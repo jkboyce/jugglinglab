@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml>
+<patternlist>
+<title>Siteswap Patterns</title>
+<line display="               3 Balls"/>
+<line display=" "/>
+<line display="3 (cascade)" notation="siteswap" pattern="pattern=3"/>
+<line display="42 (two in one hand)" notation="siteswap" pattern="pattern=42"/>
+<line display="423 (basis of many popular tricks)" notation="siteswap" pattern="pattern=423"/>
+<line display="441 (simplest computer-generated pattern)" notation="siteswap" pattern="pattern=441"/>
+<line display="531" notation="siteswap" pattern="pattern=531"/>
+<line display="73131 (531 on steroids)" notation="siteswap" pattern="pattern=73131"/>
+<line display="9313131" notation="siteswap" pattern="pattern=9313131"/>
+<line display="5241" notation="siteswap" pattern="pattern=5241"/>
+<line display="46131" notation="siteswap" pattern="pattern=46131"/>
+<line display="63141 (same numbers as above)" notation="siteswap" pattern="pattern=63141"/>
+<line display="52512 (baby juggling pattern)" notation="siteswap" pattern="pattern=52512"/>
+<line display="55500" notation="siteswap" pattern="pattern=55500"/>
+<line display="471231" notation="siteswap" pattern="pattern=471231"/>
+<line display="723141" notation="siteswap" pattern="pattern=723141"/>
+<line display="731241 (same numbers, 3 different patterns)" notation="siteswap" pattern="pattern=731241"/>
+<line display="6316131" notation="siteswap" pattern="pattern=6316131"/>
+<line display="51 (shower)" notation="siteswap" pattern="pattern=51;tps=5.0;hands=(25)(12.5).(12.5)(25)."/>
+<line display="7131 (high-low)" notation="siteswap" pattern="pattern=7131;tps=5.0;hands=(25)(12.5).(12.5)(25)."/>
+<line display="913131" notation="siteswap" pattern="pattern=913131;tps=5.0;hands=(25)(12.5).(12.5)(25)."/>
+<line display="55050 (the snake)" notation="siteswap" pattern="pattern=55050"/>
+<line display="60 (three in one hand)" notation="siteswap" pattern="pattern=60"/>
+<line display="8040 (high-low in one hand)" notation="siteswap" pattern="pattern=8040"/>
+<line display="801 (really fun)" notation="siteswap" pattern="pattern=801"/>
+<line display="71701701" notation="siteswap" pattern="pattern=71701701"/>
+<line display=" "/>
+<line display="(4,2x)(2x,4) (box, or seesaw)" notation="siteswap" pattern="pattern=(4,2x)(2x,4);tps=4.0;hands=(25)(25).(5)(25).(5)(25).(25)(25)."/>
+<line display=" "/>
+<line display=" "/>
+<line display="               4 Balls"/>
+<line display=" "/>
+<line display="4 (fountain)" notation="siteswap" pattern="pattern=4"/>
+<line display="53 (half-shower)" notation="siteswap" pattern="pattern=53;hands=(32.5)(17.5).(17.5)(32.5)."/>
+<line display="534" notation="siteswap" pattern="pattern=534"/>
+<line display="552" notation="siteswap" pattern="pattern=552"/>
+<line display="5551" notation="siteswap" pattern="pattern=5551"/>
+<line display="55550" notation="siteswap" pattern="pattern=55550"/>
+<line display="633 (towers with clubs)" notation="siteswap" pattern="pattern=633"/>
+<line display="5641 (try 56414)" notation="siteswap" pattern="pattern=5641"/>
+<line display="6451" notation="siteswap" pattern="pattern=6451"/>
+<line display="6631" notation="siteswap" pattern="pattern=6631"/>
+<line display="7333 (get rid of one and do 3 for a while)" notation="siteswap" pattern="pattern=7333"/>
+<line display="7441" notation="siteswap" pattern="pattern=7441"/>
+<line display="7531 (nice sequence)" notation="siteswap" pattern="pattern=7531"/>
+<line display="63551" notation="siteswap" pattern="pattern=63551"/>
+<line display="63641 (good)" notation="siteswap" pattern="pattern=63641"/>
+<line display="64613 (pair with 63641)" notation="siteswap" pattern="pattern=64613"/>
+<line display="73451" notation="siteswap" pattern="pattern=73451"/>
+<line display="67313" notation="siteswap" pattern="pattern=67313"/>
+<line display="73631 (pair with above)" notation="siteswap" pattern="pattern=73631"/>
+<line display="566151 (good)" notation="siteswap" pattern="pattern=566151"/>
+<line display="575151 (easy for one hand)" notation="siteswap" pattern="pattern=575151"/>
+<line display="577131" notation="siteswap" pattern="pattern=577131"/>
+<line display="733551 (good)" notation="siteswap" pattern="pattern=733551"/>
+<line display="62" notation="siteswap" pattern="pattern=62"/>
+<line display="561 (good)" notation="siteswap" pattern="pattern=561"/>
+<line display="723" notation="siteswap" pattern="pattern=723"/>
+<line display="741 (good)" notation="siteswap" pattern="pattern=741"/>
+<line display="5713" notation="siteswap" pattern="pattern=5713"/>
+<line display="8413" notation="siteswap" pattern="pattern=8413"/>
+<line display="8512" notation="siteswap" pattern="pattern=8512"/>
+<line display="66161 (good)" notation="siteswap" pattern="pattern=66161"/>
+<line display="6716161 (good)" notation="siteswap" pattern="pattern=6716161"/>
+<line display="714 (pair with 741 above)" notation="siteswap" pattern="pattern=714"/>
+<line display="8134" notation="siteswap" pattern="pattern=8134"/>
+<line display="71 (shower)" notation="siteswap" pattern="pattern=71;hands=(25)(12.5).(12.5)(25)."/>
+<line display="9151 (high-low shower)" notation="siteswap" pattern="pattern=9151;hands=(25)(12.5).(12.5)(25)."/>
+<line display="9124" notation="siteswap" pattern="pattern=9124"/>
+<line display="831" notation="siteswap" pattern="pattern=831"/>
+<line display="9313" notation="siteswap" pattern="pattern=9313"/>
+<line display="912 (good)" notation="siteswap" pattern="pattern=912"/>
+<line display=" "/>
+<line display="(4,4) (synchronous fountain)" notation="siteswap" pattern="pattern=(4,4)"/>
+<line display="(4x,4x)" notation="siteswap" pattern="pattern=(4x,4x)"/>
+<line display="(4,6x)(2x,4)" notation="siteswap" pattern="pattern=(4,6x)(2x,4)"/>
+<line display="(4,6x)(4x,2)" notation="siteswap" pattern="pattern=(4,6x)(4x,2)"/>
+<line display="(4x,6x)(4x,2x)" notation="siteswap" pattern="pattern=(4x,6x)(4x,2x)"/>
+<line display="(4x,6)(4,2x)" notation="siteswap" pattern="pattern=(4x,6)(4,2x)"/>
+<line display="(6,4x)(4x,2)" notation="siteswap" pattern="pattern=(6,4x)(4x,2)"/>
+<line display="(6x,6x)(2x,2x) (good)" notation="siteswap" pattern="pattern=(6x,6x)(2x,2x)"/>
+<line display="(2x,6x) (synch shower)" notation="siteswap" pattern="pattern=(2x,6x);hands=(12.5)(25).(25)(12.5)."/>
+<line display="(6x,2)(2x,6)(2,6x)(6,2x)" notation="siteswap" pattern="
+pattern=(6x,2)(2x,6)(2,6x)(6,2x)"/>
+<line display="(8,2x)(4,2x)(2x,8)(2x,4) (Bennett's box)" notation="siteswap" pattern="pattern=(8,2x)(4,2x)(2x,8)(2x,4);hands=(25)(25).(7.5)(25).(25)(25).(7.5)(25).(7.5)(25).(25)(25).(7.5)(25).(25)(25)."/>
+<line display="(2x,8)(4,2)(8,2)(4,2x)" notation="siteswap" pattern="pattern=(2x,8)(4,2)(8,2)(4,2x)"/>
+<line display="(8,2)(2x,4x)" notation="siteswap" pattern="pattern=(8,2)(2x,4x)"/>
+<line display="(2x,8)(4,2x) (lopsided box)" notation="siteswap" pattern="pattern=(2x,8)(4,2x)"/>
+<line display="(2x,6x)(6x,2x) (good)" notation="siteswap" pattern="pattern=(2x,6x)(6x,2x)"/>
+<line display=" "/>
+<line display=" "/>
+<line display="               5 Balls"/>
+<line display=" "/>
+<line display="5 (cascade)" notation="siteswap" pattern="pattern=5"/>
+<line display="64 (Rastelli-style)" notation="siteswap" pattern="pattern=64"/>
+<line display="645 (good)" notation="siteswap" pattern="pattern=645"/>
+<line display="663" notation="siteswap" pattern="pattern=663"/>
+<line display="744 (good)" notation="siteswap" pattern="pattern=744"/>
+<line display="753 (good, but hard)" notation="siteswap" pattern="pattern=753"/>
+<line display="6662" notation="siteswap" pattern="pattern=6662"/>
+<line display="6734" notation="siteswap" pattern="pattern=6734"/>
+<line display="7463" notation="siteswap" pattern="pattern=7463"/>
+<line display="7733 (good, but hard)" notation="siteswap" pattern="pattern=7733"/>
+<line display="8444" notation="siteswap" pattern="pattern=8444"/>
+<line display="8534 (variation of above)" notation="siteswap" pattern="pattern=8534"/>
+<line display="8552" notation="siteswap" pattern="pattern=8552"/>
+<line display="8642 (sequence)" notation="siteswap" pattern="pattern=8642"/>
+<line display="66661" notation="siteswap" pattern="pattern=66661"/>
+<line display="67363" notation="siteswap" pattern="pattern=67363"/>
+<line display="67741" notation="siteswap" pattern="pattern=67741"/>
+<line display="75751 (good, two balls over the top)" notation="siteswap" pattern="pattern=75751;hands=(45)(25).(25)(45).(45)(25).(25)(25).(17.5)(45)."/>
+<line display="77731" notation="siteswap" pattern="pattern=77731"/>
+<line display="88441 (good)" notation="siteswap" pattern="pattern=88441"/>
+<line display="94444 (heave!)" notation="siteswap" pattern="pattern=94444"/>
+<line display="95551" notation="siteswap" pattern="pattern=95551"/>
+<line display="97531 (tough sequence)" notation="siteswap" pattern="pattern=97531"/>
+<line display="747741" notation="siteswap" pattern="pattern=747741"/>
+<line display="774714 (pair with above)" notation="siteswap" pattern="pattern=774714"/>
+<line display="a55550 (nice idea)" notation="siteswap" pattern="pattern=a55550"/>
+<line display="9494414" notation="siteswap" pattern="pattern=9494414"/>
+<line display="73 (tough kind of half-shower)" notation="siteswap" pattern="pattern=73;hands=(37.5)(20).(20)(37.5)."/>
+<line display="672" notation="siteswap" pattern="pattern=672"/>
+<line display="834" notation="siteswap" pattern="pattern=834"/>
+<line display="852" notation="siteswap" pattern="pattern=852"/>
+<line display="6671" notation="siteswap" pattern="pattern=6671"/>
+<line display="6851" notation="siteswap" pattern="pattern=6851"/>
+<line display="7571 (Boppo's poor man's 6 half-shower)" notation="siteswap" pattern="pattern=7571;hands=(45)(25).(25)(45)."/>
+<line display="7841" notation="siteswap" pattern="pattern=7841"/>
+<line display="9353" notation="siteswap" pattern="pattern=9353"/>
+<line display="9551 (easiest of 9551/9515/9155 set)" notation="siteswap" pattern="pattern=9551"/>
+<line display="9515" notation="siteswap" pattern="pattern=9515"/>
+<line display="9155" notation="siteswap" pattern="pattern=9155"/>
+<line display="777171 (good)" notation="siteswap" pattern="pattern=777171"/>
+<line display="771 (good)" notation="siteswap" pattern="pattern=771"/>
+<line display="825" notation="siteswap" pattern="pattern=825"/>
+<line display="861" notation="siteswap" pattern="pattern=861"/>
+<line display="82 (four in one hand)" notation="siteswap" pattern="pattern=82"/>
+<line display="96181" notation="siteswap" pattern="pattern=96181"/>
+<line display="915" notation="siteswap" pattern="pattern=915"/>
+<line display="91951" notation="siteswap" pattern="pattern=91951"/>
+<line display="91 (shower)" notation="siteswap" pattern="pattern=91;hands=(37.5)(17.5).(17.5)(37.5)."/>
+<line display=" "/>
+<line display="24[54] (good)" notation="siteswap" pattern="pattern=24[54]"/>
+<line display="25[53]" notation="siteswap" pattern="pattern=25[53]"/>
+<line display="26[43]" notation="siteswap" pattern="pattern=26[43]"/>
+<line display="22[43][54]" notation="siteswap" pattern="pattern=22[43][54]"/>
+<line display="22[53][53]" notation="siteswap" pattern="pattern=22[53][53]"/>
+<line display="24[64]4" notation="siteswap" pattern="pattern=24[64]4"/>
+<line display="24[65]3" notation="siteswap" pattern="pattern=24[65]3"/>
+<line display="25[65]2" notation="siteswap" pattern="pattern=25[65]2"/>
+<line display="26[64]2" notation="siteswap" pattern="pattern=26[64]2"/>
+<line display="27[43]4" notation="siteswap" pattern="pattern=27[43]4"/>
+<line display="27[53]3" notation="siteswap" pattern="pattern=27[53]3"/>
+<line display="27[54]2" notation="siteswap" pattern="pattern=27[54]2"/>
+<line display="623[54]" notation="siteswap" pattern="pattern=623[54]"/>
+<line display="723[53]" notation="siteswap" pattern="pattern=723[53]"/>
+<line display="22[52][65][21]" notation="siteswap" pattern="pattern=22[52][65][21]"/>
+<line display="22[72][54][21]" notation="siteswap" pattern="pattern=22[72][54][21]"/>
+<line display="22[43][64]4" notation="siteswap" pattern="pattern=22[43][64]4"/>
+<line display="22[43][65]3" notation="siteswap" pattern="pattern=22[43][65]3"/>
+<line display="22[53][65]2" notation="siteswap" pattern="pattern=22[53][65]2"/>
+<line display="22[54][65]1" notation="siteswap" pattern="pattern=22[54][65]1"/>
+<line display="22[64][64]1" notation="siteswap" pattern="pattern=22[64][64]1"/>
+<line display="22[75][53]1" notation="siteswap" pattern="pattern=22[75][53]1"/>
+<line display="22[76][43]1" notation="siteswap" pattern="pattern=22[76][43]1"/>
+<line display="24[65]62" notation="siteswap" pattern="pattern=24[65]62"/>
+<line display="24[76]33" notation="siteswap" pattern="pattern=24[76]33"/>
+<line display="24[76]42" notation="siteswap" pattern="pattern=24[76]42"/>
+<line display="25[65]61" notation="siteswap" pattern="pattern=25[65]61"/>
+<line display="25[75]51" notation="siteswap" pattern="pattern=25[75]51"/>
+<line display="25[76]23" notation="siteswap" pattern="pattern=25[76]23"/>
+<line display="25[76]41" notation="siteswap" pattern="pattern=25[76]41"/>
+<line display="26[64]61" notation="siteswap" pattern="pattern=26[64]61"/>
+<line display="26[76]31" notation="siteswap" pattern="pattern=26[76]31"/>
+<line display="27[43]63" notation="siteswap" pattern="pattern=27[43]63"/>
+<line display="27[54]61" notation="siteswap" pattern="pattern=27[54]61"/>
+<line display="27[75]31" notation="siteswap" pattern="pattern=27[75]31"/>
+<line display="622[42][54]" notation="siteswap" pattern="pattern=622[42][54]"/>
+<line display="622[62][43]" notation="siteswap" pattern="pattern=622[62][43]"/>
+<line display="623[64]4" notation="siteswap" pattern="pattern=623[64]4"/>
+<line display="623[65]3" notation="siteswap" pattern="pattern=623[65]3"/>
+<line display="625[65]1" notation="siteswap" pattern="pattern=625[65]1"/>
+<line display="626[64]1" notation="siteswap" pattern="pattern=626[64]1"/>
+<line display="627[54]1" notation="siteswap" pattern="pattern=627[54]1"/>
+<line display="6622[54]" notation="siteswap" pattern="pattern=6622[54]"/>
+<line display="722[65][21]" notation="siteswap" pattern="pattern=722[65][21]"/>
+<line display="723[65]2" notation="siteswap" pattern="pattern=723[65]2"/>
+<line display="724[65]1" notation="siteswap" pattern="pattern=724[65]1"/>
+<line display="7423[54]" notation="siteswap" pattern="pattern=7423[54]"/>
+<line display="23[64]" notation="siteswap" pattern="pattern=23[64]"/>
+<line display="25[62] (good)" notation="siteswap" pattern="pattern=25[62]"/>
+<line display="27[42]" notation="siteswap" pattern="pattern=27[42]"/>
+<line display="25[75]1" notation="siteswap" pattern="pattern=25[75]1"/>
+<line display="24[72]" notation="siteswap" pattern="pattern=24[72]"/>
+<line display=" "/>
+<line display="(4x,6x) (synchronous half-shower)" notation="siteswap" pattern="pattern=(4x,6x);hands=(17.5)(37.5).(37.5)(17.5)."/>
+<line display="(6,4)" notation="siteswap" pattern="pattern=(6,4)"/>
+<line display="(4x,6)(4,6x)" notation="siteswap" pattern="pattern=(4x,6)(4,6x)"/>
+<line display="(4x,6)(6,4x) (good)" notation="siteswap" pattern="pattern=(4x,6)(6,4x)"/>
+<line display="(6x,4)(4,6x) (good)" notation="siteswap" pattern="pattern=(6x,4)(4,6x)"/>
+<line display="(6x,4)(6,4x)" notation="siteswap" pattern="pattern=(6x,4)(6,4x)"/>
+<line display="(6x,6x)(2x,6x)" notation="siteswap" pattern="pattern=(6x,6x)(2x,6x)"/>
+<line display="(6x,8x)(2x,4x)" notation="siteswap" pattern="pattern=(6x,8x)(2x,4x)"/>
+<line display="(8,6x)(2x,4)" notation="siteswap" pattern="pattern=(8,6x)(2x,4)"/>
+<line display="(6,6)(2x,6)(6,4x)" notation="siteswap" pattern="pattern=(6,6)(2x,6)(6,4x)"/>
+<line display="(6x,4)(6x,6x)(2,6x)" notation="siteswap" pattern="pattern=(6x,4)(6x,6x)(2,6x)"/>
+<line display="(2x,8)(8,2x)" notation="siteswap" pattern="pattern=(2x,8)(8,2x)"/>
+<line display="(8,2x)(6x,4)" notation="siteswap" pattern="pattern=(8,2x)(6x,4)"/>
+<line display=" "/>
+<line display=" "/>
+<line display="               6 Balls"/>
+<line display=" "/>
+<line display="6 (fountain)" notation="siteswap" pattern="pattern=6"/>
+<line display="75 (half-shower)" notation="siteswap" pattern="pattern=75;hands=(45)(25).(25)(45)."/>
+<line display="756" notation="siteswap" pattern="pattern=756"/>
+<line display="774" notation="siteswap" pattern="pattern=774"/>
+<line display="855" notation="siteswap" pattern="pattern=855"/>
+<line display="864 (high-low with one hand)" notation="siteswap" pattern="pattern=864"/>
+<line display="7773" notation="siteswap" pattern="pattern=7773"/>
+<line display="8844 (high-low with both hands)" notation="siteswap" pattern="pattern=8844"/>
+<line display="77772" notation="siteswap" pattern="pattern=77772"/>
+<line display="777771 (one of the easiest with 6)" notation="siteswap" pattern="pattern=777771"/>
+<line display="786861" notation="siteswap" pattern="pattern=786861"/>
+<line display="868671 (good)" notation="siteswap" pattern="pattern=868671"/>
+<line display="945" notation="siteswap" pattern="pattern=945"/>
+<line display="77781" notation="siteswap" pattern="pattern=77781"/>
+<line display="78681" notation="siteswap" pattern="pattern=78681"/>
+<line display="86781" notation="siteswap" pattern="pattern=86781"/>
+<line display="88581" notation="siteswap" pattern="pattern=88581"/>
+<line display="7881" notation="siteswap" pattern="pattern=7881"/>
+<line display="891" notation="siteswap" pattern="pattern=891"/>
+<line display=" "/>
+<line display="(6,6) (synch fountain)" notation="siteswap" pattern="pattern=(6,6)"/>
+<line display="(6x,6x)" notation="siteswap" pattern="pattern=(6x,6x)"/>
+</patternlist>
+</jml>
