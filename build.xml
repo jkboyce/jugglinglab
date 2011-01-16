@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Build file for Juggling Lab. -->
+<!-- For use with the Apache Ant Java build tool (http://ant.apache.org) -->
+
+<project name="JugglingLab" default="jars" basedir=".">
+
+<property name="src" value="source" />
+<property name="build" value="build" />
+<property name="bin" value="bin" />
+<property name="debug" value="off" />
+<property name="deprecation" value="off" />
+
+<target name="init">
+	<mkdir dir="${build}" />
+</target>
+
+<target name="compile" depends="init">
+	<javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5" deprecation="${deprecation}" includes="**"
+	excludes="jugglinglab/MacOS/PlatformSpecificMacOS.java,idx3d/idx3d_3ds*,idx3d/idx3d_FX*,resources/*,resources_osx/*,org/apache/regexp/RED*,org/apache/regexp/Reader*,org/apache/regexp/Stream*,org/apache/regexp/RETest.java,dox.conf,jugglinglab/notation/*.jj">
+	</javac>
+</target>
+
+<!-- This target is the main Juggling Lab jar file -->
+<target name="jar" depends="compile">
+	<jar index="yes" destfile="${bin}/JugglingLab.jar">
+	<manifest>
+	<attribute name="Main-Class" value="JugglingLab" />
+	</manifest>
+	<fileset dir="${build}" excludes="Organizer*,jugglinglab/MacOS/*,jugglinglab/MacOS" />
+	<fileset dir="${src}/resources" includes="GUIStrings*" />
+	<fileset dir="${src}/resources" includes="ErrorStrings*" />
+	<fileset dir="${src}" includes="resources/*.au" />
+	<fileset dir="${src}" includes="resources/*.gif" />
+	<fileset dir="${src}" includes="resources/*.png" />
+	</jar>
+</target>
+
+<!-- This target builds an archive containing all source code, plus the build file -->
+<target name="source">
+	<jar destfile="${bin}/JugglingLab_source.jar">
+	<fileset file="build.xml" />
+	<fileset defaultexcludes="yes" dir="." includes="${src}/**" />
+	</jar>
+</target>
+
+<target name="jars" depends="jar,source" />
+
+<!-- This target executes only if invoked with something like 'ant signjars -Dkeystore=keystorepath -Dstorepass=password' -->
+<target name="signjars" if="storepass,keystore" depends="jars">
+    <signjar jar="${bin}/JugglingLab.jar" signedjar="${bin}/SignedJugglingLab.jar" alias="jlkey" keystore="${keystore}" storepass="${storepass}"/>
+    <signjar jar="${bin}/JugglingLabAWTApplet.jar" signedjar="${bin}/SignedJugglingLabAWTApplet.jar" alias="jlkey" keystore="${storename}" storepass="${storepass}"/>
+</target>
+
+<!-- Run the application -->
+<target name="run" depends="jar" description="Run the application">
+    <java jar="${bin}/JugglingLab.jar" fork="true"/>
+</target>
+
+<!-- Clean up -->
+<target name="clean" description="Remove build directory">
+	<delete dir="${build}"/>
+</target>
+
+
+
+<!-- This target builds the Mac OS X application -->
+<!-- It won't work on non-Mac machines, because the Apple stub executable below is missing -->
+<property name="resources_macosx" location="${src}/resources_osx" />
+<property name="apple.appstub" location="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
+<property name="application" location="./Juggling Lab.app" />
+<property name="application.macos" location="${application}/Contents/MacOS" />
+<property name="application.macos.stub" location="${application}/Contents/MacOS/Juggling Lab" />
+<property name="application.resources" location="${application}/Contents/Resources" />
+<property name="application.resources.java" location="${application}/Contents/Resources/Java" />
+
+<target name="osx" depends="compile,source" description="Make a double-clickable Mac OS X application">
+	<javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5"
+	deprecation="yes" includes="jugglinglab/MacOS/*.java" />
+
+	<mkdir dir="${application.resources.java}"/>
+	<mkdir dir="${application.macos}"/>
+	<!-- put jars into application -->
+	<jar index="yes" destfile="${application.resources.java}/JugglingLab.jar">
+	<manifest>
+	<attribute name="Main-Class" value="JugglingLab" />
+	</manifest>
+	<fileset dir="${build}" excludes="Organizer*" />
+	<fileset dir="${src}/resources" includes="GUIStrings*" />
+	<fileset dir="${src}/resources" includes="ErrorStrings*" />
+	<fileset dir="${src}" includes="resources/*.au" />
+	<fileset dir="${src}" includes="resources/*.gif" />
+	<fileset dir="${src}" includes="resources/*.png" />
+	</jar>
+	<copy toDir="${application.resources.java}">
+		<fileset dir="${bin}">
+		<include name="JugglingLab_source.jar"/>
+		</fileset>
+	</copy>
+	<!-- copy application stub -->
+	<copy file="${apple.appstub}" toFile="${application.macos}/Juggling Lab"/>
+	<!-- fix stub permissions -->
+	<exec executable="/bin/chmod">
+		<arg line="755 '${application.macos.stub}'"/>
+	</exec>		
+	<!-- copy Info.plist -->
+	<copy file="${resources_macosx}/Info.plist" toFile="${application}/Contents/Info.plist"/>
+	<!-- copy PkgInfo -->
+	<copy file="${resources_macosx}/PkgInfo" toFile="${application}/Contents/PkgInfo"/>
+	<!-- copy icons -->
+	<copy toDir="${application.resources}">
+		<fileset dir="${resources_macosx}">
+		<include name="*.icns"/>
+		</fileset>			
+	</copy>
+</target>
+
+</project>
