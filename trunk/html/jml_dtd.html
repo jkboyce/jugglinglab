@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="../jugglinglab.css"/>
+<title>JML document type definition</title>
+</head>
+<body>
+
+<pre>
+&lt;!ELEMENT jml (pattern|patternlist)&gt;
+&lt;!ATTLIST jml
+          version  CDATA   "1.0"&gt;
+
+&lt;!ELEMENT pattern (title?,prop*,setup,symmetry+,event+)&gt;
+
+&lt;!ELEMENT title (#PCDATA)&gt;
+
+&lt;!ELEMENT prop EMPTY&gt;
+&lt;!ATTLIST prop
+          type     CDATA   "ball"
+          mod      CDATA   #IMPLIED&gt;
+
+&lt;!ELEMENT setup EMPTY&gt;
+&lt;!ATTLIST setup
+          jugglers CDATA   "1"
+          paths    CDATA   #REQUIRED
+          props    CDATA   #IMPLIED&gt;
+
+&lt;!ELEMENT symmetry EMPTY&gt;
+&lt;!ATTLIST symmetry
+          type     CDATA   #REQUIRED
+          jperm    CDATA   #IMPLIED
+          pperm    CDATA   #REQUIRED
+          delay    CDATA   #IMPLIED&gt;
+
+&lt;!ELEMENT event (throw|catch|softcatch|holding)*&gt;
+&lt;!ATTLIST event
+          x        CDATA   #REQUIRED
+          y        CDATA   "0.0"
+          z        CDATA   "0.0"
+          t        CDATA   #REQUIRED
+          hand     CDATA   #REQUIRED&gt;
+
+&lt;!ELEMENT throw EMPTY&gt;
+&lt;!ATTLIST throw
+          path     CDATA   #REQUIRED
+          type     CDATA   "toss"
+          mod      CDATA   #IMPLIED&gt;
+
+&lt;!ELEMENT catch EMPTY&gt;
+&lt;!ATTLIST catch
+          path     CDATA   #REQUIRED&gt;
+
+&lt;!ELEMENT softcatch EMPTY&gt;
+&lt;!ATTLIST softcatch
+          path     CDATA   #REQUIRED&gt;
+		  
+&lt;!ELEMENT holding EMPTY&gt;
+&lt;!ATTLIST holding
+          path     CDATA   #REQUIRED&gt;
+
+&lt;!ELEMENT position EMPTY&gt;
+&lt;!ATTLIST position
+          x        CDATA   #REQUIRED
+          y        CDATA   #REQUIRED
+          z        CDATA   "100.0"
+          t        CDATA   #REQUIRED
+          angle    CDATA   "0.0"
+          juggler  CDATA   "1"&gt;
+
+&lt;!ELEMENT patternlist (title?,line*)&gt;
+
+&lt;!ELEMENT line EMPTY&gt;
+&lt;!ATTLIST line
+          display    CDATA   #REQUIRED
+          animprefs  CDATA   #IMPLIED
+          notation   CDATA   #IMPLIED
+          pattern    CDATA   #IMPLIED&gt;
+</pre>
+</body>
+</html>

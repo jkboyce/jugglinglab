@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css"/>
+<title>Juggling Lab siteswap input panel</title>
+</head>
+<body>
+<div id="all">
+<h2>Using the pattern entry panel</h2>
+<p>The pattern entry panel is where you type in a pattern to juggle, and then optionally
+adjust the pattern timing and movement of the hands.  Its appearance is shown below.</p>
+
+<p><img src="sspanel.gif" alt="siteswap panel screenshot"/></p>
+<p>Description of each part:</p>
+<ul>
+<li><b>Pattern.</b>  Box where you enter a pattern to juggle, using <a href="ssnotation.html">siteswap
+notation</a>.</li>
+<li><b>Beats per second.</b>  A number greater than 0.0 that specifies how many beats there are
+each second.  There is typically an average of one throw per beat.  Leaving this blank causes Juggling Lab to calculate a default value based
+on the pattern.  Typical values are between 3.0 and 5.5 beats per second.</li>
+<li><b>Dwell beats.</b>  A number between 0.0 and 2.0 that specifies the number of beats a catch is made prior to the subsequent throw.  Default value is 1.3.</li>
+<li><b>Hand movement.</b>  Specifies hand movement using a text string in a format described
+<a href="#hands">below</a>.  The pulldown list allows you to select from a number of built-in hand movement strings.
+As a default, Juggling Lab determines hand movement based on the pattern.</li>
+<li><b>Body movement.</b>  Specifies movement for the jugglers using a text string in a format described
+<a href="#body">below</a>.  The pulldown list allows you to select from a number of built-in body movement strings.
+As a default, Juggling Lab determines body positions based on the number of jugglers.</li>
+<li><b>Prop type.</b>  The pulldown list selects the prop to use.</li>
+<li><b>Manual settings.</b>  Manual settings to configure the pattern; see the description <a href="#settings">below</a>.</li>
+<li><b>Defaults button.</b>  Click this to restore default values.</li>
+<li><b>Juggle button.</b>  Click this to juggle the pattern.</li>
+</ul>
+
+<h3 id="hands">Hand movement format</h3>
+
+<p>The text string representing hand movement allows you to specify the spatial location of the hands at
+the times of each throw and catch, as well as at points in time in between.  Juggling Lab uses a spline interpolation
+algorithm to calculate hand locations at all times from the coordinates specified at these discrete
+points in time.  The format is flexible enough to allow you
+to define hand movements of arbitrary complexity.</p>
+
+<p>Imagine that you are the juggler, and define a coordinate system with the <i>x</i> axis going from
+left to right in front of you (positive direction is to your right), the <i>y</i> axis
+going in and out (positive is out), and the <i>z</i> axis going up and down (positive is up).
+The point <code>(<i>x, y, z</i>) = (0,0,0)</code> lies at the midline of your body, in the "usual"
+plane of juggling in front of you, and at a height that places your forearms roughly
+parallel with the ground.  We will specify hand movement in terms of coordinates in this system.</p>
+
+<p>The simplest case is a single juggler, with only throw and catch positions defined.  In this case,
+the text string consists of a series of coordinate pairs in the form
+<code>"(throwx,throwz,throwy)(catchx,catchz,catchy)."</code>,
+where each pair is assigned, in order, to a throw in the siteswap pattern.
+All dimensions are in centimeters.  <b>Note in particular that the <i>y</i> and <i>z</i> coordinates have been interchanged;</b> this is for convenience since leaving out components at the end will default them to 0, e.g., <code>(30,10)</code> is shorthand for
+<code>(x=30,z=10,y=0)</code>.  Other facts:</p>
+<ul>
+<li>If a coordinate pair is assigned
+to a left-handed throw or catch, the <code>throwx</code> and <code>catchx</code> values are
+automatically negated.</li>
+<li>The number of pairs specified need not equal the
+number of throws in the siteswap -- it just loops back to the beginning when it gets to
+the end of the pairs.  Alternatively, the hand style can have <em>more</em> beats than the
+pattern.</li>
+<li>When applied to a synchronous siteswap, the coordinates are assigned to the throws in the order
+the throws are written.  For example, for the pattern <code>(4x,6x)</code>, the first hand coordinate is assigned
+to the left-handed <code>'4x'</code>, the next to the right-handed <code>'6x'</code>, and so on.</li>
+</ul>
+
+<p>As an example, the standard style for inside throws is
+<code>"(10)(32.5)."</code>, which means to throw at 10 cm from the centerline (at no elevation) and
+make the next catch at 32.5 cm from the centerline (also at no elevation).
+The standard style for Mills Mess is <code>"(-30)(2.5).(30)(-2.5).(-30)(0)."</code> if
+you care to puzzle that one out.</p>
+
+<p>The <code>'.'</code> separators in the examples above correspond to beats in the siteswap pattern.  For
+example, at 5 throws per second in an asynch pattern the throws are typically made at times 0.0 seconds, 0.2 seconds,
+0.4 seconds, and so on. Catch times
+are determined based on the dwell ratio setting.  (The only throws not made exactly on-beat are <code>'1'</code>
+throws, which are thrown slightly early and caught slightly late.)</p>
+
+<p>Hand locations at other times (besides the throw and catch points) can also be defined, by adding
+additional coordinates for each beat.  For example, the style <code>"t(10)c(32.5)(0,45,-25)."</code>
+is an "eating the apple on every beat" hand style that keeps the throw and catch positions of
+inside throws,
+but also defines the hand to be at location <code>(0,45,-25)</code> at a time exactly halfway between
+each catch and subsequent throw.  Note the use of <code>'t'</code> and <code>'c'</code> to indicate
+which coordinates correspond to throw and catch positions.  A few rules:</p>
+<ul>
+<li>The <code>'t'</code> and <code>'c'</code> specifiers are optional; if unspecified, the first coordinate
+is assumed to be the throw, and the last coordinate is assumed to be the catch.</li>
+<li>The <code>'t'</code> specifier must attach to the first coordinate, if specified.</li>
+<li>If multiple additional (i.e., other than throw/catch) positions are specified, they are assigned
+at uniform time intervals between the throws and catches.  Imagine the coordinate timeline
+drawn on a rubber sheet, and imagine stretching the sheet in time to match the pattern at the known throw and
+catch times; the other coordinates then fall uniformly in between these defined times.</li>
+<li>You can specify <code>'-'</code> in place of a coordinate if you wish to occupy a point in time
+but not define a hand coordinate.  For example, consider the hand style
+<code>"t(10)(0)-(50)c(32.5)."</code>, where the pattern timing is such that the first throw and
+catch are made at t=0.00 and t=0.20 seconds, respectively.  Then in this case, the hand is defined to
+be at location <code>(0)</code> at t=0.05 and <code>(50)</code> at t=0.15, but the hand
+location at t=0.10 is left unspecified.</li>
+<li>Throw and catch positions cannot be assigned the value <code>'-'</code>, i.e., these positions
+must always be explicitly defined.</li>
+</ul>
+
+<p>Lastly, when there are multiple jugglers, by default the hand style is applied to each of them
+equally.  To define different hand styles for each juggler, the format is
+<code>"&lt;(style for juggler 1)|(style for juggler 2)| ... &gt;"</code>.  For example,
+using the style <code>"&lt;t(10)c(32.5)(0,45,-25).|(-30)(2.5).(30)(-2.5).(-30)(0).&gt;"</code> with the pattern
+<code>&lt;3|5&gt;</code> gives two jugglers, one "eating apples" and the other juggling
+a 5 ball Mills Mess.</p>
+
+<h3 id="body">Body movement format</h3>
+
+<p>The text string defining body movement allows you to define angles and locations for each
+juggler's body, as a function of time.  Its format is similar to the hand movement format above,
+with some differences:</p>
+<ul>
+<li>The coordinate format
+is different: <code>(angle, bodyx, bodyy, bodyz)</code>, where <code>"angle"</code> is the
+rotation angle around the <i>z</i> axis.  The other coordinates <code>"bodyx"</code>,
+<code>"bodyy"</code>, and <code>"bodyz"</code> are in a global coordinate system, unlike the hand
+coordinates which are defined in a local coordinate system centered on each juggler.  Default
+coordinates for a single juggler are <code>(angle,bodyx,bodyy,bodyz)=(0,0,0,100)</code>.
+<code>bodyz=0</code> is floor height.</li>
+<li>Coordinates are not
+attached explicitly to throws and catches, but are laid out uniformly in time within each
+beat of the pattern.  The <code>'t'</code> and <code>'c'</code> specifiers are not used.</li>
+<li>Coordinates need not be defined on each beat.  For example, the body style
+<code>"(0)....(90)....(180)....(270)...."</code> defines a juggler slowly rotating at a fixed
+position, with a total period of 16 beats.</li>
+<li>The same body style cannot be applied to more than one juggler.  When passing, separate
+body styles for each juggler must be explicitly indicated using the same <code>'&lt;|&gt;'</code>
+format as the hand movement setting.  (If the number of jugglers in the body style is greater
+than the number in the pattern, the extra jugglers in the body style are ignored.)</li>
+</ul>
+
+<p>Examples body styles:</p>
+<ul>
+<li><code>"&lt;(90).|(270,-125).|(90,125).|(270,-250).|(90,250).|(270,-375).&gt;"</code> = a line passing
+formation for up to 6 jugglers.</li>
+<li><code>"(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)..."</code> = a single juggler slowly
+walking in circles, with a total period of 12 beats.</li>
+<li><code>"(0)(90)(180)(270)."</code> = a silly example defining a single juggler doing a
+counter-clockwise pirouette on every beat.  (Note that, like the hand movement setting, multiple coordinates can
+be defined within a single beat.  The <code>'-'</code> spacer can also be used.)</li>
+<li><code>"(0).(0).(0).(0).(0).(0,0,0,150)."</code> = a single juggler jumping up
+and down.</li>
+</ul>
+
+<h3 id="settings">Manual settings to configure the pattern</h3>
+
+<p>This entry method provides a way to manually control the siteswap pattern.  Everything that can be set in the
+other portions of the siteswap input panel can be manually entered in this box as well.  Manual settings override
+settings made in other parts of the panel.</p>
+
+<p>The format of the entry is a text string comprised of
+semicolon-separated assignment settings, for example <code>"pattern=(4x,4x);bps=6.0;hands=(32.5)(10)."</code>.  Variables are:</p>
+<ul>
+<li><code class="def">pattern</code> &ndash; pattern to animate, in <a href="ssnotation.html">siteswap notation</a>.  No default.</li>
+<li><code class="def">bps</code> &ndash; number of beats per second, a floating point value.  Default is
+automatically calculated from the pattern.</li>
+<li><code class="def">dwell</code> &ndash; number of beats a catch is made prior to the subsequent throw.  Values are floating-point numbers between 0.0 and 2.0; default is 1.3.</li>
+<li><code class="def">hands</code> &ndash; hand movement as a sequence of spatial coordinates, using the format <a href="#hands">described above</a>.</li>
+<li><code class="def">body</code> &ndash; body movement as a sequence of angles and spatial coordinates, using the format <a href="#body">described above</a>.</li>
+<li><code class="def">colors</code> &ndash; determines the coloring of the props.  Each color is defined either
+by name or by its red/green/blue components on a 0-255 scale.  Thus if this
+setting is equal to <code>{red}</code> or <code>{255,0,0}</code>, the animator will use red balls.
+If you define several colors, they will be assigned to the balls in a cyclical manner.  For example,
+<code>{255,0,0}{0,255,0}</code> means that ball 1 is red, ball 2 is green, ball 3 is red,
+ball 4 is green, and so on.  Recognized color names are:
+<code>black, blue, cyan, gray, green, magenta, orange, pink, red, yellow</code>.  Using the
+value <code>mixed</code> (no braces) will apply a pre-defined mix of colors.  Default is red balls.</li>
+<li><code class="def">propdiam</code> &ndash; diameter of the props, in centimeters.  Values are
+floating-point numbers greater than 0.0; default is 10.0.</li>
+<li><code class="def">prop</code> &ndash; prop type to use.  Recognized prop names are <code>ball</code>, <code>image</code>, and <code>ring</code>; default is <code>ball</code>.</li>
+<li><code class="def">gravity</code> &ndash; acceleration of gravity, in cm/sec^2.  Values are floating-point
+numbers; default is 980.0 (earth standard).</li>
+<li><code class="def">bouncefrac</code> &ndash; fraction of a ball's energy retained after bouncing off the ground
+(how much of its dropped height does it return to?).  Values are floating point numbers greater than 0.0;
+default is 0.9.</li>
+</ul>
+<p>The following variables are also supported for backward compatibility, but their continuing use is
+discouraged.  Most are documented
+<a href="http://juggleanim.sourceforge.net/doc/inputformat.html">elsewhere</a>:</p>
+<ul>
+<li><code class="def">tps</code> &ndash; use <code>bps</code> instead.</li>
+<li><code class="def">dratio</code> &ndash; defined as half of <code>dwell</code>.  In the typical
+case where a given hand throws on every other beat, this equals the fraction of time the
+hand is filled with a ball.  
+Values are floating-point numbers between 0.0 and 1.0; default is 0.65.</li>
+<li><code class="def">throwx</code> &ndash; use <code>hands</code> instead .</li>
+<li><code class="def">rightthrowx</code> &ndash; use <code>hands</code> instead.</li>
+<li><code class="def">leftthrowx</code> &ndash; use <code>hands</code> instead.</li>
+<li><code class="def">catchx</code> &ndash; use <code>hands</code> instead.</li>
+<li><code class="def">rightcatchx</code> &ndash; use <code>hands</code> instead.</li>
+<li><code class="def">leftcatchx</code> &ndash; use <code>hands</code> instead.</li>
+<li><code class="def">balldiam</code> &ndash; use <code>propdiam</code> instead.</li>
+<li><code class="def">g</code> &ndash; use <code>gravity</code> instead.</li>
+</ul>
+
+</div>
+</body>
+</html>

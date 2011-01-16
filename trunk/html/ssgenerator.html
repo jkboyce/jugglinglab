@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css"/>
+<title>Juggling Lab siteswap generator</title>
+</head>
+<body>
+<div id="all">
+<h2>Using the siteswap generator</h2>
+<p>A <dfn>siteswap generator</dfn> is a program that finds juggling patterns in
+<a href="ssnotation.html">siteswap notation</a>.
+You give the generator a list of parameters that define what kinds of patterns you
+want it to find, and it finds <em>all</em>
+patterns that fit the given constraints.</p>
+
+<p>There are three sections in this discussion:</p>
+<ul>
+<li><a href="#running">Running the generator for the first time</a></li>
+<li><a href="#parameters">The parameters that feed the siteswap generator</a></li>
+<li><a href="#tips">Tips on using the generator successfully</a></li>
+</ul>
+
+<h2 id="running">Running the generator for the first time</h2>
+
+<p>Juggling Lab's siteswap generator panel is shown in the graphic below.  To run it for
+the first time, perform the following steps:</p>
+<ol>
+<li>Click the "Defaults" button.</li>
+<li>Click the "Run" button.</li>
+</ol>
+
+<p><img src="ssgenerator.gif" alt="siteswap generator screenshot"/></p>
+
+<p>The generator should produce the list of five-ball siteswap patterns
+shown below.</p>
+<pre>
+  55555
+  64555
+  64645
+  66355
+  66364
+  66625
+    .
+    .
+    .
+  77461
+  77722
+  77731
+* 66670 *
+* 67273 *
+* 67570 *
+* 75670 *
+* 77272 *
+* 77470 *
+</pre>
+
+<p>This is an exhaustive list of patterns satisfying the parameters entered on the
+panel above.  (These parameters were reset to their default values when you clicked the
+"Defaults" button.)  Each line is a separate pattern.</p>
+
+<p>Why do some patterns have a <code>'*'</code> before and after them?  These patterns
+require some transition throws to get from the cascade (in this case, siteswap <code>5</code>)
+into the pattern, and more transition throws to get from the pattern back into the cascade.
+The <code>'*'</code> is just a placeholder to indicate that these transition throws are
+required.  Check the "transition throws" box on the input panel and re-run the generator;
+the explicit values of the transition throws will be filled in.</p>
+
+<p>For example, let's
+say you wanted to do the pattern <code>66670</code> once from the middle of a cascade.
+Because <code>66670</code> has transition throws, you can't just switch into it
+immediately like this:</p>
+<pre>
+       ... 5555555 666706667066670 ...
+                 ^     ^
+</pre>
+<p>because of the collision indicated.  (The space is there to guide the eye; it doesn't
+correspond to a beat in time.)  You need a transition throw, in this case a
+<code>'6'</code>:</p>
+<pre>
+       ... 5555555 6 666706667066670 ...
+</pre>
+<p>Similarly, you need a transition throw to get back to the cascade, in this case a
+<code>'4'</code>:</p>
+<pre>
+       ... 666706667066670 4 5555555 ...
+</pre>
+<p>It can be shown that when transition throws are required to get <em>into</em> a pattern,
+then transition throws will always be required to get <em>back out</em> (and vice versa).</p>
+
+<p>Patterns that require these extra transition throws
+are called <dfn>excited state</dfn> patterns, and the others without transition throws
+are called <dfn>ground state</dfn> patterns.  The transition throws for an excited state
+pattern are not unique; in the case above the sequence <code>'662'</code> could have been used
+to exit the pattern <code>66670</code>.  Juggling Lab finds the shortest transition sequences
+possible.</p>
+
+
+<h2 id="parameters">Siteswap generator parameters</h2>
+
+<p>Each element of the generator panel specifies a parameter that constrains the generator's search
+algorithm:</p>
+
+<ul>
+<li><b>Balls.</b>  Specifies the number of objects the generated patterns are to have.</li>
+<li><b>Max. throw.</b>  Specifies a maximum siteswap throw value in the
+patterns found.  Enter large values as <code>10</code>, <code>11</code>,
+<code>12</code>, ... rather than the conventional
+<code>a</code>, <code>b</code>, <code>c</code>, ... of siteswap notation.</li>
+<li><b>Period.</b>  Specifies the period of time, in "beats", before the
+pattern repeats.  For an asynchronous pattern there is 1 beat per throw.
+In a synchronous pattern there are 2 beats per throw pair
+<code>(r,l)</code>, so the period must be a multiple of 2.</li>
+<li><b>Jugglers.</b>  Specifies the number of jugglers in the pattern.</li>
+<li><b>Rhythm.</b>  Selects either asynchronous or synchronous rhythm of throws,
+i.e., whether the hands alternate throws or throw at the same time.</li>
+<li><b><a href="#compositions">Compositions</a>.</b>  Sets option to filter out patterns that
+are combinations (<dfn>compositions</dfn>) of simpler patterns.  See the section
+below for a more complete description.</li>
+<li><b><a href="#find">Find</a>.</b>  Sets options to generate ground- or excited-state patterns
+(or both) and options for displaying them.  See the section below for a more
+complete description.</li>
+<li><b>Multiplexing.</b>  Specifies whether the generator is to find multiplexing
+patterns, and if so, the maximum number of simultaneous throws to allow from any
+hand.  There are also options to exclude patterns requiring simultaneous
+catches from different places (such catches are typically quite difficult), and to
+exclude patterns with "clustered" multiplex throws of the same value (for example
+<code>[33]</code>).  These exclusions apply only to the pattern itself, not to the
+transition throws of excited-state patterns.  "True multiplexing" requires that each pattern have at least one multiplex throw containing no held balls; for example <code>[32]</code> with 5 balls would be excluded.</li>
+<li><b><a href="#regex">Exclude these expressions</a>.</b>  Items to exclude from the search, written as regular expressions and separated by spaces if more than one.  A pattern will be excluded if it matches <em>any</em> of these expressions.  These
+exclusions apply only to the pattern itself, not to the transition throws of
+excited-state patterns.  See the section below for a more
+complete description.</li>
+<li><b><a href="#regex">Include these expressions</a>.</b>  Requires that patterns match <em>all</em> of
+the listed regular expressions.  See the section below for a more
+complete description.</li>
+<li><b><a href="#delay">Passing communications delay</a>.</b>  Number of time beats jugglers 2, 3, ...
+are given to react to a trick thrown by juggler 1.  See section below for a more
+complete description.</li>
+<li><b>Defaults button.</b>  Click on this to reset all generator parameters to their
+defaults.</li>
+<li><b>Run button.</b>  Click on this to start the generator searching for patterns.</li>
+</ul>
+ 
+<h4 id="compositions">Compositions options</h4>
+<p>This option is a bit complicated and requires a little deeper understanding of siteswap notation.</p>
+
+<p>One general observation about siteswap patterns
+is that any two that share the same transition throws
+can be strung together to get another valid pattern.  Thus
+the two ground state three ball patterns <span style="font-family: courier, monospace">441</span> and
+<span style="font-family: courier, monospace">3</span> are combined to get another valid pattern: <span style="font-family: courier, monospace">4413</span>.
+In this case we say that <span style="font-family: courier, monospace">4413</span> is a <i>composition</i> of <span style="font-family: courier, monospace">441</span>
+and <span style="font-family: courier, monospace">3</span>.</p>
+
+<p>Another general observation is that you can cyclically <i>rotate</i> the throws in a pattern to get another valid one.
+Thus <span style="font-family: courier, monospace">441</span> can be rotated left to get <span style="font-family: courier, monospace">414</span>.  Note that
+<span style="font-family: courier, monospace">414</span> is not a ground state pattern, as written, since in the following
+throw sequence:</p>
+<pre>
+         ... 3333333 414414414 ...
+                   ^  ^
+</pre>
+<p>causes the two indicated throws to collide.</p>
+
+<p>The program generally doesn't list all the rotated versions of the patterns that it finds, since
+this clutters up the listings.  So how does it decide <em>which</em> rotation to display?
+It displays the rotation that minimizes the length and throw values of the transition throws into
+the pattern.
+In the case of <span style="font-family: courier, monospace">441</span>, this minimum number of transition throws is 0 if the
+pattern is displayed as <span style="font-family: courier, monospace">441</span> (not <span style="font-family: courier, monospace">414</span>), so it's displayed that
+way.</p>
+
+<p>Now the three "Compositions" choices break down in the following way:</p>
+<ol>
+<li><b>All compositions.</b>  Show all patterns, including any compositions.</li>
+<li><b>Non-obvious compositions.</b>  Do not show patterns that are compositions of other, <em>listed</em>, patterns.</li>
+<li><b>No compositions.</b>  Show only patterns that are not compositions of <em>any</em> shorter
+patterns.  (These are called <dfn>prime</dfn> or <dfn>simple</dfn> patterns.)</li>
+</ol>
+
+<p>As an example, consider the three patterns <span style="font-family: courier, monospace">6316131</span>, <span style="font-family: courier, monospace">4413</span>, and
+<span style="font-family: courier, monospace">51414</span>.  The first
+is not a composition at all, so it will appear regardless of the "Compositions" setting.  The second is a composition of two patterns that the program <em>does</em> print, namely <span style="font-family: courier, monospace">441</span> and <span style="font-family: courier, monospace">3</span>; therefore it will be listed only with the "all compositions" setting.</p>
+
+<p>The last pattern, <span style="font-family: courier, monospace">51414</span>, is
+a composition of two shorter patterns, <span style="font-family: courier, monospace">51</span> (the shower) and <span style="font-family: courier, monospace">414</span>.
+When "no compositions" is selected, <span style="font-family: courier, monospace">51414</span> will not be displayed.  In the "non-obvious compositions" setting, however, this pattern <em>will</em>
+be displayed because, although <span style="font-family: courier, monospace">51</span> is displayed as such by the generator,
+<span style="font-family: courier, monospace">414</span> will be displayed as its ground state rotation <span style="font-family: courier, monospace">441</span>.  If
+you were looking at a generator listing you would see <span style="font-family: courier, monospace">51</span> and <span style="font-family: courier, monospace">441</span> with
+different transition throws, and it wouldn't be obvious that you could rotate
+the latter and tack it onto the former.  These kinds of compositions are
+called <dfn>non-obvious</dfn>.</p>
+
+<p>The default setting is to show all compositions.</p>
+
+<h4 id="find">Find options</h4>
+<p>This tells the generator what class of patterns to find: Ground state patterns,
+excited state patterns, or
+both.  The "transition throws" option causes transition throws to be printed
+for any excited state patterns found -- otherwise <span style="font-family: courier, monospace">'*'</span> is
+printed as a placeholder.  The "pattern rotations" causes all rotations of a pattern to be printed, for example
+<code>441</code>, <code>414</code>, and <code>144</code> would each be printed separately.</p>
+
+<p>The "juggler permutations" option applies when generating passing patterns.  As a default, the generator will avoid displaying multiple patterns that are just the same pattern with the jugglers reordered (permuted).  For example, the two passing siteswaps <code>&lt;3|4p&gt;&lt;2p|3&gt;</code> and <code>&lt;4p|3&gt;&lt;3|2p&gt;</code> are the same pattern with the jugglers swapped, so only one of them is shown by the generator.  You can show all permutations as distinct patterns by selecting the "juggler permutations" option.  <i>(Note: The algorithm Juggling Lab uses to exclude juggler-permuted duplicates is not guaranteed to exclude all of them, although it does exclude the vast majority.)</i></p>
+
+<p>"Connected patterns only" also applies only to passing patterns.  Selecting this option filters out any passing patterns that are two or more patterns (each with fewer jugglers) done together.  A simple example is <code>&lt;5|3&gt;&lt;1|3&gt;</code>, which is two jugglers standing next to each other doing solo juggling tricks.</p>
+
+<h4 id="regex">Exclude / include these expressions</h4>
+<p>The search terms should be entered into the text boxes as regular expressions, separated by spaces if there are more than one.  Regular expression matching is quite powerful and a little bit complicated in its complete form; the full details of the syntax used by Juggling Lab are <a href="regex.html">on another page</a>.</p>
+
+<p>However, for basic literal searches the format is simple; you just enter the text you want to match against.  For example, entering <code>7</code> into the exclude box will eliminate all patterns containing siteswap 7 throws (including any passes).  Another example is <code>&lt;3p|.*&gt;</code>, which will exclude all passing siteswaps where the first juggler throws a <code>3p</code> (the <code>'.*'</code> is a wildcard that matches against any string of characters).</p>
+
+<h4 id="delay">Passing communication delay</h4>
+<p>This delay setting only has an effect when there is more than one juggler.  If you
+are doing a standard ground state passing pattern (see definition below; an example is
+<span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span> for six objects),
+then by definition you and your partner can switch into any ground state pattern instantly with no
+transition throws.  However, many siteswap patterns
+will require you both to start throwing differently <em>at
+the same time.</em></p>
+
+<p>An analagous situation with a single juggler is
+if I wanted to switch from the pattern <code>(4,4)</code> into
+<code>(4x,4x)</code>.  No transition throws would be required, but both
+of my hands would have to start throwing <code>4x</code>'s at exactly the same
+time.  There is no issue with communication/synchronization when a single juggler is controlling the entire pattern,
+but it can be an issue in passing.  Pattern transitions that require immediate
+change in throwing behavior from several jugglers typically require the jugglers to count
+down to the pattern transition in order to ensure synchronization.</p>
+
+<p>  It is nice to allow
+for a communication delay, though, so that person #2 has
+time to react when person #1 starts throwing a trick (many
+of the popular passing tricks have this property).  This is
+what this setting determines.  The number you input is the number of
+throws after the beginning of the trick before person #2
+needs to throw something different from what he was while
+doing a <i>standard ground state pattern</i> (like <span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span>).</p>
+
+<p>A few words need to be said about what constitutes a
+"standard ground state pattern".  These are those patterns 
+<dfn>composed of ground state patterns of length 1.</dfn>  For
+6 objects, for example, run the generator with the settings:
+(<span style="font-family: courier, monospace">balls=6, max throw=4, period=1, jugglers=2, find=ground</span>).  You get
+two ground state patterns of length 1: <span style="font-family: courier, monospace">&lt;3|3&gt;</span> and <span style="font-family: courier, monospace">&lt;3p|3p&gt;</span>.
+Any combination of these stuck together qualifies as a
+"standard ground state pattern"; these include standard two-count
+passing <span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span>, ultimate passing <span style="font-family: courier, monospace">&lt;3p|3p&gt;</span>, and so on.
+The delay flag lists all patterns which provide the requested
+communication delay for at least <em>one</em>
+of these "standard passing patterns".  Whew, this is complicated.</p>
+
+<p>As an example, run the generator with settings:
+(<span style="font-family: courier, monospace">balls=6, max throw=4, period=3, jugglers=2, find=ground, delay=2</span>).
+(Note that the "excited state patterns" box must be unchecked for the communications delay field to become active.)
+The list includes the following two patterns; the juggler in the left slot is
+the one "leading" the tricks:</p>
+
+<pre>
+                  &lt;4|3p&gt;&lt;4p|3&gt;&lt;3|1&gt;
+                        which assumes the people were doing the
+                        standard &lt;3p|3p&gt;&lt;3|3&gt; before the trick was
+                        being done.  Note that person #1 has to begin
+                        when his partner is throwing a pass.
+			      
+                  &lt;4p|3p&gt;&lt;4p|3p&gt;&lt;3|1&gt;
+                        which assumes the people were ultimate
+                        passing before starting the trick.
+</pre>
+<p>Some of the patterns will require a 2-count passing pattern
+to get the requested communication delay, others a 3-count,
+and so on.  When you use this feature just scan the list
+for the patterns relevant to your case.</p>
+
+<p>As a final example, run the generator with settings:
+(<span style="font-family: courier, monospace">balls=6, max throw=3, period=3, jugglers=2, find=ground,
+multiplexing=enabled, # allowed throws=2, delay=3</span>).  One of the patterns is the
+popular "left-hand single" multiplexing pattern:
+<span style="font-family: courier, monospace">&lt;2|3p&gt;&lt;2p|3&gt;&lt;[3p/2]|3p&gt;</span>.  Note that
+the communication delay setting of 3 has vastly reduced the number of tricks found.</p>
+
+
+<h2 id="tips">Tips on using the siteswap generator</h2>
+
+<p>In general the number of siteswap patterns is very large, larger than you can possibly sift through
+in a lifetime.  To find interesting patterns, the challenge is to constrain your search
+as much as possible.  If you give the generator
+parameters that are too broad, it will automatically stop rather than run indefinitely (the limits are
+1000 patterns found or 15 seconds elapsed, whichever comes first).</p>
+
+<p>Some general tips on constraining the search:</p>
+<ol>
+<li>Don't make the "max throw" value larger than it needs to be.</li>
+<li>Exclude as many throw values as possible for self-throws and passes.  For example, I tend to avoid
+<code>'3'</code>s in 5-ball patterns.  I also might exclude the <code>'1p'</code> and <code>'2p'</code>
+fast-passes.</li>
+<li>When multiplexing, limit the number of simultaneous throws and use the "no simultaneous catches"
+and "no clustered throws" options if you can.  Multiplexing makes the number of patterns grow enormously.</li>
+<li>Try using the "no compositions" option to find only prime patterns, especially in
+searches for long-period patterns.  Most of the best siteswaps happen to be prime anyway.</li>
+<li>Start with a large "passing communication delay" value if you're looking for passing tricks.</li>
+</ol>
+
+<p>The other challenge is to scan the lists generated to find the interesting patterns.  You will find
+that as you get more familiar with siteswap notation (and get practice juggling siteswap patterns), you will improve
+at this very quickly.</p>
+
+<p>Lastly, the siteswap generator can also be run as a command line application.  This is generally the best option
+if you want to perform very long runs, or generate large lists of patterns.</p>
+
+</div>
+</body>
+</html>

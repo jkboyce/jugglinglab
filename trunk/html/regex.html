@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css"/>
+<title>Juggling Lab siteswap generator</title>
+</head>
+<body>
+<div id="all">
+<h2>Siteswap generator regular expression syntax</h2>
+
+<p>For a comprehensive discussion of regular expression matching, read one of the several good tutorials
+available on the web (for example, <a href="http://jmason.org/software/sitescooper/tao_regexps.html">A
+Tao of Regular Expressions</a>).</p>
+
+<p>Within Juggling Lab, the standard regular expression metacharacters
+<code>[]()|</code> require quoting with a backslash <code>'\'</code> to avoid conflict with the use of these
+characters in siteswap notation.</p>
+
+<p>The full regular expression syntax accepted by Juggling Lab is described below.  This documentation is
+adapted from the <a href="http://jakarta.apache.org/regexp/index.html">Jakarta-Regexp</a> documentation.</p>
+
+<h4>Characters</h4>
+<pre>
+   <i>Char</i>          Matches any identical character
+
+</pre>
+
+<h4>Character Classes</h4>
+<pre>
+   \[abc\]       Simple character class
+   \[a-zA-Z\]    Character class with ranges
+   \[^abc\]      Negated character class
+
+</pre>
+
+<h4>Standard POSIX Character Classes</h4>
+<pre>
+   \[:alnum:\]   Alphanumeric characters
+   \[:alpha:\]   Alphabetic characters
+   \[:digit:\]   Numeric characters
+
+</pre>
+
+<h4>Predefined Classes</h4>
+<pre>
+   .             Matches any character other than newline
+   \d            Matches a digit character
+   \D            Matches a non-digit character
+
+</pre>
+
+<h4>Boundary Matchers</h4>
+<pre>
+   ^             Matches only at the beginning of a line
+   $             Matches only at the end of a line
+
+</pre>
+
+<h4>Greedy Closures</h4>
+<pre>
+   A*            Matches A 0 or more times (greedy)
+   A+            Matches A 1 or more times (greedy)
+   A?            Matches A 1 or 0 times (greedy)
+   A{n}          Matches A exactly n times (greedy)
+   A{n,}         Matches A at least n times (greedy)
+   A{n,m}        Matches A at least n but not more than m times (greedy)
+
+</pre>
+
+<h4>Reluctant Closures</h4>
+<pre>
+   A*?           Matches A 0 or more times (reluctant)
+   A+?           Matches A 1 or more times (reluctant)
+   A??           Matches A 0 or 1 times (reluctant)
+
+</pre>
+
+<h4>Logical Operators</h4>
+<pre>
+   AB            Matches A followed by B
+   A\|B          Matches either A or B
+   \(A\)         Used for subexpression grouping
+   \(?:A\)       Used for subexpression clustering (just like grouping but no backrefs)
+
+</pre>
+
+<h4>Backreferences</h4>
+<pre>
+   \1            Backreference to 1st parenthesized subexpression
+   \2            Backreference to 2nd parenthesized subexpression
+   \3            Backreference to 3rd parenthesized subexpression
+   \4            Backreference to 4th parenthesized subexpression
+   \5            Backreference to 5th parenthesized subexpression
+   \6            Backreference to 6th parenthesized subexpression
+   \7            Backreference to 7th parenthesized subexpression
+   \8            Backreference to 8th parenthesized subexpression
+   \9            Backreference to 9th parenthesized subexpression
+</pre>
+
+<p>You can refer to the contents of a parenthesized expression
+within a regular expression itself.  This is called a
+'backreference'.  The first backreference in a regular expression is
+denoted by \1, the second by \2 and so on.  So the expression:</p>
+
+<pre>
+\(\[0-9\]+\)=\1
+</pre>
+
+<p>will match any string of the form n=n (like 0=0 or 2=2).</p>
+
+<p>All closure operators (+, *, ?, {m,n}) are greedy by default, meaning
+that they match as many elements of the string as possible without
+causing the overall match to fail.  If you want a closure to be
+reluctant (non-greedy), you can simply follow it with a '?'.  A
+reluctant closure will match as few elements of the string as
+possible when finding matches.  {m,n} closures don't currently
+support reluctancy.</p>
+
+</div>
+</body>
+</html>

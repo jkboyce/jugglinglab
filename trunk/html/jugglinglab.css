@@ -1,0 +1,85 @@
+/* First reset browser default css for the elements we use */
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td {margin:0; padding:0;}
+table {border-collapse:separate; border-spacing:2px;}
+fieldset,img {border:0;}
+address,caption,cite,code,dfn,em,strong,th,var {font-style:normal; font-weight:normal;}
+h1,h2,h3,h4,h5,h6 {font-size:100%; font-weight:bold;}
+input, textarea, select {font-family:inherit; font-size:inherit; font-weight:normal;}
+h1,h2,h3,h4,h5,h6,p,ul,ol { text-align: left; }
+
+body, p {
+     font-family: Times New Roman, Times, serif;
+     font-size: 12pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+     font-family: georgia, serif;
+     font-weight: bold;
+     margin: 2em 0 0 0;
+}
+
+h1 { font-size: 22pt; } 
+h2 { font-size: 18pt; }
+h3 { font-size: 14pt; } 
+h4 { font-size: 12pt; }
+h5 { font-size: 10pt; }
+h6 { font-size: 9pt;  }
+
+p {
+	margin: 1em 0;
+}
+
+ul, ol {
+	margin: 1em 0;
+	padding-left: 40px;
+}
+
+pre, dl {
+	text-align: left;
+	margin-top: 1em;
+}
+
+blockquote {
+	text-align: left;
+	padding-left: 40px;
+}
+
+a:link, a:visited {
+     font-family: georgia, serif;
+     font-weight: normal;
+     text-decoration: none;
+}
+
+a:hover {
+     text-decoration: underline;
+}
+
+a:active {
+     font-family: georgia, serif;
+     font-weight: normal;
+     text-decoration: none;
+}
+
+ul {
+     font-family: Times New Roman, Times, serif;
+     font-weight: normal;
+     list-style-type: disc; 
+}
+
+#all {
+	position: relative;
+	margin: 0 90px 50px 90px;
+	background-color: #FFF;
+	text-align: center;
+}
+
+#standalone {
+	position: relative;
+	margin: 0 30px 10px 30px;
+	background-color: #FFF;
+	text-align: center;
+}
+
+.def {
+	font-weight: bold;
+}
