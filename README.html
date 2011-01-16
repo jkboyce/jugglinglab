@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="html/jugglinglab.css"/>
+<title>Juggling Lab</title>
+</head>
+<body>
+<div id="all">
+<p style="text-align:center">
+<img src="html/title.gif" alt="Juggling Lab screenshot"/><br />
+<span style="font-family: georgia, serif; font-size: 18pt">Juggling Lab</span><br />
+~ Current release: <a href="html/notes.html">0.6</a> (March 25, 2010) ~
+</p>
+
+<p style="margin-top: 1.5em">Juggling Lab is an application for creating and animating juggling patterns.  Its
+main goals are to help people learn juggling patterns, and to assist in inventing new ones.</p>
+<p>This software is free for non-commercial use
+(<a href="html/license.html">details</a>).  Portions are released under the
+GNU <a href="http://www.gnu.org/licenses/gpl.html">General Public License</a>.
+</p>
+
+<h3>How to run Juggling Lab</h3>
+<blockquote>
+
+<p>Juggling Lab is written entirely in Java, so it will run on any platform
+that supports the Java 2 Standard Edition platform.  It has been tested
+extensively on Windows and Mac OS X, and we have reports of users
+running it successfully on other Unix-like
+operating systems (Linux, Solaris).</p>
+
+<p><b>Windows:</b>
+Double-click on the <b>JugglingLab.bat</b> file.  If it doesn't launch correctly,
+you most likely have an older version of Java; try installing Sun's
+<a href="http://java.com">latest version</a>.</p>
+
+<p><b>Mac OS X:</b>
+Juggling Lab works like any other application, and is launched with a double-click.</p>
+
+<p><b>Other:</b>
+The executable jar file is <b>bin/JugglingLab.jar</b>.  Consult your
+Java installation's documentation for instructions on how to run a jar file.
+On Unix-like systems: (1) change your shell search path to
+include the "java" command (try <b>'which java'</b> in the shell
+to verify it's working), and
+(2) execute the "JugglingLab.sh" shell script.</p>
+</blockquote>
+
+<h3>Documentation</h3>
+<blockquote>
+<p>Read these to get up to speed on how to use Juggling Lab:</p>
+<ul>
+<li><a href="html/ssnotation.html">Siteswap notation.</a>  The juggling pattern notation used by
+Juggling Lab.</li>
+<li><a href="html/sspanel.html">The pattern entry panel.</a>  How to enter
+siteswap patterns, add hand movements, and change pattern timing.</li>
+<li><a href="html/ssgenerator.html">The generator panel.</a>  What the siteswap generator does and what all those options mean.</li>
+<li><a href="html/editor.html">The visual editor.</a>  How to use
+Juggling Lab's visual editor to modify patterns.</li>
+<li><a href="html/phpinfo.html">Web link front end.</a>  How to create a Juggling Lab animation with a
+simple web link.</li>
+</ul>
+<p>This more specialized documentation covers topics the average user won't need to know:</p>
+<ul>
+<li><a href="html/jml.html">Juggling Markup Language (JML).</a>  Explains JML,
+Juggling Lab's internal pattern representation.</li>
+<li><a href="html/applet.html">Using Juggling Lab as an applet.</a>  Describes the HTML needed
+to create an animation within a web page.</li>
+<li><a href="html/license.html">Juggling Lab license.</a>  Describes what you need to do if you make Juggling Lab
+publicly available (for example, you post it on a web site).</li>
+</ul>
+<p><a href="source_doc/html/index.html">Source code documentation</a> is also available.</p>
+</blockquote>
+
+<h3>How to compile Juggling Lab</h3>
+<blockquote>
+<p>As distributed, Juggling Lab is already compiled so there
+is no need to do so again unless you want to change the source code.  If you are
+interested in adding new features to Juggling Lab, please consider becoming a
+developer on the Juggling Lab project so that your features become
+a part of the standard distribution; contact the <a href="mailto:jboyce@users.sourceforge.net">Juggling Lab project administrator</a>.</p>
+
+<p>Please note that most of Juggling Lab is released under the GNU <a href="http://www.gnu.org/licenses/gpl.html">General Public License (GPL)</a>.  The GPL requires that, if you make Juggling Lab publicly available, it must be accompanied by a copy of the source code in a machine-readable format.</p>
+
+<p>First you need to extract the source code, distributed as a
+compressed archive:</p>
+<blockquote>
+<p><b>Windows:</b>
+Double-click on the <b>bin/extract_source.bat</b> batch file.  This should
+create a directory called <b>source</b> in the main Juggling Lab directory.</p>
+
+<p><b>Mac OS X:</b>
+From a Terminal window, execute the <b>bin/extract_source.sh</b>
+shell script.  This will create a folder called <b>source</b> in the
+same folder as the main Juggling Lab application.</p>
+
+<p><b>Other:</b>
+The source code is archived in <b>bin/JugglingLab_source.jar</b>  Consult
+your Java installation's documentation for instructions on how to expand
+a jar file.  On Unix-like systems: (1) change your shell search path to
+include the "jar" command (try <b>'which jar'</b> in the shell
+to verify it's working), and
+(2) execute the <b>bin/extract_source.sh</b> shell script.</p>
+</blockquote>
+
+<p>Next you need to compile the source code.
+The distribution includes a file <b>build.xml</b>, which is a build
+file for use with the Apache Ant Java build system.  Ant is free software
+that is available for most platforms at
+<a href="http://ant.apache.org">ant.apache.org</a>.</p>
+<blockquote>
+
+<p><b>Windows and Other:</b>  The "jars" target in build.xml compiles and builds
+two files:  <b>bin/JugglingLab.jar</b>
+and <b>bin/JugglingLab_source.jar</b>.  The latter source
+archive should be included with Juggling Lab whenever it is made publicly
+available, in the same directory as the executable jar file.</li>
+</ul>
+
+<p><b>Mac OS X:</b>  The "osx" target in build.xml makes the double-clickable Mac OS X application.
+<i>(From the Terminal, type "ant osx" in the same directory as build.xml.  Note that Ant comes
+pre-installed with Mac OS X.)</i>
+This build only works on a Mac since it depends on the presence of the JavaVM framework.</p>
+</blockquote>
+</blockquote>
+
+<h3>Interested in Juggling Lab?</h3>
+<blockquote>
+<p>Stay informed of future updates to Juggling Lab by subscribing to the
+<a href="http://lists.sourceforge.net/lists/listinfo/jugglinglab-announce">Juggling Lab announcement mailing
+list</a>  <i>(expect low traffic).</i></p>
+
+<p>You can also contribute directly to the project by:</p>
+<ul>
+<li><b>Finding bugs</b> and reporting them on the Juggling Lab <a href="http://sourceforge.net/tracker/?atid=456268&amp;group_id=49459&amp;func=browse">bug tracking page</a>.</li>
+<li><b>Thinking of interesting ideas</b> for the Juggling Lab <a href="http://sourceforge.net/tracker/?atid=456271&amp;group_id=49459&amp;func=browse">
+feature requests page</a>.</li>
+<li><b>Creating new patterns</b> for Juggling Lab, and emailing them to one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a>.</li>
+<li><b>Developing code</b>.  Contact one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a>, and in the meantime look at the online <a href="source_doc/html/index.html">source code documentation</a>
+or browse the <a href="http://jugglinglab.svn.sourceforge.net/viewvc/jugglinglab/">source repository</a>.</li>
+</ul>
+</blockquote>
+
+<h3>Contributors</h3>
+<blockquote>
+<ul>
+<li>Vincent Bruel &ndash; Suggestions for improved bouncing support (hyperlift/hyperforce patterns), ball-bounce audio sample</li>
+<li>Jason Haslam &ndash; Ring prop, bitmapped-image prop, improved ball graphic, visual editor enhancements,
+internationalization of user interface including Spanish and Portuguese translations,
+and many bug fixes</li>
+<li>Steve Healy (JAG) &ndash; Many invaluable design suggestions and bug reports, especially of siteswap notation component</li>
+<li>Anselm Heaton &ndash; Orbit-finding code, other design suggestions</li>
+<li>Lewis Jardine &ndash; Apache Ant build file, GPL clarifications</li>
+<li>Jonathan Locke and others &ndash; <a href="http://jakarta.apache.org/regexp/index.html">Jakarta-Regexp</a> regular expressions package used in the generator exclude/include feature</li>
+<li>Ken Matsuoka &ndash; JuggleMaster pattern library, used here with his permission</li>
+<li>David Megginson &ndash; Simple API for XML (SAX) interface</li>
+<li>Microstar Software Ltd. &ndash; AElfred XML parser</li>
+<li>Rupert Millard &ndash; Implementation of '*' shortcut for synch notation</li>
+<li>Herve Nicol &ndash; Bug fixes</li>
+<li>Denis Paumier &ndash; Suggestions for passing and multiplexing improvements to siteswap generator</li>
+<li>Andrew Peterson &ndash; Performance profiling of animation routines</li>
+<li>Jef Poskanzer of <a href="http://www.acme.com/">Acme Labs</a> and many others from decades past &ndash; GIF-writing code</li>
+<li>Xavier Verne &ndash; French translation of user interface</li>
+<li>Johannes Waldmann &ndash; <a href="http://www.doxygen.org">Doxygen</a>-generated source code documentation</li>
+<li>Peter Walser &ndash; <a href="http://www.idx3d.ch">idx3d</a> engine for 3d solid rendering</li>
+<li>Dozens of people from <a href="http://groups.google.com/groups?group=rec.juggling">rec.juggling</a> &ndash; Browser compatibility testing</li>
+<li><a href="mailto:jboyce@users.sourceforge.net">Jack Boyce</a> &ndash; All other Juggling Lab code, project administration</li>
+</ul>
+</blockquote>
+
+<h3>Want to learn more about juggling?</h3>
+<blockquote>
+<p>People can juggle, too.  Some good sources of general information are:</p>
+<ul>
+<li><a href="http://www.jugglingdb.com/">Internet Juggling Database</a></li>
+<li><a href="http://www.juggling.org/">Juggling Information Service</a></li>
+<li><a href="http://groups.google.com/groups?group=rec.juggling">rec.juggling</a> Usenet newsgroup</li>
+</ul>
+</blockquote>
+
+</div>
+</body>
+</html>
