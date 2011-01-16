@@ -1,0 +1,68 @@
+
+<!ELEMENT jml (pattern|patternlist)>
+<!ATTLIST jml
+          version  CDATA   "1.0">
+
+<!ELEMENT pattern (title?,prop*,setup,symmetry+,(event|position)*)>
+
+<!ELEMENT title (#PCDATA)>
+
+<!ELEMENT prop EMPTY>
+<!ATTLIST prop
+          type     CDATA   "ball"
+          mod      CDATA   #IMPLIED>
+
+<!ELEMENT setup EMPTY>
+<!ATTLIST setup
+          jugglers CDATA   "1"
+          paths    CDATA   #REQUIRED
+          props    CDATA   #IMPLIED>
+
+<!ELEMENT symmetry EMPTY>
+<!ATTLIST symmetry
+          type     CDATA   #REQUIRED
+          jperm    CDATA   #IMPLIED
+          pperm    CDATA   #REQUIRED
+          delay    CDATA   #IMPLIED>
+
+<!ELEMENT event (throw|catch|softcatch|holding)*>
+<!ATTLIST event
+          x        CDATA   #REQUIRED
+          y        CDATA   "0.0"
+          z        CDATA   "0.0"
+          t        CDATA   #REQUIRED
+          hand     CDATA   #REQUIRED>
+
+<!ELEMENT throw EMPTY>
+<!ATTLIST throw
+          path     CDATA   #REQUIRED
+          type     CDATA   "toss"
+          mod      CDATA   #IMPLIED>
+
+<!ELEMENT catch EMPTY>
+<!ATTLIST catch
+          path     CDATA   #REQUIRED>
+
+<!ELEMENT softcatch EMPTY>
+<!ATTLIST softcatch
+          path     CDATA   #REQUIRED>
+		  
+<!ELEMENT holding EMPTY>
+<!ATTLIST holding
+          path     CDATA   #REQUIRED>
+
+<!ELEMENT position EMPTY>
+<!ATTLIST position
+          x        CDATA   #REQUIRED
+          y        CDATA   #REQUIRED
+          z        CDATA   "100.0"
+          t        CDATA   #REQUIRED
+          angle    CDATA   "0.0"
+          juggler  CDATA   "1">
+
+<!ELEMENT patternlist (title?,line*)>
+
+<!ELEMENT line (#PCDATA)>
+<!ATTLIST line
+          display  CDATA   #REQUIRED
+          notation CDATA   #IMPLIED>

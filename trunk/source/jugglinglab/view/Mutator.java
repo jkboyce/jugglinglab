@@ -1,0 +1,63 @@
+// Mutator.java
+//
+// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+
+/*
+    This file is part of Juggling Lab.
+
+    Juggling Lab is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Juggling Lab is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Juggling Lab; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+package jugglinglab.view;
+
+import javax.swing.*;
+import jugglinglab.jml.*;
+
+
+/*
+Possible mutations:
+1)  Change positions of events (in-plane)
+2)  Change positions of events (out of plane)
+3)  Change times of events
+4)  Add new events
+5)  Remove events
+6)  Change throw types
+7)  Add throw/catch pair
+*/
+
+public class Mutator {
+	protected JPanel controls = null;
+	
+    public Mutator() {
+    }
+
+	public JMLPattern mutatePattern(JMLPattern pat) {
+		return pat;
+	}
+	
+	public JPanel getControlPanel() {
+		if (controls == null)
+			controls = makeControlPanel();
+		return controls;
+	}
+	
+	
+	protected JPanel makeControlPanel() {
+		JPanel p = new JPanel();
+		
+		p.add(new JButton("Hello"));
+		return p;
+	}
+}
