@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css"/>
+<title>Juggling Markup Language (JML)</title>
+</head>
+<body>
+<div id="all">
+<h2>Juggling Markup Language (JML) description</h2>
+
+<p>Juggling Markup Language (JML) is the primary juggling pattern description language used
+by the <a href="http://jugglinglab.sourceforge.net">Juggling Lab</a>
+animation program.  This document describes JML and the pattern model it enables.</p>
+
+<h4>JML is a detailed juggling notation</h4>
+
+<p>JML is quite detailed compared with other popular juggling notations such as
+<a href="ssnotation.html">siteswap notation</a>, causal diagrams, or Multi-Hand Notation.  This reflects the primary design goals of Juggling Lab, which are to:</p>
+
+<ul>
+<li>Develop an internal pattern model (JML) with sufficient detail to encompass all of the "common" juggling notations</li>
+<li>Use an architecture of <dfn>notation components</dfn> to animate common juggling notations via conversion to JML</li>
+<li>Animate patterns in a physically-realistic manner, with correct timing and trajectory of throws and hands</li>
+</ul>
+
+<p>As JML is a detailed description language, it is primarily intended to be read and written by machine.  Users will likely create JML using a notation component as described above, and edit JML using graphical tools (for example, the visual editor within Juggling Lab).</p>
+
+<h4>JML is a type of XML</h4>
+
+<p>As you might have guessed from the name, JML is based on
+<a href="http://www.w3.org/XML/">Extensible Markup Language (XML)</a>.  This choice was made
+because:</p>
+<ul>
+<li>XML allows us to define our own juggling-specific tags using a <a href="jml_dtd.html">JML
+<dfn>Document Type Definition (DTD)</dfn></a></li>
+<li>Many free parsers to read and validate XML are available in Java; in fact this functionality is
+included in the standard Java 1.4 libraries</li>
+<li>The syntax provided by XML is sufficient for our purpose</li>
+</ul>
+
+<h4>JML examples</h4>
+
+<p>There are two basic kinds of JML documents:  <b>Patterns</b> and <b>pattern lists.</b>  The pattern type describes a single juggling pattern, while the pattern list type describes multiple patterns in a single document.</p>
+
+<h5>Example 1 - Pattern type</h5>
+
+<p>Below is an example of the pattern type of JML document, in this case Burke's Barrage with three balls.  Here the JML is simply describing the elements required to construct a spacetime diagram:  A bunch of setup information, followed by at least one <code>&lt;event&gt;</code> tag to do the real work.  The individual tags are described in a section below.</p>
+<blockquote>
+<pre>
+&lt;jml&gt;
+   &lt;pattern&gt;
+      &lt;title&gt;Burke's Barrage&lt;/title&gt;
+      &lt;prop type="ball"/&gt;
+      &lt;setup jugglers="1" paths="3" props="1,1,1"/&gt;
+      &lt;symmetry type="delay" pperm="(1)(2)(3)" delay="1.3714"/&gt;
+      &lt;symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/&gt;
+
+      &lt;event x="1.2854" y="11.6921" z="0" t="0.0919" hand="1:left"&gt;
+         &lt;throw path="1" type="toss"/&gt;
+      &lt;/event&gt;
+      &lt;event x="-0.0837" y="77.4015" z="0" t="0.1505" hand="1:right"&gt;
+         &lt;holding path="2"/&gt;
+      &lt;/event&gt;
+      &lt;event x="-18.5196" y="18.3529" z="0" t="0.2143" hand="1:left"&gt;
+         &lt;catch path="3"/&gt;
+      &lt;/event&gt;
+      &lt;event x="33.9434" y="51.0847" z="0" t="0.3763" hand="1:right"&gt;
+         &lt;holding path="2"/&gt;
+      &lt;/event&gt;
+      &lt;event x="-20" y="0" z="0" t="0.4027" hand="1:left"&gt;
+         &lt;throw path="3" type="toss"/&gt;
+      &lt;/event&gt;
+      &lt;event x="16.9726" y="44.0451" z="0" t="0.5586" hand="1:left"&gt;
+         &lt;catch path="1"/&gt;
+      &lt;/event&gt;
+   &lt;/pattern&gt;
+&lt;/jml&gt;
+</pre>
+</blockquote>
+
+<h5 id="patternlist">Example 2 -- Pattern list type</h5>
+
+<p>The JML pattern list document type is simpler than the pattern type; see the example below.  Each line in the list requires four items to define it:</p>
+<ol>
+<li><b>"display" attribute.</b>  This defines the text to represent the pattern in the visual pattern list displayed by Juggling Lab.</li>
+<li><b>"animprefs" attribute</b> (optional).  Settings for the animator, in the same format used for the
+<a href="applet.html#animprefs">applet "animprefs" setting</a>.</li>
+<li><b>"notation" attribute</b> (optional).  Name of a notation component within Juggling Lab ("siteswap" and "jml" are the most common examples).</li>
+<li><b>"pattern" attribute</b> (optional).  This text is sent to the notation component for conversion to JML,
+and then animated.</li>
+</ol>
+
+<blockquote>
+<pre>
+&lt;jml&gt;
+   &lt;patternlist&gt;
+      &lt;title&gt;Siteswap Patterns&lt;/title&gt;
+
+      &lt;line display="3 cascade" animprefs="stereo=true" notation="siteswap"
+         pattern="pattern=3;dratio=0.5;tps=3.572;hands={(32.5)(10)}"/&gt;
+      &lt;line display="42 two in one hand" notation="siteswap"
+         pattern="pattern=42;dratio=0.5;tps=4.331;hands={(32.5)(10)}"/&gt;
+      &lt;line display="423" notation="siteswap"
+         pattern="pattern=423;dratio=0.5;tps=4.331;hands={(20)(20)}"/&gt;
+      &lt;line display="441" notation="siteswap"
+         pattern="pattern=441;tps=5.371;hands={(32.5)(10)}"/&gt;
+      &lt;line display="531" notation="siteswap"
+         pattern="pattern=531;tps=4.98;hands={(32.5)(10)}"/&gt;
+   &lt;/patternlist&gt;
+&lt;/jml&gt;
+</pre>
+</blockquote>
+
+<h4>JML tag reference</h4>
+<p>Under construction</p>
+
+</div>
+</body>
+</html>

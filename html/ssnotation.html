@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css">
+<title>Siteswap notation used in Juggling Lab</title>
+</head>
+<body>
+<div id="all">
+<h2>Siteswap notation</h2>
+<p>This page describes the pattern notation used by the siteswap notation
+component of <a href="http://jugglinglab.sourceforge.net">Juggling Lab</a>.  There are two
+main sections:</p>
+<ul>
+<li><a href="#notation">A description of basic siteswap notation</a></li>
+<li><a href="#extensions">Extensions to the notation supported by Juggling Lab</a></li>
+</ul>
+
+<h2 id="notation">Description of siteswap notation</h2>
+<p>A lot of freedom exists in choosing a notation to use for juggling.  In
+particular, there are always tradeoffs between expressiveness (how many
+weird patterns like Mills Mess can you uniquely describe?) and compactness.
+Siteswap notation is a very "compact" method, which has two major benefits:  (1) it makes
+the notation amenable to computer analysis, and (2) it is easy for a person to look
+at a pattern and figure out how to do it.  There is a price for this compactness, however;
+siteswap notation ignores all
+information concerning throwing and catching positions and styles, as well as any
+characteristics about the objects being juggled (e.g., number of spins on clubs).</p>
+
+<p>When an object is thrown, the <em>only</em> things siteswap notation tells you
+are which hand to throw to, and the number of time beats until the object is 
+thrown again.  You have complete freedom in choosing how to make this happen:
+Make a standard throw, throw behind the back, bounce off the
+floor, do a helicopter spin on your head, or whatever, so long as the object
+ends up in the correct hand at the correct time.</p>
+
+<p>Viewed in this way, siteswap notation is a very minimalist approach to juggling
+notation.  Its ignorance of throwing styles means that tricks like the 3 ball cascade
+and Mills Mess get lumped together.  Despite the limitations, siteswap patterns
+are fun to perform and can be a great starting point for
+adding your own creative embellishments.</p>
+
+<h4>Solo juggler with asynchronous throwing rhythm (<dfn>vanilla siteswap</dfn>)</h4>
+
+<p>The simplest case is that of a single juggler throwing alternately with
+both hands in a R-L-R-L kind of way (called <dfn>asynchronous</dfn> juggling).
+This is what you do in the standard cascade pattern.  Each throw in our
+notation can then be described by a single number, namely <em>the number of
+throws in the future when the object is thrown again.</em>  In a 3 ball
+cascade each throw is a <span style="font-family: courier, monospace">'3'</span>, for example.</p>
+
+<p>Note that the notation doesn't
+need to specify the destination hand, since odd numbers always go to the
+opposite hand, even numbers to the same hand (a result of constraining
+ourselves to a R-L-R-L throwing rhythm).  Another way of thinking about
+it is this:  When you do a throw <span style="font-family: courier, monospace">'n'</span> (<span style="font-family: courier, monospace">n</span> is the throw number), throw just
+as you would if you were doing a cascade or fountain with <span style="font-family: courier, monospace">n</span> objects, at
+the same handspeed.  A <span style="font-family: courier, monospace">3</span> is a short toss across, a <span style="font-family: courier, monospace">4</span>
+is higher and into the same hand, and so on.</p>
+
+<p>An asynchronous siteswap is just a sequence of these
+numbers:  The first number describes the first throw made, the second
+number the second throw (opposite hand as the first), and so on.  At
+the end of the pattern you loop back to the beginning and continue.</p>
+
+<p>Sample three ball tricks include (click on the patterns to see animations):</p>
+<blockquote>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?3" target="_blank"><span style="font-family: courier, monospace">3</span></a></dt>
+<dd>Standard cascade</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?51" target="_blank"><span style="font-family: courier, monospace">51</span></a></dt>
+<dd>Shower (that's
+<span style="font-family: courier, monospace">5</span> and
+<span style="font-family: courier, monospace">1</span>, not fifty-one)</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?42" target="_blank"><span style="font-family: courier, monospace">42</span></a></dt>
+<dd>Two in one hand, hold with the other (see the explanation of holds below)</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?441" target="_blank"><span style="font-family: courier, monospace">441</span></a></dt>
+<dd>An interesting box-like pattern</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?531" target="_blank"><span style="font-family: courier, monospace">531</span></a></dt>
+<dd></dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?55500" target="_blank"><span style="font-family: courier, monospace">55500</span></a></dt>
+<dd>A 3-high flash</dd>
+</dl>
+</blockquote>
+
+<p>The <span style="font-family: courier, monospace">'0'</span>, <span style="font-family: courier, monospace">'1'</span>, and <span style="font-family: courier, monospace">'2'</span> throws need some
+explanation.  A <span style="font-family: courier, monospace">'2'</span> throw is
+thrown again two throws in the future, in other words the next throw out of
+the same hand.  Since the hand does nothing before throwing the
+object again, we are free to interpret a <span style="font-family: courier, monospace">'2'</span> as just a hold in that hand for one count.
+A <span style="font-family: courier, monospace">'1'</span> is a fast zip across from hand to hand, as in the shower.  Finally,
+a <span style="font-family: courier, monospace">'0'</span> is no throw at all; the hand is empty (the pattern
+<span style="font-family: courier, monospace">60</span> is three in one hand, the other hand empty).</p>
+
+<p>Throws with values greater than <span style="font-family: courier, monospace">'9'</span> are
+by convention assigned the letters
+<span style="font-family: courier, monospace">'a'</span> (10),
+<span style="font-family: courier, monospace">'b'</span> (11),
+<span style="font-family: courier, monospace">'c'</span> (12), and so on.  In Juggling Lab these
+must be supplied
+in lower case to avoid conflicting with <a href="#modifiers">throw modifiers</a>.</p>
+
+<p>Are all strings of numbers jugglable patterns?  No.  Notice that if you average the throws in each of the above patterns you
+always get 3, the number of objects being juggled.  This is one of the
+ways you can tell whether or not a string of throw numbers forms a
+valid pattern.  <span style="font-family: courier, monospace">'76'</span> doesn't work, but <span style="font-family: courier, monospace">'75'</span> is a
+valid six ball pattern
+(commonly known as the six ball half-shower).  It turns out that even this averaging criterion is not enough
+to determine which strings of numbers are valid juggling patterns; for a better description see the <a href="http://www.juggling.org/help/siteswap/">JIS siteswap
+help pages</a>.</p>
+
+
+<h4>Multiplexing</h4>
+
+<p>So far in our discussion of siteswap, we have placed some serious restrictions on the
+pattern:  There is only one juggler (<dfn>solo</dfn> juggling), the hands are throwing in a right-left
+alternating rhythm (<dfn>asynchronous</dfn> juggling), and only one throw is made at a time out of each hand.  This simplest form of
+siteswap notation, sometimes called <dfn>vanilla</dfn> siteswap, was the first kind discovered,
+independently by three people in 1985:  Bruce Tiemann (Caltech), Paul Klimek (Santa Cruz), and Mike Day
+(Cambridge, England).</p>
+
+<p>What we'd like to do is expand the set of patterns we can describe, by relaxing these restrictions
+one by one.  We start by allowing the juggler to make multiple throws out of the same hand at the same time;
+this is a popular juggling technique known as <dfn>multiplexing</dfn>.</p>
+
+<p>The simplest way to notate multiplexing is to group together with brackets the throw
+numbers of the multiplexed throws.  An example five ball
+multiplexed pattern is <a href="http://jugglinglab.sourceforge.net/siteswap.php?24[54]" target="_blank"><span style="font-family: courier, monospace">24[54]</span></a>.  From the middle of a cascade, we first do a hold
+with our right hand, throw a shorter toss from the left hand to itself, and
+then simultaneously throw a <span style="font-family: courier, monospace">5</span> and <span style="font-family: courier, monospace">4</span> with the right (the
+hand had two balls in
+it, since it did the hold first).  Then we can either switch back into the
+cascade, or repeat the trick starting with a left-handed hold -- recall that we switch
+hands each repetition since the
+pattern is of odd length.  [This, by the
+way, is a trick that Anthony Gatto did in his act, except that he did it
+all while juggling over his head.  He can also do <a href="http://jugglinglab.sourceforge.net/siteswap.php?26[76]" target="_blank"><span style="font-family: courier, monospace">26[76]</span></a> with seven balls.]</p>
+
+<h4>Solo synchronous juggler</h4>
+
+<p>Now we relax the restriction that the juggler throws in a right-left alternating rhythm.  The simplest
+case is where both hands are throwing at the same time, called <dfn>synchronous</dfn> juggling.</p>
+
+<p>Synchronous siteswap notation is very much like vanilla
+siteswap notation above, but with two differences: (1) we group together throws
+made simultaneously with parenthesis, and (2) we now need to specify a
+destination hand for each throw, so put an <span style="font-family: courier, monospace">'x'</span> after any throw that crosses
+over into the other hand (a throw without the <span style="font-family: courier, monospace">'x'</span> is assumed to be directed
+to the same hand that threw it).  A <span style="font-family: courier, monospace">'2'</span> is still a hold, but a <span style="font-family: courier, monospace">'2x'</span>
+is similar to the <span style="font-family: courier, monospace">'1'</span> in the siteswap notation above: a short pass from hand
+to hand.  A <span style="font-family: courier, monospace">'0'</span> is still no throw, and a <span style="font-family: courier, monospace">'0x'</span> is not allowed.
+<em>All</em> throw numbers must now be even.</p>
+
+<p>Examples of synchronous patterns:</p>
+<blockquote>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,4)" target="_blank"><span style="font-family: courier, monospace">(4,4)</span></a></dt>
+<dd>4 ball synchronous fountain</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(4x,4x)" target="_blank"><span style="font-family: courier, monospace">(4x,4x)</span></a></dt>
+<dd>A common crossing version of the 4 ball fountain</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(4x,2x)" target="_blank"><span style="font-family: courier, monospace">(4x,2x)</span></a></dt>
+<dd>3 ball shower with simultaneous throws</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,2x)(2x,4)" target="_blank"><span style="font-family: courier, monospace">(4,2x)(2x,4)</span></a></dt>
+<dd>The 3 ball "box" or "see-saw" pattern</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(6,6)(6x,2x)" target="_blank"><span style="font-family: courier, monospace">(6,6)(6x,2x)</span></a></dt>
+<dd>A 5 ball trick</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(6x,6x)(2x,2x)" target="_blank"><span style="font-family: courier, monospace">(6x,6x)(2x,2x)</span></a></dt>
+<dd>A 4 ball trick</dd>
+</dl>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,4)(4,0)" target="_blank"><span style="font-family: courier, monospace">(4,4)(4,0)</span></a></dt>
+<dd>3 balls in 4 ball synchronous fountain (1 missing)</dd>
+</dl>
+</blockquote>
+
+<p>By convention the left slot in the parenthesis is taken to correspond to
+the left hand.  Multiplexing can also be notated, exactly as above; for example
+the 4 ball pattern <a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,2)(2x,[44x])" target="_blank"><span style="font-family: courier, monospace">(4,2)(2x,[44x])</span></a> has a multiplexed <span style="font-family: courier, monospace">'4'</span>
+and <span style="font-family: courier, monospace">'4x'</span> thrown with the right hand.</p>
+
+<h4>More than one juggler (passing)</h4>
+
+<p>Imagine several people juggling, each person asynchronously, but synchronized
+with respect to each other (i.e., all jugglers throw with their right hands at the
+same time).  This is the situation in 2-count 6 club passing, for
+example.  Now our notation has to tell <em>all</em> people what to do, which might
+sound complicated but actually isn't too bad if we add a few things to what we
+defined above.</p>
+
+<p>Divide a "throw" into several
+parts, the throwing instructions for each juggler.  Continue to write a self-throw
+as a single number, exactly as we did for siteswap notation
+(a <span style="font-family: courier, monospace">2</span> is a hold,
+a <span style="font-family: courier, monospace">3</span> is a low toss to the other hand, etc.).
+So for example, <a href="http://jugglinglab.sourceforge.net/siteswap.php?<3|3|3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;3|3|3|3&gt;</span></a> is a
+pattern that describes 4 jugglers each doing a 3-ball cascade.</p>
+
+<p>What about passes?  Append a <span style="font-family: courier, monospace">'p'</span> to a number to
+represent a passed throw.  To figure out which of your partner's hands to
+pass to, use this rule:  If without the <span style="font-family: courier, monospace">'p'</span>
+the throw would go to your left
+hand, throw at your partner's left, and so on.  If there are more than two jugglers, put a
+number after the <span style="font-family: courier, monospace">'p'</span> to indicate which
+juggler you're passing to, with the convention that the leftmost juggler in the
+<span style="font-family: courier, monospace">&lt;|&gt;</span> is juggler #1, the next is juggler #2,
+and so on.  So for example, <a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p>" target="_blank"><span style="font-family: courier, monospace">&lt;3p|3p&gt;</span></a> and
+<a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p2|3p1>" target="_blank"><span style="font-family: courier, monospace">&lt;3p2|3p1&gt;</span></a> each describes the same passing
+pattern, namely 6-object ultimate passing.</p>
+
+<p>Some example passing patterns (note the average rule still applies):</p>
+<blockquote>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p><3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span></a></dt>
+<dd>Ordinary 2-count 6 object passing.  Notice how the instructions for each person are sectioned off.
+Each person starts throwing with his right.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p>" target="_blank"><span style="font-family: courier, monospace">&lt;3p|3p&gt;</span></a></dt>
+<dd>Ultimate passing, where all throws are passes.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;3|3&gt;</span></a></dt>
+<dd>Two people doing 3 ball cascades.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p><3|3><3p|3p><4p|3><2|3p><3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;4p|3&gt;&lt;2|3p&gt;</span></a></dt>
+<dd>A left-handed double, if done once from the middle of a "cascade" (in this case 
+<a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p><3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span></a> qualifies).</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p><3|3><2|3p><2p|3><{3p 2}|3p><3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;2|3p&gt;&lt;2p|3&gt;&lt;[3p/2]|3p&gt;&lt;3|3&gt;</span></a></dt>
+<dd>A multiplexed pattern, the left-handed single.  Do the first hold with your right hand,
+since that is when your partner is doing a <span style="font-family: courier, monospace">'3p'</span>.
+The <span style="font-family: courier, monospace">'2p'</span> is
+from your left to his left, and then you resume.
+Note the use of <span style="font-family: courier, monospace">'/'</span> in the multiplexed
+throw, to separate the two throws
+<span style="font-family: courier, monospace">'3p'</span> and
+<span style="font-family: courier, monospace">'2'</span> (otherwise the animator would
+think the <span style="font-family: courier, monospace">2</span> was the target juggler
+for the <span style="font-family: courier, monospace">3p</span> pass).  This could also
+have been notated <span style="font-family: courier, monospace">[3p22]</span>.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<(4x,4xp)|(4x,4xp)>" target="_blank"><span style="font-family: courier, monospace">&lt;(4x,4xp)|(4x,4xp)&gt;</span></a></dt>
+<dd>A synchronous pattern with 2 jugglers and 8 objects.  Note that the
+<span style="font-family: courier, monospace">'p'</span> comes after the
+<span style="font-family: courier, monospace">'x'</span>.  The
+<span style="font-family: courier, monospace">4xp</span> is thrown to the other juggler's left hand,
+since a hypothetical
+<span style="font-family: courier, monospace">4x</span> thrown as a self-throw from the right hand would
+go to the throwing juggler's left hand.
+Multiplexing can also be included in a synchronous pattern with multiple jugglers.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<(2p3,4x)|(2xp3,4p1)|(2xp2,4xp2)>" target="_blank"><span style="font-family: courier, monospace">&lt;(2p3,4x)|(2xp3,4p1)|(2xp2,4xp2)&gt;</span></a></dt>
+<dd>A synchronous pattern with 3 jugglers and 9 objects.</dd>
+</dl>
+</blockquote>
+
+
+<h2 id="extensions">Juggling Lab extensions to siteswap notation</h2>
+
+<p>The previous section described basic siteswap notation, which is also what is produced by the Juggling Lab <a href="ssgenerator.html">siteswap generator</a>.  The animator portion of Juggling Lab also recognizes several extensions to this notation, to provide convenience and greater flexibility.</p>
+
+<h4>Conveniences: Subpattern repeats, simplified passing notation, and the * suffix</h4>
+
+<p>When a pattern contains a subpattern that you'd like to repeat multiple times, Juggling Lab provides
+a simple way to indicate this without manually repeating the subpattern.  For example, let's say you want
+to do 10 throws of the 3-ball cascade, followed by two iterations of
+<span style="font-family: courier, monospace">531</span>.  One way to achieve this would be to use the
+pattern <a href="http://jugglinglab.sourceforge.net/siteswap.php?3333333333531531" target="_blank">
+<span style="font-family: courier, monospace">3333333333531531</span></a>.</p>
+
+<p>Using the subpattern repeat notation, you can also write this as <a href="http://jugglinglab.sourceforge.net/siteswap.php?(3^10)(531^2)" target="_blank">
+<span style="font-family: courier, monospace">(3^10)(531^2)</span></a>.  In all cases the result is as though
+the subpattern had been written out manually the specified number of times.</p>
+
+<p>Another convenience is simplified passing notation, which allows you to combine together multiple beats within a single <span style="font-family: courier, monospace">&lt;|&gt;</span>.  For example, 2-count passing with 6 can be shortened to <a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p 3|3p 3>" target="_blank">
+<span style="font-family: courier, monospace">&lt;3p 3|3p 3&gt;</span></a> from the version <a href="http://jugglinglab.sourceforge.net/siteswap.php?<3p|3p><3|3>" target="_blank"><span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span></a> discussed above.  The only restriction is that the total
+number of beats within a <span style="font-family: courier, monospace">&lt;|&gt;</span>
+must be the same for all jugglers.</p>
+
+<p>A final notational convenience was introduced by Ben Beever, who noted that many popular synch patterns are
+symmetrical in the sense that the pattern consists of a throwing sequence which is then repeated with the
+roles of the hands exchanged.  One example is the see-saw or box
+pattern <a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,2x)(2x,4)" target="_blank"><span style="font-family: courier, monospace">(4,2x)(2x,4)</span></a>.  The convention is to write only the
+first half of the pattern, and attach a <span style="font-family: courier, monospace">"*"</span> to indicate
+the hands-exchanged repeat.  In this way the box pattern can be written
+<a href="http://jugglinglab.sourceforge.net/siteswap.php?(4,2x)*" target="_blank">
+<span style="font-family: courier, monospace">(4,2x)*</span></a>.</p>
+
+<h4 id="modifiers">Adding throw modifiers</h4>
+
+<p>Juggling Lab allows you to add instructions to each siteswap throw in order to change the way the juggling
+looks.  Each modifier is a string of upper-case letters that comes after the throw it modifies, and the main action is determined by the first letter in the string:</p>
+
+<ul>
+<li><span style="font-family: courier, monospace"><b>B</b></span> -- Bounce the throw off the floor.  The format is to put as many <span style="font-family: courier, monospace">B</span>'s as you want bounces, followed by the style of the bounce:
+<ul>
+<li><span style="font-family: courier, monospace">L</span> for lift bouncing</li>
+<li><span style="font-family: courier, monospace">F</span> for force bouncing</li>
+<li><span style="font-family: courier, monospace">HL</span> for hyperlift bouncing (for a description of hyperforce/hyperlift bouncing, see <a href="http://groups.google.com/groups?selm=3fd9121d%240%2452888%24bed64819%40news.gradwell.net">this discussion on rec.juggling</a>)</li>
+<li><span style="font-family: courier, monospace">HF</span> for hyperforce bouncing</li>
+</ul>
+For example:
+<ul>
+<li><span style="font-family: courier, monospace">BL</span> indicates regular lift bouncing with single bounces</li>
+<li><span style="font-family: courier, monospace">BBF</span> indicates force bouncing with double bounces</li>
+<li><span style="font-family: courier, monospace">BBHL</span> indicates hyperlift bouncing with double bounces</li>
+</ul>
+Note that a given bounce style may not always be possible if the ball is spending too much or too little time in the air.  For example, it is not possible to do a double-bounce with too little time in the air.  (Likewise, it is not possible to do a single-bounce hyperforce throw with too much time in the air.)  In situations where the specified throw is not possible, Juggling Lab will adjust the throw/catch styles (lift vs. forced) to find something physically possible; its last resort is to decrease the number of bounces.</li>
+<li><span style="font-family: courier, monospace"><b>F</b></span> -- Force-bounce the throw off the floor, with a single bounce.  <em>(Note: this is included for
+compatibility reasons; use of the <span style="font-family: courier, monospace">B</span> modifier is preferred)</em></li>
+<li><span style="font-family: courier, monospace"><b>H</b></span> -- Hold an object that would
+ordinarily be thrown (e.g., a <span style="font-family: courier, monospace">'4'</span>).</li>
+<li><span style="font-family: courier, monospace"><b>T</b></span> -- Throw an object that would
+ordinarily be held (e.g., a <span style="font-family: courier, monospace">'2'</span>).</li>
+</ul>
+
+<p>For example, <a href="http://jugglinglab.sourceforge.net/siteswap.php?pattern=42T3;dratio=0.3" target="_blank"><span style="font-family: courier, monospace">42T3</span></a> is the siteswap
+<span style="font-family: courier, monospace">423</span> where the
+<span style="font-family: courier, monospace">'2'</span> is thrown, rather than held.
+<a href="http://jugglinglab.sourceforge.net/siteswap.php?<(2p3,4xBL)|(2xp3,4p1BL)|(2xp2,4xp2BL)>" target="_blank"><span style="font-family: courier, monospace">&lt;(2p3,4xBL)|(2xp3,4p1BL)|(2xp2,4xp2BL)&gt;</span></a> is
+the three-juggler passing pattern mentioned above, only now all throws from the right hands are bounced off
+the floor.</p>
+
+<h4>Mixed asynch/synch notation</h4>
+
+<p>Juggling Lab also understands patterns in a combination of asynch and synch notations.  A few examples:</p>
+
+<blockquote>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?41x(4x,3)" target="_blank"><span style="font-family: courier, monospace">41x(4x,3)</span></a></dt>
+<dd>A 3-ball pattern that is pretty close to <a href="http://jugglinglab.sourceforge.net/siteswap.php?(2,4)(4x,2x)" target="_blank"><span style="font-family: courier, monospace">(2,4)(4x,2x)</span></a> in appearance.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?55556x56x1x(6x,4)(4,6x)(6x,4)(5x,7)(6x,4)" target="_blank"><span style="font-family: courier, monospace">55556x56x1x(6x,4)(4,6x)(6x,4)(5x,7)(6x,4)</span></a></dt>
+<dd>A pattern that switches between the 5-ball cascade and the synch pattern
+<a href="http://jugglinglab.sourceforge.net/siteswap.php?(6x,4)*" target="_blank">
+<span style="font-family: courier, monospace">(6x,4)*</span></a>.  (This pattern could
+have been written 
+<span style="font-family: courier, monospace">(5^4)6x56x1x((6x,4)*^1)(6x,4)(5x,7)(6x,4)</span>
+to better indicate the subpatterns involved.)</dd>
+</dl>
+</blockquote>
+
+<p>Several new things are going on here, for example odd throw values
+(<span style="font-family: courier, monospace">7</span> and
+<span style="font-family: courier, monospace">5</span>) in a synch pair, and throws like
+<span style="font-family: courier, monospace">"1x"</span> and
+<span style="font-family: courier, monospace">"5x"</span>.  These departures 
+are required to generate the change in rhythm as we switch between asynch and synch throwing.</p>
+
+<p>A few points of clarification:</p>
+<ul>
+<li>The <span style="font-family: courier, monospace">"x"</span> suffix is generalized here to mean
+"throw to the opposite hand that you would in an asynch pattern".  So a <span style="font-family: courier, monospace">"4x"</span> is a crossing <span style="font-family: courier, monospace">4</span> as in
+standard synch notation, and a <span style="font-family: courier, monospace">"1x"</span>
+is a non-crossing <span style="font-family: courier, monospace">1</span> (i.e., a short hold).</li>
+<li>When there is a switch from a synch to an asynch section, Juggling Lab assumes that the hand to throw
+is the opposite of the last asynch throw made (prior to the synch section).</li>
+<li>Juggling Lab always assumes a single beat of no throws after each
+<span style="font-family: courier, monospace">(,)</span> synch pair.  So an asynch throw after a
+synch throw happens two beats after the synch throw is made.</li>
+<li>The siteswap average rule still holds for patterns in mixed notation.</li>
+</ul>
+
+<p>Unfortunately the appropriate transitions between asynch and synch patterns are not simple to
+figure out (the common method of last resort is to draw a ladder diagram on paper).  Perhaps a future
+version of Juggling Lab will include features to aid in finding these transitions.</p>
+
+<h4>Specifying hands in asynchronous patterns</h4>
+
+<p>The basic passing notation assumes that when an asynchronous throwing rhythm is used,
+all jugglers are throwing with the same hands at the same time (as in 2-count 6 club passing).
+However
+many interesting juggling patterns break this rule, for example 2-count 7 club passing;
+in this case
+the right hand of juggler #1 throws at the same time as the <i>left</i> hand of juggler #2.  We would like to write 2-count 7 club passing as something like 
+<span style="font-family: courier, monospace">&lt;4xp|3&gt;&lt;3|4xp&gt;</span>, where we
+identify the first juggler as starting with her <i>right</i> (a pass), and the
+second as starting with her <i>left</i> (a self).</p>
+
+<p>Juggling Lab allows you to do this by using a <dfn>hands specifier</dfn>: put a <span style="font-family: courier, monospace"><b>L</b></span> or
+<span style="font-family: courier, monospace"><b>R</b></span> before any asynchronous throw to cause that throw to be made by the left or right hand, respectively.  Subsequent asynch throws are made in an alternating manner from that starting point, as usual.
+For example:</p>
+
+<blockquote>
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?<R|L><4xp|3><3|4xp>" target="_blank"><span style="font-family: courier, monospace">&lt;R|L&gt;&lt;4xp|3&gt;&lt;3|4xp&gt;</span></a></dt>
+<dd>The solution to the 2-count 7 club passing problem.  Juggler #1 starts with the right hand,
+juggler #2 starts with the left.</dd>
+</dl>
+
+<dl>
+<dt><a href="http://jugglinglab.sourceforge.net/siteswap.php?L75" target="_blank"><span style="font-family: courier, monospace">L75</span></a></dt>
+<dd>A 6-ball half shower, with the left throwing high.</dd>
+</dl>
+</blockquote>
+
+<p>A hands specifier may come at any point in the pattern; in particular there may be multiple hands specifiers, for example <a href="http://jugglinglab.sourceforge.net/siteswap.php?pattern=R3R3xL3L3x;dwell=0.5;bps=5" target="_blank"><span style="font-family: courier, monospace">R3R3xL3L3x</span></a> which is a pattern with an unusual RRLL throwing rhythm.  If there isn't a hands specifier prior to the first asynch throw, Juggling Lab assumes the first asynch throw is made by the right hand.</p>
+
+</div>
+</body>
+</html>

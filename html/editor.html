@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="STYLESHEET" type="text/css" href="jugglinglab.css"/>
+<title>Juggling Lab visual editor</title>
+</head>
+<body>
+<div id="all">
+<h2>Using the visual editor</h2>
+
+<p>The visual JML editor included with Juggling Lab is shown in the graphic below.  The editor display is on the right side, next to the juggler display.</p>
+
+<p><img src="ladderkey.gif" alt="visual editor screenshot"/></p>
+
+<h4>The components in the editor display</h4>
+
+<p>The editor display shows a <dfn>spacetime diagram</dfn> of the pattern, oriented so that time runs vertically (and increasing downward).  You can think of this spacetime diagram as an abstract "movie" of the pattern.  The spacetime diagram really extends to all times in the past and future, but since all patterns eventually repeat in Juggling Lab, we just show the repeating portion.  In the graphic above, visualize pasting another copy of the spacetime diagram immediately below the one shown; you can verify that all of the lines representing paths match up perfectly.</p>
+
+<p>Descriptions of the individual components:</p>
+<ul>
+<li><b>Tracker.</b>  As time within the animator advances, the red tracker bar moves downward to match.  Clicking the mouse in the editor display area will move the tracker to the point chosen.  Dragging the tracker while the animator is paused is a good way of seeing the details of a particular point in the pattern.</li>
+<li><b>Left hand/Right hand.</b>  In the display, two heavy black vertical lines represent the juggler's hands.  The view is reversed relative to the juggler display, since we are looking at the juggler from the front (its left is our right).</li>
+<li><b>Paths.</b>  A path represents the movement of a single prop as it is thrown and caught by the two hands.  Notice that there are three continuous paths in the graphic above, matching the number of balls in the pattern.  Right-clicking on a path will pull up a menu that allows you to change the characteristics of the prop on the path (e.g., type, color, size).</li>
+<li><b>Events.</b>  The spatial aspects of the juggling are described by events, which appear as the filled black circles along the hand lines.  An event defines a point in space and time, and other actions such as throws and catches can be attached to events.  Change the time of an event by dragging it up and down with the mouse.  Change the spatial position by clicking on it with the mouse, which will show a green square in the juggler display; dragging this square around sets the event location.</li>
+<li><b>Throws and Catches ("Transitions").</b>  These are represented by the open circles in the graphic above.  Right click on a transition to evoke a popup menu with editing options.</li>
+<li><b>Switch-delay symmetry indicator.</b>  Some patterns have a <dfn>switch-delay symmetry</dfn>, where the right and left hands take turns doing the same thing.  (For example, any odd-period siteswap like <code>441</code> has this property.)  Juggling Lab understands this kind of symmetry in the spacetime diagram, and indicates the presence of a switch-delay symmetry with a faint gray horizontal bar in the middle of the diagram.  Notice that if you take the top half of the diagram and flip it horizontally ("switch" hands), and move it down to overlap the lower half of the diagram ("delay" it), the two portions of the diagram line up exactly.  Juggling Lab will maintain this symmetry; any edits made to an event will cause corresponding edits to other events linked by the symmetry.</li>
+</ul>
+
+<h4>Using the editor</h4>
+
+<p>Under construction.  For now, just left-click and right-click on everything and you'll figure it out.</p>
+
+</div>
+</body>
+</html>
