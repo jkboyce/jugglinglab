@@ -1,0 +1,1793 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.0">
+<patternlist>
+<title>JuggleMaster Patterns</title>
+
+<line display="3-Cascade Step By Step"/>
+<line display=" "/>
+<line display="1 Ball out of a 3-Cascade" notation="jml" pattern='
+<pattern>
+<title>1 Ball out of a 3-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="1" props="1"/>
+<symmetry type="delay" pperm="(1)" delay="1.6797"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-34.3531" y="7.5242" z="0" t="0.1595" hand="1:left">
+</event>
+<event x="29.5407" y="15.6337" z="0" t="0.4283" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.5599" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+<line display="Throw Twice" notation="jml" pattern='
+<pattern>
+<title>Throw Twice</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="2" props="1,1"/>
+<symmetry type="delay" pperm="(1)(2)" delay="2.7995"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2799" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="25.5851" y="16.2121" z="0" t="0.4199" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.5599" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.8398" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-16.9493" y="-20.9975" z="0" t="1.0358" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="27.8752" y="-18.5729" z="0" t="1.2597" hand="1:right">
+<holding path="2"/>
+</event>
+</pattern>
+'/>
+<line display="2 Balls out of a 3-Cascade" notation="jml" pattern='
+<pattern>
+<title>2 Balls out of a 3-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="2" props="1,1"/>
+<symmetry type="delay" pperm="(1)(2)" delay="1.6797"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2799" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="24.8597" y="12.0538" z="0" t="0.3107" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.5599" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+<line display="Throw 3 Times" notation="jml" pattern='
+<pattern>
+<title>Throw 3 Times</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.7995"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<holding path="2"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2799" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.5599" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.5599" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="-28.2093" y="-1.0589" z="0" t="0.8258" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.8398" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="1.1198" hand="1:left">
+<holding path="1"/>
+<catch path="2"/>
+</event>
+<event x="27.4165" y="-17.0917" z="0" t="1.2318" hand="1:right">
+<holding path="3"/>
+</event>
+</pattern>
+'/>
+<line display="3-Cascade" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(10)(32.5).
+"/>
+<line display="Slower 3-Cascade" notation="jml" pattern='
+<pattern>
+<title>Slower 3-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1,3,2)" delay="1"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-33.2752" y="-29.5543" z="0" t="0.13" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.3" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+'/>
+<line display=" "/>
+<line display="4-Fountain Step By Step"/>
+<line display=" "/>
+<line display="2 in One Hand" notation="siteswap" pattern="
+pattern=40;dratio=0.5;tps=4.331
+"/>
+<line display="4-Synchronous Fountain" notation="siteswap" pattern="
+pattern=(4,4);dratio=0.5;tps=4.331;hands=(10)(32.5).
+"/>
+<line display="4-Fountain" notation="siteswap" pattern="
+pattern=4;dratio=0.5;tps=4.331;hands=(10)(32.5).
+"/>
+<line display=" "/>
+<line display="5-Cascade Step By Step"/>
+<line display=" "/>
+<line display="2 Balls out of a 5-Cascade" notation="jml" pattern='
+<pattern>
+<title>2 Balls out of a 5-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="2" props="1,1"/>
+<symmetry type="delay" pperm="(1)(2)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-34.949" y="9.6431" z="0" t="0.4518" hand="1:left">
+</event>
+<event x="29.5374" y="19.7492" z="0" t="0.7028" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="3 Balls out of a 5-Cascade" notation="jml" pattern='
+<pattern>
+<title>3 Balls out of a 5-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-30.2705" y="-1.4657" z="0" t="0.1606" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.5321" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="16.8658" y="0.4225" z="0" t="0.6425" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Chase" notation="jml" pattern='
+<pattern>
+<title>Chase</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-29.8153" y="21.5003" z="0" t="0.1405" hand="1:left">
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-37.4296" y="17.2415" z="0" t="0.4718" hand="1:left">
+</event>
+<event x="32.5" y="0" z="0" t="0.6024" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.8032" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Flash" notation="jml" pattern='
+<pattern>
+<title>Flash</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-28.8824" y="10.2105" z="0" t="0.4919" hand="1:left">
+</event>
+<event x="27.531" y="11.4021" z="0" t="0.6827" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Throw 4 out of 5" notation="jml" pattern='
+<pattern>
+<title>Throw 4 out of 5</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="3.6144"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3,4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<holding path="2"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<holding path="4"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6024" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="18.3978" y="17.9637" z="0" t="0.6911" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="32.5" y="0" z="0" t="1.004" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="1.2048" hand="1:left">
+<holding path="1"/>
+<catch path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="1.4056" hand="1:right">
+<holding path="3"/>
+<catch path="4"/>
+</event>
+<event x="-21.3007" y="-16.6246" z="0" t="1.5204" hand="1:left">
+<holding path="1"/>
+<holding path="2"/>
+</event>
+<event x="20.4196" y="-16.9576" z="0" t="1.745" hand="1:right">
+<holding path="3"/>
+<holding path="4"/>
+</event>
+</pattern>
+'/>
+
+<line display="4 Balls out of a 5-Cascade" notation="jml" pattern='
+<pattern>
+<title>4 Balls out of a 5-Cascade</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)(4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4016" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6024" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="28.1969" y="13.2303" z="0" t="0.6927" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="552" notation="jml" pattern='
+<pattern>
+<title>552</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1,2)(3,4)" delay="1.2048"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,2,3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4016" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="17.2555" y="-15.4501" z="0" t="0.4879" hand="1:right">
+<holding path="3"/>
+</event>
+</pattern>
+'/>
+
+<line display="5551" notation="siteswap" pattern="
+pattern=5551
+"/>
+<line display="5-Cascade" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(10)(32.5).
+"/>
+<line display=" "/>
+<line display="3-Cascade Tricks"/>
+<line display=" "/>
+
+<line display="3-ball Flash" notation="jml" pattern='
+<pattern>
+<title>3-ball Flash</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1,3,2)" delay="4.4269"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2459" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2459" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4918" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4918" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0.7378" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.7378" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.9837" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.9837" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="1.2297" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="1.2297" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.305" y="34.2599" z="0" t="1.4444" hand="1:left">
+</event>
+<event x="10" y="0" z="0" t="1.4756" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="19.4743" y="33.86" z="0" t="1.702" hand="1:right">
+</event>
+<event x="-32.5" y="0" z="0" t="1.9675" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Chops" notation="siteswap" pattern="
+pattern=(4x,2)(2,4x);dratio=0.5;tps=5.591;hands=(-25,-15)(25,30).(17.5,45)(10,45).(17.5,45)(10,45).(-25,-15)(25,30).
+"/>
+
+<line display="Eating an apple" notation="jml" pattern='
+<pattern>
+<title>Eating an apple</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2,3)" delay="1.8471"/>
+<event x="-7.5" y="20" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2308" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2308" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4617" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4617" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6926" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.6926" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.9235" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.9235" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="-5" y="0" z="0" t="1.1544" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="35" z="0" t="1.1544" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="8.1673" y="35.2969" z="0" t="1.3509" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-32.5" y="0" z="0" t="1.3853" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-1.0524" y="52.2112" z="-18" t="1.572" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="10" y="0" z="0" t="1.6162" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+</pattern>
+'/>
+
+<line display="Wide Cascade" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.611;hands=(45,20)(52.5,45).
+"/>
+<line display="Juggler's Tennis" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(10)(35,15).(10)(20).(35,15)(20).
+"/>
+<line display="Over the Head" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(7.5,95)(30,95).
+"/>
+<line display="Reverse Cascade" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(32.5)(10).
+"/>
+<line display="Wide Reverse Cascade" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(30)(-20).
+"/>
+<line display="Reachover" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.124;hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25).(10)(-32.5,25).(20,-10)(32.5,-15).(0,10)(32.5).(10)(32.5).
+"/>
+
+<line display="Reachover (alternate)" notation="jml" pattern='
+<pattern>
+<title>Reachover (alternate)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.4548"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="8.8057" y="-1.1864" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="25" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.2424" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="-2.5227" z="0" t="0.2424" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4849" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0.4849" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Reachunder" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.124;hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25,20).(10,-15)(-40,-15).(10,20)(32.5,15).(0)(32.5).(10)(32.5).
+"/>
+<line display="Reachunder (alternate)" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.124;hands=(7.5,20)(32.5,15).(32.5)(25,20).(10)(-32.5,-25).
+"/>
+<line display="Crossed Arm Reverse" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(-30)(-10).
+"/>
+<line display=" "/>
+<line display="3-ball Tricks"/>
+<line display=" "/>
+
+<line display="1Up-2Up A (Columns)" notation="jml" pattern='
+<pattern>
+<title>1Up-2Up A (Columns)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.7727"/>
+<event x="0" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="0.1931" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-25" y="0" z="0" t="0.1931" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="25" y="0" z="0" t="0.3863" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0.3863" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="0" y="0" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-24.6697" y="3.0458" z="0" t="0.6684" hand="1:left">
+</event>
+</pattern>
+'/>
+
+<line display="1Up-2Up B" notation="jml" pattern='
+<pattern>
+<title>1Up-2Up B</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.5455"/>
+<event x="17.5" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="35" y="0" z="0" t="0.1931" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-16.6925" y="0.8441" z="0" t="0.2936" hand="1:left">
+</event>
+<event x="0" y="0" z="0" t="0.3863" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0.5795" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="17.5" y="0" z="0" t="0.7727" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0.7727" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-35" y="0" z="0" t="0.9659" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="17.5" y="1.2507" z="0" t="1.051" hand="1:right">
+</event>
+<event x="-0" y="0" z="0" t="1.1591" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="1.3523" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="1.3523" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="1Up-2Up C" notation="jml" pattern='
+<pattern>
+<title>1Up-2Up C</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="3.0911"/>
+<event x="17.5" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="35" y="0" z="0" t="0.1931" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18.2673" y="-0.683" z="0" t="0.2789" hand="1:left">
+</event>
+<event x="35" y="0" z="0" t="0.3863" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0.5795" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="17.5" y="0" z="0" t="0.7727" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0.7727" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-0" y="0" z="0" t="0.9659" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="16.4768" y="0.5971" z="0" t="1.0592" hand="1:right">
+</event>
+<event x="-0" y="0" z="0" t="1.1591" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="1.3523" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="1.3523" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="17.5" y="0" z="0" t="1.5455" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="1.5455" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-35" y="0" z="0" t="1.7387" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="16.7326" y="2.3307" z="0" t="1.832" hand="1:right">
+</event>
+<event x="-35" y="0" z="0" t="1.9319" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="2.1251" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="2.1251" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="17.5" y="0" z="0" t="2.3183" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="2.3183" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="0" y="0" z="0" t="2.5115" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18.0115" y="2.0749" z="0" t="2.6048" hand="1:left">
+</event>
+<event x="0" y="0" z="0" t="2.7047" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="17.5" y="0" z="0" t="2.8979" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-17.5" y="0" z="0" t="2.8979" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="1Up-2Up D" notation="jml" pattern='
+<pattern>
+<title>1Up-2Up D</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.5455"/>
+<event x="-15" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-30" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-30.4355" y="0.4917" z="0" t="0.1713" hand="1:left">
+</event>
+<event x="0" y="0" z="0" t="0.1931" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-30.027" y="0.851" z="0" t="0.3632" hand="1:left">
+</event>
+<event x="0" y="0" z="0" t="0.3863" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-15" y="0" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-30" y="0" z="0" t="0.5795" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="30" y="0" z="0" t="0.7727" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="15" y="0" z="0" t="0.7727" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="30.2676" y="-0.8446" z="0" t="0.9527" hand="1:right">
+</event>
+<event x="-0" y="0" z="0" t="0.9659" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="31.0981" y="-2.7267" z="0" t="1.1514" hand="1:right">
+</event>
+<event x="-0" y="0" z="0" t="1.1591" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="0" z="0" t="1.3523" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="15" y="0" z="0" t="1.3523" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="1Up-2Up E" notation="siteswap" pattern="
+pattern=(4,4)(4,0);dratio=0.5;tps=5.176;hands=(10)(32.5).(10)(10).(-32.5)(10).(10)(10).
+"/>
+
+<line display="1Up-2Up F" notation="jml" pattern='
+<pattern>
+<title>1Up-2Up F</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.7635"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="35" z="0" t="0.1272" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.2545" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.3054" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="35" z="0" t="0.509" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.6362" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6362" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Yo-Yo" notation="jml" pattern='
+<pattern>
+<title>Yo-Yo</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.8235"/>
+<event x="3.5647" y="16.3295" z="0" t="0.1235" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="6.4749" y="3.9783" z="0" t="0.2058" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="5.3031" y="41.0392" z="0" t="0.276" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="23.1843" y="8.1392" z="0" t="0.35" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="6.0764" y="64.7705" z="0" t="0.4608" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="21.2221" y="6.9974" z="0" t="0.6176" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="6.4113" y="3.487" z="0" t="0.7617" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Oy-Oy" notation="jml" pattern='
+<pattern>
+<title>Oy-Oy</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.7447"/>
+<event x="12.5" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="12.5" y="20" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="12.5" y="32.7811" z="0" t="0.1712" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-12.5" y="15" z="0" t="0.1861" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="12.5" y="35.9" z="0" t="0.3723" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-12.5" y="20" z="0" t="0.3723" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="12.1993" y="20.4113" z="0" t="0.5585" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="12.8006" y="3.6848" z="0" t="0.5697" hand="1:right">
+<holding path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Around The Yo-Yo" notation="jml" pattern='
+<pattern>
+<title>Around The Yo-Yo</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.8235"/>
+<event x="-0.5027" y="15.9905" z="0" t="0.1235" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="0.3999" y="3.6408" z="0" t="0.2058" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="0.2195" y="41.0392" z="0" t="0.276" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="23.1823" y="6.4568" z="0" t="0.35" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="0.6539" y="64.4315" z="0" t="0.4608" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="-22.3585" y="4.9703" z="0" t="0.6176" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="0.3188" y="3.8254" z="0" t="0.7617" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Yo-Yo (Columns Fake A)" notation="jml" pattern='
+<pattern>
+<title>Yo-Yo (Columns Fake A)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.8114"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="0" y="-5" z="0" t="0.2028" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-25.3421" y="45.2103" z="0" t="0.3042" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="0" y="0" z="0" t="0.4057" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="25" y="-5" z="0" t="0.6085" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-25" y="0" z="0" t="0.6329" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="-25.3421" y="1.7921" z="0" t="0.7911" hand="1:left">
+<holding path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Yo-Yo (Columns Fake B)" notation="jml" pattern='
+<pattern>
+<title>Yo-Yo (Columns Fake B)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.7727"/>
+<event x="0" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-24.7928" y="25.2257" z="0" t="0.112" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="25" y="-5" z="0" t="0.1931" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-25" y="39.1865" z="0" t="0.2936" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="25" y="0" z="0" t="0.3863" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-25.3492" y="20.306" z="0" t="0.4752" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="0" y="-5" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-24.662" y="-5.1588" z="0" t="0.6491" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="-24.3599" y="-4.5205" z="0" t="0.7418" hand="1:left">
+<holding path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Yo-Yo (Columns Fake C)" notation="jml" pattern='
+<pattern>
+<title>Yo-Yo (Columns Fake C)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.4894"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-25" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-0" y="-5" z="0" t="0.1861" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="24.6635" y="35.8698" z="0" t="0.283" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-0" y="0" z="0" t="0.3723" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-25" y="-5" z="0" t="0.5585" hand="1:left">
+<catch path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Yo-Yo (Traverse)" notation="jml" pattern='
+<pattern>
+<title>Yo-Yo (Traverse)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="0.9235"/>
+<event x="7.6234" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-26.4729" y="23.7738" z="0" t="0.0969" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="-9.365" y="0" z="0" t="0.2308" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-9.7133" y="0" z="0" t="0.4617" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="26.7554" y="24.3777" z="0" t="0.5449" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="8.6683" y="0" z="0" t="0.6926" hand="1:right">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Arches" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.43;hands=(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).
+"/>
+
+<line display="2-in-1-Hand Tennis" notation="jml" pattern='
+<pattern>
+<title>2-in-1-Hand Tennis</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.5455"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/>
+<event x="12.5" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-12.5" y="0" z="0" t="0" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="37.5" y="15" z="0" t="0.1931" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-12.5" y="0" z="0" t="0.2318" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="37.5" y="15" z="0" t="0.3863" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-11.4736" y="0.1227" z="0" t="0.4714" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="12.5" y="0" z="0" t="0.5795" hand="1:right">
+<catch path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="Statue of Liberty A" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.611;hands=(30,20)(7.5).(22.5,95)(25,100).
+"/>
+<line display="Statue of Liberty B" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.269;hands=(30)(7.5,20).(22.5,95)(25,85).
+"/>
+<line display="Shuffle (The Slam)" notation="siteswap" pattern="
+pattern=(2x,4x);dratio=0.5;tps=5.591;hands=(30,50)(0,-25).(35)(25).
+"/>
+<line display="See Saw Shuffle (Luke's Shuffle)" notation="siteswap" pattern="
+pattern=(2x,4)(4,2x);dratio=0.5;tps=5.001;hands=(35,50)(25,-15).(15)(25).(15)(25).(35,50)(25,-15).
+"/>
+<line display="441 Shuffle" notation="siteswap" pattern="
+pattern=441;dratio=0.5;tps=6.125;hands=(12.5,-10)(37.5,20).(15)(12,5,-10).(22.5,50)(15).
+"/>
+<line display="Both Side Slam" notation="siteswap" pattern="
+pattern=(2x,4x)(4x,2)(4x,2x)(2,4x);dratio=0.5;tps=6.125;hands=(30,50)(25).(25)(15).(10)(25).(15)(15).(25)(15).(30,50)(25).(15)(15).(10)(25).
+"/>
+<line display="Robot (Machine,Factory)" notation="siteswap" pattern="
+pattern=242334;dratio=0.5;tps=5.001;hands=(25,-15)(25,-15).(25)(0).(25,65)(25,65).(0)(15).(-25,65)(12.5,20).(15)(25).
+"/>
+<line display="Exchange (Pendulum,Drop)" notation="siteswap" pattern="
+pattern=2334;dratio=0.5;tps=5.371;hands=(25,55)(0,60).(0)(25).(-25,60)(0,55).(0)(25).
+"/>
+<line display="Carry" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=5.051;hands=
+(-17.5,60)(17.5,60).(-17.5)(17.5).
+"/>
+
+<line display="Follow" notation="siteswap" pattern="
+pattern=423;dratio=0.5;tps=6.125;hands=(-25,20)(0,20).(25,50)(-25,50).(0,10)(25,-15).
+"/>
+<line display=" "/>
+<line display="     4-ball Tricks"/>
+<line display=" "/>
+<line display="4-Reverse Synchronous Fountain" notation="siteswap" pattern="
+pattern=(4,4);dratio=0.5;tps=4.331;hands=(32.5)(10).
+"/>
+<line display="4-Reverse Fountain" notation="siteswap" pattern="
+pattern=4;dratio=0.5;tps=4.331;hands=(32.5)(10).
+"/>
+<line display="4-Columns Switch" notation="siteswap" pattern="
+pattern=(4x,4x)(4,4);dratio=0.5;tps=4.331;hands=(30,10)(10).(30)(10).(10)(30).(10)(30,10).
+"/>
+<line display="4-ball Cross A" notation="siteswap" pattern="
+pattern=(4x,4x);dratio=0.5;tps=4.331;hands=(17.5,15)(32.5).(17.5)(32.5,15).
+"/>
+<line display="4-ball Cross B" notation="siteswap" pattern="
+pattern=(4x,4x);dratio=0.5;tps=4.331;hands=(17.5,15)(32.5,15).(17.5)(32.5).(17.5)(32.5).(17.5,15)(32.5,15).
+"/>
+<line display="444447333" notation="siteswap" pattern="
+pattern=444447333;dratio=0.5;tps=4.964;hands=(10)(32.5).
+"/>
+<line display="4-ball Tennis" notation="siteswap" pattern="
+pattern=44453;dratio=0.5;tps=4.98;hands=(10)(0).(10)(37.5,15).(10)(22.5).(37.5,15)(22.5).(10)(22.5).
+"/>
+
+<line display="4-ball Burke's Barrage" notation="jml" pattern='
+<pattern>
+<title>4-ball Burkes Barrage</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1,4)(2,3)" delay="0.9332"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,4,3)"/>
+<event x="-12.5" y="-10" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="22.5" y="15" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="22.5" y="70" z="0" t="0.1135" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="0" y="0" z="0" t="0.1555" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-29.84" y="64.0704" z="0" t="0.2426" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="7.5" y="0" z="0" t="0.311" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-23.6414" y="7.9916" z="0" t="0.3406" hand="1:left">
+<holding path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display="Dancey's Devilment" notation="jml" pattern='
+<pattern>
+<title>Danceys Devilment</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="1.5554"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3,4)"/>
+<event x="32.5" y="40" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="-10" z="0" t="0" hand="1:left">
+<catch path="2"/>
+<holding path="3"/>
+</event>
+<event x="25" y="-15" z="0" t="0.1555" hand="1:left">
+<throw path="2" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="7.5" y="30" z="0" t="0.1555" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-11.2529" y="31.098" z="0" t="0.216" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="-5.1039" y="45.0282" z="0" t="0.2678" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="2.5" y="0" z="0" t="0.311" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="13.0235" y="42.5604" z="0" t="0.3518" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="-30" y="10" z="0" t="0.4666" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="-5" y="10" z="0" t="0.4666" hand="1:right">
+<holding path="4"/>
+<catch path="3"/>
+</event>
+<event x="-25" y="-10" z="0" t="0.6221" hand="1:right">
+<holding path="4"/>
+<throw path="3" type="toss"/>
+</event>
+</pattern>
+'/>
+
+<line display=" "/>
+<line display="     5-ball Tricks"/>
+<line display=" "/>
+<line display="5-Reverse Cascade" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(32.5)(10).
+"/>
+<line display="3-Cascade -> 5-Cascade" notation="siteswap" pattern="
+pattern=[32][32][32][32][32][32][52][52][52]555555522;dratio=0.5;tps=4.98;hands=(10)(32.5).
+"/>
+<line display="555555744" notation="siteswap" pattern="
+pattern=555555744;dratio=0.5;tps=4.964;hands=(10)(32.5).
+"/>
+
+<line display="5-ball Burke's Barrage" notation="jml" pattern='
+<pattern>
+<title>5-ball Burkes Barrage</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="5" props="1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,4,2)(3)(5)" delay="0.7644"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,4)(3,5)"/>
+<event x="-7.5" y="-20" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="22.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="25" y="70" z="0" t="0.1274" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="5" y="-10" z="0" t="0.1274" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-31.0459" y="59.6597" z="0" t="0.2293" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.2548" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-30.0822" y="19.2932" z="0" t="0.2793" hand="1:left">
+<holding path="2"/>
+</event>
+</pattern>
+'/>
+
+<line display=" "/>
+<line display="     Shower"/>
+<line display=" "/>
+<line display="3-Shower Japanese OTEDAMA" notation="siteswap" pattern="
+pattern=51
+"/>
+
+<line display="3-Half Shower A" notation="jml" pattern='
+<pattern>
+<title>3-Half Shower A</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1,3,2)" delay="0.8032"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="12.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="25.7495" y="-15.7056" z="0" t="0.5502" hand="1:right">
+<holding path="3"/>
+</event>
+<event x="-12.5" y="0" z="0" t="0.6024" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+</pattern>
+'/>
+
+<line display="3-Half Shower B" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(37.5,40)(20).(20)(37.5,40).
+"/>
+<line display="4-Shower" notation="siteswap" pattern="
+pattern=71;dratio=0.5;tps=6.08;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="4-Half Shower" notation="siteswap" pattern="
+pattern=53;dratio=0.5;tps=4.98;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="5-Half Shower A" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(37.5,40)(20).(20)(37.5,40).
+"/>
+<line display="5-Half Shower B" notation="siteswap" pattern="
+pattern=73;dratio=0.5;tps=6.08;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="5-Half Shower C" notation="siteswap" pattern="
+pattern=(4x,6x);dratio=0.5;tps=5.556;hands=(12.5)(25).(25)(12.5).
+"/>
+<line display="6-Half Shower" notation="siteswap" pattern="
+pattern=75;dratio=0.5;tps=6.08;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="3-Synchronous Shower" notation="siteswap" pattern="
+pattern=(2x,4x);dratio=0.5;tps=4.331;hands=(12.5)(25).(25)(12.5).
+"/>
+<line display="4-Synchronous Shower" notation="siteswap" pattern="
+pattern=(2x,6x);dratio=0.5;tps=5.556;hands=(12.5)(25).(25)(12.5).
+"/>
+<line display="3-High-Low Shower A" notation="siteswap" pattern="
+pattern=7131;dratio=0.5;tps=6.08;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="3-High-Low Shower B" notation="siteswap" pattern="
+pattern=(2x,6x)(2x,2x);dratio=0.5;tps=6.416;hands=(15)(30,15).(30,15)(15).(15)(15,15).(15,15)(15).
+"/>
+<line display="3-High-Low Shower C" notation="siteswap" pattern="
+pattern=315171;dratio=0.5;tps=6.08;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="4-High-Low Shower" notation="siteswap" pattern="
+pattern=9151;dratio=0.5;tps=7.012;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="Under-the-Hand Shower" notation="siteswap" pattern="
+pattern=(2x,4x);dratio=0.5;tps=4.331;hands=(-7.5,20)(7.5,20).(-25)(12.5).
+"/>
+<line display="Under-the-Hand Shower (alternate)" notation="siteswap" pattern="
+pattern=(2x,4x);dratio=0.5;tps=4.331;hands=(0,20)(12.5,20).(25)(7.5).(0,20)(12.5,20).(-25)(7.5).
+"/>
+<line display="4-Half Shower Like Trick" notation="siteswap" pattern="
+pattern=35;dratio=0.5;tps=4.98;hands=(37.5,40)(20).(20)(37.5,40).
+"/>
+<line display="High Half Shower" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.611;hands=(-17.5,35)(17.5,35).(-32.5)(32.5).
+"/>
+<line display="Multi-Shower" notation="siteswap" pattern="
+pattern=[97]121;dratio=0.5;tps=7.012;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="False Shower (Windmill)" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(-25,-10)(25).(25,10)(-25,20).
+"/>
+<line display=" "/>
+<line display="     Mills Mess"/>
+<line display=" "/>
+<line display="2 out of the Mills Mess" notation="siteswap" pattern="
+pattern=330;dratio=0.5;tps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Standard Mills Mess" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 423" notation="siteswap" pattern="
+pattern=423;dratio=0.5;tps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 414" notation="siteswap" pattern="
+pattern=414;dratio=0.5;tps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 315" notation="siteswap" pattern="
+pattern=315;dratio=0.5;tps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess Box" notation="siteswap" pattern="
+pattern=612;dratio=0.5;tps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="4-ball Mills Mess" notation="siteswap" pattern="
+pattern=4;dratio=0.5;tps=5.371;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 534" notation="siteswap" pattern="
+pattern=534;dratio=0.5;tps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 552" notation="siteswap" pattern="
+pattern=552;dratio=0.5;tps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 642" notation="siteswap" pattern="
+pattern=642;dratio=0.5;tps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="5-ball Mills Mess" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="6-ball Mills Mess" notation="siteswap" pattern="
+pattern=6;dratio=0.5;tps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Mills Mess 864" notation="siteswap" pattern="
+pattern=864;dratio=0.5;tps=6.562;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="Multi-Mills Mess" notation="siteswap" pattern="
+pattern=[34]23;dratio=0.5;tps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+"/>
+<line display="No Through Mills Mess" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=5.648;hands=(-30,5)(-5,10).(30,10)(-5,5).(-15,-20)(15,-15).
+"/>
+<line display="Half Mess" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.43;hands=(30)(0,10).(-30,-15)(0,-15).(-30,10)(30).(-15)(0).
+"/>
+<line display="Reverse Mills Mess" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=4.43;hands=(-2.5)(-30).(0)(-30).(2.5)(30).
+"/>
+<line display="Mills 44133" notation="siteswap" pattern="
+pattern=44133;dratio=0.5;tps=5.371;hands=(-30,25)(0,10).(30)(25).(-7.5)(17.5,-10).(25,10)(-5).(-25,-15)(5,-10).
+"/>
+<line display="2-Mills Simultaneous" notation="siteswap" pattern="
+pattern=(4x,4x)(0,0);dratio=0.75;tps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+"/>
+<line display="3-Mills Simultaneous" notation="siteswap" pattern="
+pattern=(4x,4x)(0,4x)(4x,4x)(4x,0);dratio=0.75;tps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+"/>
+<line display="4-Mills Simultaneous" notation="siteswap" pattern="
+pattern=(4x,4x);dratio=0.75;tps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+"/>
+<line display=" "/>
+<line display="     Box"/>
+<line display=" "/>
+<line display="2 Balls out of the Box" notation="siteswap" pattern="
+pattern=(2x,4)(0,2x);dratio=0.5;tps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).
+"/>
+<line display="Box (See Saw)" notation="siteswap" pattern="
+pattern=(2x,4)(4,2x);dratio=0.5;tps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).
+"/>
+<line display="Double Box" notation="siteswap" pattern="
+pattern=(2x,4x)(2x,4)(4x,2x)(4,2x);dratio=0.5;tps=5.839;hands=(17.5)(35).(0)(0).(0)(0).(35)(35).(0)(0).(17.5)(35).(35)(35).(0)(0).
+"/>
+
+<line display="Advanced Box" notation="jml" pattern='
+<pattern>
+<title>Advanced Box</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="1.8287"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3)(2)"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-7.5" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="7.5" y="0" z="0" t="0.1523" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-25" y="0" z="0" t="0.1523" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="25" y="0" z="0" t="0.3047" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-7.5" y="0" z="0" t="0.3047" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="0.4571" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-6.5118" y="6.7708" z="0" t="0.5211" hand="1:left">
+</event>
+<event x="7.5" y="0" z="0" t="0.6095" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="0.7619" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-7.5" y="0" z="0" t="0.7619" hand="1:left">
+<catch path="3"/>
+</event>
+</pattern>
+'/>
+
+<line display="4-ball Box A" notation="siteswap" pattern="
+pattern=633;dratio=0.5;tps=5.556;hands=(25)(17.5).(0)(25).(0)(17.5).
+"/>
+<line display="4-ball Box B" notation="siteswap" pattern="
+pattern=(8,2x)(4,2x)(2x,8)(2x,4);dratio=0.5;tps=6.562;hands=(25)(25).(7.5)(25).(25)(25).(7.5)(25).(7.5)(25).(25)(25).(7.5)(25).(25)(25).
+"/>
+<line display="4-ball Box C" notation="siteswap" pattern="
+pattern=(6,2x)(6,2x)(2x,6)(2x,6);dratio=0.5;tps=5.556;hands=(10)(32.5).
+"/>
+<line display="5-ball Box" notation="siteswap" pattern="
+pattern=(6,4x)(4x,6);dratio=0.5;tps=5.556;hands=(10)(32.5).
+"/>
+<line display=" "/>
+<line display="     Columns"/>
+<line display=" "/>
+<line display="Boston Mess A" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,15).
+"/>
+<line display="Boston Mess B" notation="siteswap" pattern="
+pattern=3;dratio=0.5;tps=3.572;hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,-10).(25,15)(0,15).(25,-10)(-25,-10).(0,15)(-25,15).(-25,-10)(0,-10).(-25,15)(25,15).(0,-10)(25,15).
+"/>
+<line display="4-Columns (Pistons)" notation="siteswap" pattern="
+pattern=4;dratio=0.5;tps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).
+"/>
+<line display="4-Synchronous Columns (Asymmetry)" notation="siteswap" pattern="
+pattern=(4,4);dratio=0.5;tps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).
+"/>
+<line display="4-Synchronous Columns (Symmetry)" notation="siteswap" pattern="
+pattern=(4,4);dratio=0.5;tps=4.331;hands=(30)(10).(30)(10).(10)(30).(10)(30).
+"/>
+<line display="4-Synchronous Columns (Splits)" notation="siteswap" pattern="
+pattern=(4,4);dratio=0.5;tps=4.331;hands=(30)(-10).(-10)(30).(-10)(30).(30)(-10).
+"/>
+<line display="5-Columns" notation="siteswap" pattern="
+pattern=(6,6)(6,6)(0,6);dratio=0.5;tps=5.556;hands=(30)(15).(30)(15).(15)(15).(15)(0).(15)(30).(0)(30).
+"/>
+<line display="5-Mills Mess Columns A" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(-30)(0).(-15)(15).(0)(30).(15)(30).(30)(15).(30)(0).(15)(-15).(0)(-30).(-15)(-30).(-30)(-15).
+"/>
+<line display="5-Mills Mess Columns B" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(30)(15).(15)(30).(15)(0).(30)(-30).(0)(-15).(-30)(-15).(-15)(-30).(-15)(0).(-30)(30).(0)(15).
+"/>
+<line display="5-Mills Mess Columns C" notation="siteswap" pattern="
+pattern=5;dratio=0.5;tps=4.98;hands=(30,15)(0,15).(-15)(15).(0,15)(-30,15).(15)(-30).(-30,15)(15,15).(-30)(0).(15,15)(-15,15).(0)(30).(-15,15)(30,15).(30)(-15).
+"/>
+<line display="6-Columns" notation="siteswap" pattern="
+pattern=(6,6);dratio=0.5;tps=5.556;hands=(37.5)(22.5).(37.5)(22.5).(22.5)(7.5).(22.5)(7.5).(7.5)(37.5).(7.5)(37.5).
+"/>
+<line display="Multi-Columns" notation="siteswap" pattern="
+pattern=([46],[46])(0,6)(2,2);dratio=0.5;tps=5.556;hands=(32.5)(32.5).(32.5)(0).(32.5)(32.5).(0)(32.5).(32.5)(32.5).(32.5)(32.5).
+"/>
+<line display=" "/>
+<line display="     One Hand Tricks"/>
+<line display=" "/>
+<line display="2-ball Columns in One Hand" notation="siteswap" pattern="
+pattern=40;dratio=0.5;tps=4.331;hands=(0)(25).(32.5)(32.5).(25)(0).(32.5)(32.5).
+"/>
+<line display="3 balls in One Hand" notation="siteswap" pattern="
+pattern=60;dratio=0.5;tps=5.556
+"/>
+
+<line display="3-Multiplex in One Hand" notation="jml" pattern='
+<pattern>
+<title>3-Multiplex in One Hand</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1,2)(3)" delay="1.0799"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0.0799" hand="1:left">
+</event>
+<event x="32.5" y="0" z="0" t="0.1799" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.3599" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.5399" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="24.5409" y="1.5791" z="0" t="0.6965" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.8999" hand="1:right">
+<catch path="2"/>
+<holding path="1"/>
+</event>
+</pattern>
+'/>
+
+<line display="8040" notation="siteswap" pattern="
+pattern=8040;dratio=0.5;tps=6.562
+"/>
+<line display="3-ball Columns in One Hand" notation="siteswap" pattern="
+pattern=60;dratio=0.5;tps=5.556;hands=(-5)(15).(32.5)(32.5).(15)(35).(32.5)(32.5).(35)(-5).(32.5)(32.5).
+"/>
+<line display="Cascade in One Hand" notation="siteswap" pattern="
+pattern=60;dratio=0.5;tps=5.556;hands=(5)(45).(32.5)(32.5).(25)(-15).(32.5)(32.5).
+"/>
+<line display=" "/>
+<line display="     Multiplex"/>
+<line display=" "/>
+<line display="[34]1" notation="siteswap" pattern="
+pattern=[34]1;dratio=0.5;tps=4.331;hands=(10)(32.5).
+"/>
+<line display="4[43]1 (441+1)" notation="siteswap" pattern="
+pattern=4[43]1;dratio=0.5;tps=4.331;hands=(10)(32.5).
+"/>
+
+<line display="Martin" notation="jml" pattern='
+<pattern>
+<title>Martin</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="5" props="1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2,5,3)(4)" delay="1.0799"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4)(2,3,5)"/>
+<event x="32.5" y="0" z="0" t="0" hand="1:right">
+<holding path="2"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.3599" hand="1:left">
+<holding path="3"/>
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.3599" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+</pattern>
+'/>
+
+<line display="5-ball Multiplex A" notation="jml" pattern='
+<pattern>
+<title>5-ball Multiplex A</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="5" props="1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,2,5,3,4)" delay="1.2048"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,2,4,5)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="3"/>
+<holding path="4"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="5"/>
+</event>
+</pattern>
+'/>
+
+<line display="5-ball Multiplex B" notation="jml" pattern='
+<pattern>
+<title>5-ball Multiplex B</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="5" props="1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,3,5,4,2)" delay="1.2048"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,3,2,5)"/>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<holding path="1"/>
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4016" hand="1:left">
+<catch path="4"/>
+</event>
+</pattern>
+'/>
+
+<line display="25[75]51" notation="jml" pattern='
+<pattern>
+<title>25[75]51</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="5" props="1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)(5)" delay="1.6447"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,5)(2)(3)(4)"/>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.1644" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.1644" hand="1:right">
+<holding path="1"/>
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.3289" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.3289" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.4934" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.4934" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="10" y="0" z="0" t="0.6167" hand="1:right">
+<throw path="5" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.7401" hand="1:left">
+<catch path="5"/>
+</event>
+</pattern>
+'/>
+
+<line display="7-ball Splits A" notation="jml" pattern='
+<pattern>
+<title>7-ball Splits A</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="7" props="1,1,1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,3,6,4,7,5,2)" delay="1.0799"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,7,3,5,6,2,4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="3" type="toss"/>
+<throw path="2" type="toss"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<holding path="5"/>
+<catch path="4"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.1799" hand="1:right">
+<catch path="6"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.3599" hand="1:left">
+<holding path="5"/>
+<holding path="4"/>
+<catch path="7"/>
+</event>
+</pattern>
+'/>
+
+<line display="7-ball Splits B" notation="jml" pattern='
+<pattern>
+<title>7-ball Splits B</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="7" props="1,1,1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,6)(2,7,4)(3,5)" delay="0.7199"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,5,6,3)(2,4,7)"/>
+<event x="-0" y="0" z="0" t="0" hand="1:left">
+<throw path="3" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.1799" hand="1:right">
+<holding path="1"/>
+<catch path="4"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.1799" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="-38.5958" y="1.1299" z="0" t="0.3239" hand="1:left">
+<holding path="5"/>
+</event>
+</pattern>
+'/>
+
+<line display="26[76]" notation="jml" pattern='
+<pattern>
+<title>26[76]</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="7" props="1,1,1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,7,4)(2)(3)(5)(6)" delay="0.9868"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,7)(2,5)(3,6)"/>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.1644" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.1644" hand="1:right">
+<holding path="1"/>
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.3289" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.3289" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+</pattern>
+'/>
+
+<line display="[234]57" notation="siteswap" pattern="
+pattern=[234]57;dratio=0.5;tps=6.08;hands=(10)(32.5).
+"/>
+<line display="9-ball Multiplex" notation="siteswap" pattern="
+pattern=[54];dratio=0.5;tps=4.98;hands=(10)(32.5).
+"/>
+<line display=" "/>
+<line display="     Numbers"/>
+<line display=" "/>
+<line display="5-Shower" notation="siteswap" pattern="
+pattern=91;dratio=0.5;tps=7.012;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="6-Shower" notation="siteswap" pattern="
+pattern=b1;dratio=0.5;tps=7.835;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="7-Shower" notation="siteswap" pattern="
+pattern=d1;dratio=0.5;tps=8.58;hands=(25)(12.5).(12.5)(25).
+"/>
+<line display="6-Fountain" notation="siteswap" pattern="
+pattern=6;dratio=0.5;tps=5.556;hands=(10)(32.5).
+"/>
+<line display="7-Cascade" notation="siteswap" pattern="
+pattern=7;dratio=0.5;tps=6.08;hands=(10)(32.5).
+"/>
+<line display="8-Fountain" notation="siteswap" pattern="
+pattern=8;dratio=0.5;tps=6.562;hands=(10)(32.5).
+"/>
+<line display="9-Cascade" notation="siteswap" pattern="
+pattern=9;dratio=0.5;tps=7.012;hands=(10)(32.5).
+"/>
+</patternlist>
+</jml>
