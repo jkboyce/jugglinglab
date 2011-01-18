@@ -26,8 +26,8 @@ import java.awt.*;
 import java.util.*;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
-import idx3d.*;
 
+// import idx3d.*;
 
 public abstract class Prop {
     // static ResourceBundle guistrings;
