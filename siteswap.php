@@ -15,7 +15,7 @@ if ($query=="") {
 } else {
 	parse_str(strtr($query, ";", "&"));
 	$width = (($stereo=="true") ? 750 : 600);
-	$viewmode = ( strpos($query, "<") === false ? "simple" : "edit" );
+	$viewmode = ( (strpos($query, "<") === false) ? "edit" : "simple" );
 	echo "<p>\n";
 	echo "<applet archive=\"bin/JugglingLab.jar\" code=\"JugglingLab\" width=\"$width\" height=\"500\">\n";
 	echo "<param name=\"config\" value=\"entry=none;view=$viewmode\">\n";
