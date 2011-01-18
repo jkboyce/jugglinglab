@@ -281,25 +281,10 @@ public class Animator extends Component implements Runnable {
         if (this.pat == null)
             return;
 
-        ren1 = ren2 = null;
-		/*
-        if (this.jc.threeD) {
-            try {
-                Class rc = Class.forName("jugglinglab.renderer.RendererIDX3D");
-                ren1 = (Renderer)(rc.newInstance());
-                if (this.jc.stereo)
-                    ren2 = (Renderer)(rc.newInstance());
-            } catch (Exception e) {
-				// The 3D renderer is not always packaged in the jar file.  That's ok; we'll
-				// load the 2D renderer below instead.
-            }
-        }
-		*/
-        if (ren1 == null) {
-            ren1 = new Renderer2D();
-            if (this.jc.stereo)
-                ren2 = new Renderer2D();
-        }
+		ren1 = new Renderer2D();
+		if (this.jc.stereo)
+			ren2 = new Renderer2D();
+
         ren1.setPattern(this.pat);
         if (this.jc.stereo)
             ren2.setPattern(this.pat);

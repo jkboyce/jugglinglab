@@ -35,7 +35,6 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
 import jugglinglab.core.*;
-// import idx3d.*;
 
 
 public class imageProp extends Prop {
@@ -214,6 +213,7 @@ public class imageProp extends Prop {
 		return grip;
 	}
 	
+	/*
 	public Object getPropIDX3D() {
         Object result = null;
         try {
@@ -255,5 +255,5 @@ public class imageProp extends Prop {
     public Coordinate getPropIDX3DGrip() {
         return new Coordinate(0.0, 0.0, -height/2);		// bottom of cube
     }
-	
+	*/
 }

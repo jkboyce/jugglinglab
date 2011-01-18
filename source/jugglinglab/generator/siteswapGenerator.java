@@ -1637,8 +1637,7 @@ findending2:
         if (args.length < 3)
             System.out.println(
                 "Juggling Lab "+guistrings.getString("Version").toLowerCase()+" "+Constants.version+", copyright 2002-"+Constants.year+" by Jack Boyce and others\n\n" +
-                guistrings.getString("GPL_part1")+"\n"+
-                guistrings.getString("GPL_part2")+"\n\n"+
+                guistrings.getString("GPL_message")+"\n\n"+
                 guistrings.getString("Generator_intro")
                 );
         else {

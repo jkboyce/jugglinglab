@@ -31,7 +31,6 @@ import java.text.MessageFormat;
 import jugglinglab.core.*;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
-// import idx3d.*;
 
 
 public class ballProp extends Prop {
@@ -243,15 +242,10 @@ public class ballProp extends Prop {
         lastzoom = zoom;
     }
 
+	/*
     public Object getPropIDX3D() {
         Object result = null;
         try {
-            /*
-             idx3d_Object result = idx3d_ObjectFactory.SPHERE((float)diam/2, 10);
-             idx3d_Material surf = new idx3d_Material();
-             surf.setColor(color.getRGB());
-             result.setMaterial(surf);
-             */
             Class ob = Class.forName("idx3d.idx3d_Object");
             Class of = Class.forName("idx3d.idx3d_ObjectFactory");
             Class mat = Class.forName("idx3d.idx3d_Material");
@@ -282,4 +276,5 @@ public class ballProp extends Prop {
     public Coordinate getPropIDX3DGrip() {
         return new Coordinate(0.0, 0.0, -diam/2);		// bottom of ball
     }
+	*/
 }

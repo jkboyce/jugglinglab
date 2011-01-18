@@ -15,9 +15,10 @@ if ($query=="") {
 } else {
 	parse_str(strtr($query, ";", "&"));
 	$width = (($stereo=="true") ? 750 : 600);
+	$viewmode = ( strpos($query, "<") === false ? "simple" : "edit" );
 	echo "<p>\n";
 	echo "<applet archive=\"bin/JugglingLab.jar\" code=\"JugglingLab\" width=\"$width\" height=\"500\">\n";
-	echo "<param name=\"config\" value=\"entry=none;view=edit\">\n";
+	echo "<param name=\"config\" value=\"entry=none;view=$viewmode\">\n";
 	echo "<param name=\"animprefs\" value=\"$query\">\n";
 	echo "<param name=\"notation\" value=\"siteswap\">\n";
 	echo "<param name=\"pattern\" value=\"$query\">\n";

@@ -22,10 +22,6 @@ Use no command line options for a help message (e.g.,
 "<code>java -cp JugglingLab.jar jugglinglab/generator/siteswapGenerator</code>").</li>
 </ul>
 
-<p>Lastly you should always include
-<code>JugglingLab_source.jar</code> on your site, in the same location as the executable jar file.  This is
-explained in the Juggling Lab <a href="license.html">license</a>.</p>
-
 <h2>Juggling Lab applet parameters</h2>
 
 <p>Juggling Lab recognizes six parameters within the
@@ -47,12 +43,10 @@ It is comprised of semicolon-separated assignment settings, for example <code>"e
 <dt id="animprefs"><code class="def">animprefs</code></dt>
 <dd>This parameter defines how the animator itself will work.  (These settings are made in
 the "Animation Preferences" panel when Juggling Lab is run as an application.)
-It is comprised of semicolon-separated assignment settings, for example <code>"threed=true;fps=10"</code>
+It is comprised of semicolon-separated assignment settings, for example <code>"slowdown=1.0;fps=10"</code>
 <ul>
-<li><code class="def">threed</code> &ndash; determines whether the display is a 3d solid perspective display, or a 2d wireframe orthographic display.  Values are true/false; default value is false.</li>
 <li><code class="def">stereo</code> &ndash; determines whether to display a stereo pair of images.  Values are true/false; default value is false.</li>
-<li><code class="def">dbuffer</code> &ndash; determines if the display will be double-buffered to minimize flicker.
-Has no effect in 3d display mode, which is always double-buffered.  Values are true/false; default value is true.</li>
+<li><code class="def">dbuffer</code> &ndash; determines if the display will be double-buffered to minimize flicker.  Values are true/false; default value is true.</li>
 <li><code class="def">startpaused</code> &ndash; causes the animator to wait for a prompt from the user to begin animation.  Values are true/false; default value is false.</li>
 <li><code class="def">catchsound</code> &ndash; determines whether catches are audible.  Values are true/false; default value is false.</li>
 <li><code class="def">bouncesound</code> &ndash; determines whether bounces off the ground are audible.  Values are true/false; default value is true.</li>

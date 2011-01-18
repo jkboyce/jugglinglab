@@ -27,7 +27,6 @@ import java.util.*;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
 
-// import idx3d.*;
 
 public abstract class Prop {
     // static ResourceBundle guistrings;
@@ -77,6 +76,9 @@ public abstract class Prop {
     public abstract Dimension getProp2DSize(Component comp, double zoom);
     public abstract Dimension getProp2DCenter(Component comp, double zoom);
     public abstract Dimension getProp2DGrip(Component comp, double zoom);
+	
+	/*
     public abstract Object getPropIDX3D();
     public abstract Coordinate getPropIDX3DGrip();
+	*/
 }
