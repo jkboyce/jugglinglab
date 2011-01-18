@@ -40,7 +40,7 @@ public class AnimatorPrefsDialog extends JDialog {
     }
 
     protected JTextField 	tf1, tf2, tf3;
-    protected JCheckBox 	cb0, cb1, cb2, cb3, cb4, cb5, cb6;
+    protected JCheckBox 	cb1, cb2, cb3, cb4, cb5, cb6;
     protected JButton 		but1, but2;
 
     protected AnimatorPrefs newjc;
@@ -56,8 +56,6 @@ public class AnimatorPrefsDialog extends JDialog {
         GridBagLayout gb = new GridBagLayout();
 
         this.getContentPane().setLayout(gb);
-
-        cb0 = new JCheckBox(guistrings.getString("Solid_3D_display"));
 
         JPanel p1 = new JPanel();			// to hold text boxes
         p1.setLayout(gb);
@@ -142,7 +140,6 @@ public class AnimatorPrefsDialog extends JDialog {
                     new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
 
-                newjc.threeD = cb0.isSelected();
                 newjc.dbuffer = cb1.isSelected();
                 newjc.startPause = cb2.isSelected();
 				newjc.mousePause = cb6.isSelected();
@@ -156,32 +153,29 @@ public class AnimatorPrefsDialog extends JDialog {
         gb.setConstraints(but2, make_constraints(GridBagConstraints.LINE_END,1,0,
                                                  new Insets(0,10,0,0)));
 
-        this.getContentPane().add(cb0);
-        gb.setConstraints(cb0, make_constraints(GridBagConstraints.LINE_START,0,0,
-                                                new Insets(border,border,0,border)));
         this.getContentPane().add(cb3);
-        gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,0,1,
+        gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,0,0,
                                                 new Insets(0,border,0,border)));
         this.getContentPane().add(cb1);
-        gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,0,2,
+        gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,0,1,
                                                 new Insets(0,border,0,border)));
         this.getContentPane().add(cb2);
-        gb.setConstraints(cb2, make_constraints(GridBagConstraints.LINE_START,0,3,
+        gb.setConstraints(cb2, make_constraints(GridBagConstraints.LINE_START,0,2,
                                                 new Insets(0,border,0,border)));
         this.getContentPane().add(cb6);
-        gb.setConstraints(cb6, make_constraints(GridBagConstraints.LINE_START,0,4,
+        gb.setConstraints(cb6, make_constraints(GridBagConstraints.LINE_START,0,3,
                                                 new Insets(0,border,0,border)));
         this.getContentPane().add(cb4);
-        gb.setConstraints(cb4, make_constraints(GridBagConstraints.LINE_START,0,5,
+        gb.setConstraints(cb4, make_constraints(GridBagConstraints.LINE_START,0,4,
                                                 new Insets(0,border,0,border)));
         this.getContentPane().add(cb5);
-        gb.setConstraints(cb5, make_constraints(GridBagConstraints.LINE_START,0,6,
+        gb.setConstraints(cb5, make_constraints(GridBagConstraints.LINE_START,0,5,
                                                 new Insets(0,border,3,border)));
         this.getContentPane().add(p1);		// now make the whole window
-        gb.setConstraints(p1, make_constraints(GridBagConstraints.LINE_START,0,7,
+        gb.setConstraints(p1, make_constraints(GridBagConstraints.LINE_START,0,6,
                                                new Insets(3,border,border,border)));
         this.getContentPane().add(p2);
-        gb.setConstraints(p2, make_constraints(GridBagConstraints.LINE_END,0,8,
+        gb.setConstraints(p2, make_constraints(GridBagConstraints.LINE_END,0,7,
                                                new Insets(0,border,border,border)));
 
         this.getRootPane().setDefaultButton(but2);		// OK button is default
@@ -212,7 +206,6 @@ public class AnimatorPrefsDialog extends JDialog {
         tf1.setText(Double.toString(oldjc.fps));
         tf2.setText(Double.toString(oldjc.slowdown));
         tf3.setText(Integer.toString(oldjc.border));
-        cb0.setSelected(oldjc.threeD);
         cb1.setSelected(oldjc.dbuffer);
         cb2.setSelected(oldjc.startPause);
 		cb6.setSelected(oldjc.mousePause);

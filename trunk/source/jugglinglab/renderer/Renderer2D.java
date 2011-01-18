@@ -181,37 +181,7 @@ public class Renderer2D extends Renderer {
 				obj[index].boundingbox.y = y - center.height;
 				obj[index].boundingbox.width = size.width;
 				obj[index].boundingbox.height = size.height;
-			} /* else {
-				idx3d_Object object = (idx3d_Object)pr.getPropIDX3D();
-				// Rotate by the prop orientation.
-				//object.rotate(0f, (float)JLMath.toRad(90.0), 0f);
-				// Translate the object so that it is centered about its origin.
-				//Coordinate origin = pr.getPropIDX3DGrip();
-				//object.shift((float)-origin.x, (float)-origin.z, (float)-origin.y);
-				
-				// Rotate the object to its correct orientation!!!
-				pat.getPathOrientation(i, time, tempc);
-				object.rotate((float)tempc.x, 0f, 0f);		// ignoring yaw and roll!!!
-				
-				// Rotate the object according to the current camera angle.
-				object.rotate(0f, (float)(JLMath.toRad(180.0) - cameraangle[0]), 0f);
-				object.rotate((float)(JLMath.toRad(90.0) - cameraangle[1]), 0f, 0f);
-				// Scale the object for the current zoom.
-				object.scale(1f, -1f, 1f);
-				object.scale((float)(this.zoom));
-				// Finally, translate the object into its screen coordinates.
-				object.shift(x, y, 0f);
-				// Apply changes to the prop
-				//object.matrixMeltdown();
-				applyPartialTransformation(object);
-				obj[index].object = object;
-				idx3d_Vector min = object.min();
-				idx3d_Vector max = object.max();
-				obj[index].boundingbox.x = (int)(min.x);
-				obj[index].boundingbox.y = (int)(min.y);
-				obj[index].boundingbox.width = (int)(1 + max.x - min.x);
-				obj[index].boundingbox.height = (int)(1 + max.y - min.y);
-			} */
+			}
             index++;
         }
 
@@ -461,53 +431,6 @@ public class Renderer2D extends Renderer {
         originz = r.y + (int)(0.5 + 0.5 * (r.height + zoom*(coordmax.z+coordmin.z)));
     }
 
-/*	
-	protected void draw3DProp(idx3d_Object object, Graphics g) {
-		// We use a simple orthogonal projection that merely neglects the z coordinate.
-		if (this.render_type == RENDER_POINT_FIELD) {
-			for (int i = 0; i < object.vertexData.size(); i++) {
-				idx3d_Vector screenCoord = object.vertex(i).pos;
-				//System.out.println("x: " + screenCoord.x + ", y: " + screenCoord.y);
-				
-				g.drawLine((int)screenCoord.x, (int)screenCoord.y, (int)screenCoord.x, (int)screenCoord.y);
-			}
-		} else  if (this.render_type == RENDER_WIRE_FRAME) {
-			for (int i = 0; i < object.triangleData.size(); i++) {
-				idx3d_Triangle t = object.triangle(i);
-				int[] xs = new int[3];
-				int[] ys = new int[3];
-				xs[0] = (int)t.p1.pos.x;
-				ys[0] = (int)t.p1.pos.y;
-				xs[1] = (int)t.p2.pos.x;
-				ys[1] = (int)t.p2.pos.y;
-				xs[2] = (int)t.p3.pos.x;
-				ys[2] = (int)t.p3.pos.y;
-				g.drawPolygon(xs, ys, 3);
-			}
-		} else {
-			for (int i = 0; i < object.triangleData.size(); i++) {
-				idx3d_Triangle t = object.triangle(i);
-				int[] xs = new int[3];
-				int[] ys = new int[3];
-				xs[0] = (int)t.p1.pos.x;
-				ys[0] = (int)t.p1.pos.y;
-				xs[1] = (int)t.p2.pos.x;
-				ys[1] = (int)t.p2.pos.y;
-				xs[2] = (int)t.p3.pos.x;
-				ys[2] = (int)t.p3.pos.y;
-				g.fillPolygon(xs, ys, 3);
-			}
-		}
-	}
-	
-	public void applyPartialTransformation(idx3d_Object o) {
-		// This is meant to be much faster than idx3d_Object.matrixMeltdown() since
-		// it neglects the normal vectors and all of the other cleanup.
-		for (int i = 0; i < o.vertexData.size(); i++) {
-			o.vertex(i).pos = o.vertex(i).pos.transform(o.matrix);
-		}
-	}
-*/
 
     class DrawObject2D {
         public static final int TYPE_PROP = 1;
@@ -524,8 +447,6 @@ public class Renderer2D extends Renderer {
         public boolean drawn = false;
         public JLVector tempv = null;
 		
-		// public idx3d_Object object = null;  // For drawing with the 3D representation
-
         public DrawObject2D(int numobjects) {
             this.coord = new JLVector[8];
             for (int i = 0; i < 8; i++)

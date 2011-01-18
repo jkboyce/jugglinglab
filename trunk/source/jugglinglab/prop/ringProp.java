@@ -31,7 +31,7 @@ import java.text.MessageFormat;
 import jugglinglab.core.*;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
-// import idx3d.*;
+
 
 public class ringProp extends Prop {
     static String[] colornames = {"black", "blue", "cyan", "gray",
@@ -289,6 +289,7 @@ public class ringProp extends Prop {
 		lastcamangle = new double[] {camangle[0], camangle[1]};
 	}
 
+	/*
     public Object getPropIDX3D() {
         Object result = null;
         try {
@@ -328,4 +329,5 @@ public class ringProp extends Prop {
     public Coordinate getPropIDX3DGrip() {
         return new Coordinate(0.0, -outside_diam/2, 0.0);
     }
+	*/
 }
