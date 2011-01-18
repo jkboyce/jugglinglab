@@ -68,8 +68,14 @@ public class PatternWindow extends JFrame implements ActionListener {
         mb.add(viewmenu);
         setJMenuBar(mb);
 
-        view.setViewMode(View.VIEW_EDIT);
-		viewmenu.getItem(1).setSelected(true);
+		if (pat.getNumberOfJugglers() > 1) {
+			view.setViewMode(View.VIEW_SIMPLE);
+			viewmenu.getItem(0).setSelected(true);
+		} else {
+			view.setViewMode(View.VIEW_EDIT);
+			viewmenu.getItem(1).setSelected(true);
+		}
+
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
 			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim"))
