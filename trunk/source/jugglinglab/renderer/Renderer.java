@@ -26,7 +26,6 @@ import java.awt.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
-import idx3d.*;
 
 
 public abstract class Renderer {
@@ -54,7 +53,7 @@ public abstract class Renderer {
 	
 	public abstract Color getBackground();
 	
-	protected static idx3d_Vector toVector(Coordinate c, idx3d_Vector result) {
+	protected static JLVector toVector(Coordinate c, JLVector result) {
         result.x = (float)c.x;
         result.y = (float)c.z;
         result.z = (float)c.y;

@@ -35,7 +35,7 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
 import jugglinglab.core.*;
-import idx3d.*;
+// import idx3d.*;
 
 
 public class imageProp extends Prop {

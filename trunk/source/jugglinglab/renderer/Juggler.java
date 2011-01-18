@@ -22,8 +22,6 @@
 
 package jugglinglab.renderer;
 
-import idx3d.*;
-
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
 
@@ -65,23 +63,23 @@ public class Juggler {
 	
 	
 
-	public static void findJugglerCoordinates(JMLPattern pat, double time, idx3d_Vector[][] result) throws JuggleExceptionInternal {
+	public static void findJugglerCoordinates(JMLPattern pat, double time, JLVector[][] result) throws JuggleExceptionInternal {
 		for (int juggler = 1; juggler <= pat.getNumberOfJugglers(); juggler++) {
-			idx3d_Vector lefthand, righthand;
-			idx3d_Vector leftshoulder, rightshoulder;
-			idx3d_Vector leftelbow, rightelbow;
-			idx3d_Vector leftwaist, rightwaist;
-			idx3d_Vector leftheadbottom, leftheadtop;
-			idx3d_Vector rightheadbottom, rightheadtop;
+			JLVector lefthand, righthand;
+			JLVector leftshoulder, rightshoulder;
+			JLVector leftelbow, rightelbow;
+			JLVector leftwaist, rightwaist;
+			JLVector leftheadbottom, leftheadtop;
+			JLVector rightheadbottom, rightheadtop;
 			
 			Coordinate coord0 = new Coordinate();
 			Coordinate coord1 = new Coordinate();
 			Coordinate coord2 = new Coordinate();
 			pat.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0);
 			pat.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1);
-			lefthand = new idx3d_Vector((float)coord0.x,
+			lefthand = new JLVector((float)coord0.x,
 						(float)(coord0.z + lower_hand_height), (float)coord0.y);
-			righthand = new idx3d_Vector((float)coord1.x,
+			righthand = new JLVector((float)coord1.x,
 						(float)(coord1.z + lower_hand_height), (float)coord1.y);
 			
 			pat.getJugglerPosition(juggler, time, coord2);
@@ -89,42 +87,42 @@ public class Juggler {
 			double s = Math.sin(angle);
 			double c = Math.cos(angle);
 			
-			leftshoulder = new idx3d_Vector(
+			leftshoulder = new JLVector(
 				(float)(coord2.x - shoulder_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h),
 				(float)(coord2.y - shoulder_hw * s + shoulder_y * c));
-			rightshoulder = new idx3d_Vector(
+			rightshoulder = new JLVector(
 				(float)(coord2.x + shoulder_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h),
 				(float)(coord2.y + shoulder_hw * s + shoulder_y * c));
-			leftwaist = new idx3d_Vector(
+			leftwaist = new JLVector(
 				(float)(coord2.x - waist_hw * c - shoulder_y * s),
 				(float)(coord2.z + waist_h),
 				(float)(coord2.y - waist_hw * s + shoulder_y * c));
-			rightwaist = new idx3d_Vector(
+			rightwaist = new JLVector(
 				(float)(coord2.x + waist_hw * c - shoulder_y * s),
 				(float)(coord2.z + waist_h),
 				(float)(coord2.y + waist_hw * s + shoulder_y * c));
-			leftheadbottom = new idx3d_Vector(
+			leftheadbottom = new JLVector(
 				(float)(coord2.x - head_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h + neck_h),
 				(float)(coord2.y - head_hw * s + shoulder_y * c));
-			leftheadtop = new idx3d_Vector(
+			leftheadtop = new JLVector(
 				(float)(coord2.x - head_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h + neck_h + head_h),
 				(float)(coord2.y - head_hw * s + shoulder_y * c));
-			rightheadbottom = new idx3d_Vector(
+			rightheadbottom = new JLVector(
 				(float)(coord2.x + head_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h + neck_h),
 				(float)(coord2.y + head_hw * s + shoulder_y * c));
-			rightheadtop = new idx3d_Vector(
+			rightheadtop = new JLVector(
 				(float)(coord2.x + head_hw * c - shoulder_y * s),
 				(float)(coord2.z + shoulder_h + neck_h + head_h),
 				(float)(coord2.y + head_hw * s + shoulder_y * c));
 			
 			double L = lower_total;
 			double U = upper_total;
-			idx3d_Vector deltaL = idx3d_Vector.sub(lefthand, leftshoulder);
+			JLVector deltaL = JLVector.sub(lefthand, leftshoulder);
 			double D = (double)(deltaL.length());
 			if (D <= (L+U)) {
 				// Calculate the coordinates of the elbows
@@ -135,12 +133,12 @@ public class Juggler {
 				double factor = Math.sqrt(U*U-Lr*Lr)/D;
 				if (Double.isNaN(factor))
 					throw new JuggleExceptionInternal("NaN in renderer 2");
-				idx3d_Vector Lxsc = idx3d_Vector.scale((float)factor, deltaL);
+				JLVector Lxsc = JLVector.scale((float)factor, deltaL);
 				double Lalpha = Math.asin(deltaL.y / D);
 				if (Double.isNaN(Lalpha))
 					throw new JuggleExceptionInternal("NaN in renderer 3");
 				factor = 1.0 + Lr*Math.tan(Lalpha)/(factor*D);
-				leftelbow = new idx3d_Vector(
+				leftelbow = new JLVector(
 						leftshoulder.x + Lxsc.x * (float)factor,
 						leftshoulder.y + Lxsc.y - (float)(Lr*Math.cos(Lalpha)),
 						leftshoulder.z + Lxsc.z * (float)factor);
@@ -148,7 +146,7 @@ public class Juggler {
 				leftelbow = null;
 			}
 			
-			idx3d_Vector deltaR = idx3d_Vector.sub(righthand, rightshoulder);
+			JLVector deltaR = JLVector.sub(righthand, rightshoulder);
 			D = (double)(deltaR.length());
 			if (D <= (L+U)) {
 				// Calculate the coordinates of the elbows
@@ -159,12 +157,12 @@ public class Juggler {
 				double factor = Math.sqrt(U*U-Rr*Rr)/D;
 				if (Double.isNaN(factor))
 					throw new JuggleExceptionInternal("NaN in renderer 5");
-				idx3d_Vector Rxsc = idx3d_Vector.scale((float)factor, deltaR);
+				JLVector Rxsc = JLVector.scale((float)factor, deltaR);
 				double Ralpha = Math.asin(deltaR.y / D);
 				if (Double.isNaN(Ralpha))
 					throw new JuggleExceptionInternal("NaN in renderer 6");
 				factor = 1.0 + Rr*Math.tan(Ralpha)/(factor*D);
-				rightelbow = new idx3d_Vector(
+				rightelbow = new JLVector(
 						rightshoulder.x + Rxsc.x * (float)factor,
 						rightshoulder.y + Rxsc.y - (float)(Rr*Math.cos(Ralpha)),
 						rightshoulder.z + Rxsc.z * (float)factor);

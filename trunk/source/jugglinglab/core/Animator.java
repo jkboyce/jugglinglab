@@ -282,6 +282,7 @@ public class Animator extends Component implements Runnable {
             return;
 
         ren1 = ren2 = null;
+		/*
         if (this.jc.threeD) {
             try {
                 Class rc = Class.forName("jugglinglab.renderer.RendererIDX3D");
@@ -293,6 +294,7 @@ public class Animator extends Component implements Runnable {
 				// load the 2D renderer below instead.
             }
         }
+		*/
         if (ren1 == null) {
             ren1 = new Renderer2D();
             if (this.jc.stereo)

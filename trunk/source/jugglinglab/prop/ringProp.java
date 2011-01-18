@@ -31,7 +31,7 @@ import java.text.MessageFormat;
 import jugglinglab.core.*;
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
-import idx3d.*;
+// import idx3d.*;
 
 public class ringProp extends Prop {
     static String[] colornames = {"black", "blue", "cyan", "gray",
