@@ -60,6 +60,8 @@
 <!-- Clean up -->
 <target name="clean" description="Remove build directory">
 	<delete dir="${build}"/>
+	<delete file="${bin}/JugglingLab.jar"/>
+	<delete file="${bin}/JugglingLab_source.jar"/>
 </target>
 
 
