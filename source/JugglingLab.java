@@ -33,7 +33,6 @@ import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
 import jugglinglab.notation.*;
-import jugglinglab.generator.*;
 import jugglinglab.view.*;
 
 
@@ -57,7 +56,6 @@ public class JugglingLab extends JApplet {
 
 
     protected void configure_applet() {
-        // String uploadscript = getParameter("uploadscript");
         String jmldir = getParameter("jmldir");
         String jmlfile = getParameter("jmlfile");
         String prefs = getParameter("animprefs");
@@ -123,72 +121,6 @@ public class JugglingLab extends JApplet {
 				}
 			}
 			
-			/*
-			// This code is currently active only in the AWT applet; sync with that version to
-			// use it here
-			
-			if (uploadscript != null) {
-				if (jmlfile == null)
-					throw new JuggleExceptionUser(errorstrings.getString("Error_no_JML_specified"));
-
-				JPanel p = new JPanel();
-				p.setBackground(Color.white);
-				GridBagLayout gb = new GridBagLayout();
-				p.setLayout(gb);
-			
-				ja = new Animator();
-				p.add(ja);
-				GridBagConstraints gbc = new GridBagConstraints();
-				gbc.anchor = GridBagConstraints.LINE_START;
-				gbc.fill = GridBagConstraints.BOTH;
-				gbc.gridwidth = gbc.gridheight = 1;
-				gbc.gridx = 0;
-				gbc.gridy = 0;
-				gbc.insets = new Insets(0,0,0,0);
-				gbc.weightx = 1.0;
-				gbc.weighty = 1.0;
-				gb.setConstraints(ja, gbc);
-
-				JButton but = new JButton(guistrings.getString("Edit"));
-				but.setBackground(Color.white);
-				p.add(but);
-				gbc = new GridBagConstraints();
-				gbc.anchor = GridBagConstraints.LINE_END;
-				gbc.fill = GridBagConstraints.NONE;
-				gbc.gridwidth = gbc.gridheight = 1;
-				gbc.gridx = 0;
-				gbc.gridy = 1;
-				gbc.insets = new Insets(0,0,0,0);
-				gbc.weightx = 1.0;
-				gbc.weighty = 0.0;
-				gb.setConstraints(but, gbc);
-							
-				setContentPane(p);
-				validate();
-				
-				if (pat != null)
-					ja.restartJuggle(pat, jc);
-				else if (readerror)
-					ja.exception = new JuggleExceptionUser(guistrings.getString("Click_Edit"));
-				else if (pl != null)
-					throw new JuggleExceptionUser(errorstrings.getString("Error_JML_is_pattern_list"));
-		
-				final String uploadscriptf = uploadscript;
-				final String jmlfilef = jmlfile;
-				final Animator jaf = ja;
-				but.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						try {
-							new JugglingLabWindow("Editing "+jmlfilef, uploadscriptf, jmlfilef, jaf);
-						} catch (JuggleExceptionUser jeu) {
-							jaf.exception = jeu;
-						} catch (JuggleExceptionInternal jei) {
-							jaf.exception = new JuggleExceptionInternal("Internal error: " + jei.getMessage());
-						}
-					}
-				});
-			} else {
-			*/
 			if (readerror)
 				throw new JuggleExceptionUser(errorstrings.getString("Error_reading_pattern"));
 				
@@ -228,7 +160,7 @@ public class JugglingLab extends JApplet {
 			// NOTE: animprefs will only be applied when some kind of pattern is defined
 			if (pat != null)
 				jlp.getView().restartView(pat, jc);
-//			}
+
 		} catch (Exception e) {
 			String message = "";
 			if (e instanceof JuggleExceptionUser)

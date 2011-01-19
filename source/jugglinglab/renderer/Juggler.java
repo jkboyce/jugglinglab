@@ -42,16 +42,16 @@ public class Juggler {
 	public final static double head_hw = 10.0;		// head half-width
 	public final static double head_h = 26.0;		// head height
 	public final static double neck_h = 5.0;		// neck height
-	public final static double shoulder_y = 0;
-	public final static double pattern_y = 30;
-	public final static double upper_length = 41;
-	public final static double lower_length = 40;
+	public final static double shoulder_y = 0.0;
+	public final static double pattern_y = 30.0;
+	public final static double upper_length = 41.0;
+	public final static double lower_length = 40.0;
 	
-	public final static double lower_gap_wrist = 1;
-	public final static double lower_gap_elbow = 0;
-	public final static double lower_hand_height = 0;
-	public final static double upper_gap_elbow = 0;
-	public final static double upper_gap_shoulder = 0;
+	public final static double lower_gap_wrist = 1.0;
+	public final static double lower_gap_elbow = 0.0;
+	public final static double lower_hand_height = 0.0;
+	public final static double upper_gap_elbow = 0.0;
+	public final static double upper_gap_shoulder = 0.0;
 	
 	protected final static double lower_total = lower_length + lower_gap_wrist + lower_gap_elbow;
 	protected final static double upper_total = upper_length + upper_gap_elbow + upper_gap_shoulder;
@@ -77,10 +77,10 @@ public class Juggler {
 			Coordinate coord2 = new Coordinate();
 			pat.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0);
 			pat.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1);
-			lefthand = new JLVector((float)coord0.x,
-						(float)(coord0.z + lower_hand_height), (float)coord0.y);
-			righthand = new JLVector((float)coord1.x,
-						(float)(coord1.z + lower_hand_height), (float)coord1.y);
+			lefthand = new JLVector(coord0.x,
+						coord0.z + lower_hand_height, coord0.y);
+			righthand = new JLVector(coord1.x,
+						coord1.z + lower_hand_height, coord1.y);
 			
 			pat.getJugglerPosition(juggler, time, coord2);
 			double angle = JLMath.toRad(pat.getJugglerAngle(juggler, time));
@@ -88,42 +88,42 @@ public class Juggler {
 			double c = Math.cos(angle);
 			
 			leftshoulder = new JLVector(
-				(float)(coord2.x - shoulder_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h),
-				(float)(coord2.y - shoulder_hw * s + shoulder_y * c));
+				coord2.x - shoulder_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h,
+				coord2.y - shoulder_hw * s + shoulder_y * c);
 			rightshoulder = new JLVector(
-				(float)(coord2.x + shoulder_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h),
-				(float)(coord2.y + shoulder_hw * s + shoulder_y * c));
+				coord2.x + shoulder_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h,
+				coord2.y + shoulder_hw * s + shoulder_y * c);
 			leftwaist = new JLVector(
-				(float)(coord2.x - waist_hw * c - shoulder_y * s),
-				(float)(coord2.z + waist_h),
-				(float)(coord2.y - waist_hw * s + shoulder_y * c));
+				coord2.x - waist_hw * c - shoulder_y * s,
+				coord2.z + waist_h,
+				coord2.y - waist_hw * s + shoulder_y * c);
 			rightwaist = new JLVector(
-				(float)(coord2.x + waist_hw * c - shoulder_y * s),
-				(float)(coord2.z + waist_h),
-				(float)(coord2.y + waist_hw * s + shoulder_y * c));
+				coord2.x + waist_hw * c - shoulder_y * s,
+				coord2.z + waist_h,
+				coord2.y + waist_hw * s + shoulder_y * c);
 			leftheadbottom = new JLVector(
-				(float)(coord2.x - head_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h + neck_h),
-				(float)(coord2.y - head_hw * s + shoulder_y * c));
+				coord2.x - head_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h + neck_h,
+				coord2.y - head_hw * s + shoulder_y * c);
 			leftheadtop = new JLVector(
-				(float)(coord2.x - head_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h + neck_h + head_h),
-				(float)(coord2.y - head_hw * s + shoulder_y * c));
+				coord2.x - head_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h + neck_h + head_h,
+				coord2.y - head_hw * s + shoulder_y * c);
 			rightheadbottom = new JLVector(
-				(float)(coord2.x + head_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h + neck_h),
-				(float)(coord2.y + head_hw * s + shoulder_y * c));
+				coord2.x + head_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h + neck_h,
+				coord2.y + head_hw * s + shoulder_y * c);
 			rightheadtop = new JLVector(
-				(float)(coord2.x + head_hw * c - shoulder_y * s),
-				(float)(coord2.z + shoulder_h + neck_h + head_h),
-				(float)(coord2.y + head_hw * s + shoulder_y * c));
+				coord2.x + head_hw * c - shoulder_y * s,
+				coord2.z + shoulder_h + neck_h + head_h,
+				coord2.y + head_hw * s + shoulder_y * c);
 			
 			double L = lower_total;
 			double U = upper_total;
 			JLVector deltaL = JLVector.sub(lefthand, leftshoulder);
-			double D = (double)(deltaL.length());
+			double D = deltaL.length();
 			if (D <= (L+U)) {
 				// Calculate the coordinates of the elbows
 				double Lr = Math.sqrt((4.0*U*U*L*L-(U*U+L*L-D*D)*(U*U+L*L-D*D))/(4.0*D*D));
@@ -133,21 +133,21 @@ public class Juggler {
 				double factor = Math.sqrt(U*U-Lr*Lr)/D;
 				if (Double.isNaN(factor))
 					throw new JuggleExceptionInternal("NaN in renderer 2");
-				JLVector Lxsc = JLVector.scale((float)factor, deltaL);
+				JLVector Lxsc = JLVector.scale(factor, deltaL);
 				double Lalpha = Math.asin(deltaL.y / D);
 				if (Double.isNaN(Lalpha))
 					throw new JuggleExceptionInternal("NaN in renderer 3");
 				factor = 1.0 + Lr*Math.tan(Lalpha)/(factor*D);
 				leftelbow = new JLVector(
-						leftshoulder.x + Lxsc.x * (float)factor,
-						leftshoulder.y + Lxsc.y - (float)(Lr*Math.cos(Lalpha)),
-						leftshoulder.z + Lxsc.z * (float)factor);
+						leftshoulder.x + Lxsc.x * factor,
+						leftshoulder.y + Lxsc.y - Lr*Math.cos(Lalpha),
+						leftshoulder.z + Lxsc.z * factor);
 			} else {
 				leftelbow = null;
 			}
 			
 			JLVector deltaR = JLVector.sub(righthand, rightshoulder);
-			D = (double)(deltaR.length());
+			D = deltaR.length();
 			if (D <= (L+U)) {
 				// Calculate the coordinates of the elbows
 				double Rr = Math.sqrt((4.0*U*U*L*L-(U*U+L*L-D*D)*(U*U+L*L-D*D))/(4.0*D*D));
@@ -157,15 +157,15 @@ public class Juggler {
 				double factor = Math.sqrt(U*U-Rr*Rr)/D;
 				if (Double.isNaN(factor))
 					throw new JuggleExceptionInternal("NaN in renderer 5");
-				JLVector Rxsc = JLVector.scale((float)factor, deltaR);
+				JLVector Rxsc = JLVector.scale(factor, deltaR);
 				double Ralpha = Math.asin(deltaR.y / D);
 				if (Double.isNaN(Ralpha))
 					throw new JuggleExceptionInternal("NaN in renderer 6");
 				factor = 1.0 + Rr*Math.tan(Ralpha)/(factor*D);
 				rightelbow = new JLVector(
-						rightshoulder.x + Rxsc.x * (float)factor,
-						rightshoulder.y + Rxsc.y - (float)(Rr*Math.cos(Ralpha)),
-						rightshoulder.z + Rxsc.z * (float)factor);
+						rightshoulder.x + Rxsc.x * factor,
+						rightshoulder.y + Rxsc.y - Rr*Math.cos(Ralpha),
+						rightshoulder.z + Rxsc.z * factor);
 			} else {
 				rightelbow = null;
 			}

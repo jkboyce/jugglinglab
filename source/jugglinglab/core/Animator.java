@@ -48,32 +48,32 @@ public class Animator extends Component implements Runnable {
     protected boolean			engineStarted = false;;
     protected boolean			enginePaused = false;
     protected boolean			engineRunning = false;
-    public boolean			writingGIF = false;
+    public boolean				writingGIF = false;
     public JuggleException		exception;
-    public String			message;
+    public String				message;
 
     protected JMLPattern		pat;
     protected AnimatorPrefs		jc;
     protected jugglinglab.renderer.Renderer	ren1 = null, ren2 = null;
     protected Coordinate		overallmax = null, overallmin = null;
 
-    protected int[]			animpropnum = null, temppropnum = null;
+    protected int[]				animpropnum = null, temppropnum = null;
     protected Permutation		invpathperm = null;
-    protected int			num_frames;
+    protected int				num_frames;
     protected double			sim_time;
     protected double			sim_interval_secs;
-    protected long			real_interval_millis;
+    protected long				real_interval_millis;
     protected Graphics			offg = null;
-    protected Image			offscreen = null;
-    protected static AudioClip		catchclip = null, bounceclip = null;
+    protected Image				offscreen = null;
+    protected static AudioClip	catchclip = null, bounceclip = null;
 	
-	protected boolean waspaused;			// for pause on mouse away
+	protected boolean			waspaused;			// for pause on mouse away
 	// protected boolean waspaused_valid = false;
-	protected boolean outside;
-	protected boolean		outside_valid;
+	protected boolean			outside;
+	protected boolean			outside_valid;
     
     protected boolean			cameradrag;
-    protected int			startx, starty, lastx, lasty;
+    protected int				startx, starty, lastx, lasty;
     protected double[]			camangle;
     protected double[]			actualcamangle;
     protected double[]			actualcamangle1;

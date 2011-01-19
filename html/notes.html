@@ -18,7 +18,7 @@
 <td><ul>
 <li>Added full user interface support for right-to-left languages such as Hebrew and Arabic.
 	User interface elements invert when the default system language is right-to-left.  This
-	behavior can be explicitly triggered by for example launching Juggling Lab with: <code>java -Duser.language=ar -jar JugglingLab.jar</code></li>
+	behavior can be explicitly triggered by for example launching Juggling Lab with: <code>java -Duser.language=he -jar JugglingLab.jar</code></li>
 <li>Added support for UTF-8 encoded properties files, to make localization into non-Roman
 	scripts easier.</li>
 </ul></td>
@@ -29,8 +29,11 @@
 <li>Added better error-checking to prop color assignment parser (<a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1362999&amp;group_id=49459&amp;atid=456268">1362999</a>).</li>
 <li>Improved quality of error message on siteswap parsing errors (<a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2878097&amp;group_id=49459&amp;atid=456268">2878097</a>).</li>
 <li>Refactored UI messages and error messages to use templates, improving our ability to localize them.</li>
+<li>Passing patterns now default to Simple view instead of Edit view, since the latter doesn't
+properly work with passing patterns (<a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3160246&amp;group_id=49459&amp;atid=456268">3160246</a>).</li>
 <li>Grip location of rings moved from geometrical center of the ring (the hole) to the edge, to appear more natural.</li>
-<li>Fixed a bug in auto-scaling the animation, so props are no longer cut off at the bottom of the view.</li>
+<li>Fixed a bug in auto-scaling the animation, so props aren't cut off at the bottom of the view.</li>
+<li>For patterns with more than 3 jugglers, increased the default spacing between jugglers to eliminate overlaps in the hands.</li>
 </ul></td>
 </tr>
 <tr valign="top">
