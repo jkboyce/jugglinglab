@@ -37,7 +37,6 @@ public class AnimatorPrefs {
     }
     
     public static final boolean stereo_def = false;
-    public static final boolean dbuffer_def = true;
     public static final boolean startPause_def = false;
     public static final boolean mousePause_def = false;
     public static final boolean catchSound_def = false;
@@ -47,7 +46,6 @@ public class AnimatorPrefs {
     public static final int 	border_def = 0;
 
     public boolean	stereo = stereo_def;
-    public boolean	dbuffer = dbuffer_def;
     public boolean	startPause = startPause_def;
 	public boolean  mousePause = mousePause_def;
     public boolean	catchSound = catchSound_def;
@@ -59,12 +57,11 @@ public class AnimatorPrefs {
     public AnimatorPrefs() { super(); }
 
     public AnimatorPrefs(AnimatorPrefs jc) {
-        if (jc.slowdown >= 0.0)			this.slowdown = jc.slowdown;
+        if (jc.slowdown >= 0.0)		this.slowdown = jc.slowdown;
         if (jc.fps >= 0.0)			this.fps = jc.fps;
         if (jc.border >= 0)			this.border = jc.border;
         this.startPause = jc.startPause;
 		this.mousePause = jc.mousePause;
-        this.dbuffer = jc.dbuffer;
         this.stereo = jc.stereo;
         this.catchSound = jc.catchSound;
         this.bounceSound = jc.bounceSound;
@@ -79,8 +76,6 @@ public class AnimatorPrefs {
 
         if ((value = pl.getParameter("stereo")) != null)
             this.stereo = Boolean.valueOf(value).booleanValue();
-        if ((value = pl.getParameter("dbuffer")) != null)
-            this.dbuffer = Boolean.valueOf(value).booleanValue();
         if ((value = pl.getParameter("startpaused")) != null)
             this.startPause = Boolean.valueOf(value).booleanValue();
         if ((value = pl.getParameter("mousepause")) != null)
@@ -126,8 +121,6 @@ public class AnimatorPrefs {
 
         if (stereo != stereo_def)
             result += "stereo="+this.stereo+";";
-        if (dbuffer != dbuffer_def)
-            result += "dbuffer="+this.dbuffer+";";
         if (startPause != startPause_def)
             result += "startpaused="+this.startPause+";";
         if (mousePause != mousePause_def)

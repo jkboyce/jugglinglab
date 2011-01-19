@@ -240,7 +240,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             });
             np2.add(juggle);
             np1.add(np2, BorderLayout.PAGE_END);
-            
+			
             jtp.addTab(guistrings.getString("Pattern_entry"), np1);
 
             final Generator gen = Generator.getGenerator(Notation.builtinNotations[num-1]);

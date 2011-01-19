@@ -26,6 +26,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 import java.lang.reflect.*;
+import javax.swing.*;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
@@ -41,7 +42,7 @@ public class Renderer2D extends Renderer {
 	
     protected Color			background = null;
     protected Coordinate	left = null, right = null;
-    protected JLVector	cameracenter;
+    protected JLVector		cameracenter;
     protected double[]		cameraangle;
     protected double		cameradistance;
     protected JLMatrix	m;
@@ -152,7 +153,7 @@ public class Renderer2D extends Renderer {
     }
 
 
-    public void drawFrame(double time, int[] pnum, Graphics g, Component comp) throws JuggleExceptionInternal {
+    public void drawFrame(double time, int[] pnum, Graphics g, JPanel pan) throws JuggleExceptionInternal {
         // try to turn on antialiased rendering
         VersionSpecific.getVersionSpecific().setAntialias(g);
 
@@ -174,9 +175,9 @@ public class Renderer2D extends Renderer {
             int x = (int)(0.5f + obj[index].coord[0].x);
             int y = (int)(0.5f + obj[index].coord[0].y);
             Prop pr = pat.getProp(pnum[i-1]);
-			if (pr.getProp2DImage(comp, this.zoom, this.cameraangle) != null) {
-				Dimension center = pr.getProp2DCenter(comp, this.zoom);
-				Dimension size = pr.getProp2DSize(comp, this.zoom);
+			if (pr.getProp2DImage(pan, this.zoom, this.cameraangle) != null) {
+				Dimension center = pr.getProp2DCenter(pan, this.zoom);
+				Dimension size = pr.getProp2DSize(pan, this.zoom);
 				obj[index].boundingbox.x = x - center.width;
 				obj[index].boundingbox.y = y - center.height;
 				obj[index].boundingbox.width = size.width;
@@ -324,10 +325,10 @@ public class Renderer2D extends Renderer {
                     Prop pr = pat.getProp(pnum[ob.number-1]);
 					int x = (int)(0.5f + ob.coord[0].x);
                     int y = (int)(0.5f + ob.coord[0].y);
-                    Image propimage = pr.getProp2DImage(comp, this.zoom, this.cameraangle);
+                    Image propimage = pr.getProp2DImage(pan, this.zoom, this.cameraangle);
 					if (propimage != null) {
-						Dimension grip = pr.getProp2DGrip(comp, this.zoom);
-						g.drawImage(propimage, x-grip.width, y-grip.height, comp);
+						Dimension grip = pr.getProp2DGrip(pan, this.zoom);
+						g.drawImage(propimage, x-grip.width, y-grip.height, pan);
 					} /* else {
 						g.setColor(pr.getEditorColor());
 						draw3DProp(ob.object, g);

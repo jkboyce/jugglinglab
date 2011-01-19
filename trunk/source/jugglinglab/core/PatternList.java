@@ -55,10 +55,12 @@ public class PatternList extends JPanel {
 
 	public PatternList() {
 		makePanel();
+		this.setOpaque(false);
 	}
 	
     public PatternList(View target) {
         makePanel();
+		this.setOpaque(false);
 		setTargetView(target);
     }
 
@@ -262,9 +264,9 @@ public class PatternList extends JPanel {
 			PatternRecord rec = (PatternRecord)value;
 			list.setFont((rec.anim == null) ? font_nopattern : font_pattern);
 			
-			super.getListCellRendererComponent(list, rec.display, index, iss, chf);
+			return super.getListCellRendererComponent(list, rec.display, index, iss, chf);
 			
-			return this;
+			// return this;
 		}
 	}	
 }

@@ -215,11 +215,6 @@ public class AnimatorEdit extends Animator {
                 if (!engineStarted)
                     return;
                 syncRenderer();
-                if (jc.dbuffer) {
-                    Dimension dim = getSize();
-                    offscreen = createImage(dim.width, dim.height);
-                    offg = offscreen.getGraphics();
-                }
                 repaint();
             }
         });

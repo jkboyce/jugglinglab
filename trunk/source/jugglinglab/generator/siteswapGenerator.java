@@ -1683,6 +1683,7 @@ class siteswapGeneratorControl extends JPanel {
     protected final static int border = 10;
 
     public siteswapGeneratorControl() {
+		this.setOpaque(false);
         GridBagLayout gb = new GridBagLayout();
 
         this.setLayout(gb);		

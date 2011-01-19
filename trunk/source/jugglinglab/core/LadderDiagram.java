@@ -68,6 +68,7 @@ public class LadderDiagram extends JPanel {
 
     public LadderDiagram(JMLPattern pat) {
         this.setBackground(background);
+		this.setOpaque(false);
         this.pat = pat;
         createView();
     }

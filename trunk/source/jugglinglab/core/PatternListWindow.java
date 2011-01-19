@@ -69,11 +69,12 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
     protected void makeWindow() {
-        getContentPane().setLayout(new BorderLayout());
-
         this.pl = new PatternList(null);
 
-        this.getContentPane().add(pl, BorderLayout.CENTER);
+		pl.setDoubleBuffered(true);
+		this.setBackground(Color.white);
+		this.setContentPane(pl);
+		
 		this.setSize(300,450);
         createMenuBar();
 

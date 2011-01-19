@@ -154,6 +154,8 @@ public class JugglingLab extends JApplet {
 			}
 			
 			JugglingLabPanel jlp = new JugglingLabPanel(null, entry_type, pl, view_type);
+			jlp.setDoubleBuffered(true);
+			this.setBackground(new Color(0.9f, 0.9f, 0.9f));
 			setContentPane(jlp);
 			validate();
 			

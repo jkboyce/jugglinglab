@@ -66,6 +66,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         PlatformSpecific.getPlatformSpecific().setupPlatform();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		ng.setDoubleBuffered(true);
+		this.setBackground(new Color(0.9f, 0.9f, 0.9f));
         setContentPane(ng);
         ng.setNotation(Notation.NOTATION_SITESWAP);
 

@@ -23,6 +23,7 @@
 package jugglinglab.renderer;
 
 import java.awt.*;
+import javax.swing.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
@@ -49,7 +50,7 @@ public abstract class Renderer {
 				int dx, int dy);
 	
 	public abstract void drawFrame(double time, int[] pnum,
-				Graphics g, Component comp) throws JuggleExceptionInternal;
+				Graphics g, JPanel pan) throws JuggleExceptionInternal;
 	
 	public abstract Color getBackground();
 	

@@ -30,13 +30,14 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.lang.reflect.*;
+import javax.swing.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.renderer.*;
 import jugglinglab.util.*;
 
 
-public class Animator extends Component implements Runnable {
+public class Animator extends JPanel implements Runnable {
     static ResourceBundle guistrings;
     // static ResourceBundle errorstrings;
     static {
@@ -63,8 +64,6 @@ public class Animator extends Component implements Runnable {
     protected double			sim_time;
     protected double			sim_interval_secs;
     protected long				real_interval_millis;
-    protected Graphics			offg = null;
-    protected Image				offscreen = null;
     protected static AudioClip	catchclip = null, bounceclip = null;
 	
 	protected boolean			waspaused;			// for pause on mouse away
@@ -95,6 +94,8 @@ public class Animator extends Component implements Runnable {
 		
 		outside = true;
 		waspaused = outside_valid = false;
+		
+		this.setOpaque(true);
     }
 
 
@@ -225,11 +226,6 @@ public class Animator extends Component implements Runnable {
                 if (!engineStarted)
                     return;
                 syncRenderer();
-                if (jc.dbuffer && (ren1 instanceof Renderer2D)) {
-                    Dimension dim = Animator.this.getSize();
-                    offscreen = Animator.this.createImage(dim.width, dim.height);
-                    offg = offscreen.getGraphics();
-                }
                 repaint();
             }
         });
@@ -343,11 +339,6 @@ public class Animator extends Component implements Runnable {
 
             message = null;
             // setCameraAngle(camangle);
-            if (jc.dbuffer && (ren1 instanceof Renderer2D)) {
-                Dimension dim = this.getSize();
-                offscreen = this.createImage(dim.width, dim.height);
-                offg = offscreen.getGraphics();
-            }
 
             real_time_start = System.currentTimeMillis();
             double oldtime, newtime;
@@ -415,10 +406,6 @@ public class Animator extends Component implements Runnable {
             exception = je;
             repaint();
         } finally {
-            if (offg != null) {
-                offg.dispose();
-                offg = null;
-            }
             engineStarted = engineRunning = enginePaused = false;
             engine = null;	// this is critical as it signals restartJuggle() that exit is occurring
         }
@@ -444,8 +431,6 @@ public class Animator extends Component implements Runnable {
         engineRunning = false;
         exception = null;
         message = null;
-        offg = null;
-        offscreen = null;
     }
 
     public boolean getPaused() {
@@ -470,17 +455,14 @@ public class Animator extends Component implements Runnable {
         sim_time = time;
     }
 
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
         if (exception != null)
             drawString(exception.getMessage(), g);
         else if (message != null)
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                Graphics myg = ((offg == null)? g : offg);
-                drawFrame(getTime(), animpropnum, myg);
-                if (offg != null)
-                    g.drawImage(offscreen, 0, 0, this);
+                drawFrame(getTime(), animpropnum, g);
             } catch (JuggleExceptionInternal jei) {
                 this.killAnimationThread();
                 System.out.println(jei.getMessage());
