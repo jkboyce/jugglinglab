@@ -595,14 +595,15 @@ public class JMLPattern {
                 positions[0] = new Coordinate();
                 angles[0] = new Coordinate();
 
+				// default juggler body positions
                 if (this.getNumberOfJugglers() == 1) {
                     positions[0].setCoordinate(0.0, 0.0, 100.0);
                     angles[0].setCoordinate(0.0, 0.0, 0.0);
                 } else {
                     double r = 70.0;
                     double theta = 360.0 / (double)this.getNumberOfJugglers();
-                    if (r * Math.sin(JLMath.toRad(0.5*theta)) < 45.0)
-                        r = 45.0 / Math.sin(JLMath.toRad(0.5*theta));
+                    if (r * Math.sin(JLMath.toRad(0.5*theta)) < 65.0)
+                        r = 65.0 / Math.sin(JLMath.toRad(0.5*theta));
                     positions[0].setCoordinate(r*Math.cos(JLMath.toRad(theta*(double)(i-1))),
                                                r*Math.sin(JLMath.toRad(theta*(double)(i-1))), 100.0);
                     angles[0].setCoordinate(90.0 + theta*(double)(i-1), 0.0, 0.0);

@@ -54,9 +54,9 @@ public abstract class Renderer {
 	public abstract Color getBackground();
 	
 	protected static JLVector toVector(Coordinate c, JLVector result) {
-        result.x = (float)c.x;
-        result.y = (float)c.z;
-        result.z = (float)c.y;
+        result.x = c.x;
+        result.y = c.z;
+        result.z = c.y;
         return result;
 	}
 }
