@@ -49,10 +49,13 @@ public class EditView extends View {
         ladder.setLayout(new BorderLayout());
         ladder.setPreferredSize(new Dimension(ladder_width, 1));
         ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
+		ladder.setBackground(Color.white);
 
         JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
         jsp.setResizeWeight(1.0);
 		jsp.setBorder(new EmptyBorder(0,0,0,0));
+		jsp.setBackground(Color.white);
+		this.setBackground(Color.white);
         this.add(jsp, BorderLayout.CENTER);
     }
 

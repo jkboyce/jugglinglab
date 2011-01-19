@@ -82,6 +82,8 @@ public class PatternWindow extends JFrame implements ActionListener {
 				jmi.setEnabled(false);
 		}
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		view.setDoubleBuffered(true);
+		this.setBackground(Color.white);
 		setContentPane(view);
 		
 		Locale loc = Locale.getDefault();

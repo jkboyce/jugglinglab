@@ -72,6 +72,7 @@ public class mhnNotationControl extends NotationControl {
 
 
     public mhnNotationControl() {
+		this.setOpaque(false);
         this.setLayout(new BorderLayout());
 
         JPanel p1 = new JPanel();
