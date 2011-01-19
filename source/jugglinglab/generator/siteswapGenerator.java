@@ -1125,9 +1125,10 @@ public class siteswapGenerator extends Generator {
     
         if (groundflag != 1) {
             if (sequenceflag) {
-                if (mode == ASYNCH)
+                if (mode == ASYNCH) {
                     for (i = n - starting_seq_length; i > 0; i--)
                         outputline.append(" ");
+				}
                 outputline.append(starting_seq, 0, starting_seq_length);
 				outputline.append("  ");
             } else {
@@ -1147,9 +1148,18 @@ public class siteswapGenerator extends Generator {
             if (sequenceflag) {
                 outputline.append("  ");
 				outputline.append(ending_seq, 0, ending_seq_length);
+				// add proper number of trailing spaces too, so formatting is aligned
+				// in RTL languages
+                if (mode == ASYNCH) {
+                    for (i = n - ending_seq_length; i > 0; i--)
+                        outputline.append(" ");
+				}
+			} else {
+				if (excited != 0)
+					outputline.append(" *");
+				else
+					outputline.append("  ");
 			}
-            else if (excited != 0)
-                outputline.append(" *");
         }
     
         target.writePattern(outputline.toString(), "siteswap", outputline2.toString().trim());

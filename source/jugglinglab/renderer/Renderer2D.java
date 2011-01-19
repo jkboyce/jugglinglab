@@ -324,10 +324,10 @@ public class Renderer2D extends Renderer {
                     Prop pr = pat.getProp(pnum[ob.number-1]);
 					int x = (int)(0.5f + ob.coord[0].x);
                     int y = (int)(0.5f + ob.coord[0].y);
-                    Image ballimage = pr.getProp2DImage(comp, this.zoom, this.cameraangle);
-					if (ballimage != null) {
-						Dimension center = pr.getProp2DCenter(comp, this.zoom);
-						g.drawImage(ballimage, x-center.width, y-center.height, comp);
+                    Image propimage = pr.getProp2DImage(comp, this.zoom, this.cameraangle);
+					if (propimage != null) {
+						Dimension grip = pr.getProp2DGrip(comp, this.zoom);
+						g.drawImage(propimage, x-grip.width, y-grip.height, comp);
 					} /* else {
 						g.setColor(pr.getEditorColor());
 						draw3DProp(ob.object, g);
