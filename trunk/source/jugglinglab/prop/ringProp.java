@@ -167,11 +167,11 @@ public class ringProp extends Prop {
     }
 
     public Coordinate getMax() {
-        return new Coordinate(outside_diam/2, 0, outside_diam);
+        return new Coordinate(outside_diam/2, 0, outside_diam/2);
     }
 
     public Coordinate getMin() {
-        return new Coordinate(-outside_diam/2, 0, 0);
+        return new Coordinate(-outside_diam/2, 0, -outside_diam/2);
     }
 
     public Image getProp2DImage(Component comp, double zoom, double[] camangle) {

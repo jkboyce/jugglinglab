@@ -159,11 +159,11 @@ public class ballProp extends Prop {
     }
 
     public Coordinate getMax() {
-        return new Coordinate(diam/2,0,diam);
+        return new Coordinate(diam/2,0,diam/2);
     }
 
     public Coordinate getMin() {
-        return new Coordinate(-diam/2,0,0);
+        return new Coordinate(-diam/2,0,-diam/2);
     }
 
     public Image getProp2DImage(Component comp, double zoom, double[] camangle) {
@@ -237,7 +237,7 @@ public class ballProp extends Prop {
 
         size = new Dimension(ball_pixel_size, ball_pixel_size);
         center = new Dimension(ball_pixel_size/2, ball_pixel_size/2);
-        grip = new Dimension(ball_pixel_size/2, ball_pixel_size);
+        grip = new Dimension(ball_pixel_size/2, ball_pixel_size/2);
 
         lastzoom = zoom;
     }
