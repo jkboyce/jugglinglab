@@ -88,7 +88,6 @@ public class ParseException extends Exception {
   private static String initialise(Token currentToken,
                            int[][] expectedTokenSequences,
                            String[] tokenImage) {
-	  /*
     String eol = System.getProperty("line.separator", "\n");
     StringBuffer expected = new StringBuffer();
     int maxSize = 0;
@@ -127,13 +126,6 @@ public class ParseException extends Exception {
     }
     retval += expected.toString();
     return retval;
-	  */
-
-	  java.util.ResourceBundle errorstrings = jugglinglab.util.Utf8ResourceBundle.getBundle("ErrorStrings");
-	  String template = errorstrings.getString("Error_pattern_syntax");
-	  String problem = add_escapes(currentToken.next.image);
-	  Object[] arguments = { problem, new Integer(currentToken.next.beginColumn) };					
-	  return java.text.MessageFormat.format(template, arguments);
   }
 
   /**

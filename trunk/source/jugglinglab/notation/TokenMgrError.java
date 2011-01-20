@@ -42,7 +42,15 @@ public class TokenMgrError extends Error
    * one of the above 4 values.
    */
   int errorCode;
-
+	
+	// JKB changes to this block:
+	boolean EOFSeen;
+	int lexState;
+	int errorLine;
+	int errorColumn;
+	String errorAfter;
+	char curChar;
+	
   /**
    * Replaces unprintable characters by their escaped (or unicode escaped)
    * equivalents in the given string
@@ -140,8 +148,15 @@ public class TokenMgrError extends Error
   }
 
   /** Full Constructor. */
-  public TokenMgrError(boolean EOFSeen, int lexState, int errorLine, int errorColumn, String errorAfter, char curChar, int reason) {
-    this(LexicalError(EOFSeen, lexState, errorLine, errorColumn, errorAfter, curChar), reason);
+  public TokenMgrError(boolean EOFSeenVal, int lexStateVal, int errorLineVal, int errorColumnVal, String errorAfterVal, char curCharVal, int reason) {
+    this(LexicalError(EOFSeenVal, lexStateVal, errorLineVal, errorColumnVal, errorAfterVal, curCharVal), reason);
+	  
+	  EOFSeen = EOFSeenVal;
+	  lexState = lexStateVal;
+	  errorLine = errorLineVal;
+	  errorColumn = errorColumnVal;
+	  errorAfter = errorAfterVal;
+	  curChar = curCharVal;
   }
 }
 /* JavaCC - OriginalChecksum=79b94454935a9ff7b33267f9f70063d2 (do not edit this line) */
