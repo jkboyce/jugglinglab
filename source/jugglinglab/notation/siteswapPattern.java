@@ -23,6 +23,7 @@
 package jugglinglab.notation;
 
 import java.util.*;
+import java.text.*;
 import jugglinglab.util.*;
 
 
@@ -226,7 +227,16 @@ public class siteswapPattern extends mhnPattern {
 			// System.out.println("Parse error:");
 			// System.out.println(pe.getMessage());
 			// System.out.println("---------------");
-			throw new JuggleExceptionUser(pe.getMessage());
+			
+			String template = errorstrings.getString("Error_pattern_syntax");
+			String problem = ParseException.add_escapes(pe.currentToken.next.image);
+			Object[] arguments = { problem, new Integer(pe.currentToken.next.beginColumn) };					
+			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+		} catch (TokenMgrError tme) {
+			String template = errorstrings.getString("Error_pattern_syntax");
+			String problem = TokenMgrError.addEscapes(String.valueOf(tme.curChar));
+			Object[] arguments = { problem, new Integer(tme.errorColumn - 1) };					
+			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 		}
 		
 		// Need to use tree to fill in mhnPattern internal variables:
@@ -267,7 +277,7 @@ public class siteswapPattern extends mhnPattern {
 		if ((tree.throw_sum % tree.beats) != 0)
 			throw new JuggleExceptionUser(errorstrings.getString("Error_siteswap_bad_average"));
 		this.numpaths = tree.throw_sum / tree.beats;
-		this.indexes = this.max_throw + this.period;
+		this.indexes = this.max_throw + this.period + 1;
 		this.th = new mhnThrow[numjugglers][2][indexes][max_occupancy];
 		
 		/*

@@ -293,13 +293,13 @@ public class View extends JPanel implements ActionListener {
                                 FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
                                 PrintWriter pw = new PrintWriter(fw);
 
-                                // String config = null;
+                                String config = null;
                                 Dimension dim = null;
-                                if (this instanceof EditView) {
-                                    // config = "entry=false;editor=true";
+                                if (this.getViewMode() == VIEW_EDIT) {
+                                    config = "entry=none;view=edit";
                                     dim = getSize();
                                 } else {
-                                    // config = "entry=false;editor=false";
+                                    config = "entry=none;view=simple";
                                     dim = getAnimatorSize();
                                 }
 
@@ -309,16 +309,18 @@ public class View extends JPanel implements ActionListener {
                                 int h = dim.height;
                                 JMLPattern pat = getPattern();
 
+                                pw.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
                                 pw.println("<html>");
                                 pw.println("<head>");
+                                pw.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
                                 pw.println("<title>"+pat.getTitle()+"</title>");
                                 pw.println("</head>");
                                 pw.println("<body>");
-                                pw.println("<applet archive=\"JugglingLabAWTApplet.jar\" code=\"JugglingLabAWT\" width="+w+" height="+h+">");
-                                // pw.println("<param name=\"config\" value=\""+config+"\"/>");
+                                pw.println("<applet archive=\"JugglingLab.jar\" code=\"JugglingLab\" width=\""+w+"\" height=\""+h+"\">");
+                                pw.println("<param name=\"config\" value=\""+config+"\">");
                                 if (prefs.length() != 0)
-                                    pw.println("<param name=\"animprefs\" value=\""+prefs+"\"/>");
-                                pw.println("<param name=\"notation\" value=\"jml\"/>");
+                                    pw.println("<param name=\"animprefs\" value=\""+prefs+"\">");
+                                pw.println("<param name=\"notation\" value=\"jml\">");
                                 pw.println("<param name=\'pattern\' value=\'");
                                 pw.flush();
                                 String p = pat.toString();
@@ -330,7 +332,7 @@ public class View extends JPanel implements ActionListener {
                                 pw.println(p);
                                 // pat.writeJML(fw, false);
                                 // fw.flush();
-                                pw.println("\'/>");
+                                pw.println("\'>");
                                 pw.println("Java not available");
                                 pw.println("</applet>");
                                 pw.println("</body>");

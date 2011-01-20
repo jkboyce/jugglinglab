@@ -893,11 +893,11 @@ public class mhnNotation extends Notation {
 
                     // figure out when the next catch or hold is:
                     double nextcatchtime = lastcatchtime;
-                    
+					
                     for (int tempk = (k+1); tempk < p.getIndexes(); tempk++) {
-                        int next_num_catches = 0;
-                        boolean next_gotevent = false;
-                        boolean next_onecaught = false;
+						int next_num_catches = 0;
+						boolean next_gotevent = false;
+						boolean next_onecaught = false;
                         
                         for (int tempslot = 0; tempslot < p.getMaxOccupancy(); tempslot++) {
                             mhnThrow tempsst = th[j][h][tempk][tempslot];
@@ -930,7 +930,7 @@ public class mhnNotation extends Notation {
                     }
                     if (nextcatchtime == lastcatchtime)
                         throw new JuggleExceptionInternal("Couldn't find next catch/hold past t="+lastcatchtime);
-
+					
                     // add other events between the current throw and the next catch
                     pos = sst.handsindex;
                     numcoords = p.hands.getCatchIndex(sst.juggler, pos);
