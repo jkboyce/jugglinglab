@@ -633,6 +633,23 @@ public class Animator extends JPanel implements Runnable {
         this.overallmin = Coordinate.min(handmin, ren1.getJugglerWindowMin());
         this.overallmin = Coordinate.min(overallmin, patternmin);
 
+		// we want to ensure everything stays visible as we rotate the camera
+		// viewpoint.  the following is simple and seems to work ok.
+		if (pat.getNumberOfJugglers() == 1) {
+			overallmin.z -= 0.3 * Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
+			overallmax.z += 5.0;	// keeps objects from rubbing against top of window
+		} else {
+			double tempx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
+			double tempy = Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
+			overallmin.z -= 0.4 * Math.max(tempx, tempy);
+			overallmax.z += 0.4 * Math.max(tempx, tempy);
+		}
+
+		// make the x-coordinate origin at the center of the view
+		double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
+		this.overallmin.x = -maxabsx;
+		this.overallmax.x = maxabsx;
+		
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = "+handmax);
             System.out.println("Hand min = "+handmin);
