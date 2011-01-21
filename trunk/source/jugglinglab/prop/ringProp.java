@@ -129,8 +129,11 @@ public class ringProp extends Prop {
 
             if (temp != null)
                 color = temp;
-            else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_prop_color")+": '"+colorstr+"'");
+            else {
+				String template = errorstrings.getString("Error_prop_color");
+				Object[] arguments = { colorstr };					
+				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+			}
         }
 
         String outsidestr = pl.getParameter("outside");

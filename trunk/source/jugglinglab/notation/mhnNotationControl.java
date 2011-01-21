@@ -34,10 +34,10 @@ import jugglinglab.prop.Prop;
 
 public class mhnNotationControl extends NotationControl {
     protected static final String[] builtinHandsNames = {
-        "inside throws",
-        "outside throws",
-        "half shower",
-        "Mills Mess"
+        "inside",
+        "outside",
+        "half",
+        "Mills"
     };
     protected static final String[] builtinHandsStrings = {
         "(10)(32.5).",
@@ -49,8 +49,8 @@ public class mhnNotationControl extends NotationControl {
     protected static final String[] builtinBodyNames = {
         "line",
         "feed",
-        "back to back",
-        "side to side",
+        "backtoback",
+        "sidetoside",
         "circles"
     };
     protected static final String[] builtinBodyStrings = {
@@ -109,10 +109,12 @@ public class mhnNotationControl extends NotationControl {
         gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_END,0,3,
                                                  new Insets(vspacing,border,0,hspacing)));
         cb1 = new JComboBox();
-        cb1.addItem(guistrings.getString("default"));
-        for (int i = 0; i < builtinHandsNames.length; i++)
-            cb1.addItem(builtinHandsNames[i]);
-        cb1.addItem(guistrings.getString("custom"));
+        cb1.addItem(guistrings.getString("MHNHands_name_default"));
+        for (int i = 0; i < builtinHandsNames.length; i++) {
+			String item = "MHNHands_name_" + builtinHandsNames[i];
+			cb1.addItem(guistrings.getString(item));
+		}
+        cb1.addItem(guistrings.getString("MHNHands_name_custom"));
         p1.add(cb1);
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,3,
                                                 new Insets(vspacing,0,0,border)));
@@ -156,10 +158,12 @@ public class mhnNotationControl extends NotationControl {
         gb.setConstraints(lab5, make_constraints(GridBagConstraints.LINE_END,0,5,
                                                  new Insets(vspacing,border,0,hspacing)));
         cb2 = new JComboBox();
-        cb2.addItem(guistrings.getString("default"));
-        for (int i = 0; i < builtinBodyNames.length; i++)
-            cb2.addItem(builtinBodyNames[i]);
-        cb2.addItem(guistrings.getString("custom"));
+        cb2.addItem(guistrings.getString("MHNBody_name_default"));
+        for (int i = 0; i < builtinBodyNames.length; i++) {
+			String item = "MHNBody_name_" + builtinBodyNames[i];
+			cb2.addItem(guistrings.getString(item));
+		}
+        cb2.addItem(guistrings.getString("MHNBody_name_custom"));
         p1.add(cb2);
         gb.setConstraints(cb2, make_constraints(GridBagConstraints.LINE_START,1,5,
                                                 new Insets(vspacing,0,0,border)));
@@ -204,7 +208,8 @@ public class mhnNotationControl extends NotationControl {
 													   new Insets(vspacing,border,0,hspacing)));
 		cb3 = new JComboBox();
 		for (int i = 0; i < Prop.builtinProps.length; i++) {
-			cb3.addItem(Prop.builtinProps[i].toLowerCase());
+			String item = "Prop_name_" + Prop.builtinProps[i].toLowerCase();
+			cb3.addItem(guistrings.getString(item));
 		}
 		p1.add(cb3);
 		gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,1,7,
@@ -257,7 +262,7 @@ public class mhnNotationControl extends NotationControl {
 
         sb.append("pattern=");
         sb.append(tf1.getText());
-		sb.append(";prop=" + ((String)cb3.getSelectedItem()).toLowerCase());
+		sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
             if (!tf2.getText().equals(new Double(mhnPattern.dwell_default).toString())) {
                 sb.append(";dwell=");
