@@ -45,8 +45,8 @@ public class ballProp extends Prop {
     protected static final boolean highlight_def = false;
 
     protected double 	diam = diam_def;	// diameter, in cm
-    protected int	colornum = colornum_def;
-    protected Color	color;
+    protected int		colornum = colornum_def;
+    protected Color		color;
     protected boolean	highlight = highlight_def;
     // protected int	ball_pixel_size;
 
@@ -122,7 +122,9 @@ public class ballProp extends Prop {
 						token = st2.nextToken();
 						blue = Integer.valueOf(token).intValue();
 					} catch (NumberFormatException nfe) {
-						throw new JuggleExceptionUser(errorstrings.getString("Error_color_spec")+": '"+token+"'");
+						String template = errorstrings.getString("Error_number_format");
+						Object[] arguments = { token };					
+						throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 					}
 					temp = new Color(red, green, blue);
 				} else
@@ -131,8 +133,11 @@ public class ballProp extends Prop {
 
             if (temp != null)
                 color = temp;
-            else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_prop_color")+": '"+colorstr+"'");
+            else {
+				String template = errorstrings.getString("Error_prop_color");
+				Object[] arguments = { colorstr };					
+				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+			}
         }
 
         String diamstr = pl.getParameter("diam");
