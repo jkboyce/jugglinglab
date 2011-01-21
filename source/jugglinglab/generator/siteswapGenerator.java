@@ -1692,25 +1692,25 @@ class siteswapGeneratorControl extends JPanel {
         p2.setLayout(gb);
         JLabel lab6 = new JLabel(guistrings.getString("balls"));
         p2.add(lab6);
-        gb.setConstraints(lab6, make_constraints(GridBagConstraints.LINE_START,1,0,
-                                                 new Insets(0,3,0,15)));
+        gb.setConstraints(lab6, make_constraints(GridBagConstraints.LINE_END,0,0,
+                                                 new Insets(0,0,0,3)));
         tf1 = new JTextField(3);
         p2.add(tf1);
-        gb.setConstraints(tf1, make_constraints(GridBagConstraints.LINE_END,0,0));
+        gb.setConstraints(tf1, make_constraints(GridBagConstraints.LINE_START,1,0));
         JLabel lab7 = new JLabel(guistrings.getString("max._throw"));
         p2.add(lab7);
-        gb.setConstraints(lab7, make_constraints(GridBagConstraints.LINE_START,3,0,
-                                                 new Insets(0,3,0,15)));
+        gb.setConstraints(lab7, make_constraints(GridBagConstraints.LINE_END,2,0,
+                                                 new Insets(0,15,0,3)));
         tf2 = new JTextField(3);
         p2.add(tf2);
-        gb.setConstraints(tf2, make_constraints(GridBagConstraints.LINE_END,2,0));
+        gb.setConstraints(tf2, make_constraints(GridBagConstraints.LINE_START,3,0));
         JLabel lab8 = new JLabel(guistrings.getString("period"));
         p2.add(lab8);
-        gb.setConstraints(lab8, make_constraints(GridBagConstraints.LINE_START,5,0,
-                                                 new Insets(0,3,0,0)));
+        gb.setConstraints(lab8, make_constraints(GridBagConstraints.LINE_END,4,0,
+                                                 new Insets(0,15,0,3)));
         tf3 = new JTextField(3);
         p2.add(tf3);
-        gb.setConstraints(tf3, make_constraints(GridBagConstraints.LINE_END,4,0));
+        gb.setConstraints(tf3, make_constraints(GridBagConstraints.LINE_START,5,0));
 
 
         JPanel p6 = new JPanel();
@@ -1815,11 +1815,11 @@ class siteswapGeneratorControl extends JPanel {
         p3.setLayout(gb);
         tf9 = new JTextField(3);
         p3.add(tf9);
-        gb.setConstraints(tf9, make_constraints(GridBagConstraints.LINE_END,0,0));
+        gb.setConstraints(tf9, make_constraints(GridBagConstraints.LINE_START,1,0));
         lab13 = new JLabel(guistrings.getString("simultaneous_throws"));
         p3.add(lab13);
-        gb.setConstraints(lab13, make_constraints(GridBagConstraints.LINE_START,1,0,
-                                                  new Insets(0,3,0,0)));
+        gb.setConstraints(lab13, make_constraints(GridBagConstraints.LINE_END,0,0,
+                                                  new Insets(0,0,0,3)));
 
         p9.add(p3);
         gb.setConstraints(p3, make_constraints(GridBagConstraints.LINE_START,0,2,
@@ -1855,18 +1855,18 @@ class siteswapGeneratorControl extends JPanel {
         p1.setLayout(gb);
         tf4 = new JTextField(10);
         p1.add(tf4);
-        gb.setConstraints(tf4, make_constraints(GridBagConstraints.LINE_END,0,0));
+        gb.setConstraints(tf4, make_constraints(GridBagConstraints.LINE_START,1,0));
         tf5 = new JTextField(10);
         p1.add(tf5);
-        gb.setConstraints(tf5, make_constraints(GridBagConstraints.LINE_END,0,1));
+        gb.setConstraints(tf5, make_constraints(GridBagConstraints.LINE_START,1,1));
 		/*
         tf6 = new JTextField(10);
         p1.add(tf6);
-        gb.setConstraints(tf6, make_constraints(GridBagConstraints.LINE_END,0,2));
+        gb.setConstraints(tf6, make_constraints(GridBagConstraints.LINE_START,0,2));
 		*/
         tf7 = new JTextField(3);
         p1.add(tf7);
-        gb.setConstraints(tf7, make_constraints(GridBagConstraints.LINE_END,0,2,
+        gb.setConstraints(tf7, make_constraints(GridBagConstraints.LINE_START,1,2,
                                                 new Insets(3,0,0,0)));
         /*
          tf8 = new JTextField(3);
@@ -1875,27 +1875,27 @@ class siteswapGeneratorControl extends JPanel {
          */
         lab1 = new JLabel(guistrings.getString("Exclude_these_throws"));
         p1.add(lab1);
-        gb.setConstraints(lab1, make_constraints(GridBagConstraints.LINE_START,1,0,
-                                                 new Insets(0,3,0,0)));
+        gb.setConstraints(lab1, make_constraints(GridBagConstraints.LINE_END,0,0,
+                                                 new Insets(0,0,0,3)));
         lab2 = new JLabel(guistrings.getString("Include_these_throws"));
         p1.add(lab2);
-        gb.setConstraints(lab2, make_constraints(GridBagConstraints.LINE_START,1,1,
-                                                 new Insets(0,3,0,0)));
+        gb.setConstraints(lab2, make_constraints(GridBagConstraints.LINE_END,0,1,
+                                                 new Insets(0,0,0,3)));
 		/*
         lab3 = new JLabel(guistrings.getString("Exclude_these_passes"));
         p1.add(lab3);
-        gb.setConstraints(lab3, make_constraints(GridBagConstraints.LINE_START,1,2,
-                                                 new Insets(0,3,0,0)));
+        gb.setConstraints(lab3, make_constraints(GridBagConstraints.LINE_END,1,2,
+                                                 new Insets(0,0,0,3)));
 		*/
         lab4 = new JLabel(guistrings.getString("Passing_communication_delay"));
         p1.add(lab4);
-        gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_START,1,2,
-                                                 new Insets(3,3,0,0)));
+        gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_END,0,2,
+                                                 new Insets(3,0,0,3)));
         /*
          lab5 = new JLabel("Passing leader slot number");
          p1.add(lab5);
          gb.setConstraints(lab5, make_constraints(GridBagConstraints.LINE_START,1,4,
-                                                  new Insets(0,3,0,0)));
+                                                  new Insets(0,0,0,3)));
          */
 
         this.add(p2);		// now make the whole window
