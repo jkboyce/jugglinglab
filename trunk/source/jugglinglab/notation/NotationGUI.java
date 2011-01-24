@@ -31,6 +31,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import org.xml.sax.*;
 
+import jugglinglab.*;
 import jugglinglab.core.*;
 import jugglinglab.generator.*;
 import jugglinglab.jml.*;
@@ -42,8 +43,8 @@ public class NotationGUI extends JPanel implements ActionListener {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
     protected JTabbedPane jtp = null;
@@ -432,7 +433,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 			}
 		});
 		
-		Locale loc = Locale.getDefault();
+		Locale loc = JLLocale.getLocale();
 		aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 		
 		aboutBox.pack();

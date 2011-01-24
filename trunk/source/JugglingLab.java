@@ -39,10 +39,6 @@ import jugglinglab.view.*;
 public class JugglingLab extends JApplet {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
-    static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
-    }
 
 	protected Animator ja = null;
     protected JugglingLabPanel jlp = null;
@@ -56,10 +52,58 @@ public class JugglingLab extends JApplet {
 
 
     protected void configure_applet() {
+		String config = getParameter("config");
+        String prefs = getParameter("animprefs");
         String jmldir = getParameter("jmldir");
         String jmlfile = getParameter("jmlfile");
-        String prefs = getParameter("animprefs");
 		
+		// default values
+		int entry_type = Notation.NOTATION_SITESWAP;
+		int view_type = View.VIEW_SIMPLE;
+		
+		if (config != null) {
+			ParameterList param = new ParameterList(config);
+			String entry = param.getParameter("entry");
+			if (entry != null) {
+				if (entry.equalsIgnoreCase("none"))
+					entry_type = Notation.NOTATION_NONE;
+				else if (entry.equalsIgnoreCase("siteswap"))
+					entry_type = Notation.NOTATION_SITESWAP;
+			}
+			String view = param.getParameter("view");
+			if (view != null) {
+				if (view.equalsIgnoreCase("none"))
+					view_type = View.VIEW_NONE;
+				else if (view.equalsIgnoreCase("simple"))
+					view_type = View.VIEW_SIMPLE;
+				else if (view.equalsIgnoreCase("edit"))
+					view_type = View.VIEW_EDIT;
+				else if (view.equalsIgnoreCase("selection"))
+					view_type = View.VIEW_SELECTION;
+				else if (view.equalsIgnoreCase("jml"))
+					view_type = View.VIEW_JML;
+			}
+			String loc = param.getParameter("locale");
+			if (loc != null) {
+				// want to get to this before the resource bundles are needed
+				// by this or any other objects
+				String[] locarray = loc.split("_", 5);
+				System.out.println("locarray = " + locarray);
+				Locale newloc = null;
+				if (locarray.length == 1)
+					newloc = new Locale(locarray[0]);
+				else if (locarray.length == 2)
+					newloc = new Locale(locarray[0], locarray[1]);
+				else if (locarray.length > 2)
+					newloc = new Locale(locarray[0], locarray[1], locarray[2]);
+				
+				JLLocale.setLocale(newloc);
+			}
+		}
+
+		JugglingLab.guistrings = JLLocale.getBundle("GUIStrings");
+        JugglingLab.errorstrings = JLLocale.getBundle("ErrorStrings");
+
 		try {
 			jc = new AnimatorPrefs();
 			if (prefs != null)
@@ -124,39 +168,14 @@ public class JugglingLab extends JApplet {
 			if (readerror)
 				throw new JuggleExceptionUser(errorstrings.getString("Error_reading_pattern"));
 				
-			// default values
-			int entry_type = Notation.NOTATION_SITESWAP;
-			int view_type = View.VIEW_SIMPLE;
-			
-			String config = getParameter("config");
-			if (config != null) {
-				ParameterList param = new ParameterList(config);
-				String entry = param.getParameter("entry");
-				if (entry != null) {
-					if (entry.equalsIgnoreCase("none"))
-						entry_type = Notation.NOTATION_NONE;
-					else if (entry.equalsIgnoreCase("siteswap"))
-						entry_type = Notation.NOTATION_SITESWAP;
-				}
-				String view = param.getParameter("view");
-				if (view != null) {
-					if (view.equalsIgnoreCase("none"))
-						view_type = View.VIEW_NONE;
-					else if (view.equalsIgnoreCase("simple"))
-						view_type = View.VIEW_SIMPLE;
-					else if (view.equalsIgnoreCase("edit"))
-						view_type = View.VIEW_EDIT;
-					else if (view.equalsIgnoreCase("selection"))
-						view_type = View.VIEW_SELECTION;
-					else if (view.equalsIgnoreCase("jml"))
-						view_type = View.VIEW_JML;
-				}
-			}
-			
 			JugglingLabPanel jlp = new JugglingLabPanel(null, entry_type, pl, view_type);
 			jlp.setDoubleBuffered(true);
 			this.setBackground(new Color(0.9f, 0.9f, 0.9f));
 			setContentPane(jlp);
+			
+			Locale loc = JLLocale.getLocale();
+			this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
 			validate();
 			
 			// NOTE: animprefs will only be applied when some kind of pattern is defined

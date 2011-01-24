@@ -22,8 +22,6 @@
 
 package jugglinglab.util;
 
-import jugglinglab.util.JBoyceException;
-
 
 // This is our own exception class, which we use to handle juggling-related
 // problems that occur.

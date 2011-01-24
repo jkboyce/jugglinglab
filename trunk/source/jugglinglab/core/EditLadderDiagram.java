@@ -43,8 +43,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
     static final protected double min_throw_time = 0.05;
@@ -1106,7 +1106,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(p3, make_constraints(GridBagConstraints.LINE_END,0,2,new Insets(10,10,10,10)));
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
 
-		Locale loc = Locale.getDefault();
+		Locale loc = JLLocale.getLocale();
 		jd.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 		
         jd.pack();

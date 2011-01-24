@@ -37,8 +37,8 @@ public class PatternWindow extends JFrame implements ActionListener {
 	static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 	*/
 
@@ -86,7 +86,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 		this.setBackground(Color.white);
 		setContentPane(view);
 		
-		Locale loc = Locale.getDefault();
+		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 		
         pack();

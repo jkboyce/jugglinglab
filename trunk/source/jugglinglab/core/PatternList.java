@@ -39,8 +39,8 @@ public class PatternList extends JPanel {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 	final static Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
 	final static Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);

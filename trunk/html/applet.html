@@ -31,11 +31,13 @@ Use no command line options for a help message (e.g.,
 <dl>
 <dt><code class="def">config</code></dt>
 <dd>This parameter configures which interface elements are included in the applet display.
-It is comprised of semicolon-separated assignment settings, for example <code>"entry=siteswap;view=jml"</code>
+It is comprised of semicolon-separated assignment settings, for example <code>"entry=siteswap;view=jml;locale=he"</code>
 <ul>
 <li><code class="def">entry</code> &ndash; determines which notation (if any) is used in the pattern input panel shown on the left of the applet display.  Values are 'none' and 'siteswap'; default value is 'siteswap'.</li>
 <li><code class="def">view</code> &ndash; determines which type of animation view is shown on the right of the applet display.  Values are 'none', 'simple', 'edit', 'selection', and 'jml'; default value is 'simple'.</li>
-</ul>
+<li><code class="def">locale</code> &ndash; determines the user interface language, overriding the system default.  Values are in the form 'xx_YY', where 'xx' is an <a href="http://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1 two-letter language code</a> and
+'YY' is an optional <a href="http://www.iso.org/iso/country_codes/iso_3166_code_lists/english_country_names_and_code_elements.htm">ISO 3166 two-letter country code</a>.  Examples are 'en_US' (US English) and 'fr' (French).  Default is the
+system-supplied locale.</ul>
 </dd>
 </dl>
 

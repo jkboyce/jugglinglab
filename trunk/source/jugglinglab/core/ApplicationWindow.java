@@ -39,8 +39,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
 	protected NotationGUI ng = null;
@@ -71,7 +71,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         setContentPane(ng);
         ng.setNotation(Notation.NOTATION_SITESWAP);
 
-		Locale loc = Locale.getDefault();
+		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 		
 		notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);

@@ -53,8 +53,8 @@ public class mhnSymmetry {
                 this.jugglerperm = new Permutation(numjugglers, true);
             else
                 this.jugglerperm = new Permutation(numjugglers, jp, true);
-        } catch (JBoyceException jbe) {
-            throw new JuggleExceptionUser(jbe.getMessage());
+        } catch (JuggleException je) {
+            throw new JuggleExceptionUser(je.getMessage());
         }
     }
     public int getDelay()		{ return delay; }
