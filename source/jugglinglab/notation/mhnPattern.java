@@ -31,8 +31,8 @@ public class mhnPattern {
     // static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        // guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        // guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
     protected static double bps_default = -1.0;	// calculate bps

@@ -38,8 +38,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static ResourceBundle guistrings;
     // static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        // errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        // errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
     String title = null;
@@ -78,7 +78,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 		this.setSize(300,450);
         createMenuBar();
 
-		Locale loc = Locale.getDefault();
+		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 		// list contents are always left-to-right -- DISABLE FOR NOW
 		// this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);

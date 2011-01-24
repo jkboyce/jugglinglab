@@ -22,13 +22,11 @@
 
 package jugglinglab.util;
 
-import jugglinglab.util.JBoyceException;
-
 
 // This is our own exception class, which we use to handle juggling-related
 // problems that occur.
 
-public class JuggleException extends JBoyceException {
+public class JuggleException extends Exception {
 	public JuggleException()  			{ super();	}
 	public JuggleException(String s)	{ super(s);	}
 }

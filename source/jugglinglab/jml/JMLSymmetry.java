@@ -32,8 +32,8 @@ public class JMLSymmetry {
     // static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        // guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        // guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
     int		type;
@@ -68,8 +68,8 @@ public class JMLSymmetry {
                 this.jugglerperm = new Permutation(numjugglers, true);
             else
                 this.jugglerperm = new Permutation(numjugglers, jp, true);
-        } catch (JBoyceException jbe) {
-            throw new JuggleExceptionUser(jbe.getMessage());
+        } catch (JuggleException je) {
+            throw new JuggleExceptionUser(je.getMessage());
         }
     }
     public int getNumberOfPaths() 		{ return numpaths; }
@@ -81,8 +81,8 @@ public class JMLSymmetry {
                 this.pathperm = new Permutation(numpaths, false);
             else
                 this.pathperm = new Permutation(numpaths, pp, false);
-        } catch (JBoyceException jbe) {
-            throw new JuggleExceptionUser(jbe.getMessage());
+        } catch (JuggleException je) {
+            throw new JuggleExceptionUser(je.getMessage());
         }
     }
     public double getDelay()			{ return delay; }

@@ -1670,8 +1670,8 @@ class siteswapGeneratorControl extends JPanel {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
-        guistrings = Utf8ResourceBundle.getBundle("GUIStrings");
-        errorstrings = Utf8ResourceBundle.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 				// text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, /*tf6,*/ tf7, /*tf8,*/ tf9;

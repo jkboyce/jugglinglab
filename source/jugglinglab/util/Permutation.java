@@ -54,7 +54,7 @@ public class Permutation {
 		this.mapping = mapping;
 	}
 	
-	public Permutation(int n, String perm, boolean reverses) throws JBoyceException {
+	public Permutation(int n, String perm, boolean reverses) throws JuggleException {
 		int i;
 		boolean[] used;
 		
@@ -88,20 +88,20 @@ public class Permutation {
 			StringTokenizer st = new StringTokenizer(perm, ",");
 			
 			if (st.countTokens() != size)
-				throw new JBoyceException("Permutation init error: must have "+n+
+				throw new JuggleException("Permutation init error: must have "+n+
 								" elements in mapping");
 			for (i = 0; i < size; i++) {
 				String s = st.nextToken().trim();
 				try {
 					num = Integer.parseInt(s);
 				} catch (NumberFormatException nfe) {
-					throw new JBoyceException("Permutation init error: number format");
+					throw new JuggleException("Permutation init error: number format");
 				}
 				if ((num < 1) || (num > size))
-					throw new JBoyceException("Permutation init error: out of range");
+					throw new JuggleException("Permutation init error: out of range");
 				
 				if (used[num-1])
-					throw new JBoyceException("Permutation init error: not one-to-one");
+					throw new JuggleException("Permutation init error: not one-to-one");
 				
 				used[num-1] = true;
 				mapping[i] = num;
@@ -113,7 +113,7 @@ public class Permutation {
 			while (st1.hasMoreTokens()) {
 				String s1 = st1.nextToken().trim();
 				if (s1.charAt(0) != '(')
-					throw new JBoyceException("Permutation init error: parenthesis not grouped");
+					throw new JuggleException("Permutation init error: parenthesis not grouped");
 				s1 = s1.substring(1);
 				int num = 0, lastnum = -(size+1);
 				StringTokenizer st2 = new StringTokenizer(s1, ",");
@@ -132,15 +132,15 @@ public class Permutation {
 						} else
 							num = Integer.parseInt(s2);
 					} catch (NumberFormatException nfe) {
-						throw new JBoyceException("Permutation init error: number format");
+						throw new JuggleException("Permutation init error: number format");
 					}
 
 					if (reverses) {
 						if ((num < -size) || (num > size) || (num == 0))
-							throw new JBoyceException("Permutation init error: out of range");
+							throw new JuggleException("Permutation init error: out of range");
 					
 						if (used[num+size])
-							throw new JBoyceException("Permutation init error: not one-to-one");
+							throw new JuggleException("Permutation init error: not one-to-one");
 						used[num+size] = true;
 						
 						if (lastnum == -(size+1))
@@ -149,14 +149,14 @@ public class Permutation {
 							mapping[num+size] = mapping[lastnum+size];
 							mapping[lastnum+size] = num;
 							if (used[-lastnum+size] && (mapping[-lastnum+size] != -num))
-								throw new JBoyceException("Permutation init error: input not reversible");
+								throw new JuggleException("Permutation init error: input not reversible");
 						}
 					} else {
 						if ((num < 1) || (num > size))
-							throw new JBoyceException("Permutation init error: out of range");
+							throw new JuggleException("Permutation init error: out of range");
 					
 						if (used[num-1])
-							throw new JBoyceException("Permutation init error: not one-to-one");
+							throw new JuggleException("Permutation init error: not one-to-one");
 						used[num-1] = true;
 						
 						if (lastnum == -(size+1))
