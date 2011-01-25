@@ -7,18 +7,52 @@
 </head>
 <body>
 <div id="all">
-<h2>Siteswap generator regular expression syntax</h2>
+<h2>Regular expressions as siteswap generator filters</h2>
 
-<p>For a comprehensive discussion of regular expression matching, read one of the several good tutorials
-available on the web (for example, <a href="http://jmason.org/software/sitescooper/tao_regexps.html">A
-Tao of Regular Expressions</a>).</p>
+<p>The Juggling Lab <a href="ssgenerator.html#regex">siteswap generator</a> allows regular expressions to be used as
+output filters.  This page is not intended to be a comprehensive discussion of
+<a href="http://en.wikipedia.org/wiki/Regular_expression">regular expressions</a>; for this read one of the
+several good tutorials available on the web.</p>
 
-<p>Within Juggling Lab, the standard regular expression metacharacters
-<code>[]()|</code> require quoting with a backslash <code>'\'</code> to avoid conflict with the use of these
-characters in siteswap notation.</p>
+<p>Juggling Lab uses standard regular expression syntax, with some important differences.</p>
 
-<p>The full regular expression syntax accepted by Juggling Lab is described below.  This documentation is
-adapted from the <a href="http://jakarta.apache.org/regexp/index.html">Jakarta-Regexp</a> documentation.</p>
+<h4>Difference 1:  Swapped metacharacters and literals</h4>
+
+<p>In standard regular expressions, the characters <code>[]()|</code> act as metacharacters with special
+non-literal meaning.  Doing a literal match of one of these characters requires a preceding backslash
+<code>'\'</code>, for example the regex <code>\[</code> matches the string <code>[</code>.  In
+siteswap notation the characters <code>[]()|</code> have special meaning, so relative to
+standard regular expressions we swap the roles of <code>[</code> and <code>\[</code>.  So within Juggling Lab the regex
+<code>[</code> is a literal match for <code>[</code>, and <code>\[</code> and <code>\]</code> are used
+to define character classes (see below).</p>
+
+<h4>Difference 2:  When regular expression filters are applied</h4>
+
+<p>The "include" patterns are applied once, after a pattern is generated but before it is printed.
+Therefore the boundary matchers <code>^</code> and <code>$</code> do what one expects, matching to the beginning
+or end of the pattern respectively.  For example the include filter <code>4$</code> results in patterns ending
+with a <code>4</code> throw, since <code>$</code> matches to the end of the pattern.</p>
+
+<p>By contrast, for efficiency reasons the "exclude" filters are applied as the pattern is being built
+up, throw by throw.  So the beginning matcher <code>^</code> always matches the beginning of the pattern, but the end
+matcher <code>$</code> can match <em>the end of any throw</em>.  (For this purpose, a "throw" is any set of events
+occurring simultaneously, e.g., <code>(4,[2x2])</code> counts as a single throw.)  So an exclude filter of <code>4$</code>
+excludes patterns containing <code>4</code> throws anywhere, not just at the end of the pattern.</p>
+
+<h4>Difference 3:  Implied wildcard matching</h4>
+
+<p>If the beginning matcher <code>^</code> is not supplied in a given filter term, then a <code>.*</code> wildcard
+match is prepended to it.  For <em>include filters only</em>, the same <code>.*</code> is appended to the pattern if no
+ending matcher <code>$</code> is supplied.  This is done for convenience, so that for example an include filter of
+<code>4</code> will match a <code>4</code> throw anywhere in the pattern (it is converted to <code>.*4.*</code> before
+the regex matching is done).</p>
+
+<p>Note that <code>.*</code> is not automatically added to the end of exclude filters.  Thus for example an exclude filter
+<code>33</code> will match two successive <code>3</code> throws anywhere in the pattern, but it <em>will not match</em>
+the siteswap throw <code>[33]</code>.  One could exclude the latter with a filter pattern of <code>[33]</code> or
+<code>33]</code>.</p>
+
+<h2>Juggling Lab regular expression summary</h2>
 
 <h4>Characters</h4>
 <pre>
@@ -34,14 +68,6 @@ adapted from the <a href="http://jakarta.apache.org/regexp/index.html">Jakarta-R
 
 </pre>
 
-<h4>Standard POSIX Character Classes</h4>
-<pre>
-   \[:alnum:\]   Alphanumeric characters
-   \[:alpha:\]   Alphabetic characters
-   \[:digit:\]   Numeric characters
-
-</pre>
-
 <h4>Predefined Classes</h4>
 <pre>
    .             Matches any character other than newline
@@ -52,8 +78,8 @@ adapted from the <a href="http://jakarta.apache.org/regexp/index.html">Jakarta-R
 
 <h4>Boundary Matchers</h4>
 <pre>
-   ^             Matches only at the beginning of a line
-   $             Matches only at the end of a line
+   ^             Matches only at the beginning of a pattern
+   $             Matches at the end of a pattern, or throw (see note above)
 
 </pre>
 

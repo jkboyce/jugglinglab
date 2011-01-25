@@ -33,7 +33,6 @@ import java.text.MessageFormat;
 
 import jugglinglab.util.*;
 import jugglinglab.core.*;
-//import org.apache.regexp.*;
 
 
 // This class is a port of the J2 siteswap pattern generator to Java.
@@ -481,30 +480,7 @@ public class siteswapGenerator extends Generator {
 		res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@");
 		res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|");
 		res = Pattern.compile("@").matcher(res).replaceAll("|");
-		
-		/*
-		System.out.println("regex1 = " + res);
-		
-		res = (new RE("\\\\\\[")).subst(term, "@");
-		res = (new RE("\\[")).subst(res, "\\[");
-		res = (new RE("@")).subst(res, "[");
-		res = (new RE("\\\\\\]")).subst(res, "@");
-		res = (new RE("\\]")).subst(res, "\\]");
-		res = (new RE("@")).subst(res, "]");
-		
-		res = (new RE("\\\\\\(")).subst(res, "@");
-		res = (new RE("\\(")).subst(res, "\\(");
-		res = (new RE("@")).subst(res, "(");
-		res = (new RE("\\\\\\)")).subst(res, "@");
-		res = (new RE("\\)")).subst(res, "\\)");
-		res = (new RE("@")).subst(res, ")");
 
-		res = (new RE("\\\\\\|")).subst(res, "@");
-		res = (new RE("\\|")).subst(res, "\\|");
-		res = (new RE("@")).subst(res, "|");
-
-		System.out.println("regex2 = " + res);
-		*/
 		return res;
 	}
 

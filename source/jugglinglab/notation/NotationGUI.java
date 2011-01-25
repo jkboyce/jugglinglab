@@ -404,27 +404,21 @@ public class NotationGUI extends JPanel implements ActionListener {
 		gb.setConstraints(abouttext2, make_constraints(GridBagConstraints.LINE_START,0,2,
 													   new Insets(15,15,0,15)));
 
-		JLabel abouttext8 = new JLabel("Jakarta-Regexp copyright (C) 1999-2003 The Apache Software Foundation");
-		abouttext8.setFont(new Font("SansSerif", Font.PLAIN, 10));
-		textPanel.add(abouttext8);
-		gb.setConstraints(abouttext8, make_constraints(GridBagConstraints.LINE_START,0,3,
-													   new Insets(0,15,0,15)));
-
 		JLabel abouttext6 = new JLabel("All other code copyright (C) 2002-"+Constants.year+" Jack Boyce and others");
 		abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
 		textPanel.add(abouttext6);
-		gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,4,
+		gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,3,
 													   new Insets(0,15,15,15)));
 
 		JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
 		abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
 		textPanel.add(abouttext3);
-		gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,5,
+		gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,4,
 													   new Insets(0,15,0,15)));
 
 		JButton okbutton = new JButton(guistrings.getString("OK"));
 		textPanel.add(okbutton);
-		gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,6,
+		gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,5,
 													 new Insets(15,15,15,15)));
 		okbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

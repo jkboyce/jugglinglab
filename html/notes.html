@@ -21,8 +21,7 @@
 	behavior can be explicitly triggered by for example launching Juggling Lab with: <code>java -Duser.language=he -jar JugglingLab.jar</code></li>
 <li>Added support for UTF-8 encoded properties files, to make localization into non-Roman
 	scripts easier.</li>
-<li>Added <code>locale</code> setting to <a href="applet.html">applet</a> configuration, to override the system
-default languge.</li>
+<li>Added <code>locale</code> setting to <a href="applet.html">applet configuration</a>, to override the system default languge.</li>
 </ul></td>
 </tr>
 <tr valign="top">
@@ -45,6 +44,7 @@ properly work with passing patterns (<a href="https://sourceforge.net/tracker/?f
 <td><p>Other changes</p></td>
 <td><ul>
 <li>Removed idx3d library and 3d rendering mode, making Juggling Lab now fully open source.</li>
+<li>Removed Jakarta regular expression library; using Java regular expression library instead.</li>
 <li>Removed support for legacy parameters <code>mat_style</code>, <code>mat_HR</code>, and <code>mat_DR</code>.</li>
 <li>Added bookmarklet to home page.</li>
 </ul></td>
