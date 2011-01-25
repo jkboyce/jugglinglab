@@ -208,11 +208,23 @@ printed as a placeholder.  The "pattern rotations" causes all rotations of a pat
 <p>"Connected patterns only" also applies only to passing patterns.  Selecting this option filters out any passing patterns that are two or more patterns (each with fewer jugglers) done together.  A simple example is <code>&lt;5|3&gt;&lt;1|3&gt;</code>, which is two jugglers standing next to each other doing solo juggling tricks.</p>
 
 <h4 id="regex">Exclude / include these expressions</h4>
-<p>The search terms should be entered into the text boxes as regular expressions, separated by spaces if there are more than one.  Regular expression matching is quite powerful and a little bit complicated in its complete form; the full details of the syntax used by Juggling Lab are <a href="regex.html">on another page</a>.</p>
 
-<p>However, for basic literal searches the format is simple; you just enter the text you want to match against.  For example, entering <code>7</code> into the exclude box will eliminate all patterns containing siteswap 7 throws (including any passes).  Another example is <code>&lt;3p|.*&gt;</code>, which will exclude all passing siteswaps where the first juggler throws a <code>3p</code> (the <code>'.*'</code> is a wildcard that matches against any string of characters).</p>
+<p>Values entered here specify terms that filter the generator output.  Exclude eliminates
+	all patterns that match any of the supplied terms, and include eliminates all patterns
+	that don't match at least one of the supplied terms.  Multiple terms may be provided for
+	each, separated by spaces.  For example an exclude of <code>11 2 3 [54]</code> filters out
+	all patterns containing at least one of the following:  The throw combination
+	<code>11</code> (two <code>1</code>s in a row), throws <code>2</code> or <code>3</code>, or the multiplex throw <code>[54]</code>.</p>
+
+<p>Searches can be more involved than these basic literal searches.  The terms supplied can be
+	any regular expressions, with a syntax <a href="regex.html">adjusted
+	to accomodate siteswap pattern notation</a>.  For example using
+	<code>[\[^2\]*]</code> as an included expression is how the "real multiplexing only"
+	feature is implemented, if you care to puzzle that one out.  For example an exclude term
+	of <code>&lt;3p|.*&gt;</code> excludes all passing patterns where the first juggler throws a <code>3p</code> (the <code>'.*'</code> is a wildcard that matches against any string of characters).  The "true multiplexing only" option is implemented for solo asynch patterns with the <code>[\[^2\]*]</code> include term</p>
 
 <h4 id="delay">Passing communication delay</h4>
+
 <p>This delay setting only has an effect when there is more than one juggler.  If you
 are doing a standard ground state passing pattern (see definition below; an example is
 <span style="font-family: courier, monospace">&lt;3p|3p&gt;&lt;3|3&gt;</span> for six objects),
@@ -303,12 +315,10 @@ searches for long-period patterns.  Most of the best siteswaps happen to be prim
 <li>Start with a large "passing communication delay" value if you're looking for passing tricks.</li>
 </ol>
 
-<p>The other challenge is to scan the lists generated to find the interesting patterns.  You will find
-that as you get more familiar with siteswap notation (and get practice juggling siteswap patterns), you will improve
-at this very quickly.</p>
-
-<p>Lastly, the siteswap generator can also be run as a command line application.  This is generally the best option
-if you want to perform very long runs, or generate large lists of patterns.</p>
+<p>The siteswap generator can also be run as a command line application; see the script
+	called <code>j2</code> included with the distribution.  When run in this way the
+	generator by default has no limits on time or pattern count, so this is a good option
+	for big searches.</p>
 
 </div>
 </body>
