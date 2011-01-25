@@ -28,11 +28,12 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.regex.*;
 import java.text.MessageFormat;
 
 import jugglinglab.util.*;
 import jugglinglab.core.*;
-import org.apache.regexp.*;
+//import org.apache.regexp.*;
 
 
 // This class is a port of the J2 siteswap pattern generator to Java.
@@ -266,8 +267,11 @@ public class siteswapGenerator extends Generator {
                 i++;
                 while ((i < args.length) && (args[i].charAt(0) != '-')) {
                     try {
-						exclude.add(new RE(make_standard_RE(args[i])));
-                    } catch (RESyntaxException rese) {
+						String re = make_standard_RE(args[i]);
+						if (re.indexOf("^") < 0)
+							re = ".*" + re;
+						exclude.add(Pattern.compile(re));
+                    } catch (PatternSyntaxException pse) {
                         throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
                     }
                     i++;
@@ -278,15 +282,23 @@ public class siteswapGenerator extends Generator {
                 i++;
                 while ((i < args.length) && (args[i].charAt(0) != '-')) {
                     try {
-						include.add(new RE(make_standard_RE(args[i])));
-                    } catch (RESyntaxException rese) {
+						String re = make_standard_RE(args[i]);
+						if (re.indexOf("^") < 0)
+							re = ".*" + re;
+						if (re.indexOf("$") < 0)
+							re = re + ".*";
+						include.add(Pattern.compile(re));
+                    } catch (PatternSyntaxException ps) {
                         throw new JuggleExceptionUser(errorstrings.getString("Error_included_throws"));
                     }
                     i++;
                 }
                 i--;
-            } else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_unrecognized_option")+" '"+args[i]+"'");
+            } else {
+				String template = errorstrings.getString("Error_unrecognized_option");
+				Object[] arguments = { args[i] };					
+				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+			}
         }
 
         //	if (mode != CUSTOM)
@@ -421,18 +433,18 @@ public class siteswapGenerator extends Generator {
 
 			if (jugglers == 1) {
 				if (mode == ASYNCH)
-					include_RE = "\\[[^2]*\\]";
+					include_RE = ".*\\[[^2]*\\].*";
 				else if (mode == SYNCH)
-					include_RE = "\\[([^2\\]]*2x)*[^2\\]]*\\]";
+					include_RE = ".*\\[([^2\\]]*2x)*[^2\\]]*\\].*";
 			} else {
 				if (mode == ASYNCH)
-					include_RE = "\\[([^2\\]]*(2p|.p2|2p.))*[^2\\]]*\\]";
+					include_RE = ".*\\[([^2\\]]*(2p|.p2|2p.))*[^2\\]]*\\].*";
 				else if (mode == SYNCH)
-					include_RE = "\\[([^2\\]]*(2p|.p2|2p.|2x|2xp|.xp2|2xp.))*[^2\\]]*\\]";
+					include_RE = ".*\\[([^2\\]]*(2p|.p2|2p.|2x|2xp|.xp2|2xp.))*[^2\\]]*\\].*";
 			}
 			
 			if (include_RE != null)
-				include.add(new RE(include_RE));
+				include.add(Pattern.compile(include_RE));
 		}
 		
 		if (connected_patterns)
@@ -450,25 +462,50 @@ public class siteswapGenerator extends Generator {
 	with siteswap notation: []()|
 	*/
 	protected String make_standard_RE(String term) {
-		term = (new RE("\\\\\\[")).subst(term, "@");
-		term = (new RE("\\[")).subst(term, "\\[");
-		term = (new RE("@")).subst(term, "[");
-		term = (new RE("\\\\\\]")).subst(term, "@");
-		term = (new RE("\\]")).subst(term, "\\]");
-		term = (new RE("@")).subst(term, "]");
+		String res;
 		
-		term = (new RE("\\\\\\(")).subst(term, "@");
-		term = (new RE("\\(")).subst(term, "\\(");
-		term = (new RE("@")).subst(term, "(");
-		term = (new RE("\\\\\\)")).subst(term, "@");
-		term = (new RE("\\)")).subst(term, "\\)");
-		term = (new RE("@")).subst(term, ")");
+		res = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@");
+		res = Pattern.compile("\\[").matcher(res).replaceAll("\\\\[");
+		res = Pattern.compile("@").matcher(res).replaceAll("[");
+		res = Pattern.compile("\\\\\\]").matcher(res).replaceAll("@");
+		res = Pattern.compile("\\]").matcher(res).replaceAll("\\\\]");
+		res = Pattern.compile("@").matcher(res).replaceAll("]");
+		
+		res = Pattern.compile("\\\\\\(").matcher(res).replaceAll("@");
+		res = Pattern.compile("\\(").matcher(res).replaceAll("\\\\(");
+		res = Pattern.compile("@").matcher(res).replaceAll("(");
+		res = Pattern.compile("\\\\\\)").matcher(res).replaceAll("@");
+		res = Pattern.compile("\\)").matcher(res).replaceAll("\\\\)");
+		res = Pattern.compile("@").matcher(res).replaceAll(")");
+		
+		res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@");
+		res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|");
+		res = Pattern.compile("@").matcher(res).replaceAll("|");
+		
+		/*
+		System.out.println("regex1 = " + res);
+		
+		res = (new RE("\\\\\\[")).subst(term, "@");
+		res = (new RE("\\[")).subst(res, "\\[");
+		res = (new RE("@")).subst(res, "[");
+		res = (new RE("\\\\\\]")).subst(res, "@");
+		res = (new RE("\\]")).subst(res, "\\]");
+		res = (new RE("@")).subst(res, "]");
+		
+		res = (new RE("\\\\\\(")).subst(res, "@");
+		res = (new RE("\\(")).subst(res, "\\(");
+		res = (new RE("@")).subst(res, "(");
+		res = (new RE("\\\\\\)")).subst(res, "@");
+		res = (new RE("\\)")).subst(res, "\\)");
+		res = (new RE("@")).subst(res, ")");
 
-		term = (new RE("\\\\\\|")).subst(term, "@");
-		term = (new RE("\\|")).subst(term, "\\|");
-		term = (new RE("@")).subst(term, "|");
-		
-		return term;
+		res = (new RE("\\\\\\|")).subst(res, "@");
+		res = (new RE("\\|")).subst(res, "\\|");
+		res = (new RE("@")).subst(res, "|");
+
+		System.out.println("regex2 = " + res);
+		*/
+		return res;
 	}
 
     public int runGenerator(GeneratorTarget t) {
@@ -680,9 +717,10 @@ public class siteswapGenerator extends Generator {
     
 		// test pattern in progress against all exclusions
 		for (i = 0; i < exclude.size(); i++) {
-			RE regex = (RE)exclude.elementAt(i);
-			CharacterIterator ci = new CharacterArrayCharacterIterator(output, 0, outputpos);
-			if (regex.match(ci, 0))
+			Pattern regex = (Pattern)exclude.elementAt(i);
+			/*System.out.println("test for string " + (new String(output, 0, outputpos)) + " = " +
+							   regex.matcher(new String(output, 0, outputpos)).matches());*/
+			if (regex.matcher(new String(output, 0, outputpos)).matches())
 				return false;
 		}
 		
@@ -753,9 +791,8 @@ public class siteswapGenerator extends Generator {
 
 		// test pattern in progress against all inclusions
 		for (i = 0; i < include.size(); i++) {
-			RE regex = (RE)include.elementAt(i);
-			CharacterIterator ci = new CharacterArrayCharacterIterator(output, 0, outputpos);
-			if (!regex.match(ci, 0))
+			Pattern regex = (Pattern)include.elementAt(i);
+			if (!regex.matcher(new String(output, 0, outputpos)).matches())
 				return false;
 		}
 		
