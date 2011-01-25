@@ -216,12 +216,13 @@ printed as a placeholder.  The "pattern rotations" causes all rotations of a pat
 	all patterns containing at least one of the following:  The throw combination
 	<code>11</code> (two <code>1</code>s in a row), throws <code>2</code> or <code>3</code>, or the multiplex throw <code>[54]</code>.</p>
 
-<p>Searches can be more involved than these basic literal searches.  The terms supplied can be
+<p>Filters can match patterns as well as literal terms.  The terms supplied can be
 	any regular expressions, with a syntax <a href="regex.html">adjusted
-	to accomodate siteswap pattern notation</a>.  For example using
-	<code>[\[^2\]*]</code> as an included expression is how the "real multiplexing only"
-	feature is implemented, if you care to puzzle that one out.  For example an exclude term
-	of <code>&lt;3p|.*&gt;</code> excludes all passing patterns where the first juggler throws a <code>3p</code> (the <code>'.*'</code> is a wildcard that matches against any string of characters).  The "true multiplexing only" option is implemented for solo asynch patterns with the <code>[\[^2\]*]</code> include term</p>
+	to accomodate siteswap pattern notation</a>.  For example an exclude term
+	of <code>&lt;3p|.*&gt;</code> excludes all passing patterns where the first juggler throws
+	a <code>3p</code> (the <code>'.*'</code> is a wildcard that matches against any string of characters).
+	As another example, the "true multiplexing only" option is implemented for solo asynch patterns with the <code>[\[^2\]*]</code>
+	include term.</p>
 
 <h4 id="delay">Passing communication delay</h4>
 
