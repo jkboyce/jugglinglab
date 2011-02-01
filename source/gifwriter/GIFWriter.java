@@ -23,8 +23,8 @@
 
 package gifwriter;
 
-import Acme.IntHashtable;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.io.*;
 import java.awt.*;
 import java.awt.image.*;
@@ -38,7 +38,7 @@ public class GIFWriter implements ImageObserver {
     private boolean loadingstarted;	// done from another thread
     private IOException iox;
     
-    private IntHashtable colorHash;
+    private Hashtable colorHash;
 	private int defaultcolorkey;
     private int[] rgbPixels;
     
@@ -133,7 +133,7 @@ public class GIFWriter implements ImageObserver {
 
 	        // Put all the pixels into a hash table.
 	    if (colorHash == null)
-	    	colorHash = new IntHashtable();
+	    	colorHash = new Hashtable();
 	    
 		int index = colorHash.size();
 		
@@ -143,17 +143,17 @@ public class GIFWriter implements ImageObserver {
                 int rgb = rgbPixels[rowOffset + col] & 0xffffff;
 
 		        GIFEncoderHashitem item =
-				    	(GIFEncoderHashitem) colorHash.get( rgb );
+				    	(GIFEncoderHashitem) colorHash.get(Integer.valueOf(rgb));
 		        if ( item == null ) {
 				    if ( index < 256 ) {
-                        item = new GIFEncoderHashitem( rgb, null, 1, index );
+                        item = new GIFEncoderHashitem(rgb, null, 1, index);
 /*                        int red = (rgb >> 16) & 0xff;
                         int green = (rgb >> 8) & 0xff;
                         int blue = (rgb) & 0xff;
                         System.out.println("adding color "+index+" at (x="+col+",y="+row+"): r="+red+", g="+green+", b="+blue);
 */                        
                         ++index;
-                        colorHash.put( rgb, item );
+                        colorHash.put(Integer.valueOf(rgb), item);
                     } /* else
 						throw new IOException( "Too many colors for a GIF" );*/
 				} else
@@ -164,11 +164,11 @@ public class GIFWriter implements ImageObserver {
         gotcolormap = true;
 	}
 	
-	public IntHashtable getColorMap() {
+	public Hashtable getColorMap() {
 		return colorHash;
 	}
 	
-	public void setColorMap(IntHashtable chash, int defaultcolorkey) {
+	public void setColorMap(Hashtable chash, int defaultcolorkey) {
 		colorHash = chash;
 		this.defaultcolorkey = defaultcolorkey;
 		gotcolormap = (chash != null);
@@ -180,7 +180,7 @@ public class GIFWriter implements ImageObserver {
 	}
 	
 	
-	public static void writeHeader(IntHashtable colormap, int mywidth,
+	public static void writeHeader(Hashtable colormap, int mywidth,
 					int myheight, OutputStream outs) throws IOException {
 		byte B;
 		int i;

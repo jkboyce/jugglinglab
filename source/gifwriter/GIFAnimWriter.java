@@ -23,8 +23,8 @@
 
 package gifwriter;
 
-import Acme.IntHashtable;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Vector;
 import java.io.*;
 import java.awt.*;
 
@@ -35,7 +35,7 @@ public class GIFAnimWriter {
 	Vector frames, delays;
 	
 	boolean colormap_valid = false;
-	IntHashtable colormap;
+	Hashtable colormap;
 	int defaultcolorkey;
 	
 
@@ -54,19 +54,19 @@ public class GIFAnimWriter {
 	// This version allows us to manually add to the colormap
 	public void doColorMap(Color color, boolean defaultcolor) throws IOException {
 		if (colormap == null)
-			colormap = new IntHashtable();
+			colormap = new Hashtable();
 		
 		int index = colormap.size();
 		int rgb = color.getRGB();
 
 		GIFEncoderHashitem item =
-						(GIFEncoderHashitem)colormap.get(rgb);
+						(GIFEncoderHashitem)colormap.get(Integer.valueOf(rgb));
 		if (item == null) {
 			if (index >= 256)
 				throw new IOException( "Too many colors for a GIF" );
 			item = new GIFEncoderHashitem(rgb, color, 1, index);
 			++index;
-			colormap.put(rgb, item);
+			colormap.put(Integer.valueOf(rgb), item);
 		} else
 			++item.count;
 			
@@ -115,7 +115,7 @@ public class GIFAnimWriter {
 	}
 */
 	
-	public IntHashtable getColorMap() {
+	public Hashtable getColorMap() {
 		return this.colormap;
 	}
 	
