@@ -62,7 +62,8 @@
 
 <!ELEMENT patternlist (title?,line*)>
 
-<!ELEMENT line (#PCDATA)>
+<!ELEMENT line (#PCDATA|pattern)*>
 <!ATTLIST line
-          display  CDATA   #REQUIRED
-          notation CDATA   #IMPLIED>
+          display    CDATA   #REQUIRED
+          animprefs  CDATA   #IMPLIED
+          notation   CDATA   #IMPLIED>

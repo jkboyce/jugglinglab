@@ -24,12 +24,17 @@ package jugglinglab.jml;
 
 import java.io.*;
 import java.net.*;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
 import jugglinglab.util.*;
 
 
-public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, ErrorHandler {
+public class JMLParser extends DefaultHandler {
     protected boolean patternStarted;
     protected boolean patternFinished;
 
@@ -51,23 +56,21 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
 
 
     public void parse(Reader read) throws SAXException, IOException {
-        // choose parser
-        Parser parser = new com.microstar.xml.SAXDriver();		// use AElfred
-                                                            //		Parser parser = new com.megginson.sax.LarkDriver();		// use Lark
-                                                            //		Parser parser = new com.sun.xml.parser.Parser();		// use Sun XML
-
-        parser.setEntityResolver(this);
-        parser.setDTDHandler(this);
-        parser.setDocumentHandler(this);
-        parser.setErrorHandler(this);
-
-        // Parse the document.
-        parser.parse(new org.xml.sax.InputSource(read));
-    }
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setValidating(true);
+			SAXParser parser = factory.newSAXParser();
+			
+			// Parse the document.
+			parser.parse(new InputSource(read), this);
+		} catch (ParserConfigurationException pce) {
+			throw new SAXException(pce.getMessage());
+		}
+	}
 
 
     // Implementation of org.xml.sax.EntityResolver
-
+	
     public InputSource resolveEntity(String publicId, String systemId) {
         if (saxdebug) {
             System.out.print("Resolve entity:");
@@ -75,20 +78,20 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
                 System.out.print(" publicId=\"" + publicId + '"');
             System.out.println(" systemId=\"" + systemId + '"');
         }
-
+		
         if (systemId.equalsIgnoreCase("file://jml.dtd")) {
             if (saxdebug) {
                 System.out.println("--------- jml.dtd -----------");
                 System.out.println(JMLDefs.jmldtd);
                 System.out.println("-----------------------------");
             }
-            return new org.xml.sax.InputSource(new StringReader(JMLDefs.jmldtd));
+            return new InputSource(new StringReader(JMLDefs.jmldtd));
         }
         return null;
     }
-
+	
     // Implementation of org.xml.sax.DTDHandler
-
+	
     public void notationDecl(String name, String publicId, String systemId) {
         if (saxdebug) {
             System.out.print("Notation declaration: " + name);
@@ -99,7 +102,7 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
             System.out.print('\n');
         }
     }
-
+	
     public void unparsedEntityDecl(String name,
                                    String publicId,
                                    String systemId,
@@ -113,14 +116,15 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
             System.out.println(" notationName=\"" + notationName + '"');
         }
     }
-
-    // Implementation of org.xml.sax.DocumentHandler
-
+	
+    // Implementation of org.xml.sax.ContentHandler
+	
     public void setDocumentLocator(Locator locator) {
+		super.setDocumentLocator(locator);
         if (saxdebug)
             System.out.println("Document locator supplied.");
     }
-
+	
     public void startDocument() throws SAXException {
         if (saxdebug)
             System.out.println("Start document");
@@ -130,7 +134,7 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
             throw new SAXException(je.getMessage());
         }
     }
-
+	
     public void endDocument() throws SAXException {
         if (saxdebug)
             System.out.println("End document");
@@ -140,36 +144,36 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
             throw new SAXException(je.getMessage());
         }
     }
-
-    public void startElement(String name, AttributeList attributes) throws SAXException {
+	
+	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
         if (saxdebug) {
-            System.out.println("Start element: " + name);
-            for (int i = 0; i < attributes.getLength(); i++) {
+            System.out.println("Start element: " + qName);
+            for (int i = 0; i < atts.getLength(); i++) {
                 System.out.println("  Attribute: " +
-                                   attributes.getName(i) + ' ' +
-                                   attributes.getType(i) + " \"" +
-                                   attributes.getValue(i) + '"');
+                                   atts.getQName(i) + ' ' +
+                                   atts.getType(i) + " \"" +
+                                   atts.getValue(i) + '"');
             }
         }
         try {
-            startJMLElement(name);
-            for (int i = 0; i < attributes.getLength(); i++)
-                addJMLAttribute(attributes.getName(i), attributes.getValue(i));
+            startJMLElement(qName);
+            for (int i = 0; i < atts.getLength(); i++)
+                addJMLAttribute(atts.getQName(i), atts.getValue(i));
         } catch (JuggleException je) {
             throw new SAXException(je.getMessage());
         }
     }
-
-    public void endElement(String name) throws SAXException {
+	
+	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
         if (saxdebug)
-            System.out.println("End element: " + name);
+            System.out.println("End element: " + qName);
         try {
-            endJMLElement(name);
+            endJMLElement(qName);
         } catch (JuggleException je) {
             throw new SAXException(je.getMessage());
         }
     }
-
+	
     public void characters(char ch[], int start, int length) throws SAXException {
         if (saxdebug) {
             System.out.print("Characters: ");
@@ -181,48 +185,49 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
             throw new SAXException(je.getMessage());
         }
     }
-
+	
     public void ignorableWhitespace(char ch[], int start, int length) {
         if (saxdebug) {
             System.out.print("Ignorable Whitespace: ");
             display(ch, start, length);
         }
     }
-
+	
     public void processingInstruction(String target, String data) {
         if (saxdebug)
             System.out.println("Processing instruction: " + target + ' ' + data);
     }
-
+	
     // Implementation of org.xml.sax.ErrorHandler
-
+	
     public void warning(SAXParseException exception) throws SAXException {
         //		throw new SAXException("Warning: " +
         //					exception.getMessage() + " (" +
         //					exception.getSystemId() + ':' +
         //					exception.getLineNumber() + ',' +
         //					exception.getColumnNumber() + ')');
-        throw new SAXException("line "+exception.getLineNumber()+": "+exception.getMessage());
+		throw exception;
     }
-
+	
     public void error(SAXParseException exception) throws SAXException {
         //		throw new SAXException("Recoverable Error: " +
         //					exception.getMessage() + " (" +
         //					exception.getSystemId() + ':' +
         //					exception.getLineNumber() + ',' +
         //					exception.getColumnNumber() + ')');
-        throw new SAXException("line "+exception.getLineNumber()+": "+exception.getMessage());
+        throw exception;
     }
-
+	
     public void fatalError(SAXParseException exception) throws SAXException {
         //		throw new SAXException("Fatal Error: " +
         //					exception.getMessage() + " (" +
         //					exception.getSystemId() + ':' +
         //					exception.getLineNumber() + ',' +
         //					exception.getColumnNumber() + ')');
-        throw new SAXException("line "+exception.getLineNumber()+": "+exception.getMessage());
+        throw exception;
     }
-
+	
+	
     // Utility routines.
 
     /**
@@ -302,7 +307,12 @@ public class JMLParser implements EntityResolver, DTDHandler, DocumentHandler, E
         if (currentNode == null)
             throw new JuggleExceptionInternal("addJMLText(): no element to add to");
 
-        currentNode.setNodeValue(text);
+		String newvalue = null;
+		if (currentNode.getNodeValue() == null)
+			newvalue = text;
+		else
+			newvalue = currentNode.getNodeValue() + text;
+        currentNode.setNodeValue(newvalue);
     }
 
     public void endJMLPattern() throws JuggleExceptionInternal {

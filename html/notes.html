@@ -16,12 +16,11 @@
 <tr valign="top">
 <td><p>New features</p></td>
 <td><ul>
-<li>Added full user interface support for right-to-left languages such as Hebrew and Arabic.
-	User interface elements invert when the default system language is right-to-left.  This
-	behavior can be explicitly triggered by for example launching Juggling Lab with: <code>java -Duser.language=he -jar JugglingLab.jar</code></li>
-<li>Added support for UTF-8 encoded properties files, to make localization into non-Roman
-	scripts easier.</li>
+<li>Added user interface support for right-to-left languages such as Hebrew and Arabic.  User interface elements invert when the default system language is right-to-left.  This behavior can be explicitly triggered by for example launching Juggling Lab with: <code>java -Duser.language=he -jar JugglingLab.jar</code></li>
+<li>Added support for UTF-8 encoded properties files, to make localization into non-Roman scripts easier.</li>
 <li>Added <code>locale</code> setting to <a href="applet.html">applet configuration</a>, to override the system default languge.</li>
+<li>Changed JML syntax to make it fully XML-compliant; new version is called JML 1.2.</li>
+<li>Added Convert JML menu item to application, which converts JML files to version 1.2.</li>
 </ul></td>
 </tr>
 <tr valign="top">
@@ -32,7 +31,7 @@
 <li>Refactored UI messages and error messages to use templates, improving our ability to localize them.</li>
 <li>Passing patterns now default to Simple view instead of Edit view, since the latter doesn't
 properly work with passing patterns (<a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3160246&amp;group_id=49459&amp;atid=456268">3160246</a>).</li>
-<li>Grip location of rings moved from geometrical center of the ring (the hole) to the edge, to appear more natural.</li>
+<li>Moved grip location of rings from geometrical center of the ring (the hole) to the edge, to appear more natural.</li>
 <li>Fixed auto-scaling of the animation, so the props and jugglers are better sized and positioned within the view.</li>
 <li>For patterns with more than 3 jugglers, increased the default spacing between jugglers to eliminate overlaps in the hands.</li>
 <li>Fixed bugs in Save As HTML output.</li>
@@ -43,8 +42,9 @@ properly work with passing patterns (<a href="https://sourceforge.net/tracker/?f
 <tr valign="top">
 <td><p>Other changes</p></td>
 <td><ul>
-<li>Removed idx3d library and 3d rendering mode, making Juggling Lab now fully open source.</li>
+<li>Removed idx3d library and 3d rendering mode, making Juggling Lab fully open source.</li>
 <li>Removed Jakarta regular expression library; using Java regular expression library instead.</li>
+<li>Removed AElfred XML parser; using Java XML parser instead.</li>
 <li>Removed Acme labs IntHashtable class; using Java Hashtable instead.</li>
 <li>Removed support for legacy parameters <code>mat_style</code>, <code>mat_HR</code>, and <code>mat_DR</code>.</li>
 <li>Added bookmarklet to home page.</li>

@@ -1,29 +1,38 @@
 <?xml version="1.0"?>
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
-<jml version="1.1">
+<jml version="1.2">
 <patternlist>
 <title>Demo bounce patterns</title>
 
-<line display="3 ball hyperlift (1.2 tps)" notation="siteswap"
-pattern="pattern=3BHL;tps=1.2;hands=(15)(20,15)c(25)(20,-15)."/>
-<line display="3 ball lift (1.6 tps)" notation="siteswap"
-pattern="pattern=3BL;tps=1.6;hands=(20)(23,15)c(25)(23,-15)."/>
-<line display="3 ball force (1.8 tps)" notation="siteswap"
-pattern="pattern=3BF;tps=1.8;;hands=(25)(20)."/>
-<line display="3 ball hyperforce (3.5 tps)" notation="siteswap"
-pattern="pattern=3BHF;tps=3.5;hands=(25)(10)."/>
+<line display="3 ball hyperlift (1.2 tps)" notation="siteswap">
+pattern=3BHL;tps=1.2;hands=(15)(20,15)c(25)(20,-15).
+</line>
+<line display="3 ball lift (1.6 tps)" notation="siteswap">
+pattern=3BL;tps=1.6;hands=(20)(23,15)c(25)(23,-15).
+</line>
+<line display="3 ball force (1.8 tps)" notation="siteswap">
+pattern=3BF;tps=1.8;;hands=(25)(20).
+</line>
+<line display="3 ball hyperforce (3.5 tps)" notation="siteswap">
+pattern=3BHF;tps=3.5;hands=(25)(10).
+</line>
 
-<line display=" "/>
+<line display=""/>
 
-<line display="7 ball hyperlift (3.5 tps)" notation="siteswap" pattern="pattern=7BHL;tps=3.5"/>
-<line display="5 ball force double-bounce" notation="siteswap"
-pattern="pattern=5BBF;tps=2"/>
-<line display="5 ball shower 9BBBHL1" notation="siteswap"
-pattern="pattern=9BBBHL1;tps=2.1"/>
-<line display="Moving shower" notation="siteswap"
-pattern="pattern=19BBBHL;tps=2.1;hands=(20)(20,15)c(20)(20,-15).;body=(0,75,0)..(72,23,71)..(144,-61,44)..(216,-61,-44)..(288,23,-71).."/>
+<line display="7 ball hyperlift (3.5 tps)" notation="siteswap">
+pattern=7BHL;tps=3.5
+</line>
+<line display="5 ball force double-bounce" notation="siteswap">
+pattern=5BBF;tps=2
+</line>
+<line display="5 ball shower 9BBBHL1" notation="siteswap">
+pattern=9BBBHL1;tps=2.1
+</line>
+<line display="Moving shower" notation="siteswap">
+pattern=19BBBHL;tps=2.1;hands=(20)(20,15)c(20)(20,-15).;body=(0,75,0)..(72,23,71)..(144,-61,44)..(216,-61,-44)..(288,23,-71)..
+</line>
 
-<line display="Bounced yo-yo" notation="jml" pattern='
+<line display="Bounced yo-yo" notation="jml">
 <pattern>
 <title>Bounced yo-yo</title>
 <prop type="ball"/>
@@ -54,7 +63,7 @@ pattern="pattern=19BBBHL;tps=2.1;hands=(20)(20,15)c(20)(20,-15).;body=(0,75,0)..
 <holding path="2"/>
 </event>
 </pattern>
-'/>
+</line>
 
 </patternlist>
 </jml>

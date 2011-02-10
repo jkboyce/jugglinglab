@@ -54,7 +54,7 @@ public class GeneratorTarget {
 			// updated from the event dispatch thread.
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					ltarget.addPattern(display, null, notation, anim);
+					ltarget.addPattern(display, null, notation, anim, null);
 				}
 			});
 		}

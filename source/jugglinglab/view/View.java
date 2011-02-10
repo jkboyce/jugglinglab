@@ -254,9 +254,6 @@ public class View extends JPanel implements ActionListener {
                                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
                                 PrintWriter write = new PrintWriter(fw);
-                                for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
-                                    write.println(JMLDefs.jmlprefix[i]);
-                                write.flush();
                                 getPattern().writeJML(fw, true);
                                 fw.close();
                             }
@@ -313,26 +310,17 @@ public class View extends JPanel implements ActionListener {
                                 pw.println("<html>");
                                 pw.println("<head>");
                                 pw.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
-                                pw.println("<title>"+pat.getTitle()+"</title>");
+                                pw.println("<title>"+JMLNode.xmlescape(pat.getTitle())+"</title>");
                                 pw.println("</head>");
                                 pw.println("<body>");
                                 pw.println("<applet archive=\"JugglingLab.jar\" code=\"JugglingLab\" width=\""+w+"\" height=\""+h+"\">");
-                                pw.println("<param name=\"config\" value=\""+config+"\">");
+                                pw.println("<param name=\"config\" value=\""+JMLNode.xmlescape(config)+"\">");
                                 if (prefs.length() != 0)
-                                    pw.println("<param name=\"animprefs\" value=\""+prefs+"\">");
+                                    pw.println("<param name=\"animprefs\" value=\""+JMLNode.xmlescape(prefs)+"\">");
                                 pw.println("<param name=\"notation\" value=\"jml\">");
-                                pw.println("<param name=\'pattern\' value=\'");
-                                pw.flush();
-                                String p = pat.toString();
-                                // delete the ' character first
-                                int pos;
-                                while ((pos = p.indexOf('\'')) >= 0) {
-                                    p = p.substring(0,pos) + p.substring(pos+1,p.length());
-                                }
-                                pw.println(p);
-                                // pat.writeJML(fw, false);
-                                // fw.flush();
-                                pw.println("\'>");
+                                pw.println("<param name=\"pattern\" value=\"");
+                                pw.println(JMLNode.xmlescape(pat.toString()));
+                                pw.println("\">");
                                 pw.println("Java not available");
                                 pw.println("</applet>");
                                 pw.println("</body>");
