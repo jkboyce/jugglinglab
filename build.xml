@@ -17,7 +17,7 @@
 
 <target name="compile" depends="init">
 	<javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5" deprecation="${deprecation}" includeAntRuntime="false" includes="**"
-	excludes="jugglinglab/MacOS/PlatformSpecificMacOS.java,idx3d/idx3d_3ds*,idx3d/idx3d_FX*,resources/*,resources_osx/*,org/apache/regexp/RED*,org/apache/regexp/Reader*,org/apache/regexp/Stream*,org/apache/regexp/RETest.java,dox.conf,jugglinglab/notation/*.jj">
+	excludes="jugglinglab/MacOS/PlatformSpecificMacOS.java,resources/*,resources_osx/*,dox.conf,jugglinglab/notation/*.jj">
 	</javac>
 </target>
 
