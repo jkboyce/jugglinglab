@@ -165,11 +165,13 @@ public class JMLView extends View {
             } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleException(jei);
                 setDirty(true);
-            } catch (SAXException se) {
-                StringTokenizer st = new StringTokenizer(se.getMessage(), ":");
+            } catch (SAXParseException spe) {
 				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { st.nextToken() };					
+				Object[] arguments = { new Integer(spe.getLineNumber()) };					
                 lab.setText(MessageFormat.format(template, arguments));
+                setDirty(true);
+            } catch (SAXException se) {
+                lab.setText(se.getMessage());
                 setDirty(true);
             } catch (IOException ioe) {
                 ErrorDialog.handleException(ioe);

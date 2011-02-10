@@ -24,7 +24,9 @@ package jugglinglab.jml;
 
 
 public class JMLDefs {
-	public static final String jmlversion = "1.1";
+	public static final String default_JML_on_save = "1.2";
+
+	public static final String default_JML_on_load = "1.0";
 	
 	public static final String jmldtd =
 "<!ELEMENT jml (pattern|patternlist)>\n" +
@@ -90,12 +92,11 @@ public class JMLDefs {
 "\n" +
 "<!ELEMENT patternlist (title?,line*)>\n" +
 "\n" +
-"<!ELEMENT line EMPTY>\n"+
+"<!ELEMENT line (#PCDATA|pattern)*>\n"+
 "<!ATTLIST line\n" +
 "          display    CDATA   #REQUIRED\n" +
 "          animprefs  CDATA   #IMPLIED\n" +
-"          notation   CDATA   #IMPLIED\n" +
-"          pattern    CDATA   #IMPLIED>\n";
+"          notation   CDATA   #IMPLIED>\n";
 
 
 

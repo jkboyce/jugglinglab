@@ -27,6 +27,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
 import org.xml.sax.*;
@@ -392,33 +393,31 @@ public class NotationGUI extends JPanel implements ActionListener {
 		gb.setConstraints(abouttext1, make_constraints(GridBagConstraints.LINE_START,0,0,
 													   new Insets(15,15,0,15)));
 
-		JLabel abouttext5 = new JLabel(guistrings.getString("Version")+" "+Constants.version);
+		String template = guistrings.getString("Version");
+		Object[] arguments = { Constants.version };					
+		JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
 		abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		textPanel.add(abouttext5);
 		gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
 													   new Insets(0,15,0,15)));
 
-		JLabel abouttext2 = new JLabel("AElfred XML parser copyright (C) 1997-1998 Microstar Software Ltd.");
-		abouttext2.setFont(new Font("SansSerif", Font.PLAIN, 10));
-		textPanel.add(abouttext2);
-		gb.setConstraints(abouttext2, make_constraints(GridBagConstraints.LINE_START,0,2,
-													   new Insets(15,15,0,15)));
-
-		JLabel abouttext6 = new JLabel("All other code copyright (C) 2002-"+Constants.year+" Jack Boyce and others");
+		String template2 = guistrings.getString("Copyright_message");
+		Object[] arguments2 = { Constants.year };					
+		JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
 		abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
 		textPanel.add(abouttext6);
-		gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,3,
-													   new Insets(0,15,15,15)));
+		gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
+													   new Insets(15,15,15,15)));
 
 		JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
 		abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
 		textPanel.add(abouttext3);
-		gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,4,
+		gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
 													   new Insets(0,15,0,15)));
 
 		JButton okbutton = new JButton(guistrings.getString("OK"));
 		textPanel.add(okbutton);
-		gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,5,
+		gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
 													 new Insets(15,15,15,15)));
 		okbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

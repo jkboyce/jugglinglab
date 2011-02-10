@@ -62,7 +62,7 @@ public class JMLPattern {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    protected String version = JMLDefs.jmlversion;	// JML version number
+    protected String version = JMLDefs.default_JML_on_save;	// JML version number
     protected String title;
     protected int numjugglers;
     protected int numpaths;
@@ -100,9 +100,9 @@ public class JMLPattern {
     }
 
     // Used to specify the jml version number, when pattern is part of a patternlist
-    public JMLPattern(JMLNode root, String jmlversion) throws JuggleExceptionUser {
+    public JMLPattern(JMLNode root, String jmlvers) throws JuggleExceptionUser {
         this();
-        this.loadingversion = jmlversion;
+        this.loadingversion = jmlvers;
         readJML(root);
         valid = true;
     }
@@ -121,14 +121,7 @@ public class JMLPattern {
 
     //	public void setJMLVersion(String version)	{ this.version = version; }
     
-    public void setTitle(String title) {
-        for (int i = 0; i < title.length(); i++) {
-            if ( title.charAt(i) == '<' || title.charAt(i) == '>') {
-                title = "Passing Pattern";
-            }
-        }
-        this.title = title;
-    }
+    public void setTitle(String title)		{ this.title = title == null ? null : title.trim(); }
     public void setNumberOfJugglers(int n)	{ this.numjugglers = n; }
     public void setNumberOfPaths(int n)		{ this.numpaths = n; }
 
@@ -1265,8 +1258,7 @@ done2:
         if (type.equalsIgnoreCase("jml")) {
             loadingversion = current.getAttributes().getAttribute("version");
             if (loadingversion == null)
-                loadingversion = Constants.default_JML_version;
-            // System.out.println("loading version = "+loadingversion);
+                loadingversion = JMLDefs.default_JML_on_load;
         } else if (type.equalsIgnoreCase("pattern")) {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {
@@ -1387,14 +1379,16 @@ done2:
     public void writeJML(Writer wr, boolean title) throws IOException {
         PrintWriter write = new PrintWriter(wr);
 
+        for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
+            write.println(JMLDefs.jmlprefix[i]);
         write.println("<jml version=\"" + this.version + "\">");
         write.println("<pattern>");
         if (title)
-            write.println("<title>"+this.title+"</title>");
+            write.println("<title>" + JMLNode.xmlescape(this.title) + "</title>");
         for (int i = 0; i < props.size(); i++)
             ((PropDef)props.elementAt(i)).writeJML(write);
 
-        String out = "<setup jugglers=\""+getNumberOfJugglers()+"\" paths=\""+
+        String out = "<setup jugglers=\"" + getNumberOfJugglers() + "\" paths=\""+
             getNumberOfPaths()+"\" props=\""+getPropAssignment(1);
         for (int i = 2; i <= getNumberOfPaths(); i++)
             out += "," + getPropAssignment(i);

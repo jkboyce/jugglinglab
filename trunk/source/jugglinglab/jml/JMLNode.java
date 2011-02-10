@@ -151,14 +151,14 @@ public class JMLNode {
         // output attributes
         for (i = 0; i < attributes.getNumberOfAttributes(); i++) {
             result.append(" " + attributes.getAttributeName(i));
-            result.append("=\"" + attributes.getAttributeValue(i) + "\"");
+            result.append("=\"" + JMLNode.xmlescape(attributes.getAttributeValue(i)) + "\"");
         }
 
         if (getNumberOfChildren() == 0) {
             if (nodeValue == null)
                 result.append("/>");
             else
-                result.append(">" + nodeValue + "</" + nodeType + ">");
+                result.append(">" + JMLNode.xmlescape(nodeValue) + "</" + nodeType + ">");
             write.println(result.toString());
             result = new StringBuffer();
         } else {
@@ -171,7 +171,7 @@ public class JMLNode {
                  for (i = 0; i <= indentlevel; i++)
                  result.append('\t');
                  */
-                result.append(nodeValue);
+                result.append(JMLNode.xmlescape(nodeValue));
                 write.println(result.toString());
                 result = new StringBuffer();
             }
@@ -189,5 +189,14 @@ public class JMLNode {
         }
         write.flush();
     }
+	
+	public static String xmlescape(String in) {
+		String result = in.replace("&", "&amp;");
+		result = result.replace("<", "&lt;");
+		result = result.replace(">", "&gt;");
+		result = result.replace("'", "&apos;");
+		result = result.replace("\"", "&quot;");
+		return result;
+	}
 }
 

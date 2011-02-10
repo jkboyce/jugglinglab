@@ -192,7 +192,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
 
-    public void addPattern(String display, String animprefs, String notation, String anim) {
-        pl.addPattern(display, animprefs, notation, anim);
+    public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pattern) {
+        pl.addPattern(display, animprefs, notation, anim, pattern);
     }
 }

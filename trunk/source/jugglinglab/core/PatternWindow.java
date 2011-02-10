@@ -78,7 +78,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
-			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim"))
+			if (jmi != null && jmi.getActionCommand().equals("savegifanim"))
 				jmi.setEnabled(false);
 		}
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

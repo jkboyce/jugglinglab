@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
-<jml>
+<jml version="1.2">
 <patternlist>
 <title>Demo patterns</title>
 
 <line display="Image prop:"/>
-<line display="default image" notation="jml" pattern='
+<line display="default image" notation="jml">
 <pattern>
 <title>3</title>
 <prop type="image"/>
@@ -19,11 +19,11 @@
 <catch path="3"/>
 </event>
 </pattern>
-'/>
+</line>
 
-<line display=" "/>
+<line display=""/>
 <line display="Rings:"/>
-<line display="7 rings" notation="jml" pattern='
+<line display="7 rings" notation="jml">
 <pattern>
 <title>7</title>
 <prop type="ring"/>
@@ -38,11 +38,11 @@
 <catch path="3"/>
 </event>
 </pattern>
-'/>
+</line>
 
-<line display=" "/>
+<line display=""/>
 <line display="Highlighted balls:"/>
-<line display="5 cascade" notation="jml" pattern='
+<line display="5 cascade" notation="jml">
 <pattern>
 <title>Demo of Ball with Transparent Background</title>
 <prop type="ball" mod="color=blue;highlight=true"/>
@@ -60,17 +60,23 @@
 <catch path="3"/>
 </event>
 </pattern>
-'/>
+</line>
 
-<line display=" "/>
+<line display=""/>
 <line display="Stereo display:"/>
-<line display="3 cascade" animprefs="stereo=true" notation="siteswap" pattern="pattern=3"/>
-<line display="7 cascade" animprefs="stereo=true" notation="siteswap" pattern="pattern=7"/>
-<line display="7 passing" animprefs="stereo=true" notation="siteswap" pattern="pattern=<R|L><4xp|3><3|4xp>"/>
-<line display=" "/>
+<line display="3 cascade" animprefs="stereo=true" notation="siteswap">
+pattern=3
+</line>
+<line display="7 cascade" animprefs="stereo=true" notation="siteswap">
+pattern=7
+</line>
+<line display="7 passing" animprefs="stereo=true" notation="siteswap">
+pattern=&lt;R|L&gt;&lt;4xp|3&gt;&lt;3|4xp&gt;
+</line>
+<line display=""/>
 <line display="Body movement:"/>
 
-<line display="turning in circles" notation="jml" pattern='
+<line display="turning in circles" notation="jml">
 <pattern>
 <title>5 turning</title>
 <prop type="ball"/>
@@ -111,9 +117,9 @@
 <catch path="2"/>
 </event>
 </pattern>
-'/>
+</line>
 
-<line display="walking in circles" notation="jml" pattern='
+<line display="walking in circles" notation="jml">
 <pattern>
 <title>5 walking</title>
 <prop type="ball"/>
@@ -154,9 +160,9 @@
 <catch path="2"/>
 </event>
 </pattern>
-'/>
+</line>
 
-<line display="5 ball half-pirouettes" notation="jml" pattern='
+<line display="5 ball half-pirouettes" notation="jml">
 <pattern>
 <title>5 ball half-pirouettes</title>
 <prop type="ball"/>
@@ -313,7 +319,7 @@
 <holding path="4"/>
 </event>
 </pattern>
-'/>
+</line>
 
 </patternlist>
 </jml>

@@ -27,13 +27,10 @@ public class Constants {
     public static final String version = "0.6.1";
     public static final String year = "2011";
     
-    public static final String default_JML_version = "1.1";
-
     public static final boolean DEBUG_LAYOUT = false;
     public static final boolean DEBUG_PARSING = false;
 
     public static final boolean INCLUDE_GIF_SAVE = true;
-    public static final boolean INCLUDE_JUGGLEANIM_OPEN = false;
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
     public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.splineCurve.rmsaccel;

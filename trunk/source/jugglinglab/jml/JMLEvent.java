@@ -194,7 +194,7 @@ public class JMLEvent {
     }
 
     // Methods to handle JML
-    public void readJML(JMLNode current, String jmlversion, int njugglers, int npaths) throws JuggleExceptionUser {
+    public void readJML(JMLNode current, String jmlvers, int njugglers, int npaths) throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
         double tempx=0.0, tempy=0.0, tempz=0.0, tempt=0.0;
         String handstr = null;
@@ -218,7 +218,7 @@ public class JMLEvent {
         }
 
         // JML version 1.0 used a different coordinate system -- convert
-        if (jmlversion.equals("1.0")) {
+        if (jmlvers.equals("1.0")) {
             double temp = tempy;
             tempy = tempz;
             tempz = temp;
