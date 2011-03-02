@@ -69,36 +69,6 @@ public class siteswapNotation extends mhnNotation {
                     bodyperiod = Permutation.lcm(bodyperiod, p.bodies.getPeriod(i));
             }
 
-            // The following is a hack to compensate for the fact that JuggleAnim
-            // displays synch patterns so that the leftmost slot in the (,) corresponds
-            // to the right hand.  We switch the right and left hands in the mat_style
-            // parameter, if one was given.
-			
-			// Commented out for now; need to figure out how to apply the hack under
-			// siteswap2 notation (if at all)
-			
-			/*
-            if (p.mat_style && (p.getMode() == siteswap_oldPattern.MODE_SYNCH)) {
-                String handstring = "";
-                int count = ((handperiod%2 == 1) ? (2*handperiod) : handperiod);
-                for (int i = 0; i < count; i += 2) {
-                    int index = (i + 1) % handperiod;
-                    Coordinate c = p.hands.getCoordinate(1, index, 0);
-                    handstring += "("+c.x+","+c.z+")";
-                    c = p.hands.getCoordinate(1, index, p.hands.getCatchIndex(1, index));
-                    handstring += "("+c.x+","+c.z+").";
-                    index = i % handperiod;
-                    c = p.hands.getCoordinate(1, index, 0);
-                    handstring += "("+c.x+","+c.z+")";
-                    c = p.hands.getCoordinate(1, index, p.hands.getCatchIndex(1, index));
-                    handstring += "("+c.x+","+c.z+").";
-                }
-                handperiod = count;
-
-                p.hands = new mhnHands(handstring);
-            }
-			*/
-
             int totalperiod = patperiod;
             totalperiod = Permutation.lcm(totalperiod, handperiod);
             totalperiod = Permutation.lcm(totalperiod, bodyperiod);
