@@ -29,8 +29,6 @@ import jugglinglab.util.*;
 
 public class siteswapPattern extends mhnPattern {
     protected boolean oddperiod = false;
-    // protected boolean mat_style = false;
-    // protected double mat_hr = -1;	// legacy, for emulating Ken Matsuoka's format
 
 
     // only works after parsePattern() is called:
@@ -141,64 +139,14 @@ public class siteswapPattern extends mhnPattern {
         }
 
         if ((temp = pl.getParameter("mat_style")) != null) {
-        /*
-            try {
-                StringTokenizer	st1 = new StringTokenizer(temp, "}", false);
-                StringTokenizer st2 = null;
-                String			str = null;
-                int				size = st1.countTokens();
-
-                if ((size % 2) == 1)
-                    throw new JuggleExceptionUser(errorstrings.getString("Error_matstyle_number"));
-                double[][] style = new double[size][2];
-
-                for (int i = 0; i < size/2; i++) {
-                    for (int j = 0; j < 2; j++) {
-                        str = st1.nextToken().replace('{', ' ');
-                        st2 = new StringTokenizer(str, ",", false);
-                        style[2*i+j][0] = 2.5 * Double.valueOf(st2.nextToken()).doubleValue();
-                        style[2*i+j][1] = 5.0 * Double.valueOf(st2.nextToken()).doubleValue();
-                    }
-                }
-
-                String handstring = "";
-                for (int i = 0; i < size/2; i++) {
-                    int throwindex = 2 * i + 1;
-                    int catchindex = 2 * i + 4;
-                    while (catchindex >= size)
-                        catchindex -= size;
-
-                    handstring += "("+style[throwindex][0]+","+style[throwindex][1]+")("+
-                        style[catchindex][0]+","+style[catchindex][1]+").";
-                }
-                hands = new mhnHands(handstring);
-            } catch (NumberFormatException e) {
-                throw new JuggleExceptionUser(errorstrings.getString("Error_matstyle_format"));
-            } catch (NoSuchElementException e) {
-                throw new JuggleExceptionUser(errorstrings.getString("Error_matstyle_coords"));
-            }
-            mat_style = true;
-            */
             throw new JuggleExceptionUser(errorstrings.getString("Error_unsupported_setting")+": 'mat_style'");
         }
 
         if ((temp = pl.getParameter("mat_DR")) != null) {
-        	/*
-            try {
-                dwell = 2.0 * Double.valueOf(temp).doubleValue();
-            } catch (NumberFormatException e) {
-            }
-            */
             throw new JuggleExceptionUser(errorstrings.getString("Error_unsupported_setting")+": 'mat_DR'");
         }
 
         if ((temp = pl.getParameter("mat_HR")) != null) {
-        	/*
-            try {
-                mat_hr = Double.valueOf(temp).doubleValue();
-            } catch (NumberFormatException e) {
-            }
-            */
             throw new JuggleExceptionUser(errorstrings.getString("Error_unsupported_setting")+": 'mat_HR'");
         }
 
