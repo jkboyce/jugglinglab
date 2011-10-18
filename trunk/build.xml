@@ -16,8 +16,7 @@
 </target>
 
 <target name="compile" depends="init">
-	<javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5" deprecation="${deprecation}" includeAntRuntime="false" includes="**"
-	excludes="jugglinglab/MacOS/PlatformSpecificMacOS.java,resources/*,resources_osx/*,dox.conf,jugglinglab/notation/*.jj">
+	<javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5" deprecation="${deprecation}" includeAntRuntime="false" includes="**" excludes="jugglinglab/MacOS/PlatformSpecificMacOS.java,resources/*,resources_osx/*,dox.conf,jugglinglab/notation/*.jj">
 	</javac>
 </target>
 
