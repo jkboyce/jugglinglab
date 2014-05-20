@@ -70,7 +70,7 @@ public class PatternList extends JPanel {
         list = new JList(model);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setCellRenderer(new PatternCellRenderer());
-		
+        
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent lse) {
                 PatternWindow jaw2 = null;
@@ -273,22 +273,30 @@ public class PatternList extends JPanel {
     }
 	
 	
-	class PatternCellRenderer extends DefaultListCellRenderer {
-		public Component getListCellRendererComponent(
-													  JList list,
-													  Object value,   // value to display
-													  int index,      // cell index
-													  boolean iss,    // is the cell selected
-													  boolean chf)    // the list and the cell have the focus
-		{
-			// The DefaultListCellRenderer class will take care of the JLabels text
-			// property, its foreground and background colors, and so on
+	class PatternCellRenderer extends JLabel implements ListCellRenderer {
+        public Component getListCellRendererComponent(
+                        JList list,              // the list
+                        Object value,            // value to display
+                        int index,               // cell index
+                        boolean isSelected,      // is the cell selected
+                        boolean cellHasFocus)    // does the cell have focus
+        {
 			PatternRecord rec = (PatternRecord)value;
-			list.setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
-			
-			return super.getListCellRendererComponent(list, rec.display, index, iss, chf);
-			
-			// return this;
-		}
-	}	
+
+            setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
+            setText(rec.display);
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            setEnabled(list.isEnabled());
+            setOpaque(true);
+            return this;
+        }
+	}
+    
 }

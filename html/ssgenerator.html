@@ -14,11 +14,12 @@ You give the generator a list of parameters that define what kinds of patterns y
 want it to find, and it finds <em>all</em>
 patterns that fit the given constraints.</p>
 
-<p>There are three sections in this discussion:</p>
+<p>There are four sections in this discussion:</p>
 <ul>
 <li><a href="#running">Running the generator for the first time</a></li>
-<li><a href="#parameters">The parameters that feed the siteswap generator</a></li>
-<li><a href="#tips">Tips on using the generator successfully</a></li>
+<li><a href="#parameters">Input parameters</a></li>
+<li><a href="#tips">Tips for success</a></li>
+<li><a href="#commandline">Running it from the command line</a></li>
 </ul>
 
 <h2 id="running">Running the generator for the first time</h2>
@@ -277,7 +278,7 @@ the one "leading" the tricks:</p>
                         standard &lt;3p|3p&gt;&lt;3|3&gt; before the trick was
                         being done.  Note that person #1 has to begin
                         when his partner is throwing a pass.
-			      
+
                   &lt;4p|3p&gt;&lt;4p|3p&gt;&lt;3|1&gt;
                         which assumes the people were ultimate
                         passing before starting the trick.
@@ -316,10 +317,51 @@ searches for long-period patterns.  Most of the best siteswaps happen to be prim
 <li>Start with a large "passing communication delay" value if you're looking for passing tricks.</li>
 </ol>
 
-<p>The siteswap generator can also be run as a command line application; see the script
-	called <code>j2</code> included with the distribution.  When run in this way the
-	generator by default has no limits on time or pattern count, so this is a good option
-	for big searches.</p>
+<h2 id="commandline">Running it from the command line</h2>
+
+<p>The file distribution includes a command-line version of the siteswap generator, located at <code>bin/j2</code>.
+When run in this way the generator by default has no limits on time or pattern count, so this is a good option
+if you're doing something big or complex.</p>
+
+<p>From the <code>bin</code> directory try the following command line input, which should show a help message:</p>
+
+<pre class="userinput">
+    j2
+</pre>
+
+<p>All of the input parameters described above have corresponding options from the command line. For example you can
+experiment with these:</p>
+<pre class="userinput">
+    j2 5 7 5
+    j2 5 7 5 -g
+    j2 5 7 5 -g -n
+    j2 5 7 5 -g -no
+    j2 5 7 5 -ng -se
+    j2 5 7 5 -x 2 3
+    j2 5 7 5 -x 23
+    j2 5 7 18 -prime
+</pre>
+
+<p>Generating synchronous patterns:</p>
+<pre class="userinput">
+    j2 4 6 6 -s -g
+</pre>
+
+<p>Multiplexing has a number of options designed to filter out less interesting patterns:</p>
+<pre class="userinput">
+    j2 5 6 4 -m 2 -g
+    j2 5 6 4 -m 2 -g -mt
+</pre>
+
+<p>Here are some examples involving more than one juggler:</p>
+
+<pre class="userinput">
+    j2 6 4 1 -j 2
+    j2 6 4 2 -j 2 -g -jp -m 2 -d 1 -l 1
+</pre>
+
+<p>Experiment and see what you can discover! The number of possible siteswap patterns is vast, so it's easy to find patterns that have never been tried or even seen before. If you give <code>j2</code> a task that requires
+too much time to complete, you can always use Control-C to stop it.</p>
 
 </div>
 </body>

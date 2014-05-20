@@ -1,0 +1,15 @@
+<launch4jConfig>
+    <headerType>console</headerType>
+    <jar>../../bin/JugglingLab.jar</jar>
+    <dontWrapJar>true</dontWrapJar>
+    <outfile>../../bin/j2.exe</outfile>
+    <errTitle>j2 Siteswap Generator</errTitle>
+    <chdir>.</chdir>
+    <jre>
+        <minVersion>1.5.0</minVersion>
+    </jre>
+    <classPath>
+        <mainClass>jugglinglab/generator/siteswapGenerator</mainClass>
+        <cp>JugglingLab.jar</cp>
+    </classPath>
+</launch4jConfig>

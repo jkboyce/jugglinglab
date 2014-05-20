@@ -265,7 +265,7 @@ public class siteswapGenerator extends Generator {
                     try {
 						String re = make_standard_RE(args[i]);
 						if (re.indexOf("^") < 0)
-							re = ".*" + re;
+							re = ".*" + re + ".*";
 						exclude.add(Pattern.compile(re));
                     } catch (PatternSyntaxException pse) {
                         throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
@@ -1654,13 +1654,20 @@ findending2:
     
     
     public static void main(String[] args) {
-        if (args.length < 3)
-            System.out.println(
-                "Juggling Lab "+guistrings.getString("Version").toLowerCase()+" "+Constants.version+", copyright 2002-"+Constants.year+" by Jack Boyce and others\n\n" +
-                guistrings.getString("GPL_message")+"\n\n"+
-                guistrings.getString("Generator_intro")
-                );
-        else {
+        if (args.length < 3) {
+            String template = guistrings.getString("Version");
+            Object[] arg1 = { Constants.version };
+            String output = "Juggling Lab " + MessageFormat.format(template, arg1).toLowerCase()+"\n";
+
+            template = guistrings.getString("Copyright_message");
+            Object[] arg2 = { Constants.year };
+            output += MessageFormat.format(template, arg2)+"\n\n";
+
+            output += guistrings.getString("GPL_message")+"\n\n";
+            output += guistrings.getString("Generator_intro");
+            
+            System.out.println(output);
+        } else {
             siteswapGenerator ssg = new siteswapGenerator();
     
             try {

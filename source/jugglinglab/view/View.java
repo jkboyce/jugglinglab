@@ -181,7 +181,8 @@ public class View extends JPanel implements ActionListener {
             else if (command.equals("savegifanim")) {
                 if (jugglinglab.core.Constants.INCLUDE_GIF_SAVE)
                     doMenuCommand(FILE_GIFSAVE);
-            } else if (command.equals("savehtml"))
+            }
+            else if (command.equals("savehtml"))
                 doMenuCommand(FILE_HTMLSAVE);
             else if (command.equals("restart"))
                 doMenuCommand(VIEW_RESTART);
@@ -271,12 +272,18 @@ public class View extends JPanel implements ActionListener {
                 break;
 
             case FILE_GIFSAVE:
-                if ((getViewMode() == VIEW_SIMPLE) && jugglinglab.core.Constants.INCLUDE_GIF_SAVE) {
-                    NormalView nv = (NormalView)subview;
-					Animator ja = nv.getAnimator();
-                    if (!ja.isAnimInited())
-                        break;
-                    ja.writeGIFAnim();
+                if (jugglinglab.core.Constants.INCLUDE_GIF_SAVE) {
+                    if (getViewMode() == VIEW_SIMPLE) {
+                        NormalView nv = (NormalView)subview;
+                        Animator ja = nv.getAnimator();
+                        if (!ja.isAnimInited())
+                            break;
+                        ja.writeGIFAnim();
+                    }
+                    else {
+                        new LabelDialog(this, "Not available",
+                                        "Switch to Simple view to save an animated GIF");
+                    }
                 }
                 break;
 

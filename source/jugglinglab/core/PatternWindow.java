@@ -76,11 +76,15 @@ public class PatternWindow extends JFrame implements ActionListener {
 			viewmenu.getItem(1).setSelected(true);
 		}
 
+        /*
+        5/18/2014 Turned this off; UI was too confusing
+
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
 			if (jmi != null && jmi.getActionCommand().equals("savegifanim"))
 				jmi.setEnabled(false);
 		}
+        */
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		view.setDoubleBuffered(true);
 		this.setBackground(Color.white);
@@ -105,10 +109,15 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     // Implements ActionListener to enable/disable GIFsave as view mode changes
     public void actionPerformed(ActionEvent ae) {
-		boolean gifenabled = false;
+		/*
+        5/18/2014 Turned this off; UI was too confusing
+        
+        boolean gifenabled = false;
 		if (ae.getActionCommand().equals("simple"))
 			gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-		
+		*/
+        boolean gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
+        
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
 			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim")) {
