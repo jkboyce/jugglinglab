@@ -24,8 +24,8 @@ package jugglinglab.core;
 
 
 public class Constants {
-    public static final String version = "0.6.1";
-    public static final String year = "2011";
+    public static final String version = "0.6.2";
+    public static final String year = "2014";
     
     public static final boolean DEBUG_LAYOUT = false;
     public static final boolean DEBUG_PARSING = false;

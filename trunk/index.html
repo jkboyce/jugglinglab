@@ -10,7 +10,7 @@
 <p style="text-align:center">
 <img src="html/title.gif" alt="Juggling Lab screenshot"/><br />
 <span style="font-family: georgia, serif; font-size: 18pt">Juggling Lab</span><br />
-~ Current release: <a href="html/notes.html">0.6.1</a> (October 11, 2011) ~
+~ Current release: <a href="html/notes.html">0.6.2</a> (May 20, 2014) ~
 </p>
 
 <p style="margin-top: 1.5em">Juggling Lab is an application for creating and animating juggling patterns.  Its
@@ -19,8 +19,17 @@ main goals are to help people learn juggling patterns, and to assist in inventin
 GNU <a href="http://www.gnu.org/licenses/gpl.html">General Public License</a>.
 </p>
 
+<h3>Download</h3>
+<blockquote>
+<p><a href="https://sourceforge.net/projects/jugglinglab/files/Juggling%20Lab/">Juggling Lab download page</a> for Windows, Mac OS X,
+and other systems.</p>
+</blockquote>
+
 <h3>Run it in a browser</h3>
 <blockquote>
+<p>Note: Many browsers do not enable Java by default, which is required to run Juggling Lab.
+See <a href="http://java.com/en/download/help/enable_browser.xml">these instructions</a> for help. In a browser certain
+features are disabled, such as the ability to load and save patterns, and the ability to save animated GIFs.</p>
 <ul>
 <li><a href="bin/example_JM.html">Patterns #1</a> (JuggleMaster library)</li>
 <li><a href="bin/example_stnd.html">Patterns #2</a> (more popular patterns)</li>
@@ -28,42 +37,29 @@ GNU <a href="http://www.gnu.org/licenses/gpl.html">General Public License</a>.
 <li><a href="bin/example_bounce.html">Patterns #4</a> (bounce juggling)</li>
 <li><a href="bin/example_demo.html">Demo of stereo animation and body movement</a></li>
 <li><a href="bin/example_gen.html">Full applet</a> (pattern entry, siteswap generator, visual editing)</li>
-<li><a href="http://www.jugglewiki.org/">JuggleWiki site</a> (external site with hundreds of user-contributed patterns)</li>
 </ul>
 <ul>
 <li><a href="javascript:void( window.open('http://jugglinglab.sourceforge.net/siteswap.php?'+(window.getSelection?window.getSelection():(document.getSelection?document.getSelection():document.selection.createRange().text) ),'JugglingLab','location=no,status=yes,menubar=no,scrollbars=yes,resizable=yes,width=670,height=600,alwaysRaised=yes') )">JL</a> bookmarklet.  Under most browsers you can drag the link at left
 	into your bookmarks bar.  Then in any web page you can highlight a pattern with your mouse,
 	then click the bookmarklet to launch an animation.  Try it with this pattern:  868671</li>
 </ul>
-<p>Note:  These pages require that your browser support Java, and that it is enabled.  On most modern browsers they should
-work fine.</p>
-</blockquote>
-
-<h3>Run it as a standalone application</h3>
-<blockquote>
-<p>
-Juggling Lab also runs as a standalone application, in addition to the applet version above.  As an application
-it has more features, such as the ability to open and save patterns, and to export animated GIF files.
-</p>
-<p><a href="https://sourceforge.net/projects/jugglinglab/files/">Juggling Lab download page</a> for Mac OS X,
-Windows, and other systems.</p>
 </blockquote>
 
 <h3>Documentation</h3>
 <blockquote>
 <p>Read these to get up to speed on how to use Juggling Lab:</p>
 <ul>
-<li><a href="html/ssnotation.html">Siteswap notation.</a>  The juggling pattern notation used by
+<li><a href="html/ssnotation.html">Siteswap notation.</a> Description of siteswap notation as used by
 Juggling Lab.</li>
-<li><a href="html/sspanel.html">The pattern entry panel.</a>  How to enter
+<li><a href="html/sspanel.html">The pattern entry panel.</a> How to enter
 siteswap patterns, add hand movements, and change pattern timing.</li>
-<li><a href="html/ssgenerator.html">The generator panel.</a>  What the siteswap generator does and what all those options mean.</li>
-<li><a href="html/editor.html">The visual editor.</a>  How to use
+<li><a href="html/editor.html">The visual editor.</a> How to use
 Juggling Lab's visual editor to modify patterns.</li>
-<li><a href="html/phpinfo.html">Web link front end.</a>  How to create a Juggling Lab animation with a
+<li><a href="html/ssgenerator.html">The siteswap generator.</a> What the siteswap generator does and what all those options mean.</li>
+<li><a href="html/phpinfo.html">Web link front end.</a> How to create a Juggling Lab animation with a
 simple web link.</li>
 </ul>
-<p>This more specialized documentation covers topics the average user won't need to know:</p>
+<p>This more specialized material covers topics the average user won't need to know:</p>
 <ul>
 <li><a href="html/applet.html">Using Juggling Lab as an applet.</a>  Describes the HTML needed
 to create an animation within a web page.</li>
@@ -72,7 +68,6 @@ expression matching used in the siteswap generator.</li>
 <li><a href="html/jml.html">Juggling Markup Language (JML).</a>  Explains JML,
 Juggling Lab's internal pattern representation.</li>
 </ul>
-<p><a href="source_doc/html/index.html">Source code documentation</a> is also available.</p>
 </blockquote>
 
 <h3>Quick feature overview</h3>
@@ -97,21 +92,21 @@ list</a>  <i>(expect low traffic).</i></p>
 
 <p>You can also contribute directly to the project by:</p>
 <ul>
-<li><b>Finding bugs</b> and reporting them on the Juggling Lab <a href="http://sourceforge.net/tracker/?atid=456268&amp;group_id=49459&amp;func=browse">bug tracking page</a>.</li>
-<li><b>Thinking of interesting ideas</b> for the Juggling Lab <a href="http://sourceforge.net/tracker/?atid=456271&amp;group_id=49459&amp;func=browse">
+<li><b>Finding bugs</b> and reporting them on the <a href="http://sourceforge.net/tracker/?atid=456268&amp;group_id=49459&amp;func=browse">bug tracking page</a>.</li>
+<li><b>Thinking of interesting ideas</b> for the <a href="http://sourceforge.net/tracker/?atid=456271&amp;group_id=49459&amp;func=browse">
 feature requests page</a>.</li>
 <li><b>Creating new patterns</b> for Juggling Lab, and emailing them to one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a>.</li>
 <li><b>Localizing into new languages</b>.  Juggling Lab is currently localized into Spanish,
-	French, and Portuguese.  Email one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a> if you can help us
+	French, Portuguese, and Hebrew.  Email one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a> if you can help us
 	translate into more languages.</li>
-<li><b>Developing code</b>.  Contact one of the <a href="http://sourceforge.net/projects/jugglinglab">project admins</a>, and in the meantime look at the online <a href="source_doc/html/index.html">source code documentation</a>
-or browse the <a href="http://jugglinglab.svn.sourceforge.net/viewvc/jugglinglab/">source repository</a>.</li>
+<li><b>Developing code</b>.</li>
 </ul>
 </blockquote>
 
 <h3>Contributors</h3>
 <blockquote>
 <ul>
+<li><a href="mailto:jboyce@users.sourceforge.net">Jack Boyce</a> &ndash; Most Juggling Lab code, project administration</li>
 <li>Brian Campbell &ndash; Juggling Lab bookmarklet</li>
 <li>Vincent Bruel &ndash; Suggestions for improved bouncing support (hyperlift/hyperforce patterns), ball-bounce audio sample</li>
 <li>Jason Haslam &ndash; Ring prop, bitmapped-image prop, improved ball graphic, visual editor enhancements,
@@ -121,26 +116,12 @@ and many bug fixes</li>
 <li>Anselm Heaton &ndash; Orbit-finding code, other design suggestions</li>
 <li>Lewis Jardine &ndash; Apache Ant build file, GPL clarifications</li>
 <li>Ken Matsuoka &ndash; JuggleMaster pattern library, used here with his permission</li>
-<li>David Megginson &ndash; Simple API for XML (SAX) interface</li>
-<li>Microstar Software Ltd. &ndash; AElfred XML parser</li>
 <li>Rupert Millard &ndash; Implementation of '*' shortcut for synch notation</li>
 <li>Herve Nicol &ndash; Bug fixes</li>
 <li>Denis Paumier &ndash; Suggestions for passing and multiplexing improvements to siteswap generator</li>
 <li>Andrew Peterson &ndash; Performance profiling of animation routines</li>
 <li>Xavier Verne &ndash; French translation of user interface</li>
-<li>Johannes Waldmann &ndash; <a href="http://www.doxygen.org">Doxygen</a>-generated source code documentation</li>
-<li>Dozens of people from <a href="http://groups.google.com/groups?group=rec.juggling">rec.juggling</a> &ndash; Browser compatibility testing</li>
-<li><a href="mailto:jboyce@users.sourceforge.net">Jack Boyce</a> &ndash; All other Juggling Lab code, project administration</li>
-</ul>
-</blockquote>
-
-<h3>Want to learn more about juggling?</h3>
-<blockquote>
-<p>People can juggle, too.  Some good sources of general information are:</p>
-<ul>
-<li><a href="http://www.jugglingdb.com/">Internet Juggling Database</a></li>
-<li><a href="http://www.juggling.org/">Juggling Information Service</a></li>
-<li><a href="http://groups.google.com/groups?group=rec.juggling">rec.juggling</a> Usenet newsgroup</li>
+<li>Johannes Waldmann &ndash; Doxygen-generated source code documentation</li>
 </ul>
 </blockquote>
 

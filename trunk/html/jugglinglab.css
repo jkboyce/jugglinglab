@@ -44,6 +44,10 @@ blockquote {
 	padding-left: 40px;
 }
 
+table {
+	width: 100%;
+}
+
 a:link, a:visited {
      font-family: georgia, serif;
      font-weight: normal;
@@ -82,4 +86,11 @@ ul {
 
 .def {
 	font-weight: bold;
+}
+
+.userinput {
+	padding: 8px;
+	border: 1px dashed #999999;
+	background-color: #f1f1f1;
+	font: 13px/20px "Courier New", Courier, monospace;
 }
