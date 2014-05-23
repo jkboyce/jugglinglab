@@ -72,7 +72,7 @@ public class ringProp extends Prop {
     public ParameterDescriptor[] getParameterDescriptors() {
         ParameterDescriptor[] result = new ParameterDescriptor[3];
 
-        Vector range = new Vector();
+        ArrayList<String> range = new ArrayList<String>();
         for (int i = 0; i < colornames.length; i++)
             range.add(colornames[i]);
 

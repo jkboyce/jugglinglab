@@ -48,7 +48,7 @@ class siteswapGeneratorControl extends JPanel {
     protected JRadioButton cb1, cb2, /*cb3,*/ cb4, cb5, cb6;
     protected JCheckBox cb7, cb8, cb9, cb10, cb12, cb13, cb14, cb15, cb16, cb17;
     protected JLabel lab1, lab2, /*lab3,*/ lab4, /*lab5,*/ lab13;
-    protected JComboBox c1;
+    protected JComboBox<String> c1;
 
     protected final static int border = 10;
 
@@ -88,7 +88,7 @@ class siteswapGeneratorControl extends JPanel {
         JLabel lab14 = new JLabel(guistrings.getString("Jugglers"));
         p6.add(lab14);
         gb.setConstraints(lab14, make_constraints(GridBagConstraints.LINE_START,0,0));
-        c1 = new JComboBox();
+        c1 = new JComboBox<String>();
         for (int i = 1; i <= 6; i++)
             c1.addItem(Integer.toString(i)+"   ");
         p6.add(c1);

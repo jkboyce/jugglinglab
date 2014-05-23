@@ -39,7 +39,7 @@ public abstract class Notation {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    static Hashtable hash = null;
+    static Hashtable<String, Notation> hash = null;
 
     // The built-in notations
     public static final String[] builtinNotations = { "Siteswap" };
@@ -52,9 +52,9 @@ public abstract class Notation {
     // naming convention.
     public static Notation getNotation(String name) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (hash == null)
-            hash = new Hashtable();
+            hash = new Hashtable<String, Notation>();
 
-        Notation not = (Notation)hash.get(name.toLowerCase());
+        Notation not = hash.get(name.toLowerCase());
         if (not == null) {
             Notation newnot = null;
             try {

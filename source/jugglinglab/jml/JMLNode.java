@@ -22,7 +22,7 @@
 
 package jugglinglab.jml;
 
-import java.util.Vector;
+import java.util.*;
 import java.io.*;
 
 import jugglinglab.util.*;
@@ -32,14 +32,14 @@ public class JMLNode {
     protected String nodeType;		// from taglist in JMLDefs.java
     protected String nodeValue;		// nodes with character content
     protected JMLNode parentNode;
-    protected Vector childNodes;
+    protected ArrayList<JMLNode> childNodes;
     protected JMLNode previousSibling;
     protected JMLNode nextSibling;
     protected JMLAttributes attributes;
 
     public JMLNode(String nodeType) {
         this.nodeType = nodeType;
-        childNodes = new Vector();
+        childNodes = new ArrayList<JMLNode>();
         attributes = new JMLAttributes(this);
     }
 
@@ -55,11 +55,16 @@ public class JMLNode {
     public int getNumberOfChildren() { return childNodes.size(); }
 
     public JMLNode getChildNode(int index) {
-        return (JMLNode)childNodes.elementAt(index);
+        return childNodes.get(index);
     }
 
-    public JMLNode getFirstChild() { return (JMLNode)childNodes.firstElement(); }
-    public JMLNode getLastChild() { return (JMLNode)childNodes.lastElement(); }
+    public JMLNode getFirstChild() { return childNodes.get(0); }
+    public JMLNode getLastChild() {
+        int n = childNodes.size();
+        if (n > 0)
+            return childNodes.get(n-1);
+        return null;
+    }
 
     public JMLNode getPreviousSibling() { return previousSibling; }
     public void setPreviousSibling(JMLNode sibling) {
@@ -80,7 +85,7 @@ public class JMLNode {
     public void insertBefore(JMLNode newChild, JMLNode refChild) {
         if (refChild != null) {
             int refindex = childNodes.indexOf(refChild);
-            childNodes.insertElementAt(newChild, refindex);
+            childNodes.add(refindex, newChild);
             // now fix references
             newChild.setParentNode(this);
             JMLNode prevsibling = refChild.getPreviousSibling();
@@ -102,7 +107,7 @@ public class JMLNode {
                 int refindex = childNodes.indexOf(oldChild);
                 JMLNode prev = oldChild.getPreviousSibling();
                 JMLNode next = oldChild.getNextSibling();
-                childNodes.setElementAt(newChild, refindex);
+                childNodes.set(refindex, newChild);
                 newChild.setPreviousSibling(prev);
                 newChild.setNextSibling(next);
                 newChild.setParentNode(this);
@@ -112,7 +117,7 @@ public class JMLNode {
 
     // Removes the child node indicated by oldChild from the list of children.
     public void removeChild(JMLNode oldChild) throws JuggleExceptionInternal {
-        if (childNodes.removeElement(oldChild)) {
+        if (childNodes.remove(oldChild)) {
             JMLNode prev = oldChild.getPreviousSibling();
             JMLNode next = oldChild.getNextSibling();
             if (prev != null)
@@ -127,10 +132,10 @@ public class JMLNode {
         JMLNode lastnode = null;
 
         if (childNodes.size() != 0) {
-            lastnode = (JMLNode)childNodes.lastElement();
+            lastnode = childNodes.get(childNodes.size() - 1);
             lastnode.setNextSibling(newChild);
         }
-        childNodes.addElement(newChild);
+        childNodes.add(newChild);
         newChild.setPreviousSibling(lastnode);
         newChild.setNextSibling(null);
         newChild.setParentNode(this);

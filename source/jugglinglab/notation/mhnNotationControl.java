@@ -63,7 +63,7 @@ public class mhnNotationControl extends NotationControl {
 
 				// text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, tf6;
-    protected JComboBox cb1, cb2, cb3;
+    protected JComboBox<String> cb1, cb2, cb3;
     protected boolean cb1_selected = false, cb2_selected = false;
 
     protected final static int border = 10;
@@ -108,7 +108,7 @@ public class mhnNotationControl extends NotationControl {
         p1.add(lab4);
         gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_END,0,3,
                                                  new Insets(vspacing,border,0,hspacing)));
-        cb1 = new JComboBox();
+        cb1 = new JComboBox<String>();
         cb1.addItem(guistrings.getString("MHNHands_name_default"));
         for (int i = 0; i < builtinHandsNames.length; i++) {
 			String item = "MHNHands_name_" + builtinHandsNames[i];
@@ -157,7 +157,7 @@ public class mhnNotationControl extends NotationControl {
         p1.add(lab5);
         gb.setConstraints(lab5, make_constraints(GridBagConstraints.LINE_END,0,5,
                                                  new Insets(vspacing,border,0,hspacing)));
-        cb2 = new JComboBox();
+        cb2 = new JComboBox<String>();
         cb2.addItem(guistrings.getString("MHNBody_name_default"));
         for (int i = 0; i < builtinBodyNames.length; i++) {
 			String item = "MHNBody_name_" + builtinBodyNames[i];
@@ -206,7 +206,7 @@ public class mhnNotationControl extends NotationControl {
 		p1.add(prop_label);
 		gb.setConstraints(prop_label, make_constraints(GridBagConstraints.LINE_END,0,7,
 													   new Insets(vspacing,border,0,hspacing)));
-		cb3 = new JComboBox();
+		cb3 = new JComboBox<String>();
 		for (int i = 0; i < Prop.builtinProps.length; i++) {
 			String item = "Prop_name_" + Prop.builtinProps[i].toLowerCase();
 			cb3.addItem(guistrings.getString(item));

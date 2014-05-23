@@ -27,8 +27,8 @@ import java.util.*;
 
 public class ParameterList {
     protected int size;
-    protected Vector names;
-    protected Vector values;
+    protected ArrayList<String> names;
+    protected ArrayList<String> values;
 
     public ParameterList() {
         size = 0;
@@ -41,11 +41,11 @@ public class ParameterList {
 
     public void addParameter(String name, String value) {
         if (size == 0) {
-            names = new Vector();
-            values = new Vector();
+            names = new ArrayList<String>();
+            values = new ArrayList<String>();
         }
-        names.addElement(name);
-        values.addElement(value);
+        names.add(name);
+        values.add(value);
         size++;
     }
 
@@ -57,11 +57,11 @@ public class ParameterList {
     }
 
     public String getParameterName(int index) {
-        return (String)names.elementAt(index);
+        return names.get(index);
     }
 
     public String getParameterValue(int index) {
-        return (String)values.elementAt(index);
+        return values.get(index);
     }
 
     public int getNumberOfParameters() {

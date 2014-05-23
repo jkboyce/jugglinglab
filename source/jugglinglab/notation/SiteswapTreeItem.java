@@ -42,7 +42,7 @@ public class SiteswapTreeItem {
 	static final int TYPE_HAND_SPEC = 14;
 
 	int type;
-	Vector children;
+	ArrayList<SiteswapTreeItem> children;
 	
 	// variables that the parser determines:
 	int jugglers;					// for type 1, 7, 8
@@ -68,20 +68,20 @@ public class SiteswapTreeItem {
 	
 	public SiteswapTreeItem(int type) {
 		this.type = type;
-		this.children = new Vector();
+		this.children = new ArrayList<SiteswapTreeItem>();
 		this.synch_throw = false;
 	}
 	
 	public void addChild(SiteswapTreeItem item) {
-		children.addElement(item);
+		children.add(item);
 	}
 	
 	public SiteswapTreeItem getChild(int index) {
-		return (SiteswapTreeItem)(children.elementAt(index));
+		return children.get(index);
 	}
 	
 	public void removeChildren() {
-		this.children = new Vector();
+		this.children = new ArrayList<SiteswapTreeItem>();
 	}
 	
 	public int getNumberOfChildren() {

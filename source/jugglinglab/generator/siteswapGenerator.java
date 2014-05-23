@@ -89,7 +89,7 @@ public class siteswapGenerator extends Generator {
     protected int ground_state[][];
     protected int ground_state_length;
     protected int n, ht, l, llow, lhigh;
-	protected Vector exclude, include;
+	protected ArrayList<Pattern> exclude, include;
 	protected char[] output;
 	protected int outputpos;
     protected int numflag, groundflag;
@@ -163,8 +163,8 @@ public class siteswapGenerator extends Generator {
         jugglers = 1;
         target = null;
 
-		exclude = new Vector();
-		include = new Vector();
+		exclude = new ArrayList<Pattern>();
+		include = new ArrayList<Pattern>();
 
         for (i = 3; i < args.length; i++) {
             if (args[i].equals("-n"))
@@ -690,7 +690,7 @@ public class siteswapGenerator extends Generator {
     
 		// test pattern in progress against all exclusions
 		for (i = 0; i < exclude.size(); i++) {
-			Pattern regex = (Pattern)exclude.elementAt(i);
+			Pattern regex = exclude.get(i);
 			/*System.out.println("test for string " + (new String(output, 0, outputpos)) + " = " +
 							   regex.matcher(new String(output, 0, outputpos)).matches());*/
 			if (regex.matcher(new String(output, 0, outputpos)).matches())
@@ -764,7 +764,7 @@ public class siteswapGenerator extends Generator {
 
 		// test pattern in progress against all inclusions
 		for (i = 0; i < include.size(); i++) {
-			Pattern regex = (Pattern)include.elementAt(i);
+			Pattern regex = include.get(i);
 			if (!regex.matcher(new String(output, 0, outputpos)).matches())
 				return false;
 		}

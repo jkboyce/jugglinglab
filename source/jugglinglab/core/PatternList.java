@@ -49,8 +49,8 @@ public class PatternList extends JPanel {
 	
 	View animtarget = null;
     String title = null;
-    JList list = null;
-    DefaultListModel model = null;
+    JList<PatternRecord> list = null;
+    DefaultListModel<PatternRecord> model = null;
     // JLabel status = null;
 
 
@@ -66,8 +66,8 @@ public class PatternList extends JPanel {
     }
 
     protected void makePanel() {
-        model = new DefaultListModel();
-        list = new JList(model);
+        model = new DefaultListModel<PatternRecord>();
+        list = new JList<PatternRecord>(model);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setCellRenderer(new PatternCellRenderer());
         
@@ -76,7 +76,7 @@ public class PatternList extends JPanel {
                 PatternWindow jaw2 = null;
                 try {
                     if (lse.getValueIsAdjusting()) {
-                        PatternRecord rec = (PatternRecord)model.elementAt(list.getSelectedIndex());
+                        PatternRecord rec = model.get(list.getSelectedIndex());
 
                         JMLPattern pat = null;
 
@@ -218,7 +218,7 @@ public class PatternList extends JPanel {
         write.println("<title>" + JMLNode.xmlescape(this.title) + "</title>");
 
         for (int i = 0; i < model.size(); i++) {
-            PatternRecord rec = (PatternRecord)model.elementAt(i);
+            PatternRecord rec = model.get(i);
             String line = "<line display=\"" + JMLNode.xmlescape(rec.display) + "\"";
 
             if (rec.notation != null)
@@ -248,7 +248,7 @@ public class PatternList extends JPanel {
         PrintWriter write = new PrintWriter(wr);
 
         for (int i = 0; i < model.size(); i++) {
-            PatternRecord rec = (PatternRecord)model.elementAt(i);
+            PatternRecord rec = model.get(i);
             write.println(rec.display);
         }
         write.flush();
@@ -273,15 +273,15 @@ public class PatternList extends JPanel {
     }
 	
 	
-	class PatternCellRenderer extends JLabel implements ListCellRenderer {
+	class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
         public Component getListCellRendererComponent(
-                        JList list,              // the list
-                        Object value,            // value to display
+                        JList<? extends PatternRecord> list,              // the list
+                        PatternRecord value,            // value to display
                         int index,               // cell index
                         boolean isSelected,      // is the cell selected
                         boolean cellHasFocus)    // does the cell have focus
         {
-			PatternRecord rec = (PatternRecord)value;
+			PatternRecord rec = value;
 
             setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
             setText(rec.display);

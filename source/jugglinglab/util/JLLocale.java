@@ -68,14 +68,14 @@ public class JLLocale {
 			this.bundle = bundle;
 		}
 		
-		public Enumeration getKeys() {
+		public Enumeration<String> getKeys() {
 			return bundle.getKeys();
 		}
 		
 		protected Object handleGetObject(String key) {
 			String value = (String)bundle.handleGetObject(key);
 			try {
-				return new String (value.getBytes("ISO-8859-1"),"UTF-8") ;
+				return new String(value.getBytes("ISO-8859-1"),"UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				// Shouldn't fail - but should we still add logging message?
 				return null;
