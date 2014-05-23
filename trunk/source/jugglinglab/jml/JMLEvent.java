@@ -42,7 +42,7 @@ public class JMLEvent {
     protected double t;
     protected int juggler;
     protected int hand;
-    protected Vector transitions = null;
+    protected ArrayList<JMLTransition> transitions = null;
     protected int[][][] eventarray;
     protected int delay;
     protected int delayunits;
@@ -57,7 +57,7 @@ public class JMLEvent {
         this.master = null;
         this.prev = this.next = null;
         this.calcpos = false;
-        this.transitions = new Vector();
+        this.transitions = new ArrayList<JMLTransition>();
         this.globaldirty = true;
     }
 
@@ -112,13 +112,13 @@ public class JMLEvent {
 
     public int getNumberOfTransitions()	{ return transitions.size(); }
     public JMLTransition getTransition(int index) {
-        return (JMLTransition)transitions.elementAt(index);
+        return transitions.get(index);
     }
     public void addTransition(JMLTransition trans) {
-        transitions.addElement(trans);
+        transitions.add(trans);
     }
     public void removeTransition(int index) {
-        transitions.removeElementAt(index);
+        transitions.remove(index);
     }
     public void removeTransition(JMLTransition trans) {
         for (int i = 0; i < getNumberOfTransitions(); i++) {

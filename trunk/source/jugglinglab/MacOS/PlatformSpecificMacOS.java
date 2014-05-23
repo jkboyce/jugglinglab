@@ -45,6 +45,51 @@ public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
 		// a native OS X application
 		app = com.apple.eawt.Application.getApplication();
 		
+        app.setAboutHandler(new AboutHandler() {
+            public void handleAbout(AppEvent.AboutEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        jlw.getNotationGUI().doMenuCommand(NotationGUI.HELP_ABOUT);
+                    }
+                });
+            }
+        });
+        
+        app.setQuitHandler(new QuitHandler() {
+            public void handleQuitRequestWith(AppEvent.QuitEvent e, QuitResponse response) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            jlw.doMenuCommand(ApplicationWindow.FILE_EXIT);
+                        } catch (JuggleExceptionInternal jei) {
+                            ErrorDialog.handleException(jei);
+                        }
+                    }
+                });
+            }
+        });
+
+        app.setOpenFileHandler(new OpenFilesHandler() {
+            public void openFiles(AppEvent.OpenFilesEvent e) {
+				final File toopen = e.getFiles().get(0);
+				
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // System.out.println("trying to open file "+filename);
+                        try {
+                            jlw.showJMLWindow(toopen);
+                        } catch (JuggleExceptionUser je) {
+                            new ErrorDialog(jlw, je.getMessage());
+                        } catch (JuggleExceptionInternal jei) {
+                            ErrorDialog.handleException(jei);
+                        }
+                    }
+                });
+            }
+        });
+        
+        
+        /*
 		app.addApplicationListener(new ApplicationAdapter() {
 			public void handleAbout(ApplicationEvent event) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -86,6 +131,7 @@ public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
 				event.setHandled(true);
 			}
 		});
+        */
 	}
 
     public int showOpenDialog(Component c) {

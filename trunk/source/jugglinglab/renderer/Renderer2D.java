@@ -160,7 +160,7 @@ public class Renderer2D extends Renderer {
         int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
         // first reset the objects in the object pool
         for (int i = 0; i < numobjects; i++)
-            obj[i].covering.removeAllElements();
+            obj[i].covering.clear();
 
         // first create a list of objects in the display
         int index = 0;
@@ -272,7 +272,7 @@ public class Renderer2D extends Renderer {
                 if (j == i)
                     continue;
                 if (obj[i].isCovering(obj[j]))
-                    obj[i].covering.addElement(obj[j]);
+                    obj[i].covering.add(obj[j]);
             }
             obj[i].drawn = false;
         }
@@ -289,7 +289,7 @@ public class Renderer2D extends Renderer {
 
                 boolean candraw = true;
                 for (int j = 0; j < obj[i].covering.size(); j++) {
-                    DrawObject2D temp = (DrawObject2D)(obj[i].covering.elementAt(j));
+                    DrawObject2D temp = obj[i].covering.get(j);
                     if (!temp.drawn) {
                         candraw = false;
                         break;
@@ -444,7 +444,7 @@ public class Renderer2D extends Renderer {
         public int number;		// either path or juggler number
         public JLVector[] coord = null;
         public Rectangle boundingbox = null;
-        public Vector covering = null;
+        public ArrayList<DrawObject2D> covering = null;
         public boolean drawn = false;
         public JLVector tempv = null;
 		
@@ -453,7 +453,7 @@ public class Renderer2D extends Renderer {
             for (int i = 0; i < 8; i++)
                 this.coord[i] = new JLVector();
             this.boundingbox = new Rectangle();
-            this.covering = new Vector(numobjects);
+            this.covering = new ArrayList<DrawObject2D>(numobjects);
             this.tempv = new JLVector();
         }
 

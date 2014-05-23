@@ -35,11 +35,11 @@ public class ParameterDescriptor {
         
 	public String name;
 	public int type;
-	public Vector range;
+	public ArrayList<String> range;
 	public Object default_value;
 	public Object value;
 	
-	public ParameterDescriptor(String name, int type, Vector range,
+	public ParameterDescriptor(String name, int type, ArrayList<String> range,
 				Object default_value, Object value) {
 		this.name = name;
 		this.type = type;

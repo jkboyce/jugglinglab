@@ -62,7 +62,7 @@ public class mhnPattern {
     protected mhnBody bodies = null;
     protected int max_throw;
     protected int indexes;
-    protected Vector symmetry = null;
+    protected ArrayList<mhnSymmetry> symmetry = null;
 
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
@@ -77,12 +77,8 @@ public class mhnPattern {
     protected mhnThrow[][][][] getThrows() 	{ return th; }
     protected int getNumberOfSymmetries()	{ return symmetry.size(); }
 	protected String getPropName() { return prop; }
-    protected void addSymmetry(mhnSymmetry ss) {
-        symmetry.addElement(ss);
-    }
-    protected mhnSymmetry getSymmetry(int i) {
-        return (mhnSymmetry)(symmetry.elementAt(i));
-    }
+    protected void addSymmetry(mhnSymmetry ss) { symmetry.add(ss); }
+    protected mhnSymmetry getSymmetry(int i) { return symmetry.get(i); }
 
     public void parseInput(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (config.indexOf((int)'=') == -1)	{ // just the pattern

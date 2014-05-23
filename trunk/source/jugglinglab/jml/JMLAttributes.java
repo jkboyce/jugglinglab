@@ -28,8 +28,8 @@ import java.util.*;
 public class JMLAttributes {
     protected JMLNode parentTag;
     protected int size;
-    protected Vector names;
-    protected Vector values;
+    protected ArrayList<String> names;
+    protected ArrayList<String> values;
 
     public JMLAttributes(JMLNode parent) {
         parentTag = parent;
@@ -42,20 +42,20 @@ public class JMLAttributes {
 
     public void addAttribute(String name, String value) {
         if (size == 0) {
-            names = new Vector();
-            values = new Vector();
+            names = new ArrayList<String>();
+            values = new ArrayList<String>();
         }
-        names.addElement(name);
-        values.addElement(value);
+        names.add(name);
+        values.add(value);
         size++;
     }
 
     public String getAttributeName(int index) {
-        return (String)names.elementAt(index);
+        return names.get(index);
     }
 
     public String getAttributeValue(int index) {
-        return (String)values.elementAt(index);
+        return values.get(index);
     }
 
     public String getAttribute(String name) {

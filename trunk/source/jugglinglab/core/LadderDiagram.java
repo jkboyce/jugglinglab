@@ -57,8 +57,8 @@ public class LadderDiagram extends JPanel {
     private boolean has_switch_symmetry;
     private boolean has_switchdelay_symmetry;
 
-    protected Vector laddereventitems = null;
-    protected Vector ladderpathitems = null;
+    protected ArrayList<LadderEventItem> laddereventitems = null;
+    protected ArrayList<LadderPathItem> ladderpathitems = null;
     protected Image laddercache = null;
     protected boolean laddercachedirty;
     protected int cacheframesleft;
@@ -75,7 +75,7 @@ public class LadderDiagram extends JPanel {
 
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
         for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = (LadderEventItem)laddereventitems.elementAt(i);
+            LadderEventItem item = laddereventitems.get(i);
             if ((x >= item.xlow) && (x <= item.xhigh) &&
                 (y >= item.ylow) && (y <= item.yhigh))
                 return item;
@@ -91,7 +91,7 @@ public class LadderDiagram extends JPanel {
             return null;
 
         for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = (LadderPathItem)ladderpathitems.elementAt(i);
+            LadderPathItem item = ladderpathitems.get(i);
             double d;
 
             if (item.type == LadderPathItem.TYPE_SELF) {
@@ -127,7 +127,7 @@ public class LadderDiagram extends JPanel {
 
     public void setPathColor(int path, Color color) {
         for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = (LadderPathItem)ladderpathitems.elementAt(i);
+            LadderPathItem item = ladderpathitems.get(i);
             if (item.pathnum == path)
                 item.color = color;
         }
@@ -161,7 +161,7 @@ public class LadderDiagram extends JPanel {
         }
 
         // first create events (little circles)
-        this.laddereventitems = new Vector();
+        this.laddereventitems = new ArrayList<LadderEventItem>();
         double loop_start = pat.getLoopStartTime();
         double loop_end = pat.getLoopEndTime();
 
@@ -190,7 +190,7 @@ public class LadderDiagram extends JPanel {
         }
 
         // create paths (lines and arcs)
-        this.ladderpathitems = new Vector();
+        this.ladderpathitems = new ArrayList<LadderPathItem>();
 		
 		if (pat.getNumberOfJugglers() == 1) {
 			current = eventlist;
@@ -245,7 +245,7 @@ public class LadderDiagram extends JPanel {
 
         // set locations of events and transitions
         for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = (LadderEventItem)laddereventitems.elementAt(i);
+            LadderEventItem item = laddereventitems.get(i);
             JMLEvent current = item.event;
 
             int event_x = (current.getHand() == HandLink.LEFT_HAND ?
@@ -272,7 +272,7 @@ public class LadderDiagram extends JPanel {
 
         // set locations of paths (lines and arcs)
         for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = (LadderPathItem)ladderpathitems.elementAt(i);
+            LadderPathItem item = ladderpathitems.get(i);
 
             item.xstart = (item.startevent.getHand() == HandLink.LEFT_HAND ?
                            (left_x + (item.transnum_start+1)*2*transition_radius) :
@@ -370,7 +370,7 @@ public class LadderDiagram extends JPanel {
 				// draw paths
 				Shape clip = g.getClip();
 				for (int i = 0; i < ladderpathitems.size(); i++) {
-					LadderPathItem item = (LadderPathItem)ladderpathitems.elementAt(i);
+					LadderPathItem item = ladderpathitems.get(i);
 
 					g.setColor(item.color);
 					g.clipRect(left_x, border_top, (right_x-left_x), height-2*border_top);
@@ -412,7 +412,7 @@ public class LadderDiagram extends JPanel {
         // draw events
         gr.setColor(Color.black);
         for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = (LadderEventItem)laddereventitems.elementAt(i);
+            LadderEventItem item = laddereventitems.get(i);
 
             if (item.type == item.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow,

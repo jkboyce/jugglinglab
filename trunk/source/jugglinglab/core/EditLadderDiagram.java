@@ -68,7 +68,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     protected JPopupMenu popup = null;
     protected JMenuItem[] popupmenuitems = null;
-    protected Vector dialog_controls = null;
+    protected ArrayList<JComponent> dialog_controls = null;
     protected ParameterDescriptor[] dialog_pd = null;
     
     public EditLadderDiagram(JMLPattern pat, JFrame parent) {
@@ -222,7 +222,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                             if (delta_y != 0) {
                                 moveEvent(active_eventitem.eventitem);
                                 for (int i = 0; i < laddereventitems.size(); i++) {
-                                    LadderEventItem item = (LadderEventItem)laddereventitems.elementAt(i);
+                                    LadderEventItem item = laddereventitems.get(i);
 
                                     if (item.eventitem == active_eventitem.eventitem) {
                                         item.ylow += delta_y;
@@ -988,13 +988,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         final JPanel p2 = new JPanel();
         p2.setLayout(gb);
 
-        final JComboBox cb1 = new JComboBox(prtypes);
+        final JComboBox<String> cb1 = new JComboBox<String>(prtypes);
         p1.add(cb1);
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                 new Insets(0,10,0,0)));
         cb1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                String type = (String)cb1.getItemAt(cb1.getSelectedIndex());
+                String type = cb1.getItemAt(cb1.getSelectedIndex());
                 //				System.out.println("Got an action item: "+type);
                 try {
                     Prop pt;
@@ -1140,13 +1140,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         final JPanel p2 = new JPanel();
         p2.setLayout(gb);
 
-        final JComboBox cb1 = new JComboBox(pptypes);
+        final JComboBox<String> cb1 = new JComboBox<String>(pptypes);
         p1.add(cb1);
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                 new Insets(0,10,0,0)));
         cb1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                String type = (String)cb1.getItemAt(cb1.getSelectedIndex());
+                String type = cb1.getItemAt(cb1.getSelectedIndex());
                 // System.out.println("Got an action item: "+type);
                 try {
                     Path ppt;
@@ -1225,7 +1225,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         GridBagLayout gb = new GridBagLayout();
         jp.setLayout(gb);
 
-        dialog_controls = new Vector();
+        dialog_controls = new ArrayList<JComponent>();
         dialog_pd = pd;
 
         if (pd.length != 0) {
@@ -1263,9 +1263,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 }
                 else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
                     String[] choices = new String[pd[i].range.size()];
-                    pd[i].range.copyInto(choices);
+                    pd[i].range.toArray(choices);
 
-                    JComboBox jcb = new JComboBox(choices);
+                    JComboBox<String> jcb = new JComboBox<String>(choices);
                     pdp.add(jcb);
                     gb.setConstraints(jcb, make_constraints(GridBagConstraints.LINE_START,1,i,new Insets(0,5,0,0)));
                     dialog_controls.add(jcb);
@@ -1391,7 +1391,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             else if (dialog_pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
                 JComboBox jcb = (JComboBox)control;
                 int ind = jcb.getSelectedIndex();
-                String val = (String)(dialog_pd[i].range.elementAt(ind));
+                String val = dialog_pd[i].range.get(ind);
                 String def_val = (String)(dialog_pd[i].default_value);
                 if (!val.equalsIgnoreCase(def_val))
                     term = val;
@@ -1515,7 +1515,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         // draw events
         gr.setColor(Color.black);
         for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = (LadderEventItem)laddereventitems.elementAt(i);
+            LadderEventItem item = laddereventitems.get(i);
 
             int yoffset = ((gui_state == STATE_MOVING_EVENT) &&
                            (active_eventitem.eventitem == item.eventitem)) ? delta_y : 0;

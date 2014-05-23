@@ -38,7 +38,7 @@ public class GIFWriter implements ImageObserver {
     private boolean loadingstarted;	// done from another thread
     private IOException iox;
     
-    private Hashtable colorHash;
+    private Hashtable<Integer, GIFEncoderHashitem> colorHash;
 	private int defaultcolorkey;
     private int[] rgbPixels;
     
@@ -133,7 +133,7 @@ public class GIFWriter implements ImageObserver {
 
 	        // Put all the pixels into a hash table.
 	    if (colorHash == null)
-	    	colorHash = new Hashtable();
+	    	colorHash = new Hashtable<Integer, GIFEncoderHashitem>();
 	    
 		int index = colorHash.size();
 		
@@ -142,8 +142,7 @@ public class GIFWriter implements ImageObserver {
             for ( int col = 0; col < width; ++col ) {
                 int rgb = rgbPixels[rowOffset + col] & 0xffffff;
 
-		        GIFEncoderHashitem item =
-				    	(GIFEncoderHashitem) colorHash.get(Integer.valueOf(rgb));
+		        GIFEncoderHashitem item = colorHash.get(Integer.valueOf(rgb));
 		        if ( item == null ) {
 				    if ( index < 256 ) {
                         item = new GIFEncoderHashitem(rgb, null, 1, index);
@@ -164,11 +163,11 @@ public class GIFWriter implements ImageObserver {
         gotcolormap = true;
 	}
 	
-	public Hashtable getColorMap() {
+	public Hashtable<Integer, GIFEncoderHashitem> getColorMap() {
 		return colorHash;
 	}
 	
-	public void setColorMap(Hashtable chash, int defaultcolorkey) {
+	public void setColorMap(Hashtable<Integer, GIFEncoderHashitem> chash, int defaultcolorkey) {
 		colorHash = chash;
 		this.defaultcolorkey = defaultcolorkey;
 		gotcolormap = (chash != null);
@@ -180,7 +179,7 @@ public class GIFWriter implements ImageObserver {
 	}
 	
 	
-	public static void writeHeader(Hashtable colormap, int mywidth,
+	public static void writeHeader(Hashtable<Integer, GIFEncoderHashitem> colormap, int mywidth,
 					int myheight, OutputStream outs) throws IOException {
 		byte B;
 		int i;
@@ -202,8 +201,8 @@ public class GIFWriter implements ImageObserver {
 		byte[] reds = new byte[mapSize];
 		byte[] grns = new byte[mapSize];
 		byte[] blus = new byte[mapSize];
-		for ( Enumeration e = colormap.elements(); e.hasMoreElements(); ) {
-		    GIFEncoderHashitem item = (GIFEncoderHashitem) e.nextElement();
+		for ( Enumeration<GIFEncoderHashitem> e = colormap.elements(); e.hasMoreElements(); ) {
+		    GIFEncoderHashitem item = e.nextElement();
 		    reds[item.index] = (byte) ( ( item.rgb >> 16 ) & 0xff );
 		    grns[item.index] = (byte) ( ( item.rgb >>  8 ) & 0xff );
 		    blus[item.index] = (byte) (   item.rgb         & 0xff );
@@ -349,11 +348,10 @@ public class GIFWriter implements ImageObserver {
 
     byte GetPixel( int x, int y ) throws IOException
 	{
-		GIFEncoderHashitem item =
-		    (GIFEncoderHashitem) colorHash.get( rgbPixels[y*width+x] & 0xffffff );
+		GIFEncoderHashitem item = colorHash.get( rgbPixels[y*width+x] & 0xffffff );
 		if ( item == null ) {
 //            System.out.println("Could not get color at (x="+x+",y="+y+")");
-			item = (GIFEncoderHashitem) colorHash.get( defaultcolorkey );
+			item = colorHash.get( defaultcolorkey );
 		}
 		return (byte) item.index;
 	}
