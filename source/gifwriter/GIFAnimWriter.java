@@ -113,7 +113,7 @@ public class GIFAnimWriter {
 	}
 */
 	
-	public Hashtable getColorMap() {
+	public Hashtable<Integer, GIFEncoderHashitem> getColorMap() {
 		return this.colormap;
 	}
 	

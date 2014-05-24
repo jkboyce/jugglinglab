@@ -167,9 +167,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         case STATE_INACTIVE:
                         case STATE_EVENT_SELECTED:
                         case STATE_MOVING_EVENT:
+                        case STATE_MOVING_TRACKER:
                             // skip this code for MOVING_TRACKER state, since already
                             // executed in mousePressed() above
-                            if (animator != null) {
+                            if ((gui_state != STATE_MOVING_TRACKER) &&
+                                        (animator != null)) {
                                 int my = me.getY();
                                 if (my < border_top)
                                     my = border_top;
@@ -187,7 +189,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                     animator.activateEvent(active_eventitem.event);
                                 animator.repaint();
                             }
-                        case STATE_MOVING_TRACKER:
+
                             gui_state = STATE_POPUP;
 
                             if (delta_y != 0) {
@@ -1034,7 +1036,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,1,0,new Insets(0,10,0,0)));
         okbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String type = (String)cb1.getItemAt(cb1.getSelectedIndex());
+                String type = cb1.getItemAt(cb1.getSelectedIndex());
 
                 String mod = null;
                 try {
@@ -1186,7 +1188,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                                      new Insets(0,10,0,0)));
         okbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String type = (String)cb1.getItemAt(cb1.getSelectedIndex());
+                String type = cb1.getItemAt(cb1.getSelectedIndex());
                 tr.setThrowType(type.toLowerCase());
 
                 String mod = null;
@@ -1389,7 +1391,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 }
             }
             else if (dialog_pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
-                JComboBox jcb = (JComboBox)control;
+                JComboBox<?> jcb = (JComboBox<?>)control;
                 int ind = jcb.getSelectedIndex();
                 String val = dialog_pd[i].range.get(ind);
                 String def_val = (String)(dialog_pd[i].default_value);
@@ -1519,7 +1521,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
             int yoffset = ((gui_state == STATE_MOVING_EVENT) &&
                            (active_eventitem.eventitem == item.eventitem)) ? delta_y : 0;
-            if (item.type == item.TYPE_EVENT)
+            if (item.type == LadderItem.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow + yoffset,
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
             else {
