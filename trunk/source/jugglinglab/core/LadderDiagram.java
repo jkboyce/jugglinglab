@@ -414,7 +414,7 @@ public class LadderDiagram extends JPanel {
         for (int i = 0; i < laddereventitems.size(); i++) {
             LadderEventItem item = laddereventitems.get(i);
 
-            if (item.type == item.TYPE_EVENT)
+            if (item.type == LadderItem.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow,
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
             else {

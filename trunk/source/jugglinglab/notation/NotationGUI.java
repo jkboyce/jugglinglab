@@ -176,7 +176,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 		if (num != Notation.NOTATION_NONE) {
 			try {
 				not = Notation.getNotation(Notation.builtinNotations[num-1]);
-				Class nc = Class.forName("jugglinglab.notation."+Notation.builtinNotations[num-1].toLowerCase()+"NotationControl");
+				Class<?> nc = Class.forName("jugglinglab.notation."+Notation.builtinNotations[num-1].toLowerCase()+"NotationControl");
 				control = (NotationControl)(nc.newInstance());
 			} catch (JuggleExceptionUser je) {
 				throw new JuggleExceptionInternal("Could not create notation \""+Notation.builtinNotations[num-1]+"\"");
