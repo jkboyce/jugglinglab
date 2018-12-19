@@ -43,8 +43,8 @@ public class JugglingLab extends JApplet {
 	protected Animator ja = null;
     protected JugglingLabPanel jlp = null;
 	protected AnimatorPrefs jc = null;
-	
-    
+
+
     public JugglingLab() {
         initAudioClips();
 		initDefaultPropImages();
@@ -56,11 +56,11 @@ public class JugglingLab extends JApplet {
         String prefs = getParameter("animprefs");
         String jmldir = getParameter("jmldir");
         String jmlfile = getParameter("jmlfile");
-		
+
 		// default values
 		int entry_type = Notation.NOTATION_SITESWAP;
 		int view_type = View.VIEW_SIMPLE;
-		
+
 		if (config != null) {
 			ParameterList param = new ParameterList(config);
 			String entry = param.getParameter("entry");
@@ -96,7 +96,7 @@ public class JugglingLab extends JApplet {
 					newloc = new Locale(locarray[0], locarray[1]);
 				else if (locarray.length > 2)
 					newloc = new Locale(locarray[0], locarray[1], locarray[2]);
-				
+
 				JLLocale.setLocale(newloc);
 			}
 		}
@@ -112,13 +112,13 @@ public class JugglingLab extends JApplet {
 			JMLPattern pat = null;
 			PatternList pl = null;
 			boolean readerror = false;
-			
+
 			if (jmlfile != null) {
 				if (!jmlfile.endsWith(".jml"))
 					throw new JuggleExceptionUser(errorstrings.getString("Error_JML_extension"));
 				if (jmlfile.indexOf(".") != (jmlfile.length()-4))
 					throw new JuggleExceptionUser(errorstrings.getString("Error_JML_filename"));
-				
+
 				try {
 					URL jmlfileURL = null;
 					if (jmldir != null)
@@ -144,7 +144,7 @@ public class JugglingLab extends JApplet {
 					throw new JuggleExceptionUser(errorstrings.getString("Error_parsing_pattern"));
 				}
 			}
-			
+
 			if (pat == null) {
 				String notation = getParameter("notation");
 				String pattern = getParameter("pattern");
@@ -164,20 +164,20 @@ public class JugglingLab extends JApplet {
 					}
 				}
 			}
-			
+
 			if (readerror)
 				throw new JuggleExceptionUser(errorstrings.getString("Error_reading_pattern"));
-				
+
 			JugglingLabPanel jlp = new JugglingLabPanel(null, entry_type, pl, view_type);
 			jlp.setDoubleBuffered(true);
 			this.setBackground(new Color(0.9f, 0.9f, 0.9f));
 			setContentPane(jlp);
-			
+
 			Locale loc = JLLocale.getLocale();
 			this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
 			validate();
-			
+
 			// NOTE: animprefs will only be applied when some kind of pattern is defined
 			if (pat != null)
 				jlp.getView().restartView(pat, jc);
@@ -194,12 +194,12 @@ public class JugglingLab extends JApplet {
 				if (e.getMessage() != null)
 					message = message + ": " + e.getMessage();
 			}
-			
+
 			JPanel p = new JPanel();
 			p.setBackground(Color.white);
 			GridBagLayout gb = new GridBagLayout();
 			p.setLayout(gb);
-		
+
 			JLabel lab = new JLabel(message);
 			lab.setHorizontalAlignment(SwingConstants.CENTER);
 			p.add(lab);
@@ -216,7 +216,7 @@ public class JugglingLab extends JApplet {
 
 			setContentPane(p);
 			validate();
-			
+
 			if (e instanceof JuggleExceptionInternal)
 				ErrorDialog.handleException(e);
 			else if (!(e instanceof JuggleExceptionUser))
@@ -231,9 +231,9 @@ public class JugglingLab extends JApplet {
 			public void run() {
 				configure_applet();
 			}
-		});	
+		});
 	}
-	
+
     public void start() {
 		if ((jlp != null) && (jlp.getView() != null) && !jc.mousePause)
 			jlp.getView().setPaused(false);
@@ -267,9 +267,9 @@ public class JugglingLab extends JApplet {
 			clips[1] = newAudioClip(bounceurl);
         Animator.setAudioClips(clips);
     }
-	
+
 	// The class loader delegation model makes it difficult to find resources from
-	// within the VersionSpecific class.  There must be a better way to do it but I 
+	// within the VersionSpecific class.  There must be a better way to do it but I
 	// give it up already.
 	protected void initDefaultPropImages() {
 		URL[] images = new URL[2];
@@ -278,9 +278,16 @@ public class JugglingLab extends JApplet {
         VersionSpecific.setDefaultPropImages(images);
 	}
 
-	
+
     // application version starts here
     public static void main(String[] args) {
+        // do some os-specific setup
+        String osname = System.getProperty("os.name").toLowerCase();
+        boolean isMacOS = osname.startsWith("mac os x");
+        if (isMacOS) {
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+        }
+
         try {
             new JugglingLab();		// to load audio clips
             new ApplicationWindow("Juggling Lab");
