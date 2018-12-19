@@ -63,7 +63,7 @@
                  uri="javafx:com.sun.javafx.tools.ant"
                  classpath="${packaging_resources}:${javafx_ant_jar.osx}" />
         <fx:deploy width="600" height="400" verbose="true" nativeBundles="dmg" outdir="./packages" outfile="Juggling Lab">
-            <fx:application name="Juggling Lab" mainClass="JugglingLab" />
+            <fx:application name="Juggling Lab" version="0.6.2" mainClass="JugglingLab" />
             <fx:resources>
                 <fx:fileset dir="${bin}" includes="JugglingLab.jar" />
             </fx:resources>
