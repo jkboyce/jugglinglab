@@ -12,6 +12,11 @@
   <string>Juggling Lab</string>
   <key>CFBundleIconFile</key>
   <string>Juggling Lab.icns</string>
+  <!--
+  Can't associate .jml document type with the application for now. We need
+  to use the java.awt.Desktop class functionality in order to be able to
+  respond to AppleEvents in the correct way; specifically Desktop.setOpenFileHandler()
+
   <key>CFBundleDocumentTypes</key>
   <array>
    <dict>
@@ -27,6 +32,7 @@
     <string>Editor</string>
    </dict>
   </array>
+-->
   <key>CFBundleIdentifier</key>
   <string>JugglingLab</string>
   <key>CFBundleInfoDictionaryVersion</key>
@@ -43,10 +49,6 @@
        for list of AppStore categories -->
   <key>LSApplicationCategoryType</key>
   <string>Unknown</string>
-  <key>CFBundleVersion</key>
-  <string>1.0</string>
-  <key>NSHumanReadableCopyright</key>
-  <string>Copyright (C) 2018</string>
   <key>NSHighResolutionCapable</key>
   <string>true</string>
  </dict>

@@ -33,7 +33,7 @@
             <manifest>
                 <attribute name="Main-Class" value="JugglingLab" />
             </manifest>
-            <fileset dir="${build}" excludes="Organizer*,jugglinglab/MacOS/*,jugglinglab/MacOS" />
+            <fileset dir="${build}" excludes="jugglinglab/MacOS/*,jugglinglab/MacOS" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}" includes="resources/*.au" />
