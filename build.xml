@@ -17,11 +17,17 @@
         <mkdir dir="${build}" />
     </target>
 
+    <path id="master-classpath">
+        <pathelement location="${bin}/commons-math3-3.6.1.jar" />
+        <pathelement location="${bin}/JugglingLab.jar" />
+    </path>
+
     <target name="compile" depends="init">
         <javac debug="${debug}" srcdir="${src}/." destdir="${build}/."
             target="1.8" source="1.8" deprecation="${deprecation}"
             includeAntRuntime="false" includes="**"
             excludes="jugglinglab/MacOS/*,resources/*,resources_win/*,jugglinglab/notation/*.jj">
+            <classpath refid="master-classpath" />
             <compilerarg value="-Xlint:-options"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
@@ -49,7 +55,7 @@
 
     <!-- Run the application -->
     <target name="run" depends="jar" description="Run the application">
-        <java jar="${bin}/JugglingLab.jar" fork="true" />
+        <java classname="JugglingLab" fork="true" classpathref="master-classpath" />
     </target>
 
     <!-- Clean up -->
@@ -58,6 +64,7 @@
         <delete file="${bin}/JugglingLab.jar" />
     </target>
 
+    <!-- Build the Mac OS X application -->
     <target name="osx" depends="jar" description="Build OS X dmg package">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
