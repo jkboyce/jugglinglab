@@ -35,7 +35,7 @@ public class MarginEquations {
         // guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-	
+
 	public int				varsNum;		// number of variables in margin equations
 	public JMLEvent[]		varsEvents;		// corresponding JMLEvents, one per variable
 	public double[]			varsValues;		// current values of variables
@@ -43,8 +43,8 @@ public class MarginEquations {
 	public double[]			varsMax;		// maximum values of variables
 	public int				marginsNum;		// number of distinct margin equations
 	public LinearEquation[]	marginsEqs;		// array of linear equations
-	
-	
+
+
     public MarginEquations() {
 		varsNum = 0;
 		varsEvents = null;
@@ -54,19 +54,19 @@ public class MarginEquations {
 		marginsNum = 0;
 		marginsEqs = null;
 	}
-	
+
 
 	public MarginEquations(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
 		this();
 		findeqs(pat);
 	}
-	
-	
+
+
 	public double getNumberOfEquations()  { return marginsNum; }
-	
-	
+
+
 	// returns current value of a given margin equation
-	
+
 	public double getMargin(int eqn) {
 		double m = marginsEqs[eqn].constant();
 		for (int i = 0; i < varsNum; i++)
@@ -74,13 +74,13 @@ public class MarginEquations {
 
 		return m;
 	}
-	
+
 	// returns minimum value of all margins together
-	
+
 	public double getMargin() {
 		if (marginsNum == 0)
 			return -100.0;
-		
+
 		double minmargin = getMargin(0);
 		for (int i = 1; i < marginsNum; i++) {
 			double m = getMargin(i);
@@ -89,31 +89,31 @@ public class MarginEquations {
 		}
 		return minmargin;
 	}
-	
-	
+
+
 	protected void findeqs(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
 		if (Constants.DEBUG_OPTIMIZE)
 			System.out.println("finding margin equations");
-		
+
 		if (pat.getNumberOfJugglers() > 1)
 			throw new JuggleExceptionUser(errorstrings.getString("Error_no_optimize_passing"));
 
 		// step 1:  Lay out the pattern.  This generates two things we need, the pattern event
 		// list and the pattern pathlink list.
-		
+
 		pat.layoutPattern();
 		JMLEvent events = pat.getEventList();
 		ArrayList<ArrayList<PathLink>> pathlinks = pat.getPathlinks();
-		
+
 		// step 2:  Figure out the variables in the margin equations.  Find the master events
 		// in the pattern, in particular the ones that are throws or catches.  The x-coordinate
 		// of each will be a free variable in our equations.
-		
-		Vector variableEvents = new Vector();
-		
+
+		ArrayList<JMLEvent> variableEvents = new ArrayList<JMLEvent>();
+
 		double maxValue = 0.0;
 		double g = 980.0;			// cm per second^2
-		
+
 		JMLEvent ev = events;
 		while (ev != null) {
 			if (ev.isMaster()) {
@@ -148,17 +148,17 @@ public class MarginEquations {
 			System.out.println("maxValue = " + maxValue);
 			System.out.println("g = " + g);
 		}
-		
+
 		// step 3:  Set up the arrays containing the current values of our variables, their
 		// minimum and maximum allowed values, and corresponding JMLEvents
-		
+
 		this.varsEvents = new JMLEvent[this.varsNum];
 		this.varsValues = new double[this.varsNum];
 		this.varsMin = new double[this.varsNum];
 		this.varsMax = new double[this.varsNum];
-		
+
 		for (int i = 0; i < this.varsNum; i++) {
-			ev = (JMLEvent)variableEvents.elementAt(i);
+			ev = variableEvents.get(i);
 			Coordinate coord = ev.getLocalCoordinate();
 			this.varsEvents[i] = ev;
 			this.varsValues[i] = coord.x;
@@ -173,10 +173,10 @@ public class MarginEquations {
 			if (Constants.DEBUG_OPTIMIZE)
 				System.out.println("variable " + i + " min = " + this.varsMin[i] + ", max = " + this.varsMax[i]);
 		}
-		
+
 		// step 4:  Find the maximum radius of props in the pattern, used in the margin
 		// calculation below
-		
+
 		double propradius = 0.0;
 		for (int i = 0; i < pat.getNumberOfProps(); i++) {
 			double thisprop = 0.5 * pat.getProp(i + 1).getWidth();
@@ -185,10 +185,10 @@ public class MarginEquations {
 		}
 		if (Constants.DEBUG_OPTIMIZE)
 			System.out.println("propradius = " + propradius);
-		
+
 		// step 5:  Identify the "master pathlinks", the non-hand pathlinks starting on
 		// master events.  Put them into a linear array for convenience
-		
+
 		int masterplNum = 0;
 		PathLink[] masterpl = null;
 		for (int pass = 1; pass < 3; pass++) {
@@ -210,9 +210,9 @@ public class MarginEquations {
 		if (Constants.DEBUG_OPTIMIZE)
 			System.out.println("number of master pathlinks = " + masterplNum);
 
-		
+
 		// step 6:  Figure out all distinct potential collisions in the pattern, and the
-		// equation determining throw error margin for each one.  
+		// equation determining throw error margin for each one.
 		//
 		// Find all pathlink pairs (P1, P2) such that:
 		// * P1 and P2 both represent paths through the air (not in the hands)
@@ -224,7 +224,7 @@ public class MarginEquations {
 		// * if P1 and P2 start and end at the same time, then P2 is not from a smaller juggler number than P1
 		// * if P1 and P2 start and end at the same time, and are from the same juggler, then P1 is from the right hand
 		// * P1 and P2 can collide (t_same is defined and occurs when both are in the air)
-		
+
 		double sym_delay = -1.0;
 		boolean sym_switchdelay = false;
 		for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
@@ -240,16 +240,16 @@ public class MarginEquations {
 					throw new JuggleExceptionUser(errorstrings.getString("Error_no_optimize_switch"));
 			}
 		}
-		
-		Vector eqns = new Vector();
-		
+
+		ArrayList<double[]> eqns = new ArrayList<double[]>();
+
 		if (Constants.DEBUG_OPTIMIZE)
 			System.out.println("potential collisions:");
 		for (int i = 0; i < masterplNum; i++) {
 			for (int j = 0; j < masterplNum; j++) {
 				PathLink mpl1 = masterpl[i];
 				PathLink mpl2 = masterpl[j];
-				
+
 				// enumerate all of the ways that mpl2 could collide with mpl1.
 				double mpl1_start = mpl1.getStartEvent().getT();
 				double mpl1_end = mpl1.getEndEvent().getT();
@@ -257,10 +257,10 @@ public class MarginEquations {
 				double mpl2_end = mpl2.getEndEvent().getT();
 				double delay = 0.0;
 				boolean invert_mpl2 = false;
-				
+
 				do {
 					boolean can_collide = true;
-					
+
 					// implement the criteria described above
 					if (delay == 0.0 && mpl1.getStartEvent() == mpl2.getStartEvent())
 						can_collide = false;
@@ -278,19 +278,19 @@ public class MarginEquations {
 							}
 						}
 					}
-					
+
 					double tsame = -1.0;
 					double tsame_denom = (mpl2_start + mpl2_end + 2*delay) - (mpl1_start + mpl1_end);
 					if (tsame_denom == 0.0)
 						can_collide = false;
-					
+
 					if (can_collide) {
 						tsame = ((mpl2_start + delay) * (mpl2_end + delay) - mpl1_start * mpl1_end) / tsame_denom;
-						
+
 						if (tsame < mpl1_start || tsame > mpl1_end || tsame < (mpl2_start+delay) || tsame > (mpl2_end+delay))
 							can_collide = false;
 					}
-					
+
 					if (can_collide) {
 						// We have another potential collision in the pattern, and a new margin equation.
 						//
@@ -299,12 +299,12 @@ public class MarginEquations {
 						// (4 coordinates in all):
 						//
 						// margin = sum_i {coef_i * x_i} + coef_varsNum
-						
+
 						double[] coefs = new double[this.varsNum + 1];
-						
+
 						// Calculate the angular margin of error (in radians) with the relations:
 						//
-						// margin * v_y1 * (tsame - t_t1) + margin * v_y2 * (tsame - t_t2) 
+						// margin * v_y1 * (tsame - t_t1) + margin * v_y2 * (tsame - t_t2)
 						// = (horizontal distance btwn arcs at time t_same) - 2 * propradius
 						// = abs(
 						//     (x_t1 * (t_c1 - tsame) + x_c1 * (tsame - t_t1)) / (t_c1 - t_t1)
@@ -316,25 +316,25 @@ public class MarginEquations {
 						// v_y2 = 0.5 * g * (t_c2 - t_t2)
 						//
 						// and t_t1, t_c1 are the throw and catch time of arc 1, etc.
-						
+
 						double t_t1 = mpl1_start;
 						double t_c1 = mpl1_end;
 						double t_t2 = mpl2_start + delay;
 						double t_c2 = mpl2_end + delay;
-						
+
 						double v_y1 = 0.5 * g * (t_c1 - t_t1);
 						double v_y2 = 0.5 * g * (t_c2 - t_t2);
 						double denom = v_y1 * (tsame - t_t1) + v_y2 * (tsame - t_t2);
 						denom *= Math.PI / 180.0;	// so margin will be in degrees
-						
+
 						double coef_t1 = (t_c1 - tsame) / ((t_c1 - t_t1) * denom);
 						double coef_c1 = (tsame - t_t1) / ((t_c1 - t_t1) * denom);
 						double coef_t2 = -(t_c2 - tsame) / ((t_c2 - t_t2) * denom);
 						double coef_c2 = -(tsame - t_t2) / ((t_c2 - t_t2) * denom);
 						double coef_0 = -2.0 * propradius / denom;
-						
+
 						int t1_varnum, c1_varnum, t2_varnum, c2_varnum;
-						
+
 						JMLEvent mplev = mpl1.getStartEvent();
 						if (!mplev.isMaster()) {
 							if (mplev.getHand() != mplev.getMaster().getHand())
@@ -363,22 +363,22 @@ public class MarginEquations {
 							mplev = mplev.getMaster();
 						}
 						c2_varnum = variableEvents.indexOf(mplev);
-						
+
 						if (t1_varnum < 0 || c1_varnum < 0 || t2_varnum < 0 || c2_varnum < 0)
 							throw new JuggleExceptionInternal("Could not find master event in variableEvents");
-						
+
 						if (invert_mpl2) {
 							coef_t2 = -coef_t2;
 							coef_c2 = -coef_c2;
 						}
-						
+
 						coefs[t1_varnum] += coef_t1;
 						coefs[c1_varnum] += coef_c1;
 						coefs[t2_varnum] += coef_t2;
 						coefs[c2_varnum] += coef_c2;
 						coefs[this.varsNum] = coef_0;
-						
-						// define coefficients so distance (ignoring prop dimension) is nonnegative 
+
+						// define coefficients so distance (ignoring prop dimension) is nonnegative
 						double dist = 0.0;
 						for (int k = 0; k < this.varsNum; k++)
 							dist += coefs[k] * this.varsValues[k];
@@ -388,14 +388,14 @@ public class MarginEquations {
 									coefs[k] = -coefs[k];
 							}
 						}
-						
+
 						eqns.add(coefs);
 						this.marginsNum++;
-						
+
 						if (Constants.DEBUG_OPTIMIZE)
 							System.out.println("mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
 					}
-					
+
 					if (sym_switchdelay) {
 						delay += 0.5 * sym_delay;
 						invert_mpl2 = !invert_mpl2;
@@ -406,16 +406,16 @@ public class MarginEquations {
 				} while (mpl1_end > (mpl2_start + delay));
 			}
 		}
-		
+
 		// step 7.  De-duplicate the list of equations; for various reasons the same equation
 		// can appear multiple times.
-		
+
 		if (Constants.DEBUG_OPTIMIZE) {
 			System.out.println("total margin equations = " + this.marginsNum);
 			for (int i = 0; i < this.marginsNum; i++) {
 				StringBuffer sb = new StringBuffer();
 				sb.append("{ ");
-				double[] temp = (double[])eqns.elementAt(i);
+				double[] temp = eqns.get(i);
 				for (int j = 0; j <= this.varsNum; j++) {
 					sb.append(JMLPattern.toStringTruncated(temp[j], 4));
 					if (j == (this.varsNum - 1))
@@ -427,21 +427,21 @@ public class MarginEquations {
 				for (int j = 0; j < this.varsNum; j++)
 					dtemp += temp[j] * this.varsValues[j];
 				sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
-				
+
 				System.out.println("eq[" + i + "] = " + sb.toString());
 			}
 			System.out.println("de-duplicating equations...");
-		}		
-		
+		}
+
 		int orig_row = 1;
-		
+
 		for (int i = 1; i < this.marginsNum; i++) {
 			boolean dupoverall = false;
 			final double epsilon = 0.000001;
-			double[] rowi = (double[])eqns.elementAt(i);
-			
+			double[] rowi = eqns.get(i);
+
 			for (int j = 0; !dupoverall && j < i; j++) {
-				double[] rowj = (double[])eqns.elementAt(j);
+				double[] rowj = eqns.get(j);
 				boolean duprow = true;
 				for (int k = 0; duprow && k <= this.varsNum; k++) {
 					if (rowi[k] < (rowj[k] - epsilon) || rowi[k] > (rowj[k] + epsilon))
@@ -449,7 +449,7 @@ public class MarginEquations {
 				}
 				dupoverall |= duprow;
 			}
-			
+
 			if (dupoverall) {
 				if (Constants.DEBUG_OPTIMIZE)
 					System.out.println("removed duplicate equation " + orig_row);
@@ -460,14 +460,14 @@ public class MarginEquations {
 			if (Constants.DEBUG_OPTIMIZE)
 				orig_row++;
 		}
-		
+
 		// step 8.  Move the equations into an array, and sort it based on margins at the
 		// current values of the variables.
-		
+
 		this.marginsEqs = new LinearEquation[this.marginsNum];
 		for (int i = 0; i < this.marginsNum; i++) {
 			this.marginsEqs[i] = new LinearEquation(this.varsNum);
-			this.marginsEqs[i].setCoefficients((double[])eqns.elementAt(i));
+			this.marginsEqs[i].setCoefficients(eqns.get(i));
 		}
 
 		if (Constants.DEBUG_OPTIMIZE) {
@@ -486,13 +486,13 @@ public class MarginEquations {
 				for (int j = 0; j < this.varsNum; j++)
 					dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
 				sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
-				
+
 				System.out.println("eq[" + i + "] = " + sb.toString());
 			}
-		}		
-		
+		}
+
 		this.sort();
-		
+
 		if (Constants.DEBUG_OPTIMIZE) {
 			System.out.println("sorted:");
 			for (int i = 0; i < this.marginsNum; i++) {
@@ -509,18 +509,16 @@ public class MarginEquations {
 				for (int j = 0; j < this.varsNum; j++)
 					dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
 				sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
-				
+
 				System.out.println("eq[" + i + "] = " + sb.toString());
 			}
 		}
 	}
-	
-	
+
+
 	public void sort() {
-		Comparator comp = new Comparator() {
-			public int compare(Object o1, Object o2) {
-				LinearEquation eq1 = (LinearEquation)o1;
-				LinearEquation eq2 = (LinearEquation)o2;
+		Comparator<LinearEquation> comp = new Comparator<LinearEquation>() {
+			public int compare(LinearEquation eq1, LinearEquation eq2) {
 				if (eq1.done() && !eq2.done())
 					return -1;
 				if (!eq1.done() && eq2.done())
@@ -538,10 +536,10 @@ public class MarginEquations {
 					return 1;
 				return 0;
 			}
-			
-			public boolean equals(Object obj) { return false; }
+
+			public boolean equals(LinearEquation eq) { return false; }
 		};
-		
-		Arrays.sort(marginsEqs, comp);		
+
+		Arrays.sort(marginsEqs, comp);
 	}
 }
