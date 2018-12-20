@@ -177,6 +177,10 @@ public class ringProp extends Prop {
         return new Coordinate(-outside_diam/2, 0, -outside_diam/2);
     }
 
+	public double getWidth() {
+		return 0.0;
+	}
+	
     public Image getProp2DImage(Component comp, double zoom, double[] camangle) {
         if ((image == null) || (zoom != lastzoom) ||
 			(camangle[0] != lastcamangle[0]) || (camangle[1] != lastcamangle[1]))	// first call or display resized?

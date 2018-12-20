@@ -29,7 +29,8 @@ public class Constants {
     
     public static final boolean DEBUG_LAYOUT = false;
     public static final boolean DEBUG_PARSING = false;
-
+	public static final boolean DEBUG_OPTIMIZE = true;
+	
     public static final boolean INCLUDE_GIF_SAVE = true;
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;

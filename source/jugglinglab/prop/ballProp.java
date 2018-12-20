@@ -171,6 +171,10 @@ public class ballProp extends Prop {
         return new Coordinate(-diam/2,0,-diam/2);
     }
 
+	public double getWidth() {
+		return diam;
+	}
+	
     public Image getProp2DImage(Component comp, double zoom, double[] camangle) {
         if ((ballimage == null) || (zoom != lastzoom))	// first call or display resized?
             recalc2D(comp, zoom);

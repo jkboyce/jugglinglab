@@ -74,6 +74,7 @@ public abstract class Prop {
     protected abstract void init(String st) throws JuggleExceptionUser;
     public abstract Coordinate getMax();
     public abstract Coordinate getMin();
+	public abstract double getWidth();		// width in cm, for margin calculation
     public abstract Image getProp2DImage(Component comp, double zoom, double[] camangle);
     public abstract Dimension getProp2DSize(Component comp, double zoom);
     public abstract Dimension getProp2DCenter(Component comp, double zoom);

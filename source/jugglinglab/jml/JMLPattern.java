@@ -68,13 +68,16 @@ public class JMLPattern {
     protected int numpaths;
     protected ArrayList<PropDef> props;
     protected int[] propassignment;
-    protected boolean[][] hasVDHandJMLTransition;		// whether pattern has a velocity-defining transition,
-                                                   // for each juggler/hand
+    protected boolean laidout, valid;
+	
+	// everything below this is set in layoutPattern()
+	
+    protected boolean[][] hasVDHandJMLTransition;	// whether pattern has a velocity-defining transition,
+													// for each juggler/hand
     protected boolean[] hasVDPathJMLTransition;		// for each path
     protected ArrayList<JMLSymmetry> symmetries;
     protected JMLEvent eventlist;
     protected JMLPosition positionlist;
-    protected boolean laidout, valid;
 
     protected ArrayList<ArrayList<PathLink>> pathlinks;		// for each path
     protected ArrayList<ArrayList<ArrayList<HandLink>>> handlinks;		// for each juggler/hand
@@ -122,26 +125,31 @@ public class JMLPattern {
     //	public void setJMLVersion(String version)	{ this.version = version; }
     
     public void setTitle(String title)		{ this.title = title == null ? null : title.trim(); }
-    public void setNumberOfJugglers(int n)	{ this.numjugglers = n; }
-    public void setNumberOfPaths(int n)		{ this.numpaths = n; }
+    public void setNumberOfJugglers(int n)	{ this.dirty(); this.numjugglers = n; }
+    public void setNumberOfPaths(int n)		{ this.dirty(); this.numpaths = n; }
 
-    public void addProp(PropDef pd) 		{ props.add(pd); }
+    public void addProp(PropDef pd) 		{ this.dirty(); props.add(pd); }
     public void removeProp(int propnum) {
+		this.dirty();
         props.remove(propnum-1);
+
         for (int i = 1; i <= getNumberOfPaths(); i++) {
             if (getPropAssignment(i) > propnum)
                 setPropAssignment(i, getPropAssignment(i)-1);
         }
     }
     public void setPropAssignment(int pathnum, int propnum) {
+		this.dirty();
         propassignment[pathnum-1] = propnum;
     }
-    public void setPropAssignments(int[] pa) 	{ this.propassignment = pa; }
+    public void setPropAssignments(int[] pa) 	{ this.dirty(); this.propassignment = pa; }
 
-    public void addSymmetry(JMLSymmetry sym)	{ symmetries.add(sym); }
+    public void addSymmetry(JMLSymmetry sym)	{ this.dirty(); symmetries.add(sym); }
 
 
     public void addEvent(JMLEvent ev) {
+		this.dirty();
+		
         if ((eventlist == null) || (eventlist.getT() > ev.getT())) {
             ev.setPrevious(null);
             ev.setNext(eventlist);
@@ -168,10 +176,11 @@ public class JMLPattern {
         current.setNext(ev);
         ev.setNext(null);
         ev.setPrevious(current);
-        laidout = false;
     }
 
     public void removeEvent(JMLEvent ev) {
+		this.dirty();
+		
         if (eventlist == ev) {
             eventlist = ev.getNext();
             if (eventlist != null)
@@ -189,10 +198,13 @@ public class JMLPattern {
 
     public JMLEvent getEventList()	{ return eventlist; }
 
+	public ArrayList<ArrayList<PathLink>> getPathlinks()  { return pathlinks; }
+	
     public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
         if ((pos.getT() < getLoopStartTime()) || (pos.getT() > getLoopEndTime()))
             return;  // throw new JuggleExceptionUser("<position> time out of range");
 
+		this.dirty();
         if ((positionlist == null) || (positionlist.getT() > pos.getT())) {
             pos.setPrevious(null);
             pos.setNext(positionlist);
@@ -222,6 +234,7 @@ public class JMLPattern {
     }
 
     public void removePosition(JMLPosition pos) {
+		this.dirty();
         if (positionlist == pos) {
             positionlist = pos.getNext();
             if (positionlist != null)
@@ -498,7 +511,7 @@ public class JMLPattern {
                     }
                 }
             }
-            // do we need to continue adding earlier events?
+            // do we need to continue adding later events?
             contin = false;
             for (int i = 0; i < numjugglers; i++) {
                 contin |= needHandEvent[i][0];
@@ -522,15 +535,13 @@ public class JMLPattern {
             if (ev.isMaster()) {
                 JMLEvent newmaster = ev;
                 double tmaster = getLoopEndTime();
-                if ((ev.getT() >= getLoopStartTime()) &&
-                    (ev.getT() < tmaster))
+                if (ev.getT() >= getLoopStartTime() && ev.getT() < tmaster)
                     tmaster = ev.getT();
 
                 JMLEvent ev2 = eventlist;
                 while (ev2 != null) {
                     if (ev2.getMaster() == ev) {
-                        if ((ev2.getT() >= getLoopStartTime()) &&
-                            (ev2.getT() < tmaster)) {
+                        if (ev2.getT() >= getLoopStartTime() && ev2.getT() < tmaster) {
                             newmaster = ev2;
                             tmaster = ev2.getT();
                         }
@@ -660,7 +671,6 @@ public class JMLPattern {
             ev = ev.getNext();
         }
     }
-
 
     // Step 5: construct the links connecting events; build PathLink and HandLink lists
     protected void buildLinkLists() throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -939,8 +949,7 @@ done2:
     public void getPathCoordinate(int path, double time, Coordinate newPosition) throws JuggleExceptionInternal {
         for (int i = 0; i < pathlinks.get(path-1).size(); i++) {
             PathLink pl = pathlinks.get(path-1).get(i);
-            if ((time >= pl.getStartEvent().getT()) &&
-                (time <= pl.getEndEvent().getT())) {
+            if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT()) {
                 if (pl.isInHand()) {
                     int jug = pl.getHoldingJuggler();
                     int hand = pl.getHoldingHand();
@@ -1231,7 +1240,8 @@ done2:
 
     public boolean isValid()	{ return valid; }
     public boolean isLaidout()	{ return laidout; }
-
+	public void dirty()			{ laidout = false; }
+	
     protected void printEventList() {
         JMLEvent current = eventlist;
         java.io.PrintWriter pw = new java.io.PrintWriter(System.out);

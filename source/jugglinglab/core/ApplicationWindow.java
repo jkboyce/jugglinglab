@@ -156,6 +156,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                     siteswapNotation sn = new siteswapNotation();
 
                     JMLPattern pat = sn.getJMLPattern("pattern=5");
+					pat = jugglinglab.optimizer.Optimizer(pat);
                     jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimatorPrefs());
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)

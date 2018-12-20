@@ -26,6 +26,7 @@ import java.util.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
+import jugglinglab.optimizer.*;
 
 
 public class siteswapNotation extends mhnNotation {
@@ -95,6 +96,11 @@ public class siteswapNotation extends mhnNotation {
         JMLPattern result = getJML(p);
         result.setTitle(origpattern);
 
+		if (p.hands == null && p.bodies == null && result.getNumberOfJugglers() == 1) {
+			System.out.println("optimizing in siteswapNotation");
+			result = Optimizer.optimize(result);
+		}
+		
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(result);
 

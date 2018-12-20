@@ -195,6 +195,10 @@ public class imageProp extends Prop {
 		return new Coordinate(-width/2, 0.0, 0.0);
 	}
 	
+	public double getWidth() {
+		return width;
+	}
+	
     public Dimension getProp2DSize(Component comp, double zoom) {
 		if ((size == null) || (zoom != last_zoom))
 			rescaleImage(zoom);
