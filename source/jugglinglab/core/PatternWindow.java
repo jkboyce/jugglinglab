@@ -85,15 +85,6 @@ public class PatternWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    protected void restartJuggle(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleException {
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (name != null)
-            this.setTitle(name);
-        view.restartView(pat, jc);
-        this.setCursor(Cursor.getDefaultCursor());
-    }
-
-
     // Implements ActionListener to enable/disable GIFsave as view mode changes
     public void actionPerformed(ActionEvent ae) {
         boolean gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
