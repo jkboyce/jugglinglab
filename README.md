@@ -12,10 +12,12 @@ Please feel free to clone the repository and play around with it. Even better, c
 
 ## Contributors
 
-Juggling Lab has been in development since 1997 -- the earliest days of the Java language. Over that time it has seen contributions from many people, including:
+Juggling Lab has been in development since 1997 -- the earliest days of the Java language. (Some of the code is even older; the siteswap pattern generator is a port of C code written in 1991.) Juggling Lab started as an applet that ran in browsers, then migrated to Swing with the release of Java 1.2. As applet support gradually died out, Juggling Lab morphed into the desktop application it is today.
+
+Over that long span of time the project has seen contributions from many people, including:
 
 - Jack Boyce – Most Juggling Lab code, project administration
-- Brian Campbell – bookmarklet
+- Brian Campbell – Bookmarklet
 - Vincent Bruel – Suggestions for improved bouncing support (hyperlift/hyperforce patterns), ball-bounce audio sample
 - Jason Haslam – Ring prop, bitmapped-image prop, improved ball graphic, visual editor enhancements, internationalization of user interface including Spanish and Portuguese translations, and many bug fixes
 - Steve Healy (JAG) – Many invaluable design suggestions and bug reports, especially of siteswap notation component
