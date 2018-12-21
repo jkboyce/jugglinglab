@@ -65,12 +65,12 @@ public class Animator extends JPanel implements Runnable {
     protected double			sim_interval_secs;
     protected long				real_interval_millis;
     protected static AudioClip	catchclip = null, bounceclip = null;
-	
+
 	protected boolean			waspaused;			// for pause on mouse away
 	// protected boolean waspaused_valid = false;
 	protected boolean			outside;
 	protected boolean			outside_valid;
-    
+
     protected boolean			cameradrag;
     protected int				startx, starty, lastx, lasty;
     protected double[]			camangle;
@@ -91,41 +91,44 @@ public class Animator extends JPanel implements Runnable {
         actualcamangle1 = new double[2];
         actualcamangle2 = new double[2];
 		jc = new AnimatorPrefs();
-		
+
 		outside = true;
 		waspaused = outside_valid = false;
-		
+
 		this.setOpaque(true);
     }
 
 
-    public void setJAPreferredSize(Dimension d) {
+    public void setAnimatorPreferredSize(Dimension d) {
         prefsize = d;
     }
 
     // override methods in java.awt.Component
+    @Override
     public Dimension getPreferredSize() {
 		if (prefsize != null)
 			return new Dimension(prefsize);
 		return getMinimumSize();
     }
+
+    @Override
     public Dimension getMinimumSize() {
-        return new Dimension(100,100);
+        return new Dimension(10,10);
     }
 
     public static void setAudioClips(AudioClip[] clips) {
         Animator.catchclip = clips[0];
         Animator.bounceclip = clips[1];
     }
-    
+
     protected void initHandlers() {
         this.addMouseListener(new MouseAdapter() {
 			long lastpress = 0L;
 			long lastenter = 1L;
-			
+
             public void mousePressed(MouseEvent me) {
 				lastpress = me.getWhen();
-				
+
 				// The following (and the equivalent in mouseReleased()) is a hack to swallow
 				// a mouseclick when the browser stops reporting enter/exit events because the
 				// user has clicked on something else.  The system reports simultaneous enter/press
@@ -133,7 +136,7 @@ public class Animator extends JPanel implements Runnable {
 				// click, and just use it to get focus back.
 				if (jc.mousePause && (lastpress == lastenter))
 					return;
-					
+
                 if (exception != null)
                     return;
                 if (!engineStarted)
@@ -170,7 +173,7 @@ public class Animator extends JPanel implements Runnable {
 				outside = false;
 				outside_valid = true;
 			}
-			
+
 			public void mouseExited(MouseEvent me) {
 				if (jc.mousePause) {
 					waspaused = getPaused();
@@ -319,7 +322,7 @@ public class Animator extends JPanel implements Runnable {
 			waspaused = jc.startPause;
 			// waspaused_valid = outside_valid;
 		}
-					
+
         try {
             engineRunning = true;	// ok to start rendering
 
@@ -342,7 +345,7 @@ public class Animator extends JPanel implements Runnable {
 
             real_time_start = System.currentTimeMillis();
             double oldtime, newtime;
-            
+
 			if (jc.mousePause) {
 				if (outside_valid)
 					setPaused(outside);
@@ -351,7 +354,7 @@ public class Animator extends JPanel implements Runnable {
 				waspaused = false;
 				// waspaused_valid = true;
 			}
-				
+
             while (engineRunning)  {
                 setTime(pat.getLoopStartTime());
                 engineStarted = true;
@@ -488,7 +491,7 @@ public class Animator extends JPanel implements Runnable {
 
         // try to turn on antialiased rendering
         VersionSpecific.getVersionSpecific().setAntialias(g);
-        
+
         {
             double[] ca = ren1.getCameraAngle();
             double theta = ca[0];
@@ -549,7 +552,7 @@ public class Animator extends JPanel implements Runnable {
             g.drawString("z", zx-2, zy-4);
         }
     }
-    
+
     protected void drawString(String message, Graphics g) {
         int x, y, width;
         Dimension appdim = this.getSize();
@@ -649,7 +652,7 @@ public class Animator extends JPanel implements Runnable {
 		double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
 		this.overallmin.x = -maxabsx;
 		this.overallmax.x = maxabsx;
-		
+
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = "+handmax);
             System.out.println("Hand min = "+handmin);
@@ -690,7 +693,7 @@ public class Animator extends JPanel implements Runnable {
     public int[] getAnimPropNum() {
         return animpropnum;
     }
-    
+
     public void dispose() {
         killAnimationThread();
     }

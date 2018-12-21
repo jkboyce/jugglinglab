@@ -39,9 +39,9 @@ public class AnimatorPrefsDialog extends JDialog {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    protected JTextField 	tf1, tf2, tf3;
-    protected JCheckBox 	cb2, cb3, cb4, cb5, cb6;
-    protected JButton 		but1, but2;
+    protected JTextField 	tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
+    protected JCheckBox 	cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;
+    protected JButton 		but_cancel, but_ok;
 
     protected AnimatorPrefs newjc;
     //	protected boolean finished = false;
@@ -52,60 +52,76 @@ public class AnimatorPrefsDialog extends JDialog {
     public AnimatorPrefsDialog(JFrame parent) {
         // set up dialog
         super(parent, guistrings.getString("Animation_Preferences"), true);
-        
+
         GridBagLayout gb = new GridBagLayout();
 
         this.getContentPane().setLayout(gb);
 
         JPanel p1 = new JPanel();			// to hold text boxes
         p1.setLayout(gb);
-        JLabel lab1 = new JLabel(guistrings.getString("Frames_per_second"));
+        JLabel lab1 = new JLabel(guistrings.getString("Width"));
         p1.add(lab1);
         gb.setConstraints(lab1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                  new Insets(0,3,0,0)));
-        tf1 = new JTextField(4);
-        p1.add(tf1);
-        gb.setConstraints(tf1, make_constraints(GridBagConstraints.LINE_START,0,0,
-                                                new Insets(0,0,0,0)));
-        JLabel lab2 = new JLabel(guistrings.getString("Slowdown_factor"));
+        tf_width = new JTextField(4);
+        p1.add(tf_width);
+        gb.setConstraints(tf_width, make_constraints(GridBagConstraints.LINE_START,0,0,
+                                                 new Insets(0,0,0,0)));
+        JLabel lab2 = new JLabel(guistrings.getString("Height"));
         p1.add(lab2);
         gb.setConstraints(lab2, make_constraints(GridBagConstraints.LINE_START,1,1,
                                                  new Insets(0,3,0,0)));
-        tf2 = new JTextField(4);
-        p1.add(tf2);
-        gb.setConstraints(tf2, make_constraints(GridBagConstraints.LINE_START,0,1,
-                                                new Insets(0,0,0,0)));
-        JLabel lab3 = new JLabel(guistrings.getString("Border_(pixels)"));
+        tf_height = new JTextField(4);
+        p1.add(tf_height);
+        gb.setConstraints(tf_height, make_constraints(GridBagConstraints.LINE_START,0,1,
+                                                 new Insets(0,0,0,0)));
+        JLabel lab3 = new JLabel(guistrings.getString("Frames_per_second"));
         p1.add(lab3);
         gb.setConstraints(lab3, make_constraints(GridBagConstraints.LINE_START,1,2,
                                                  new Insets(0,3,0,0)));
-        tf3 = new JTextField(4);
-        p1.add(tf3);
-        gb.setConstraints(tf3, make_constraints(GridBagConstraints.LINE_START,0,2,
-                                                new Insets(0,0,0,0)));
+        tf_fps = new JTextField(4);
+        p1.add(tf_fps);
+        gb.setConstraints(tf_fps, make_constraints(GridBagConstraints.LINE_START,0,2,
+                                                 new Insets(0,0,0,0)));
+        JLabel lab4 = new JLabel(guistrings.getString("Slowdown_factor"));
+        p1.add(lab4);
+        gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_START,1,3,
+                                                 new Insets(0,3,0,0)));
+        tf_slowdown = new JTextField(4);
+        p1.add(tf_slowdown);
+        gb.setConstraints(tf_slowdown, make_constraints(GridBagConstraints.LINE_START,0,3,
+                                                 new Insets(0,0,0,0)));
+        JLabel lab5 = new JLabel(guistrings.getString("Border_(pixels)"));
+        p1.add(lab5);
+        gb.setConstraints(lab5, make_constraints(GridBagConstraints.LINE_START,1,4,
+                                                 new Insets(0,3,0,0)));
+        tf_border = new JTextField(4);
+        p1.add(tf_border);
+        gb.setConstraints(tf_border, make_constraints(GridBagConstraints.LINE_START,0,4,
+                                                 new Insets(0,0,0,0)));
 
-        cb2 = new JCheckBox(guistrings.getString("Start_paused"));
-        cb6 = new JCheckBox(guistrings.getString("Pause_on_mouse_away"));
-        cb3 = new JCheckBox(guistrings.getString("Stereo_display"));
-        cb4 = new JCheckBox(guistrings.getString("Catch_sounds"));
-        cb5 = new JCheckBox(guistrings.getString("Bounce_sounds"));
+        cb_paused = new JCheckBox(guistrings.getString("Start_paused"));
+        cb_mousepause = new JCheckBox(guistrings.getString("Pause_on_mouse_away"));
+        cb_stereo = new JCheckBox(guistrings.getString("Stereo_display"));
+        cb_catchsounds = new JCheckBox(guistrings.getString("Catch_sounds"));
+        cb_bouncesounds = new JCheckBox(guistrings.getString("Bounce_sounds"));
 
         JPanel p2 = new JPanel();			// buttons at bottom
         p2.setLayout(gb);
-        but1 = new JButton(guistrings.getString("Cancel"));
+        but_cancel = new JButton(guistrings.getString("Cancel"));
 
-        but1.addActionListener(new ActionListener() {
+        but_cancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
         });
 
-        p2.add(but1);
-        gb.setConstraints(but1, make_constraints(GridBagConstraints.LINE_END,0,0,
+        p2.add(but_cancel);
+        gb.setConstraints(but_cancel, make_constraints(GridBagConstraints.LINE_END,0,0,
                                                  new Insets(0,0,0,0)));
-        but2 = new JButton(guistrings.getString("OK"));
+        but_ok = new JButton(guistrings.getString("OK"));
 
-        but2.addActionListener(new ActionListener() {
+        but_ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 int tempint;
                 double tempdouble;
@@ -115,69 +131,88 @@ public class AnimatorPrefsDialog extends JDialog {
                 newjc = new AnimatorPrefs(newjc);	// clone old controls
 
                 try {
-                    tempdouble = Double.valueOf(tf1.getText()).doubleValue();
+                    tempint = Integer.parseInt(tf_width.getText());
+                    if (tempint >= 0) newjc.width = tempint;
+                } catch (NumberFormatException e) {
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "width" };
+                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                }
+                try {
+                    tempint = Integer.parseInt(tf_height.getText());
+                    if (tempint >= 0) newjc.height = tempint;
+                } catch (NumberFormatException e) {
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "height" };
+                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                }
+                try {
+                    tempdouble = Double.valueOf(tf_fps.getText()).doubleValue();
                     if (tempdouble > 0.0) newjc.fps = tempdouble;
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "fps" };					
+					Object[] arguments = { "fps" };
                     new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
-                    tempdouble = Double.valueOf(tf2.getText()).doubleValue();
+                    tempdouble = Double.valueOf(tf_slowdown.getText()).doubleValue();
                     if (tempdouble > 0.0) newjc.slowdown = tempdouble;
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "slowdown" };					
+					Object[] arguments = { "slowdown" };
                     new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
-                    tempint = Integer.parseInt(tf3.getText());
+                    tempint = Integer.parseInt(tf_border.getText());
                     if (tempint >= 0) newjc.border = tempint;
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "border" };					
+					Object[] arguments = { "border" };
                     new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
 
-                newjc.startPause = cb2.isSelected();
-				newjc.mousePause = cb6.isSelected();
-                newjc.stereo = cb3.isSelected();
-                newjc.catchSound = cb4.isSelected();
-                newjc.bounceSound = cb5.isSelected();
+                newjc.startPause = cb_paused.isSelected();
+				newjc.mousePause = cb_mousepause.isSelected();
+                newjc.stereo = cb_stereo.isSelected();
+                newjc.catchSound = cb_catchsounds.isSelected();
+                newjc.bounceSound = cb_bouncesounds.isSelected();
             }
         });
 
-        p2.add(but2);
-        gb.setConstraints(but2, make_constraints(GridBagConstraints.LINE_END,1,0,
+        p2.add(but_ok);
+        gb.setConstraints(but_ok, make_constraints(GridBagConstraints.LINE_END,1,0,
                                                  new Insets(0,10,0,0)));
 
-        this.getContentPane().add(cb3);
-        gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,0,0,
+        // now make the whole window
+        this.getContentPane().add(p1);
+        gb.setConstraints(p1, make_constraints(GridBagConstraints.LINE_START,0,0,
+                                               new Insets(3,border,0,border)));
+
+        this.getContentPane().add(cb_paused);
+        gb.setConstraints(cb_paused, make_constraints(GridBagConstraints.LINE_START,0,1,
                                                 new Insets(0,border,0,border)));
-        this.getContentPane().add(cb2);
-        gb.setConstraints(cb2, make_constraints(GridBagConstraints.LINE_START,0,1,
+        this.getContentPane().add(cb_mousepause);
+        gb.setConstraints(cb_mousepause, make_constraints(GridBagConstraints.LINE_START,0,2,
                                                 new Insets(0,border,0,border)));
-        this.getContentPane().add(cb6);
-        gb.setConstraints(cb6, make_constraints(GridBagConstraints.LINE_START,0,2,
+        this.getContentPane().add(cb_stereo);
+        gb.setConstraints(cb_stereo, make_constraints(GridBagConstraints.LINE_START,0,3,
                                                 new Insets(0,border,0,border)));
-        this.getContentPane().add(cb4);
-        gb.setConstraints(cb4, make_constraints(GridBagConstraints.LINE_START,0,3,
+        this.getContentPane().add(cb_catchsounds);
+        gb.setConstraints(cb_catchsounds, make_constraints(GridBagConstraints.LINE_START,0,4,
                                                 new Insets(0,border,0,border)));
-        this.getContentPane().add(cb5);
-        gb.setConstraints(cb5, make_constraints(GridBagConstraints.LINE_START,0,4,
+        this.getContentPane().add(cb_bouncesounds);
+        gb.setConstraints(cb_bouncesounds, make_constraints(GridBagConstraints.LINE_START,0,5,
                                                 new Insets(0,border,3,border)));
-        this.getContentPane().add(p1);		// now make the whole window
-        gb.setConstraints(p1, make_constraints(GridBagConstraints.LINE_START,0,5,
-                                               new Insets(3,border,border,border)));
+
         this.getContentPane().add(p2);
         gb.setConstraints(p2, make_constraints(GridBagConstraints.LINE_END,0,6,
                                                new Insets(0,border,border,border)));
 
-        this.getRootPane().setDefaultButton(but2);		// OK button is default
-		
+        this.getRootPane().setDefaultButton(but_ok);		// OK button is default
+
 		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-				
+
 		this.pack();
 		this.setResizable(false);
     }
@@ -198,14 +233,16 @@ public class AnimatorPrefsDialog extends JDialog {
     public AnimatorPrefs getPrefs(AnimatorPrefs oldjc) {
         newjc = oldjc;
 
-        tf1.setText(Double.toString(oldjc.fps));
-        tf2.setText(Double.toString(oldjc.slowdown));
-        tf3.setText(Integer.toString(oldjc.border));
-        cb2.setSelected(oldjc.startPause);
-		cb6.setSelected(oldjc.mousePause);
-        cb3.setSelected(oldjc.stereo);
-        cb4.setSelected(oldjc.catchSound);
-        cb5.setSelected(oldjc.bounceSound);
+        tf_width.setText(Integer.toString(oldjc.width));
+        tf_height.setText(Integer.toString(oldjc.height));
+        tf_fps.setText(Double.toString(oldjc.fps));
+        tf_slowdown.setText(Double.toString(oldjc.slowdown));
+        tf_border.setText(Integer.toString(oldjc.border));
+        cb_paused.setSelected(oldjc.startPause);
+		cb_mousepause.setSelected(oldjc.mousePause);
+        cb_stereo.setSelected(oldjc.stereo);
+        cb_catchsounds.setSelected(oldjc.catchSound);
+        cb_bouncesounds.setSelected(oldjc.bounceSound);
 
         this.setVisible(true);
         return newjc;

@@ -48,11 +48,9 @@ public class JMLView extends View {
 
     public JMLView(Dimension dim) {
         this.setLayout(new BorderLayout());
-        
+
         this.ja = new Animator();
-        //ja.setPreferredSize(dim);
-        ja.setJAPreferredSize(dim);
-        //ja.setMinimumSize(dim);
+        ja.setAnimatorPreferredSize(dim);
 
         this.ta = new JTextArea();
         //		ta.setPreferredSize(new Dimension(400,1));
@@ -133,6 +131,12 @@ public class JMLView extends View {
         }
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        ja.setAnimatorPreferredSize(d);
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return ja.getSize(new Dimension());
     }
@@ -142,7 +146,7 @@ public class JMLView extends View {
     }
 
 	public JMLPattern getPattern() { return ja.getPattern(); }
-	
+
     public boolean getPaused() { return ja.getPaused(); }
 
     public void setPaused(boolean pause) {
@@ -167,7 +171,7 @@ public class JMLView extends View {
                 setDirty(true);
             } catch (SAXParseException spe) {
 				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { new Integer(spe.getLineNumber()) };					
+				Object[] arguments = { new Integer(spe.getLineNumber()) };
                 lab.setText(MessageFormat.format(template, arguments));
                 setDirty(true);
             } catch (SAXException se) {

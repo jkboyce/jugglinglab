@@ -42,17 +42,18 @@ public class View extends JPanel implements ActionListener {
     }
 
 	protected JFrame parent = null;
-	protected Dimension animsize = null;
     protected AnimatorPrefs jc = null;
     protected JMLPattern pat = null;
     protected View subview = null;
 
 	public View() {}
 
-	public View(JFrame p, Dimension animsize) {
-		setParent(p);
-		this.animsize = animsize;
-		this.jc = new AnimatorPrefs();
+	public View(JFrame p, AnimatorPrefs c) {
+		this.setParent(p);
+        if (c != null)
+            this.jc = c;
+        else
+            this.jc = new AnimatorPrefs();
 	}
 
 	protected void setParent(JFrame p) {
@@ -73,6 +74,11 @@ public class View extends JPanel implements ActionListener {
 		if (subview != null)
 			subview.restartView(p, c);
 	}
+
+    public void setAnimatorPreferredSize(Dimension d) {
+        if (subview != null)
+            subview.setAnimatorPreferredSize(d);
+    }
 
     public Dimension getAnimatorSize() {
 		if (subview != null)
@@ -297,9 +303,22 @@ public class View extends JPanel implements ActionListener {
             case VIEW_ANIMPREFS:
                 AnimatorPrefsDialog japd = new AnimatorPrefsDialog(parent);
 
-                //  AnimatorPrefs oldjc = this.getAnimator().getAnimatorPrefs();
+                if (subview != null) {
+                    Dimension animsize = subview.getAnimatorSize();
+                    this.jc.width = animsize.width;
+                    this.jc.height = animsize.height;
+                }
+
                 AnimatorPrefs newjc = japd.getPrefs(this.jc);
-                if (newjc != jc)	 {	// user made change?
+
+                if (newjc.width != this.jc.width || newjc.height != this.jc.height) {
+                    // user changed the width and/or height
+                    setAnimatorPreferredSize(new Dimension(newjc.width, newjc.height));
+                    if (parent != null)
+                        parent.pack();
+                }
+
+                if (newjc != this.jc)	 {	// user made change?
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     this.jc = newjc;
                     try {
@@ -327,13 +346,15 @@ public class View extends JPanel implements ActionListener {
     public void setViewMode(int mode) throws JuggleExceptionUser, JuggleExceptionInternal {
         View newview = null;
         boolean paused = false;
+        Dimension animsize = null;
 
         if (subview != null) {
             animsize = subview.getAnimatorSize();
-            pat = subview.getPattern();	// retrieve possibly edited pattern from old view
+            pat = subview.getPattern();  // retrieve possibly edited pattern from old view
             paused = subview.getPaused();
-			remove(subview);
-        }
+			remove(subview);             // JPanel method
+        } else
+            animsize = new Dimension(this.jc.width, this.jc.height);
 
         switch (mode) {
             case VIEW_NONE:
@@ -372,10 +393,10 @@ public class View extends JPanel implements ActionListener {
 
 		newview.setParent(parent);
         newview.setPaused(paused);
-		if (subview != null)
-			subview.dispose();
+		if (this.subview != null)
+			this.subview.dispose();
 
-        subview = newview;
+        this.subview = newview;
     }
 
 	protected int getViewMode() {

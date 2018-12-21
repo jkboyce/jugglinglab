@@ -41,17 +41,17 @@ public class JugglingLabPanel extends JPanel {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 	*/
-	
+
 	protected NotationGUI ng = null;
     protected View view = null;
-	
+
 
 	public JugglingLabPanel(JFrame parent, int entry_type, PatternList pl, int view_type) throws JuggleExceptionUser, JuggleExceptionInternal {
 		GridBagLayout gb = new GridBagLayout();
 		setLayout(gb);
 
 		if (view_type != View.VIEW_NONE) {
-			view = new View(parent, new Dimension(200,300));
+			view = new View(parent, null);
 			view.setViewMode(view_type);
 			add(view);
 
@@ -66,10 +66,10 @@ public class JugglingLabPanel extends JPanel {
 			gbc.weighty = 1.0;
 			gb.setConstraints(view, gbc);
 		}
-		
+
 		if (pl != null)
 			pl.setTargetView(view);
-			
+
 		if ((entry_type != Notation.NOTATION_NONE) || (pl != null)) {
 			ng = new NotationGUI(parent, view, pl, true);
 			ng.setNotation(entry_type);		// select the first notation in the menu list
@@ -87,7 +87,7 @@ public class JugglingLabPanel extends JPanel {
 			gb.setConstraints(ng, gbc);
 		}
 	}
-	
+
 	public NotationGUI getNotationGUI() { return ng; }
 	public View getView() { return view; }
 }

@@ -44,7 +44,7 @@ public class EditView extends View {
         this.setLayout(new BorderLayout());
 
         this.jae = new AnimatorEdit();
-        jae.setJAPreferredSize(dim);
+        jae.setAnimatorPreferredSize(dim);
 
         this.ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
@@ -93,6 +93,12 @@ public class EditView extends View {
         }
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        jae.setAnimatorPreferredSize(d);
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return jae.getSize(new Dimension());
     }
@@ -102,7 +108,7 @@ public class EditView extends View {
     }
 
 	public JMLPattern getPattern() { return jae.getPattern(); }
-	
+
     public boolean getPaused() { return jae.getPaused(); }
 
     public void setPaused(boolean pause) {

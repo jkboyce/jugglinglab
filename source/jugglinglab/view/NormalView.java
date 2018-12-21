@@ -34,8 +34,7 @@ public class NormalView extends View {
 
     public NormalView(Dimension dim) {
         this.ja = new Animator();
-        // ja.setPreferredSize(dim);
-        ja.setJAPreferredSize(dim);
+        ja.setAnimatorPreferredSize(dim);
         this.setLayout(new BorderLayout());
         this.add(ja, BorderLayout.CENTER);
     }
@@ -48,6 +47,12 @@ public class NormalView extends View {
         ja.restartJuggle(p, c);
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        ja.setAnimatorPreferredSize(d);
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return ja.getSize(new Dimension());
     }
@@ -57,14 +62,14 @@ public class NormalView extends View {
     }
 
 	public JMLPattern getPattern() { return ja.getPattern(); }
-	
+
     public boolean getPaused() { return ja.getPaused(); }
 
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);
     }
-	
+
 	// The following is needed by the GIF saver
     public Animator getAnimator() { return ja; }
 }

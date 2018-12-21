@@ -45,16 +45,12 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected View view = null;
 	protected JMenu filemenu = null;
 	protected JMenu viewmenu = null;
-	
+
 
     public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
-        this(name, pat, jc, new Dimension(400, 450));
-    }
-
-    public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc, Dimension dim) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(name);
-		view = new View(this, dim);
-		
+		view = new View(this, jc);
+
 		JMenuBar mb = new JMenuBar();
 		filemenu = view.createFileMenu();
 		mb.add(filemenu);
@@ -76,23 +72,14 @@ public class PatternWindow extends JFrame implements ActionListener {
 			viewmenu.getItem(1).setSelected(true);
 		}
 
-        /*
-        5/18/2014 Turned this off; UI was too confusing
-
-		for (int i = 0; i < filemenu.getItemCount(); i++) {
-			JMenuItem jmi = filemenu.getItem(i);
-			if (jmi != null && jmi.getActionCommand().equals("savegifanim"))
-				jmi.setEnabled(false);
-		}
-        */
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		view.setDoubleBuffered(true);
 		this.setBackground(Color.white);
 		setContentPane(view);
-		
+
 		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		
+
         pack();
 		view.restartView(pat, jc);
         setVisible(true);
@@ -109,15 +96,8 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     // Implements ActionListener to enable/disable GIFsave as view mode changes
     public void actionPerformed(ActionEvent ae) {
-		/*
-        5/18/2014 Turned this off; UI was too confusing
-        
-        boolean gifenabled = false;
-		if (ae.getActionCommand().equals("simple"))
-			gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-		*/
         boolean gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-        
+
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
 			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim")) {
