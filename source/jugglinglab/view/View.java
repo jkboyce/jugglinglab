@@ -257,7 +257,6 @@ public class View extends JPanel implements ActionListener {
                             if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
                                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                                PrintWriter write = new PrintWriter(fw);
                                 getPattern().writeJML(fw, true);
                                 fw.close();
                             }
