@@ -1,6 +1,6 @@
 // PatternWindow.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -32,7 +32,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
-public class PatternWindow extends JFrame implements ActionListener {
+public class PatternWindow extends JFrame implements ActionListener, WindowListener {
     /*
 	static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
@@ -45,6 +45,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected View view = null;
 	protected JMenu filemenu = null;
 	protected JMenu viewmenu = null;
+    protected boolean exit_on_close = false;
 
 
     public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -83,8 +84,12 @@ public class PatternWindow extends JFrame implements ActionListener {
         pack();
 		view.restartView(pat, jc);
         setVisible(true);
+        addWindowListener(this);
     }
 
+    public void setExitOnClose(boolean value) {
+        this.exit_on_close = value;
+    }
 
     // Implements ActionListener to enable/disable GIFsave as view mode changes
     public void actionPerformed(ActionEvent ae) {
@@ -107,5 +112,18 @@ public class PatternWindow extends JFrame implements ActionListener {
             view = null;
         }
     }
+
+    // WindowListener interface methods
+    public void windowOpened(WindowEvent e) { }
+    public void windowClosing(WindowEvent e) {
+        if (this.exit_on_close)
+            System.exit(0);
+    }
+    public void windowClosed(WindowEvent e) { }
+    public void windowIconified(WindowEvent e) { }
+    public void windowDeiconified(WindowEvent e) { }
+    public void windowActivated(WindowEvent e) { }
+    public void windowDeactivated(WindowEvent e) { }
+
 }
 

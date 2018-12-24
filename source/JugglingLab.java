@@ -23,32 +23,124 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.generator.*;
+import jugglinglab.notation.*;
 import jugglinglab.util.*;
 
 
 public class JugglingLab {
-    // command line arguments as an ArrayList that can be trimmed as sections
-    // are parsed
+    // command line arguments as an ArrayList that we trim as portions are parsed
     protected static ArrayList<String> jlargs = null;
 
-    // output file path, if specified
-    protected static String outpath = null;
+    // Look in jlargs to see if there's an output path specified, and if so
+    // then record it and trim out of jlargs. Otherwise return null.
+    protected static String parse_outpath() {
+        for (int i = 0; i < jlargs.size(); i++) {
+            if (jlargs.get(i).equalsIgnoreCase("-out")) {
+                if (i == (jlargs.size() - 1)) {
+                    System.out.println("Warning: no output path specified after -out flag; ignoring");
+                    jlargs.remove(i);
+                    return null;
+                }
+
+                jlargs.remove(i);
+                return jlargs.remove(i);
+            }
+        }
+        return null;
+    }
+
+    // Look in jlargs to see if animator preferences are supplied, and if so then
+    // parse them and return an AnimatorPrefs object. Otherwise (or on error) return null.
+    protected static AnimatorPrefs parse_animprefs() {
+        for (int i = 0; i < jlargs.size(); i++) {
+            if (jlargs.get(i).equalsIgnoreCase("-prefs")) {
+                if (i == (jlargs.size() - 1)) {
+                    System.out.println("Warning: nothing specified after -prefs flag; ignoring");
+                    jlargs.remove(i);
+                    return null;
+                }
+
+                jlargs.remove(i);
+                String prefstring = jlargs.remove(i);
+                AnimatorPrefs jc = new AnimatorPrefs();
+                try {
+                    jc.parseInput(prefstring);
+                } catch (JuggleExceptionUser jeu) {
+                    System.out.println("Error in animator prefs: " + jeu.getMessage() + "; ignoring");
+                    return null;
+                }
+                return jc;
+            }
+        }
+        return null;
+    }
 
     // Look at beginning of jlargs to see if there's a pattern, and if so then
     // parse it at return it. Otherwise print an error message and return null.
     protected static JMLPattern parse_pattern() {
-        return null;
+        if (jlargs.size() == 0) {
+            System.out.println("Error: expected pattern input, none found");
+            return null;
+        }
+
+        // first case is a JML-formatted pattern in a file
+        if (jlargs.get(0).equalsIgnoreCase("-jml")) {
+            if (jlargs.size() == 1) {
+                System.out.println("Error: no input path specified after -jml flag");
+                return null;
+            }
+
+            jlargs.remove(0);
+            String inpath = jlargs.remove(0);
+
+            try {
+                JMLParser parser = new JMLParser();
+                parser.parse(new FileReader(new File(inpath)));
+
+                switch (parser.getFileType()) {
+                    case JMLParser.JML_PATTERN:
+                        return new JMLPattern(parser.getTree());
+                    case JMLParser.JML_LIST:
+                        System.out.println("Error: JML file cannot be a pattern list");
+                        return null;
+                    default:
+                        System.out.println("Error: file is not valid JML");
+                        return null;
+                }
+            } catch (JuggleExceptionUser jeu) {
+                System.out.println("Error parsing JML: " + jeu.getMessage());
+                return null;
+            } catch (FileNotFoundException fnfe) {
+                System.out.println("Error: cannot read from JML file");
+                return null;
+            } catch (SAXException se) {
+                System.out.println("Error: formatting error in JML file");
+                return null;
+            } catch (IOException ioe) {
+                System.out.println("Error: problem reading JML file");
+                return null;
+            }
+        }
+
+        // otherwise assume pattern is in siteswap notation
+        String sspattern = jlargs.remove(0);
+        JMLPattern pat = null;
+        try {
+            Notation not = Notation.getNotation("siteswap");
+            pat = not.getJMLPattern(sspattern);
+        } catch (JuggleExceptionUser jeu) {
+            System.out.println("Error: " + jeu.getMessage());
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleException(jei);
+        }
+        return pat;
     }
 
-    // Look in jlargs to see if there's an output path specified, and if so
-    // then record it and trim out of jlargs.
-    protected static void parse_outpath() {
-
-    }
 
     // main entry point
 
@@ -77,13 +169,8 @@ public class JugglingLab {
         JugglingLab.jlargs = new ArrayList<String>(Arrays.asList(args));
         String firstarg = jlargs.remove(0);
 
-        if (firstarg.equalsIgnoreCase("anim")) {
-            System.out.println("animate");
-            return;
-        }
-
-        // Each of the modes below can send output to a file
-        JugglingLab.parse_outpath();
+        String outpath = JugglingLab.parse_outpath();
+        AnimatorPrefs jc = JugglingLab.parse_animprefs();
 
         if (firstarg.equalsIgnoreCase("gen")) {
             // run the siteswap generator
@@ -97,16 +184,69 @@ public class JugglingLab {
             } catch (FileNotFoundException fnfe) {
                 System.out.println("Error: cannot write to file path " + outpath);
             }
+            if (jc != null)
+                System.out.println("Warning: animator prefs not used in generator mode; ignored");
+            return;
+        }
+
+        JMLPattern pat = JugglingLab.parse_pattern();
+        if (pat == null)
+            return;
+
+        if (jlargs.size() > 0) {
+            // any remaining arguments that parsing didn't consume?
+            String arglist = String.join(", ", jlargs);
+            System.out.println("Error unrecognized input: " + arglist);
+            return;
+        }
+
+        if (firstarg.equalsIgnoreCase("anim")) {
+            // open pattern in a window
+            try {
+                PatternWindow pw = new PatternWindow(pat.getTitle(), pat, jc);
+                pw.setExitOnClose(true);
+            } catch (JuggleExceptionUser jeu) {
+                System.out.println("Error: " + jeu.getMessage());
+            } catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleException(jei);
+            }
             return;
         }
 
         if (firstarg.equalsIgnoreCase("togif")) {
             System.out.println("to gif");
+            if (outpath == null) {
+                System.out.println("Error: no output path specified for animated GIF");
+                return;
+            }
+            /*
+            Animator ja = new Animator();
+            if (jc != null) {
+                ja.setAnimatorPreferredSize(new Dimension(jc.width, jc.height));
+                jc.startPause = false;
+            }
+            if (!ja.isAnimInited())
+                break;
+            ja.writeGIFAnim();
+            */
             return;
         }
 
         if (firstarg.equalsIgnoreCase("tojml")) {
-            System.out.println("to JML");
+            // output pattern to JML
+            if (outpath == null)
+                System.out.print(pat.toString());
+            else {
+                try {
+                    FileWriter fw = new FileWriter(new File(outpath));
+                    pat.writeJML(fw, true);
+                    fw.close();
+                } catch (IOException ioe) {
+                    System.out.println("Error: problem writing JML to path " + outpath);
+                }
+            }
+            if (jc != null)
+                System.out.println("Warning: animator prefs not used in jml output mode; ignored");
             return;
         }
 
