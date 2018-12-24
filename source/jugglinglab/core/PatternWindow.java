@@ -93,12 +93,10 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
 
     // Implements ActionListener to enable/disable GIFsave as view mode changes
     public void actionPerformed(ActionEvent ae) {
-        boolean gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
 			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim")) {
-				jmi.setEnabled(gifenabled);
+				jmi.setEnabled(true);
 				return;
 			}
 		}

@@ -52,11 +52,10 @@ public class AnimatorGIFWriter extends Thread {
     int num_frames;
     double sim_interval_secs;
     long real_interval_millis;
-    OutputStream out = null;
+    // OutputStream out = null;
 
-    public AnimatorGIFWriter() {
-        this.setPriority(Thread.MIN_PRIORITY);
-    }
+
+    public AnimatorGIFWriter() {}
 
     public void setup(Animator ja, jugglinglab.renderer.Renderer ren1,
                       jugglinglab.renderer.Renderer ren2, int num_frames,
@@ -70,168 +69,120 @@ public class AnimatorGIFWriter extends Thread {
         this.real_interval_millis = real_interval_millis;
     }
 
+    public void writeGIF(File f, ProgressMonitor pm) throws FileNotFoundException,
+                IOException, JuggleExceptionInternal {
+        FileOutputStream out = new FileOutputStream(f);
+
+        // Create the object that will actually do the writing
+        GIFAnimWriter gaw = new GIFAnimWriter();
+
+        Dimension dim = ja.getSize();
+        int appWidth = dim.width;
+        int appHeight = dim.height;
+
+        BufferedImage image = new BufferedImage(appWidth, appHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+
+        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            gifpropnum[i] = pat.getPropAssignment(i+1);
+        int patperiod = pat.getPeriod();
+        int totalframes = patperiod * num_frames * 2;
+        int framecount = 0;
+
+        if (pm != null)
+            pm.setMaximum(totalframes);
+
+        // loop through the individual frames twice, first to build the
+        // color map and the second to write the GIF frames
+        for (int pass = 0; pass < 2; pass++) {
+            if (pass == 1)
+                gaw.writeHeader(out);
+
+            for (int i = 0; i < patperiod; i++)  {
+                double time = pat.getLoopStartTime();
+
+                for (int j = 0; j < num_frames; j++) {
+                    if (pass == 1)
+                        gaw.writeDelay((int)(real_interval_millis/10), out);
+
+                    if (ren2 != null) {
+                        this.ren1.drawFrame(time, gifpropnum,
+                                            g.create(0,0,dim.width/2,dim.height), ja);
+                        this.ren2.drawFrame(time, gifpropnum,
+                                            g.create(dim.width/2,0,dim.width/2,dim.height), ja);
+                    } else {
+                        this.ren1.drawFrame(time, gifpropnum, g, ja);
+                    }
+
+                    if (pass == 0)
+                        gaw.doColorMap(image);
+                    else
+                        gaw.writeGIF(image, out);
+
+                    if (pm != null) {
+                        framecount++;
+                        String note = (pass==0 ? guistrings.getString("Message_GIFsave_color_map") :
+                                guistrings.getString("Message_GIFsave_writing_frame")+" "+(framecount-num_frames)+"/"+num_frames);
+                        SwingUtilities.invokeLater(new PBUpdater(pm, framecount, note));
+                        if (pm.isCanceled()) {
+                            out.close();
+                            ja.writingGIF = false;
+                            return;
+                        }
+                    }
+
+                    time += sim_interval_secs;
+                }
+
+                ja.advanceProps(gifpropnum);
+            }
+        }
+
+        gaw.writeTrailer(out);
+        g.dispose();
+        out.close();
+        ja.writingGIF = false;
+    }
+
+    public void writeGIF_interactive() {
+        // Do all of the processing in a thread separate from the main event loop.
+        // This may be overkill since the processing is usually pretty quick, but
+        // it doesn't hurt.
+        this.setPriority(Thread.MIN_PRIORITY);
+        this.start();
+    }
+
     public void run() {
-        if (!jugglinglab.core.Constants.INCLUDE_GIF_SAVE)
-            return;
-
         try {
-            /*
-             Class gawclass = null;
-             try {
-                 gawclass = Class.forName("gifwriter.GIFAnimWriter");
-             } catch (ClassNotFoundException cnfe) {
-                 try {
-                     URL[] jarurl = new URL[] {new URL("file:GIFAnimWriter.jar")};
-                     URLClassLoader loader = new URLClassLoader(jarurl);
-                     gawclass = Class.forName("gifwriter.GIFAnimWriter", true, loader);
-                 } catch (ClassNotFoundException cnfe2) {
-                     new ErrorDialog(parent, "Required file GIFAnimWriter.jar not found");
-                     return;
-                 } catch (MalformedURLException ex) {
-                     throw new JuggleExceptionInternal("Malformed URL");
-                 }
-             }
-             Method docolormap1 = null;	// public void doColorMap(Color color, boolean defaultcolor) throws IOException;
-             Method writeheader = null;	// public void writeHeader(OutputStream out) throws IOException;
-             Method writedelay = null;	// public void writeDelay(int delay, OutputStream out) throws IOException;
-             Method writegif = null;		// public void writeGIF(Image img, OutputStream out) throws IOException;
-             Method writetrailer = null;	// public void writeTrailer(OutputStream out) throws IOException;
-             try {
-                 docolormap1 = gawclass.getMethod("doColorMap", new Class[] {Color.class, Boolean.TYPE});
-                 writeheader = gawclass.getMethod("writeHeader", new Class[] {OutputStream.class});
-                 writedelay = gawclass.getMethod("writeDelay", new Class[] {Integer.TYPE, OutputStream.class});
-                 writegif = gawclass.getMethod("writeGIF", new Class[] {Image.class, OutputStream.class});
-                 writetrailer = gawclass.getMethod("writeTrailer", new Class[] {OutputStream.class});
-             } catch (NoSuchMethodException nsme) {
-                 throw new JuggleExceptionInternal("Could not find method: "+nsme.getMessage());
-             } catch (SecurityException se) {
-                 throw new JuggleExceptionInternal("Method not accessible (security): "+se.getMessage());
-             }
-             */
-
             boolean origpause = ja.getPaused();
             ja.setPaused(true);
 
             try {
-                FileOutputStream out = null;
-                ProgressMonitor pm = null;
-
                 int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(ja);
 
                 if (option == JFileChooser.APPROVE_OPTION) {
                     if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
                         ja.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         File file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
-                        out = new FileOutputStream(file);
-
-                        // Create the object that will actually do the writing
-                        /*  Object gaw = null;
-                        try {
-                            gaw = gawclass.newInstance();
-                        } catch (IllegalAccessException iae) {
-                            throw new JuggleExceptionInternal("Cannot access gifwriter.GIFAnimWriter class (security)");
-                        } catch (InstantiationException ie) {
-                            throw new JuggleExceptionInternal("Could not instantiate gifwriter.GIFAnimWriter object");
-                        }*/
-                        GIFAnimWriter gaw = new GIFAnimWriter();
-
-                        // set black as default drawing color
-                        //   docolormap1.invoke(gaw, new Object[] {Color.black, new Boolean(true)});
-                        // gaw.doColorMap(Color.black, true);
-
-                        Dimension dim = ja.getSize();
-                        int appWidth = dim.width;
-                        int appHeight = dim.height;
-                        Image tempoffscreen = ja.createImage(appWidth, appHeight);
-                        Graphics tempoffg = tempoffscreen.getGraphics();
-
-
-                        // writeheader.invoke(gaw, new Object[] {out});
-                        //		gaw.writeHeader(out);
-
-                        int[] gifpropnum = new int[pat.getNumberOfPaths()];
-                        for (int i = 0; i < pat.getNumberOfPaths(); i++)
-                            gifpropnum[i] = pat.getPropAssignment(i+1);
-                        int patperiod = pat.getPeriod();
-                        int totalframes = patperiod * num_frames * 2;
-                        int framecount = 0;
-
-                        pm = new ProgressMonitor(ja, guistrings.getString("Saving_animated_GIF"),
-                                "", 0, totalframes);
-                        boolean canceled = false;
-
-                        // loop through the individual frames twice, first to build the
-                        // color map and the second to write the GIF frames
-                        for (int pass = 0; pass < 2; pass++) {
-                            if (pass == 1)
-                                gaw.writeHeader(out);
-
-                            for (int i = 0; i < patperiod; i++)  {
-                                double time = pat.getLoopStartTime();
-
-                                for (int j = 0; j < num_frames; j++) {
-                                    if (pass == 1)
-                                        gaw.writeDelay((int)(real_interval_millis/10), out);
-
-                                    if (ren2 != null) {
-                                        this.ren1.drawFrame(time, gifpropnum,
-                                                            tempoffg.create(0,0,dim.width/2,dim.height), ja);
-                                        this.ren2.drawFrame(time, gifpropnum,
-                                                            tempoffg.create(dim.width/2,0,dim.width/2,dim.height), ja);
-                                    } else {
-                                        this.ren1.drawFrame(time, gifpropnum, tempoffg, ja);
-                                    }
-                                    // ren.drawFrame(time, gifpropnum, tempoffg, ja);
-
-                                    if (pass == 0)
-                                        gaw.doColorMap(tempoffscreen);
-                                    else
-                                        gaw.writeGIF(tempoffscreen, out);
-
-                                    if (pm != null) {
-                                        framecount++;
-                                        String note = (pass==0 ? guistrings.getString("Message_GIFsave_color_map") :
-                                                guistrings.getString("Message_GIFsave_writing_frame")+" "+(framecount-num_frames)+"/"+num_frames);
-                                        SwingUtilities.invokeLater(new PBUpdater(pm,framecount,note));
-                                        if (pm.isCanceled())
-                                            return;
-                                    }
-
-                                    time += sim_interval_secs;
-                                }
-
-                                ja.advanceProps(gifpropnum);
-                            }
-                        }
-
-                        //  writetrailer.invoke(gaw, new Object[] {out});
-                        gaw.writeTrailer(out);
-                        tempoffg.dispose();
+                        ProgressMonitor pm = new ProgressMonitor(ja,
+                                guistrings.getString("Saving_animated_GIF"), "", 0, 1);
+                        this.writeGIF(file, pm);
                     }
                 }
             } catch (FileNotFoundException fnfe) {
                 throw new JuggleExceptionInternal("AnimGIFSave file not found: "+fnfe.getMessage());
             } catch (IOException ioe) {
                 throw new JuggleExceptionInternal("AnimGIFSave IOException: "+ioe.getMessage());
-            } /* catch (IllegalAccessException iae) {
-                throw new JuggleExceptionInternal("AnimGIFSave IllegalAccessException: "+iae.getMessage());
-            } catch (InvocationTargetException ite) {
-                throw new JuggleExceptionInternal("AnimGIFSave InvocationTargetException: "+ite.getMessage());
-            } */ catch (IllegalArgumentException iae) {
+            } catch (IllegalArgumentException iae) {
                 throw new JuggleExceptionInternal("AnimGIFSave IllegalArgumentException: "+iae.getMessage());
             } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException ioe) {}
-                }
                 ja.setCursor(Cursor.getDefaultCursor());
                 ja.setPaused(origpause);
             }
         } catch (Exception e) {
             jugglinglab.util.ErrorDialog.handleException(e);
         }
-
         ja.writingGIF = false;
     }
 }

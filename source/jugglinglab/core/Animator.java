@@ -266,7 +266,8 @@ public class Animator extends JPanel implements Runnable {
             ren1.setCameraAngle(actualcamangle);
     }
 
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc, boolean startEngine)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
         // try to lay out new pattern first so that if there's an error we won't stop the current animation
         if ((pat != null) && !pat.isLaidout())
             pat.layoutPattern();
@@ -303,8 +304,14 @@ public class Animator extends JPanel implements Runnable {
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(this.pat);
 
-        engine = new Thread(this);
-        engine.start();
+        if (startEngine) {
+            engine = new Thread(this);
+            engine.start();
+        }
+    }
+
+    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
+        restartJuggle(pat, newjc, true);
     }
 
     public void restartJuggle() throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -698,32 +705,28 @@ public class Animator extends JPanel implements Runnable {
         killAnimationThread();
     }
 
+    // Called when the user selects the "Save as Animated GIF..." menu option
     public void writeGIFAnim() {
-        try {
-            Class<?> jagw = Class.forName("jugglinglab.core.AnimatorGIFWriter");
-            Method setup = jagw.getMethod("setup", new Class<?>[] {Animator.class,
-                jugglinglab.renderer.Renderer.class,
-                jugglinglab.renderer.Renderer.class,
-                Integer.TYPE, Double.TYPE, Long.TYPE});
-            Object gw = jagw.newInstance();
-            setup.invoke(gw, new Object[] {this, ren1, ren2, new Integer(num_frames),
-                new Double(sim_interval_secs), new Long(real_interval_millis)});
+        writingGIF = true;
 
-            writingGIF = true;
-            Thread worker = (Thread)gw;
-            worker.start();
-        } catch (ClassNotFoundException cnfe) {
-            return;
-        } catch (NoSuchMethodException nsme) {
-            return;
-        } catch (SecurityException se) {
-            return;
-        } catch (IllegalAccessException iae) {
-            return;
-        } catch (InstantiationException ie) {
-            return;
-        } catch (InvocationTargetException ite) {
-            return;
+        AnimatorGIFWriter gw = new AnimatorGIFWriter();
+        gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
+        gw.writeGIF_interactive();
+    }
+
+    // Called when the user wants to save a GIF from the command line. This skips the
+    // file dialog box, progress bar, and separate worker thread.
+    public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
+        writingGIF = true;
+
+        try {
+            AnimatorGIFWriter gw = new AnimatorGIFWriter();
+            gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
+            gw.writeGIF(new File(outpath), null);
+        } catch (FileNotFoundException fnfe) {
+            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+        } catch (IOException ioe) {
+            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
         }
     }
 }

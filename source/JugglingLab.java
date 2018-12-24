@@ -23,6 +23,9 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
 import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
@@ -33,6 +36,13 @@ import jugglinglab.util.*;
 
 
 public class JugglingLab {
+    static ResourceBundle guistrings;
+    static ResourceBundle errorstrings;
+    static {
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
+    }
+
     // command line arguments as an ArrayList that we trim as portions are parsed
     protected static ArrayList<String> jlargs = null;
 
@@ -141,7 +151,6 @@ public class JugglingLab {
         return pat;
     }
 
-
     // main entry point
 
     public static void main(String[] args) {
@@ -152,8 +161,46 @@ public class JugglingLab {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-        if (args.length == 0) {
+        boolean showHelp = false;
+        String firstarg = null;
+
+        if (args.length == 0)
+            showHelp = true;
+        else {
+            JugglingLab.jlargs = new ArrayList<String>(Arrays.asList(args));
+            firstarg = jlargs.remove(0);
+
+            List<String> modes = Arrays.asList("start", "gen", "anim", "togif", "tojml");
+
+            if (!modes.contains(firstarg.toLowerCase()))
+                showHelp = true;
+        }
+
+        if (showHelp) {
+            // Print a help message and return
+            String template = guistrings.getString("Version");
+            Object[] arg1 = { Constants.version };
+            String output = "Juggling Lab " +
+                            MessageFormat.format(template, arg1).toLowerCase() + "\n";
+            template = guistrings.getString("Copyright_message");
+            Object[] arg2 = { Constants.year };
+            output += MessageFormat.format(template, arg2) + "\n\n";
+            output += guistrings.getString("GPL_message") + "\n\n";
+            output += guistrings.getString("CLI_help");
+
+            System.out.println(output);
+            return;
+        }
+
+        if (firstarg.equalsIgnoreCase("start")) {
             // launch as application
+            if (jlargs.size() > 0) {
+                // any remaining arguments that parsing didn't consume?
+                String arglist = String.join(", ", jlargs);
+                System.out.println("Error unrecognized input: " + arglist);
+                return;
+            }
+
             try {
                 JugglingLabApplet.initAudioClips();
                 JugglingLabApplet.initDefaultPropImages();
@@ -166,14 +213,12 @@ public class JugglingLab {
             return;
         }
 
-        JugglingLab.jlargs = new ArrayList<String>(Arrays.asList(args));
-        String firstarg = jlargs.remove(0);
-
         String outpath = JugglingLab.parse_outpath();
         AnimatorPrefs jc = JugglingLab.parse_animprefs();
 
         if (firstarg.equalsIgnoreCase("gen")) {
             // run the siteswap generator
+            System.setProperty("java.awt.headless", "true");
             String[] genargs = jlargs.toArray(new String[jlargs.size()]);
 
             try {
@@ -213,22 +258,28 @@ public class JugglingLab {
             return;
         }
 
+        // rest of the modes are headless (no GUI)
+        System.setProperty("java.awt.headless", "true");
+
         if (firstarg.equalsIgnoreCase("togif")) {
-            System.out.println("to gif");
+            // output an animated GIF of the pattern
             if (outpath == null) {
                 System.out.println("Error: no output path specified for animated GIF");
                 return;
             }
-            /*
-            Animator ja = new Animator();
-            if (jc != null) {
-                ja.setAnimatorPreferredSize(new Dimension(jc.width, jc.height));
-                jc.startPause = false;
+
+            try {
+                Animator ja = new Animator();
+                if (jc == null)
+                    jc = ja.getAnimatorPrefs();
+                ja.setSize(jc.width, jc.height);
+                ja.restartJuggle(pat, jc, false);
+                ja.writeGIFAnim_CLI(outpath);
+            } catch (JuggleExceptionUser jeu) {
+                System.out.println("Error: " + jeu.getMessage());
+            } catch (JuggleExceptionInternal jei) {
+                System.out.println("Internal Error: " + jei.getMessage());
             }
-            if (!ja.isAnimInited())
-                break;
-            ja.writeGIFAnim();
-            */
             return;
         }
 
@@ -249,7 +300,5 @@ public class JugglingLab {
                 System.out.println("Warning: animator prefs not used in jml output mode; ignored");
             return;
         }
-
-        System.out.println("Command line help message goes here");
     }
 }
