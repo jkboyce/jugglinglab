@@ -47,8 +47,7 @@ public class JugglingLabApplet extends JApplet {
 
 
     public JugglingLabApplet() {
-        initAudioClips();
-		initDefaultPropImages();
+        JugglingLab.loadMediaResources();
     }
 
 
@@ -265,26 +264,4 @@ public class JugglingLabApplet extends JApplet {
 			ja.dispose();
         */
     }
-
-    // It's easiest to load the audioclips here and pass them along to Animator.
-    // For some reason AudioClip is part of the Applet package.
-    public static void initAudioClips() {
-        AudioClip[] clips = new AudioClip[2];
-        URL catchurl = JugglingLabApplet.class.getResource("/resources/catch.au");
-		if (catchurl != null)
-			clips[0] = Applet.newAudioClip(catchurl);
-        URL bounceurl = JugglingLabApplet.class.getResource("/resources/bounce.au");
-		if (bounceurl != null)
-			clips[1] = Applet.newAudioClip(bounceurl);
-        Animator.setAudioClips(clips);
-    }
-
-	// The class loader delegation model makes it difficult to find resources from
-	// within the VersionSpecific class.  There must be a better way to do it.
-	public static void initDefaultPropImages() {
-		URL[] images = new URL[2];
-		images[0] = JugglingLabApplet.class.getResource("/resources/ball.gif");
-        images[1] = JugglingLabApplet.class.getResource("/resources/ball.png");
-        VersionSpecific.setDefaultPropImages(images);
-	}
 }
