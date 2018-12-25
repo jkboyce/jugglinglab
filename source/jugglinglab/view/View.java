@@ -274,7 +274,7 @@ public class View extends JPanel implements ActionListener {
 
             case FILE_GIFSAVE:
                 if (getViewMode() == VIEW_SIMPLE) {
-                    NormalView nv = (NormalView)subview;
+                    SimpleView nv = (SimpleView)subview;
                     Animator ja = nv.getAnimator();
                     if (!ja.isAnimInited())
                         break;
@@ -356,7 +356,7 @@ public class View extends JPanel implements ActionListener {
             case VIEW_NONE:
                 break;
             case VIEW_SIMPLE:
-                newview = new NormalView(animsize);
+                newview = new SimpleView(animsize);
                 break;
             case VIEW_EDIT:
                 newview = new EditView(animsize);
@@ -398,7 +398,7 @@ public class View extends JPanel implements ActionListener {
 	protected int getViewMode() {
 		if (subview == null)
 			return VIEW_NONE;
-		if (subview instanceof NormalView)
+		if (subview instanceof SimpleView)
 			return VIEW_SIMPLE;
 		if (subview instanceof EditView)
 			return VIEW_EDIT;
