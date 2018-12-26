@@ -23,14 +23,13 @@
 package jugglinglab.prop;
 
 import java.awt.*;
-import java.util.*;
-import javax.swing.*;
-import java.awt.image.*;
-import java.awt.image.ImageObserver.*;
-import java.net.*;
-import java.io.*;
-import java.lang.reflect.*;
+import java.awt.image.BufferedImage;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.io.IOException;
+// import java.lang.reflect.*;
 import java.text.MessageFormat;
+import javax.imageio.ImageIO;
 
 import jugglinglab.util.*;
 import jugglinglab.renderer.*;
@@ -40,8 +39,8 @@ import jugglinglab.core.*;
 public class imageProp extends Prop {
 	protected static URL url_default = null;
 	protected URL url;
-	protected Image image;
-	protected Image scaled_image;
+	protected BufferedImage image = null;
+	protected BufferedImage scaled_image = null;
 	protected final float width_default = 10f;  // in cm
 	protected float width;
 	protected float height;
@@ -64,11 +63,9 @@ public class imageProp extends Prop {
     }
 
 	private void loadImage() throws JuggleExceptionUser {
-		// We should probably get the real component that this image wants to be
-		// drawn on, but it doesn't really seem to matter much.
 		try {
-			MediaTracker mt = new MediaTracker(new JPanel());
-			image = Toolkit.getDefaultToolkit().getImage(url);
+			MediaTracker mt = new MediaTracker(new Component() {});
+            image = ImageIO.read(this.url);
 			mt.addImage(image, 0);
 			// Try to laod the image
 			try {
@@ -81,10 +78,12 @@ public class imageProp extends Prop {
 				throw new JuggleExceptionUser(errorstrings.getString("Error_bad_file"));
 			}
 
-			float aspectRatio = ((float)image.getHeight(null))/((float)image.getWidth(null));
+			float aspectRatio = ((float)image.getHeight())/((float)image.getWidth());
 			this.width = width_default;
 			this.height = width_default * aspectRatio;;
-		} catch (SecurityException se) {
+		} catch (IOException e) {
+            throw new JuggleExceptionUser(errorstrings.getString("Error_bad_file"));
+        } catch (SecurityException se) {
 			throw new JuggleExceptionUser(errorstrings.getString("Error_security_restriction"));
 		}
 	}
@@ -105,7 +104,11 @@ public class imageProp extends Prop {
 
 		last_zoom = zoom;
 
-		scaled_image = image.getScaledInstance(image_pixel_width, image_pixel_height, Image.SCALE_SMOOTH);
+        scaled_image = new BufferedImage(image_pixel_width, image_pixel_height, image.getType());
+        Graphics2D g = scaled_image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(image, 0, 0, image_pixel_width, image_pixel_height, 0, 0, image.getWidth(), image.getHeight(), null);
+        g.dispose();
 	}
 
     @Override
