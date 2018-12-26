@@ -20,15 +20,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-import java.applet.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.io.*;
-import java.net.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 import javax.swing.*;
-import org.xml.sax.*;
+import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
@@ -41,7 +41,6 @@ public class JugglingLabApplet extends JApplet {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
 
-	// protected Animator ja = null;
     protected JugglingLabPanel jlp = null;
 	protected AnimatorPrefs jc = null;
 
@@ -225,10 +224,12 @@ public class JugglingLabApplet extends JApplet {
     }
 
     // applet version starts here
+
     @Override
 	public void init() {
 		// do it this way, so that calls to Swing methods happen on the event dispatch thread
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				configure_applet();
 			}
@@ -239,29 +240,17 @@ public class JugglingLabApplet extends JApplet {
     public void start() {
 		if ((jlp != null) && (jlp.getView() != null) && !jc.mousePause)
 			jlp.getView().setPaused(false);
-        /*
-		if ((ja != null) && (ja.message == null) && !jc.mousePause)
-			ja.setPaused(false);
-        */
     }
 
     @Override
     public void stop() {
 		if ((jlp != null) && (jlp.getView() != null) && !jc.mousePause)
 			jlp.getView().setPaused(true);
-        /*
-		if ((ja != null) && (ja.message == null) && !jc.mousePause)
-			ja.setPaused(true);
-        */
     }
 
     @Override
     public void destroy() {
 		if ((jlp != null) && (jlp.getView() != null))
 			jlp.getView().disposeView();
-        /*
-		if (ja != null)
-			ja.dispose();
-        */
     }
 }
