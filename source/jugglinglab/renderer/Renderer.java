@@ -36,7 +36,7 @@ public abstract class Renderer {
 
 	public abstract void setCameraAngle(double[] angle);
 	public abstract double[] getCameraAngle();
-	
+
 	// the following return results in local coordinates
 	public abstract Coordinate getHandWindowMax();
 	public abstract Coordinate getHandWindowMin();
@@ -44,16 +44,16 @@ public abstract class Renderer {
 	// the following return results in global coordinates
 	public abstract Coordinate getJugglerWindowMax();
 	public abstract Coordinate getJugglerWindowMin();
-	
+
 	public abstract int[] getXY(Coordinate coord);	// pixel coordinates
 	public abstract Coordinate getScreenTranslatedCoordinate(Coordinate coord,
 				int dx, int dy);
-	
+
 	public abstract void drawFrame(double time, int[] pnum,
 				Graphics g, JPanel pan) throws JuggleExceptionInternal;
-	
+
 	public abstract Color getBackground();
-	
+
 	protected static JLVector toVector(Coordinate c, JLVector result) {
         result.x = c.x;
         result.y = c.z;

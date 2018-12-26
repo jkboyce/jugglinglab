@@ -495,8 +495,10 @@ public class Animator extends JPanel implements Runnable {
         if (!this.cameradrag)
             return;
 
-        // try to turn on antialiased rendering
-        VersionSpecific.getVersionSpecific().setAntialias(g);
+        if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
         {
             double[] ca = ren1.getCameraAngle();

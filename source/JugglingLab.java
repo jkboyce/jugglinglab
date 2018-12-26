@@ -26,6 +26,7 @@ import java.io.*;
 import java.net.URL;
 
 import jugglinglab.core.*;
+import jugglinglab.prop.imageProp;
 import jugglinglab.util.*;
 
 
@@ -43,12 +44,8 @@ public class JugglingLab {
             clips[1] = Applet.newAudioClip(bounceurl);
         Animator.setAudioClips(clips);
 
-        // The class loader delegation model makes it difficult to find resources from
-        // within the VersionSpecific class.  There must be a better way to do it.
-        URL[] images = new URL[2];
-        images[0] = JugglingLab.class.getResource("/resources/ball.gif");
-        images[1] = JugglingLab.class.getResource("/resources/ball.png");
-        VersionSpecific.setDefaultPropImages(images);
+        URL ballurl = JugglingLab.class.getResource("/resources/ball.png");
+        imageProp.setDefaultPropImage(ballurl);
     }
 
     // main entry point

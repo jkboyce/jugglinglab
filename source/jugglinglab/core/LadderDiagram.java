@@ -1,6 +1,6 @@
 // LadderDiagram.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -45,14 +45,14 @@ public class LadderDiagram extends JPanel {
     static final protected int cacheframes = 5;
 
 	static final protected double passing_border_sides = 0.2;
-	
+
     protected JMLPattern pat = null;
 
     protected double sim_time = 0.0;
     protected int width, height;
     protected int right_x, left_x;
 	protected int passing_first_x, passing_offset_x;
-	
+
     protected int tracker_y = border_top;
     private boolean has_switch_symmetry;
     private boolean has_switchdelay_symmetry;
@@ -191,7 +191,7 @@ public class LadderDiagram extends JPanel {
 
         // create paths (lines and arcs)
         this.ladderpathitems = new ArrayList<LadderPathItem>();
-		
+
 		if (pat.getNumberOfJugglers() == 1) {
 			current = eventlist;
 
@@ -332,8 +332,11 @@ public class LadderDiagram extends JPanel {
             if (cacheframesleft == 0) {
                 laddercache = this.createImage(width, height);
                 g = laddercache.getGraphics();
-                // try to turn on antialiased rendering
-                VersionSpecific.getVersionSpecific().setAntialias(g);
+
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D)g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                }
 
                 laddercachedirty = false;
             }
@@ -403,9 +406,12 @@ public class LadderDiagram extends JPanel {
             gr.drawImage(laddercache, 0, 0, this);
     }
 
+    @Override
     protected void paintComponent(Graphics gr) {
-        // try to turn on antialiased rendering
-        VersionSpecific.getVersionSpecific().setAntialias(gr);
+        if (gr instanceof Graphics2D) {
+            Graphics2D gr2 = (Graphics2D)gr;
+            gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
         paintBackground(gr);
 

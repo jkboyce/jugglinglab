@@ -1,6 +1,6 @@
 // ringProp.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -48,9 +48,9 @@ public class ringProp extends Prop {
 	protected double inside_diam = inside_diam_def;
     protected int	colornum = colornum_def;
     protected Color	color;
-	
-	protected Image image;
-	
+
+	protected BufferedImage image;
+
     protected double lastzoom = 0.0;
 	protected double[] lastcamangle = {0.0, 0.0};
 
@@ -60,15 +60,17 @@ public class ringProp extends Prop {
 	int polysides = 200;
 	int[] px, py;
 
-
+    @Override
     public String getName() {
         return "Ring";
     }
 
+    @Override
     public Color getEditorColor() {
         return color;
     }
 
+    @Override
     public ParameterDescriptor[] getParameterDescriptors() {
         ParameterDescriptor[] result = new ParameterDescriptor[3];
 
@@ -86,12 +88,13 @@ public class ringProp extends Prop {
         return result;
     }
 
+    @Override
     protected void init(String st) throws JuggleExceptionUser {
 		px = new int[polysides];
 		py = new int[polysides];
-		
+
         color = Color.red;
-		
+
         if (st == null) return;
         ParameterList pl = new ParameterList(st);
 
@@ -131,7 +134,7 @@ public class ringProp extends Prop {
                 color = temp;
             else {
 				String template = errorstrings.getString("Error_prop_color");
-				Object[] arguments = { colorstr };					
+				Object[] arguments = { colorstr };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 			}
         }
@@ -147,11 +150,11 @@ public class ringProp extends Prop {
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
             } catch (NumberFormatException nfe) {
 				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "diam" };					
+				Object[] arguments = { "diam" };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-		
+
 		String insidestr = pl.getParameter("inside");
         if (insidestr != null) {
             try {
@@ -163,60 +166,66 @@ public class ringProp extends Prop {
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
             } catch (NumberFormatException nfe) {
 				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "diam" };					
+				Object[] arguments = { "diam" };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
     }
 
+    @Override
     public Coordinate getMax() {
         return new Coordinate(outside_diam/2, 0, outside_diam/2);
     }
 
+    @Override
     public Coordinate getMin() {
         return new Coordinate(-outside_diam/2, 0, -outside_diam/2);
     }
 
-    public Image getProp2DImage(Component comp, double zoom, double[] camangle) {
+    @Override
+    public Image getProp2DImage(double zoom, double[] camangle) {
         if ((image == null) || (zoom != lastzoom) ||
 			(camangle[0] != lastcamangle[0]) || (camangle[1] != lastcamangle[1]))	// first call or display resized?
-            redrawImage(comp, zoom, camangle);
+            redrawImage(zoom, camangle);
         return image;
     }
 
-    public Dimension getProp2DSize(Component comp, double zoom) {
+    @Override
+    public Dimension getProp2DSize(double zoom) {
         if ((size == null) || (zoom != lastzoom))		// first call or display resized?
-            redrawImage(comp, zoom, lastcamangle);
+            redrawImage(zoom, lastcamangle);
         return size;
     }
-	
-    public Dimension getProp2DCenter(Component comp, double zoom) {
+
+    @Override
+    public Dimension getProp2DCenter(double zoom) {
         if ((center == null) || (zoom != lastzoom))		// first call or display resized?
-            redrawImage(comp, zoom, lastcamangle);
+            redrawImage(zoom, lastcamangle);
         return center;
     }
 
-    public Dimension getProp2DGrip(Component comp, double zoom) {
+    @Override
+    public Dimension getProp2DGrip(double zoom) {
         if ((grip == null) || (zoom != lastzoom))		// first call or display resized?
-            redrawImage(comp, zoom, lastcamangle);
+            redrawImage(zoom, lastcamangle);
         return grip;
     }
 
-	private void redrawImage(Component comp, double zoom, double[] camangle) {
+	private void redrawImage(double zoom, double[] camangle) {
 		int outside_pixel_diam = (int)(0.5 + zoom * outside_diam);
 		int inside_pixel_diam = (int)(0.5 + zoom * inside_diam);
-			
+
 		double c0 = Math.cos(camangle[0]);
 		double s0 = Math.sin(camangle[0]);
 		double s1 = Math.sin(camangle[1]);
-		
+
 		int width = (int)(outside_pixel_diam * Math.abs(s0*s1));
 		if (width < 2)
 			width = 2;
 		int height = outside_pixel_diam;
 		if (height < 2)
 			height = 2;
-			
+
 		int inside_width = (int)(inside_pixel_diam * Math.abs(s0*s1));
 		if (inside_width == width)
 			inside_width -= 2;
@@ -224,15 +233,15 @@ public class ringProp extends Prop {
 		int inside_height = inside_pixel_diam;
 		if (inside_height == height)
 			inside_height -= 2;
-			
+
 		// The angle of rotation of the ring.
 		double term1 = Math.sqrt(c0*c0 / (1.0 - s0*s0*s1*s1));
 		double angle = (term1 < 1.0) ? Math.acos(term1) : 0.0;
 		if (c0*s0 > 0.0)
-			angle = -angle;		
+			angle = -angle;
 		double sa = Math.sin(angle);
 		double ca = Math.cos(angle);
-		
+
 		int pxmin=0, pxmax=0, pymin=0, pymax=0;
 		for (int i = 0; i < polysides; i++) {
 			double theta = (double)i * 2.0 * JLMath.pi / (double)polysides;
@@ -254,20 +263,22 @@ public class ringProp extends Prop {
 		int bbheight = pymax - pymin + 1;
 		size = new Dimension(bbwidth, bbheight);
 
-		image = VersionSpecific.getVersionSpecific().makeImage(comp, bbwidth, bbheight);
-		Graphics g = image.getGraphics();
-		VersionSpecific.getVersionSpecific().setAntialias(g);
+        image = new BufferedImage(bbwidth, bbheight, BufferedImage.TYPE_INT_ARGB_PRE);
+		Graphics2D g = image.createGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		g.setColor(color);
-
 		for (int i = 0; i < polysides; i++) {
 			px[i] -= pxmin;
 			py[i] -= pymin;
 		}
 		g.fillPolygon(px, py, polysides);
-		
-		VersionSpecific.getVersionSpecific().setColorTransparent(g);
-		
+
+		// make the transparent hole in the center
+        g.setComposite(AlphaComposite.Src);
+        g.setColor(new Color(1f, 1f, 1f, 0f));
+
 		for (int i = 0; i < polysides; i++) {
 			double theta = (double)i * 2.0 * JLMath.pi / (double)polysides;
 			double x = (double)inside_width * Math.cos(theta) * 0.5;
@@ -276,9 +287,9 @@ public class ringProp extends Prop {
 			py[i] = (int)(ca*y + sa*x + 0.5) - pymin;
 		}
 		g.fillPolygon(px, py, polysides);
-		
+
 		center = new Dimension(bbwidth/2, bbheight/2);
-		
+
 		int gripx = (s0 < 0) ? (bbwidth - 1) : 0;
 		double bbw = sa*sa + ca*ca*Math.abs(s0*s1);
 		double dsq = s0*s0*s1*s1*ca*ca + sa*sa - bbw*bbw;
@@ -287,7 +298,7 @@ public class ringProp extends Prop {
 			d = -d;
 		int gripy = (int)((double)outside_pixel_diam * d) + bbheight/2;
 		grip = new Dimension(gripx, gripy);
-		
+
 		lastzoom = zoom;
 		lastcamangle = new double[] {camangle[0], camangle[1]};
 	}
