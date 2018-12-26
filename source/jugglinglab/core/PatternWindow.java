@@ -1,6 +1,6 @@
 // PatternWindow.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -32,7 +32,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
-public class PatternWindow extends JFrame implements ActionListener {
+public class PatternWindow extends JFrame implements WindowListener {
     /*
 	static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
@@ -45,26 +45,17 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected View view = null;
 	protected JMenu filemenu = null;
 	protected JMenu viewmenu = null;
-	
+    protected boolean exit_on_close = false;
+
 
     public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
-        this(name, pat, jc, new Dimension(400, 450));
-    }
-
-    public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc, Dimension dim) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(name);
-		view = new View(this, dim);
-		
+		view = new View(this, jc);
+
 		JMenuBar mb = new JMenuBar();
 		filemenu = view.createFileMenu();
 		mb.add(filemenu);
 		viewmenu = view.createViewMenu();
-		for (int i = 0; i < viewmenu.getItemCount(); i++) {
-			JMenuItem jmi = viewmenu.getItem(i);
-			if (jmi == null)
-				break;		// hit the first separator, end of the list of views
-			jmi.addActionListener(this);   // so we can enable/disable GIFsave depending on view mode
-		}
         mb.add(viewmenu);
         setJMenuBar(mb);
 
@@ -76,64 +67,52 @@ public class PatternWindow extends JFrame implements ActionListener {
 			viewmenu.getItem(1).setSelected(true);
 		}
 
-        /*
-        5/18/2014 Turned this off; UI was too confusing
-
-		for (int i = 0; i < filemenu.getItemCount(); i++) {
-			JMenuItem jmi = filemenu.getItem(i);
-			if (jmi != null && jmi.getActionCommand().equals("savegifanim"))
-				jmi.setEnabled(false);
-		}
-        */
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		view.setDoubleBuffered(true);
 		this.setBackground(Color.white);
 		setContentPane(view);
-		
+
 		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		
+
         pack();
 		view.restartView(pat, jc);
         setVisible(true);
+        addWindowListener(this);
     }
 
-    protected void restartJuggle(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleException {
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (name != null)
-            this.setTitle(name);
-        view.restartView(pat, jc);
-        this.setCursor(Cursor.getDefaultCursor());
+    public void setExitOnClose(boolean value) {
+        this.exit_on_close = value;
     }
 
-
-    // Implements ActionListener to enable/disable GIFsave as view mode changes
-    public void actionPerformed(ActionEvent ae) {
-		/*
-        5/18/2014 Turned this off; UI was too confusing
-        
-        boolean gifenabled = false;
-		if (ae.getActionCommand().equals("simple"))
-			gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-		*/
-        boolean gifenabled = jugglinglab.core.Constants.INCLUDE_GIF_SAVE;
-        
-		for (int i = 0; i < filemenu.getItemCount(); i++) {
-			JMenuItem jmi = filemenu.getItem(i);
-			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim")) {
-				jmi.setEnabled(gifenabled);
-				return;
-			}
-		}
-    }
-
-
+    @Override
     public synchronized void dispose() {
         super.dispose();
         if (view != null) {
-            view.dispose();
+            view.disposeView();
             view = null;
         }
     }
+
+    // WindowListener interface methods
+
+    @Override
+    public void windowOpened(WindowEvent e) { }
+    @Override
+    public void windowClosing(WindowEvent e) {
+        if (this.exit_on_close)
+            System.exit(0);
+    }
+    @Override
+    public void windowClosed(WindowEvent e) { }
+    @Override
+    public void windowIconified(WindowEvent e) { }
+    @Override
+    public void windowDeiconified(WindowEvent e) { }
+    @Override
+    public void windowActivated(WindowEvent e) { }
+    @Override
+    public void windowDeactivated(WindowEvent e) { }
+
 }
 

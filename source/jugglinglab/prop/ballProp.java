@@ -1,6 +1,6 @@
 // ballProp.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -50,22 +50,24 @@ public class ballProp extends Prop {
     protected boolean	highlight = highlight_def;
     // protected int	ball_pixel_size;
 
-    protected Image 	ballimage;
+    protected BufferedImage 	ballimage;
     protected double 	lastzoom = 0.0;
     // protected int 	offsetx, offsety;
     protected Dimension size = null;
     protected Dimension center = null;
     protected Dimension grip = null;
 
-
+    @Override
     public String getName() {
         return "Ball";
     }
 
+    @Override
     public Color getEditorColor() {
         return color;
     }
 
+    @Override
     public ParameterDescriptor[] getParameterDescriptors() {
         ParameterDescriptor[] result = new ParameterDescriptor[3];
 
@@ -83,6 +85,7 @@ public class ballProp extends Prop {
         return result;
     }
 
+    @Override
     protected void init(String st) throws JuggleExceptionUser {
         color = Color.red;
 
@@ -123,7 +126,7 @@ public class ballProp extends Prop {
 						blue = Integer.valueOf(token).intValue();
 					} catch (NumberFormatException nfe) {
 						String template = errorstrings.getString("Error_number_format");
-						Object[] arguments = { token };					
+						Object[] arguments = { token };
 						throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 					}
 					temp = new Color(red, green, blue);
@@ -135,7 +138,7 @@ public class ballProp extends Prop {
                 color = temp;
             else {
 				String template = errorstrings.getString("Error_prop_color");
-				Object[] arguments = { colorstr };					
+				Object[] arguments = { colorstr };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 			}
         }
@@ -151,7 +154,7 @@ public class ballProp extends Prop {
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
             } catch (NumberFormatException nfe) {
 				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "diam" };					
+				Object[] arguments = { "diam" };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
@@ -163,56 +166,61 @@ public class ballProp extends Prop {
         }
     }
 
+    @Override
     public Coordinate getMax() {
-        return new Coordinate(diam/2,0,diam/2);
+        return new Coordinate(diam/2, 0, diam/2);
     }
 
+    @Override
     public Coordinate getMin() {
-        return new Coordinate(-diam/2,0,-diam/2);
+        return new Coordinate(-diam/2, 0, -diam/2);
     }
 
-	public double getWidth() {
-		return diam;
-	}
-	
-    public Image getProp2DImage(Component comp, double zoom, double[] camangle) {
+    @Override
+    public double getWidth() { return diam; }
+
+    @Override
+    public Image getProp2DImage(double zoom, double[] camangle) {
         if ((ballimage == null) || (zoom != lastzoom))	// first call or display resized?
-            recalc2D(comp, zoom);
+            recalc2D(zoom);
         return ballimage;
     }
 
-    public Dimension getProp2DSize(Component comp, double zoom) {
+    @Override
+    public Dimension getProp2DSize(double zoom) {
         if ((size == null) || (zoom != lastzoom))		// first call or display resized?
-            recalc2D(comp, zoom);
+            recalc2D(zoom);
         return size;
     }
 
-	public Dimension getProp2DCenter(Component comp, double zoom) {
+    @Override
+	public Dimension getProp2DCenter(double zoom) {
 		if ((center == null) || (zoom != lastzoom))
-			recalc2D(comp, zoom);
+			recalc2D(zoom);
 		return center;
 	}
-	
-    public Dimension getProp2DGrip(Component comp, double zoom) {
+
+    @Override
+    public Dimension getProp2DGrip(double zoom) {
         if ((grip == null) || (zoom != lastzoom))		// first call or display resized?
-            recalc2D(comp, zoom);
+            recalc2D(zoom);
         return grip;
     }
 
-    protected void recalc2D(Component comp, double zoom) {
+    protected void recalc2D(double zoom) {
         int ball_pixel_size = (int)(0.5 + zoom * diam);
         if (ball_pixel_size < 1)
             ball_pixel_size = 1;
         int offsetx = -ball_pixel_size / 2;
         int offsety = -ball_pixel_size;
 
-        // Now we should create a ball image of diameter ball_pixel_size
-        // pixels and put it in the variable ballimage.  First try making a
-        // ball with a transparent background.
-        ballimage = VersionSpecific.getVersionSpecific().makeImage(comp, ball_pixel_size+1, ball_pixel_size+1);
-        Graphics ballg = ballimage.getGraphics();
-        VersionSpecific.getVersionSpecific().setAntialias(ballg);
-        
+        // Create a ball image of diameter ball_pixel_size, and transparent background
+
+        ballimage = new BufferedImage(ball_pixel_size+1, ball_pixel_size+1, BufferedImage.TYPE_INT_ARGB_PRE);
+        Graphics2D ballg = ballimage.createGraphics();
+
+        ballg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         if (this.highlight) {
             float highlightOvals = ball_pixel_size / 1.2f;  // Number of concentric circles to draw.
             float[] rgb = new float[3];

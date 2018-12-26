@@ -35,28 +35,34 @@ public class AnimatorPrefs {
         // guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-    
+
+    public static final int     width_def = 400;
+    public static final int     height_def = 450;
+    public static final double  fps_def = 30.0;
+    public static final double  slowdown_def = 2.0;
+    public static final int     border_def = 0;
     public static final boolean stereo_def = false;
     public static final boolean startPause_def = false;
     public static final boolean mousePause_def = false;
     public static final boolean catchSound_def = false;
     public static final boolean bounceSound_def = true;
-    public static final double 	fps_def = 30.0;
-    public static final double 	slowdown_def = 2.0;
-    public static final int 	border_def = 0;
 
+    public int      width = width_def;
+    public int      height = height_def;
+    public double   fps = fps_def;
+    public double   slowdown = slowdown_def;
+    public int      border = border_def;
     public boolean	stereo = stereo_def;
     public boolean	startPause = startPause_def;
 	public boolean  mousePause = mousePause_def;
     public boolean	catchSound = catchSound_def;
     public boolean	bounceSound = bounceSound_def;
-    public double	fps = fps_def;
-    public double	slowdown = slowdown_def;
-    public int		border = border_def;
 
     public AnimatorPrefs() { super(); }
 
     public AnimatorPrefs(AnimatorPrefs jc) {
+        if (jc.width > 0)           this.width = jc.width;
+        if (jc.height > 0)          this.height = jc.height;
         if (jc.slowdown >= 0.0)		this.slowdown = jc.slowdown;
         if (jc.fps >= 0.0)			this.fps = jc.fps;
         if (jc.border >= 0)			this.border = jc.border;
@@ -90,7 +96,7 @@ public class AnimatorPrefs {
                 this.fps = tempdouble;
             } catch (NumberFormatException e) {
 				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "fps" };					
+				Object[] arguments = { "fps" };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
@@ -100,7 +106,7 @@ public class AnimatorPrefs {
                 this.slowdown = tempdouble;
             } catch (NumberFormatException e) {
 				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "slowdown" };					
+				Object[] arguments = { "slowdown" };
 				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
@@ -109,9 +115,29 @@ public class AnimatorPrefs {
                 tempint = Integer.parseInt(value);
                 this.border = tempint;
             } catch (NumberFormatException e) {
-				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "border" };					
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "border" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+        }
+        if ((value = pl.getParameter("width")) != null) {
+            try {
+                tempint = Integer.parseInt(value);
+                this.width = tempint;
+            } catch (NumberFormatException e) {
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "width" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+        }
+        if ((value = pl.getParameter("height")) != null) {
+            try {
+                tempint = Integer.parseInt(value);
+                this.height = tempint;
+            } catch (NumberFormatException e) {
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "height" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
     }
@@ -119,22 +145,26 @@ public class AnimatorPrefs {
     public String toString() {
         String result = "";
 
-        if (stereo != stereo_def)
-            result += "stereo="+this.stereo+";";
-        if (startPause != startPause_def)
-            result += "startpaused="+this.startPause+";";
-        if (mousePause != mousePause_def)
-            result += "mousepause="+this.mousePause+";";
-        if (catchSound != catchSound_def)
-            result += "catchsound="+this.catchSound+";";
-        if (bounceSound != bounceSound_def)
-            result += "bouncesound="+this.bounceSound+";";
-        if (fps != fps_def)
-            result += "fps="+JMLPattern.toStringTruncated(this.fps,2)+";";
-        if (slowdown != slowdown_def)
-            result += "slowdown="+JMLPattern.toStringTruncated(this.slowdown,2)+";";
-        if (border != border_def)
-            result += "border="+this.border+";";
+        if (this.width != width_def)
+            result += "width=" + this.width + ";";
+        if (this.height != height_def)
+            result += "height=" + this.height + ";";
+        if (this.fps != fps_def)
+            result += "fps=" + JMLPattern.toStringTruncated(this.fps,2) + ";";
+        if (this.slowdown != slowdown_def)
+            result += "slowdown=" + JMLPattern.toStringTruncated(this.slowdown,2) + ";";
+        if (this.border != border_def)
+            result += "border=" + this.border + ";";
+        if (this.stereo != stereo_def)
+            result += "stereo=" + this.stereo + ";";
+        if (this.startPause != startPause_def)
+            result += "startpaused=" + this.startPause + ";";
+        if (this.mousePause != mousePause_def)
+            result += "mousepause=" + this.mousePause + ";";
+        if (this.catchSound != catchSound_def)
+            result += "catchsound=" + this.catchSound + ";";
+        if (this.bounceSound != bounceSound_def)
+            result += "bouncesound=" + this.bounceSound + ";";
 
         if (result.length() != 0)
             result = result.substring(0, result.length()-1);

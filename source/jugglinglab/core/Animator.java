@@ -1,6 +1,6 @@
 // Animator.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -65,12 +65,12 @@ public class Animator extends JPanel implements Runnable {
     protected double			sim_interval_secs;
     protected long				real_interval_millis;
     protected static AudioClip	catchclip = null, bounceclip = null;
-	
+
 	protected boolean			waspaused;			// for pause on mouse away
 	// protected boolean waspaused_valid = false;
 	protected boolean			outside;
 	protected boolean			outside_valid;
-    
+
     protected boolean			cameradrag;
     protected int				startx, starty, lastx, lasty;
     protected double[]			camangle;
@@ -91,41 +91,44 @@ public class Animator extends JPanel implements Runnable {
         actualcamangle1 = new double[2];
         actualcamangle2 = new double[2];
 		jc = new AnimatorPrefs();
-		
+
 		outside = true;
 		waspaused = outside_valid = false;
-		
+
 		this.setOpaque(true);
     }
 
 
-    public void setJAPreferredSize(Dimension d) {
+    public void setAnimatorPreferredSize(Dimension d) {
         prefsize = d;
     }
 
     // override methods in java.awt.Component
+    @Override
     public Dimension getPreferredSize() {
 		if (prefsize != null)
 			return new Dimension(prefsize);
 		return getMinimumSize();
     }
+
+    @Override
     public Dimension getMinimumSize() {
-        return new Dimension(100,100);
+        return new Dimension(10,10);
     }
 
     public static void setAudioClips(AudioClip[] clips) {
         Animator.catchclip = clips[0];
         Animator.bounceclip = clips[1];
     }
-    
+
     protected void initHandlers() {
         this.addMouseListener(new MouseAdapter() {
 			long lastpress = 0L;
 			long lastenter = 1L;
-			
+
             public void mousePressed(MouseEvent me) {
 				lastpress = me.getWhen();
-				
+
 				// The following (and the equivalent in mouseReleased()) is a hack to swallow
 				// a mouseclick when the browser stops reporting enter/exit events because the
 				// user has clicked on something else.  The system reports simultaneous enter/press
@@ -133,7 +136,7 @@ public class Animator extends JPanel implements Runnable {
 				// click, and just use it to get focus back.
 				if (jc.mousePause && (lastpress == lastenter))
 					return;
-					
+
                 if (exception != null)
                     return;
                 if (!engineStarted)
@@ -170,7 +173,7 @@ public class Animator extends JPanel implements Runnable {
 				outside = false;
 				outside_valid = true;
 			}
-			
+
 			public void mouseExited(MouseEvent me) {
 				if (jc.mousePause) {
 					waspaused = getPaused();
@@ -263,7 +266,8 @@ public class Animator extends JPanel implements Runnable {
             ren1.setCameraAngle(actualcamangle);
     }
 
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc, boolean startEngine)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
         // try to lay out new pattern first so that if there's an error we won't stop the current animation
         if ((pat != null) && !pat.isLaidout())
             pat.layoutPattern();
@@ -300,15 +304,21 @@ public class Animator extends JPanel implements Runnable {
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(this.pat);
 
-        engine = new Thread(this);
-        engine.start();
+        if (startEngine) {
+            engine = new Thread(this);
+            engine.start();
+        }
+    }
+
+    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
+        restartJuggle(pat, newjc, true);
     }
 
     public void restartJuggle() throws JuggleExceptionUser, JuggleExceptionInternal {
         restartJuggle(null, null);
     }
 
-
+    @Override
     public void run()  {		// Called when this object becomes a thread
         long	real_time_start, real_time_wait;
 
@@ -319,7 +329,7 @@ public class Animator extends JPanel implements Runnable {
 			waspaused = jc.startPause;
 			// waspaused_valid = outside_valid;
 		}
-					
+
         try {
             engineRunning = true;	// ok to start rendering
 
@@ -342,7 +352,7 @@ public class Animator extends JPanel implements Runnable {
 
             real_time_start = System.currentTimeMillis();
             double oldtime, newtime;
-            
+
 			if (jc.mousePause) {
 				if (outside_valid)
 					setPaused(outside);
@@ -351,7 +361,7 @@ public class Animator extends JPanel implements Runnable {
 				waspaused = false;
 				// waspaused_valid = true;
 			}
-				
+
             while (engineRunning)  {
                 setTime(pat.getLoopStartTime());
                 engineStarted = true;
@@ -433,9 +443,7 @@ public class Animator extends JPanel implements Runnable {
         message = null;
     }
 
-    public boolean getPaused() {
-        return enginePaused;
-    }
+    public boolean getPaused() { return enginePaused; }
 
     public synchronized void setPaused(boolean wanttopause) {
         if ((enginePaused == true) && (wanttopause == false)) {
@@ -455,6 +463,7 @@ public class Animator extends JPanel implements Runnable {
         sim_time = time;
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         if (exception != null)
             drawString(exception.getMessage(), g);
@@ -486,9 +495,11 @@ public class Animator extends JPanel implements Runnable {
         if (!this.cameradrag)
             return;
 
-        // try to turn on antialiased rendering
-        VersionSpecific.getVersionSpecific().setAntialias(g);
-        
+        if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+
         {
             double[] ca = ren1.getCameraAngle();
             double theta = ca[0];
@@ -549,7 +560,7 @@ public class Animator extends JPanel implements Runnable {
             g.drawString("z", zx-2, zy-4);
         }
     }
-    
+
     protected void drawString(String message, Graphics g) {
         int x, y, width;
         Dimension appdim = this.getSize();
@@ -649,7 +660,7 @@ public class Animator extends JPanel implements Runnable {
 		double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
 		this.overallmin.x = -maxabsx;
 		this.overallmax.x = maxabsx;
-		
+
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = "+handmax);
             System.out.println("Hand min = "+handmin);
@@ -675,52 +686,38 @@ public class Animator extends JPanel implements Runnable {
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
     }
 
-    public boolean isAnimInited() {
-        return engineStarted;
-    }
+    public boolean isAnimInited() { return engineStarted; }
 
-    public JMLPattern getPattern() {
-        return pat;
-    }
+    public JMLPattern getPattern() { return pat; }
 
-    public AnimatorPrefs getAnimatorPrefs() {
-        return jc;
-    }
+    public AnimatorPrefs getAnimatorPrefs() { return jc; }
 
-    public int[] getAnimPropNum() {
-        return animpropnum;
-    }
-    
-    public void dispose() {
-        killAnimationThread();
-    }
+    public int[] getAnimPropNum() { return animpropnum; }
 
+    public void dispose() { killAnimationThread(); }
+
+    // Called when the user selects the "Save as Animated GIF..." menu option
     public void writeGIFAnim() {
-        try {
-            Class<?> jagw = Class.forName("jugglinglab.core.AnimatorGIFWriter");
-            Method setup = jagw.getMethod("setup", new Class<?>[] {Animator.class,
-                jugglinglab.renderer.Renderer.class,
-                jugglinglab.renderer.Renderer.class,
-                Integer.TYPE, Double.TYPE, Long.TYPE});
-            Object gw = jagw.newInstance();
-            setup.invoke(gw, new Object[] {this, ren1, ren2, new Integer(num_frames),
-                new Double(sim_interval_secs), new Long(real_interval_millis)});
+        writingGIF = true;
 
-            writingGIF = true;
-            Thread worker = (Thread)gw;
-            worker.start();
-        } catch (ClassNotFoundException cnfe) {
-            return;
-        } catch (NoSuchMethodException nsme) {
-            return;
-        } catch (SecurityException se) {
-            return;
-        } catch (IllegalAccessException iae) {
-            return;
-        } catch (InstantiationException ie) {
-            return;
-        } catch (InvocationTargetException ite) {
-            return;
+        AnimatorGIFWriter gw = new AnimatorGIFWriter();
+        gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
+        gw.writeGIF_interactive();
+    }
+
+    // Called when the user wants to save a GIF from the command line. This skips the
+    // file dialog box, progress monitor, and separate worker thread.
+    public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
+        writingGIF = true;
+
+        try {
+            AnimatorGIFWriter gw = new AnimatorGIFWriter();
+            gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
+            gw.writeGIF(new File(outpath), null);
+        } catch (FileNotFoundException fnfe) {
+            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+        } catch (IOException ioe) {
+            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
         }
     }
 }

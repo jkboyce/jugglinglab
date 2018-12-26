@@ -1,6 +1,6 @@
 // AnimatorEdit.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -44,16 +44,17 @@ public class AnimatorEdit extends Animator {
         super();
     }
 
+    @Override
     protected void initHandlers() {
         final JMLPattern fpat = pat;
 
         this.addMouseListener(new MouseAdapter() {
 			long lastpress = 0L;
 			long lastenter = 1L;
-			
+
             public void mousePressed(MouseEvent me) {
 				lastpress = me.getWhen();
-				
+
 				// The following (and the equivalent in mouseReleased()) is a hack to swallow
 				// a mouseclick when the browser stops reporting enter/exit events because the
 				// user has clicked on something else.  The system reports simultaneous enter/press
@@ -61,7 +62,7 @@ public class AnimatorEdit extends Animator {
 				// click, and just use it to get focus back.
 				if (jc.mousePause && (lastpress == lastenter))
 					return;
-					
+
                 if (exception != null)
                     return;
                 if (!engineStarted)
@@ -149,7 +150,7 @@ public class AnimatorEdit extends Animator {
 				outside = false;
 				outside_valid = true;
 			}
-			
+
 			public void mouseExited(MouseEvent me) {
 				if (jc.mousePause) {
 					waspaused = getPaused();
@@ -220,6 +221,7 @@ public class AnimatorEdit extends Animator {
         });
     }
 
+    @Override
     protected double[] snapCamera(double[] ca) {
         double[] result = super.snapCamera(ca);
 
@@ -252,6 +254,7 @@ public class AnimatorEdit extends Animator {
     }
 
     // set position of tracker bar in ladder diagram as we animate
+    @Override
     public void setTime(double time) {
         super.setTime(time);
         if (ladder != null)
@@ -303,12 +306,14 @@ public class AnimatorEdit extends Animator {
         }
     }
 
+    @Override
     protected void syncRenderer() {
         super.syncRenderer();
         if (event_active)
             createEventView();
     }
 
+    @Override
     protected void drawFrame(double sim_time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
         super.drawFrame(sim_time, pnum, g);
 
@@ -344,4 +349,9 @@ public class AnimatorEdit extends Animator {
         }
     }
 
+    @Override
+    public void writeGIFAnim() {
+        deactivateEvent();       // so we don't draw event box in animated GIF
+        super.writeGIFAnim();
+    }
 }

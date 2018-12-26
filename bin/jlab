@@ -1,0 +1,3 @@
+#!/bin/sh -f
+
+java -cp `dirname $0`/JugglingLab.jar JugglingLabCLI $*

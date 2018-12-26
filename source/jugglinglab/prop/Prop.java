@@ -1,6 +1,6 @@
 // Prop.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -37,7 +37,7 @@ public abstract class Prop {
         guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-    
+
     protected String initString;
 
     public static final String[] builtinProps = { "Ball", "Image", "Ring" };
@@ -56,7 +56,7 @@ public abstract class Prop {
         }
 
 		String template = errorstrings.getString("Error_prop_type");
-		Object[] arguments = { name };					
+		Object[] arguments = { name };
 		throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
 
@@ -72,14 +72,14 @@ public abstract class Prop {
     }
 
     protected abstract void init(String st) throws JuggleExceptionUser;
-    public abstract Coordinate getMax();
-    public abstract Coordinate getMin();
-	public abstract double getWidth();		// width in cm, for margin calculation
-    public abstract Image getProp2DImage(Component comp, double zoom, double[] camangle);
-    public abstract Dimension getProp2DSize(Component comp, double zoom);
-    public abstract Dimension getProp2DCenter(Component comp, double zoom);
-    public abstract Dimension getProp2DGrip(Component comp, double zoom);
-	
+    public abstract Coordinate getMax();    // in cm
+    public abstract Coordinate getMin();    // in cm
+    public abstract double getWidth();      // prop width in cm
+    public abstract Image getProp2DImage(double zoom, double[] camangle);
+    public abstract Dimension getProp2DSize(double zoom);
+    public abstract Dimension getProp2DCenter(double zoom);
+    public abstract Dimension getProp2DGrip(double zoom);
+
 	/*
     public abstract Object getPropIDX3D();
     public abstract Coordinate getPropIDX3DGrip();

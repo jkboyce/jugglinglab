@@ -1,6 +1,6 @@
 // Renderer2D.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -39,7 +39,7 @@ public class Renderer2D extends Renderer {
 	public static final int RENDER_WIRE_FRAME = 1;
 	public static final int RENDER_FLAT_SOLID = 2;
 	protected int render_type = RENDER_FLAT_SOLID; // One of the above
-	
+
     protected Color			background = null;
     protected Coordinate	left = null, right = null;
     protected JLVector		cameracenter;
@@ -77,6 +77,7 @@ public class Renderer2D extends Renderer {
         this.tempv = new JLVector();
     }
 
+    @Override
     public void setPattern(JMLPattern pat) {
         this.pat = pat;
         int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
@@ -87,8 +88,10 @@ public class Renderer2D extends Renderer {
         this.jugglervec = new JLVector[pat.getNumberOfJugglers()][12];
     }
 
+    @Override
     public Color getBackground() { return this.background; }
 
+    @Override
     public void initDisplay(Dimension dim, int border,
                             Coordinate overallmax, Coordinate overallmin) {
         this.width = dim.width;
@@ -102,8 +105,8 @@ public class Renderer2D extends Renderer {
         setCameraAngle(this.cameraangle);	// sets camera position
     }
 
+    @Override
     public void setCameraAngle(double[] camangle) {
-		
         this.cameraangle[0] = camangle[0];
         this.cameraangle[1] = camangle[1];
 
@@ -119,7 +122,8 @@ public class Renderer2D extends Renderer {
         m.transform(JLMatrix.scaleMatrix(this.zoom));
         m.transform(JLMatrix.shiftMatrix(this.originx, this.originz, 0.0));
     }
-	
+
+    @Override
     public double[] getCameraAngle() {
         double[] ca = new double[2];
         ca[0] = cameraangle[0];
@@ -127,6 +131,7 @@ public class Renderer2D extends Renderer {
         return ca;
     }
 
+    @Override
     public int[] getXY(Coordinate c) {
         return getXY(new JLVector(c.x, c.z, c.y));
     }
@@ -144,6 +149,7 @@ public class Renderer2D extends Renderer {
         return result;
     }
 
+    @Override
     public Coordinate getScreenTranslatedCoordinate(Coordinate c, int dx, int dy) {
         JLVector v = new JLVector(c.x, c.z, c.y);
         JLVector s = v.transform(m);
@@ -152,10 +158,12 @@ public class Renderer2D extends Renderer {
         return new Coordinate(newv.x, newv.z, newv.y);
     }
 
-
+    @Override
     public void drawFrame(double time, int[] pnum, Graphics g, JPanel pan) throws JuggleExceptionInternal {
-        // try to turn on antialiased rendering
-        VersionSpecific.getVersionSpecific().setAntialias(g);
+        if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
         int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
         // first reset the objects in the object pool
@@ -175,9 +183,9 @@ public class Renderer2D extends Renderer {
             int x = (int)(0.5f + obj[index].coord[0].x);
             int y = (int)(0.5f + obj[index].coord[0].y);
             Prop pr = pat.getProp(pnum[i-1]);
-			if (pr.getProp2DImage(pan, this.zoom, this.cameraangle) != null) {
-				Dimension center = pr.getProp2DCenter(pan, this.zoom);
-				Dimension size = pr.getProp2DSize(pan, this.zoom);
+			if (pr.getProp2DImage(this.zoom, this.cameraangle) != null) {
+				Dimension center = pr.getProp2DCenter(this.zoom);
+				Dimension size = pr.getProp2DSize(this.zoom);
 				obj[index].boundingbox.x = x - center.width;
 				obj[index].boundingbox.y = y - center.height;
 				obj[index].boundingbox.width = size.width;
@@ -325,15 +333,15 @@ public class Renderer2D extends Renderer {
                     Prop pr = pat.getProp(pnum[ob.number-1]);
 					int x = (int)(0.5f + ob.coord[0].x);
                     int y = (int)(0.5f + ob.coord[0].y);
-                    Image propimage = pr.getProp2DImage(pan, this.zoom, this.cameraangle);
+                    Image propimage = pr.getProp2DImage(this.zoom, this.cameraangle);
 					if (propimage != null) {
-						Dimension grip = pr.getProp2DGrip(pan, this.zoom);
+						Dimension grip = pr.getProp2DGrip(this.zoom);
 						g.drawImage(propimage, x-grip.width, y-grip.height, pan);
 					} /* else {
 						g.setColor(pr.getEditorColor());
 						draw3DProp(ob.object, g);
 					} */
-					
+
 					// g.setColor(Color.black);
 					// g.drawLine(ob.boundingbox.x, ob.boundingbox.y, ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y);
 					// g.drawLine(ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y, ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y + ob.boundingbox.height);
@@ -381,25 +389,28 @@ public class Renderer2D extends Renderer {
                     g.drawLine(x1, y1, x2, y2);
                     break;
             }
-            
-			
+
+
             // g.setColor(Color.black);
             // g.drawLine(ob.boundingbox.x, ob.boundingbox.y, ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y);
             // g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y, ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1);
             // g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1, ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1);
             // g.drawLine(ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1, ob.boundingbox.x, ob.boundingbox.y);
-             
+
         }
     }
 
+    @Override
     public Coordinate getHandWindowMax() {
         return new Coordinate(Juggler.hand_out, 0, 1);
     }
 
+    @Override
     public Coordinate getHandWindowMin() {
         return new Coordinate(-Juggler.hand_in, 0, -1);
     }
 
+    @Override
     public Coordinate getJugglerWindowMax() {
         Coordinate max = pat.getJugglerMax(1);
         for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
@@ -410,6 +421,8 @@ public class Renderer2D extends Renderer {
         return max;
         // return new Coordinate(Math.max(max.x, max.y), Math.max(max.x, max.y), max.z);
     }
+
+    @Override
     public Coordinate getJugglerWindowMin() {
         Coordinate min = pat.getJugglerMin(1);
         for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
@@ -447,7 +460,7 @@ public class Renderer2D extends Renderer {
         public ArrayList<DrawObject2D> covering = null;
         public boolean drawn = false;
         public JLVector tempv = null;
-		
+
         public DrawObject2D(int numobjects) {
             this.coord = new JLVector[8];
             for (int i = 0; i < 8; i++)

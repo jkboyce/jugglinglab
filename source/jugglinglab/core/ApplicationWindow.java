@@ -1,6 +1,6 @@
 // ApplicationWindow.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -25,15 +25,17 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.text.MessageFormat;
 import javax.swing.*;
 import org.xml.sax.*;
-import java.util.*;
-import java.util.regex.*;
-import java.text.MessageFormat;
 
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
 import jugglinglab.util.*;
+
 
 
 public class ApplicationWindow extends JFrame implements ActionListener, WindowListener {
@@ -44,21 +46,17 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-	protected NotationGUI ng = null;
-	protected boolean macos = false;
-
     public ApplicationWindow(String title) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
-		ng = new NotationGUI(this);
+		NotationGUI ng = new NotationGUI(this);
 
-		macos = PlatformSpecific.getPlatformSpecific().isMacOS();
-		
         JMenuBar mb = new JMenuBar();
 		JMenu filemenu = createFileMenu();
         mb.add(filemenu);
         JMenu notationmenu = ng.createNotationMenu();
-		mb.add(notationmenu);
-        JMenu helpmenu = ng.createHelpMenu(!macos);
+        if (Notation.builtinNotations.length > 1)
+            mb.add(notationmenu);
+        JMenu helpmenu = createHelpMenu();
 		if (helpmenu != null)
 			mb.add(helpmenu);
         setJMenuBar(mb);
@@ -74,7 +72,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
 		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		
+
+        // make siteswap notation the default
 		notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
 		pack();
 		setResizable(false);
@@ -84,16 +83,19 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
 
     protected static final String[] fileItems = new String[]
-    { "Open JML...", "Convert JML...", null, "Quit" };
+    { "Open JML...", null, "Quit" };
     protected static final String[] fileCommands = new String[]
-    { "open", "convert", null, "exit" };
+    { "open", null, "exit" };
     protected static final char[] fileShortcuts =
-    { 'O', ' ', ' ', 'Q' };
+    { 'O', ' ', 'Q' };
 
 	protected JMenu createFileMenu() {
+        // When we move to Java 9+ we can use Desktop.setQuitHandler() here.
+        boolean include_quit = true;
+
         JMenu filemenu = new JMenu(guistrings.getString("File"));
 
-        for (int i = 0; i < (macos ? fileItems.length-2 : fileItems.length); i++) {
+        for (int i = 0; i < (include_quit ? fileItems.length : fileItems.length - 2); i++) {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
@@ -109,74 +111,62 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 		return filemenu;
 	}
 
+    protected static final String[] helpItems = new String[]
+    { "About Juggling Lab", "Juggling Lab Online Help" };
+    protected static final String[] helpCommands = new String[]
+    { "about", "online" };
 
+    protected JMenu createHelpMenu() {
+        // When we move to Java 9+ we can use Desktop.setAboutHandler() here to
+        // do the about box in a more platform-realistic way. For now it's just a
+        // regular menu item.
+        boolean include_about = true;
+
+        JMenu helpmenu = new JMenu(guistrings.getString("Help"));
+
+        for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
+            if (helpItems[i] == null)
+                helpmenu.addSeparator();
+            else {
+                JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
+                helpitem.setActionCommand(helpCommands[i]);
+                helpitem.addActionListener(this);
+                helpmenu.add(helpitem);
+            }
+        }
+        return helpmenu;
+    }
+
+    @Override
 	public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
         try {
 			if (command.equals("open"))
                 doMenuCommand(FILE_OPEN);
-            /*else if (command.equals("newpat"))
-                doFileMenuCommand(FILE_NEWPAT);
-            else if (command.equals("newlist"))
-                doFileMenuCommand(FILE_NEWLIST);
-            else if (command.equals("juggleanim"))
-                doMenuCommand(FILE_CONVERT);*/
-            else if (command.equals("convert"))
-                doMenuCommand(FILE_CONVERT);
             else if (command.equals("exit"))
                 doMenuCommand(FILE_EXIT);
+            else if (command.equals("about"))
+                doMenuCommand(HELP_ABOUT);
+            else if (command.equals("online"))
+                doMenuCommand(HELP_ONLINE);
         } catch (Exception e) {
             ErrorDialog.handleException(e);
         }
     }
 
+    protected static final int FILE_NONE = 0;
+    protected static final int FILE_OPEN = 1;
+    protected static final int FILE_EXIT = 2;
+    protected static final int HELP_ABOUT = 3;
+    protected static final int HELP_ONLINE = 4;
 
-    public static final int FILE_NONE = 0;
-    // public static final int FILE_NEWPAT = 1;
-    // public static final int FILE_NEWLIST = 2;
-    public static final int FILE_OPEN = 3;
-    // public static final int FILE_JUGGLEANIM = 4;
-	public static final int FILE_CONVERT = 5;
-    public static final int	FILE_EXIT = 6;
-
-    
-    public void doMenuCommand(int action) throws JuggleExceptionInternal {
+    protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
-
             case FILE_NONE:
                 break;
 
-			/*
-            case FILE_NEWPAT:
-            {
-                PatternWindow jaw2 = null;
-
-                try {
-                    siteswapNotation sn = new siteswapNotation();
-
-                    JMLPattern pat = sn.getJMLPattern("pattern=5");
-					pat = jugglinglab.optimizer.Optimizer(pat);
-                    jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimatorPrefs());
-                } catch (JuggleExceptionUser je) {
-                    if (jaw2 != null)
-                        jaw2.dispose();
-                    new ErrorDialog(this, je.getMessage());
-                } catch (JuggleException je) {
-                    if (jaw2 != null)
-                        jaw2.dispose();
-                    throw new JuggleExceptionInternal(je.getMessage());
-                }
-            }
-                break;
-
-            case FILE_NEWLIST:
-                new PatternListWindow(guistrings.getString("Pattern_List"));
-                break;
-			*/
-			
             case FILE_OPEN:
-			{
 				javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
 					public boolean accept(File f) {
 						StringTokenizer st = new StringTokenizer(f.getName(), ".");
@@ -185,12 +175,12 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 							ext = st.nextToken();
 						return (ext.equals("jml") || f.isDirectory());
 					}
-					
+
 					public String getDescription() {
 						return "JML Files";
 					}
 				};
-				
+
                 try {
                     if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) == JFileChooser.APPROVE_OPTION) {
                         if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null)
@@ -200,76 +190,37 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                     new ErrorDialog(this, je.getMessage());
                 }
                 break;
-			}
-				
-			/*
-            case FILE_JUGGLEANIM:
-            {
-                PatternListWindow pw = null;
 
-                try {
-                    try {
-                        int option = PlatformSpecific.getPlatformSpecific().showOpenDialog(this);
-                        if (option == JFileChooser.APPROVE_OPTION) {
-                            if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                                pw = new PatternListWindow(guistrings.getString("Patterns"));
-                                readJuggleAnimPatternfile(pw,
-                                        new FileReader(PlatformSpecific.getPlatformSpecific().getSelectedFile()));
-                            }
-                        }
-                    } catch (FileNotFoundException fnfe) {
-                        throw new JuggleExceptionUser(errorstrings.getString("Error_file_not_found")+
-                                                      ": "+fnfe.getMessage());
-                    } catch (IOException ioe) {
-                        throw new JuggleExceptionUser(errorstrings.getString("Error_IO")+": "+ioe.getMessage());
-                    }
-                } catch (JuggleExceptionUser jeu) {
-                    if (pw != null) pw.dispose();
-                    new ErrorDialog(this, jeu.getMessage());
-                } catch (JuggleExceptionInternal jei) {
-                    if (pw != null) pw.dispose();
-                    ErrorDialog.handleException(jei);
-                }
-				break;
-            }
-			*/
-			
-			case FILE_CONVERT:
-			{
-				javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
-					public boolean accept(File f) {
-						StringTokenizer st = new StringTokenizer(f.getName(), ".");
-						String ext = "";
-						while (st.hasMoreTokens())
-							ext = st.nextToken();
-						return (ext.equals("jml") || f.isDirectory());
-					}
-					
-					public String getDescription() {
-						return "JML Files";
-					}
-				};
-				
-                try {
-                    if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null)
-                            convertJML(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                    }
-                } catch (JuggleExceptionUser je) {
-                    new ErrorDialog(this, je.getMessage());
-                }
-				break;
-			}
-				
             case FILE_EXIT:
                 System.exit(0);
+                break;
+
+            case HELP_ABOUT:
+                showAboutBox();
+                break;
+
+            case HELP_ONLINE:
+                boolean browse_supported = (Desktop.isDesktopSupported() &&
+                                            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+                boolean browse_problem = false;
+
+                if (browse_supported) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(jugglinglab.core.Constants.help_URL));
+                    } catch (Exception e) {
+                        browse_problem = true;
+                    }
+                }
+
+                if (!browse_supported || browse_problem) {
+                    new LabelDialog(this, "Help", "Find online help at " + jugglinglab.core.Constants.help_URL);
+                }
                 break;
         }
 
     }
-	
 
-    public void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected static void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
         JFrame frame = null;
         PatternListWindow pw = null;
 
@@ -277,7 +228,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             try {
                 JMLParser parser = new JMLParser();
                 parser.parse(new FileReader(jmlf));
-        
+
                 switch (parser.getFileType()) {
                     case JMLParser.JML_PATTERN:
                     {
@@ -304,7 +255,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 throw new JuggleExceptionUser(errorstrings.getString("Error_IO")+": "+ioe.getMessage());
             } catch (SAXParseException spe) {
 				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { new Integer(spe.getLineNumber()) };					
+				Object[] arguments = { new Integer(spe.getLineNumber()) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             } catch (SAXException se) {
                 throw new JuggleExceptionUser(se.getMessage());
@@ -320,153 +271,93 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         }
     }
 
-	
-	public void convertJML(File jmlf) throws JuggleExceptionUser {
-		String in = null, out = null;
-		
-		try {
-			int len = (int)jmlf.length();
-			FileReader fr = new FileReader(jmlf);
-			char[] ch = new char[len];
-			fr.read(ch, 0, len);
-			in = new String(ch);
-		} catch (IOException ioe) {
-			String template = errorstrings.getString("Error_reading_file");
-			Object[] arguments = { jmlf.getName() };					
-			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-		}
-		
-		// check to see if input file is already JML version 1.2
-		// check if we should be loading as JML version 1.0 (switch y and z coordinates in events)
-		boolean switchyz = false;
-		Matcher m = Pattern.compile("<jml[^>]*version[\\s]*=[\\s]*['\"]([^'\"]*)['\"]").matcher(in);
-		if (m.find()) {
-			if (m.group(1).equals("1.0"))
-				switchyz = true;
-			else if (m.group(1).equals("1.2"))
-				throw new JuggleExceptionUser(errorstrings.getString("Error_already_12"));				
-		} else if (JMLDefs.default_JML_on_load.equals("1.0"))
-			switchyz = true;
-		
-		// <jml (...)> ---> <jml version="1.2">
-		m = Pattern.compile("<jml[^>]*>").matcher(in);
-		out = m.replaceAll("<jml version=\"1.2\">");
+    protected static void showAboutBox() {
+        final JFrame aboutBox = new JFrame(guistrings.getString("About_Juggling_Lab"));
+        aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		// <title>(...1)</title> ---> <title>XMLc(...1)</title>
-		StringBuffer sb = new StringBuffer();
-		m = Pattern.compile("<title>(.*?)</title>").matcher(out);
-		while (m.find()) {
-			String g = "<title>" + JMLNode.xmlescape(m.group(1)).trim() + "</title>";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		// display="(...1)" ---> display="XMLc(...1)"
-		sb = new StringBuffer();
-		m = Pattern.compile("display[\\s]*=[\\s]*\"([^\"]*)\"").matcher(out);
-		while (m.find()) {
-			String g = "display=\"" + JMLNode.xmlescape(m.group(1)).trim() + "\"";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		// animprefs="(...1)" ---> animprefs="XMLc(...1)"
-		sb = new StringBuffer();
-		m = Pattern.compile("animprefs[\\s]*=[\\s]*\"([^\"]*)\"").matcher(out);
-		while (m.find()) {
-			String g = "animprefs=\"" + JMLNode.xmlescape(m.group(1)).trim() + "\"";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		// <line (...1) notation="jml" pattern='(...2)'(...3)/> ---> <line (...1) notation="jml"(...3)>(...2)</line>
-		sb = new StringBuffer();
-		m = Pattern.compile("(<line[^>]*notation[\\s]*=[\\s]*\"jml\"[^>]*?)[\\s]+pattern[\\s]*=[\\s]*['\"]([^']*)['\"]([^>]*)/>").matcher(out);
-		while (m.find()) {
-			String g = m.group(1) + m.group(3) + ">" + m.group(2) + "</line>";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		// <line (...1) pattern='(...2)' notation="jml" (...3)/> ---> <line (...1) notation="jml"(...3)>(...2)</line>
-		sb = new StringBuffer();
-		m = Pattern.compile("(<line[^>]*?)[\\s]+pattern[\\s]*=[\\s]*['\"]([^']*)['\"]([^>]*notation[\\s]*=[\\s]*\"jml\"[^>]*?)[\\s]*/>").matcher(out);
-		while (m.find()) {
-			String g = m.group(1) + m.group(3) + ">" + m.group(2) + "</line>";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		// all of the JML patterns are taken care of above; any remaining lines with
-		// 'pattern=' are in other notations
-		
-		// <line (...1) pattern='(...2)' (...3)/> ---> <line (...1) (...3)>XMLc(...2)</line>
-		sb = new StringBuffer();
-		m = Pattern.compile("(<line[^>]*?)[\\s]+pattern[\\s]*=[\\s]*['\"]([^'\"]*)['\"]([^>]*?)[\\s]*/>").matcher(out);
-		while (m.find()) {
-			String g = m.group(1) + m.group(3) + ">\n" + JMLNode.xmlescape(m.group(2)).trim() + "\n</line>";
-			m.appendReplacement(sb, g);
-		}
-		m.appendTail(sb);
-		out = sb.toString();
-		
-		if (switchyz) {
-			// <event (...1) y="(...2)" (...3) z="(...4)" ---> <event (...1) y="(...4)" (...3) z="(...2)"
-			sb = new StringBuffer();
-			m = Pattern.compile("(<event[^>]*)[\\s]+([yz])[\\s]*=[\\s]*\"([^\"]*)\"([^>]*)[\\s]+([yz])[\\s]*=[\\s]*\"([^\"]*)\"").matcher(out);
-			while (m.find()) {
-				String g = m.group(1) + " " + m.group(2) + "=\"" + m.group(6) + "\"" + m.group(4) + " " +
-							m.group(5) + "=\"" + m.group(3) + "\"";
-				m.appendReplacement(sb, g);
-			}
-			m.appendTail(sb);
-			out = sb.toString();
-		}
-		
-		
-		String outname = jmlf.getName();
-		m = Pattern.compile("^(.*)(\\.[^\\.]*)$").matcher(outname);
-		if (m.find())
-			outname = m.group(1) + "_converted" + m.group(2);	// insert before filename extension
-		else
-			outname = outname + "_converted";
-		
-		if (Constants.DEBUG_PARSING) {
-			System.out.println("------------------- input file: -------------------");
-			System.out.println(in);
-			System.out.println("------------------- output file: -------------------");
-			System.out.println(out);
-			System.out.println("output filename = " + outname);
-		}
-		
-		try {
-			File outfile = new File(jmlf.getParent(), outname);
-			if (outfile.exists()) {
-				String template = errorstrings.getString("Error_already_exists");
-				Object[] arguments = { outname };					
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-			}
-			
-			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(outfile), "UTF-8");
-			osw.write(out, 0, out.length());
-			osw.flush();
-			osw.close();
-		} catch (IOException ioe) {
-			String template = errorstrings.getString("Error_writing_file");
-			Object[] arguments = { outname };					
-			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-		}
-	}
-	
-	
-	public NotationGUI getNotationGUI() { return ng; }
-	
+        JPanel aboutPanel = new JPanel(new BorderLayout());
+        aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
+
+        java.net.URL url = ApplicationWindow.class.getResource("/resources/about.gif");
+        if (url != null) {
+            ImageIcon aboutPicture = new ImageIcon(url, "A lab");
+            if (aboutPicture != null) {
+                JLabel aboutLabel = new JLabel(aboutPicture);
+                aboutPanel.add(aboutLabel, BorderLayout.LINE_START);
+            }
+        }
+
+        JPanel textPanel = new JPanel();
+        aboutPanel.add(textPanel, BorderLayout.LINE_END);
+        GridBagLayout gb = new GridBagLayout();
+        textPanel.setLayout(gb);
+
+        JLabel abouttext1 = new JLabel("Juggling Lab");
+        abouttext1.setFont(new Font("SansSerif", Font.BOLD, 18));
+        textPanel.add(abouttext1);
+        gb.setConstraints(abouttext1, make_constraints(GridBagConstraints.LINE_START,0,0,
+                                                       new Insets(15,15,0,15)));
+
+        String template = guistrings.getString("Version");
+        Object[] arguments = { Constants.version };
+        JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
+        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        textPanel.add(abouttext5);
+        gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
+                                                       new Insets(0,15,0,15)));
+
+        String template2 = guistrings.getString("Copyright_message");
+        Object[] arguments2 = { Constants.year };
+        JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
+        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        textPanel.add(abouttext6);
+        gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
+                                                       new Insets(15,15,15,15)));
+
+        JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
+        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        textPanel.add(abouttext3);
+        gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
+                                                       new Insets(0,15,0,15)));
+
+        JButton okbutton = new JButton(guistrings.getString("OK"));
+        textPanel.add(okbutton);
+        gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
+                                                     new Insets(15,15,15,15)));
+        okbutton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                aboutBox.setVisible(false);
+                aboutBox.dispose();
+            }
+        });
+
+        Locale loc = JLLocale.getLocale();
+        aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
+        aboutBox.pack();
+        aboutBox.setResizable(false);
+        aboutBox.setVisible(true);
+    }
+
+
+    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.anchor = location;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridheight = gbc.gridwidth = 1;
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
+        gbc.insets = ins;
+        gbc.weightx = gbc.weighty = 0.0;
+        return gbc;
+    }
+
+
+    // WindowListener methods
+    @Override
 	public void windowOpened(WindowEvent e) { }
+    @Override
 	public void windowClosing(WindowEvent e) {
 		try {
 			doMenuCommand(FILE_EXIT);
@@ -474,9 +365,14 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             System.exit(0);
         }
 	}
+    @Override
 	public void windowClosed(WindowEvent e) { }
+    @Override
 	public void windowIconified(WindowEvent e) { }
+    @Override
 	public void windowDeiconified(WindowEvent e) { }
+    @Override
 	public void windowActivated(WindowEvent e) { }
+    @Override
 	public void windowDeactivated(WindowEvent e) { }
 }

@@ -1,6 +1,6 @@
 // NotationGUI.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -24,20 +24,16 @@ package jugglinglab.notation;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
-import org.xml.sax.*;
 
-import jugglinglab.*;
 import jugglinglab.core.*;
 import jugglinglab.generator.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
-import jugglinglab.view.*;
+import jugglinglab.view.View;
 
 
 public class NotationGUI extends JPanel implements ActionListener {
@@ -53,24 +49,21 @@ public class NotationGUI extends JPanel implements ActionListener {
 	protected View animtarget = null;
 	protected PatternList patlist = null;
 	protected boolean patlisttab = false;
-	
+
 	protected int currentnum = -1;
     protected JButton juggle = null;
     protected JButton run = null;
 	protected JLabel busy = null;
-    
-//    protected Notation not = null;
-//    protected NotationControl control = null;
-    
+
     // Execution limits for generator
     protected static final int max_patterns = 1000;
     protected static final double max_time = 15.0;
-    
-    
+
+
     public NotationGUI(JFrame parent) throws JuggleExceptionInternal {
         this(parent, null, null, false);
     }
-    
+
     public NotationGUI(JFrame p, View v, PatternList pl, boolean patlisttab) {
 		this.parent = p;
 		this.animtarget = v;
@@ -87,7 +80,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             return this.run;
     }
 
-	
+
 	public JMenu createNotationMenu() {
 		JMenu notationmenu = new JMenu(guistrings.getString("Notation"));
         ButtonGroup buttonGroup = new ButtonGroup();
@@ -99,36 +92,11 @@ public class NotationGUI extends JPanel implements ActionListener {
             notationmenu.add(notationitem);
             buttonGroup.add(notationitem);
         }
-        // notationmenu.getItem(0).setSelected(true);  // start in siteswap notation
-		
+
 		return notationmenu;
 	}
 
-    protected static final String[] helpItems = new String[]
-    { "About Juggling Lab" };
-    protected static final String[] helpCommands = new String[]
-    { "about" };
-
-	public JMenu createHelpMenu(boolean include_about) {
-		if (!include_about)
-			return null;
-			
-		JMenu helpmenu = new JMenu(guistrings.getString("Help"));
-
-		for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
-			if (helpItems[i] == null)
-				helpmenu.addSeparator();
-			else {
-				JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
-				helpitem.setActionCommand(helpCommands[i]);
-				helpitem.addActionListener(this);
-				helpmenu.add(helpitem);
-			}
-		}
-		return helpmenu;
-	}
-
-	
+    @Override
 	public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
@@ -145,32 +113,17 @@ public class NotationGUI extends JPanel implements ActionListener {
                 } catch (NumberFormatException nfe) {
                     throw new JuggleExceptionInternal("Error in notation number coding");
                 }
-            } else if (command.equals("about"))
-                doMenuCommand(HELP_ABOUT);
+            }
         } catch (Exception e) {
             ErrorDialog.handleException(e);
         }
     }
 
-    public static final int	HELP_NONE = 0;
-    public static final int	HELP_ABOUT = 1;
-
-    public void doMenuCommand(int action) {
-        switch (action) {
-            case HELP_NONE:
-                break;
-
-            case HELP_ABOUT:
-				showAboutBox();
-                break;
-		}
-	}
-
 	// input is for example Notation.NOTATION_SITESWAP
 	public void setNotation(int num) throws JuggleExceptionUser, JuggleExceptionInternal {
 		if (num > Notation.builtinNotations.length)
 			return;
-			
+
 		Notation not = null;
 		NotationControl control = null;
 		if (num != Notation.NOTATION_NONE) {
@@ -186,13 +139,13 @@ public class NotationGUI extends JPanel implements ActionListener {
 			} catch (InstantiationException ie) {
 			}
 		}
-		
+
 		if (jtp != null)
 			remove(jtp);
         jtp = new JTabbedPane();
-        
+
         PatternList pl = patlist;
-            
+
         if (control != null) {
 			final Notation fnot = not;
 			final NotationControl fcontrol = control;
@@ -242,16 +195,16 @@ public class NotationGUI extends JPanel implements ActionListener {
             });
             np2.add(juggle);
             np1.add(np2, BorderLayout.PAGE_END);
-			
+
             jtp.addTab(guistrings.getString("Pattern_entry"), np1);
 
             final Generator gen = Generator.getGenerator(Notation.builtinNotations[num-1]);
-            
+
             if (gen != null) {
 				if ((pl == null) && patlisttab)
 					pl = new PatternList(animtarget);
                 final PatternList plf = pl;
-				
+
                 JPanel p1 = new JPanel();
                 p1.setLayout(new BorderLayout());
                 p1.add(gen.getGeneratorControls(), BorderLayout.PAGE_START);
@@ -267,7 +220,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                 this.run = new JButton(guistrings.getString("Run"));
                 run.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
-						
+
 						Thread t = new Thread() {
 							public void run() {
 								busy.setVisible(true);
@@ -284,7 +237,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 										pw = new PatternListWindow(fnot.getName()+" "+guistrings.getString("Patterns"));
 										pwot = new GeneratorTarget(pw);
 									}
-									gen.runGenerator(pwot, max_patterns, max_time);									
+									gen.runGenerator(pwot, max_patterns, max_time);
 									if (plf != null)
 										jtp.setSelectedComponent(plf);
 								} catch (JuggleExceptionDone ex) {
@@ -303,7 +256,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 										pw.dispose();
 									jugglinglab.util.ErrorDialog.handleException(e);
 								}
-								
+
 								busy.setVisible(false);
 								run.setEnabled(true);
 							}
@@ -312,7 +265,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                     }
                 });
                 p2.add(run);
-				
+
 				busy = new JLabel(guistrings.getString("Processing"));
 				busy.setVisible(false);
 				JPanel p3 = new JPanel();
@@ -324,7 +277,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 				gb.setConstraints(busy, make_constraints(GridBagConstraints.LINE_START, 0, 0, new Insets(0,10,0,0)));
 				p3.add(p4, BorderLayout.LINE_START);
 				p3.add(p2, BorderLayout.LINE_END);
-				
+
                 p1.add(p3, BorderLayout.PAGE_END);
 
                 // Change the default button when the tab changes
@@ -333,11 +286,11 @@ public class NotationGUI extends JPanel implements ActionListener {
                         getRootPane().setDefaultButton(getDefaultButton());
                     }
                 });
-                
+
                 jtp.addTab(guistrings.getString("Generator"), p1);
             }
         }
-        
+
 		if (pl != null) {
             jtp.addTab(guistrings.getString("Pattern_list_tab"), pl);
             if (patlist != null)
@@ -346,7 +299,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 
         setLayout(new BorderLayout());
         add(jtp, BorderLayout.CENTER);
-		
+
 		GridBagLayout gb = new GridBagLayout();
 		setLayout(gb);
 		add(jtp);
@@ -361,80 +314,11 @@ public class NotationGUI extends JPanel implements ActionListener {
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gb.setConstraints(jtp, gbc);
-		
+
 		if (parent != null)
 			parent.getRootPane().setDefaultButton(getDefaultButton());
 	}
-	
-	protected void showAboutBox() {
-		final JFrame aboutBox = new JFrame(guistrings.getString("About_Juggling_Lab"));
-		aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		JPanel aboutPanel = new JPanel(new BorderLayout());
-		aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
-
-		java.net.URL url = this.getClass().getResource("/resources/about.gif");
-		if (url != null) {
-			ImageIcon aboutPicture = new ImageIcon(url, "A lab");
-			if (aboutPicture != null) {
-				JLabel aboutLabel = new JLabel(aboutPicture);
-				aboutPanel.add(aboutLabel, BorderLayout.LINE_START);
-			}
-		}
-
-		JPanel textPanel = new JPanel();
-		aboutPanel.add(textPanel, BorderLayout.LINE_END);
-		GridBagLayout gb = new GridBagLayout();
-		textPanel.setLayout(gb);
-
-		JLabel abouttext1 = new JLabel("Juggling Lab");
-		abouttext1.setFont(new Font("SansSerif", Font.BOLD, 18));
-		textPanel.add(abouttext1);
-		gb.setConstraints(abouttext1, make_constraints(GridBagConstraints.LINE_START,0,0,
-													   new Insets(15,15,0,15)));
-
-		String template = guistrings.getString("Version");
-		Object[] arguments = { Constants.version };					
-		JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
-		abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
-		textPanel.add(abouttext5);
-		gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
-													   new Insets(0,15,0,15)));
-
-		String template2 = guistrings.getString("Copyright_message");
-		Object[] arguments2 = { Constants.year };					
-		JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
-		abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
-		textPanel.add(abouttext6);
-		gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
-													   new Insets(15,15,15,15)));
-
-		JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
-		abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
-		textPanel.add(abouttext3);
-		gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
-													   new Insets(0,15,0,15)));
-
-		JButton okbutton = new JButton(guistrings.getString("OK"));
-		textPanel.add(okbutton);
-		gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
-													 new Insets(15,15,15,15)));
-		okbutton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				aboutBox.setVisible(false);
-				aboutBox.dispose();
-			}
-		});
-		
-		Locale loc = JLLocale.getLocale();
-		aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		
-		aboutBox.pack();
-		aboutBox.setResizable(false);
-		aboutBox.setVisible(true);
-	}
-	
-	
     protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
         GridBagConstraints gbc = new GridBagConstraints();
 

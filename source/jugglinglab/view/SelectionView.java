@@ -1,6 +1,6 @@
 // SelectionView.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -34,15 +34,15 @@ public class SelectionView extends View {
 	protected Animator[] ja = null;
 	protected Mutator mutator = null;
 	protected Dimension dtemp = null;
-	
-	
+
+
     public SelectionView(Dimension dim) {
 		this.dtemp = new Dimension();
-		
+
 		final JPanel pleft = new JPanel() {
 			public void paint(Graphics g) {
 				super.paint(g);
-				
+
 				ja[0].getSize(dtemp);
 				int vline1x = dtemp.width;
 				int vline2x = 2 * vline1x;
@@ -50,14 +50,14 @@ public class SelectionView extends View {
 				int hline2y = 2 * hline1y;
 				int w = 3 * vline1x;
 				int h = 3 * hline1y;
-				
+
 				g.setColor(Color.black);
 				g.drawLine(vline1x, hline1y, vline1x, hline2y);
 				g.drawLine(vline1x, hline2y, vline2x, hline2y);
 				g.drawLine(vline2x, hline2y, vline2x, hline1y);
 				g.drawLine(vline2x, hline1y, vline1x, hline1y);
-				
-				
+
+
 				int x, y, width;
 				Dimension appdim = this.getSize();
 				int appWidth = appdim.width;
@@ -73,15 +73,15 @@ public class SelectionView extends View {
 				g.drawString(message, x, y);
 			}
 		};
-		
+
 		pleft.setLayout(new GridLayout(3,3));
         this.ja = new Animator[9];
 		for (int i = 0; i < 9; i++) {
 			ja[i] = new Animator();
-			ja[i].setJAPreferredSize(dim);
+			ja[i].setAnimatorPreferredSize(dim);
 			pleft.add(ja[i]);
 		}
-		
+
 		pleft.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
             }
@@ -108,13 +108,13 @@ public class SelectionView extends View {
 				}
             }
         });
-		
+
 		this.mutator = new Mutator();
 		final JPanel pright = mutator.getControlPanel();
 
         GridBagLayout gb = new GridBagLayout();
         this.setLayout(gb);
-        
+
 		this.add(pleft);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.LINE_START;
@@ -124,7 +124,7 @@ public class SelectionView extends View {
         gbc.gridy = 0;
         gbc.weightx = gbc.weighty = 1.0;
         gb.setConstraints(pleft, gbc);
-		
+
 		this.add(pright);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;
@@ -137,11 +137,13 @@ public class SelectionView extends View {
         gb.setConstraints(pright, gbc);
     }
 
+    @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         for (int i = 0; i < 9; i++)
 			ja[i].restartJuggle();
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
 		ja[4].restartJuggle(p, c);
         for (int i = 0; i < 9; i++) {
@@ -152,24 +154,36 @@ public class SelectionView extends View {
 		}
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        for (int i = 0; i < 9; i++)
+            ja[i].setAnimatorPreferredSize(d);
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return ja[4].getSize(new Dimension());
     }
 
-    public void dispose() {
+    @Override
+    public Animator getAnimator() { return ja[4]; }
+
+    @Override
+    public void disposeView() {
         for (int i = 0; i < 9; i++)
 			ja[i].dispose();
     }
 
+    @Override
 	public JMLPattern getPattern() { return ja[4].getPattern(); }
-	
+
+    @Override
     public boolean getPaused() { return ja[4].getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
-        /*
 		if (ja[4].message == null)
 			for (int i = 0; i < 9; i++)
 				ja[i].setPaused(pause);
-		*/
     }
 }

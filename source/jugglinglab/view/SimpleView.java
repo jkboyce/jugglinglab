@@ -1,6 +1,6 @@
-// NormalView.java
+// SimpleView.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -29,42 +29,51 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
-public class NormalView extends View {
+public class SimpleView extends View {
     protected Animator ja = null;
 
-    public NormalView(Dimension dim) {
+    public SimpleView(Dimension dim) {
         this.ja = new Animator();
-        // ja.setPreferredSize(dim);
-        ja.setJAPreferredSize(dim);
+        ja.setAnimatorPreferredSize(dim);
         this.setLayout(new BorderLayout());
         this.add(ja, BorderLayout.CENTER);
     }
 
+    @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle();
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        ja.setAnimatorPreferredSize(d);
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return ja.getSize(new Dimension());
     }
 
-    public void dispose() {
-        ja.dispose();
-    }
+    @Override
+    public Animator getAnimator() { return ja; }
 
+    @Override
+    public void disposeView() { ja.dispose(); }
+
+    @Override
 	public JMLPattern getPattern() { return ja.getPattern(); }
-	
+
+    @Override
     public boolean getPaused() { return ja.getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);
     }
-	
-	// The following is needed by the GIF saver
-    public Animator getAnimator() { return ja; }
 }

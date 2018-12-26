@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -42,23 +42,24 @@ public class View extends JPanel implements ActionListener {
     }
 
 	protected JFrame parent = null;
-	protected Dimension animsize = null;
     protected AnimatorPrefs jc = null;
     protected JMLPattern pat = null;
     protected View subview = null;
-	
+
 	public View() {}
-	
-	public View(JFrame p, Dimension animsize) {
-		setParent(p);
-		this.animsize = animsize;
-		this.jc = new AnimatorPrefs();
+
+	public View(JFrame p, AnimatorPrefs c) {
+		this.setParent(p);
+        if (c != null)
+            this.jc = c;
+        else
+            this.jc = new AnimatorPrefs();
 	}
-	
+
 	protected void setParent(JFrame p) {
 		this.parent = p;
 	}
-	
+
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
 		if (subview != null)
 			subview.restartView();
@@ -69,24 +70,37 @@ public class View extends JPanel implements ActionListener {
             this.pat = p;
         if (c != null)
             this.jc = c;
-			
+
 		if (subview != null)
 			subview.restartView(p, c);
 	}
-	
+
+    public void setAnimatorPreferredSize(Dimension d) {
+        if (subview != null)
+            subview.setAnimatorPreferredSize(d);
+    }
+
     public Dimension getAnimatorSize() {
 		if (subview != null)
 			return subview.getAnimatorSize();
 		return null;
 	}
-    public void dispose() {
+
+    // used by the animated GIF saver
+    public Animator getAnimator() {
+        if (subview != null)
+            return subview.getAnimator();
+        return null;
+    }
+
+    public void disposeView() {
 		if (subview != null)
-			subview.dispose();
+			subview.disposeView();
 		subview = null;
 	}
 
     public JMLPattern getPattern() { return pat; }
-    
+
     public boolean getPaused() {
 		if (subview != null)
 			return subview.getPaused();
@@ -96,12 +110,12 @@ public class View extends JPanel implements ActionListener {
 		if (subview != null)
 			subview.setPaused(pause);
 	}
-	
+
 
     protected static final String[] fileItems = new String[]
-    { "Close", null, "Save JML As...", "Save Animated GIF As...", "Save HTML As..." };
+    { "Close", null, "Save JML As...", "Save Animated GIF As..." };
     protected static final String[] fileCommands = new String[]
-    { "close", null, "saveas", "savegifanim", "savehtml" };
+    { "close", null, "saveas", "savegifanim" };
     protected static final char[] fileShortcuts =
     { 'W', ' ', 'S', ' ', ' ' };
 
@@ -112,7 +126,7 @@ public class View extends JPanel implements ActionListener {
                 filemenu.addSeparator();
             else {
 				JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
-				
+
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
 											Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -132,7 +146,7 @@ public class View extends JPanel implements ActionListener {
     { "simple", "edit", /*"selection",*/ "jml", null, "restart", "prefs" };
     protected static final char[] viewShortcuts =
     { '1', '2', '3', /*'4',*/ ' ', ' ', 'P' };
-	
+
 	public JMenu createViewMenu() {
         JMenu viewmenu = new JMenu(guistrings.getString("View"));
         ButtonGroup buttonGroup = new ButtonGroup();
@@ -147,14 +161,14 @@ public class View extends JPanel implements ActionListener {
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
 											Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-				
+
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);
                 viewmenu.add(viewitem);
                 buttonGroup.add(viewitem);
             } else {
 				JMenuItem viewitem = new JMenuItem(guistrings.getString(viewItems[i].replace(' ', '_')));
-				
+
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
 											Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -165,11 +179,11 @@ public class View extends JPanel implements ActionListener {
 			}
         }
 		// viewmenu.getItem(0).setSelected(true);  // start in Normal view
-		
+
 		return viewmenu;
 	}
-	
-	
+
+    @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
@@ -179,11 +193,8 @@ public class View extends JPanel implements ActionListener {
             else if (command.equals("saveas"))
                 doMenuCommand(FILE_SAVE);
             else if (command.equals("savegifanim")) {
-                if (jugglinglab.core.Constants.INCLUDE_GIF_SAVE)
-                    doMenuCommand(FILE_GIFSAVE);
+                doMenuCommand(FILE_GIFSAVE);
             }
-            else if (command.equals("savehtml"))
-                doMenuCommand(FILE_HTMLSAVE);
             else if (command.equals("restart"))
                 doMenuCommand(VIEW_RESTART);
             else if (command.equals("prefs"))
@@ -232,10 +243,9 @@ public class View extends JPanel implements ActionListener {
     public static final int	FILE_CLOSE = 1;
     public static final int FILE_SAVE = 2;
     public static final int FILE_GIFSAVE = 3;
-    public static final int FILE_HTMLSAVE = 4;
     public static final int VIEW_RESTART = 5;
     public static final int	VIEW_ANIMPREFS = 6;
-	
+
 	public void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
 
@@ -254,7 +264,6 @@ public class View extends JPanel implements ActionListener {
                             if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
                                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                                PrintWriter write = new PrintWriter(fw);
                                 getPattern().writeJML(fw, true);
                                 fw.close();
                             }
@@ -272,80 +281,11 @@ public class View extends JPanel implements ActionListener {
                 break;
 
             case FILE_GIFSAVE:
-                if (jugglinglab.core.Constants.INCLUDE_GIF_SAVE) {
-                    if (getViewMode() == VIEW_SIMPLE) {
-                        NormalView nv = (NormalView)subview;
-                        Animator ja = nv.getAnimator();
-                        if (!ja.isAnimInited())
-                            break;
-                        ja.writeGIFAnim();
-                    }
-                    else {
-                        new LabelDialog(this, "Not available",
-                                        "Switch to Simple view to save an animated GIF");
-                    }
-                }
-                break;
-
-            case FILE_HTMLSAVE:
-                if (getPattern().isValid()) {
-                    try {
-                        int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
-                        if (option == JFileChooser.APPROVE_OPTION) {
-                            if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                                PrintWriter pw = new PrintWriter(fw);
-
-                                String config = null;
-                                Dimension dim = null;
-                                if (this.getViewMode() == VIEW_EDIT) {
-                                    config = "entry=none;view=edit";
-                                    dim = getSize();
-                                } else {
-                                    config = "entry=none;view=simple";
-                                    dim = getAnimatorSize();
-                                }
-
-                                String prefs = this.jc.toString();
-
-                                int w = dim.width;
-                                int h = dim.height;
-                                JMLPattern pat = getPattern();
-
-                                pw.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-                                pw.println("<html>");
-                                pw.println("<head>");
-                                pw.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
-                                pw.println("<title>"+JMLNode.xmlescape(pat.getTitle())+"</title>");
-                                pw.println("</head>");
-                                pw.println("<body>");
-                                pw.println("<applet archive=\"JugglingLab.jar\" code=\"JugglingLab\" width=\""+w+"\" height=\""+h+"\">");
-                                pw.println("<param name=\"config\" value=\""+JMLNode.xmlescape(config)+"\">");
-                                if (prefs.length() != 0)
-                                    pw.println("<param name=\"animprefs\" value=\""+JMLNode.xmlescape(prefs)+"\">");
-                                pw.println("<param name=\"notation\" value=\"jml\">");
-                                pw.println("<param name=\"pattern\" value=\"");
-                                pw.println(JMLNode.xmlescape(pat.toString()));
-                                pw.println("\">");
-                                pw.println("Java not available");
-                                pw.println("</applet>");
-                                pw.println("</body>");
-                                pw.println("</html>");
-                                pw.flush();
-
-                                fw.close();
-                            }
-                        }
-                    } catch (FileNotFoundException fnfe) {
-                        throw new JuggleExceptionInternal("FileNotFound: "+fnfe.getMessage());
-                    } catch (IOException ioe) {
-                        throw new JuggleExceptionInternal("IOException: "+ioe.getMessage());
-                    } finally {
-                        setCursor(Cursor.getDefaultCursor());
-                    }
-                } else {
-                    new ErrorDialog(this, "Could not save: pattern is not valid");
+                if (subview != null) {
+                    Animator ja = subview.getAnimator();
+                    if (!ja.isAnimInited())
+                        break;
+                    ja.writeGIFAnim();
                 }
                 break;
 
@@ -362,9 +302,22 @@ public class View extends JPanel implements ActionListener {
             case VIEW_ANIMPREFS:
                 AnimatorPrefsDialog japd = new AnimatorPrefsDialog(parent);
 
-                //  AnimatorPrefs oldjc = this.getAnimator().getAnimatorPrefs();
+                if (subview != null) {
+                    Dimension animsize = subview.getAnimatorSize();
+                    this.jc.width = animsize.width;
+                    this.jc.height = animsize.height;
+                }
+
                 AnimatorPrefs newjc = japd.getPrefs(this.jc);
-                if (newjc != jc)	 {	// user made change?
+
+                if (newjc.width != this.jc.width || newjc.height != this.jc.height) {
+                    // user changed the width and/or height
+                    setAnimatorPreferredSize(new Dimension(newjc.width, newjc.height));
+                    if (parent != null)
+                        parent.pack();
+                }
+
+                if (newjc != this.jc)	 {	// user made change?
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     this.jc = newjc;
                     try {
@@ -392,19 +345,21 @@ public class View extends JPanel implements ActionListener {
     public void setViewMode(int mode) throws JuggleExceptionUser, JuggleExceptionInternal {
         View newview = null;
         boolean paused = false;
-		
+        Dimension animsize = null;
+
         if (subview != null) {
             animsize = subview.getAnimatorSize();
-            pat = subview.getPattern();	// retrieve possibly edited pattern from old view
+            pat = subview.getPattern();  // retrieve possibly edited pattern from old view
             paused = subview.getPaused();
-			remove(subview);
-        }
+			remove(subview);             // JPanel method
+        } else
+            animsize = new Dimension(this.jc.width, this.jc.height);
 
         switch (mode) {
             case VIEW_NONE:
                 break;
             case VIEW_SIMPLE:
-                newview = new NormalView(animsize);
+                newview = new SimpleView(animsize);
                 break;
             case VIEW_EDIT:
                 newview = new EditView(animsize);
@@ -419,7 +374,7 @@ public class View extends JPanel implements ActionListener {
 
 		if (newview == null)
 			return;
-			
+
 		GridBagLayout gb = new GridBagLayout();
 		this.setLayout(gb);
 		this.add(newview);
@@ -434,19 +389,19 @@ public class View extends JPanel implements ActionListener {
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gb.setConstraints(newview, gbc);
-		
+
 		newview.setParent(parent);
         newview.setPaused(paused);
-		if (subview != null)
-			subview.dispose();
+		if (this.subview != null)
+			this.subview.disposeView();
 
-        subview = newview;
+        this.subview = newview;
     }
 
 	protected int getViewMode() {
 		if (subview == null)
 			return VIEW_NONE;
-		if (subview instanceof NormalView)
+		if (subview instanceof SimpleView)
 			return VIEW_SIMPLE;
 		if (subview instanceof EditView)
 			return VIEW_EDIT;

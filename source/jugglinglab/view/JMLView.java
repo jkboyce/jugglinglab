@@ -1,6 +1,6 @@
 // JMLView.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -36,10 +36,11 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
-public class JMLView extends View {
+public class JMLView extends View implements DocumentListener {
     protected boolean isdirty = false;
 
     protected Animator ja = null;
+    protected JSplitPane jsp = null;
     protected JTextArea ta = null;
     protected JButton compile = null;
     protected JButton revert = null;
@@ -48,16 +49,12 @@ public class JMLView extends View {
 
     public JMLView(Dimension dim) {
         this.setLayout(new BorderLayout());
-        
+
         this.ja = new Animator();
-        //ja.setPreferredSize(dim);
-        ja.setJAPreferredSize(dim);
-        //ja.setMinimumSize(dim);
+        ja.setAnimatorPreferredSize(dim);
 
         this.ta = new JTextArea();
-        //		ta.setPreferredSize(new Dimension(400,1));
-        ChangeListener myListener = new ChangeListener();
-        this.ta.getDocument().addDocumentListener(myListener);
+        this.ta.getDocument().addDocumentListener(this);
 
         JScrollPane jscroll = new JScrollPane(ta);
         jscroll.setPreferredSize(new Dimension(400,1));
@@ -66,7 +63,7 @@ public class JMLView extends View {
             jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         }
 
-        JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, jscroll);
+        jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, jscroll);
         this.add(jsp, BorderLayout.CENTER);
 
         JPanel lower = new JPanel();
@@ -108,6 +105,7 @@ public class JMLView extends View {
         this.add(lower, BorderLayout.PAGE_END);
     }
 
+    @Override
     public void restartView() {
         try {
             ja.restartJuggle();
@@ -116,6 +114,7 @@ public class JMLView extends View {
         }
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) {
         try {
             ja.restartJuggle(p, c);
@@ -133,18 +132,30 @@ public class JMLView extends View {
         }
     }
 
+    @Override
+    public void setAnimatorPreferredSize(Dimension d) {
+        ja.setAnimatorPreferredSize(d);
+        jsp.resetToPreferredSizes();
+    }
+
+    @Override
     public Dimension getAnimatorSize() {
         return ja.getSize(new Dimension());
     }
 
-    public void dispose() {
-        ja.dispose();
-    }
+    @Override
+    public Animator getAnimator() { return ja; }
 
+    @Override
+    public void disposeView() { ja.dispose(); }
+
+    @Override
 	public JMLPattern getPattern() { return ja.getPattern(); }
-	
+
+    @Override
     public boolean getPaused() { return ja.getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);
@@ -167,7 +178,7 @@ public class JMLView extends View {
                 setDirty(true);
             } catch (SAXParseException spe) {
 				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { new Integer(spe.getLineNumber()) };					
+				Object[] arguments = { new Integer(spe.getLineNumber()) };
                 lab.setText(MessageFormat.format(template, arguments));
                 setDirty(true);
             } catch (SAXException se) {
@@ -207,15 +218,18 @@ public class JMLView extends View {
         this.revert.setEnabled(dirty);
     }
 
-    class ChangeListener implements DocumentListener {
-        public void insertUpdate(DocumentEvent e) {
-            JMLView.this.setDirty(true);
-        }
-        public void removeUpdate(DocumentEvent e) {
-            JMLView.this.setDirty(true);
-        }
-        public void changedUpdate(DocumentEvent e) {
-            JMLView.this.setDirty(true);
-        }
+    // DocumentListener methods
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        this.setDirty(true);
+    }
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        this.setDirty(true);
+    }
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        this.setDirty(true);
     }
 }
