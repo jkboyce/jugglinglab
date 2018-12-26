@@ -1,6 +1,6 @@
 // SelectionView.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -137,11 +137,13 @@ public class SelectionView extends View {
         gb.setConstraints(pright, gbc);
     }
 
+    @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         for (int i = 0; i < 9; i++)
 			ja[i].restartJuggle();
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
 		ja[4].restartJuggle(p, c);
         for (int i = 0; i < 9; i++) {
@@ -166,20 +168,22 @@ public class SelectionView extends View {
     @Override
     public Animator getAnimator() { return ja[4]; }
 
-    public void dispose() {
+    @Override
+    public void disposeView() {
         for (int i = 0; i < 9; i++)
 			ja[i].dispose();
     }
 
+    @Override
 	public JMLPattern getPattern() { return ja[4].getPattern(); }
 
+    @Override
     public boolean getPaused() { return ja[4].getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
-        /*
 		if (ja[4].message == null)
 			for (int i = 0; i < 9; i++)
 				ja[i].setPaused(pause);
-		*/
     }
 }

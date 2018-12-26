@@ -153,6 +153,7 @@ public class AnimatorGIFWriter extends Thread {
         this.start();
     }
 
+    @Override
     public void run() {
         try {
             boolean origpause = ja.getPaused();
@@ -198,6 +199,7 @@ class PBUpdater implements Runnable {
         this.note = note;
     }
 
+    @Override
     public void run() {
         pro.setProgress(setting);
         pro.setNote(note);

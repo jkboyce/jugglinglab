@@ -258,7 +258,7 @@ public class JugglingLabApplet extends JApplet {
     @Override
     public void destroy() {
 		if ((jlp != null) && (jlp.getView() != null))
-			jlp.getView().dispose();
+			jlp.getView().disposeView();
         /*
 		if (ja != null)
 			ja.dispose();

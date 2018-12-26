@@ -39,10 +39,12 @@ public class SimpleView extends View {
         this.add(ja, BorderLayout.CENTER);
     }
 
+    @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle();
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
     }
@@ -60,14 +62,16 @@ public class SimpleView extends View {
     @Override
     public Animator getAnimator() { return ja; }
 
-    public void dispose() {
-        ja.dispose();
-    }
+    @Override
+    public void disposeView() { ja.dispose(); }
 
+    @Override
 	public JMLPattern getPattern() { return ja.getPattern(); }
 
+    @Override
     public boolean getPaused() { return ja.getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);

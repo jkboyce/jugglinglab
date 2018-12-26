@@ -1,6 +1,6 @@
 // Animator.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -318,7 +318,7 @@ public class Animator extends JPanel implements Runnable {
         restartJuggle(null, null);
     }
 
-
+    @Override
     public void run()  {		// Called when this object becomes a thread
         long	real_time_start, real_time_wait;
 
@@ -443,9 +443,7 @@ public class Animator extends JPanel implements Runnable {
         message = null;
     }
 
-    public boolean getPaused() {
-        return enginePaused;
-    }
+    public boolean getPaused() { return enginePaused; }
 
     public synchronized void setPaused(boolean wanttopause) {
         if ((enginePaused == true) && (wanttopause == false)) {
@@ -465,6 +463,7 @@ public class Animator extends JPanel implements Runnable {
         sim_time = time;
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         if (exception != null)
             drawString(exception.getMessage(), g);
@@ -685,25 +684,15 @@ public class Animator extends JPanel implements Runnable {
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
     }
 
-    public boolean isAnimInited() {
-        return engineStarted;
-    }
+    public boolean isAnimInited() { return engineStarted; }
 
-    public JMLPattern getPattern() {
-        return pat;
-    }
+    public JMLPattern getPattern() { return pat; }
 
-    public AnimatorPrefs getAnimatorPrefs() {
-        return jc;
-    }
+    public AnimatorPrefs getAnimatorPrefs() { return jc; }
 
-    public int[] getAnimPropNum() {
-        return animpropnum;
-    }
+    public int[] getAnimPropNum() { return animpropnum; }
 
-    public void dispose() {
-        killAnimationThread();
-    }
+    public void dispose() { killAnimationThread(); }
 
     // Called when the user selects the "Save as Animated GIF..." menu option
     public void writeGIFAnim() {
@@ -715,7 +704,7 @@ public class Animator extends JPanel implements Runnable {
     }
 
     // Called when the user wants to save a GIF from the command line. This skips the
-    // file dialog box, progress bar, and separate worker thread.
+    // file dialog box, progress monitor, and separate worker thread.
     public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
         writingGIF = true;
 

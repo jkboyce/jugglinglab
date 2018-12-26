@@ -93,9 +93,9 @@ public class View extends JPanel implements ActionListener {
         return null;
     }
 
-    public void dispose() {
+    public void disposeView() {
 		if (subview != null)
-			subview.dispose();
+			subview.disposeView();
 		subview = null;
 	}
 
@@ -183,7 +183,7 @@ public class View extends JPanel implements ActionListener {
 		return viewmenu;
 	}
 
-
+    @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
@@ -393,7 +393,7 @@ public class View extends JPanel implements ActionListener {
 		newview.setParent(parent);
         newview.setPaused(paused);
 		if (this.subview != null)
-			this.subview.dispose();
+			this.subview.disposeView();
 
         this.subview = newview;
     }

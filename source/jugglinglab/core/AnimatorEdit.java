@@ -44,6 +44,7 @@ public class AnimatorEdit extends Animator {
         super();
     }
 
+    @Override
     protected void initHandlers() {
         final JMLPattern fpat = pat;
 
@@ -220,6 +221,7 @@ public class AnimatorEdit extends Animator {
         });
     }
 
+    @Override
     protected double[] snapCamera(double[] ca) {
         double[] result = super.snapCamera(ca);
 
@@ -252,6 +254,7 @@ public class AnimatorEdit extends Animator {
     }
 
     // set position of tracker bar in ladder diagram as we animate
+    @Override
     public void setTime(double time) {
         super.setTime(time);
         if (ladder != null)
@@ -303,12 +306,14 @@ public class AnimatorEdit extends Animator {
         }
     }
 
+    @Override
     protected void syncRenderer() {
         super.syncRenderer();
         if (event_active)
             createEventView();
     }
 
+    @Override
     protected void drawFrame(double sim_time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
         super.drawFrame(sim_time, pnum, g);
 
@@ -344,4 +349,9 @@ public class AnimatorEdit extends Animator {
         }
     }
 
+    @Override
+    public void writeGIFAnim() {
+        deactivateEvent();       // so we don't draw event box in animated GIF
+        super.writeGIFAnim();
+    }
 }

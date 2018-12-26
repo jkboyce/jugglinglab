@@ -1,6 +1,6 @@
 // EditView.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -35,14 +35,13 @@ import jugglinglab.util.*;
 public class EditView extends View {
     protected AnimatorEdit jae = null;
     protected JPanel ladder = null;
+    protected JSplitPane jsp = null;
 
     static protected int ladder_width = 150;
     static protected int ladder_min_width = 80;
 
 
     public EditView(Dimension dim) {
-        this.setLayout(new BorderLayout());
-
         this.jae = new AnimatorEdit();
         jae.setAnimatorPreferredSize(dim);
 
@@ -52,7 +51,6 @@ public class EditView extends View {
         ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
 		ladder.setBackground(Color.white);
 
-		JSplitPane jsp = null;
 		Locale loc = JLLocale.getLocale();
 		if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
 			jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
@@ -63,14 +61,18 @@ public class EditView extends View {
 		}
 		jsp.setBorder(new EmptyBorder(0,0,0,0));
 		jsp.setBackground(Color.white);
+
 		this.setBackground(Color.white);
+        this.setLayout(new BorderLayout());
         this.add(jsp, BorderLayout.CENTER);
     }
 
+    @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         jae.restartJuggle();
     }
 
+    @Override
     public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         jae.restartJuggle(p, c);
         if (p != null) {
@@ -96,6 +98,7 @@ public class EditView extends View {
     @Override
     public void setAnimatorPreferredSize(Dimension d) {
         jae.setAnimatorPreferredSize(d);
+        jsp.resetToPreferredSizes();
     }
 
     @Override
@@ -106,14 +109,16 @@ public class EditView extends View {
     @Override
     public Animator getAnimator() { return jae; }
 
-    public void dispose() {
-        jae.dispose();
-    }
+    @Override
+    public void disposeView() { jae.dispose(); }
 
+    @Override
 	public JMLPattern getPattern() { return jae.getPattern(); }
 
+    @Override
     public boolean getPaused() { return jae.getPaused(); }
 
+    @Override
     public void setPaused(boolean pause) {
         if (jae.message == null)
             jae.setPaused(pause);

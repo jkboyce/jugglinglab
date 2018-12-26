@@ -92,6 +92,7 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
     }
 
     // Implements ActionListener to enable/disable GIFsave as view mode changes
+    @Override
     public void actionPerformed(ActionEvent ae) {
 		for (int i = 0; i < filemenu.getItemCount(); i++) {
 			JMenuItem jmi = filemenu.getItem(i);
@@ -102,25 +103,33 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
 		}
     }
 
-
+    @Override
     public synchronized void dispose() {
         super.dispose();
         if (view != null) {
-            view.dispose();
+            view.disposeView();
             view = null;
         }
     }
 
     // WindowListener interface methods
+
+    @Override
     public void windowOpened(WindowEvent e) { }
+    @Override
     public void windowClosing(WindowEvent e) {
         if (this.exit_on_close)
             System.exit(0);
     }
+    @Override
     public void windowClosed(WindowEvent e) { }
+    @Override
     public void windowIconified(WindowEvent e) { }
+    @Override
     public void windowDeiconified(WindowEvent e) { }
+    @Override
     public void windowActivated(WindowEvent e) { }
+    @Override
     public void windowDeactivated(WindowEvent e) { }
 
 }
