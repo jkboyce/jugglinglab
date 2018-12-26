@@ -141,6 +141,9 @@ public class JMLView extends View {
         return ja.getSize(new Dimension());
     }
 
+    @Override
+    public Animator getAnimator() { return ja; }
+
     public void dispose() {
         ja.dispose();
     }

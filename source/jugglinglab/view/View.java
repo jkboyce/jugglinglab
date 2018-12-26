@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -85,6 +85,14 @@ public class View extends JPanel implements ActionListener {
 			return subview.getAnimatorSize();
 		return null;
 	}
+
+    // used by the animated GIF saver
+    public Animator getAnimator() {
+        if (subview != null)
+            return subview.getAnimator();
+        return null;
+    }
+
     public void dispose() {
 		if (subview != null)
 			subview.dispose();
@@ -273,16 +281,11 @@ public class View extends JPanel implements ActionListener {
                 break;
 
             case FILE_GIFSAVE:
-                if (getViewMode() == VIEW_SIMPLE) {
-                    SimpleView nv = (SimpleView)subview;
-                    Animator ja = nv.getAnimator();
+                if (subview != null) {
+                    Animator ja = subview.getAnimator();
                     if (!ja.isAnimInited())
                         break;
                     ja.writeGIFAnim();
-                }
-                else {
-                    new LabelDialog(this, "Not available",
-                                    "Switch to Simple view to save an animated GIF");
                 }
                 break;
 

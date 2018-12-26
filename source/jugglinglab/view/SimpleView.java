@@ -57,6 +57,9 @@ public class SimpleView extends View {
         return ja.getSize(new Dimension());
     }
 
+    @Override
+    public Animator getAnimator() { return ja; }
+
     public void dispose() {
         ja.dispose();
     }
@@ -69,7 +72,4 @@ public class SimpleView extends View {
         if (ja.message == null)
             ja.setPaused(pause);
     }
-
-	// The following is needed by the GIF saver
-    public Animator getAnimator() { return ja; }
 }

@@ -103,6 +103,9 @@ public class EditView extends View {
         return jae.getSize(new Dimension());
     }
 
+    @Override
+    public Animator getAnimator() { return jae; }
+
     public void dispose() {
         jae.dispose();
     }

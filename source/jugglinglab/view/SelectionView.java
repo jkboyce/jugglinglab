@@ -163,6 +163,9 @@ public class SelectionView extends View {
         return ja[4].getSize(new Dimension());
     }
 
+    @Override
+    public Animator getAnimator() { return ja[4]; }
+
     public void dispose() {
         for (int i = 0; i < 9; i++)
 			ja[i].dispose();
