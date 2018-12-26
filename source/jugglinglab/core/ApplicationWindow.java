@@ -1,6 +1,6 @@
 // ApplicationWindow.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -57,7 +57,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 		JMenu filemenu = createFileMenu();
         mb.add(filemenu);
         JMenu notationmenu = ng.createNotationMenu();
-		mb.add(notationmenu);
+        if (Notation.builtinNotations.length > 1)
+            mb.add(notationmenu);
         JMenu helpmenu = ng.createHelpMenu(!macos);
 		if (helpmenu != null)
 			mb.add(helpmenu);
@@ -109,7 +110,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 		return filemenu;
 	}
 
-
+    @Override
 	public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
@@ -221,7 +222,9 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
 	public NotationGUI getNotationGUI() { return ng; }
 
+    @Override
 	public void windowOpened(WindowEvent e) { }
+    @Override
 	public void windowClosing(WindowEvent e) {
 		try {
 			doMenuCommand(FILE_EXIT);
@@ -229,9 +232,14 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             System.exit(0);
         }
 	}
+    @Override
 	public void windowClosed(WindowEvent e) { }
+    @Override
 	public void windowIconified(WindowEvent e) { }
+    @Override
 	public void windowDeiconified(WindowEvent e) { }
+    @Override
 	public void windowActivated(WindowEvent e) { }
+    @Override
 	public void windowDeactivated(WindowEvent e) { }
 }
