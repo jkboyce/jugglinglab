@@ -32,7 +32,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
-public class PatternWindow extends JFrame implements ActionListener, WindowListener {
+public class PatternWindow extends JFrame implements WindowListener {
     /*
 	static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
@@ -56,12 +56,6 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
 		filemenu = view.createFileMenu();
 		mb.add(filemenu);
 		viewmenu = view.createViewMenu();
-		for (int i = 0; i < viewmenu.getItemCount(); i++) {
-			JMenuItem jmi = viewmenu.getItem(i);
-			if (jmi == null)
-				break;		// hit the first separator, end of the list of views
-			jmi.addActionListener(this);   // so we can enable/disable GIFsave depending on view mode
-		}
         mb.add(viewmenu);
         setJMenuBar(mb);
 
@@ -89,18 +83,6 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
 
     public void setExitOnClose(boolean value) {
         this.exit_on_close = value;
-    }
-
-    // Implements ActionListener to enable/disable GIFsave as view mode changes
-    @Override
-    public void actionPerformed(ActionEvent ae) {
-		for (int i = 0; i < filemenu.getItemCount(); i++) {
-			JMenuItem jmi = filemenu.getItem(i);
-			if ((jmi != null) && jmi.getActionCommand().equals("savegifanim")) {
-				jmi.setEnabled(true);
-				return;
-			}
-		}
     }
 
     @Override
