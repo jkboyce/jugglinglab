@@ -25,10 +25,12 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import javax.swing.*;
-import org.xml.sax.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.text.MessageFormat;
+import javax.swing.*;
+import org.xml.sax.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
@@ -44,14 +46,9 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-	protected NotationGUI ng = null;
-	protected boolean macos = false;
-
     public ApplicationWindow(String title) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
-		ng = new NotationGUI(this);
-
-		macos = PlatformSpecific.getPlatformSpecific().isMacOS();
+		NotationGUI ng = new NotationGUI(this);
 
         JMenuBar mb = new JMenuBar();
 		JMenu filemenu = createFileMenu();
@@ -59,7 +56,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         JMenu notationmenu = ng.createNotationMenu();
         if (Notation.builtinNotations.length > 1)
             mb.add(notationmenu);
-        JMenu helpmenu = ng.createHelpMenu(!macos);
+        JMenu helpmenu = createHelpMenu();
 		if (helpmenu != null)
 			mb.add(helpmenu);
         setJMenuBar(mb);
@@ -76,6 +73,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 		Locale loc = JLLocale.getLocale();
 		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
+        // make siteswap notation the default
 		notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
 		pack();
 		setResizable(false);
@@ -92,9 +90,12 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
     { 'O', ' ', 'Q' };
 
 	protected JMenu createFileMenu() {
+        // When we move to Java 9+ we can use Desktop.setQuitHandler() here.
+        boolean include_quit = true;
+
         JMenu filemenu = new JMenu(guistrings.getString("File"));
 
-        for (int i = 0; i < (macos ? fileItems.length-2 : fileItems.length); i++) {
+        for (int i = 0; i < (include_quit ? fileItems.length : fileItems.length - 2); i++) {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
@@ -110,6 +111,32 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 		return filemenu;
 	}
 
+    protected static final String[] helpItems = new String[]
+    { "About Juggling Lab", "Juggling Lab Online Help" };
+    protected static final String[] helpCommands = new String[]
+    { "about", "online" };
+
+    protected JMenu createHelpMenu() {
+        // When we move to Java 9+ we can use Desktop.setAboutHandler() here to
+        // do the about box in a more platform-realistic way. For now it's just a
+        // regular menu item.
+        boolean include_about = true;
+
+        JMenu helpmenu = new JMenu(guistrings.getString("Help"));
+
+        for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
+            if (helpItems[i] == null)
+                helpmenu.addSeparator();
+            else {
+                JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
+                helpitem.setActionCommand(helpCommands[i]);
+                helpitem.addActionListener(this);
+                helpmenu.add(helpitem);
+            }
+        }
+        return helpmenu;
+    }
+
     @Override
 	public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
@@ -119,18 +146,22 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 doMenuCommand(FILE_OPEN);
             else if (command.equals("exit"))
                 doMenuCommand(FILE_EXIT);
+            else if (command.equals("about"))
+                doMenuCommand(HELP_ABOUT);
+            else if (command.equals("online"))
+                doMenuCommand(HELP_ONLINE);
         } catch (Exception e) {
             ErrorDialog.handleException(e);
         }
     }
 
+    protected static final int FILE_NONE = 0;
+    protected static final int FILE_OPEN = 1;
+    protected static final int FILE_EXIT = 2;
+    protected static final int HELP_ABOUT = 3;
+    protected static final int HELP_ONLINE = 4;
 
-    public static final int FILE_NONE = 0;
-    public static final int FILE_OPEN = 1;
-    public static final int	FILE_EXIT = 2;
-
-
-    public void doMenuCommand(int action) throws JuggleExceptionInternal {
+    protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
                 break;
@@ -163,12 +194,33 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             case FILE_EXIT:
                 System.exit(0);
                 break;
+
+            case HELP_ABOUT:
+                showAboutBox();
+                break;
+
+            case HELP_ONLINE:
+                boolean browse_supported = (Desktop.isDesktopSupported() &&
+                                            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+                boolean browse_problem = false;
+
+                if (browse_supported) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(jugglinglab.core.Constants.help_URL));
+                    } catch (Exception e) {
+                        browse_problem = true;
+                    }
+                }
+
+                if (!browse_supported || browse_problem) {
+                    new LabelDialog(this, "Help", "Find online help at " + jugglinglab.core.Constants.help_URL);
+                }
+                break;
         }
 
     }
 
-
-    public void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected static void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
         JFrame frame = null;
         PatternListWindow pw = null;
 
@@ -219,9 +271,90 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         }
     }
 
+    protected static void showAboutBox() {
+        final JFrame aboutBox = new JFrame(guistrings.getString("About_Juggling_Lab"));
+        aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-	public NotationGUI getNotationGUI() { return ng; }
+        JPanel aboutPanel = new JPanel(new BorderLayout());
+        aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
 
+        java.net.URL url = ApplicationWindow.class.getResource("/resources/about.gif");
+        if (url != null) {
+            ImageIcon aboutPicture = new ImageIcon(url, "A lab");
+            if (aboutPicture != null) {
+                JLabel aboutLabel = new JLabel(aboutPicture);
+                aboutPanel.add(aboutLabel, BorderLayout.LINE_START);
+            }
+        }
+
+        JPanel textPanel = new JPanel();
+        aboutPanel.add(textPanel, BorderLayout.LINE_END);
+        GridBagLayout gb = new GridBagLayout();
+        textPanel.setLayout(gb);
+
+        JLabel abouttext1 = new JLabel("Juggling Lab");
+        abouttext1.setFont(new Font("SansSerif", Font.BOLD, 18));
+        textPanel.add(abouttext1);
+        gb.setConstraints(abouttext1, make_constraints(GridBagConstraints.LINE_START,0,0,
+                                                       new Insets(15,15,0,15)));
+
+        String template = guistrings.getString("Version");
+        Object[] arguments = { Constants.version };
+        JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
+        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        textPanel.add(abouttext5);
+        gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
+                                                       new Insets(0,15,0,15)));
+
+        String template2 = guistrings.getString("Copyright_message");
+        Object[] arguments2 = { Constants.year };
+        JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
+        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        textPanel.add(abouttext6);
+        gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
+                                                       new Insets(15,15,15,15)));
+
+        JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
+        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        textPanel.add(abouttext3);
+        gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
+                                                       new Insets(0,15,0,15)));
+
+        JButton okbutton = new JButton(guistrings.getString("OK"));
+        textPanel.add(okbutton);
+        gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
+                                                     new Insets(15,15,15,15)));
+        okbutton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                aboutBox.setVisible(false);
+                aboutBox.dispose();
+            }
+        });
+
+        Locale loc = JLLocale.getLocale();
+        aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
+        aboutBox.pack();
+        aboutBox.setResizable(false);
+        aboutBox.setVisible(true);
+    }
+
+
+    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.anchor = location;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridheight = gbc.gridwidth = 1;
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
+        gbc.insets = ins;
+        gbc.weightx = gbc.weighty = 0.0;
+        return gbc;
+    }
+
+
+    // WindowListener methods
     @Override
 	public void windowOpened(WindowEvent e) { }
     @Override
