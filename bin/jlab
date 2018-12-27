@@ -1,3 +1,18 @@
-#!/bin/sh -f
+#!/bin/bash
+#
+# Command line interface for Juggling Lab
+#
+# This uses the system-installed Java VM, not the version bundled with
+# the Juggling Lab application.
+#
+#
 
-java -cp `dirname $0`/JugglingLab.jar:`dirname $0`/commons-math3-3.6.1.jar JugglingLabCLI $*
+DIR=$(dirname $0)
+
+if [[ $# -ne 0 ]]
+then
+    java -cp "${DIR}/JugglingLab.jar:${DIR}/commons-math3-3.6.1.jar" JugglingLab $*
+else
+    # print a help message if no command line args
+    java -cp "${DIR}/JugglingLab.jar:${DIR}/commons-math3-3.6.1.jar" JugglingLab help
+fi
