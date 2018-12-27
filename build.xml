@@ -64,7 +64,7 @@
     </target>
 
     <!-- Build the Mac OS X application -->
-    <target name="osx" depends="jar" description="Build OS X dmg package">
+    <target name="osx" depends="jar" description="Build OS X application">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
                  classpath="${packaging_resources}:${javafx_ant_jar.osx}" />
@@ -73,7 +73,7 @@
             <fx:resources>
                 <fx:fileset dir="${bin}" includes="JugglingLab.jar" />
             </fx:resources>
-            <fx:bundleArgument arg="mac.dmg.simple" value="false" />
+            <fx:bundleArgument arg="mac.dmg.simple" value="true" />
         </fx:deploy>
     </target>
 
