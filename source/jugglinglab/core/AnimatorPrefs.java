@@ -38,7 +38,7 @@ public class AnimatorPrefs {
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;
-    public static final double  fps_def = 30.0;
+    public static final double  fps_def = 60.0;
     public static final double  slowdown_def = 2.0;
     public static final int     border_def = 0;
     public static final boolean stereo_def = false;
