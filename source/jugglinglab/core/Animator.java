@@ -22,18 +22,15 @@
 
 package jugglinglab.core;
 
-import java.applet.*;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import java.io.*;
-import java.util.*;
-import java.net.*;
-import java.lang.reflect.*;
-import javax.swing.*;
+import java.util.ResourceBundle;
+import javax.swing.JPanel;
 
 import jugglinglab.jml.*;
-import jugglinglab.renderer.*;
+import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
 
@@ -268,7 +265,8 @@ public class Animator extends JPanel implements Runnable {
 
     public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc, boolean startEngine)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-        // try to lay out new pattern first so that if there's an error we won't stop the current animation
+        // try to lay out new pattern first so that if there's an error we
+        // won't stop the current animation
         if ((pat != null) && !pat.isLaidout())
             pat.layoutPattern();
 
@@ -315,7 +313,7 @@ public class Animator extends JPanel implements Runnable {
     }
 
     public void restartJuggle() throws JuggleExceptionUser, JuggleExceptionInternal {
-        restartJuggle(null, null);
+        restartJuggle(null, null, true);
     }
 
     @Override
@@ -705,8 +703,8 @@ public class Animator extends JPanel implements Runnable {
         gw.writeGIF_interactive();
     }
 
-    // Called when the user wants to save a GIF from the command line. This skips the
-    // file dialog box, progress monitor, and separate worker thread.
+    // Called when the user wants to save a GIF from the command line. This skips
+    // the file dialog box, progress monitor, and separate worker thread.
     public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
         writingGIF = true;
 
