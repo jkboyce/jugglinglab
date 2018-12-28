@@ -33,8 +33,8 @@ import org.xml.sax.SAXException;
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
-import jugglinglab.notation.*;
-import jugglinglab.view.*;
+import jugglinglab.notation.Notation;
+import jugglinglab.view.View;
 
 
 public class JugglingLabApplet extends JApplet {
