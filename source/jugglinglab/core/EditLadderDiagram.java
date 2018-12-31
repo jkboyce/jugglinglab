@@ -966,7 +966,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         }
 
         final int pathnum = pn;
-        final int[] animpropnum = animator.getAnimPropNum();
+        final int[] animpropnum = animator.anim.getAnimPropNum();
         final int propnum = animpropnum[pathnum - 1];
         //final int propnum = pat.getPropAssignment(pathnum);
         //		System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
@@ -1479,7 +1479,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         try {
             pat.layoutPattern();
             if (animator != null) {
-                animator.syncToPattern();
+                animator.anim.initAnimator();
                 animator.repaint();
             }
         } catch (JuggleExceptionUser jeu) {
@@ -1516,7 +1516,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         paintBackground(gr);
 
         // Could probably get this permutation from the pattern instead of the animator.
-        int[] animpropnum = animator.getAnimPropNum();
+        int[] animpropnum = animator.anim.getAnimPropNum();
 
         // draw events
         gr.setColor(Color.black);

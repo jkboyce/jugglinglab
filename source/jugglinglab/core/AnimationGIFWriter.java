@@ -46,27 +46,23 @@ public class AnimationGIFWriter extends Thread {
         // errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    AnimationPanel ja = null;
+    Animator anim = null;
     JMLPattern pat = null;
-    jugglinglab.renderer.Renderer ren1 = null, ren2 = null;
     int num_frames;
     double sim_interval_secs;
     long real_interval_millis;
     // OutputStream out = null;
 
+    Runnable cleanup = null;
 
-    public AnimationGIFWriter() {}
 
-    public void setup(AnimationPanel ja, jugglinglab.renderer.Renderer ren1,
-                      jugglinglab.renderer.Renderer ren2, int num_frames,
-                      double sim_interval_secs, long real_interval_millis) {
-        this.ja = ja;
-        this.pat = ja.getPattern();
-        this.ren1 = ren1;
-        this.ren2 = ren2;
-        this.num_frames = num_frames;
-        this.sim_interval_secs = sim_interval_secs;
-        this.real_interval_millis = real_interval_millis;
+    public AnimationGIFWriter(Animator anim) {
+        this.anim = anim;
+
+        this.pat = anim.getPattern();
+        this.num_frames = anim.num_frames;
+        this.sim_interval_secs = anim.sim_interval_secs;
+        this.real_interval_millis = anim.real_interval_millis;
     }
 
     public void writeGIF(OutputStream os, ProgressMonitor pm) throws FileNotFoundException,
@@ -75,7 +71,7 @@ public class AnimationGIFWriter extends Thread {
         // Create the object that will actually do the writing
         GIFAnimWriter gaw = new GIFAnimWriter();
 
-        Dimension dim = ja.getSize();
+        Dimension dim = anim.getDimension();
         int appWidth = dim.width;
         int appHeight = dim.height;
 
@@ -105,14 +101,7 @@ public class AnimationGIFWriter extends Thread {
                     if (pass == 1)
                         gaw.writeDelay((int)(real_interval_millis/10), os);
 
-                    if (ren2 != null) {
-                        this.ren1.drawFrame(time, gifpropnum,
-                                            g.create(0,0,dim.width/2,dim.height), ja);
-                        this.ren2.drawFrame(time, gifpropnum,
-                                            g.create(dim.width/2,0,dim.width/2,dim.height), ja);
-                    } else {
-                        this.ren1.drawFrame(time, gifpropnum, g, ja);
-                    }
+                    anim.drawFrame(time, g, false);
 
                     if (pass == 0)
                         gaw.doColorMap(image);
@@ -126,7 +115,7 @@ public class AnimationGIFWriter extends Thread {
                         SwingUtilities.invokeLater(new PBUpdater(pm, framecount, note));
                         if (pm.isCanceled()) {
                             os.close();
-                            ja.writingGIF = false;
+                            // ja.writingGIF = false;
                             return;
                         }
                     }
@@ -134,20 +123,20 @@ public class AnimationGIFWriter extends Thread {
                     time += sim_interval_secs;
                 }
 
-                ja.advanceProps(gifpropnum);
+                anim.advanceProps();
             }
         }
 
         gaw.writeTrailer(os);
         g.dispose();
         os.close();
-        ja.writingGIF = false;
     }
 
-    public void writeGIF_interactive() {
+    public void writeGIF_interactive(Runnable cleanup) {
         // Do all of the processing in a thread separate from the main event loop.
         // This may be overkill since the processing is usually pretty quick, but
         // it doesn't hurt.
+        this.cleanup = cleanup;
         this.setPriority(Thread.MIN_PRIORITY);
         this.start();
     }
@@ -155,18 +144,14 @@ public class AnimationGIFWriter extends Thread {
     @Override
     public void run() {
         try {
-            boolean origpause = ja.getPaused();
-            ja.setPaused(true);
-
             try {
-                int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(ja);
+                int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(null);
 
                 if (option == JFileChooser.APPROVE_OPTION) {
                     if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                        ja.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         File file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
                         FileOutputStream out = new FileOutputStream(file);
-                        ProgressMonitor pm = new ProgressMonitor(ja,
+                        ProgressMonitor pm = new ProgressMonitor(null,
                                 guistrings.getString("Saving_animated_GIF"), "", 0, 1);
                         this.writeGIF(out, pm);
                     }
@@ -177,14 +162,13 @@ public class AnimationGIFWriter extends Thread {
                 throw new JuggleExceptionInternal("AnimGIFSave IOException: "+ioe.getMessage());
             } catch (IllegalArgumentException iae) {
                 throw new JuggleExceptionInternal("AnimGIFSave IllegalArgumentException: "+iae.getMessage());
-            } finally {
-                ja.setCursor(Cursor.getDefaultCursor());
-                ja.setPaused(origpause);
             }
         } catch (Exception e) {
             jugglinglab.util.ErrorDialog.handleException(e);
         }
-        ja.writingGIF = false;
+
+        if (cleanup != null)
+            SwingUtilities.invokeLater(cleanup);
     }
 }
 

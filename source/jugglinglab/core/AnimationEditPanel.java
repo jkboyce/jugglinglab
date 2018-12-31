@@ -46,7 +46,7 @@ public class AnimationEditPanel extends AnimationPanel {
 
     @Override
     protected void initHandlers() {
-        final JMLPattern fpat = pat;
+        final JMLPattern fpat = anim.pat;
 
         this.addMouseListener(new MouseAdapter() {
 			long lastpress = 0L;
@@ -109,18 +109,18 @@ public class AnimationEditPanel extends AnimationPanel {
                     JMLEvent master = (event.isMaster() ? event : event.getMaster());
                     boolean flipx = (event.getHand() != master.getHand());
 
-                    Coordinate newgc = ren1.getScreenTranslatedCoordinate(
+                    Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
                                                                           event.getGlobalCoordinate(), xdelta, ydelta
                                                                           );
                     if (AnimationEditPanel.this.jc.stereo) {
-                        Coordinate newgc2 = ren2.getScreenTranslatedCoordinate(
+                        Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
                                                                                event.getGlobalCoordinate(), xdelta, ydelta
                                                                                );
                         newgc = Coordinate.add(newgc, newgc2);
                         newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
                     }
 
-                    Coordinate newlc = pat.convertGlobalToLocal(newgc,
+                    Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
                                                               event.getJuggler(), event.getT());
                     Coordinate deltalc = Coordinate.sub(newlc,
                                                         event.getLocalCoordinate());
@@ -178,7 +178,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     AnimationEditPanel.this.cameradrag = true;
                     AnimationEditPanel.this.lastx = AnimationEditPanel.this.startx;
                     AnimationEditPanel.this.lasty = AnimationEditPanel.this.starty;
-                    AnimationEditPanel.this.camangle = AnimationEditPanel.this.ren1.getCameraAngle();
+                    AnimationEditPanel.this.dragcamangle = AnimationEditPanel.this.anim.getCameraAngle();
                 }
 
                 if (!cameradrag)
@@ -188,19 +188,19 @@ public class AnimationEditPanel extends AnimationPanel {
                 int ydelta = me.getY() - AnimationEditPanel.this.lasty;
                 AnimationEditPanel.this.lastx = me.getX();
                 AnimationEditPanel.this.lasty = me.getY();
-                double[] camangle = AnimationEditPanel.this.camangle;
-                camangle[0] += (double)(xdelta) * 0.02;
-                camangle[1] -= (double)(ydelta) * 0.02;
-                if (camangle[1] < 0.0001)
-                    camangle[1] = 0.0001;
-                if (camangle[1] > JLMath.toRad(90.0))
-                    camangle[1] = JLMath.toRad(90.0);
-                while (camangle[0] < 0.0)
-                    camangle[0] += JLMath.toRad(360.0);
-                while (camangle[0] >= JLMath.toRad(360.0))
-                    camangle[0] -= JLMath.toRad(360.0);
+                double[] ca = AnimationEditPanel.this.dragcamangle;
+                ca[0] += (double)(xdelta) * 0.02;
+                ca[1] -= (double)(ydelta) * 0.02;
+                if (ca[1] < 0.0001)
+                    ca[1] = 0.0001;
+                if (ca[1] > JLMath.toRad(90.0))
+                    ca[1] = JLMath.toRad(90.0);
+                while (ca[0] < 0.0)
+                    ca[0] += JLMath.toRad(360.0);
+                while (ca[0] >= JLMath.toRad(360.0))
+                    ca[0] -= JLMath.toRad(360.0);
 
-                AnimationEditPanel.this.setCameraAngle(camangle);
+                AnimationEditPanel.this.anim.setCameraAngle(ca);
 
                 if (event_active)
                     createEventView();
@@ -215,7 +215,9 @@ public class AnimationEditPanel extends AnimationPanel {
                     return;
                 if (!engineStarted)
                     return;
-                syncRenderer();
+                anim.setDimension(AnimationEditPanel.this.getSize());
+                if (event_active)
+                    createEventView();
                 repaint();
             }
         });
@@ -226,7 +228,7 @@ public class AnimationEditPanel extends AnimationPanel {
         double[] result = super.snapCamera(ca);
 
         if (event_active) {
-            double a = JLMath.toRad(pat.getJugglerAngle(event.getJuggler(),
+            double a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(),
                                                         event.getT()));
 
             if (anglediff(a - result[0]) < snapangle)
@@ -248,6 +250,16 @@ public class AnimationEditPanel extends AnimationPanel {
             delta += JLMath.toRad(360.0);
         return Math.abs(delta);
     }
+
+
+    @Override
+    public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
+        super.restartJuggle(pat, newjc);
+        if (event_active)
+            createEventView();
+    }
+
 
     public void setLadderDiagram(LadderDiagram ladder) {
         this.ladder = ladder;
@@ -278,12 +290,12 @@ public class AnimationEditPanel extends AnimationPanel {
             // translate by one pixel and see how far it was in juggler space
         {
             Coordinate c = event.getGlobalCoordinate();
-            Coordinate c2 = ren1.getScreenTranslatedCoordinate(c, 1, 0);
+            Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
             Coordinate dc = Coordinate.sub(c, c2);
             double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
             int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
 
-            int[] center = ren1.getXY(c);
+            int[] center = anim.ren1.getXY(c);
             xlow1 = center[0] - boxhw;
             ylow1 = center[1] - boxhw;
             xhigh1 = center[0] + boxhw;
@@ -292,12 +304,12 @@ public class AnimationEditPanel extends AnimationPanel {
 
             if (this.jc.stereo) {
                 Coordinate c = event.getGlobalCoordinate();
-                Coordinate c2 = ren2.getScreenTranslatedCoordinate(c, 1, 0);
+                Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
                 Coordinate dc = Coordinate.sub(c, c2);
                 double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
                 int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
 
-                int[] center = ren2.getXY(c);
+                int[] center = anim.ren2.getXY(c);
                 xlow2 = center[0] - boxhw;
                 ylow2 = center[1] - boxhw;
                 xhigh2 = center[0] + boxhw;
@@ -306,17 +318,27 @@ public class AnimationEditPanel extends AnimationPanel {
         }
     }
 
+
     @Override
-    protected void syncRenderer() {
-        super.syncRenderer();
-        if (event_active)
-            createEventView();
+    public void paintComponent(Graphics g) {
+        if (exception != null)
+            drawString(exception.getMessage(), g);
+        else if (message != null)
+            drawString(message, g);
+        else if (engineRunning && !writingGIF) {
+            try {
+                anim.drawFrame(getTime(), g, this.cameradrag);
+                drawEvent(g);
+            } catch (JuggleExceptionInternal jei) {
+                this.killAnimationThread();
+                System.out.println(jei.getMessage());
+                System.exit(0);
+                // ErrorDialog.handleException(jei);
+            }
+        }
     }
 
-    @Override
-    protected void drawFrame(double sim_time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
-        super.drawFrame(sim_time, pnum, g);
-
+    protected void drawEvent(Graphics g) throws JuggleExceptionInternal {
         if (!event_active)
             return;
 

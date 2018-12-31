@@ -22,6 +22,7 @@
 
 import java.applet.Applet;
 import java.applet.AudioClip;
+import java.awt.Dimension;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -287,16 +288,16 @@ public class JugglingLab {
             }
 
             try {
-                AnimationPanel ja = new AnimationPanel();
+                Animator anim = new Animator();
                 if (jc == null) {
-                    jc = ja.getAnimationPrefs();
+                    jc = anim.getAnimationPrefs();
                     jc.fps = 30.0;      // default frames per sec for GIFs
                 }
-                ja.setSize(jc.width, jc.height);
-                ja.restartJuggle(pat, jc, false);
+                anim.setDimension(new Dimension(jc.width, jc.height));
+                anim.restartAnimator(pat, jc);
 
                 try {
-                    ja.writeGIFAnim(new FileOutputStream(new File(outpath)));
+                    anim.writeGIFAnim(new FileOutputStream(new File(outpath)));
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionUser("error writing GIF to path " + outpath);
                 } catch (IOException ioe) {
