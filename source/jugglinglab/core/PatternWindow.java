@@ -48,7 +48,7 @@ public class PatternWindow extends JFrame implements WindowListener {
     protected boolean exit_on_close = false;
 
 
-    public PatternWindow(String name, JMLPattern pat, AnimatorPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(name);
 		view = new View(this, jc);
 

@@ -1,4 +1,4 @@
-// AnimatorGIFWriter.java
+// AnimationGIFWriter.java
 //
 // Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
 
@@ -38,7 +38,7 @@ import jugglinglab.util.*;
 import gifwriter.*;
 
 
-public class AnimatorGIFWriter extends Thread {
+public class AnimationGIFWriter extends Thread {
     static ResourceBundle guistrings;
     // static ResourceBundle errorstrings;
     static {
@@ -46,7 +46,7 @@ public class AnimatorGIFWriter extends Thread {
         // errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    Animator ja = null;
+    AnimationPanel ja = null;
     JMLPattern pat = null;
     jugglinglab.renderer.Renderer ren1 = null, ren2 = null;
     int num_frames;
@@ -55,9 +55,9 @@ public class AnimatorGIFWriter extends Thread {
     // OutputStream out = null;
 
 
-    public AnimatorGIFWriter() {}
+    public AnimationGIFWriter() {}
 
-    public void setup(Animator ja, jugglinglab.renderer.Renderer ren1,
+    public void setup(AnimationPanel ja, jugglinglab.renderer.Renderer ren1,
                       jugglinglab.renderer.Renderer ren2, int num_frames,
                       double sim_interval_secs, long real_interval_millis) {
         this.ja = ja;

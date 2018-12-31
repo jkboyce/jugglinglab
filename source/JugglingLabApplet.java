@@ -42,7 +42,7 @@ public class JugglingLabApplet extends JApplet {
     static ResourceBundle errorstrings;
 
     protected JugglingLabPanel jlp = null;
-	protected AnimatorPrefs jc = null;
+	protected AnimationPrefs jc = null;
 
 
     public JugglingLabApplet() {
@@ -104,7 +104,7 @@ public class JugglingLabApplet extends JApplet {
         JugglingLabApplet.errorstrings = JLLocale.getBundle("ErrorStrings");
 
 		try {
-			jc = new AnimatorPrefs();
+			jc = new AnimationPrefs();
 			if (prefs != null)
 				jc.parseInput(prefs);
 

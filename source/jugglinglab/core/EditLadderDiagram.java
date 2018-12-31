@@ -50,7 +50,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final protected double min_throw_time = 0.05;
     static final protected double min_hold_time = 0.05;
 
-    protected AnimatorEdit animator = null;
+    protected AnimationEditPanel animator = null;
 	protected JFrame parent = null;
 
     static final private int STATE_INACTIVE = 0;
@@ -1450,7 +1450,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         return gbc;
     }
 
-    public void setAnimator(AnimatorEdit anim) {
+    public void setAnimationPanel(AnimationEditPanel anim) {
         this.animator = anim;
     }
 
@@ -1470,7 +1470,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         layoutPattern();	// rebuild pattern event list
         createView();		// rebuild ladder diagram
 
-        // reactivate the moved event with AnimatorEdit
+        // reactivate the moved event with AnimationEditPanel
         active_eventitem = getSelectedLadderEvent(x, y);
         animator.activateEvent(active_eventitem.event);
     }
@@ -1565,7 +1565,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 	private int orbits[][] = null;
 	private Color orbitColor[] = null;
 
-	public void restartView(JMLPattern pat, AnimatorPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
+	public void restartView(JMLPattern pat, AnimationPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
 		if (pat != null)
 			this.pat = pat;
 		if (jc != null)
@@ -1573,7 +1573,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
 		if (pat != null) {
 			OrbitLadderDiagram new_ladder = new OrbitLadderDiagram(pat, parent);
-			new_ladder.setAnimator(jae);
+			new_ladder.setAnimation(jae);
 			jae.setLadderDiagram(new_ladder);
 			jae.deactivateEvent();
 			new_ladder.setPreferredSize(new Dimension(ladder_width, 1));

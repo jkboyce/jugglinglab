@@ -1,4 +1,4 @@
-// AnimatorEdit.java
+// AnimationEditPanel.java
 //
 // Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
@@ -29,7 +29,7 @@ import jugglinglab.util.*;
 import jugglinglab.jml.*;
 
 
-public class AnimatorEdit extends Animator {
+public class AnimationEditPanel extends AnimationPanel {
     protected LadderDiagram ladder = null;
     protected boolean event_active = false;
     protected JMLEvent event;
@@ -40,7 +40,7 @@ public class AnimatorEdit extends Animator {
     protected int xstart, ystart, xdelta, ydelta;
 
 
-    public AnimatorEdit() {
+    public AnimationEditPanel() {
         super();
     }
 
@@ -79,7 +79,7 @@ public class AnimatorEdit extends Animator {
                         xdelta = ydelta = 0;
                         return;
                     }
-                    int t = AnimatorEdit.this.getSize().width / 2;
+                    int t = AnimationEditPanel.this.getSize().width / 2;
                     if ((mx >= (xlow2+t)) && (mx <= (xhigh2+t)) && (my >= ylow2) && (my <= yhigh2)) {
                         dragging = true;
                         dragging_left = false;
@@ -91,8 +91,8 @@ public class AnimatorEdit extends Animator {
                 }
 
                 // if we get here, start a reposition of the camera
-                AnimatorEdit.this.startx = me.getX();
-                AnimatorEdit.this.starty = me.getY();
+                AnimationEditPanel.this.startx = me.getX();
+                AnimationEditPanel.this.starty = me.getY();
             }
 
             public void mouseReleased(MouseEvent me) {
@@ -112,7 +112,7 @@ public class AnimatorEdit extends Animator {
                     Coordinate newgc = ren1.getScreenTranslatedCoordinate(
                                                                           event.getGlobalCoordinate(), xdelta, ydelta
                                                                           );
-                    if (AnimatorEdit.this.jc.stereo) {
+                    if (AnimationEditPanel.this.jc.stereo) {
                         Coordinate newgc2 = ren2.getScreenTranslatedCoordinate(
                                                                                event.getGlobalCoordinate(), xdelta, ydelta
                                                                                );
@@ -134,12 +134,12 @@ public class AnimatorEdit extends Animator {
                     EditLadderDiagram eld = (EditLadderDiagram)ladder;
                     eld.activeEventMoved();
                 }
-                AnimatorEdit.this.cameradrag = false;
+                AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
                 if ((me.getX() == startx) && (me.getY() == starty) &&
                     (engine != null) && engine.isAlive())
                     setPaused(!enginePaused);
-                if (AnimatorEdit.this.getPaused())
+                if (AnimationEditPanel.this.getPaused())
                     repaint();
             }
 
@@ -175,20 +175,20 @@ public class AnimatorEdit extends Animator {
                     ydelta = my - ystart;
                     repaint();
                 } else if (!cameradrag) {
-                    AnimatorEdit.this.cameradrag = true;
-                    AnimatorEdit.this.lastx = AnimatorEdit.this.startx;
-                    AnimatorEdit.this.lasty = AnimatorEdit.this.starty;
-                    AnimatorEdit.this.camangle = AnimatorEdit.this.ren1.getCameraAngle();
+                    AnimationEditPanel.this.cameradrag = true;
+                    AnimationEditPanel.this.lastx = AnimationEditPanel.this.startx;
+                    AnimationEditPanel.this.lasty = AnimationEditPanel.this.starty;
+                    AnimationEditPanel.this.camangle = AnimationEditPanel.this.ren1.getCameraAngle();
                 }
 
                 if (!cameradrag)
                     return;
 
-                int xdelta = me.getX() - AnimatorEdit.this.lastx;
-                int ydelta = me.getY() - AnimatorEdit.this.lasty;
-                AnimatorEdit.this.lastx = me.getX();
-                AnimatorEdit.this.lasty = me.getY();
-                double[] camangle = AnimatorEdit.this.camangle;
+                int xdelta = me.getX() - AnimationEditPanel.this.lastx;
+                int ydelta = me.getY() - AnimationEditPanel.this.lasty;
+                AnimationEditPanel.this.lastx = me.getX();
+                AnimationEditPanel.this.lasty = me.getY();
+                double[] camangle = AnimationEditPanel.this.camangle;
                 camangle[0] += (double)(xdelta) * 0.02;
                 camangle[1] -= (double)(ydelta) * 0.02;
                 if (camangle[1] < 0.0001)
@@ -200,11 +200,11 @@ public class AnimatorEdit extends Animator {
                 while (camangle[0] >= JLMath.toRad(360.0))
                     camangle[0] -= JLMath.toRad(360.0);
 
-                AnimatorEdit.this.setCameraAngle(camangle);
+                AnimationEditPanel.this.setCameraAngle(camangle);
 
                 if (event_active)
                     createEventView();
-                if (AnimatorEdit.this.getPaused())
+                if (AnimationEditPanel.this.getPaused())
                     repaint();
             }
         });

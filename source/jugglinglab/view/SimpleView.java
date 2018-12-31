@@ -30,11 +30,11 @@ import jugglinglab.util.*;
 
 
 public class SimpleView extends View {
-    protected Animator ja = null;
+    protected AnimationPanel ja = null;
 
     public SimpleView(Dimension dim) {
-        this.ja = new Animator();
-        ja.setAnimatorPreferredSize(dim);
+        this.ja = new AnimationPanel();
+        ja.setAnimationPanelPreferredSize(dim);
         this.setLayout(new BorderLayout());
         this.add(ja, BorderLayout.CENTER);
     }
@@ -45,22 +45,22 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
     }
 
     @Override
-    public void setAnimatorPreferredSize(Dimension d) {
-        ja.setAnimatorPreferredSize(d);
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        ja.setAnimationPanelPreferredSize(d);
     }
 
     @Override
-    public Dimension getAnimatorSize() {
+    public Dimension getAnimationPanelSize() {
         return ja.getSize(new Dimension());
     }
 
     @Override
-    public Animator getAnimator() { return ja; }
+    public AnimationPanel getAnimationPanel() { return ja; }
 
     @Override
     public void disposeView() { ja.dispose(); }

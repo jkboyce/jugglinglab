@@ -45,8 +45,8 @@ public class PatternList extends JPanel {
     }
 	final static Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
 	final static Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
-	
-	
+
+
 	View animtarget = null;
     String title = null;
     JList<PatternRecord> list = null;
@@ -58,7 +58,7 @@ public class PatternList extends JPanel {
 		makePanel();
 		this.setOpaque(false);
 	}
-	
+
     public PatternList(View target) {
         makePanel();
 		this.setOpaque(false);
@@ -70,7 +70,7 @@ public class PatternList extends JPanel {
         list = new JList<PatternRecord>(model);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setCellRenderer(new PatternCellRenderer());
-        
+
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent lse) {
                 PatternWindow jaw2 = null;
@@ -91,7 +91,7 @@ public class PatternList extends JPanel {
                         if (pat != null) {
                             pat.setTitle(rec.display);
 
-                            AnimatorPrefs ap = new AnimatorPrefs();
+                            AnimationPrefs ap = new AnimationPrefs();
                             if (rec.animprefs != null)
                                 ap.parseInput(rec.animprefs);
 
@@ -122,7 +122,7 @@ public class PatternList extends JPanel {
 	public void setTargetView(View target) {
 		animtarget = target;
 	}
-	
+
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pat) {
         // display = display.trim();
         if (notation != null)
@@ -154,7 +154,7 @@ public class PatternList extends JPanel {
     public void readJML(JMLNode root) throws JuggleExceptionUser {
         if (!root.getNodeType().equalsIgnoreCase("jml"))
             throw new JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"));
-		
+
         loadingversion = root.getAttributes().getAttribute("version");
         if (loadingversion == null)
             loadingversion = "1.0";
@@ -164,7 +164,7 @@ public class PatternList extends JPanel {
             throw new JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"));
 
 		int linenumber = 0;
-		
+
         for (int i = 0; i < listnode.getNumberOfChildren(); i++) {
             JMLNode child = listnode.getChildNode(i);
             if (child.getNodeType().equalsIgnoreCase("title")) {
@@ -180,7 +180,7 @@ public class PatternList extends JPanel {
                 String notation = attr.getAttribute("notation");
 				String anim = null;
 				JMLNode pattern = null;
-				
+
 				if (notation != null) {
 					if (notation.equalsIgnoreCase("JML")) {
 						for (int j = 0; j < child.getNumberOfChildren(); j++) {
@@ -199,7 +199,7 @@ public class PatternList extends JPanel {
 						anim = child.getNodeValue().trim();
 					}
 				}
-				
+
                 addPattern(display, animprefs, notation, anim, pattern);
 			} else
                 throw new JuggleExceptionUser(errorstrings.getString("Error_illegal_tag"));
@@ -227,13 +227,13 @@ public class PatternList extends JPanel {
                 line += " animprefs=\"" + JMLNode.xmlescape(rec.animprefs) + "\"";
             line += ">";
 			write.println(line);
-			
+
 			if ((rec.notation != null) && rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
 				rec.pattern.writeNode(write, 0);
             } else if (rec.anim != null) {
                 write.println(JMLNode.xmlescape(rec.anim));
             }
-			
+
 			write.println("</line>");
         }
         write.println("</patternlist>");
@@ -271,8 +271,8 @@ public class PatternList extends JPanel {
 			this.pattern = pat;
         }
     }
-	
-	
+
+
 	class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
         public Component getListCellRendererComponent(
                         JList<? extends PatternRecord> list,              // the list
@@ -298,5 +298,5 @@ public class PatternList extends JPanel {
             return this;
         }
 	}
-    
+
 }

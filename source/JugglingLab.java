@@ -57,7 +57,7 @@ public class JugglingLab {
         URL bounceurl = JugglingLab.class.getResource("/resources/bounce.au");
         if (bounceurl != null)
             clips[1] = Applet.newAudioClip(bounceurl);
-        Animator.setAudioClips(clips);
+        AnimationPanel.setAudioClips(clips);
 
         URL ballurl = JugglingLab.class.getResource("/resources/ball.png");
         imageProp.setDefaultPropImage(ballurl);
@@ -86,8 +86,8 @@ public class JugglingLab {
     }
 
     // Look in jlargs to see if animator preferences are supplied, and if so then
-    // parse them and return an AnimatorPrefs object. Otherwise (or on error) return null.
-    protected static AnimatorPrefs parse_animprefs() {
+    // parse them and return an AnimationPrefs object. Otherwise (or on error) return null.
+    protected static AnimationPrefs parse_animprefs() {
         for (int i = 0; i < jlargs.size(); i++) {
             if (jlargs.get(i).equalsIgnoreCase("-prefs")) {
                 jlargs.remove(i);
@@ -97,7 +97,7 @@ public class JugglingLab {
                 }
 
                 String prefstring = jlargs.remove(i);
-                AnimatorPrefs jc = new AnimatorPrefs();
+                AnimationPrefs jc = new AnimationPrefs();
                 try {
                     jc.parseInput(prefstring);
                 } catch (JuggleExceptionUser jeu) {
@@ -230,7 +230,7 @@ public class JugglingLab {
         }
 
         String outpath = JugglingLab.parse_outpath();
-        AnimatorPrefs jc = JugglingLab.parse_animprefs();
+        AnimationPrefs jc = JugglingLab.parse_animprefs();
 
         if (firstarg.equals("gen")) {
             // run the siteswap generator
@@ -287,9 +287,9 @@ public class JugglingLab {
             }
 
             try {
-                Animator ja = new Animator();
+                AnimationPanel ja = new AnimationPanel();
                 if (jc == null) {
-                    jc = ja.getAnimatorPrefs();
+                    jc = ja.getAnimationPrefs();
                     jc.fps = 30.0;      // default frames per sec for GIFs
                 }
                 ja.setSize(jc.width, jc.height);

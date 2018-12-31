@@ -1,4 +1,4 @@
-// Animator.java
+// AnimationPanel.java
 //
 // Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
@@ -34,7 +34,7 @@ import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
 
-public class Animator extends JPanel implements Runnable {
+public class AnimationPanel extends JPanel implements Runnable {
     static ResourceBundle guistrings;
     // static ResourceBundle errorstrings;
     static {
@@ -51,7 +51,7 @@ public class Animator extends JPanel implements Runnable {
     public String				message;
 
     protected JMLPattern		pat;
-    protected AnimatorPrefs		jc;
+    protected AnimationPrefs	jc;
     protected jugglinglab.renderer.Renderer	ren1 = null, ren2 = null;
     protected Coordinate		overallmax = null, overallmin = null;
 
@@ -78,16 +78,17 @@ public class Animator extends JPanel implements Runnable {
 
     protected Dimension			prefsize;
 
-    public Animator() {
+    public AnimationPanel() {
         cameradrag = false;
         initHandlers();
 
         camangle = new double[2];
         camangle[0] = JLMath.toRad(0.0);
         camangle[1] = JLMath.toRad(90.0);
+        actualcamangle = new double[2];
         actualcamangle1 = new double[2];
         actualcamangle2 = new double[2];
-		jc = new AnimatorPrefs();
+		jc = new AnimationPrefs();
 
 		outside = true;
 		waspaused = outside_valid = false;
@@ -96,7 +97,7 @@ public class Animator extends JPanel implements Runnable {
     }
 
 
-    public void setAnimatorPreferredSize(Dimension d) {
+    public void setAnimationPanelPreferredSize(Dimension d) {
         prefsize = d;
     }
 
@@ -114,8 +115,8 @@ public class Animator extends JPanel implements Runnable {
     }
 
     public static void setAudioClips(AudioClip[] clips) {
-        Animator.catchclip = clips[0];
-        Animator.bounceclip = clips[1];
+        AnimationPanel.catchclip = clips[0];
+        AnimationPanel.bounceclip = clips[1];
     }
 
     protected void initHandlers() {
@@ -139,8 +140,8 @@ public class Animator extends JPanel implements Runnable {
                 if (!engineStarted)
                     return;
 
-                Animator.this.startx = me.getX();
-                Animator.this.starty = me.getY();
+                AnimationPanel.this.startx = me.getX();
+                AnimationPanel.this.starty = me.getY();
             }
 
             public void mouseReleased(MouseEvent me) {
@@ -148,7 +149,7 @@ public class Animator extends JPanel implements Runnable {
 					return;
                 if (exception != null)
                     return;
-                Animator.this.cameradrag = false;
+                AnimationPanel.this.cameradrag = false;
 
                 if (!engineStarted && (engine != null) && engine.isAlive()) {
                     setPaused(!enginePaused);
@@ -157,9 +158,9 @@ public class Animator extends JPanel implements Runnable {
                 if ((me.getX() == startx) && (me.getY() == starty) &&
 								(engine != null) && engine.isAlive()) {
                     setPaused(!enginePaused);
-					// Animator.this.getParent().dispatchEvent(me);
+					// AnimationPanel.this.getParent().dispatchEvent(me);
 				}
-                if (Animator.this.getPaused())
+                if (AnimationPanel.this.getPaused())
                     repaint();
             }
 
@@ -190,17 +191,17 @@ public class Animator extends JPanel implements Runnable {
                     return;
                 if (!cameradrag) {
                     // return;
-                    Animator.this.cameradrag = true;
-                    Animator.this.lastx = Animator.this.startx;
-                    Animator.this.lasty = Animator.this.starty;
-                    Animator.this.camangle = Animator.this.ren1.getCameraAngle();
+                    AnimationPanel.this.cameradrag = true;
+                    AnimationPanel.this.lastx = AnimationPanel.this.startx;
+                    AnimationPanel.this.lasty = AnimationPanel.this.starty;
+                    AnimationPanel.this.camangle = AnimationPanel.this.ren1.getCameraAngle();
                 }
 
-                int xdelta = me.getX() - Animator.this.lastx;
-                int ydelta = me.getY() - Animator.this.lasty;
-                Animator.this.lastx = me.getX();
-                Animator.this.lasty = me.getY();
-                double[] camangle = Animator.this.camangle;
+                int xdelta = me.getX() - AnimationPanel.this.lastx;
+                int ydelta = me.getY() - AnimationPanel.this.lasty;
+                AnimationPanel.this.lastx = me.getX();
+                AnimationPanel.this.lasty = me.getY();
+                double[] camangle = AnimationPanel.this.camangle;
                 camangle[0] += (double)(xdelta) * 0.02;
                 camangle[1] -= (double)(ydelta) * 0.02;
                 if (camangle[1] < 0.000001)
@@ -212,9 +213,10 @@ public class Animator extends JPanel implements Runnable {
                 while (camangle[0] >= JLMath.toRad(360.0))
                     camangle[0] -= JLMath.toRad(360.0);
 
-                Animator.this.setCameraAngle(camangle);
+                double[] snappedcamangle = snapCamera(camangle);
+                AnimationPanel.this.setCameraAngle(snappedcamangle);
 
-                if (Animator.this.getPaused())
+                if (AnimationPanel.this.getPaused())
                     repaint();
             }
         });
@@ -245,25 +247,28 @@ public class Animator extends JPanel implements Runnable {
         return result;
     }
 
-    protected void setCameraAngle(double[] camangle) {
-        actualcamangle = snapCamera(camangle);
-        while (actualcamangle[0] < 0.0)
-            actualcamangle[0] += JLMath.toRad(360.0);
-        while (actualcamangle[0] >= JLMath.toRad(360.0))
-            actualcamangle[0] -= JLMath.toRad(360.0);
+    protected void setCameraAngle(double[] snappedcamangle) {
+        // actualcamangle = snapCamera(camangle);
+        while (snappedcamangle[0] < 0.0)
+            snappedcamangle[0] += JLMath.toRad(360.0);
+        while (snappedcamangle[0] >= JLMath.toRad(360.0))
+            snappedcamangle[0] -= JLMath.toRad(360.0);
 
         if (jc.stereo) {
-            actualcamangle1[0] = actualcamangle[0] - 0.05;
-            actualcamangle1[1] = actualcamangle[1];
-            ren1.setCameraAngle(actualcamangle1);
-            actualcamangle2[0] = actualcamangle[0] + 0.05;
-            actualcamangle2[1] = actualcamangle[1];
-            ren2.setCameraAngle(actualcamangle2);
-        } else
-            ren1.setCameraAngle(actualcamangle);
+            this.actualcamangle1[0] = snappedcamangle[0] - 0.05;
+            this.actualcamangle1[1] = snappedcamangle[1];
+            this.ren1.setCameraAngle(this.actualcamangle1);
+            this.actualcamangle2[0] = snappedcamangle[0] + 0.05;
+            this.actualcamangle2[1] = snappedcamangle[1];
+            ren2.setCameraAngle(this.actualcamangle2);
+        } else {
+            this.actualcamangle[0] = snappedcamangle[0];
+            this.actualcamangle[1] = snappedcamangle[1];
+            ren1.setCameraAngle(this.actualcamangle);
+        }
     }
 
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc, boolean startEngine)
+    public void restartJuggle(JMLPattern pat, AnimationPrefs newjc, boolean startEngine)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
         // try to lay out new pattern first so that if there's an error we
         // won't stop the current animation
@@ -308,7 +313,7 @@ public class Animator extends JPanel implements Runnable {
         }
     }
 
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartJuggle(JMLPattern pat, AnimationPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
         restartJuggle(pat, newjc, true);
     }
 
@@ -483,11 +488,11 @@ public class Animator extends JPanel implements Runnable {
         if (this.jc.stereo) {
             Dimension d = this.getSize();
             this.ren1.drawFrame(sim_time, pnum,
-                                g.create(0,0,d.width/2,d.height), Animator.this);
+                                g.create(0,0,d.width/2,d.height), AnimationPanel.this);
             this.ren2.drawFrame(sim_time, pnum,
-                                g.create(d.width/2,0,d.width/2,d.height), Animator.this);
+                                g.create(d.width/2,0,d.width/2,d.height), AnimationPanel.this);
         } else {
-            this.ren1.drawFrame(sim_time, pnum, g, Animator.this);
+            this.ren1.drawFrame(sim_time, pnum, g, AnimationPanel.this);
         }
 
         if (!this.cameradrag)
@@ -688,7 +693,7 @@ public class Animator extends JPanel implements Runnable {
 
     public JMLPattern getPattern() { return pat; }
 
-    public AnimatorPrefs getAnimatorPrefs() { return jc; }
+    public AnimationPrefs getAnimationPrefs() { return jc; }
 
     public int[] getAnimPropNum() { return animpropnum; }
 
@@ -698,7 +703,7 @@ public class Animator extends JPanel implements Runnable {
     public void writeGIFAnim() {
         writingGIF = true;
 
-        AnimatorGIFWriter gw = new AnimatorGIFWriter();
+        AnimationGIFWriter gw = new AnimationGIFWriter();
         gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
         gw.writeGIF_interactive();
     }
@@ -708,7 +713,7 @@ public class Animator extends JPanel implements Runnable {
     public void writeGIFAnim(OutputStream out) throws IOException, JuggleExceptionInternal {
         writingGIF = true;
 
-        AnimatorGIFWriter gw = new AnimatorGIFWriter();
+        AnimationGIFWriter gw = new AnimationGIFWriter();
         gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
         gw.writeGIF(out, null);
     }
