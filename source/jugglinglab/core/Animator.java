@@ -705,17 +705,12 @@ public class Animator extends JPanel implements Runnable {
 
     // Called when the user wants to save a GIF from the command line. This skips
     // the file dialog box, progress monitor, and separate worker thread.
-    public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void writeGIFAnim(OutputStream out) throws IOException, JuggleExceptionInternal {
         writingGIF = true;
 
-        try {
-            AnimatorGIFWriter gw = new AnimatorGIFWriter();
-            gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
-            gw.writeGIF(new File(outpath), null);
-        } catch (FileNotFoundException fnfe) {
-            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-        } catch (IOException ioe) {
-            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-        }
+        AnimatorGIFWriter gw = new AnimatorGIFWriter();
+        gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
+        gw.writeGIF(out, null);
     }
+
 }

@@ -294,7 +294,14 @@ public class JugglingLab {
                 }
                 ja.setSize(jc.width, jc.height);
                 ja.restartJuggle(pat, jc, false);
-                ja.writeGIFAnim_CLI(outpath);
+
+                try {
+                    ja.writeGIFAnim(new FileOutputStream(new File(outpath)));
+                } catch (FileNotFoundException fnfe) {
+                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+                } catch (IOException ioe) {
+                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+                }
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
