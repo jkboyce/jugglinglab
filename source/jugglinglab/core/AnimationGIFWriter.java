@@ -59,7 +59,7 @@ public class AnimationGIFWriter extends Thread {
     public AnimationGIFWriter(Animator anim) {
         this.anim = anim;
 
-        this.pat = anim.getPattern();
+        this.pat = anim.pat;
         this.num_frames = anim.num_frames;
         this.sim_interval_secs = anim.sim_interval_secs;
         this.real_interval_millis = anim.real_interval_millis;

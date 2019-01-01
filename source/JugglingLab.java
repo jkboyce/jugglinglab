@@ -297,7 +297,7 @@ public class JugglingLab {
                 anim.restartAnimator(pat, jc);
 
                 try {
-                    anim.writeGIFAnim(new FileOutputStream(new File(outpath)));
+                    anim.writeGIF(new FileOutputStream(new File(outpath)), null);
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionUser("error writing GIF to path " + outpath);
                 } catch (IOException ioe) {

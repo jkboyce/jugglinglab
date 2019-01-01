@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ResourceBundle;
@@ -34,6 +35,8 @@ import java.util.ResourceBundle;
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
+
+import gifwriter.GIFAnimWriter;
 
 
 public class Animator {
@@ -219,9 +222,6 @@ public class Animator {
         }
     }
 
-    public void drawFrame(double sim_time, Graphics g) throws JuggleExceptionInternal {
-        drawFrame(sim_time, g, true);
-    }
 
     public void advanceProps() {
         int[] pnum = this.animpropnum;
@@ -248,7 +248,7 @@ public class Animator {
         invpathperm = pat.getPathPermutation().getInverse();
     }
 
-    protected void findMaxMin() {
+    private void findMaxMin() {
         // the algorithm here could be improved to take into account which props are
         // on which paths.  We may also want to leave room for the rest of the juggler.
         int i;
@@ -336,8 +336,6 @@ public class Animator {
     }
 
 
-    public JMLPattern getPattern() { return pat; }
-
     public int[] getAnimPropNum() { return animpropnum; }
 
     public Color getBackground() { return ren1.getBackground(); }
@@ -347,11 +345,72 @@ public class Animator {
 
     // Called when the user wants to save a GIF from the command line. This skips
     // the file dialog box, progress monitor, and separate worker thread.
-    public void writeGIFAnim(OutputStream out) throws IOException, JuggleExceptionInternal {
-        // writingGIF = true;
+    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
+                IOException, JuggleExceptionInternal {
 
-        AnimationGIFWriter gw = new AnimationGIFWriter(this);
-        gw.writeGIF(out, null);
+        // Create the object that will actually do the writing
+        GIFAnimWriter gaw = new GIFAnimWriter();
+
+        int appWidth = this.dim.width;
+        int appHeight = this.dim.height;
+
+        BufferedImage image = new BufferedImage(appWidth, appHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+
+        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            gifpropnum[i] = pat.getPropAssignment(i+1);
+        int patperiod = pat.getPeriod();
+        int totalframes = patperiod * num_frames * 2;
+        int framecount = 0;
+
+        // loop through the individual frames twice, first to build the
+        // color map and the second to write the GIF frames
+        for (int pass = 0; pass < 2; pass++) {
+            if (pass == 1)
+                gaw.writeHeader(os);
+
+            for (int i = 0; i < patperiod; i++)  {
+                double time = pat.getLoopStartTime();
+
+                for (int j = 0; j < num_frames; j++) {
+                    if (pass == 1)
+                        gaw.writeDelay((int)(real_interval_millis/10), os);
+
+                    this.drawFrame(time, g, false);
+
+                    if (pass == 0)
+                        gaw.doColorMap(image);
+                    else
+                        gaw.writeGIF(image, os);
+
+                    if (wgm != null) {
+                        framecount++;
+                        /*
+                        String note = (pass==0 ? guistrings.getString("Message_GIFsave_color_map") :
+                                guistrings.getString("Message_GIFsave_writing_frame")+" "+(framecount-num_frames)+"/"+num_frames);
+                        */
+                        wgm.update(framecount, totalframes);
+                        if (wgm.isCanceled()) {
+                            os.close();
+                            return;
+                        }
+                    }
+
+                    time += sim_interval_secs;
+                }
+
+                this.advanceProps();
+            }
+        }
+
+        gaw.writeTrailer(os);
+        g.dispose();
+        os.close();
     }
 
+    public interface WriteGIFMonitor {
+        public void update(int step, int steps_total);
+        public boolean isCanceled();
+    }
 }

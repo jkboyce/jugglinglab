@@ -283,9 +283,9 @@ public class View extends JPanel implements ActionListener {
             case FILE_GIFSAVE:
                 if (subview != null) {
                     AnimationPanel ja = subview.getAnimationPanel();
-                    if (!ja.isAnimInited())
+                    if (!ja.isEngineStarted())
                         break;
-                    ja.writeGIFAnim();
+                    ja.writeGIF();
                 }
                 break;
 

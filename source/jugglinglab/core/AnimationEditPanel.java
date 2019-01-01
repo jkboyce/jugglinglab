@@ -372,8 +372,8 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     @Override
-    public void writeGIFAnim() {
+    public void writeGIF() {
         deactivateEvent();       // so we don't draw event box in animated GIF
-        super.writeGIFAnim();
+        super.writeGIF();
     }
 }

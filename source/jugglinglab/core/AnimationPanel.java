@@ -27,7 +27,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ResourceBundle;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
@@ -448,13 +451,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         g.drawString(message, x, y);
     }
 
-    /*
-    public void initAnimation() {
-        anim.initAnimator();
-    }
-    */
-
-    public boolean isAnimInited() { return engineStarted; }
+    public boolean isEngineStarted() { return engineStarted; }
 
     public JMLPattern getPattern() { return anim.pat; }
 
@@ -464,20 +461,84 @@ public class AnimationPanel extends JPanel implements Runnable {
 
 
     // Called when the user selects the "Save as Animated GIF..." menu option
-    public void writeGIFAnim() {
+    public void writeGIF() {
         this.writingGIF = true;
         boolean origpause = this.getPaused();
         this.setPaused(true);
 
-        AnimationGIFWriter gw = new AnimationGIFWriter(anim);
-
-        gw.writeGIF_interactive(new Runnable() {
+        Runnable cleanup = new Runnable() {
             @Override
             public void run() {
                 AnimationPanel.this.setPaused(origpause);
                 AnimationPanel.this.writingGIF = false;
             }
-        });
+        };
+
+        // Do all of the processing in a thread separate from the main event loop.
+        // This may be overkill since the processing is usually pretty quick, but
+        // it doesn't hurt.
+        new GIFWriter(this, cleanup);
     }
+
+
+    private class GIFWriter extends Thread {
+
+        private Component parent = null;
+        private Runnable cleanup = null;
+
+        public GIFWriter(Component parent, Runnable cleanup) {
+            this.parent = parent;
+            this.cleanup = cleanup;
+            this.setPriority(Thread.MIN_PRIORITY);
+            this.start();
+        }
+
+        @Override
+        public void run() {
+            try {
+                try {
+                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(null);
+
+                    if (option == JFileChooser.APPROVE_OPTION) {
+                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
+                            File file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                            FileOutputStream out = new FileOutputStream(file);
+
+                            ProgressMonitor pm = new ProgressMonitor(parent,
+                                    AnimationPanel.guistrings.getString("Saving_animated_GIF"), "", 0, 1);
+                            pm.setMillisToPopup(1000);
+
+                            Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
+                                @Override
+                                public void update(int step, int steps_total) {
+                                    pm.setMaximum(steps_total);
+                                    pm.setProgress(step);
+                                }
+
+                                @Override
+                                public boolean isCanceled() {
+                                    return pm.isCanceled();
+                                }
+
+                            };
+                            anim.writeGIF(out, wgm);
+                        }
+                    }
+                } catch (FileNotFoundException fnfe) {
+                    throw new JuggleExceptionInternal("AnimGIFSave file not found: "+fnfe.getMessage());
+                } catch (IOException ioe) {
+                    throw new JuggleExceptionInternal("AnimGIFSave IOException: "+ioe.getMessage());
+                } catch (IllegalArgumentException iae) {
+                    throw new JuggleExceptionInternal("AnimGIFSave IllegalArgumentException: "+iae.getMessage());
+                }
+            } catch (Exception e) {
+                jugglinglab.util.ErrorDialog.handleException(e);
+            }
+
+            if (cleanup != null)
+                SwingUtilities.invokeLater(cleanup);
+        }
+    }
+
 
 }
