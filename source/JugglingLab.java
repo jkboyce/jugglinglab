@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-import java.applet.Applet;
-import java.applet.AudioClip;
 import java.awt.Dimension;
 import java.io.*;
 import java.net.URL;
@@ -36,7 +34,6 @@ import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.generator.*;
 import jugglinglab.notation.*;
-import jugglinglab.prop.imageProp;
 import jugglinglab.util.*;
 
 
@@ -47,23 +44,6 @@ public class JugglingLab {
         guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-
-
-    public static void loadMediaResources() {
-        // Load sound and graphics resources for later use
-        AudioClip[] clips = new AudioClip[2];
-        URL catchurl = JugglingLab.class.getResource("/resources/catch.au");
-        if (catchurl != null)
-            clips[0] = Applet.newAudioClip(catchurl);
-        URL bounceurl = JugglingLab.class.getResource("/resources/bounce.au");
-        if (bounceurl != null)
-            clips[1] = Applet.newAudioClip(bounceurl);
-        AnimationPanel.setAudioClips(clips);
-
-        URL ballurl = JugglingLab.class.getResource("/resources/ball.png");
-        imageProp.setDefaultPropImage(ballurl);
-    }
-
 
     // command line arguments as an ArrayList that we trim as portions are parsed
     protected static ArrayList<String> jlargs = null;
@@ -201,7 +181,6 @@ public class JugglingLab {
 
         if (run_application) {
             try {
-                JugglingLab.loadMediaResources();
                 new ApplicationWindow("Juggling Lab");
             } catch (JuggleExceptionUser jeu) {
                 new ErrorDialog(null, jeu.getMessage());
@@ -266,7 +245,6 @@ public class JugglingLab {
         if (firstarg.equals("anim")) {
             // open pattern in a window
             try {
-                JugglingLab.loadMediaResources();
                 PatternWindow pw = new PatternWindow(pat.getTitle(), pat, jc);
                 pw.setExitOnClose(true);
             } catch (JuggleExceptionUser jeu) {

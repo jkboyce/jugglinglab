@@ -22,10 +22,12 @@
 
 package jugglinglab.core;
 
+import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URL;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -40,59 +42,52 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static ResourceBundle guistrings;
     // static ResourceBundle errorstrings;
+    static AudioClip catchclip;
+    static AudioClip bounceclip;
+    protected static final double snapangle = JLMath.toRad(15.0);
+
     static {
         guistrings = JLLocale.getBundle("GUIStrings");
         // errorstrings = JLLocale.getBundle("ErrorStrings");
+
+        // load audio resources
+        URL catchurl = AnimationPanel.class.getResource("/resources/catch.au");
+        if (catchurl != null)
+            AnimationPanel.catchclip = Applet.newAudioClip(catchurl);
+        URL bounceurl = AnimationPanel.class.getResource("/resources/bounce.au");
+        if (bounceurl != null)
+            AnimationPanel.bounceclip = Applet.newAudioClip(bounceurl);
     }
 
     protected Animator          anim;
+    protected AnimationPrefs    jc;
 
     protected Thread			engine;
     protected boolean			engineStarted = false;;
     protected boolean			enginePaused = false;
     protected boolean			engineRunning = false;
+    protected double            sim_time;
     public boolean				writingGIF = false;
     public JuggleException		exception;
     public String				message;
 
-    protected AnimationPrefs	jc;
+	protected boolean			waspaused = false;	    // for pause on mouse away
+	protected boolean			outside = true;
+	protected boolean			outside_valid = false;
 
-    protected static AudioClip	catchclip = null, bounceclip = null;
-
-    protected double            sim_time;
-
-
-	protected boolean			waspaused;			// for pause on mouse away
-	protected boolean			outside;
-	protected boolean			outside_valid;
-
-    protected boolean			cameradrag;
+    protected boolean			cameradrag = false;
     protected int				startx, starty, lastx, lasty;
     protected double[]			dragcamangle;
-    protected static final double snapangle = JLMath.toRad(15.0);
 
     protected Dimension			prefsize;
 
 
     public AnimationPanel() {
         this.anim = new Animator();
-
-        cameradrag = false;
-        initHandlers();
-
-        /*
-        camangle = new double[2];
-        camangle[0] = JLMath.toRad(0.0);
-        camangle[1] = JLMath.toRad(90.0);
-        */
-		jc = new AnimationPrefs();
-
-		outside = true;
-		waspaused = outside_valid = false;
-
+		this.jc = new AnimationPrefs();
 		this.setOpaque(true);
+        this.initHandlers();
     }
-
 
     public void setAnimationPanelPreferredSize(Dimension d) {
         prefsize = d;
@@ -111,11 +106,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         return new Dimension(10,10);
     }
 
-
-    public static void setAudioClips(AudioClip[] clips) {
-        AnimationPanel.catchclip = clips[0];
-        AnimationPanel.bounceclip = clips[1];
-    }
 
     protected void initHandlers() {
         this.addMouseListener(new MouseAdapter() {

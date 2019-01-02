@@ -45,10 +45,7 @@ public class JugglingLabApplet extends JApplet {
 	protected AnimationPrefs jc = null;
 
 
-    public JugglingLabApplet() {
-        JugglingLab.loadMediaResources();
-    }
-
+    public JugglingLabApplet() {}
 
     protected void configure_applet() {
 		String config = getParameter("config");
