@@ -149,11 +149,11 @@ public class Animator {
 
         if (this.jc.stereo) {
             this.ren1.drawFrame(sim_time, pnum,
-                                g.create(0,0,this.dim.width/2,this.dim.height), null);
+                                g.create(0, 0, this.dim.width/2, this.dim.height));
             this.ren2.drawFrame(sim_time, pnum,
-                                g.create(this.dim.width/2,0,this.dim.width/2,this.dim.height), null);
+                                g.create(this.dim.width/2, 0, this.dim.width/2, this.dim.height));
         } else {
-            this.ren1.drawFrame(sim_time, pnum, g, null);
+            this.ren1.drawFrame(sim_time, pnum, g);
         }
 
         if (draw_axes) {
@@ -386,10 +386,6 @@ public class Animator {
 
                     if (wgm != null) {
                         framecount++;
-                        /*
-                        String note = (pass==0 ? guistrings.getString("Message_GIFsave_color_map") :
-                                guistrings.getString("Message_GIFsave_writing_frame")+" "+(framecount-num_frames)+"/"+num_frames);
-                        */
                         wgm.update(framecount, totalframes);
                         if (wgm.isCanceled()) {
                             os.close();
@@ -410,7 +406,10 @@ public class Animator {
     }
 
     public interface WriteGIFMonitor {
+        // callback method invoked when a processing step is completed
         public void update(int step, int steps_total);
+
+        // callback method returns true when user wants to cancel
         public boolean isCanceled();
     }
 }

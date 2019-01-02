@@ -22,16 +22,18 @@
 
 package jugglinglab.renderer;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
-import java.lang.reflect.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 
-import jugglinglab.core.*;
-import jugglinglab.jml.*;
-import jugglinglab.util.*;
-import jugglinglab.prop.*;
+import jugglinglab.jml.JMLPattern;
+import jugglinglab.util.Coordinate;
+import jugglinglab.util.JLMath;
+import jugglinglab.util.JuggleExceptionInternal;
+import jugglinglab.prop.Prop;
 
 
 public class Renderer2D extends Renderer {
@@ -159,11 +161,16 @@ public class Renderer2D extends Renderer {
     }
 
     @Override
-    public void drawFrame(double time, int[] pnum, Graphics g, JPanel pan) throws JuggleExceptionInternal {
+    public void drawFrame(double time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
+        // Turn off antialiased rendering of the juggler. It doesn't improve the
+        // appearance and it makes GIF encoding have trouble since we get a lot of
+        // distinct color values.
+        /*
         if (g instanceof Graphics2D) {
             Graphics2D g2 = (Graphics2D)g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
+        */
 
         int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
         // first reset the objects in the object pool
@@ -336,7 +343,7 @@ public class Renderer2D extends Renderer {
                     Image propimage = pr.getProp2DImage(this.zoom, this.cameraangle);
 					if (propimage != null) {
 						Dimension grip = pr.getProp2DGrip(this.zoom);
-						g.drawImage(propimage, x-grip.width, y-grip.height, pan);
+						g.drawImage(propimage, x-grip.width, y-grip.height, null);
 					} /* else {
 						g.setColor(pr.getEditorColor());
 						draw3DProp(ob.object, g);
@@ -389,7 +396,6 @@ public class Renderer2D extends Renderer {
                     g.drawLine(x1, y1, x2, y2);
                     break;
             }
-
 
             // g.setColor(Color.black);
             // g.drawLine(ob.boundingbox.x, ob.boundingbox.y, ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y);
