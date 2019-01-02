@@ -2,7 +2,7 @@
 
 Juggling Lab is an open-source application for creating and animating juggling patterns. Its main goals are to help people learn juggling patterns, and to assist in inventing new ones.
 
-The project site (link tbd) has more information and download links.
+The [project site](http://jugglinglab.org) has more information and download links.
 
 ## The code
 
@@ -24,7 +24,7 @@ Over that long span of time the project has seen contributions from many people,
 - Anselm Heaton – Orbit-finding code, other design suggestions
 - Lewis Jardine – Apache Ant build file, GPL clarifications
 - Ken Matsuoka – JuggleMaster pattern library, used here with his permission
-- Rupert Millard – Implementation of '*' shortcut for synch notation
+- Rupert Millard – Implementation of '*' shortcut for sync notation
 - Herve Nicol – Bug fixes
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
