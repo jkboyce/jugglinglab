@@ -42,6 +42,9 @@ public class mhnPattern {
     protected static double bouncefrac_default = 0.9;
 	protected static String prop_default = "ball";
 
+    // original config string:
+    protected String config;
+
     // input parameters:
     protected String pattern;
     protected double bps = bps_default;
@@ -80,10 +83,10 @@ public class mhnPattern {
     protected void addSymmetry(mhnSymmetry ss) { symmetry.add(ss); }
     protected mhnSymmetry getSymmetry(int i) { return symmetry.get(i); }
 
+
     public void parseInput(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (config.indexOf((int)'=') == -1)	{ // just the pattern
-            pattern = config;
-            return;
+            config = "pattern=" + config;
         }
 
         ParameterList pl = new ParameterList(config);
@@ -135,7 +138,7 @@ public class mhnPattern {
             } catch (NumberFormatException e) {
             }
         }
-		
+
 		if ((temp = pl.getParameter("prop")) != null) {
 			prop = temp;
 		}
@@ -176,6 +179,32 @@ public class mhnPattern {
             }
         }
 
+        this.config = config;
+    }
+
+    // print out the configuration parameters in a standard order
+
+    public String toString() {
+        if (this.config == null)
+            return null;
+
+        ParameterList pl = new ParameterList(this.config);
+        String result = "";
+
+        // write the parameters out in a standard order
+        List<String> keys = Arrays.asList("pattern", "bps", "dwell", "hands", "body",
+                                "gravity", "propdiam", "bouncefrac", "prop", "colors");
+
+        for (String key : keys) {
+            String value = pl.getParameter(key);
+            if (value != null)
+                result += key + "=" + value + ";";
+        }
+
+        if (result.length() > 0)
+            result = result.substring(0, result.length() - 1);
+
+        return result;
     }
 
 }

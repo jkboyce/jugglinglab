@@ -22,39 +22,27 @@
 
 package jugglinglab.core;
 
-import java.applet.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
-import java.util.*;
-import java.net.*;
-import java.lang.reflect.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ResourceBundle;
 
 import jugglinglab.jml.*;
-import jugglinglab.renderer.*;
+import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
+import gifwriter.GIFAnimWriter;
 
-public class Animator extends JPanel implements Runnable {
-    static ResourceBundle guistrings;
-    // static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        // errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
 
-    protected Thread			engine;
-    protected boolean			engineStarted = false;;
-    protected boolean			enginePaused = false;
-    protected boolean			engineRunning = false;
-    public boolean				writingGIF = false;
-    public JuggleException		exception;
-    public String				message;
+public class Animator {
 
     protected JMLPattern		pat;
-    protected AnimatorPrefs		jc;
+    protected AnimationPrefs	jc;
     protected jugglinglab.renderer.Renderer	ren1 = null, ren2 = null;
     protected Coordinate		overallmax = null, overallmin = null;
 
@@ -64,216 +52,28 @@ public class Animator extends JPanel implements Runnable {
     protected double			sim_time;
     protected double			sim_interval_secs;
     protected long				real_interval_millis;
-    protected static AudioClip	catchclip = null, bounceclip = null;
 
-	protected boolean			waspaused;			// for pause on mouse away
-	// protected boolean waspaused_valid = false;
-	protected boolean			outside;
-	protected boolean			outside_valid;
+    protected double[]          camangle;
+    protected double[]			camangle1;     // for stereo display
+    protected double[]			camangle2;
 
-    protected boolean			cameradrag;
-    protected int				startx, starty, lastx, lasty;
-    protected double[]			camangle;
-    protected double[]			actualcamangle;
-    protected double[]			actualcamangle1;
-    protected double[]			actualcamangle2;
-    protected static final double snapangle = JLMath.toRad(15.0);
+    protected Dimension         dim;
 
-    protected Dimension			prefsize;
 
     public Animator() {
-        cameradrag = false;
-        initHandlers();
-
-        camangle = new double[2];
-        camangle[0] = JLMath.toRad(0.0);
-        camangle[1] = JLMath.toRad(90.0);
-        actualcamangle1 = new double[2];
-        actualcamangle2 = new double[2];
-		jc = new AnimatorPrefs();
-
-		outside = true;
-		waspaused = outside_valid = false;
-
-		this.setOpaque(true);
+        this.camangle = new double[2];
+        this.camangle1 = new double[2];
+        this.camangle2 = new double[2];
+		jc = new AnimationPrefs();
     }
 
 
-    public void setAnimatorPreferredSize(Dimension d) {
-        prefsize = d;
-    }
-
-    // override methods in java.awt.Component
-    @Override
-    public Dimension getPreferredSize() {
-		if (prefsize != null)
-			return new Dimension(prefsize);
-		return getMinimumSize();
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-        return new Dimension(10,10);
-    }
-
-    public static void setAudioClips(AudioClip[] clips) {
-        Animator.catchclip = clips[0];
-        Animator.bounceclip = clips[1];
-    }
-
-    protected void initHandlers() {
-        this.addMouseListener(new MouseAdapter() {
-			long lastpress = 0L;
-			long lastenter = 1L;
-
-            public void mousePressed(MouseEvent me) {
-				lastpress = me.getWhen();
-
-				// The following (and the equivalent in mouseReleased()) is a hack to swallow
-				// a mouseclick when the browser stops reporting enter/exit events because the
-				// user has clicked on something else.  The system reports simultaneous enter/press
-				// events when the user mouses down in the component; we want to swallow this as a
-				// click, and just use it to get focus back.
-				if (jc.mousePause && (lastpress == lastenter))
-					return;
-
-                if (exception != null)
-                    return;
-                if (!engineStarted)
-                    return;
-
-                Animator.this.startx = me.getX();
-                Animator.this.starty = me.getY();
-            }
-
-            public void mouseReleased(MouseEvent me) {
-				if (jc.mousePause && (lastpress == lastenter))
-					return;
-                if (exception != null)
-                    return;
-                Animator.this.cameradrag = false;
-
-                if (!engineStarted && (engine != null) && engine.isAlive()) {
-                    setPaused(!enginePaused);
-                    return;
-                }
-                if ((me.getX() == startx) && (me.getY() == starty) &&
-								(engine != null) && engine.isAlive()) {
-                    setPaused(!enginePaused);
-					// Animator.this.getParent().dispatchEvent(me);
-				}
-                if (Animator.this.getPaused())
-                    repaint();
-            }
-
-			public void mouseEntered(MouseEvent me) {
-				lastenter = me.getWhen();
-				if (jc.mousePause /*&& waspaused_valid*/)
-					setPaused(waspaused);
-				outside = false;
-				outside_valid = true;
-			}
-
-			public void mouseExited(MouseEvent me) {
-				if (jc.mousePause) {
-					waspaused = getPaused();
-					// waspaused_valid = true;
-					setPaused(true);
-				}
-				outside = true;
-				outside_valid = true;
-			}
-        });
-
-        this.addMouseMotionListener(new MouseMotionAdapter() {
-            public void mouseDragged(MouseEvent me) {
-                if (exception != null)
-                    return;
-                if (!engineStarted)
-                    return;
-                if (!cameradrag) {
-                    // return;
-                    Animator.this.cameradrag = true;
-                    Animator.this.lastx = Animator.this.startx;
-                    Animator.this.lasty = Animator.this.starty;
-                    Animator.this.camangle = Animator.this.ren1.getCameraAngle();
-                }
-
-                int xdelta = me.getX() - Animator.this.lastx;
-                int ydelta = me.getY() - Animator.this.lasty;
-                Animator.this.lastx = me.getX();
-                Animator.this.lasty = me.getY();
-                double[] camangle = Animator.this.camangle;
-                camangle[0] += (double)(xdelta) * 0.02;
-                camangle[1] -= (double)(ydelta) * 0.02;
-                if (camangle[1] < 0.000001)
-                    camangle[1] = 0.000001;
-                if (camangle[1] > JLMath.toRad(90.0))
-                    camangle[1] = JLMath.toRad(90.0);
-                while (camangle[0] < 0.0)
-                    camangle[0] += JLMath.toRad(360.0);
-                while (camangle[0] >= JLMath.toRad(360.0))
-                    camangle[0] -= JLMath.toRad(360.0);
-
-                Animator.this.setCameraAngle(camangle);
-
-                if (Animator.this.getPaused())
-                    repaint();
-            }
-        });
-
-        this.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                if (exception != null)
-                    return;
-                if (!engineStarted)
-                    return;
-                syncRenderer();
-                repaint();
-            }
-        });
-    }
-
-    protected double[] snapCamera(double[] ca) {
-        double[] result = new double[2];
-        result[0] = ca[0];
-        result[1] = ca[1];
-
-        if (result[1] < snapangle)
-            result[1] = 0.000001;
-        if ((result[1] > (JLMath.toRad(90.0) - snapangle)) /*&& (result[1] < (JLMath.toRad(90.0) + snapangle)) */)
-            result[1] = JLMath.toRad(90.0);
-        // if (result[1] > (JLMath.toRad(180.0) - snapangle))
-        // 	result[1] = JLMath.toRad(179.99999);
-        return result;
-    }
-
-    protected void setCameraAngle(double[] camangle) {
-        actualcamangle = snapCamera(camangle);
-        while (actualcamangle[0] < 0.0)
-            actualcamangle[0] += JLMath.toRad(360.0);
-        while (actualcamangle[0] >= JLMath.toRad(360.0))
-            actualcamangle[0] -= JLMath.toRad(360.0);
-
-        if (jc.stereo) {
-            actualcamangle1[0] = actualcamangle[0] - 0.05;
-            actualcamangle1[1] = actualcamangle[1];
-            ren1.setCameraAngle(actualcamangle1);
-            actualcamangle2[0] = actualcamangle[0] + 0.05;
-            actualcamangle2[1] = actualcamangle[1];
-            ren2.setCameraAngle(actualcamangle2);
-        } else
-            ren1.setCameraAngle(actualcamangle);
-    }
-
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc, boolean startEngine)
+    public void restartAnimator(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-        // try to lay out new pattern first so that if there's an error we won't stop the current animation
+        // try to lay out new pattern first so that if there's an error we
+        // won't stop the current animation
         if ((pat != null) && !pat.isLaidout())
             pat.layoutPattern();
-
-        // stop the current animation thread, if one is running
-        killAnimationThread();
 
         if (pat != null)	this.pat = pat;
         if (newjc != null)	this.jc = newjc;
@@ -289,6 +89,8 @@ public class Animator extends JPanel implements Runnable {
         if (this.jc.stereo)
             ren2.setPattern(this.pat);
 
+        initAnimator();
+
         if (this.pat.getNumberOfJugglers() == 1) {
             this.camangle[0] = JLMath.toRad(0.0);
             this.camangle[1] = JLMath.toRad(90.0);
@@ -296,211 +98,70 @@ public class Animator extends JPanel implements Runnable {
             this.camangle[0] = JLMath.toRad(340.0);
             this.camangle[1] = JLMath.toRad(70.0);
         }
-        setCameraAngle(camangle);
 
-        this.setBackground(ren1.getBackground());
-        syncToPattern();
+        setCameraAngle(camangle);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(this.pat);
-
-        if (startEngine) {
-            engine = new Thread(this);
-            engine.start();
-        }
     }
 
-    public void restartJuggle(JMLPattern pat, AnimatorPrefs newjc) throws JuggleExceptionUser, JuggleExceptionInternal {
-        restartJuggle(pat, newjc, true);
+    public Dimension getDimension() {
+        return this.dim;
     }
 
-    public void restartJuggle() throws JuggleExceptionUser, JuggleExceptionInternal {
-        restartJuggle(null, null);
+    public void setDimension(Dimension dim) {
+        this.dim = dim;
+        if (ren1 != null)
+            syncRenderersToSize();
     }
 
-    @Override
-    public void run()  {		// Called when this object becomes a thread
-        long	real_time_start, real_time_wait;
-
-        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-        engineStarted = false;
-
-		if (jc.mousePause) {
-			waspaused = jc.startPause;
-			// waspaused_valid = outside_valid;
-		}
-
-        try {
-            engineRunning = true;	// ok to start rendering
-
-            if (jc.startPause) {
-                message = guistrings.getString("Message_click_to_start");
-                repaint();
-                enginePaused = true;
-                while (enginePaused && engineRunning) {
-                    synchronized (this) {
-                        try {
-                            wait();
-                        } catch (InterruptedException ie) {
-                        }
-                    }
-                }
-            }
-
-            message = null;
-            // setCameraAngle(camangle);
-
-            real_time_start = System.currentTimeMillis();
-            double oldtime, newtime;
-
-			if (jc.mousePause) {
-				if (outside_valid)
-					setPaused(outside);
-				else
-					setPaused(true);	// assume mouse is outside animator, if not known
-				waspaused = false;
-				// waspaused_valid = true;
-			}
-
-            while (engineRunning)  {
-                setTime(pat.getLoopStartTime());
-                engineStarted = true;
-
-                for (int i = 0; engineRunning &&
-								(getTime() < (pat.getLoopEndTime() - 0.5*sim_interval_secs)); i++) {
-                    repaint();
-                    try {
-                        real_time_wait = real_interval_millis -
-                        (System.currentTimeMillis() - real_time_start);
-                        if (real_time_wait > 0)
-                            Thread.sleep(real_time_wait);
-                        real_time_start = System.currentTimeMillis();
-                    } catch (InterruptedException ie)  {
-                        // What should we do here?
-                        throw new JuggleExceptionInternal("Animator was interrupted");
-                    }
-
-                    while (enginePaused && engineRunning) {
-                        synchronized (this) {
-                            try {
-                                wait();
-                            } catch (InterruptedException ie) {
-                            }
-                        }
-                    }
-
-                    oldtime = getTime();
-                    setTime(getTime() + sim_interval_secs);
-                    newtime = getTime();
-
-                    if (jc.catchSound && (catchclip != null)) {
-                        for (int path = 1; path <= pat.getNumberOfPaths(); path++) {
-                            if (pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                // System.out.println("Caught path "+path);
-                                catchclip.play();
-                            }
-                        }
-                    }
-                    if (jc.bounceSound && (bounceclip != null)) {
-                        for (int path = 1; path <= pat.getNumberOfPaths(); path++) {
-                            if (pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                // System.out.println("Caught path "+path);
-                                bounceclip.play();
-                            }
-                        }
-                    }
-                }
-                advanceProps(animpropnum);
-            }
-        } catch (JuggleException je) {
-            exception = je;
-            repaint();
-        } finally {
-            engineStarted = engineRunning = enginePaused = false;
-            engine = null;	// this is critical as it signals restartJuggle() that exit is occurring
-        }
-        synchronized (this) {
-            notify();	// tell possible thread wait()ing in restartJuggle() that animator thread is exiting
-        }
+    public double[] getCameraAngle() {
+        return this.camangle;
     }
 
-    // stop the current animation thread, if one is running
-    protected synchronized void killAnimationThread() {
-        while ((engine != null) && engine.isAlive()) {
-            setPaused(false);		// get thread out of pause so it can exit
-            engineRunning = false;
-            try {
-                wait();				// wait for notify() from exiting run() method
-            } catch (InterruptedException ie) {
-            }
-        }
+    protected void setCameraAngle(double[] ca) {
+        while (ca[0] < 0.0)
+            ca[0] += JLMath.toRad(360.0);
+        while (ca[0] >= JLMath.toRad(360.0))
+            ca[0] -= JLMath.toRad(360.0);
 
-        engine = null;			// just in case animator doesn't initialize these
-        engineStarted = false;
-        enginePaused = false;
-        engineRunning = false;
-        exception = null;
-        message = null;
-    }
+        this.camangle[0] = ca[0];
+        this.camangle[1] = ca[1];
 
-    public boolean getPaused() { return enginePaused; }
-
-    public synchronized void setPaused(boolean wanttopause) {
-        if ((enginePaused == true) && (wanttopause == false)) {
-            notify();		// wake up wait() in run() method
-        }
-        enginePaused = wanttopause;
-    }
-
-    public double getTime() { return sim_time; };
-
-    public void setTime(double time) {
-        /*		while (time < pat.getLoopStartTime())
-        time += (pat.getLoopEndTime() - pat.getLoopStartTime());
-        while (time > pat.getLoopEndTime())
-        time -= (pat.getLoopEndTime() - pat.getLoopStartTime());
-        */
-        sim_time = time;
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        if (exception != null)
-            drawString(exception.getMessage(), g);
-        else if (message != null)
-            drawString(message, g);
-        else if (engineRunning && !writingGIF) {
-            try {
-                drawFrame(getTime(), animpropnum, g);
-            } catch (JuggleExceptionInternal jei) {
-                this.killAnimationThread();
-                System.out.println(jei.getMessage());
-                System.exit(0);
-                // ErrorDialog.handleException(jei);
-            }
-        }
-    }
-
-    protected void drawFrame(double sim_time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
-        if (this.jc.stereo) {
-            Dimension d = this.getSize();
-            this.ren1.drawFrame(sim_time, pnum,
-                                g.create(0,0,d.width/2,d.height), Animator.this);
-            this.ren2.drawFrame(sim_time, pnum,
-                                g.create(d.width/2,0,d.width/2,d.height), Animator.this);
+        if (jc.stereo) {
+            this.camangle1[0] = ca[0] - 0.05;
+            this.camangle1[1] = ca[1];
+            this.ren1.setCameraAngle(this.camangle1);
+            this.camangle2[0] = ca[0] + 0.05;
+            this.camangle2[1] = ca[1];
+            ren2.setCameraAngle(this.camangle2);
         } else {
-            this.ren1.drawFrame(sim_time, pnum, g, Animator.this);
+            this.camangle1[0] = ca[0];
+            this.camangle1[1] = ca[1];
+            ren1.setCameraAngle(this.camangle1);
+        }
+    }
+
+
+
+    public void drawFrame(double sim_time, Graphics g, boolean draw_axes) throws JuggleExceptionInternal {
+        int[] pnum = this.animpropnum;
+
+        if (this.jc.stereo) {
+            this.ren1.drawFrame(sim_time, pnum,
+                                g.create(0, 0, this.dim.width/2, this.dim.height));
+            this.ren2.drawFrame(sim_time, pnum,
+                                g.create(this.dim.width/2, 0, this.dim.width/2, this.dim.height));
+        } else {
+            this.ren1.drawFrame(sim_time, pnum, g);
         }
 
-        if (!this.cameradrag)
-            return;
+        if (draw_axes) {
+            if (g instanceof Graphics2D) {
+                Graphics2D g2 = (Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            }
 
-        if (g instanceof Graphics2D) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-
-        {
             double[] ca = ren1.getCameraAngle();
             double theta = ca[0];
             double phi = ca[1];
@@ -531,7 +192,7 @@ public class Animator extends JPanel implements Runnable {
             g.drawString("z", zx-2, zy-4);
         }
 
-        if (this.jc.stereo) {
+        if (this.jc.stereo && draw_axes) {
             double[] ca = ren2.getCameraAngle();
             double theta = ca[0];
             double phi = ca[1];
@@ -539,7 +200,7 @@ public class Animator extends JPanel implements Runnable {
             double xya = 30.0;
             double xyb = xya * Math.sin(90.0*0.0174532925194 - phi);
             double zlen = xya * Math.cos(90.0*0.0174532925194 - phi);
-            int cx = 38 + this.getSize().width/2;
+            int cx = 38 + this.dim.width/2;
             int cy = 45;
             int xx = cx + (int)(0.5 - xya * Math.cos(theta));
             int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
@@ -561,32 +222,19 @@ public class Animator extends JPanel implements Runnable {
         }
     }
 
-    protected void drawString(String message, Graphics g) {
-        int x, y, width;
-        Dimension appdim = this.getSize();
-        int appWidth = appdim.width;
-        int appHeight = appdim.height;
-        FontMetrics fm = g.getFontMetrics();
 
-        width = fm.stringWidth(message);
-        x = (appWidth > width) ? (appWidth-width)/2 : 0;
-        y = (appHeight + fm.getHeight()) / 2;
-        g.setColor(Color.white);
-        g.fillRect(0, 0, appWidth, appHeight);
-        g.setColor(Color.black);
-        g.drawString(message, x, y);
-    }
+    public void advanceProps() {
+        int[] pnum = this.animpropnum;
 
-    protected void advanceProps(int[] pnum) {
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
             temppropnum[invpathperm.getMapping(i+1)-1] = pnum[i];
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
             pnum[i] = temppropnum[i];
     }
 
-    public void syncToPattern() {
+    public void initAnimator() {
         findMaxMin();
-        syncRenderer();
+        syncRenderersToSize();
 
         // figure out timing constants; adjust fps to get integer number of frames in loop
         num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) * jc.slowdown * jc.fps);
@@ -600,7 +248,7 @@ public class Animator extends JPanel implements Runnable {
         invpathperm = pat.getPathPermutation().getInverse();
     }
 
-    protected void findMaxMin() {
+    private void findMaxMin() {
         // the algorithm here could be improved to take into account which props are
         // on which paths.  We may also want to leave room for the rest of the juggler.
         int i;
@@ -676,8 +324,9 @@ public class Animator extends JPanel implements Runnable {
         }
     }
 
-    protected void syncRenderer() {
-        Dimension d = this.getSize();
+    private void syncRenderersToSize() {
+        Dimension d = new Dimension(this.dim);
+
         if (this.jc.stereo) {
             d.width /= 2;
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
@@ -686,38 +335,81 @@ public class Animator extends JPanel implements Runnable {
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
     }
 
-    public boolean isAnimInited() { return engineStarted; }
-
-    public JMLPattern getPattern() { return pat; }
-
-    public AnimatorPrefs getAnimatorPrefs() { return jc; }
 
     public int[] getAnimPropNum() { return animpropnum; }
 
-    public void dispose() { killAnimationThread(); }
+    public Color getBackground() { return ren1.getBackground(); }
 
-    // Called when the user selects the "Save as Animated GIF..." menu option
-    public void writeGIFAnim() {
-        writingGIF = true;
+    public AnimationPrefs getAnimationPrefs() { return jc; }
 
-        AnimatorGIFWriter gw = new AnimatorGIFWriter();
-        gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
-        gw.writeGIF_interactive();
+
+    // Called when the user wants to save a GIF from the command line. This skips
+    // the file dialog box, progress monitor, and separate worker thread.
+    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
+                IOException, JuggleExceptionInternal {
+
+        // Create the object that will actually do the writing
+        GIFAnimWriter gaw = new GIFAnimWriter();
+
+        int appWidth = this.dim.width;
+        int appHeight = this.dim.height;
+
+        BufferedImage image = new BufferedImage(appWidth, appHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+
+        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            gifpropnum[i] = pat.getPropAssignment(i+1);
+        int patperiod = pat.getPeriod();
+        int totalframes = patperiod * num_frames * 2;
+        int framecount = 0;
+
+        // loop through the individual frames twice, first to build the
+        // color map and the second to write the GIF frames
+        for (int pass = 0; pass < 2; pass++) {
+            if (pass == 1)
+                gaw.writeHeader(os);
+
+            for (int i = 0; i < patperiod; i++)  {
+                double time = pat.getLoopStartTime();
+
+                for (int j = 0; j < num_frames; j++) {
+                    if (pass == 1)
+                        gaw.writeDelay((int)(real_interval_millis/10), os);
+
+                    this.drawFrame(time, g, false);
+
+                    if (pass == 0)
+                        gaw.doColorMap(image);
+                    else
+                        gaw.writeGIF(image, os);
+
+                    if (wgm != null) {
+                        framecount++;
+                        wgm.update(framecount, totalframes);
+                        if (wgm.isCanceled()) {
+                            os.close();
+                            return;
+                        }
+                    }
+
+                    time += sim_interval_secs;
+                }
+
+                this.advanceProps();
+            }
+        }
+
+        gaw.writeTrailer(os);
+        g.dispose();
+        os.close();
     }
 
-    // Called when the user wants to save a GIF from the command line. This skips the
-    // file dialog box, progress monitor, and separate worker thread.
-    public void writeGIFAnim_CLI(String outpath) throws JuggleExceptionUser, JuggleExceptionInternal {
-        writingGIF = true;
+    public interface WriteGIFMonitor {
+        // callback method invoked when a processing step is completed
+        public void update(int step, int steps_total);
 
-        try {
-            AnimatorGIFWriter gw = new AnimatorGIFWriter();
-            gw.setup(this, ren1, ren2, num_frames, sim_interval_secs, real_interval_millis);
-            gw.writeGIF(new File(outpath), null);
-        } catch (FileNotFoundException fnfe) {
-            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-        } catch (IOException ioe) {
-            throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-        }
+        // callback method returns true when user wants to cancel
+        public boolean isCanceled();
     }
 }

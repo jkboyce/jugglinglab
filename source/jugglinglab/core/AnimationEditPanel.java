@@ -1,4 +1,4 @@
-// AnimatorEdit.java
+// AnimationEditPanel.java
 //
 // Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
@@ -29,7 +29,7 @@ import jugglinglab.util.*;
 import jugglinglab.jml.*;
 
 
-public class AnimatorEdit extends Animator {
+public class AnimationEditPanel extends AnimationPanel {
     protected LadderDiagram ladder = null;
     protected boolean event_active = false;
     protected JMLEvent event;
@@ -40,13 +40,13 @@ public class AnimatorEdit extends Animator {
     protected int xstart, ystart, xdelta, ydelta;
 
 
-    public AnimatorEdit() {
+    public AnimationEditPanel() {
         super();
     }
 
     @Override
     protected void initHandlers() {
-        final JMLPattern fpat = pat;
+        final JMLPattern fpat = anim.pat;
 
         this.addMouseListener(new MouseAdapter() {
 			long lastpress = 0L;
@@ -79,7 +79,7 @@ public class AnimatorEdit extends Animator {
                         xdelta = ydelta = 0;
                         return;
                     }
-                    int t = AnimatorEdit.this.getSize().width / 2;
+                    int t = AnimationEditPanel.this.getSize().width / 2;
                     if ((mx >= (xlow2+t)) && (mx <= (xhigh2+t)) && (my >= ylow2) && (my <= yhigh2)) {
                         dragging = true;
                         dragging_left = false;
@@ -91,8 +91,8 @@ public class AnimatorEdit extends Animator {
                 }
 
                 // if we get here, start a reposition of the camera
-                AnimatorEdit.this.startx = me.getX();
-                AnimatorEdit.this.starty = me.getY();
+                AnimationEditPanel.this.startx = me.getX();
+                AnimationEditPanel.this.starty = me.getY();
             }
 
             public void mouseReleased(MouseEvent me) {
@@ -109,18 +109,18 @@ public class AnimatorEdit extends Animator {
                     JMLEvent master = (event.isMaster() ? event : event.getMaster());
                     boolean flipx = (event.getHand() != master.getHand());
 
-                    Coordinate newgc = ren1.getScreenTranslatedCoordinate(
+                    Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
                                                                           event.getGlobalCoordinate(), xdelta, ydelta
                                                                           );
-                    if (AnimatorEdit.this.jc.stereo) {
-                        Coordinate newgc2 = ren2.getScreenTranslatedCoordinate(
+                    if (AnimationEditPanel.this.jc.stereo) {
+                        Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
                                                                                event.getGlobalCoordinate(), xdelta, ydelta
                                                                                );
                         newgc = Coordinate.add(newgc, newgc2);
                         newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
                     }
 
-                    Coordinate newlc = pat.convertGlobalToLocal(newgc,
+                    Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
                                                               event.getJuggler(), event.getT());
                     Coordinate deltalc = Coordinate.sub(newlc,
                                                         event.getLocalCoordinate());
@@ -134,12 +134,12 @@ public class AnimatorEdit extends Animator {
                     EditLadderDiagram eld = (EditLadderDiagram)ladder;
                     eld.activeEventMoved();
                 }
-                AnimatorEdit.this.cameradrag = false;
+                AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
                 if ((me.getX() == startx) && (me.getY() == starty) &&
                     (engine != null) && engine.isAlive())
                     setPaused(!enginePaused);
-                if (AnimatorEdit.this.getPaused())
+                if (AnimationEditPanel.this.getPaused())
                     repaint();
             }
 
@@ -175,36 +175,36 @@ public class AnimatorEdit extends Animator {
                     ydelta = my - ystart;
                     repaint();
                 } else if (!cameradrag) {
-                    AnimatorEdit.this.cameradrag = true;
-                    AnimatorEdit.this.lastx = AnimatorEdit.this.startx;
-                    AnimatorEdit.this.lasty = AnimatorEdit.this.starty;
-                    AnimatorEdit.this.camangle = AnimatorEdit.this.ren1.getCameraAngle();
+                    AnimationEditPanel.this.cameradrag = true;
+                    AnimationEditPanel.this.lastx = AnimationEditPanel.this.startx;
+                    AnimationEditPanel.this.lasty = AnimationEditPanel.this.starty;
+                    AnimationEditPanel.this.dragcamangle = AnimationEditPanel.this.anim.getCameraAngle();
                 }
 
                 if (!cameradrag)
                     return;
 
-                int xdelta = me.getX() - AnimatorEdit.this.lastx;
-                int ydelta = me.getY() - AnimatorEdit.this.lasty;
-                AnimatorEdit.this.lastx = me.getX();
-                AnimatorEdit.this.lasty = me.getY();
-                double[] camangle = AnimatorEdit.this.camangle;
-                camangle[0] += (double)(xdelta) * 0.02;
-                camangle[1] -= (double)(ydelta) * 0.02;
-                if (camangle[1] < 0.0001)
-                    camangle[1] = 0.0001;
-                if (camangle[1] > JLMath.toRad(90.0))
-                    camangle[1] = JLMath.toRad(90.0);
-                while (camangle[0] < 0.0)
-                    camangle[0] += JLMath.toRad(360.0);
-                while (camangle[0] >= JLMath.toRad(360.0))
-                    camangle[0] -= JLMath.toRad(360.0);
+                int xdelta = me.getX() - AnimationEditPanel.this.lastx;
+                int ydelta = me.getY() - AnimationEditPanel.this.lasty;
+                AnimationEditPanel.this.lastx = me.getX();
+                AnimationEditPanel.this.lasty = me.getY();
+                double[] ca = AnimationEditPanel.this.dragcamangle;
+                ca[0] += (double)(xdelta) * 0.02;
+                ca[1] -= (double)(ydelta) * 0.02;
+                if (ca[1] < 0.0001)
+                    ca[1] = 0.0001;
+                if (ca[1] > JLMath.toRad(90.0))
+                    ca[1] = JLMath.toRad(90.0);
+                while (ca[0] < 0.0)
+                    ca[0] += JLMath.toRad(360.0);
+                while (ca[0] >= JLMath.toRad(360.0))
+                    ca[0] -= JLMath.toRad(360.0);
 
-                AnimatorEdit.this.setCameraAngle(camangle);
+                AnimationEditPanel.this.anim.setCameraAngle(ca);
 
                 if (event_active)
                     createEventView();
-                if (AnimatorEdit.this.getPaused())
+                if (AnimationEditPanel.this.getPaused())
                     repaint();
             }
         });
@@ -215,7 +215,9 @@ public class AnimatorEdit extends Animator {
                     return;
                 if (!engineStarted)
                     return;
-                syncRenderer();
+                anim.setDimension(AnimationEditPanel.this.getSize());
+                if (event_active)
+                    createEventView();
                 repaint();
             }
         });
@@ -226,7 +228,7 @@ public class AnimatorEdit extends Animator {
         double[] result = super.snapCamera(ca);
 
         if (event_active) {
-            double a = JLMath.toRad(pat.getJugglerAngle(event.getJuggler(),
+            double a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(),
                                                         event.getT()));
 
             if (anglediff(a - result[0]) < snapangle)
@@ -248,6 +250,16 @@ public class AnimatorEdit extends Animator {
             delta += JLMath.toRad(360.0);
         return Math.abs(delta);
     }
+
+
+    @Override
+    public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
+        super.restartJuggle(pat, newjc);
+        if (event_active)
+            createEventView();
+    }
+
 
     public void setLadderDiagram(LadderDiagram ladder) {
         this.ladder = ladder;
@@ -278,12 +290,12 @@ public class AnimatorEdit extends Animator {
             // translate by one pixel and see how far it was in juggler space
         {
             Coordinate c = event.getGlobalCoordinate();
-            Coordinate c2 = ren1.getScreenTranslatedCoordinate(c, 1, 0);
+            Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
             Coordinate dc = Coordinate.sub(c, c2);
             double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
             int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
 
-            int[] center = ren1.getXY(c);
+            int[] center = anim.ren1.getXY(c);
             xlow1 = center[0] - boxhw;
             ylow1 = center[1] - boxhw;
             xhigh1 = center[0] + boxhw;
@@ -292,12 +304,12 @@ public class AnimatorEdit extends Animator {
 
             if (this.jc.stereo) {
                 Coordinate c = event.getGlobalCoordinate();
-                Coordinate c2 = ren2.getScreenTranslatedCoordinate(c, 1, 0);
+                Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
                 Coordinate dc = Coordinate.sub(c, c2);
                 double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
                 int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
 
-                int[] center = ren2.getXY(c);
+                int[] center = anim.ren2.getXY(c);
                 xlow2 = center[0] - boxhw;
                 ylow2 = center[1] - boxhw;
                 xhigh2 = center[0] + boxhw;
@@ -306,17 +318,27 @@ public class AnimatorEdit extends Animator {
         }
     }
 
+
     @Override
-    protected void syncRenderer() {
-        super.syncRenderer();
-        if (event_active)
-            createEventView();
+    public void paintComponent(Graphics g) {
+        if (exception != null)
+            drawString(exception.getMessage(), g);
+        else if (message != null)
+            drawString(message, g);
+        else if (engineRunning && !writingGIF) {
+            try {
+                anim.drawFrame(getTime(), g, this.cameradrag);
+                drawEvent(g);
+            } catch (JuggleExceptionInternal jei) {
+                this.killAnimationThread();
+                System.out.println(jei.getMessage());
+                System.exit(0);
+                // ErrorDialog.handleException(jei);
+            }
+        }
     }
 
-    @Override
-    protected void drawFrame(double sim_time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
-        super.drawFrame(sim_time, pnum, g);
-
+    protected void drawEvent(Graphics g) throws JuggleExceptionInternal {
         if (!event_active)
             return;
 
@@ -350,8 +372,8 @@ public class AnimatorEdit extends Animator {
     }
 
     @Override
-    public void writeGIFAnim() {
+    public void writeGIF() {
         deactivateEvent();       // so we don't draw event box in animated GIF
-        super.writeGIFAnim();
+        super.writeGIF();
     }
 }

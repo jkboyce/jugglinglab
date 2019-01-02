@@ -179,9 +179,9 @@ public class NotationGUI extends JPanel implements ActionListener {
                             pat.setTitle(pat.getTitle() + " " + handsname);
 
                         if (animtarget != null)
-                            animtarget.restartView(pat, new AnimatorPrefs());
+                            animtarget.restartView(pat, new AnimationPrefs());
                         else
-                            jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimatorPrefs());
+                            jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
                     } catch (JuggleExceptionUser je) {
                         if (jaw2 != null)
                             jaw2.dispose();

@@ -54,13 +54,13 @@ pattern=731241
 pattern=6316131
 </line>
 <line display="51 (shower)" notation="siteswap">
-pattern=51;tps=5.0;hands=(25)(12.5).(12.5)(25).
+pattern=51;bps=5.0;hands=(25)(12.5).(12.5)(25).
 </line>
 <line display="7131 (high-low)" notation="siteswap">
-pattern=7131;tps=5.0;hands=(25)(12.5).(12.5)(25).
+pattern=7131;bps=5.0;hands=(25)(12.5).(12.5)(25).
 </line>
 <line display="913131" notation="siteswap">
-pattern=913131;tps=5.0;hands=(25)(12.5).(12.5)(25).
+pattern=913131;bps=5.0;hands=(25)(12.5).(12.5)(25).
 </line>
 <line display="55050 (the snake)" notation="siteswap">
 pattern=55050
@@ -79,7 +79,7 @@ pattern=71701701
 </line>
 <line display=""/>
 <line display="(4,2x)(2x,4) (box, or seesaw)" notation="siteswap">
-pattern=(4,2x)(2x,4);tps=4.0;hands=(25)(25).(5)(25).(5)(25).(25)(25).
+pattern=(4,2x)(2x,4);bps=4.0;hands=(25)(25).(5)(25).(5)(25).(25)(25).
 </line>
 <line display=""/>
 <line display=""/>

@@ -28,8 +28,8 @@ import jugglinglab.util.*;
 
 
 public class siteswapPattern extends mhnPattern {
+    protected String config = null;
     protected boolean oddperiod = false;
-
 
     // only works after parsePattern() is called:
     protected int getNorepPeriod() {
@@ -38,13 +38,17 @@ public class siteswapPattern extends mhnPattern {
 
     @Override
     public void parseInput(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1)	// just the pattern
-            pattern = config;
-        else {
-            super.parseInput(config);		// parse params common to all MHN notations
-            // parseLegacyParameters(config);	// parse legacy JuggleAnim params
-        }
+        super.parseInput(config);		// parse params common to all MHN notations
+        // parseLegacyParameters(config);	// parse legacy JuggleAnim params
+
+        this.config = config;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
 
     /*
     protected void parseLegacyParameters(String config) throws JuggleExceptionUser, JuggleExceptionInternal {

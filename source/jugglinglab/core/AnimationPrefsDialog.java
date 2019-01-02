@@ -1,4 +1,4 @@
-// AnimatorPrefsDialog.java
+// AnimationPrefsDialog.java
 //
 // Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
 
@@ -31,7 +31,7 @@ import java.util.*;
 import jugglinglab.util.*;
 
 
-public class AnimatorPrefsDialog extends JDialog {
+public class AnimationPrefsDialog extends JDialog {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
@@ -43,13 +43,13 @@ public class AnimatorPrefsDialog extends JDialog {
     protected JCheckBox 	cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;
     protected JButton 		but_cancel, but_ok;
 
-    protected AnimatorPrefs newjc;
+    protected AnimationPrefs newjc;
     //	protected boolean finished = false;
 
     protected final static int border = 10;
 
 
-    public AnimatorPrefsDialog(JFrame parent) {
+    public AnimationPrefsDialog(JFrame parent) {
         // set up dialog
         super(parent, guistrings.getString("Animation_Preferences"), true);
 
@@ -128,7 +128,7 @@ public class AnimatorPrefsDialog extends JDialog {
 
                 setVisible(false);
                 // read out prefs
-                newjc = new AnimatorPrefs(newjc);	// clone old controls
+                newjc = new AnimationPrefs(newjc);	// clone old controls
 
                 try {
                     tempint = Integer.parseInt(tf_width.getText());
@@ -136,7 +136,7 @@ public class AnimatorPrefsDialog extends JDialog {
                 } catch (NumberFormatException e) {
                     String template = errorstrings.getString("Error_number_format");
                     Object[] arguments = { "width" };
-                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                    new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempint = Integer.parseInt(tf_height.getText());
@@ -144,7 +144,7 @@ public class AnimatorPrefsDialog extends JDialog {
                 } catch (NumberFormatException e) {
                     String template = errorstrings.getString("Error_number_format");
                     Object[] arguments = { "height" };
-                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                    new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempdouble = Double.valueOf(tf_fps.getText()).doubleValue();
@@ -152,7 +152,7 @@ public class AnimatorPrefsDialog extends JDialog {
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
 					Object[] arguments = { "fps" };
-                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                    new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempdouble = Double.valueOf(tf_slowdown.getText()).doubleValue();
@@ -160,7 +160,7 @@ public class AnimatorPrefsDialog extends JDialog {
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
 					Object[] arguments = { "slowdown" };
-                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                    new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempint = Integer.parseInt(tf_border.getText());
@@ -168,7 +168,7 @@ public class AnimatorPrefsDialog extends JDialog {
                 } catch (NumberFormatException e) {
 					String template = errorstrings.getString("Error_number_format");
 					Object[] arguments = { "border" };
-                    new ErrorDialog(AnimatorPrefsDialog.this, MessageFormat.format(template, arguments));
+                    new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
 
                 newjc.startPause = cb_paused.isSelected();
@@ -230,7 +230,7 @@ public class AnimatorPrefsDialog extends JDialog {
         return gbc;
     }
 
-    public AnimatorPrefs getPrefs(AnimatorPrefs oldjc) {
+    public AnimationPrefs getPrefs(AnimationPrefs oldjc) {
         newjc = oldjc;
 
         tf_width.setText(Integer.toString(oldjc.width));

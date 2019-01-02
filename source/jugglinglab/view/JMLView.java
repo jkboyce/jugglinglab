@@ -39,7 +39,7 @@ import jugglinglab.util.*;
 public class JMLView extends View implements DocumentListener {
     protected boolean isdirty = false;
 
-    protected Animator ja = null;
+    protected AnimationPanel ja = null;
     protected JSplitPane jsp = null;
     protected JTextArea ta = null;
     protected JButton compile = null;
@@ -50,8 +50,8 @@ public class JMLView extends View implements DocumentListener {
     public JMLView(Dimension dim) {
         this.setLayout(new BorderLayout());
 
-        this.ja = new Animator();
-        ja.setAnimatorPreferredSize(dim);
+        this.ja = new AnimationPanel();
+        ja.setAnimationPanelPreferredSize(dim);
 
         this.ta = new JTextArea();
         this.ta.getDocument().addDocumentListener(this);
@@ -115,7 +115,7 @@ public class JMLView extends View implements DocumentListener {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimatorPrefs c) {
+    public void restartView(JMLPattern p, AnimationPrefs c) {
         try {
             ja.restartJuggle(p, c);
             updateTextArea();
@@ -133,18 +133,18 @@ public class JMLView extends View implements DocumentListener {
     }
 
     @Override
-    public void setAnimatorPreferredSize(Dimension d) {
-        ja.setAnimatorPreferredSize(d);
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        ja.setAnimationPanelPreferredSize(d);
         jsp.resetToPreferredSizes();
     }
 
     @Override
-    public Dimension getAnimatorSize() {
+    public Dimension getAnimationPanelSize() {
         return ja.getSize(new Dimension());
     }
 
     @Override
-    public Animator getAnimator() { return ja; }
+    public AnimationPanel getAnimationPanel() { return ja; }
 
     @Override
     public void disposeView() { ja.dispose(); }

@@ -42,18 +42,18 @@ public class View extends JPanel implements ActionListener {
     }
 
 	protected JFrame parent = null;
-    protected AnimatorPrefs jc = null;
+    protected AnimationPrefs jc = null;
     protected JMLPattern pat = null;
     protected View subview = null;
 
 	public View() {}
 
-	public View(JFrame p, AnimatorPrefs c) {
+	public View(JFrame p, AnimationPrefs c) {
 		this.setParent(p);
         if (c != null)
             this.jc = c;
         else
-            this.jc = new AnimatorPrefs();
+            this.jc = new AnimationPrefs();
 	}
 
 	protected void setParent(JFrame p) {
@@ -65,7 +65,7 @@ public class View extends JPanel implements ActionListener {
 			subview.restartView();
 	}
     // In the following, a null argument means no update for that item
-    public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (p != null)
             this.pat = p;
         if (c != null)
@@ -75,21 +75,21 @@ public class View extends JPanel implements ActionListener {
 			subview.restartView(p, c);
 	}
 
-    public void setAnimatorPreferredSize(Dimension d) {
+    public void setAnimationPanelPreferredSize(Dimension d) {
         if (subview != null)
-            subview.setAnimatorPreferredSize(d);
+            subview.setAnimationPanelPreferredSize(d);
     }
 
-    public Dimension getAnimatorSize() {
+    public Dimension getAnimationPanelSize() {
 		if (subview != null)
-			return subview.getAnimatorSize();
+			return subview.getAnimationPanelSize();
 		return null;
 	}
 
     // used by the animated GIF saver
-    public Animator getAnimator() {
+    public AnimationPanel getAnimationPanel() {
         if (subview != null)
-            return subview.getAnimator();
+            return subview.getAnimationPanel();
         return null;
     }
 
@@ -282,10 +282,10 @@ public class View extends JPanel implements ActionListener {
 
             case FILE_GIFSAVE:
                 if (subview != null) {
-                    Animator ja = subview.getAnimator();
-                    if (!ja.isAnimInited())
+                    AnimationPanel ja = subview.getAnimationPanel();
+                    if (!ja.isEngineStarted())
                         break;
-                    ja.writeGIFAnim();
+                    ja.writeGIF();
                 }
                 break;
 
@@ -300,19 +300,19 @@ public class View extends JPanel implements ActionListener {
                 break;
 
             case VIEW_ANIMPREFS:
-                AnimatorPrefsDialog japd = new AnimatorPrefsDialog(parent);
+                AnimationPrefsDialog japd = new AnimationPrefsDialog(parent);
 
                 if (subview != null) {
-                    Dimension animsize = subview.getAnimatorSize();
+                    Dimension animsize = subview.getAnimationPanelSize();
                     this.jc.width = animsize.width;
                     this.jc.height = animsize.height;
                 }
 
-                AnimatorPrefs newjc = japd.getPrefs(this.jc);
+                AnimationPrefs newjc = japd.getPrefs(this.jc);
 
                 if (newjc.width != this.jc.width || newjc.height != this.jc.height) {
                     // user changed the width and/or height
-                    setAnimatorPreferredSize(new Dimension(newjc.width, newjc.height));
+                    setAnimationPanelPreferredSize(new Dimension(newjc.width, newjc.height));
                     if (parent != null)
                         parent.pack();
                 }
@@ -348,7 +348,7 @@ public class View extends JPanel implements ActionListener {
         Dimension animsize = null;
 
         if (subview != null) {
-            animsize = subview.getAnimatorSize();
+            animsize = subview.getAnimationPanelSize();
             pat = subview.getPattern();  // retrieve possibly edited pattern from old view
             paused = subview.getPaused();
 			remove(subview);             // JPanel method

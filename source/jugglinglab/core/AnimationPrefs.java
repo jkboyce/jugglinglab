@@ -1,4 +1,4 @@
-// AnimatorPrefs.java
+// AnimationPrefs.java
 //
 // Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
 
@@ -28,7 +28,7 @@ import jugglinglab.util.*;
 import jugglinglab.jml.*;
 
 
-public class AnimatorPrefs {
+public class AnimationPrefs {
     // static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
@@ -38,7 +38,7 @@ public class AnimatorPrefs {
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;
-    public static final double  fps_def = 30.0;
+    public static final double  fps_def = 60.0;
     public static final double  slowdown_def = 2.0;
     public static final int     border_def = 0;
     public static final boolean stereo_def = false;
@@ -58,9 +58,9 @@ public class AnimatorPrefs {
     public boolean	catchSound = catchSound_def;
     public boolean	bounceSound = bounceSound_def;
 
-    public AnimatorPrefs() { super(); }
+    public AnimationPrefs() { super(); }
 
-    public AnimatorPrefs(AnimatorPrefs jc) {
+    public AnimationPrefs(AnimationPrefs jc) {
         if (jc.width > 0)           this.width = jc.width;
         if (jc.height > 0)          this.height = jc.height;
         if (jc.slowdown >= 0.0)		this.slowdown = jc.slowdown;

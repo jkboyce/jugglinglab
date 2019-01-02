@@ -31,7 +31,7 @@ import jugglinglab.util.*;
 
 
 public class SelectionView extends View {
-	protected Animator[] ja = null;
+	protected AnimationPanel[] ja = null;
 	protected Mutator mutator = null;
 	protected Dimension dtemp = null;
 
@@ -75,10 +75,10 @@ public class SelectionView extends View {
 		};
 
 		pleft.setLayout(new GridLayout(3,3));
-        this.ja = new Animator[9];
+        this.ja = new AnimationPanel[9];
 		for (int i = 0; i < 9; i++) {
-			ja[i] = new Animator();
-			ja[i].setAnimatorPreferredSize(dim);
+			ja[i] = new AnimationPanel();
+			ja[i].setAnimationPanelPreferredSize(dim);
 			pleft.add(ja[i]);
 		}
 
@@ -144,7 +144,7 @@ public class SelectionView extends View {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
 		ja[4].restartJuggle(p, c);
         for (int i = 0; i < 9; i++) {
 			if (i != 4) {
@@ -155,18 +155,18 @@ public class SelectionView extends View {
     }
 
     @Override
-    public void setAnimatorPreferredSize(Dimension d) {
+    public void setAnimationPanelPreferredSize(Dimension d) {
         for (int i = 0; i < 9; i++)
-            ja[i].setAnimatorPreferredSize(d);
+            ja[i].setAnimationPanelPreferredSize(d);
     }
 
     @Override
-    public Dimension getAnimatorSize() {
+    public Dimension getAnimationPanelSize() {
         return ja[4].getSize(new Dimension());
     }
 
     @Override
-    public Animator getAnimator() { return ja[4]; }
+    public AnimationPanel getAnimationPanel() { return ja[4]; }
 
     @Override
     public void disposeView() {

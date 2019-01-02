@@ -1,6 +1,6 @@
 // JugglingLabPanel.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -23,24 +23,18 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.net.*;
-import java.util.*;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import jugglinglab.notation.*;
 import jugglinglab.util.*;
-import jugglinglab.view.*;
+import jugglinglab.view.View;
+
+
+// Note this class is currently only used by JugglingLabApplet.
 
 
 public class JugglingLabPanel extends JPanel {
-    /*
-	static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
-	*/
 
 	protected NotationGUI ng = null;
     protected View view = null;
@@ -88,6 +82,5 @@ public class JugglingLabPanel extends JPanel {
 		}
 	}
 
-	public NotationGUI getNotationGUI() { return ng; }
 	public View getView() { return view; }
 }

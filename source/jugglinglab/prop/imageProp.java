@@ -27,7 +27,6 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.IOException;
-// import java.lang.reflect.*;
 import java.text.MessageFormat;
 import javax.imageio.ImageIO;
 
@@ -37,7 +36,11 @@ import jugglinglab.core.*;
 
 
 public class imageProp extends Prop {
-	protected static URL url_default = null;
+    static URL image_url_default;
+    static {
+        image_url_default = imageProp.class.getResource("/resources/ball.png");
+    }
+
 	protected URL url;
 	protected BufferedImage image = null;
 	protected BufferedImage scaled_image = null;
@@ -51,16 +54,12 @@ public class imageProp extends Prop {
 	private double last_zoom = 0;
 
 	public imageProp() throws JuggleExceptionUser {
-        if (url_default == null)
+        if (image_url_default == null)
             throw new JuggleExceptionUser("imageProp error: Default image not set");
-		this.url = url_default;
+		this.url = image_url_default;
 		loadImage();
 		rescaleImage(1.0);
 	}
-
-    public static void setDefaultPropImage(URL u) {
-        url_default = u;
-    }
 
 	private void loadImage() throws JuggleExceptionUser {
 		try {
@@ -128,7 +127,7 @@ public class imageProp extends Prop {
 		ParameterDescriptor[] result = new ParameterDescriptor[2];
 
 		result[0] = new ParameterDescriptor("image", ParameterDescriptor.TYPE_ICON,
-                                            null, url_default, url);
+                                            null, image_url_default, url);
 		result[1] = new ParameterDescriptor("width", ParameterDescriptor.TYPE_FLOAT,
                                             null, new Double(width_default), new Double(width));
 

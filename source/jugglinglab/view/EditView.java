@@ -33,7 +33,7 @@ import jugglinglab.util.*;
 
 
 public class EditView extends View {
-    protected AnimatorEdit jae = null;
+    protected AnimationEditPanel jae = null;
     protected JPanel ladder = null;
     protected JSplitPane jsp = null;
 
@@ -42,8 +42,8 @@ public class EditView extends View {
 
 
     public EditView(Dimension dim) {
-        this.jae = new AnimatorEdit();
-        jae.setAnimatorPreferredSize(dim);
+        this.jae = new AnimationEditPanel();
+        jae.setAnimationPanelPreferredSize(dim);
 
         this.ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
@@ -73,16 +73,16 @@ public class EditView extends View {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimatorPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
         jae.restartJuggle(p, c);
         if (p != null) {
             LadderDiagram new_ladder;
             /* if (pat.getNumberOfJugglers() > 1) {
                 new_ladder = new PassLadderDiagram(pat, parent);
-                ((PassLadderDiagram)new_ladder).setAnimator(jae);
+                ((PassLadderDiagram)new_ladder).setAnimationPanel(jae);
             } else {*/
                 new_ladder = new EditLadderDiagram(p, parent);
-                ((EditLadderDiagram)new_ladder).setAnimator(jae);
+                ((EditLadderDiagram)new_ladder).setAnimationPanel(jae);
             // }
 
             jae.setLadderDiagram(new_ladder);
@@ -96,18 +96,18 @@ public class EditView extends View {
     }
 
     @Override
-    public void setAnimatorPreferredSize(Dimension d) {
-        jae.setAnimatorPreferredSize(d);
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        jae.setAnimationPanelPreferredSize(d);
         jsp.resetToPreferredSizes();
     }
 
     @Override
-    public Dimension getAnimatorSize() {
+    public Dimension getAnimationPanelSize() {
         return jae.getSize(new Dimension());
     }
 
     @Override
-    public Animator getAnimator() { return jae; }
+    public AnimationPanel getAnimationPanel() { return jae; }
 
     @Override
     public void disposeView() { jae.dispose(); }
