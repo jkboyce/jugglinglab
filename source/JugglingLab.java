@@ -91,7 +91,7 @@ public class JugglingLab {
     }
 
     // Look at beginning of jlargs to see if there's a pattern, and if so then
-    // parse it at return it. Otherwise print an error message and return null.
+    // parse it and return it. Otherwise print an error message and return null.
     protected static JMLPattern parse_pattern() {
         if (jlargs.size() == 0) {
             System.out.println("Error: expected pattern input, none found");
