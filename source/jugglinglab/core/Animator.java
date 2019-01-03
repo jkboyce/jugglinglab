@@ -427,17 +427,23 @@ public class Animator {
 
         String delayTime = String.valueOf((int)(real_interval_millis/10));
 
+        ImageWriteParam iwp = iw.getDefaultWriteParam();
+        IIOMetadata metadata = null;
+        IIOImage ii = null;
+
         for (int i = 0; i < patperiod; i++)  {
             double time = pat.getLoopStartTime();
 
             for (int j = 0; j < num_frames; j++) {
                 this.drawFrame(time, g, false);
 
-                ImageWriteParam iwp = iw.getDefaultWriteParam();
-                IIOMetadata metadata = iw.getDefaultImageMetadata(
-                        new ImageTypeSpecifier(image), iwp);
-                configureGIFMetadata(metadata, delayTime, framecount);
-                IIOImage ii = new IIOImage(image, null, metadata);
+                if (framecount < 2) {
+                    metadata = iw.getDefaultImageMetadata(
+                            new ImageTypeSpecifier(image), iwp);
+                    configureGIFMetadata(metadata, delayTime, framecount);
+                }
+
+                ii = new IIOImage(image, null, metadata);
                 iw.writeToSequence(ii, (ImageWriteParam) null);
 
                 time += sim_interval_secs;
