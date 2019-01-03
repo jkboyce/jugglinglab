@@ -25,7 +25,7 @@
         <javac debug="${debug}" srcdir="${src}/." destdir="${build}/."
             target="1.8" source="1.8" deprecation="${deprecation}"
             includeAntRuntime="false" includes="**"
-            excludes="jugglinglab/MacOS/*,resources/*,resources_win/*,jugglinglab/notation/*.jj">
+            excludes="jugglinglab/MacOS/*,gifwriter/*,resources/*,resources_win/*,jugglinglab/notation/*.jj">
             <classpath refid="master-classpath" />
             <compilerarg value="-Xlint:-options"/>
             <compilerarg value="-Xlint:unchecked"/>
@@ -38,7 +38,7 @@
             <manifest>
                 <attribute name="Main-Class" value="JugglingLab" />
             </manifest>
-            <fileset dir="${build}" excludes="jugglinglab/MacOS/*,jugglinglab/MacOS" />
+            <fileset dir="${build}" excludes="jugglinglab/MacOS/*,gifwriter/*,jugglinglab/MacOS" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}" includes="resources/*.au" />

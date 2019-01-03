@@ -32,11 +32,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ResourceBundle;
 
+import javax.imageio.*;
+import javax.imageio.metadata.*;
+import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+import org.w3c.dom.Node;
+
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
-import gifwriter.GIFAnimWriter;
+// import gifwriter.GIFAnimWriter;
 
 
 public class Animator {
@@ -343,9 +349,125 @@ public class Animator {
     public AnimationPrefs getAnimationPrefs() { return jc; }
 
 
+    // Helper method for writing animated GIFs
+    // Adapted from https://community.oracle.com/thread/1264385
+    public static void configureGIFMetadata(IIOMetadata meta,
+                                            String delayTime,
+                                            int imageIndex) {
+        String metaFormat = meta.getNativeMetadataFormatName();
+
+        if (!"javax_imageio_gif_image_1.0".equals(metaFormat)) {
+            throw new IllegalArgumentException(
+                    "Unfamiliar gif metadata format: " + metaFormat);
+        }
+
+        Node root = meta.getAsTree(metaFormat);
+
+        //find the GraphicControlExtension node
+        Node child = root.getFirstChild();
+        while (child != null) {
+            if ("GraphicControlExtension".equals(child.getNodeName())) {
+                break;
+            }
+            child = child.getNextSibling();
+        }
+
+        IIOMetadataNode gce = (IIOMetadataNode) child;
+        gce.setAttribute("userInputFlag", "FALSE");
+        gce.setAttribute("delayTime", delayTime);
+
+        //only the first node needs the ApplicationExtensions node
+        if (imageIndex == 0) {
+            IIOMetadataNode aes =
+                    new IIOMetadataNode("ApplicationExtensions");
+            IIOMetadataNode ae =
+                    new IIOMetadataNode("ApplicationExtension");
+            ae.setAttribute("applicationID", "NETSCAPE");
+            ae.setAttribute("authenticationCode", "2.0");
+            byte[] uo = new byte[]{
+                //last two bytes is an unsigned short (little endian) that
+                //indicates the the number of times to loop.
+                //0 means loop forever.
+                0x1, 0x0, 0x0
+            };
+            ae.setUserObject(uo);
+            aes.appendChild(ae);
+            root.appendChild(aes);
+        }
+
+        try {
+            meta.setFromTree(metaFormat, root);
+        } catch (IIOInvalidTreeException e) {
+            //shouldn't happen
+            throw new Error(e);
+        }
+    }
+
+
     // Called when the user wants to save a GIF from the command line. This skips
     // the file dialog box, progress monitor, and separate worker thread.
     public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
+                        IOException, JuggleExceptionInternal {
+
+        ImageWriter iw = ImageIO.getImageWritersByFormatName("gif").next();
+        ImageOutputStream ios = new MemoryCacheImageOutputStream(os);
+        iw.setOutput(ios);
+        iw.prepareWriteSequence(null);
+
+        BufferedImage image = new BufferedImage(this.dim.width, this.dim.height,
+                                                BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+
+        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            gifpropnum[i] = pat.getPropAssignment(i+1);
+        int patperiod = pat.getPeriod();
+        int totalframes = patperiod * num_frames;
+        int framecount = 0;
+
+        String delayTime = String.valueOf((int)(real_interval_millis/10));
+
+        for (int i = 0; i < patperiod; i++)  {
+            double time = pat.getLoopStartTime();
+
+            for (int j = 0; j < num_frames; j++) {
+                this.drawFrame(time, g, false);
+
+                ImageWriteParam iwp = iw.getDefaultWriteParam();
+                IIOMetadata metadata = iw.getDefaultImageMetadata(
+                        new ImageTypeSpecifier(image), iwp);
+                configureGIFMetadata(metadata, delayTime, framecount);
+                IIOImage ii = new IIOImage(image, null, metadata);
+                iw.writeToSequence(ii, (ImageWriteParam) null);
+
+                time += sim_interval_secs;
+                framecount++;
+
+                if (wgm != null) {
+                    wgm.update(framecount, totalframes);
+                    if (wgm.isCanceled()) {
+                        ios.close();
+                        os.close();
+                        return;
+                    }
+                }
+            }
+
+            this.advanceProps();
+        }
+
+        g.dispose();
+        iw.endWriteSequence();
+        ios.close();
+        os.close();
+    }
+
+
+    // Version that uses our own standalone GIF writer. It has trouble building
+    // the color map when there are many individual colors, for example with the
+    // image prop.
+    /*
+    public void writeGIF_old(OutputStream os, Animator.WriteGIFMonitor wgm) throws
                 IOException, JuggleExceptionInternal {
 
         // Create the object that will actually do the writing
@@ -404,6 +526,7 @@ public class Animator {
         g.dispose();
         os.close();
     }
+    */
 
     public interface WriteGIFMonitor {
         // callback method invoked when a processing step is completed
