@@ -38,7 +38,7 @@ import jugglinglab.core.*;
 public class imageProp extends Prop {
     static URL image_url_default;
     static {
-        image_url_default = imageProp.class.getResource("/resources/ball.png");
+        image_url_default = imageProp.class.getResource("/ball.png");
     }
 
 	protected URL url;

@@ -51,10 +51,10 @@ public class AnimationPanel extends JPanel implements Runnable {
         // errorstrings = JLLocale.getBundle("ErrorStrings");
 
         // load audio resources
-        URL catchurl = AnimationPanel.class.getResource("/resources/catch.au");
+        URL catchurl = AnimationPanel.class.getResource("/catch.au");
         if (catchurl != null)
             AnimationPanel.catchclip = Applet.newAudioClip(catchurl);
-        URL bounceurl = AnimationPanel.class.getResource("/resources/bounce.au");
+        URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
         if (bounceurl != null)
             AnimationPanel.bounceclip = Applet.newAudioClip(bounceurl);
     }

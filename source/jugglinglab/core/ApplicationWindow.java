@@ -278,7 +278,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         JPanel aboutPanel = new JPanel(new BorderLayout());
         aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
 
-        java.net.URL url = ApplicationWindow.class.getResource("/resources/about.gif");
+        java.net.URL url = ApplicationWindow.class.getResource("/about.gif");
         if (url != null) {
             ImageIcon aboutPicture = new ImageIcon(url, "A lab");
             if (aboutPicture != null) {

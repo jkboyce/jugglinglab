@@ -41,9 +41,9 @@
             <fileset dir="${build}" excludes="jugglinglab/MacOS/*,gifwriter/*,jugglinglab/MacOS" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
-            <fileset dir="${src}" includes="resources/*.au" />
-            <fileset dir="${src}" includes="resources/*.gif" />
-            <fileset dir="${src}" includes="resources/*.png" />
+            <fileset dir="${src}/resources" includes="*.au" />
+            <fileset dir="${src}/resources" includes="*.gif" />
+            <fileset dir="${src}/resources" includes="*.png" />
         </jar>
     </target>
 
