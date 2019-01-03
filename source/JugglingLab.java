@@ -48,7 +48,6 @@ public class JugglingLab {
     // command line arguments as an ArrayList that we trim as portions are parsed
     protected static ArrayList<String> jlargs = null;
 
-
     // Look in jlargs to see if there's an output path specified, and if so
     // then record it and trim out of jlargs. Otherwise return null.
     protected static String parse_outpath() {

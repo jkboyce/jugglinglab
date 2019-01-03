@@ -22,12 +22,11 @@
 
 package jugglinglab.core;
 
-
 public class Constants {
     public static final String version = "1.0";
     public static final String year = "2019";
 
-    public static final String help_URL = "https://jugglinglab.org/#html";
+    public static final String help_URL = "https://jugglinglab.org/#help";
 
     public static final boolean DEBUG_LAYOUT = false;
     public static final boolean DEBUG_PARSING = false;

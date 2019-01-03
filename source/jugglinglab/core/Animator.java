@@ -46,34 +46,33 @@ import jugglinglab.util.*;
 
 
 public class Animator {
+    protected JMLPattern        pat;
+    protected AnimationPrefs    jc;
+    protected jugglinglab.renderer.Renderer ren1 = null, ren2 = null;
+    protected Coordinate        overallmax = null, overallmin = null;
 
-    protected JMLPattern		pat;
-    protected AnimationPrefs	jc;
-    protected jugglinglab.renderer.Renderer	ren1 = null, ren2 = null;
-    protected Coordinate		overallmax = null, overallmin = null;
-
-    protected int[]				animpropnum = null, temppropnum = null;
-    protected Permutation		invpathperm = null;
-    protected int				num_frames;
-    protected double			sim_time;
-    protected double			sim_interval_secs;
-    protected long				real_interval_millis;
+    protected int[]             animpropnum = null, temppropnum = null;
+    protected Permutation       invpathperm = null;
+    protected int               num_frames;
+    protected double            sim_time;
+    protected double            sim_interval_secs;
+    protected long              real_interval_millis;
 
     protected double[]          camangle;
-    protected double[]			camangle1;     // for stereo display
-    protected double[]			camangle2;
+    protected double[]          camangle1;     // for stereo display
+    protected double[]          camangle2;
 
     protected Dimension         dim;
-
 
     public Animator() {
         this.camangle = new double[2];
         this.camangle1 = new double[2];
         this.camangle2 = new double[2];
-		jc = new AnimationPrefs();
+        jc = new AnimationPrefs();
     }
 
-
+    // Do a full (re)start of the animator with a new pattern, new animation
+    // preferences, or both.
     public void restartAnimator(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
         // try to lay out new pattern first so that if there's an error we
@@ -81,15 +80,15 @@ public class Animator {
         if ((pat != null) && !pat.isLaidout())
             pat.layoutPattern();
 
-        if (pat != null)	this.pat = pat;
-        if (newjc != null)	this.jc = newjc;
+        if (pat != null)    this.pat = pat;
+        if (newjc != null)  this.jc = newjc;
 
         if (this.pat == null)
             return;
 
-		ren1 = new Renderer2D();
-		if (this.jc.stereo)
-			ren2 = new Renderer2D();
+        ren1 = new Renderer2D();
+        if (this.jc.stereo)
+            ren2 = new Renderer2D();
 
         ren1.setPattern(this.pat);
         if (this.jc.stereo)
@@ -148,9 +147,8 @@ public class Animator {
         }
     }
 
-
-
-    public void drawFrame(double sim_time, Graphics g, boolean draw_axes) throws JuggleExceptionInternal {
+    public void drawFrame(double sim_time, Graphics g, boolean draw_axes)
+                        throws JuggleExceptionInternal {
         int[] pnum = this.animpropnum;
 
         if (this.jc.stereo) {
@@ -228,7 +226,6 @@ public class Animator {
         }
     }
 
-
     public void advanceProps() {
         int[] pnum = this.animpropnum;
 
@@ -238,6 +235,8 @@ public class Animator {
             pnum[i] = temppropnum[i];
     }
 
+    // Rescales the animator so that the pattern and key parts of the juggler
+    // are visible. Call this whenever the pattern changes.
     public void initAnimator() {
         findMaxMin();
         syncRenderersToSize();
@@ -254,15 +253,17 @@ public class Animator {
         invpathperm = pat.getPathPermutation().getInverse();
     }
 
+    // Find the overall bounding box of the juggler and pattern, in real-space
+    // (centimeters) coordinates.
+    //
+    // The algorithm here could be improved to take into account which props are
+    // on which paths.  We may also want to leave room for the rest of the juggler.
     private void findMaxMin() {
-        // the algorithm here could be improved to take into account which props are
-        // on which paths.  We may also want to leave room for the rest of the juggler.
-        int i;
         Coordinate patternmax = null, patternmin = null;
         Coordinate handmax = null, handmin = null;
         Coordinate propmax = null, propmin = null;
 
-        for (i = 1; i <= pat.getNumberOfPaths(); i++) {
+        for (int i = 1; i <= pat.getNumberOfPaths(); i++) {
             patternmax = Coordinate.max(patternmax, pat.getPathMax(i));
             patternmin = Coordinate.min(patternmin, pat.getPathMin(i));
 
@@ -271,14 +272,14 @@ public class Animator {
         }
 
         // make sure all hands are visible
-        for (i = 1; i <= pat.getNumberOfJugglers(); i++) {
+        for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
             handmax = Coordinate.max(handmax, pat.getHandMax(i, HandLink.LEFT_HAND));
             handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.LEFT_HAND));
             handmax = Coordinate.max(handmax, pat.getHandMax(i, HandLink.RIGHT_HAND));
             handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.RIGHT_HAND));
         }
 
-        for (i = 1; i <= pat.getNumberOfProps(); i++) {
+        for (int i = 1; i <= pat.getNumberOfProps(); i++) {
             propmax = Coordinate.max(propmax, pat.getProp(i).getMax());
             propmin = Coordinate.min(propmin, pat.getProp(i).getMin());
         }
@@ -298,22 +299,22 @@ public class Animator {
         this.overallmin = Coordinate.min(handmin, ren1.getJugglerWindowMin());
         this.overallmin = Coordinate.min(overallmin, patternmin);
 
-		// we want to ensure everything stays visible as we rotate the camera
-		// viewpoint.  the following is simple and seems to work ok.
-		if (pat.getNumberOfJugglers() == 1) {
-			overallmin.z -= 0.3 * Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
-			overallmax.z += 5.0;	// keeps objects from rubbing against top of window
-		} else {
-			double tempx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
-			double tempy = Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
-			overallmin.z -= 0.4 * Math.max(tempx, tempy);
-			overallmax.z += 0.4 * Math.max(tempx, tempy);
-		}
+        // we want to ensure everything stays visible as we rotate the camera
+        // viewpoint.  the following is simple and seems to work ok.
+        if (pat.getNumberOfJugglers() == 1) {
+            overallmin.z -= 0.3 * Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
+            overallmax.z += 5.0;    // keeps objects from rubbing against top of window
+        } else {
+            double tempx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
+            double tempy = Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
+            overallmin.z -= 0.4 * Math.max(tempx, tempy);
+            overallmax.z += 0.4 * Math.max(tempx, tempy);
+        }
 
-		// make the x-coordinate origin at the center of the view
-		double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
-		this.overallmin.x = -maxabsx;
-		this.overallmax.x = maxabsx;
+        // make the x-coordinate origin at the center of the view
+        double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
+        this.overallmin.x = -maxabsx;
+        this.overallmax.x = maxabsx;
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = "+handmax);
@@ -341,7 +342,6 @@ public class Animator {
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
     }
 
-
     public int[] getAnimPropNum() { return animpropnum; }
 
     public Color getBackground() { return ren1.getBackground(); }
@@ -349,7 +349,74 @@ public class Animator {
     public AnimationPrefs getAnimationPrefs() { return jc; }
 
 
-    // Helper method for writing animated GIFs
+    // There are two versions of writeGIF, one that uses Java's ImageIO library
+    // and a second (much older) version that uses a standalone GIF writer that
+    // we wrote. The ImageIO version is slower but does a better job of building
+    // the GIF colormap so we use that one for now.
+
+    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
+                        IOException, JuggleExceptionInternal {
+
+        ImageWriter iw = ImageIO.getImageWritersByFormatName("gif").next();
+        ImageOutputStream ios = new MemoryCacheImageOutputStream(os);
+        iw.setOutput(ios);
+        iw.prepareWriteSequence(null);
+
+        BufferedImage image = new BufferedImage(this.dim.width, this.dim.height,
+                                                BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+
+        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            gifpropnum[i] = pat.getPropAssignment(i+1);
+        int patperiod = pat.getPeriod();
+        int totalframes = patperiod * num_frames;
+        int framecount = 0;
+
+        // delay time is embedded in GIF header in terms of hundredths of a second
+        String delayTime = String.valueOf((int)(real_interval_millis/10));
+
+        ImageWriteParam iwp = iw.getDefaultWriteParam();
+        IIOMetadata metadata = null;
+
+        for (int i = 0; i < patperiod; i++)  {
+            double time = pat.getLoopStartTime();
+
+            for (int j = 0; j < num_frames; j++) {
+                this.drawFrame(time, g, false);
+
+                if (framecount < 2) {
+                    metadata = iw.getDefaultImageMetadata(
+                            new ImageTypeSpecifier(image), iwp);
+                    configureGIFMetadata(metadata, delayTime, framecount);
+                }
+
+                IIOImage ii = new IIOImage(image, null, metadata);
+                iw.writeToSequence(ii, (ImageWriteParam) null);
+
+                time += sim_interval_secs;
+                framecount++;
+
+                if (wgm != null) {
+                    wgm.update(framecount, totalframes);
+                    if (wgm.isCanceled()) {
+                        ios.close();
+                        os.close();
+                        return;
+                    }
+                }
+            }
+
+            this.advanceProps();
+        }
+
+        g.dispose();
+        iw.endWriteSequence();
+        ios.close();
+        os.close();
+    }
+
+    // Helper method for writeGIF() above
     // Adapted from https://community.oracle.com/thread/1264385
     public static void configureGIFMetadata(IIOMetadata meta,
                                             String delayTime,
@@ -401,71 +468,6 @@ public class Animator {
             //shouldn't happen
             throw new Error(e);
         }
-    }
-
-
-    // Called when the user wants to save a GIF from the command line. This skips
-    // the file dialog box, progress monitor, and separate worker thread.
-    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
-                        IOException, JuggleExceptionInternal {
-
-        ImageWriter iw = ImageIO.getImageWritersByFormatName("gif").next();
-        ImageOutputStream ios = new MemoryCacheImageOutputStream(os);
-        iw.setOutput(ios);
-        iw.prepareWriteSequence(null);
-
-        BufferedImage image = new BufferedImage(this.dim.width, this.dim.height,
-                                                BufferedImage.TYPE_INT_RGB);
-        Graphics g = image.getGraphics();
-
-        int[] gifpropnum = new int[pat.getNumberOfPaths()];
-        for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            gifpropnum[i] = pat.getPropAssignment(i+1);
-        int patperiod = pat.getPeriod();
-        int totalframes = patperiod * num_frames;
-        int framecount = 0;
-
-        String delayTime = String.valueOf((int)(real_interval_millis/10));
-
-        ImageWriteParam iwp = iw.getDefaultWriteParam();
-        IIOMetadata metadata = null;
-        IIOImage ii = null;
-
-        for (int i = 0; i < patperiod; i++)  {
-            double time = pat.getLoopStartTime();
-
-            for (int j = 0; j < num_frames; j++) {
-                this.drawFrame(time, g, false);
-
-                if (framecount < 2) {
-                    metadata = iw.getDefaultImageMetadata(
-                            new ImageTypeSpecifier(image), iwp);
-                    configureGIFMetadata(metadata, delayTime, framecount);
-                }
-
-                ii = new IIOImage(image, null, metadata);
-                iw.writeToSequence(ii, (ImageWriteParam) null);
-
-                time += sim_interval_secs;
-                framecount++;
-
-                if (wgm != null) {
-                    wgm.update(framecount, totalframes);
-                    if (wgm.isCanceled()) {
-                        ios.close();
-                        os.close();
-                        return;
-                    }
-                }
-            }
-
-            this.advanceProps();
-        }
-
-        g.dispose();
-        iw.endWriteSequence();
-        ios.close();
-        os.close();
     }
 
 

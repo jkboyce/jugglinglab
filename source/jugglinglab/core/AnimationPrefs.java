@@ -22,10 +22,11 @@
 
 package jugglinglab.core;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
 import jugglinglab.util.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationPrefs {
