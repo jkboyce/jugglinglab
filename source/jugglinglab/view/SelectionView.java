@@ -104,7 +104,7 @@ public class SelectionView extends View {
 						}
 					});
 				} catch (final JuggleExceptionInternal jei) {
-					ErrorDialog.handleException(jei);
+					ErrorDialog.handleFatalException(jei);
 				}
             }
         });

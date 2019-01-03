@@ -416,7 +416,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 this.killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
-                // ErrorDialog.handleException(jei);
+                // ErrorDialog.handleFatalException(jei);
             }
         }
     }
@@ -514,7 +514,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     throw new JuggleExceptionInternal("AnimGIFSave IllegalArgumentException: "+iae.getMessage());
                 }
             } catch (Exception e) {
-                jugglinglab.util.ErrorDialog.handleException(e);
+                ErrorDialog.handleFatalException(e);
             }
 
             if (cleanup != null)

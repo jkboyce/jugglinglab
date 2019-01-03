@@ -214,7 +214,7 @@ public class JugglingLabApplet extends JApplet {
             validate();
 
             if (e instanceof JuggleExceptionInternal)
-                ErrorDialog.handleException(e);
+                ErrorDialog.handleFatalException(e);
             else if (!(e instanceof JuggleExceptionUser))
                 e.printStackTrace();
         }

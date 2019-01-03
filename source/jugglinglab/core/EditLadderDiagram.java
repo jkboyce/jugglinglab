@@ -22,16 +22,16 @@
 
 package jugglinglab.core;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.net.*;
+import java.text.MessageFormat;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import java.io.File;
-import java.net.*;
-import java.text.MessageFormat;
 
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
@@ -51,7 +51,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final protected double min_hold_time = 0.05;
 
     protected AnimationEditPanel animator = null;
-	protected JFrame parent = null;
+    protected JFrame parent = null;
 
     static final private int STATE_INACTIVE = 0;
     static final private int STATE_EVENT_SELECTED = 1;
@@ -59,7 +59,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final private int STATE_MOVING_TRACKER = 3;
     static final private int STATE_POPUP = 4;
 
-    protected int gui_state;	// one of STATE_x values above
+    protected int gui_state;    // one of STATE_x values above
     protected LadderEventItem active_eventitem = null;
     protected int start_y;
     protected int delta_y, delta_y_min, delta_y_max;
@@ -73,7 +73,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     public EditLadderDiagram(JMLPattern pat, JFrame parent) {
         super(pat);
-		this.parent = parent;
+        this.parent = parent;
 
         active_eventitem = null;
         setupPopup();
@@ -147,10 +147,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                             }
                                 break;
                         case STATE_MOVING_EVENT:
-                            // ErrorDialog.handleException(new JuggleExceptionInternal("mouse pressed in MOVING_EVENT state"));
+                            // ErrorDialog.handleFatalException(new JuggleExceptionInternal("mouse pressed in MOVING_EVENT state"));
                             break;
                         case STATE_MOVING_TRACKER:
-                            // ErrorDialog.handleException(new JuggleExceptionInternal("mouse pressed in MOVING_TRACKER state"));
+                            // ErrorDialog.handleFatalException(new JuggleExceptionInternal("mouse pressed in MOVING_TRACKER state"));
                             break;
                         case STATE_POPUP:
                             gui_state = (active_eventitem == null) ? STATE_INACTIVE : STATE_EVENT_SELECTED;
@@ -207,7 +207,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                             popup.show(EditLadderDiagram.this, me.getX(), me.getY());
                             break;
                         case STATE_POPUP:
-                            ErrorDialog.handleException(new JuggleExceptionInternal("tried to enter POPUP state while already in it"));
+                            ErrorDialog.handleFatalException(new JuggleExceptionInternal("tried to enter POPUP state while already in it"));
                             break;
                     }
                 }
@@ -266,10 +266,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     case STATE_INACTIVE:
                         // This exception was being generated on popup cancelation when it could have been ignored.
                         // See bug report 861856.
-                        //ErrorDialog.handleException(new JuggleExceptionInternal("mouse dragged in INACTIVE state"));
+                        //ErrorDialog.handleFatalException(new JuggleExceptionInternal("mouse dragged in INACTIVE state"));
                         break;
                     case STATE_EVENT_SELECTED:
-                        ErrorDialog.handleException(new JuggleExceptionInternal("mouse dragged in EVENT_SELECTED state"));
+                        ErrorDialog.handleFatalException(new JuggleExceptionInternal("mouse dragged in EVENT_SELECTED state"));
                         break;
                     case STATE_MOVING_EVENT:
                         int old_delta_y = delta_y;
@@ -319,7 +319,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         ev = ev.getPrevious();
                     }
                     if (ev == null)
-                        ErrorDialog.handleException(new JuggleExceptionInternal("Null event 1 in mousePressed()"));
+                        ErrorDialog.handleFatalException(new JuggleExceptionInternal("Null event 1 in mousePressed()"));
                     double tlim = ev.getT() + min_hold_time;
                     if (tlim > tmin)
                         tmin = tlim;
@@ -350,7 +350,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         ev = ev.getNext();
                     }
                     if (ev == null)
-                        ErrorDialog.handleException(new JuggleExceptionInternal("Null event 2 in mousePressed()"));
+                        ErrorDialog.handleFatalException(new JuggleExceptionInternal("Null event 2 in mousePressed()"));
                     double tlim = ev.getT() - min_hold_time;
                     if (tlim < tmax)
                         tmax = tlim;
@@ -381,7 +381,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         } else if (newt >= pat.getLoopEndTime()) {
             shift = pat.getLoopEndTime() - 0.0001 - ev.getT();
             newt = pat.getLoopEndTime() - 0.0001;
-       	}
+        }
 
         boolean throwpath[] = new boolean[pat.getNumberOfPaths()];
         boolean catchpath[] = new boolean[pat.getNumberOfPaths()];
@@ -403,7 +403,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             }
         }
 
-        if (delta_y < 0) {		// moving to earlier time
+        if (delta_y < 0) {      // moving to earlier time
             ev = ev.getPrevious();
             while ((ev != null) && (ev.getT() > newt)) {
                 if (!sameMaster(ev, item.event) && (ev.getJuggler() == item.event.getJuggler()) &&
@@ -423,7 +423,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                     ev.removeTransition(j);
                                     if (!ev.isMaster())
                                         ev.getMaster().removeTransition(j);
-                                    j--;	// next trans moved into slot
+                                    j--;    // next trans moved into slot
                                 }
                                 break;
                         }
@@ -444,7 +444,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 }
                 ev = ev.getPrevious();
             }
-        } else if (delta_y > 0) {		// moving to later time
+        } else if (delta_y > 0) {       // moving to later time
             ev = ev.getNext();
             while ((ev != null) && (ev.getT() < newt)) {
                 if (!sameMaster(ev, item.event) && (ev.getJuggler() == item.event.getJuggler()) && (ev.getHand() == item.event.getHand())) {
@@ -501,15 +501,15 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     JMLTransition tr = ev.getPathTransition(pp.getMapping(j+1),
                                                             JMLTransition.TRANS_HOLDING);
                     if (tr == null)
-                        ErrorDialog.handleException(new JuggleExceptionInternal("Null transition in removing hold"));
+                        ErrorDialog.handleFatalException(new JuggleExceptionInternal("Null transition in removing hold"));
                     ev.removeTransition(tr);
                 }
             }
         }
 
         pat.removeEvent(ev);
-        ev.setT(ev.getT() + shift);	// change time of master
-        pat.addEvent(ev);	// remove/add cycle keeps events sorted
+        ev.setT(ev.getT() + shift); // change time of master
+        pat.addEvent(ev);   // remove/add cycle keeps events sorted
     }
 
 
@@ -630,7 +630,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     popupmenuitems[11].setEnabled(false);
             }
                 break;
-            default:	// LadderPathItem
+            default:    // LadderPathItem
                 popupmenuitems[5].setEnabled(false);
 
                 for (int i = 8; i < popupmenuitems.length; i++)
@@ -655,13 +655,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         }
 
         switch (itemnum) {
-            case 0:		// Change title...
+            case 0:     // Change title...
                 changeTitle();
                 break;
-            case 1:		// Change overall timing...
+            case 1:     // Change overall timing...
                 changeTiming();
                 break;
-            case 2:		// Add event to L hand
+            case 2:     // Add event to L hand
             {
                 JMLEvent ev = addEventToHand(HandLink.LEFT_HAND);
                 active_eventitem = null;
@@ -672,7 +672,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 repaint();
             }
                 break;
-            case 3:		// Add event to R hand
+            case 3:     // Add event to R hand
             {
                 JMLEvent ev = addEventToHand(HandLink.RIGHT_HAND);
                 active_eventitem = null;
@@ -685,11 +685,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 break;
             case 4:
                 break;
-            case 5:		// Remove event
+            case 5:     // Remove event
             {
                 // adjustPopup() ensures that the event only has hold transitions
                 if (!(popupitem instanceof LadderEventItem)) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("LadderDiagram remove event class format"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("LadderDiagram remove event class format"));
                     return;
                 }
                 JMLEvent ev = ((LadderEventItem)popupitem).event;
@@ -706,17 +706,17 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 break;
             case 6:
                 break;
-            case 7:		// Define prop...
+            case 7:     // Define prop...
                 defineProp();
                 break;
-            case 8:		// Make last in event
+            case 8:     // Make last in event
             {
                 if (popupitem == null) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("No popupitem in case 8"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 8"));
                     return;
                 }
                 if (!(popupitem instanceof LadderEventItem)) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("LadderDiagram make last transition class format"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("LadderDiagram make last transition class format"));
                     return;
                 }
                 JMLEvent ev = ((LadderEventItem)popupitem).event;
@@ -724,7 +724,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     ev = ev.getMaster();
                 JMLTransition tr = ev.getTransition(((LadderEventItem)popupitem).transnum);
                 ev.removeTransition(tr);
-                ev.addTransition(tr);	// will add at end
+                ev.addTransition(tr);   // will add at end
                 active_eventitem = null;
                 if (animator != null)
                     animator.deactivateEvent();
@@ -733,17 +733,17 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 repaint();
             }
                 break;
-            case 9:		// Define throw...
+            case 9:     // Define throw...
                 defineThrow();
                 break;
-            case 10:	// Change to catch
+            case 10:    // Change to catch
             {
                 if (popupitem == null) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("No popupitem in case 10"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 10"));
                     return;
                 }
                 if (!(popupitem instanceof LadderEventItem)) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("LadderDiagram change to catch class format"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("LadderDiagram change to catch class format"));
                     return;
                 }
                 JMLEvent ev = ((LadderEventItem)popupitem).event;
@@ -760,14 +760,14 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 repaint();
             }
                 break;
-            case 11:	// Change to softcatch
+            case 11:    // Change to softcatch
             {
                 if (popupitem == null) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("No popupitem in case 11"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 11"));
                     return;
                 }
                 if (!(popupitem instanceof LadderEventItem)) {
-                    ErrorDialog.handleException(new JuggleExceptionInternal("LadderDiagram change to softcatch class format"));
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("LadderDiagram change to softcatch class format"));
                     return;
                 }
                 JMLEvent ev = ((LadderEventItem)popupitem).event;
@@ -819,10 +819,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,1,
                                                      new Insets(10,10,10,10)));
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
-		jd.pack();
-		jd.setResizable(false);
-		jd.setVisible(true);
-		parent.setTitle(pat.getTitle());
+        jd.pack();
+        jd.setResizable(false);
+        jd.setVisible(true);
+        parent.setTitle(pat.getTitle());
     }
 
     protected void changeTiming() {
@@ -894,7 +894,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     protected JMLEvent addEventToHand(int hand) {
-        int juggler = 1;	// assumes single juggler
+        int juggler = 1;    // assumes single juggler
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) / (double)(height - 2*border_top);
         double evtime = (double)(popup_y - border_top) * scale;
         Coordinate evpos = new Coordinate();
@@ -902,7 +902,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         try {
             pat.getHandCoordinate(juggler, hand, evtime, evpos);
         } catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleException(jei);
+            ErrorDialog.handleFatalException(jei);
         }
 
         JMLEvent ev = new JMLEvent();
@@ -944,7 +944,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     protected void defineProp() {
         if (popupitem == null) {
-            ErrorDialog.handleException(new JuggleExceptionInternal("defineProp() null popupitem"));
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineProp() null popupitem"));
             return;
         }
 
@@ -952,7 +952,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         int pn = 0;
         if (popupitem instanceof LadderEventItem) {
             if (popupitem.type != LadderItem.TYPE_TRANSITION) {
-                ErrorDialog.handleException(new JuggleExceptionInternal("defineProp() bad LadderItem type"));
+                ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineProp() bad LadderItem type"));
                 return;
             }
 
@@ -969,7 +969,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         final int[] animpropnum = animator.anim.getAnimPropNum();
         final int propnum = animpropnum[pathnum - 1];
         //final int propnum = pat.getPropAssignment(pathnum);
-        //		System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
+        //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         final Prop startprop = pat.getProp(propnum);
 
         final boolean paused = animator.getPaused();
@@ -998,7 +998,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         cb1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
-                //				System.out.println("Got an action item: "+type);
+                //              System.out.println("Got an action item: "+type);
                 try {
                     Prop pt;
                     if (type.equalsIgnoreCase(startprop.getName()))
@@ -1109,18 +1109,18 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(p3, make_constraints(GridBagConstraints.LINE_END,0,2,new Insets(10,10,10,10)));
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
 
-		Locale loc = JLLocale.getLocale();
-		jd.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        Locale loc = JLLocale.getLocale();
+        jd.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         jd.pack();
-		jd.setResizable(false);
-        jd.setVisible(true);	// blocks until dispose() above
+        jd.setResizable(false);
+        jd.setVisible(true);    // blocks until dispose() above
         dialog_controls = null;
     }
 
     protected void defineThrow() {
         if (!(popupitem instanceof LadderEventItem)) {
-            ErrorDialog.handleException(new JuggleExceptionInternal("defineThrow() class format"));
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineThrow() class format"));
             return;
         }
         JMLEvent ev = ((LadderEventItem)popupitem).event;
@@ -1216,8 +1216,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
 
         jd.pack();
-		jd.setResizable(false);
-        jd.setVisible(true);	// blocks until dispose() above
+        jd.setResizable(false);
+        jd.setVisible(true);    // blocks until dispose() above
         dialog_controls = null;
     }
 
@@ -1248,13 +1248,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 gb.setConstraints(lab, make_constraints(GridBagConstraints.LINE_START,0,i,new Insets(0,0,0,0)));
                 if (pd[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
                     //JComboBox jcb = new JComboBox(booleanList);
-					JCheckBox jcb = new JCheckBox();
+                    JCheckBox jcb = new JCheckBox();
                     pdp.add(jcb);
                     gb.setConstraints(jcb, make_constraints(GridBagConstraints.LINE_START,1,i,new Insets(2,5,2,0)));
                     dialog_controls.add(jcb);
                     boolean def = ((Boolean)(pd[i].value)).booleanValue();
                     //jcb.setSelectedIndex(def ? 0 : 1);
-					jcb.setSelected(def);
+                    jcb.setSelected(def);
                 }
                 else if (pd[i].type == ParameterDescriptor.TYPE_FLOAT) {
                     JTextField tf = new JTextField(7);
@@ -1289,74 +1289,74 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     Integer def = (Integer)(pd[i].value);
                     tf.setText(def.toString());
 
-					tf.addCaretListener(new CaretListener() {
-						public void caretUpdate(CaretEvent e) {
-							//System.out.println("Caret Update");
-						}
-					});
+                    tf.addCaretListener(new CaretListener() {
+                        public void caretUpdate(CaretEvent e) {
+                            //System.out.println("Caret Update");
+                        }
+                    });
                 }
-				else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
-					final ParameterDescriptor fpd = pd[i];
-					final ParameterDescriptor[] fpds = pd;
-					final JPanel fjp = jp;
-					URL filename = (URL)fpd.value;
+                else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
+                    final ParameterDescriptor fpd = pd[i];
+                    final ParameterDescriptor[] fpds = pd;
+                    final JPanel fjp = jp;
+                    URL filename = (URL)fpd.value;
 
-					ImageIcon icon = new ImageIcon(filename, filename.toString());
-					// Scale the image down if it's too big
-					final float MAX_HEIGHT = 100;
-					if (icon.getIconHeight() > MAX_HEIGHT) {
-						float scaleFactor = MAX_HEIGHT/icon.getIconHeight();
-						int height = (int)(scaleFactor*icon.getIconHeight());
-						int width = (int)(scaleFactor*icon.getIconWidth());
-						icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
-					}
-					JLabel label = new JLabel(icon);
+                    ImageIcon icon = new ImageIcon(filename, filename.toString());
+                    // Scale the image down if it's too big
+                    final float MAX_HEIGHT = 100;
+                    if (icon.getIconHeight() > MAX_HEIGHT) {
+                        float scaleFactor = MAX_HEIGHT/icon.getIconHeight();
+                        int height = (int)(scaleFactor*icon.getIconHeight());
+                        int width = (int)(scaleFactor*icon.getIconWidth());
+                        icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
+                    }
+                    JLabel label = new JLabel(icon);
 
-					// Clicking on the icon launches a file chooser for getting a new image
-					label.addMouseListener(new MouseAdapter() {
-						public void mouseClicked(MouseEvent e) {
-							FileFilter filter = new FileFilter() {
-								public boolean accept(File f) {
-									StringTokenizer st = new StringTokenizer(f.getName(), ".");
-									String ext = "";
-									while (st.hasMoreTokens())
-										ext = st.nextToken();
-									return (ext.equals("jpg") || ext.equals("gif") ||
-											ext.equals("png") || f.isDirectory());
-								}
+                    // Clicking on the icon launches a file chooser for getting a new image
+                    label.addMouseListener(new MouseAdapter() {
+                        public void mouseClicked(MouseEvent e) {
+                            FileFilter filter = new FileFilter() {
+                                public boolean accept(File f) {
+                                    StringTokenizer st = new StringTokenizer(f.getName(), ".");
+                                    String ext = "";
+                                    while (st.hasMoreTokens())
+                                        ext = st.nextToken();
+                                    return (ext.equals("jpg") || ext.equals("gif") ||
+                                            ext.equals("png") || f.isDirectory());
+                                }
 
-								public String getDescription() {
-									return "Image Files";
-								}
-							};
-							PlatformSpecific ps = PlatformSpecific.getPlatformSpecific();
-							int result = ps.showOpenDialog(EditLadderDiagram.this, filter);
-							if (result == JFileChooser.APPROVE_OPTION) {
-								try {
-									URL source = ps.getSelectedFile().toURI().toURL();
-									// We have to load the image to get the correct dimensions
-									ImageIcon icon = new ImageIcon(source, source.toString());
-									// Rebuild the paramter descriptions
-									fpds[0].value = source;
-									//fpds[1].value = new Integer(icon.getIconWidth());
-									//fpds[2].value = new Integer(icon.getIconHeight());
-									//fpds[1].default_value = fpds[1].value;
-									//fpds[2].default_value = fpds[2].value;
-									// Remake the parameter panal with new default values.
-									makeParametersPanel(fjp, fpds);
-									((JDialog)(fjp.getTopLevelAncestor())).pack();
-								} catch (MalformedURLException ex) {
-									// This should never happen
-									ErrorDialog.handleException(new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL.")));
-								}
-							}
-						}
-					});
-					// Add the icon to the panel
-					pdp.add(label);
-					gb.setConstraints(label, make_constraints(GridBagConstraints.LINE_START,1,i,new Insets(0,5,5,0)));
-					dialog_controls.add(label);
-				}
+                                public String getDescription() {
+                                    return "Image Files";
+                                }
+                            };
+                            PlatformSpecific ps = PlatformSpecific.getPlatformSpecific();
+                            int result = ps.showOpenDialog(EditLadderDiagram.this, filter);
+                            if (result == JFileChooser.APPROVE_OPTION) {
+                                try {
+                                    URL source = ps.getSelectedFile().toURI().toURL();
+                                    // We have to load the image to get the correct dimensions
+                                    ImageIcon icon = new ImageIcon(source, source.toString());
+                                    // Rebuild the paramter descriptions
+                                    fpds[0].value = source;
+                                    //fpds[1].value = new Integer(icon.getIconWidth());
+                                    //fpds[2].value = new Integer(icon.getIconHeight());
+                                    //fpds[1].default_value = fpds[1].value;
+                                    //fpds[2].default_value = fpds[2].value;
+                                    // Remake the parameter panal with new default values.
+                                    makeParametersPanel(fjp, fpds);
+                                    ((JDialog)(fjp.getTopLevelAncestor())).pack();
+                                } catch (MalformedURLException ex) {
+                                    // This should never happen
+                                    ErrorDialog.handleFatalException(new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL.")));
+                                }
+                            }
+                        }
+                    });
+                    // Add the icon to the panel
+                    pdp.add(label);
+                    gb.setConstraints(label, make_constraints(GridBagConstraints.LINE_START,1,i,new Insets(0,5,5,0)));
+                    dialog_controls.add(label);
+                }
             }
 
             jp.add(pdp);
@@ -1372,8 +1372,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             if (dialog_pd[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
                 //JComboBox jcb = (JComboBox)control;
                 //boolean val = ((jcb.getSelectedIndex() == 0) ? true : false);
-				JCheckBox jcb = (JCheckBox)control;
-				boolean val = jcb.isSelected();
+                JCheckBox jcb = (JCheckBox)control;
+                boolean val = jcb.isSelected();
                 boolean def_val = ((Boolean)(dialog_pd[i].default_value)).booleanValue();
                 if (val != def_val)
                     term = (new Boolean(val)).toString();
@@ -1386,9 +1386,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     if (val != def_val)
                         term = tf.getText().trim();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { dialog_pd[i].name };
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { dialog_pd[i].name };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             }
             else if (dialog_pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
@@ -1407,18 +1407,18 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     if (val != def_val)
                         term = tf.getText().trim();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { dialog_pd[i].name };
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { dialog_pd[i].name };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             }
-			else if (dialog_pd[i].type == ParameterDescriptor.TYPE_ICON) {
-				JLabel label = (JLabel)control;
-				ImageIcon icon = (ImageIcon)label.getIcon();
-				String def = ((URL)(dialog_pd[i].default_value)).toString();
-				if (!icon.getDescription().equals(def))
-					term = icon.getDescription();  // This contains the URL string
-			}
+            else if (dialog_pd[i].type == ParameterDescriptor.TYPE_ICON) {
+                JLabel label = (JLabel)control;
+                ImageIcon icon = (ImageIcon)label.getIcon();
+                String def = ((URL)(dialog_pd[i].default_value)).toString();
+                if (!icon.getDescription().equals(def))
+                    term = icon.getDescription();  // This contains the URL string
+            }
 
             if (term != null) {
                 term = dialog_pd[i].name + "=" + term;
@@ -1432,9 +1432,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         return result;
     }
 
-    //	public void popupMenuCanceled(PopupMenuEvent e) { popupitem = null; }
-    //	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-    //	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+    //  public void popupMenuCanceled(PopupMenuEvent e) { popupitem = null; }
+    //  public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+    //  public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
 
     protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
@@ -1467,8 +1467,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
         int y = (active_eventitem.ylow + active_eventitem.yhigh) / 2;
 
-        layoutPattern();	// rebuild pattern event list
-        createView();		// rebuild ladder diagram
+        layoutPattern();    // rebuild pattern event list
+        createView();       // rebuild ladder diagram
 
         // reactivate the moved event with AnimationEditPanel
         active_eventitem = getSelectedLadderEvent(x, y);
@@ -1483,9 +1483,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 animator.repaint();
             }
         } catch (JuggleExceptionUser jeu) {
-            ErrorDialog.handleException(new JuggleExceptionInternal(jeu.getMessage()));
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
         } catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleException(jei);
+            ErrorDialog.handleFatalException(jei);
         }
     }
 
@@ -1496,12 +1496,12 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-		if (pat.getNumberOfJugglers() > 1) {
+        if (pat.getNumberOfJugglers() > 1) {
             int x, y, width;
             Dimension cdim = this.getSize();
             int cWidth = cdim.width;
             int cHeight = cdim.height;
-            FontMetrics	fm = gr.getFontMetrics();
+            FontMetrics fm = gr.getFontMetrics();
 
             width = fm.stringWidth("Not available");
             x = (cWidth > width) ? (cWidth-width)/2 : 0;
@@ -1562,146 +1562,146 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
 /*
-	private int orbits[][] = null;
-	private Color orbitColor[] = null;
+    private int orbits[][] = null;
+    private Color orbitColor[] = null;
 
-	public void restartView(JMLPattern pat, AnimationPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
-		if (pat != null)
-			this.pat = pat;
-		if (jc != null)
-			this.jc = jc;
+    public void restartView(JMLPattern pat, AnimationPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (pat != null)
+            this.pat = pat;
+        if (jc != null)
+            this.jc = jc;
 
-		if (pat != null) {
-			OrbitLadderDiagram new_ladder = new OrbitLadderDiagram(pat, parent);
-			new_ladder.setAnimation(jae);
-			jae.setLadderDiagram(new_ladder);
-			jae.deactivateEvent();
-			new_ladder.setPreferredSize(new Dimension(ladder_width, 1));
-			new_ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
-			this.ladder.removeAll();
-			this.ladder.add(new_ladder, BorderLayout.CENTER);
-			this.ladder.validate();
+        if (pat != null) {
+            OrbitLadderDiagram new_ladder = new OrbitLadderDiagram(pat, parent);
+            new_ladder.setAnimation(jae);
+            jae.setLadderDiagram(new_ladder);
+            jae.deactivateEvent();
+            new_ladder.setPreferredSize(new Dimension(ladder_width, 1));
+            new_ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
+            this.ladder.removeAll();
+            this.ladder.add(new_ladder, BorderLayout.CENTER);
+            this.ladder.validate();
 
-			findOrbits();
-			// Color the paths of the ladder diagram
-			for (int i = 0; i < orbits.length; i++) {
-				for (int j = 0; j < orbits[i].length; j++) {
-					new_ladder.setPathColor(orbits[i][j]+1, orbitColor[i]);
-				}
-			}
-		}
+            findOrbits();
+            // Color the paths of the ladder diagram
+            for (int i = 0; i < orbits.length; i++) {
+                for (int j = 0; j < orbits[i].length; j++) {
+                    new_ladder.setPathColor(orbits[i][j]+1, orbitColor[i]);
+                }
+            }
+        }
 
-		jae.restartJuggle(pat, jc);
-	}
+        jae.restartJuggle(pat, jc);
+    }
 
-	private void findOrbits() {
-		if (this.pat == null)
-			return;
+    private void findOrbits() {
+        if (this.pat == null)
+            return;
 
-		int pathorb[] = new int[this.pat.getNumberOfPaths()];
-		int orbids[] = new int[this.pat.getNumberOfPaths()];
-		int orbitCount = 0;
+        int pathorb[] = new int[this.pat.getNumberOfPaths()];
+        int orbids[] = new int[this.pat.getNumberOfPaths()];
+        int orbitCount = 0;
 
-		for (int i = 0; i < pathorb.length ; i++) {
-			pathorb[i] = -1;
-		}
+        for (int i = 0; i < pathorb.length ; i++) {
+            pathorb[i] = -1;
+        }
 
-		// Go through all the symetries and work out which path belongs
-		// to which orbit.
-		for (int i = 0; i < this.pat.getNumberOfSymmetries(); i++) {
-			Permutation perm = this.pat.getSymmetry(i).getPathPerm();
-			for (int j = 0; j < perm.getSize(); j++) {
-				int elem = perm.getMapping(j+1)-1; // Not zero based !
-				if (pathorb[elem] == -1) {
-					if (pathorb[j] == -1) {
-						pathorb[j] = orbitCount;
-						orbids[orbitCount] = orbitCount;
-						orbitCount++;
-					}
-					pathorb[elem] = pathorb[j];
-				} else {
-					if (pathorb[j] == -1) {
-						pathorb[j] = pathorb[elem];
-					} else if (pathorb[j] != pathorb[elem]) {
-						// These were separate orbits, now should be merged
-						orbids[pathorb[elem]] = orbids[pathorb[j]];
-					}
-				}
-			}
-		}
+        // Go through all the symetries and work out which path belongs
+        // to which orbit.
+        for (int i = 0; i < this.pat.getNumberOfSymmetries(); i++) {
+            Permutation perm = this.pat.getSymmetry(i).getPathPerm();
+            for (int j = 0; j < perm.getSize(); j++) {
+                int elem = perm.getMapping(j+1)-1; // Not zero based !
+                if (pathorb[elem] == -1) {
+                    if (pathorb[j] == -1) {
+                        pathorb[j] = orbitCount;
+                        orbids[orbitCount] = orbitCount;
+                        orbitCount++;
+                    }
+                    pathorb[elem] = pathorb[j];
+                } else {
+                    if (pathorb[j] == -1) {
+                        pathorb[j] = pathorb[elem];
+                    } else if (pathorb[j] != pathorb[elem]) {
+                        // These were separate orbits, now should be merged
+                        orbids[pathorb[elem]] = orbids[pathorb[j]];
+                    }
+                }
+            }
+        }
 
-		// Clean up to have a sequential list
-		int oc = 0;
-		for (int i = 0; i < orbitCount; i++) {
-			if (orbids[i]>=oc) {
-				int v = orbids[i];
-				for (int j = i; j < orbitCount; j++)
-					if (orbids[j] == v) orbids[j] = oc;
-				oc++;
-			}
-		}
+        // Clean up to have a sequential list
+        int oc = 0;
+        for (int i = 0; i < orbitCount; i++) {
+            if (orbids[i]>=oc) {
+                int v = orbids[i];
+                for (int j = i; j < orbitCount; j++)
+                    if (orbids[j] == v) orbids[j] = oc;
+                oc++;
+            }
+        }
 
-		// Now store which orbit is made out of which paths
-		this.orbits = new int[oc][];
-		for (int i = 0; i < oc; i++) {
-			int ocp = 0;
-			for (int j = 0; j < 2; j++) {
-				for (int k = 0; k < pathorb.length; k++) {
-					if (orbids[pathorb[k]] == i) {
-						if (j == 1) this.orbits[i][ocp] = k;
-						ocp++;
-					}
-				}
-				if (j == 0) this.orbits[i] = new int[ocp];
-				ocp = 0;
-			}
-		}
+        // Now store which orbit is made out of which paths
+        this.orbits = new int[oc][];
+        for (int i = 0; i < oc; i++) {
+            int ocp = 0;
+            for (int j = 0; j < 2; j++) {
+                for (int k = 0; k < pathorb.length; k++) {
+                    if (orbids[pathorb[k]] == i) {
+                        if (j == 1) this.orbits[i][ocp] = k;
+                        ocp++;
+                    }
+                }
+                if (j == 0) this.orbits[i] = new int[ocp];
+                ocp = 0;
+            }
+        }
 
-		// Now create the colors. We will never need more colors
-		// than orbits. We want to exclude gray colors, as that
-		// will be used for 'deselected'.
-		this.orbitColor = new Color[oc];
-		int cols[] = {255,0,0};
-		int phase = 0;
-		for (int i = 0; i < oc; i++) {
-			this.orbitColor[i] = new Color(cols[0], cols[1], cols[2]);
+        // Now create the colors. We will never need more colors
+        // than orbits. We want to exclude gray colors, as that
+        // will be used for 'deselected'.
+        this.orbitColor = new Color[oc];
+        int cols[] = {255,0,0};
+        int phase = 0;
+        for (int i = 0; i < oc; i++) {
+            this.orbitColor[i] = new Color(cols[0], cols[1], cols[2]);
 
-			if ((phase == 0 && cols[2] < 255) ||
-			    (phase == 1 && cols[2] == 255)) {
-				int d = cols[0];
-				cols[0] = cols[2];
-				cols[2] = cols[1];
-				cols[1] = d;
-			} else if (phase == 0) {
-				cols[1] = 255;
-				phase++;
-			} else if (phase == 1) {
-				if (cols[2]>0)
-					cols[1] = cols[2]/2;
-				else
-					cols[1] = cols[1]/2;
-				cols[2] = cols[1];
-				phase = 0;
-			}
-		}
+            if ((phase == 0 && cols[2] < 255) ||
+                (phase == 1 && cols[2] == 255)) {
+                int d = cols[0];
+                cols[0] = cols[2];
+                cols[2] = cols[1];
+                cols[1] = d;
+            } else if (phase == 0) {
+                cols[1] = 255;
+                phase++;
+            } else if (phase == 1) {
+                if (cols[2]>0)
+                    cols[1] = cols[2]/2;
+                else
+                    cols[1] = cols[1]/2;
+                cols[2] = cols[1];
+                phase = 0;
+            }
+        }
 */
 
-		/*
-		System.out.println("there are " + oc + " orbits");
-		String blabel = "";
-		for (int j = 0; j < this.orbits.length; j++) {
-		    blabel += "(";
-		    for (int k = 0; k < this.orbits[j].length; k++) {
-			blabel += (this.orbits[j][k]+1);
-			if (k < this.orbits[j].length-1)
-			    blabel += ",";
-		    }
-		    blabel += ")";
-		}
-		System.out.println("orbit decomposition : " + blabel);
-		*/
+        /*
+        System.out.println("there are " + oc + " orbits");
+        String blabel = "";
+        for (int j = 0; j < this.orbits.length; j++) {
+            blabel += "(";
+            for (int k = 0; k < this.orbits[j].length; k++) {
+            blabel += (this.orbits[j][k]+1);
+            if (k < this.orbits[j].length-1)
+                blabel += ",";
+            }
+            blabel += ")";
+        }
+        System.out.println("orbit decomposition : " + blabel);
+        */
 /*
-	}
+    }
 */
 
 }

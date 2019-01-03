@@ -1,6 +1,6 @@
 // lineCurve.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -26,14 +26,15 @@ import jugglinglab.util.*;
 
 
 public class lineCurve extends Curve {
-    protected int			n;				// number of line segments
-    protected double[][]	a, b;			// line coefficients
-    protected double[]		durations;		// durations of segments
+    protected int           n;              // number of line segments
+    protected double[][]    a, b;           // line coefficients
+    protected double[]      durations;      // durations of segments
 
-    public void initCurve(String st) {
-    }
+    @Override
+    public void initCurve(String st) {}
 
-    public void	calcCurve() throws JuggleExceptionInternal {
+    @Override
+    public void calcCurve() throws JuggleExceptionInternal {
         this.n = numpoints - 1;
         if (n < 1)
             throw new JuggleExceptionInternal("lineCurve error 1");
@@ -61,6 +62,7 @@ public class lineCurve extends Curve {
         }
     }
 
+    @Override
     public void getCoordinate(double time, Coordinate newPosition) {
         if ((time < times[0]) || (time > times[n]))
             return;
@@ -71,7 +73,7 @@ public class lineCurve extends Curve {
                 break;
         if (i == n)
             i = n - 1;
-        
+
         time -= times[i];
         newPosition.setCoordinate(
                                   a[i][0] + time * b[i][0],
@@ -79,6 +81,7 @@ public class lineCurve extends Curve {
                                   a[i][2] + time * b[i][2] );
     }
 
+    @Override
     protected Coordinate getMax2(double begin, double end) {
         if ((end < times[0]) || (begin > times[n]))
             return null;
@@ -106,6 +109,7 @@ public class lineCurve extends Curve {
         return result;
     }
 
+    @Override
     protected Coordinate getMin2(double begin, double end) {
         if ((end < times[0]) || (begin > times[n]))
             return null;

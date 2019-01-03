@@ -1,6 +1,6 @@
 // ErrorDialog.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,16 +22,18 @@
 
 package jugglinglab.util;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.swing.*;
 
-import jugglinglab.core.*;
+import jugglinglab.core.Constants;
 
 
-public class ErrorDialog implements Runnable {
+public class ErrorDialog {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
@@ -39,22 +41,23 @@ public class ErrorDialog implements Runnable {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-	Component parent = null;
-	String msg = null;
-	
-	public ErrorDialog(Component parent, String msg) {
-		this.parent = parent;
-		this.msg = msg;
-		
-		SwingUtilities.invokeLater(this);
-	}
-	
-	public void run() {
-		JOptionPane.showMessageDialog(parent, msg, "Error", JOptionPane.ERROR_MESSAGE);
-	}
-	
-	
-    public static void handleException(Exception e) {
+    // Shows a message dialog for a recoverable user error
+
+    public ErrorDialog(Component parent, String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(parent, msg, "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+
+    // Handles a fatal exception by presenting a window to the user with
+    // detailed debugging information. The intent is that these exceptions
+    // should only happen in the event of a bug in Juggling Lab, and so we
+    // invite users to email us this information.
+
+    public static void handleFatalException(Exception e) {
         String exmsg1 = errorstrings.getString("Error_internal_part1");
         String exmsg2 = errorstrings.getString("Error_internal_part2");
         String exmsg3 = errorstrings.getString("Error_internal_part3");
@@ -114,7 +117,7 @@ public class ErrorDialog implements Runnable {
         dumpta.setText(sw.toString());
         dumpta.setCaretPosition(0);
         JScrollPane jsp = new JScrollPane(dumpta);
-        jsp.setPreferredSize(new Dimension(400,200));
+        jsp.setPreferredSize(new Dimension(450, 300));
         exp.add(jsp);
         gb.setConstraints(jsp, make_constraints(GridBagConstraints.CENTER,0,5,
                                                 new Insets(10,10,10,10)));
@@ -140,15 +143,15 @@ public class ErrorDialog implements Runnable {
         gb.setConstraints(butp, make_constraints(GridBagConstraints.LINE_END,0,6,
                                                  new Insets(10,10,10,10)));
 
-		Locale loc = JLLocale.getLocale();
-		exframe.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		
+        Locale loc = JLLocale.getLocale();
+        exframe.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
         exframe.pack();
-		exframe.setResizable(false);
+        exframe.setResizable(false);
         exframe.setVisible(true);
     }
-	
-	protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
+
+    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
         GridBagConstraints gbc = new GridBagConstraints();
 
         gbc.anchor = location;

@@ -34,49 +34,49 @@ import jugglinglab.view.*;
 
 public class PatternWindow extends JFrame implements WindowListener {
     /*
-	static ResourceBundle guistrings;
+    static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
     static {
         guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-	*/
+    */
 
     protected View view = null;
-	protected JMenu filemenu = null;
-	protected JMenu viewmenu = null;
+    protected JMenu filemenu = null;
+    protected JMenu viewmenu = null;
     protected boolean exit_on_close = false;
 
 
     public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(name);
-		view = new View(this, jc);
+        view = new View(this, jc);
 
-		JMenuBar mb = new JMenuBar();
-		filemenu = view.createFileMenu();
-		mb.add(filemenu);
-		viewmenu = view.createViewMenu();
+        JMenuBar mb = new JMenuBar();
+        filemenu = view.createFileMenu();
+        mb.add(filemenu);
+        viewmenu = view.createViewMenu();
         mb.add(viewmenu);
         setJMenuBar(mb);
 
-		if (pat.getNumberOfJugglers() > 1) {
-			view.setViewMode(View.VIEW_SIMPLE);
-			viewmenu.getItem(0).setSelected(true);
-		} else {
-			view.setViewMode(View.VIEW_EDIT);
-			viewmenu.getItem(1).setSelected(true);
-		}
+        if (pat.getNumberOfJugglers() > 1) {
+            view.setViewMode(View.VIEW_SIMPLE);
+            viewmenu.getItem(0).setSelected(true);
+        } else {
+            view.setViewMode(View.VIEW_EDIT);
+            viewmenu.getItem(1).setSelected(true);
+        }
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		view.setDoubleBuffered(true);
-		this.setBackground(Color.white);
-		setContentPane(view);
+        view.setDoubleBuffered(true);
+        this.setBackground(Color.white);
+        setContentPane(view);
 
-		Locale loc = JLLocale.getLocale();
-		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        Locale loc = JLLocale.getLocale();
+        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         pack();
-		view.restartView(pat, jc);
+        view.restartView(pat, jc);
         setVisible(true);
         addWindowListener(this);
     }

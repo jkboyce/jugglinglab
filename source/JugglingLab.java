@@ -23,11 +23,11 @@
 import java.awt.Dimension;
 import java.io.*;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
 import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
@@ -184,7 +184,7 @@ public class JugglingLab {
             } catch (JuggleExceptionUser jeu) {
                 new ErrorDialog(null, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleException(jei);
+                ErrorDialog.handleFatalException(jei);
             }
             return;
         }
@@ -249,7 +249,7 @@ public class JugglingLab {
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleException(jei);
+                ErrorDialog.handleFatalException(jei);
             }
             return;
         }

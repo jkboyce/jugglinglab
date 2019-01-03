@@ -1,6 +1,6 @@
 // PatternList.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,13 +22,13 @@
 
 package jugglinglab.core;
 
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
@@ -43,33 +43,33 @@ public class PatternList extends JPanel {
         guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
-	final static Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
-	final static Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
+    final static Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
+    final static Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
 
 
-	View animtarget = null;
+    View animtarget = null;
     String title = null;
     JList<PatternRecord> list = null;
     DefaultListModel<PatternRecord> model = null;
     // JLabel status = null;
 
 
-	public PatternList() {
-		makePanel();
-		this.setOpaque(false);
-	}
+    public PatternList() {
+        makePanel();
+        this.setOpaque(false);
+    }
 
     public PatternList(View target) {
         makePanel();
-		this.setOpaque(false);
-		setTargetView(target);
+        this.setOpaque(false);
+        setTargetView(target);
     }
 
     protected void makePanel() {
         model = new DefaultListModel<PatternRecord>();
         list = new JList<PatternRecord>(model);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setCellRenderer(new PatternCellRenderer());
+        list.setCellRenderer(new PatternCellRenderer());
 
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent lse) {
@@ -108,7 +108,7 @@ public class PatternList extends JPanel {
                 } catch (Exception e) {
                     if (jaw2 != null)
                         jaw2.dispose();
-                    jugglinglab.util.ErrorDialog.handleException(e);
+                    ErrorDialog.handleFatalException(e);
                 }
             }
         });
@@ -119,9 +119,9 @@ public class PatternList extends JPanel {
         this.add(pane, BorderLayout.CENTER);
     }
 
-	public void setTargetView(View target) {
-		animtarget = target;
-	}
+    public void setTargetView(View target) {
+        animtarget = target;
+    }
 
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pat) {
         // display = display.trim();
@@ -163,48 +163,48 @@ public class PatternList extends JPanel {
         if (!listnode.getNodeType().equalsIgnoreCase("patternlist"))
             throw new JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"));
 
-		int linenumber = 0;
+        int linenumber = 0;
 
         for (int i = 0; i < listnode.getNumberOfChildren(); i++) {
             JMLNode child = listnode.getChildNode(i);
             if (child.getNodeType().equalsIgnoreCase("title")) {
                 title = child.getNodeValue().trim();
             } else if (child.getNodeType().equalsIgnoreCase("line")) {
-				linenumber++;
+                linenumber++;
                 JMLAttributes attr = child.getAttributes();
 
                 String display = attr.getAttribute("display");
                 if ((display==null) || display.equals(""))
-                    display = " ";		// JList won't display empty strings
+                    display = " ";      // JList won't display empty strings
                 String animprefs = attr.getAttribute("animprefs");
                 String notation = attr.getAttribute("notation");
-				String anim = null;
-				JMLNode pattern = null;
+                String anim = null;
+                JMLNode pattern = null;
 
-				if (notation != null) {
-					if (notation.equalsIgnoreCase("JML")) {
-						for (int j = 0; j < child.getNumberOfChildren(); j++) {
-							JMLNode subchild = child.getChildNode(j);
-							if (subchild.getNodeType().equalsIgnoreCase("pattern")) {
-								pattern = subchild;
-								break;
-							}
-						}
-						if (pattern == null) {
-							String template = errorstrings.getString("Error_missing_pattern");
-							Object[] arguments = { Integer.valueOf(linenumber) };
-							throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-						}
-					} else {
-						anim = child.getNodeValue().trim();
-					}
-				}
+                if (notation != null) {
+                    if (notation.equalsIgnoreCase("JML")) {
+                        for (int j = 0; j < child.getNumberOfChildren(); j++) {
+                            JMLNode subchild = child.getChildNode(j);
+                            if (subchild.getNodeType().equalsIgnoreCase("pattern")) {
+                                pattern = subchild;
+                                break;
+                            }
+                        }
+                        if (pattern == null) {
+                            String template = errorstrings.getString("Error_missing_pattern");
+                            Object[] arguments = { Integer.valueOf(linenumber) };
+                            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                        }
+                    } else {
+                        anim = child.getNodeValue().trim();
+                    }
+                }
 
                 addPattern(display, animprefs, notation, anim, pattern);
-			} else
+            } else
                 throw new JuggleExceptionUser(errorstrings.getString("Error_illegal_tag"));
         }
-	}
+    }
 
     public void writeJML(Writer wr) throws IOException {
         PrintWriter write = new PrintWriter(wr);
@@ -226,22 +226,22 @@ public class PatternList extends JPanel {
             if (rec.animprefs != null)
                 line += " animprefs=\"" + JMLNode.xmlescape(rec.animprefs) + "\"";
             line += ">";
-			write.println(line);
+            write.println(line);
 
-			if ((rec.notation != null) && rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
-				rec.pattern.writeNode(write, 0);
+            if ((rec.notation != null) && rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
+                rec.pattern.writeNode(write, 0);
             } else if (rec.anim != null) {
                 write.println(JMLNode.xmlescape(rec.anim));
             }
 
-			write.println("</line>");
+            write.println("</line>");
         }
         write.println("</patternlist>");
         write.println("</jml>");
         for (int i = 0; i < JMLDefs.jmlsuffix.length; i++)
             write.println(JMLDefs.jmlsuffix[i]);
         write.flush();
-        //		write.close();
+        //      write.close();
     }
 
     public void writeText(Writer wr) throws IOException {
@@ -252,7 +252,7 @@ public class PatternList extends JPanel {
             write.println(rec.display);
         }
         write.flush();
-        //		write.close();
+        //      write.close();
     }
 
 
@@ -261,19 +261,19 @@ public class PatternList extends JPanel {
         public String  animprefs;
         public String  notation;
         public String  anim;
-		public JMLNode pattern;		// if the pattern is in JML notation
+        public JMLNode pattern;     // if the pattern is in JML notation
 
         public PatternRecord(String dis, String ap, String not, String ani, JMLNode pat) {
             this.display = dis;
             this.animprefs = ap;
             this.notation = not;
             this.anim = ani;
-			this.pattern = pat;
+            this.pattern = pat;
         }
     }
 
 
-	class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
+    class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
         public Component getListCellRendererComponent(
                         JList<? extends PatternRecord> list,              // the list
                         PatternRecord value,            // value to display
@@ -281,7 +281,7 @@ public class PatternList extends JPanel {
                         boolean isSelected,      // is the cell selected
                         boolean cellHasFocus)    // does the cell have focus
         {
-			PatternRecord rec = value;
+            PatternRecord rec = value;
 
             setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
             setText(rec.display);
@@ -297,6 +297,6 @@ public class PatternList extends JPanel {
             setOpaque(true);
             return this;
         }
-	}
+    }
 
 }

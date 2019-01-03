@@ -233,7 +233,7 @@ public class View extends JPanel implements ActionListener {
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
         } catch (Exception e) {
-            jugglinglab.util.ErrorDialog.handleException(e);
+            ErrorDialog.handleFatalException(e);
         }
     }
 

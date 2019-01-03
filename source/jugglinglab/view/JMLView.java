@@ -44,7 +44,7 @@ public class JMLView extends View implements DocumentListener {
     protected JTextArea ta = null;
     protected JButton compile = null;
     protected JButton revert = null;
-    //	protected JLabel dirty = null;
+    //  protected JLabel dirty = null;
     protected JLabel lab = null;
 
     public JMLView(Dimension dim) {
@@ -74,7 +74,7 @@ public class JMLView extends View implements DocumentListener {
                 try {
                     JMLView.this.compilePattern();
                 } catch (Exception e) {
-                    jugglinglab.util.ErrorDialog.handleException(e);
+                    ErrorDialog.handleFatalException(e);
                 }
             }
         });
@@ -85,13 +85,13 @@ public class JMLView extends View implements DocumentListener {
                 try {
                     JMLView.this.revertPattern();
                 } catch (Exception e) {
-                    jugglinglab.util.ErrorDialog.handleException(e);
+                    ErrorDialog.handleFatalException(e);
                 }
             }
         });
         lower.add(revert);
 
-        /*		java.net.URL url = this.getClass().getResource("/images/ball.gif");
+        /*      java.net.URL url = this.getClass().getResource("/images/ball.gif");
         if (url != null) {
             ImageIcon aboutPicture = new ImageIcon(url);
             if (aboutPicture != null)
@@ -150,7 +150,7 @@ public class JMLView extends View implements DocumentListener {
     public void disposeView() { ja.dispose(); }
 
     @Override
-	public JMLPattern getPattern() { return ja.getPattern(); }
+    public JMLPattern getPattern() { return ja.getPattern(); }
 
     @Override
     public boolean getPaused() { return ja.getPaused(); }
@@ -174,18 +174,18 @@ public class JMLView extends View implements DocumentListener {
                 lab.setText(jeu.getMessage());
                 setDirty(true);
             } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleException(jei);
+                ErrorDialog.handleFatalException(jei);
                 setDirty(true);
             } catch (SAXParseException spe) {
-				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { new Integer(spe.getLineNumber()) };
+                String template = errorstrings.getString("Error_parsing");
+                Object[] arguments = { new Integer(spe.getLineNumber()) };
                 lab.setText(MessageFormat.format(template, arguments));
                 setDirty(true);
             } catch (SAXException se) {
                 lab.setText(se.getMessage());
                 setDirty(true);
             } catch (IOException ioe) {
-                ErrorDialog.handleException(ioe);
+                ErrorDialog.handleFatalException(ioe);
                 setDirty(true);
             }
         }
@@ -213,7 +213,7 @@ public class JMLView extends View implements DocumentListener {
 
     protected void setDirty(boolean dirty) {
         this.isdirty = dirty;
-        //		this.dirty.setVisible(dirty);
+        //      this.dirty.setVisible(dirty);
         this.compile.setEnabled(dirty);
         this.revert.setEnabled(dirty);
     }

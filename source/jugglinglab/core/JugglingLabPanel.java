@@ -36,51 +36,51 @@ import jugglinglab.view.View;
 
 public class JugglingLabPanel extends JPanel {
 
-	protected NotationGUI ng = null;
+    protected NotationGUI ng = null;
     protected View view = null;
 
 
-	public JugglingLabPanel(JFrame parent, int entry_type, PatternList pl, int view_type) throws JuggleExceptionUser, JuggleExceptionInternal {
-		GridBagLayout gb = new GridBagLayout();
-		setLayout(gb);
+    public JugglingLabPanel(JFrame parent, int entry_type, PatternList pl, int view_type) throws JuggleExceptionUser, JuggleExceptionInternal {
+        GridBagLayout gb = new GridBagLayout();
+        setLayout(gb);
 
-		if (view_type != View.VIEW_NONE) {
-			view = new View(parent, null);
-			view.setViewMode(view_type);
-			add(view);
+        if (view_type != View.VIEW_NONE) {
+            view = new View(parent, null);
+            view.setViewMode(view_type);
+            add(view);
 
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.anchor = GridBagConstraints.LINE_START;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.gridwidth = gbc.gridheight = 1;
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(0,0,0,0);
-			gbc.weightx = 1.0;
-			gbc.weighty = 1.0;
-			gb.setConstraints(view, gbc);
-		}
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.anchor = GridBagConstraints.LINE_START;
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.gridwidth = gbc.gridheight = 1;
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.insets = new Insets(0,0,0,0);
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gb.setConstraints(view, gbc);
+        }
 
-		if (pl != null)
-			pl.setTargetView(view);
+        if (pl != null)
+            pl.setTargetView(view);
 
-		if ((entry_type != Notation.NOTATION_NONE) || (pl != null)) {
-			ng = new NotationGUI(parent, view, pl, true);
-			ng.setNotation(entry_type);		// select the first notation in the menu list
-			add(ng);
+        if ((entry_type != Notation.NOTATION_NONE) || (pl != null)) {
+            ng = new NotationGUI(parent, view, pl, true);
+            ng.setNotation(entry_type);     // select the first notation in the menu list
+            add(ng);
 
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.anchor = GridBagConstraints.LINE_START;
-			gbc.fill = GridBagConstraints.VERTICAL;
-			gbc.gridheight = gbc.gridwidth = 1;
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(0,0,0,0);
-			gbc.weightx = 0.0;
-			gbc.weighty = 1.0;
-			gb.setConstraints(ng, gbc);
-		}
-	}
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.anchor = GridBagConstraints.LINE_START;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.gridheight = gbc.gridwidth = 1;
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.insets = new Insets(0,0,0,0);
+            gbc.weightx = 0.0;
+            gbc.weighty = 1.0;
+            gb.setConstraints(ng, gbc);
+        }
+    }
 
-	public View getView() { return view; }
+    public View getView() { return view; }
 }

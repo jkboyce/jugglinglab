@@ -22,9 +22,9 @@
 
 package jugglinglab.core;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -44,14 +44,14 @@ public class LadderDiagram extends JPanel {
     static final protected int path_slop = 5;
     static final protected int cacheframes = 5;
 
-	static final protected double passing_border_sides = 0.2;
+    static final protected double passing_border_sides = 0.2;
 
     protected JMLPattern pat = null;
 
     protected double sim_time = 0.0;
     protected int width, height;
     protected int right_x, left_x;
-	protected int passing_first_x, passing_offset_x;
+    protected int passing_first_x, passing_offset_x;
 
     protected int tracker_y = border_top;
     private boolean has_switch_symmetry;
@@ -68,7 +68,7 @@ public class LadderDiagram extends JPanel {
 
     public LadderDiagram(JMLPattern pat) {
         this.setBackground(background);
-		this.setOpaque(false);
+        this.setOpaque(false);
         this.pat = pat;
         createView();
     }
@@ -192,35 +192,35 @@ public class LadderDiagram extends JPanel {
         // create paths (lines and arcs)
         this.ladderpathitems = new ArrayList<LadderPathItem>();
 
-		if (pat.getNumberOfJugglers() == 1) {
-			current = eventlist;
+        if (pat.getNumberOfJugglers() == 1) {
+            current = eventlist;
 
-			while (current.getT() <= loop_end) {
-				for (int i = 0; i < current.getNumberOfTransitions(); i++) {
-					JMLTransition tr = current.getTransition(i);
-					PathLink opl = tr.getOutgoingPathLink();
+            while (current.getT() <= loop_end) {
+                for (int i = 0; i < current.getNumberOfTransitions(); i++) {
+                    JMLTransition tr = current.getTransition(i);
+                    PathLink opl = tr.getOutgoingPathLink();
 
-					if (opl != null) {
-						LadderPathItem item = new LadderPathItem();
-						item.transnum_start = i;
-						item.startevent = opl.getStartEvent();
-						item.endevent = opl.getEndEvent();
+                    if (opl != null) {
+                        LadderPathItem item = new LadderPathItem();
+                        item.transnum_start = i;
+                        item.startevent = opl.getStartEvent();
+                        item.endevent = opl.getEndEvent();
 
-						if (opl.isInHand())
-							item.type = LadderPathItem.TYPE_HOLD;
-						else
-							item.type = (item.startevent.getHand()==item.endevent.getHand()) ?
-								LadderPathItem.TYPE_SELF : LadderPathItem.TYPE_CROSS;
+                        if (opl.isInHand())
+                            item.type = LadderPathItem.TYPE_HOLD;
+                        else
+                            item.type = (item.startevent.getHand()==item.endevent.getHand()) ?
+                                LadderPathItem.TYPE_SELF : LadderPathItem.TYPE_CROSS;
 
-						item.pathnum = opl.getPathNum();
-						item.color = Color.black;
-						ladderpathitems.add(item);
-					}
-				}
+                        item.pathnum = opl.getPathNum();
+                        item.color = Color.black;
+                        ladderpathitems.add(item);
+                    }
+                }
 
-				current = current.getNext();
-			}
-		}
+                current = current.getNext();
+            }
+        }
 
         updateView();
     }
@@ -231,10 +231,10 @@ public class LadderDiagram extends JPanel {
         this.height = dim.height;
         this.left_x = (int)((double)width/2.0 * border_sides);
         this.right_x = width - left_x;
-		if (pat.getNumberOfJugglers() > 1) {
-			this.passing_first_x = (int)((double)width/2.0 * passing_border_sides);
-			this.passing_offset_x = (int)((double)(width - 2 * passing_first_x) / (double)(pat.getNumberOfJugglers() - 1));
-		}
+        if (pat.getNumberOfJugglers() > 1) {
+            this.passing_first_x = (int)((double)width/2.0 * passing_border_sides);
+            this.passing_offset_x = (int)((double)(width - 2 * passing_first_x) / (double)(pat.getNumberOfJugglers() - 1));
+        }
 
         this.laddercachedirty = true;
         this.laddercache = null;
@@ -323,7 +323,7 @@ public class LadderDiagram extends JPanel {
             updateView();
             //active_eventitem = null;
             //if (animator != null)
-            //	animator.deactivateEvent();
+            //  animator.deactivateEvent();
         }
 
         if (laddercachedirty) {
@@ -348,58 +348,58 @@ public class LadderDiagram extends JPanel {
             g.setColor(this.getBackground());
             g.fillRect(0, 0, width, height);
 
-			if (pat.getNumberOfJugglers() == 1) {
-				// draw the lines signifying symmetries
-				g.setColor(Color.lightGray);
-				g.drawLine(0, border_top, width, border_top);
-				g.drawLine(0, height-border_top, width, height-border_top);
-				if (has_switch_symmetry) {
-					g.drawLine(left_x, height-border_top/2, right_x, height-border_top/2);
-					g.drawLine(left_x, height-border_top/2, left_x+left_x, height-border_top*3/4);
-					g.drawLine(left_x, height-border_top/2, left_x+left_x, height-border_top/4);
-					g.drawLine(right_x, height-border_top/2, right_x-left_x, height-border_top*3/4);
-					g.drawLine(right_x, height-border_top/2, right_x-left_x, height-border_top/4);
-				}
-				if (has_switchdelay_symmetry)
-					g.drawLine(0, height/2, width, height/2);
+            if (pat.getNumberOfJugglers() == 1) {
+                // draw the lines signifying symmetries
+                g.setColor(Color.lightGray);
+                g.drawLine(0, border_top, width, border_top);
+                g.drawLine(0, height-border_top, width, height-border_top);
+                if (has_switch_symmetry) {
+                    g.drawLine(left_x, height-border_top/2, right_x, height-border_top/2);
+                    g.drawLine(left_x, height-border_top/2, left_x+left_x, height-border_top*3/4);
+                    g.drawLine(left_x, height-border_top/2, left_x+left_x, height-border_top/4);
+                    g.drawLine(right_x, height-border_top/2, right_x-left_x, height-border_top*3/4);
+                    g.drawLine(right_x, height-border_top/2, right_x-left_x, height-border_top/4);
+                }
+                if (has_switchdelay_symmetry)
+                    g.drawLine(0, height/2, width, height/2);
 
-				// draw the lines representing the hands
-				g.setColor(Color.black);
-				for (int i = -1; i < 2; i++) {
-					g.drawLine(left_x+i, border_top, left_x+i, height-border_top);
-					g.drawLine(right_x+i, border_top, right_x+i, height-border_top);
-				}
+                // draw the lines representing the hands
+                g.setColor(Color.black);
+                for (int i = -1; i < 2; i++) {
+                    g.drawLine(left_x+i, border_top, left_x+i, height-border_top);
+                    g.drawLine(right_x+i, border_top, right_x+i, height-border_top);
+                }
 
-				// draw paths
-				Shape clip = g.getClip();
-				for (int i = 0; i < ladderpathitems.size(); i++) {
-					LadderPathItem item = ladderpathitems.get(i);
+                // draw paths
+                Shape clip = g.getClip();
+                for (int i = 0; i < ladderpathitems.size(); i++) {
+                    LadderPathItem item = ladderpathitems.get(i);
 
-					g.setColor(item.color);
-					g.clipRect(left_x, border_top, (right_x-left_x), height-2*border_top);
-					if (item.type == LadderPathItem.TYPE_CROSS)
-						g.drawLine(item.xstart, item.ystart, item.xend, item.yend);
-					else if (item.type == LadderPathItem.TYPE_HOLD)
-						g.drawLine(item.xstart, item.ystart, item.xend, item.yend);
-					else {
-						if (!(item.yend < border_top)) {
-							g.clipRect(left_x, item.ystart, (right_x-left_x), (item.yend-item.ystart));
-							g.drawOval(item.xcenter-item.radius, item.ycenter-item.radius,
-									   2*item.radius, 2*item.radius);
-						}
-					}
-					g.setClip(clip);
-				}
-			} else {
-				// draw the lines representing the jugglers
-				g.setColor(Color.black);
-				for (int j = 0; j < pat.getNumberOfJugglers(); j++) {
-					for (int i = -1; i < 2; i++) {
-						int px = passing_first_x + j * passing_offset_x;
-						g.drawLine(px+i, border_top, px+i, height-border_top);
-					}
-				}
-			}
+                    g.setColor(item.color);
+                    g.clipRect(left_x, border_top, (right_x-left_x), height-2*border_top);
+                    if (item.type == LadderPathItem.TYPE_CROSS)
+                        g.drawLine(item.xstart, item.ystart, item.xend, item.yend);
+                    else if (item.type == LadderPathItem.TYPE_HOLD)
+                        g.drawLine(item.xstart, item.ystart, item.xend, item.yend);
+                    else {
+                        if (!(item.yend < border_top)) {
+                            g.clipRect(left_x, item.ystart, (right_x-left_x), (item.yend-item.ystart));
+                            g.drawOval(item.xcenter-item.radius, item.ycenter-item.radius,
+                                       2*item.radius, 2*item.radius);
+                        }
+                    }
+                    g.setClip(clip);
+                }
+            } else {
+                // draw the lines representing the jugglers
+                g.setColor(Color.black);
+                for (int j = 0; j < pat.getNumberOfJugglers(); j++) {
+                    for (int i = -1; i < 2; i++) {
+                        int px = passing_first_x + j * passing_offset_x;
+                        g.drawLine(px+i, border_top, px+i, height-border_top);
+                    }
+                }
+            }
         }
 
         if (!laddercachedirty)
@@ -462,7 +462,7 @@ class LadderEventItem extends LadderItem {
 
 class LadderPathItem extends LadderItem {
     public int xstart, ystart, xend, yend;
-    public int xcenter, ycenter, radius;	// for type SELF
+    public int xcenter, ycenter, radius;    // for type SELF
     public Color color;
 
     public JMLEvent startevent = null;

@@ -1,6 +1,6 @@
 // PatternListWindow.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,12 +22,12 @@
 
 package jugglinglab.core;
 
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
@@ -71,29 +71,26 @@ public class PatternListWindow extends JFrame implements ActionListener {
     protected void makeWindow() {
         this.pl = new PatternList(null);
 
-		pl.setDoubleBuffered(true);
-		this.setBackground(Color.white);
-		this.setContentPane(pl);
-		
-		this.setSize(300,450);
+        pl.setDoubleBuffered(true);
+        this.setBackground(Color.white);
+        this.setContentPane(pl);
+
+        this.setSize(300,450);
         createMenuBar();
 
-		Locale loc = JLLocale.getLocale();
-		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-		// list contents are always left-to-right -- DISABLE FOR NOW
-		// this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        Locale loc = JLLocale.getLocale();
+        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        // list contents are always left-to-right -- DISABLE FOR NOW
+        // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 
-		this.setVisible(true);
+        this.setVisible(true);
     }
 
+    public PatternList getPatternList() { return pl; }
 
-    public PatternList getPatternList() {
-        return pl;
-    }
-
-    protected String[] fileItems = new String[]		{ "Close", null, "Save JML As...", "Save Text As..." };
-    protected String[] fileCommands = new String[]	{ "close", null, "saveas", "savetext" };
-    protected char[] fileShortcuts =			{ 'W', ' ', 'S', 'T' };
+    protected String[] fileItems = new String[]     { "Close", null, "Save JML As...", "Save Text As..." };
+    protected String[] fileCommands = new String[]  { "close", null, "saveas", "savetext" };
+    protected char[] fileShortcuts =            { 'W', ' ', 'S', 'T' };
 
     protected void createMenuBar() {
         JMenuBar mb = new JMenuBar();
@@ -118,10 +115,10 @@ public class PatternListWindow extends JFrame implements ActionListener {
         setJMenuBar(mb);
     }
 
-    public static final int	FILE_NONE = 0;
-    public static final int	FILE_CLOSE = 1;
-    public static final int	FILE_SAVE = 2;
-    public static final int	FILE_SAVETEXT = 3;
+    public static final int FILE_NONE = 0;
+    public static final int FILE_CLOSE = 1;
+    public static final int FILE_SAVE = 2;
+    public static final int FILE_SAVETEXT = 3;
 
     // Implements ActionListener to wait for MenuItem events
     public void actionPerformed(ActionEvent ae) {
@@ -135,7 +132,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
             else if (command.equals("savetext"))
                 doFileMenuCommand(FILE_SAVETEXT);
         } catch (Exception e) {
-            jugglinglab.util.ErrorDialog.handleException(e);
+            ErrorDialog.handleFatalException(e);
         }
     }
 
@@ -190,7 +187,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 break;
         }
     }
-
 
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pattern) {
         pl.addPattern(display, animprefs, notation, anim, pattern);

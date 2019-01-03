@@ -148,8 +148,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 doMenuCommand(HELP_ABOUT);
             else if (command.equals("online"))
                 doMenuCommand(HELP_ONLINE);
-        } catch (Exception e) {
-            ErrorDialog.handleException(e);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
         }
     }
 

@@ -1,6 +1,6 @@
 // AnimationPrefsDialog.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -39,12 +39,12 @@ public class AnimationPrefsDialog extends JDialog {
         errorstrings = JLLocale.getBundle("ErrorStrings");
     }
 
-    protected JTextField 	tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
-    protected JCheckBox 	cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;
-    protected JButton 		but_cancel, but_ok;
+    protected JTextField    tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
+    protected JCheckBox     cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;
+    protected JButton       but_cancel, but_ok;
 
     protected AnimationPrefs newjc;
-    //	protected boolean finished = false;
+    //  protected boolean finished = false;
 
     protected final static int border = 10;
 
@@ -57,7 +57,7 @@ public class AnimationPrefsDialog extends JDialog {
 
         this.getContentPane().setLayout(gb);
 
-        JPanel p1 = new JPanel();			// to hold text boxes
+        JPanel p1 = new JPanel();           // to hold text boxes
         p1.setLayout(gb);
         JLabel lab1 = new JLabel(guistrings.getString("Width"));
         p1.add(lab1);
@@ -106,7 +106,7 @@ public class AnimationPrefsDialog extends JDialog {
         cb_catchsounds = new JCheckBox(guistrings.getString("Catch_sounds"));
         cb_bouncesounds = new JCheckBox(guistrings.getString("Bounce_sounds"));
 
-        JPanel p2 = new JPanel();			// buttons at bottom
+        JPanel p2 = new JPanel();           // buttons at bottom
         p2.setLayout(gb);
         but_cancel = new JButton(guistrings.getString("Cancel"));
 
@@ -128,7 +128,7 @@ public class AnimationPrefsDialog extends JDialog {
 
                 setVisible(false);
                 // read out prefs
-                newjc = new AnimationPrefs(newjc);	// clone old controls
+                newjc = new AnimationPrefs(newjc);  // clone old controls
 
                 try {
                     tempint = Integer.parseInt(tf_width.getText());
@@ -150,29 +150,29 @@ public class AnimationPrefsDialog extends JDialog {
                     tempdouble = Double.valueOf(tf_fps.getText()).doubleValue();
                     if (tempdouble > 0.0) newjc.fps = tempdouble;
                 } catch (NumberFormatException e) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "fps" };
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "fps" };
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempdouble = Double.valueOf(tf_slowdown.getText()).doubleValue();
                     if (tempdouble > 0.0) newjc.slowdown = tempdouble;
                 } catch (NumberFormatException e) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "slowdown" };
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "slowdown" };
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
                     tempint = Integer.parseInt(tf_border.getText());
                     if (tempint >= 0) newjc.border = tempint;
                 } catch (NumberFormatException e) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "border" };
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "border" };
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
 
                 newjc.startPause = cb_paused.isSelected();
-				newjc.mousePause = cb_mousepause.isSelected();
+                newjc.mousePause = cb_mousepause.isSelected();
                 newjc.stereo = cb_stereo.isSelected();
                 newjc.catchSound = cb_catchsounds.isSelected();
                 newjc.bounceSound = cb_bouncesounds.isSelected();
@@ -208,13 +208,13 @@ public class AnimationPrefsDialog extends JDialog {
         gb.setConstraints(p2, make_constraints(GridBagConstraints.LINE_END,0,6,
                                                new Insets(0,border,border,border)));
 
-        this.getRootPane().setDefaultButton(but_ok);		// OK button is default
+        this.getRootPane().setDefaultButton(but_ok);        // OK button is default
 
-		Locale loc = JLLocale.getLocale();
-		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        Locale loc = JLLocale.getLocale();
+        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
-		this.pack();
-		this.setResizable(false);
+        this.pack();
+        this.setResizable(false);
     }
 
     protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
@@ -239,7 +239,7 @@ public class AnimationPrefsDialog extends JDialog {
         tf_slowdown.setText(Double.toString(oldjc.slowdown));
         tf_border.setText(Integer.toString(oldjc.border));
         cb_paused.setSelected(oldjc.startPause);
-		cb_mousepause.setSelected(oldjc.mousePause);
+        cb_mousepause.setSelected(oldjc.mousePause);
         cb_stereo.setSelected(oldjc.stereo);
         cb_catchsounds.setSelected(oldjc.catchSound);
         cb_bouncesounds.setSelected(oldjc.bounceSound);
