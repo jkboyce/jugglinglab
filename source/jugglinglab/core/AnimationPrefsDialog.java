@@ -215,6 +215,7 @@ public class AnimationPrefsDialog extends JDialog {
 
         this.pack();
         this.setResizable(false);
+        this.setLocationRelativeTo(parent);
     }
 
     protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {

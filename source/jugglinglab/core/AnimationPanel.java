@@ -480,7 +480,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         public void run() {
             try {
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(null);
+                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(AnimationPanel.this);
 
                     if (option == JFileChooser.APPROVE_OPTION) {
                         if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
