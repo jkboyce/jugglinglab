@@ -76,6 +76,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
         pack();
         setResizable(false);
+        setLocationRelativeTo(null);    // center frame on screen
         setVisible(true);
         addWindowListener(this);
     }
