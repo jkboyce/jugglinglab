@@ -77,6 +77,7 @@ public class PatternWindow extends JFrame implements WindowListener {
 
         pack();
         view.restartView(pat, jc);
+        setLocationRelativeTo(null);    // center frame on screen
         setVisible(true);
         addWindowListener(this);
     }

@@ -82,7 +82,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         // list contents are always left-to-right -- DISABLE FOR NOW
         // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-
+        this.setLocation(150, 200);
         this.setVisible(true);
     }
 
