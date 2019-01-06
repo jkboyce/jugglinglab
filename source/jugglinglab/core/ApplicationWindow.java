@@ -296,7 +296,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         String template = guistrings.getString("Version");
         Object[] arguments = { Constants.version };
         JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
-        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 16));
         textPanel.add(abouttext5);
         gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
                                                        new Insets(0,15,0,15)));
@@ -304,13 +304,13 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         String template2 = guistrings.getString("Copyright_message");
         Object[] arguments2 = { Constants.year };
         JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
-        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext6);
         gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
                                                        new Insets(15,15,15,15)));
 
         JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
-        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext3);
         gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
                                                        new Insets(0,15,0,15)));
