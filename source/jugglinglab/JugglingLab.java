@@ -20,9 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+package jugglinglab;
+
 import java.awt.Dimension;
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,11 +42,36 @@ import jugglinglab.util.*;
 
 
 public class JugglingLab {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
+    public static ResourceBundle guistrings;
+    public static ResourceBundle errorstrings;
+    public static Path base_dir;
+
     static {
         guistrings = JLLocale.getBundle("GUIStrings");
         errorstrings = JLLocale.getBundle("ErrorStrings");
+
+        // Decide on a working directory to act as a base for file operations.
+        // First look for working directory set by an enclosing script, which
+        // indicates the user is running Juggling Lab from the command line.
+        String working_dir = System.getenv("JL_working_dir");
+        System.out.println("JL_working_dir = " + working_dir);
+
+        if (working_dir == null) {
+            // If not found, then user.dir (current working directory when Java
+            // was invoked) is the most logical choice, UNLESS we're running in
+            // an application bundle. For bundled apps user.dir is buried inside
+            // the bundled JRE so we default to user.home instead.
+            String isBundle = System.getProperty("JL_run_as_bundle");
+            System.out.println("JL_run_as_bundle = " + isBundle);
+        
+            if (isBundle == null || !isBundle.equals("true"))
+                working_dir = System.getProperty("user.dir");
+            else
+                working_dir = System.getProperty("user.home");
+        }
+
+        JugglingLab.base_dir = Paths.get(working_dir);
+        System.out.println("base directory = " + base_dir.toString());
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
@@ -159,6 +188,7 @@ public class JugglingLab {
         // do some os-specific setup
         String osname = System.getProperty("os.name").toLowerCase();
         boolean isMacOS = osname.startsWith("mac os x");
+        boolean isWindows = osname.startsWith("windows");
         if (isMacOS) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
@@ -202,13 +232,26 @@ public class JugglingLab {
             Object[] arg2 = { Constants.year };
             output += MessageFormat.format(template, arg2) + "\n";
             output += guistrings.getString("GPL_message") + "\n\n";
-            output += guistrings.getString("CLI_help");
-
+            output += guistrings.getString("CLI_help1");
+            String examples = guistrings.getString("CLI_help2");
+            if (isWindows) {
+                // replace single quotes with double quotes in Windows examples
+                examples = examples.replaceAll("\'", "\"");
+            }
+            output += examples;
             System.out.println(output);
             return;
         }
 
-        String outpath = JugglingLab.parse_outpath();
+        String outpath_string = JugglingLab.parse_outpath();
+        Path outpath = null;
+        if (outpath_string != null) {
+            outpath = Paths.get(outpath_string);
+
+            if (!outpath.isAbsolute() && JugglingLab.base_dir != null)
+                outpath = Paths.get(base_dir.toString(), outpath_string);
+        }
+
         AnimationPrefs jc = JugglingLab.parse_animprefs();
 
         if (firstarg.equals("gen")) {
@@ -219,10 +262,10 @@ public class JugglingLab {
             try {
                 PrintStream ps = System.out;
                 if (outpath != null)
-                    ps = new PrintStream(new File(outpath));
+                    ps = new PrintStream(outpath.toFile());
                 siteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
             } catch (FileNotFoundException fnfe) {
-                System.out.println("Error: cannot write to file path " + outpath);
+                System.out.println("Error: cannot write to file path " + outpath.toString());
             }
             if (jc != null)
                 System.out.println("Note: animator prefs not used in generator mode; ignored");
@@ -274,11 +317,11 @@ public class JugglingLab {
                 anim.restartAnimator(pat, jc);
 
                 try {
-                    anim.writeGIF(new FileOutputStream(new File(outpath)), null);
+                    anim.writeGIF(new FileOutputStream(outpath.toFile()), null);
                 } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+                    throw new JuggleExceptionUser("error writing GIF to path " + outpath.toString());
                 } catch (IOException ioe) {
-                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
+                    throw new JuggleExceptionUser("error writing GIF to path " + outpath.toString());
                 }
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
@@ -294,11 +337,11 @@ public class JugglingLab {
                 System.out.print(pat.toString());
             else {
                 try {
-                    FileWriter fw = new FileWriter(new File(outpath));
+                    FileWriter fw = new FileWriter(outpath.toFile());
                     pat.writeJML(fw, true);
                     fw.close();
                 } catch (IOException ioe) {
-                    System.out.println("Error: problem writing JML to path " + outpath);
+                    System.out.println("Error: problem writing JML to path " + outpath.toString());
                 }
             }
             if (jc != null)

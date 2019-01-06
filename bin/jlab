@@ -2,7 +2,9 @@
 #
 # Command line interface for Juggling Lab
 #
-#
+# Copyright 2019 by Jack Boyce (jboyce@gmail.com) and others
+# Released under the GNU General Public License v2
+
 
 DIR=$(dirname $0)
 
@@ -51,10 +53,10 @@ else
 
     if [ -a "${JL_JAR}" ]; then
         if [[ $# -ne 0 ]]; then
-            "$_java" -cp "${JL_JAR}" JugglingLab $*
+            "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab $*
         else
             # print a help message if no command line args
-            "$_java" -cp "${JL_JAR}" JugglingLab help
+            "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
         fi
     else
         echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."

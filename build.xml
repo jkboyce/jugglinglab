@@ -4,7 +4,6 @@
 <!-- For use with the Apache Ant Java build tool (http://ant.apache.org) -->
 
 <project name="JugglingLab" default="jar" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
-
     <property name="src" value="source" />
     <property name="build" value="build" />
     <property name="bin" value="bin" />
@@ -37,7 +36,7 @@
     <target name="jar" depends="compile">
         <jar index="yes" destfile="${bin}/JugglingLab.jar">
             <manifest>
-                <attribute name="Main-Class" value="JugglingLab" />
+                <attribute name="Main-Class" value="jugglinglab.JugglingLab" />
             </manifest>
             <fileset dir="${build}" excludes="jugglinglab/MacOS/*,gifwriter/*,jugglinglab/MacOS" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
@@ -56,7 +55,7 @@
 
     <!-- Run the application -->
     <target name="run" depends="jar" description="Run the application">
-        <java classname="JugglingLab" fork="true" classpathref="master-classpath" />
+        <java classname="jugglinglab.JugglingLab" fork="true" classpathref="master-classpath" />
     </target>
 
     <!-- Build the Mac OS X application -->
@@ -65,10 +64,14 @@
                  uri="javafx:com.sun.javafx.tools.ant"
                  classpath="${packaging_resources}:${javafx_ant_jar.osx}" />
         <fx:deploy width="600" height="400" verbose="true" nativeBundles="dmg" outdir="./packages" outfile="Juggling Lab">
-            <fx:application name="Juggling Lab" version="1.0" mainClass="JugglingLab" />
+            <fx:application name="Juggling Lab" version="1.0" mainClass="jugglinglab.JugglingLab" />
             <fx:resources>
                 <fx:fileset dir="${bin}" includes="JugglingLab.jar" />
             </fx:resources>
+            <!-- set a Java property the code can use to tell it's running as a bundled app: -->
+            <fx:platform>
+                <fx:property name="JL_run_as_bundle" value="true" />
+            </fx:platform>
             <fx:bundleArgument arg="mac.dmg.simple" value="true" />
         </fx:deploy>
     </target>
@@ -83,11 +86,15 @@
                  uri="javafx:com.sun.javafx.tools.ant"
                  classpath="${packaging_resources}:${javafx_ant_jar.win}" />
         <fx:deploy width="600" height="400" verbose="true" nativeBundles="exe" outdir="./packages" outfile="Juggling Lab">
-            <fx:application name="Juggling Lab" version="1.0" mainClass="JugglingLab" />
+            <fx:application name="Juggling Lab" version="1.0" mainClass="jugglinglab.JugglingLab" />
             <fx:preferences shortcut="true" menu="true" install="true" />
             <fx:resources>
                 <fx:fileset dir="${bin}" includes="JugglingLab.jar" />
             </fx:resources>
+            <!-- set a Java property the code can use to tell it's running as a bundled app: -->
+            <fx:platform>
+                <fx:property name="JL_run_as_bundle" value="true" />
+            </fx:platform>
         </fx:deploy>    
     </target>
 

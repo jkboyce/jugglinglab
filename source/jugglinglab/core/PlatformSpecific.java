@@ -22,9 +22,11 @@
 
 package jugglinglab.core;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import javax.swing.*;
+
+import jugglinglab.JugglingLab;
 
 
 // The platform-specific setup we used to do for Mac OS X is no longer
@@ -85,15 +87,22 @@ public class PlatformSpecific {
 
     public int showOpenDialog(Component c, javax.swing.filechooser.FileFilter ff) {
         if (jfc == null) {
-            jfc = new JFileChooser(System.getProperty("user.dir"));
+            if (JugglingLab.base_dir != null)
+                jfc = new JFileChooser(JugglingLab.base_dir.toFile());
+            else
+                jfc = new JFileChooser();
         }
         jfc.setFileFilter(ff);  // ff == null => no filter
         return jfc.showOpenDialog(c);
     }
 
     public int showSaveDialog(Component c) {
-        if (jfc == null)
-            jfc = new JFileChooser(System.getProperty("user.dir"));
+        if (jfc == null) {
+            if (JugglingLab.base_dir != null)
+                jfc = new JFileChooser(JugglingLab.base_dir.toFile());
+            else
+                jfc = new JFileChooser();
+        }
         return jfc.showSaveDialog(c);
     }
 
