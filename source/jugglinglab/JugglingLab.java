@@ -62,7 +62,7 @@ public class JugglingLab {
             // If not found, then user.dir (current working directory when Java
             // was invoked) is the most logical choice, UNLESS we're running in
             // an application bundle. For bundled apps user.dir is buried inside
-            // the bundled JRE so we default to user.home instead.
+            // the app directory structure so we default to user.home instead.
             String isBundle = System.getProperty("JL_run_as_bundle");
 
             if (isBundle == null || !isBundle.equals("true"))
@@ -161,7 +161,7 @@ public class JugglingLab {
                 System.out.println("Error: formatting error in JML file");
                 return null;
             } catch (IOException ioe) {
-                System.out.println("Error: problem reading JML file at path " + inpath.toString());
+                System.out.println("Error: problem reading JML file from path " + inpath.toString());
                 return null;
             }
         }
@@ -266,7 +266,7 @@ public class JugglingLab {
                     ps = new PrintStream(outpath.toFile());
                 siteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
             } catch (FileNotFoundException fnfe) {
-                System.out.println("Error: cannot write to file path " + outpath.toString());
+                System.out.println("Error: problem writing to file path " + outpath.toString());
             }
             if (jc != null)
                 System.out.println("Note: animator prefs not used in generator mode; ignored");
