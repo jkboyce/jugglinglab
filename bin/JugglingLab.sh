@@ -2,9 +2,12 @@
 #
 # Command line launcher for Juggling Lab application
 #
-#
+# Copyright 2019 by Jack Boyce (jboyce@gmail.com) and others
+# Released under the GNU General Public License v2
+
 
 DIR=$(dirname $0)
+export JL_WORKING_DIR=`pwd`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # running on Mac OS X; launch using executable in application bundle
