@@ -7,6 +7,7 @@
 
 
 DIR=$(dirname $0)
+export JL_WORKING_DIR=`pwd`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # running on Mac OS X; launch using executable in application bundle

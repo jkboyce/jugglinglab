@@ -53,8 +53,7 @@ public class JugglingLab {
         // Decide on a working directory to act as a base for file operations.
         // First look for working directory set by an enclosing script, which
         // indicates the user is running Juggling Lab from the command line.
-        String working_dir = System.getenv("JL_working_dir");
-        System.out.println("JL_working_dir = " + working_dir);
+        String working_dir = System.getenv("JL_WORKING_DIR");
 
         if (working_dir == null) {
             // If not found, then user.dir (current working directory when Java
@@ -62,8 +61,7 @@ public class JugglingLab {
             // an application bundle. For bundled apps user.dir is buried inside
             // the bundled JRE so we default to user.home instead.
             String isBundle = System.getProperty("JL_run_as_bundle");
-            System.out.println("JL_run_as_bundle = " + isBundle);
-        
+
             if (isBundle == null || !isBundle.equals("true"))
                 working_dir = System.getProperty("user.dir");
             else
@@ -71,7 +69,6 @@ public class JugglingLab {
         }
 
         JugglingLab.base_dir = Paths.get(working_dir);
-        System.out.println("base directory = " + base_dir.toString());
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
