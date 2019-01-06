@@ -48,8 +48,10 @@ public class bouncePath extends Path {
     protected double    bouncetime;
     protected int       numbounces;     // actual number of bounces (<= this.bounces)
 
+    @Override
     public String getName() { return "Bounce"; }
 
+    @Override
     public ParameterDescriptor[] getParameterDescriptors() {
         ParameterDescriptor[] result = new ParameterDescriptor[6];
 
@@ -69,6 +71,7 @@ public class bouncePath extends Path {
         return result;
     }
 
+    @Override
     public void initPath(String st) throws JuggleExceptionUser {
         // default bounce characteristics
         int bounces = bounces_def;
@@ -147,6 +150,7 @@ public class bouncePath extends Path {
     // The next function does all the real work of figuring out the ball's
     // path.  It solves a cubic equation to find the time when the ball hits
     // the ground
+    @Override
     public void calcPath() throws JuggleExceptionInternal {
         if ((start_coord == null) || (end_coord == null))
             return;
@@ -300,15 +304,18 @@ public class bouncePath extends Path {
         throw new JuggleExceptionInternal("No root found in bouncePath");
     }
 
+    @Override
     public Coordinate getStartVelocity() {
         return new Coordinate(bx, by, bz[0]);
     }
 
+    @Override
     public Coordinate getEndVelocity() {
         return new Coordinate(bx, by, bz[numbounces] +
                               2.0*az[numbounces]*(end_time-start_time));
     }
 
+    @Override
     public void getCoordinate(double time, Coordinate newPosition) {
         if ((time < start_time) || (time > end_time))
             return;
@@ -324,6 +331,7 @@ public class bouncePath extends Path {
         newPosition.setCoordinate(cx+bx*time, cy+by*time, zpos);
     }
 
+    @Override
     protected Coordinate getMax2(double start, double end) {
         Coordinate result = null;
         double tlow = Math.max(start_time, start);
@@ -356,6 +364,7 @@ public class bouncePath extends Path {
         return result;
     }
 
+    @Override
     protected Coordinate getMin2(double start, double end) {
         Coordinate result = null;
         double tlow = Math.max(start_time, start);

@@ -35,8 +35,10 @@ public class tossPath extends Path {
 
     protected double    g = g_def;
 
+    @Override
     public String getName() { return "Toss"; }
 
+    @Override
     public ParameterDescriptor[] getParameterDescriptors() {
         ParameterDescriptor[] result = new ParameterDescriptor[1];
 
@@ -45,6 +47,7 @@ public class tossPath extends Path {
         return result;
     }
 
+    @Override
     public void initPath(String st) throws JuggleExceptionUser {
         double g = g_def;
 
@@ -69,6 +72,7 @@ public class tossPath extends Path {
         az = -0.5 * g;
     }
 
+    @Override
     public void calcPath() throws JuggleExceptionInternal {
         if (start_coord == null || end_coord == null)
             throw new JuggleExceptionInternal("Error in parabolic path: endpoints not set");
@@ -82,14 +86,17 @@ public class tossPath extends Path {
         bz = (end_coord.z - start_coord.z) / t - az * t;
     }
 
+    @Override
     public Coordinate getStartVelocity() {
         return new Coordinate(bx, by, bz);
     }
 
+    @Override
     public Coordinate getEndVelocity() {
         return new Coordinate(bx, by, bz+2.0*az*getDuration());
     }
 
+    @Override
     public void getCoordinate(double time, Coordinate newPosition) {
         if ((time < start_time) || (time > end_time))
             return;
@@ -97,6 +104,7 @@ public class tossPath extends Path {
         newPosition.setCoordinate(cx+bx*time, cy+by*time, cz+time*(bz+az*time));
     }
 
+    @Override
     protected Coordinate getMax2(double begin, double end) {
         Coordinate result = null;
         double tlow = Math.max(start_time, begin);
@@ -113,6 +121,7 @@ public class tossPath extends Path {
         return result;
     }
 
+    @Override
     protected Coordinate getMin2(double begin, double end) {
         Coordinate result = null;
         double tlow = Math.max(start_time, begin);
