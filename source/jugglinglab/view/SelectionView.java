@@ -31,91 +31,91 @@ import jugglinglab.util.*;
 
 
 public class SelectionView extends View {
-	protected AnimationPanel[] ja = null;
-	protected Mutator mutator = null;
-	protected Dimension dtemp = null;
+    protected AnimationPanel[] ja = null;
+    protected Mutator mutator = null;
+    protected Dimension dtemp = null;
 
 
     public SelectionView(Dimension dim) {
-		this.dtemp = new Dimension();
+        this.dtemp = new Dimension();
 
-		final JPanel pleft = new JPanel() {
-			public void paint(Graphics g) {
-				super.paint(g);
+        final JPanel pleft = new JPanel() {
+            public void paint(Graphics g) {
+                super.paint(g);
 
-				ja[0].getSize(dtemp);
-				int vline1x = dtemp.width;
-				int vline2x = 2 * vline1x;
-				int hline1y = dtemp.height;
-				int hline2y = 2 * hline1y;
-				int w = 3 * vline1x;
-				int h = 3 * hline1y;
+                ja[0].getSize(dtemp);
+                int vline1x = dtemp.width;
+                int vline2x = 2 * vline1x;
+                int hline1y = dtemp.height;
+                int hline2y = 2 * hline1y;
+                int w = 3 * vline1x;
+                int h = 3 * hline1y;
 
-				g.setColor(Color.black);
-				g.drawLine(vline1x, hline1y, vline1x, hline2y);
-				g.drawLine(vline1x, hline2y, vline2x, hline2y);
-				g.drawLine(vline2x, hline2y, vline2x, hline1y);
-				g.drawLine(vline2x, hline1y, vline1x, hline1y);
+                g.setColor(Color.black);
+                g.drawLine(vline1x, hline1y, vline1x, hline2y);
+                g.drawLine(vline1x, hline2y, vline2x, hline2y);
+                g.drawLine(vline2x, hline2y, vline2x, hline1y);
+                g.drawLine(vline2x, hline1y, vline1x, hline1y);
 
 
-				int x, y, width;
-				Dimension appdim = this.getSize();
-				int appWidth = appdim.width;
-				int appHeight = appdim.height;
-				FontMetrics fm = g.getFontMetrics();
-				String message = "Selection view isn't working yet";
-				width = fm.stringWidth(message);
-				x = (appWidth > width) ? (appWidth-width)/2 : 0;
-				y = (appHeight + fm.getHeight()) / 2;
-				g.setColor(this.getBackground());
-				g.fillRect(x-10, appHeight/2 - fm.getHeight(), width+20, 2*fm.getHeight());
-				g.setColor(Color.black);
-				g.drawString(message, x, y);
-			}
-		};
+                int x, y, width;
+                Dimension appdim = this.getSize();
+                int appWidth = appdim.width;
+                int appHeight = appdim.height;
+                FontMetrics fm = g.getFontMetrics();
+                String message = "Selection view isn't working yet";
+                width = fm.stringWidth(message);
+                x = (appWidth > width) ? (appWidth-width)/2 : 0;
+                y = (appHeight + fm.getHeight()) / 2;
+                g.setColor(this.getBackground());
+                g.fillRect(x-10, appHeight/2 - fm.getHeight(), width+20, 2*fm.getHeight());
+                g.setColor(Color.black);
+                g.drawString(message, x, y);
+            }
+        };
 
-		pleft.setLayout(new GridLayout(3,3));
+        pleft.setLayout(new GridLayout(3,3));
         this.ja = new AnimationPanel[9];
-		for (int i = 0; i < 9; i++) {
-			ja[i] = new AnimationPanel();
-			ja[i].setAnimationPanelPreferredSize(dim);
-			pleft.add(ja[i]);
-		}
+        for (int i = 0; i < 9; i++) {
+            ja[i] = new AnimationPanel();
+            ja[i].setAnimationPanelPreferredSize(dim);
+            pleft.add(ja[i]);
+        }
 
-		pleft.addMouseListener(new MouseAdapter() {
+        pleft.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
             }
 
             public void mouseReleased(MouseEvent me) {
-				Component c = me.getComponent();
-				int num;
-				for (num = 0; num < 9; num++) {
-					if (c == SelectionView.this.ja[num])
-						break;
-				}
-				if (num == 9)
-					return;
+                Component c = me.getComponent();
+                int num;
+                for (num = 0; num < 9; num++) {
+                    if (c == SelectionView.this.ja[num])
+                        break;
+                }
+                if (num == 9)
+                    return;
                 try {
-					SelectionView.this.restartView(ja[num].getPattern(), null);
-				} catch (final JuggleExceptionUser jeu) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							new ErrorDialog(SelectionView.this, jeu.getMessage());
-						}
-					});
-				} catch (final JuggleExceptionInternal jei) {
-					ErrorDialog.handleFatalException(jei);
-				}
+                    SelectionView.this.restartView(ja[num].getPattern(), null);
+                } catch (final JuggleExceptionUser jeu) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            new ErrorDialog(SelectionView.this, jeu.getMessage());
+                        }
+                    });
+                } catch (final JuggleExceptionInternal jei) {
+                    ErrorDialog.handleFatalException(jei);
+                }
             }
         });
 
-		this.mutator = new Mutator();
-		final JPanel pright = mutator.getControlPanel();
+        this.mutator = new Mutator();
+        final JPanel pright = mutator.getControlPanel();
 
         GridBagLayout gb = new GridBagLayout();
         this.setLayout(gb);
 
-		this.add(pleft);
+        this.add(pleft);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.fill = GridBagConstraints.BOTH;
@@ -125,7 +125,7 @@ public class SelectionView extends View {
         gbc.weightx = gbc.weighty = 1.0;
         gb.setConstraints(pleft, gbc);
 
-		this.add(pright);
+        this.add(pright);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;
         gbc.fill = GridBagConstraints.NONE;
@@ -133,25 +133,25 @@ public class SelectionView extends View {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.0;
-		gbc.weighty = 1.0;
+        gbc.weighty = 1.0;
         gb.setConstraints(pright, gbc);
     }
 
     @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
         for (int i = 0; i < 9; i++)
-			ja[i].restartJuggle();
+            ja[i].restartJuggle();
     }
 
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
-		ja[4].restartJuggle(p, c);
+        ja[4].restartJuggle(p, c);
         for (int i = 0; i < 9; i++) {
-			if (i != 4) {
-				JMLPattern newpat = mutator.mutatePattern(p);
-				ja[i].restartJuggle(newpat, c);
-			}
-		}
+            if (i != 4) {
+                JMLPattern newpat = mutator.mutatePattern(p);
+                ja[i].restartJuggle(newpat, c);
+            }
+        }
     }
 
     @Override
@@ -171,19 +171,19 @@ public class SelectionView extends View {
     @Override
     public void disposeView() {
         for (int i = 0; i < 9; i++)
-			ja[i].dispose();
+            ja[i].dispose();
     }
 
     @Override
-	public JMLPattern getPattern() { return ja[4].getPattern(); }
+    public JMLPattern getPattern() { return ja[4].getPattern(); }
 
     @Override
     public boolean getPaused() { return ja[4].getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
-		if (ja[4].message == null)
-			for (int i = 0; i < 9; i++)
-				ja[i].setPaused(pause);
+        if (ja[4].message == null)
+            for (int i = 0; i < 9; i++)
+                ja[i].setPaused(pause);
     }
 }

@@ -1,6 +1,6 @@
 // siteswapNotation.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -29,15 +29,14 @@ import jugglinglab.util.*;
 
 
 public class siteswapNotation extends mhnNotation {
-
     public String getName() {
         return "Siteswap";
     }
 
     public JMLPattern getJMLPattern(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
 
-		// This entire method will need to be double-checked for suitability with siteswap2 notation
-		
+        // This entire method will need to be double-checked for suitability with siteswap2 notation
+
         siteswapPattern p = new siteswapPattern();
 
         // delete newlines and carriage returns from string

@@ -39,7 +39,7 @@ import jugglinglab.renderer.*;
 /*
 	This is one of the core classes, representing a juggling pattern in generalized
 	form.  It is used in three steps:
-	
+
 	1)  Define a pattern, in one of three ways:
 
 		A)  Manually, by calling methods in this class.
@@ -49,18 +49,14 @@ import jugglinglab.renderer.*;
 
 	2)  Call layoutPattern() to calculate flight paths for all the props and
 	    hands.
-	    
+
 	3)  Call various methods to get information about the pattern, e.g., prop/hand
 		coordinates at points in time.
 */
 
 public class JMLPattern {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected String version = JMLDefs.default_JML_on_save;	// JML version number
     protected String title;
@@ -120,7 +116,7 @@ public class JMLPattern {
     // ------------------------------------------------------------------------
 
     //	public void setJMLVersion(String version)	{ this.version = version; }
-    
+
     public void setTitle(String title)		{ this.title = title == null ? null : title.trim(); }
     public void setNumberOfJugglers(int n)	{ this.numjugglers = n; }
     public void setNumberOfPaths(int n)		{ this.numpaths = n; }
@@ -665,7 +661,7 @@ public class JMLPattern {
     // Step 5: construct the links connecting events; build PathLink and HandLink lists
     protected void buildLinkLists() throws JuggleExceptionUser, JuggleExceptionInternal {
         int i, j, k;
-        
+
         this.pathlinks = new ArrayList<ArrayList<PathLink>>(getNumberOfPaths());
 
         for (i = 0; i < getNumberOfPaths(); i++) {
@@ -748,17 +744,17 @@ done1:
 
         // now build the HandLink lists
         handlinks = new ArrayList<ArrayList<ArrayList<HandLink>>>();   // [getNumberOfJugglers()][2];
-        
+
         for (i = 0; i < getNumberOfJugglers(); i++) {
             // build the HandLink list for the ith juggler
-            
+
             handlinks.add(new ArrayList<ArrayList<HandLink>>());
-            
+
             for (j = 0; j < 2; j++) {
                 int handnum = (j == 0 ? HandLink.LEFT_HAND : HandLink.RIGHT_HAND);
 
                 handlinks.get(i).add(new ArrayList<HandLink>());
-                
+
                 JMLEvent ev = this.eventlist;
                 JMLEvent lastev = null;
                 VelocityRef vr = null;
@@ -962,8 +958,8 @@ done2:
 		axis.y = 0.0;
 		axis.z = 1.0;
 		return (3.0*time);
-    }	
-	
+    }
+
     // returns juggler coordinate in global frame
     public void getJugglerPosition(int juggler, double time, Coordinate newPosition) {
         Curve p = jugglercurve[juggler-1];
@@ -1045,7 +1041,7 @@ done2:
         PathLink pl1 = null, pl2 = null;
         boolean wasinair = false;
         boolean gotcatch = false;
-        
+
         for (i = 0; i < pathlinks.get(path-1).size(); i++) {
             pl1 = pathlinks.get(path-1).get(i);
             if ((time1 >= pl1.getStartEvent().getT()) && (time1 <= pl1.getEndEvent().getT()))
@@ -1073,7 +1069,7 @@ done2:
         // so this is just yes/no for now
         if (gotcatch)
             return 1.0;
-        
+
         return 0.0;
     }
 
@@ -1108,7 +1104,7 @@ done2:
 
         return 0.0;
     }
-    
+
     public Coordinate getPathMax(int path) {	// maximum of each coordinate
         Coordinate result = null;
         double t1 = getLoopStartTime();
@@ -1324,10 +1320,10 @@ done2:
             return;
         } else {
 			String template = errorstrings.getString("Error_unknown_tag");
-			Object[] arguments = { type };					
+			Object[] arguments = { type };
 			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
 		}
-		
+
         for (int i = 0; i < current.getNumberOfChildren(); i++)
             readJML(current.getChildNode(i));
     }

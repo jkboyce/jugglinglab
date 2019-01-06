@@ -35,12 +35,8 @@ import jugglinglab.util.*;
 
 
 public class PatternListWindow extends JFrame implements ActionListener {
-    static ResourceBundle guistrings;
-    // static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        // errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     String title = null;
     PatternList pl = null;

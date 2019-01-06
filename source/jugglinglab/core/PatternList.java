@@ -37,15 +37,11 @@ import jugglinglab.view.*;
 
 
 public class PatternList extends JPanel {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
-    final static Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
-    final static Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    static final Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
+    static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
 
     View animtarget = null;
     String title = null;

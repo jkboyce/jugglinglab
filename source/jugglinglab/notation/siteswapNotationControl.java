@@ -1,6 +1,6 @@
 // siteswapNotationControl.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -21,7 +21,6 @@
 */
 
 package jugglinglab.notation;
-
 
 public class siteswapNotationControl extends mhnNotationControl {
 }

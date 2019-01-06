@@ -1,6 +1,6 @@
 // mhnHands.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -29,19 +29,15 @@ import jugglinglab.util.*;
 
 
 public class mhnHands {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected int jugglers = 0;
     protected int[] size = null;
     protected int[][] coords = null;
     protected int[][] catches = null;
     protected double[][][][] handpath = null;
-    
+
 
     public mhnHands(String hands) throws JuggleExceptionUser, JuggleExceptionInternal {
         // delete the '<' and '>' characters first
@@ -160,9 +156,9 @@ public class mhnHands {
                         continue;
                     }
 
-					String template = errorstrings.getString("Error_hands_character");
-					Object[] arguments = { Character.toString(ch) };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_hands_character");
+                    Object[] arguments = { Character.toString(ch) };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
 
                 if (k == 0) {

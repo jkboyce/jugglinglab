@@ -29,12 +29,8 @@ import jugglinglab.util.*;
 
 
 public class JMLSymmetry {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     int		type;
     int		numjugglers;
@@ -56,7 +52,7 @@ public class JMLSymmetry {
         setPathPerm(numpaths, pathperm);
         setDelay(delay);
     }
-    
+
     public int getType()			{ return type; }
     protected void setType(int type)		{ this.type = type; }
     public int getNumberOfJugglers()		{ return numjugglers; }
@@ -122,7 +118,7 @@ public class JMLSymmetry {
         setPathPerm(numpat, pathperm);
         setDelay(delay);
     }
-    
+
     public void writeJML(PrintWriter wr) throws IOException {
         String out = "<symmetry type=\"";
         switch(getType()) {

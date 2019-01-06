@@ -32,12 +32,9 @@ import jugglinglab.util.JLLocale;
 
 
 class siteswapGeneratorControl extends JPanel {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
                 // text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, /*tf6,*/ tf7, /*tf8,*/ tf9;
     protected JRadioButton cb1, cb2, /*cb3,*/ cb4, cb5, cb6;

@@ -1,6 +1,6 @@
 // JLLocale.java
 //
-// Copyright 2011 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -30,57 +30,55 @@ import java.util.ResourceBundle;
 
 
 public class JLLocale {
+    static Locale locale;
 
-	static Locale locale;
-	
+    // convenience functions for managing locale
+    public static void setLocale(Locale loc) {
+        JLLocale.locale = loc;
+    }
 
-	// convenience functions for managing locale
-	public static void setLocale(Locale loc) {
-		JLLocale.locale = loc;
-	}
-	
-	public static Locale getLocale() {
-		if (JLLocale.locale != null)
-			return JLLocale.locale;
-		
-		return Locale.getDefault();
-	}
-	
-	public static ResourceBundle getBundle(String baseName) {
-		ResourceBundle bundle = null;
-		Locale loc = JLLocale.getLocale();
-		
-		if (loc == null)
-			bundle = ResourceBundle.getBundle(baseName);	// use default
-		else
-			bundle = ResourceBundle.getBundle(baseName, loc);
-		
-		if (!(bundle instanceof PropertyResourceBundle))
-			return bundle;
-		
-		return new Utf8PropertyResourceBundle((PropertyResourceBundle)bundle);
-	}
-	
-	private static class Utf8PropertyResourceBundle extends ResourceBundle {
-		PropertyResourceBundle bundle;
-		
-		private Utf8PropertyResourceBundle(PropertyResourceBundle bundle) {
-			this.bundle = bundle;
-		}
-		
-		public Enumeration<String> getKeys() {
-			return bundle.getKeys();
-		}
-		
-		protected Object handleGetObject(String key) {
-			String value = (String)bundle.handleGetObject(key);
-			try {
-				return new String(value.getBytes("ISO-8859-1"),"UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				// Shouldn't fail - but should we still add logging message?
-				return null;
-			} 
-		}
-	}
-	
+    public static Locale getLocale() {
+        if (JLLocale.locale != null)
+            return JLLocale.locale;
+
+        return Locale.getDefault();
+    }
+
+    public static ResourceBundle getBundle(String baseName) {
+        ResourceBundle bundle = null;
+        Locale loc = JLLocale.getLocale();
+
+        if (loc == null)
+            bundle = ResourceBundle.getBundle(baseName);    // use default
+        else
+            bundle = ResourceBundle.getBundle(baseName, loc);
+
+        if (!(bundle instanceof PropertyResourceBundle))
+            return bundle;
+
+        return new Utf8PropertyResourceBundle((PropertyResourceBundle)bundle);
+    }
+
+    private static class Utf8PropertyResourceBundle extends ResourceBundle {
+        PropertyResourceBundle bundle;
+
+        private Utf8PropertyResourceBundle(PropertyResourceBundle bundle) {
+            this.bundle = bundle;
+        }
+
+        public Enumeration<String> getKeys() {
+            return bundle.getKeys();
+        }
+
+        protected Object handleGetObject(String key) {
+            String value = (String)bundle.handleGetObject(key);
+            try {
+                return new String(value.getBytes("ISO-8859-1"),"UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                // Shouldn't fail - but should we still add logging message?
+                return null;
+            }
+        }
+    }
+
 }

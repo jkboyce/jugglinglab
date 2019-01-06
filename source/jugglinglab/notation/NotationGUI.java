@@ -37,12 +37,8 @@ import jugglinglab.view.View;
 
 
 public class NotationGUI extends JPanel implements ActionListener {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected JTabbedPane jtp = null;
     protected JFrame parent = null;

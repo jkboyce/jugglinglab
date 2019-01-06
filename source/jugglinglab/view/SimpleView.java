@@ -66,7 +66,7 @@ public class SimpleView extends View {
     public void disposeView() { ja.dispose(); }
 
     @Override
-	public JMLPattern getPattern() { return ja.getPattern(); }
+    public JMLPattern getPattern() { return ja.getPattern(); }
 
     @Override
     public boolean getPaused() { return ja.getPaused(); }

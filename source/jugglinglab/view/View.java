@@ -35,12 +35,8 @@ import jugglinglab.util.*;
 
 
 public class View extends JPanel implements ActionListener {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected JFrame parent = null;
     protected AnimationPrefs jc = null;

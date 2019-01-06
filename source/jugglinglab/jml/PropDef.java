@@ -1,6 +1,6 @@
 // PropDef.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -29,8 +29,8 @@ import jugglinglab.prop.*;
 import jugglinglab.util.*;
 
 public class PropDef {
-    String	proptype, mod;
-    Prop	prop;
+    String  proptype, mod;
+    Prop    prop;
 
     public PropDef() {
         proptype = mod = null;
@@ -43,11 +43,11 @@ public class PropDef {
         setMod(mod);
     }
 
-    public String getType()		{ return proptype; }
-    protected void setType(String type)	{ this.proptype = type; }
-    public String getMod()		{ return mod; }
-    protected void setMod(String spec) 	{ this.mod = spec; }
-    public Prop getProp()		{ return prop; }
+    public String getType()             { return proptype; }
+    protected void setType(String type) { this.proptype = type; }
+    public String getMod()              { return mod; }
+    protected void setMod(String spec)  { this.mod = spec; }
+    public Prop getProp()               { return prop; }
 
     public void layoutProp() throws JuggleExceptionUser {
         this.prop = Prop.getProp(getType());

@@ -40,19 +40,19 @@ public class ballProp extends Prop {
         Color.gray, Color.green, Color.magenta, Color.orange,
         Color.pink, Color.red, Color.white, Color.yellow};
 
-    protected static final int colornum_def = 8;	// red
-    protected static final double diam_def = 10.0;	// in cm
+    protected static final int colornum_def = 8;    // red
+    protected static final double diam_def = 10.0;  // in cm
     protected static final boolean highlight_def = false;
 
-    protected double 	diam = diam_def;	// diameter, in cm
-    protected int		colornum = colornum_def;
-    protected Color		color;
-    protected boolean	highlight = highlight_def;
-    // protected int	ball_pixel_size;
+    protected double    diam = diam_def;    // diameter, in cm
+    protected int       colornum = colornum_def;
+    protected Color     color;
+    protected boolean   highlight = highlight_def;
+    // protected int    ball_pixel_size;
 
-    protected BufferedImage 	ballimage;
-    protected double 	lastzoom = 0.0;
-    // protected int 	offsetx, offsety;
+    protected BufferedImage     ballimage;
+    protected double    lastzoom = 0.0;
+    // protected int    offsetx, offsety;
     protected Dimension size = null;
     protected Dimension center = null;
     protected Dimension grip = null;
@@ -103,7 +103,7 @@ public class ballProp extends Prop {
                         break;
                     }
                 }
-            } else {	// RGB triplet
+            } else {    // RGB triplet
                      // delete the '{' and '}' characters first
                 String str = colorstr;
                 int pos;
@@ -113,34 +113,34 @@ public class ballProp extends Prop {
                 while ((pos = str.indexOf('}')) >= 0) {
                     str = str.substring(0,pos) + str.substring(pos+1,str.length());
                 }
-				StringTokenizer st2 = new StringTokenizer(str, ",", false);
-				if (st2.countTokens() == 3) {
-					int red = 0, green = 0, blue = 0;
-					String token = null;
-					try {
-						token = st2.nextToken();
-						red = Integer.valueOf(token).intValue();
-						token = st2.nextToken();
-						green = Integer.valueOf(token).intValue();
-						token = st2.nextToken();
-						blue = Integer.valueOf(token).intValue();
-					} catch (NumberFormatException nfe) {
-						String template = errorstrings.getString("Error_number_format");
-						Object[] arguments = { token };
-						throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-					}
-					temp = new Color(red, green, blue);
-				} else
-					throw new JuggleExceptionUser(errorstrings.getString("Error_token_count"));
+                StringTokenizer st2 = new StringTokenizer(str, ",", false);
+                if (st2.countTokens() == 3) {
+                    int red = 0, green = 0, blue = 0;
+                    String token = null;
+                    try {
+                        token = st2.nextToken();
+                        red = Integer.valueOf(token).intValue();
+                        token = st2.nextToken();
+                        green = Integer.valueOf(token).intValue();
+                        token = st2.nextToken();
+                        blue = Integer.valueOf(token).intValue();
+                    } catch (NumberFormatException nfe) {
+                        String template = errorstrings.getString("Error_number_format");
+                        Object[] arguments = { token };
+                        throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    }
+                    temp = new Color(red, green, blue);
+                } else
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_token_count"));
             }
 
             if (temp != null)
                 color = temp;
             else {
-				String template = errorstrings.getString("Error_prop_color");
-				Object[] arguments = { colorstr };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-			}
+                String template = errorstrings.getString("Error_prop_color");
+                Object[] arguments = { colorstr };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
         }
 
         String diamstr = pl.getParameter("diam");
@@ -153,9 +153,9 @@ public class ballProp extends Prop {
                 else
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
             } catch (NumberFormatException nfe) {
-				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "diam" };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "diam" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
 
@@ -178,28 +178,28 @@ public class ballProp extends Prop {
 
     @Override
     public Image getProp2DImage(double zoom, double[] camangle) {
-        if ((ballimage == null) || (zoom != lastzoom))	// first call or display resized?
+        if ((ballimage == null) || (zoom != lastzoom))  // first call or display resized?
             recalc2D(zoom);
         return ballimage;
     }
 
     @Override
     public Dimension getProp2DSize(double zoom) {
-        if ((size == null) || (zoom != lastzoom))		// first call or display resized?
+        if ((size == null) || (zoom != lastzoom))       // first call or display resized?
             recalc2D(zoom);
         return size;
     }
 
     @Override
-	public Dimension getProp2DCenter(double zoom) {
-		if ((center == null) || (zoom != lastzoom))
-			recalc2D(zoom);
-		return center;
-	}
+    public Dimension getProp2DCenter(double zoom) {
+        if ((center == null) || (zoom != lastzoom))
+            recalc2D(zoom);
+        return center;
+    }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if ((grip == null) || (zoom != lastzoom))		// first call or display resized?
+        if ((grip == null) || (zoom != lastzoom))       // first call or display resized?
             recalc2D(zoom);
         return grip;
     }
@@ -256,7 +256,7 @@ public class ballProp extends Prop {
         lastzoom = zoom;
     }
 
-	/*
+    /*
     public Object getPropIDX3D() {
         Object result = null;
         try {
@@ -288,7 +288,7 @@ public class ballProp extends Prop {
     }
 
     public Coordinate getPropIDX3DGrip() {
-        return new Coordinate(0.0, 0.0, -diam/2);		// bottom of ball
+        return new Coordinate(0.0, 0.0, -diam/2);       // bottom of ball
     }
-	*/
+    */
 }

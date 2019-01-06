@@ -32,12 +32,8 @@ import jugglinglab.util.*;
     // This class defines a general object that is capable of generating tricks
     // and converting them into commands that the animator understands.
 public abstract class Generator {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     // The built-in generators
     public static final String[] builtinGenerators = { "siteswap" };

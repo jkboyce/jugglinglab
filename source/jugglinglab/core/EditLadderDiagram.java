@@ -40,12 +40,8 @@ import jugglinglab.prop.*;
 
 
 public class EditLadderDiagram extends LadderDiagram implements ActionListener {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     static final protected double min_throw_time = 0.05;
     static final protected double min_hold_time = 0.05;

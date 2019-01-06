@@ -30,12 +30,8 @@ import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationPrefs {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;

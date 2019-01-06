@@ -33,15 +33,6 @@ import jugglinglab.view.*;
 
 
 public class PatternWindow extends JFrame implements WindowListener {
-    /*
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
-    */
-
     protected View view = null;
     protected JMenu filemenu = null;
     protected JMenu viewmenu = null;

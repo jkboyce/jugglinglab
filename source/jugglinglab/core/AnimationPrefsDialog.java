@@ -32,12 +32,8 @@ import jugglinglab.util.*;
 
 
 public class AnimationPrefsDialog extends JDialog {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected JTextField    tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
     protected JCheckBox     cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;

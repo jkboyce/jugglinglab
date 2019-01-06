@@ -1,6 +1,6 @@
 // PathLink.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,17 +27,17 @@ import jugglinglab.util.*;
 
 
 public class PathLink {
-    protected int		pathnum;
-    protected JMLEvent		startevent, endevent;
-    protected int		catchtype;
-    protected String		throwtype, mod;
-    protected Path		proppath;
-    protected boolean		inhand;
-    protected int		juggler, hand;
+    protected int           pathnum;
+    protected JMLEvent      startevent, endevent;
+    protected int           catchtype;
+    protected String        throwtype, mod;
+    protected Path          proppath;
+    protected boolean       inhand;
+    protected int           juggler, hand;
 
-    protected boolean		ismaster;
-    protected PathLink[]	duplicates;		// if master
-    protected PathLink		master;			// if duplicate
+    protected boolean       ismaster;
+    protected PathLink[]    duplicates;     // if master
+    protected PathLink      master;         // if duplicate
 
 
     public PathLink(int pathnum, JMLEvent startevent, JMLEvent endevent) {
@@ -65,18 +65,18 @@ public class PathLink {
         this.hand = hand;
     }
 
-    public Path getPath() 		{ return proppath; }
+    public Path getPath()           { return proppath; }
 
-    public int getCatch()		{ return catchtype; }
+    public int getCatch()           { return catchtype; }
     public void setCatch(int catchtype) { this.catchtype = catchtype; }
-    public int getPathNum()		{ return pathnum; }
-    public JMLEvent getStartEvent()	{ return startevent; }
-    public JMLEvent getEndEvent()	{ return endevent; }
+    public int getPathNum()         { return pathnum; }
+    public JMLEvent getStartEvent() { return startevent; }
+    public JMLEvent getEndEvent()   { return endevent; }
 
-    public boolean isInHand()		{ return inhand; }
-    public int getHoldingJuggler()	{ return juggler; }
-    public int getHoldingHand()		{ return hand; }
-    public boolean isMaster()		{ return ismaster; }
+    public boolean isInHand()       { return inhand; }
+    public int getHoldingJuggler()  { return juggler; }
+    public int getHoldingHand()     { return hand; }
+    public boolean isMaster()       { return ismaster; }
 
     public String toString() {
         String result = null;

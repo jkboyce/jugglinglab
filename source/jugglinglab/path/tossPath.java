@@ -1,6 +1,6 @@
 // tossPath.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,13 +27,13 @@ import jugglinglab.util.*;
 
 
 public class tossPath extends Path {
-    protected static final double g_def = 980;	// using CGS units
+    protected static final double g_def = 980;  // using CGS units
 
-    protected double	bx, cx;
-    protected double	by, cy;
-    protected double	az, bz, cz;
+    protected double    bx, cx;
+    protected double    by, cy;
+    protected double    az, bz, cz;
 
-    protected double	g = g_def;
+    protected double    g = g_def;
 
     public String getName() { return "Toss"; }
 
@@ -58,9 +58,9 @@ public class tossPath extends Path {
                 try {
                     g = Double.valueOf(pvalue).doubleValue();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "g" };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "g" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else
                 throw new JuggleExceptionUser(errorstrings.getString("Error_path_badmod")+": '"+pname+"'");
@@ -69,11 +69,11 @@ public class tossPath extends Path {
         az = -0.5 * g;
     }
 
-    public void	calcPath() throws JuggleExceptionInternal {
+    public void calcPath() throws JuggleExceptionInternal {
         if (start_coord == null || end_coord == null)
             throw new JuggleExceptionInternal("Error in parabolic path: endpoints not set");
 
-        double	t = getDuration();
+        double  t = getDuration();
         cx = start_coord.x;
         bx = (end_coord.x - start_coord.x) / t;
         cy = start_coord.y;

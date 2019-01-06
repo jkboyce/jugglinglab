@@ -1,6 +1,6 @@
 // bouncePath.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,27 +27,27 @@ import jugglinglab.util.*;
 
 
 public class bouncePath extends Path {
-    protected static final int bounces_def = 1;		// number of bounces
+    protected static final int bounces_def = 1;     // number of bounces
     protected static final boolean forced_def = false;
     protected static final boolean hyper_def = false;
-    protected static final double bounceplane_def = 0.0;  	// floor level
+    protected static final double bounceplane_def = 0.0;    // floor level
     protected static final double bouncefrac_def = 0.9;
-    protected static final double g_def = 980.0;		// using CGS units
+    protected static final double g_def = 980.0;        // using CGS units
 
-    protected double	bx, cx;
-    protected double	by, cy;
-    protected double	az[], bz[], cz[];
-    protected double	endtime[];
-    protected int	bounces = bounces_def;
-    protected boolean	forced = forced_def;	// true -> forced throw
-    protected boolean	hyper = hyper_def;	// true -> same type of catch (lift/forced) as throw
-    protected double	bounceplane = bounceplane_def;
-    protected double	bouncefrac = bouncefrac_def;
-    protected double	g = g_def;
-    protected double	bouncefracsqrt;
-    protected double	bouncetime;
-    protected int	numbounces;		// actual number of bounces (<= this.bounces)
-    
+    protected double    bx, cx;
+    protected double    by, cy;
+    protected double    az[], bz[], cz[];
+    protected double    endtime[];
+    protected int       bounces = bounces_def;
+    protected boolean   forced = forced_def;    // true -> forced throw
+    protected boolean   hyper = hyper_def;  // true -> same type of catch (lift/forced) as throw
+    protected double    bounceplane = bounceplane_def;
+    protected double    bouncefrac = bouncefrac_def;
+    protected double    g = g_def;
+    protected double    bouncefracsqrt;
+    protected double    bouncetime;
+    protected int       numbounces;     // actual number of bounces (<= this.bounces)
+
     public String getName() { return "Bounce"; }
 
     public ParameterDescriptor[] getParameterDescriptors() {
@@ -88,9 +88,9 @@ public class bouncePath extends Path {
                 try {
                     bounces = Integer.valueOf(pvalue).intValue();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "bounces" };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "bounces" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else if (pname.equalsIgnoreCase("forced")) {
                 forced = Boolean.valueOf(pvalue).booleanValue();
@@ -100,25 +100,25 @@ public class bouncePath extends Path {
                 try {
                     bounceplane = Double.valueOf(pvalue).doubleValue();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "bounceplane" };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "bounceplane" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else if (pname.equalsIgnoreCase("bouncefrac")) {
                 try {
                     bouncefrac = Double.valueOf(pvalue).doubleValue();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "bouncefrac" };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "bouncefrac" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else if (pname.equalsIgnoreCase("g")) {
                 try {
                     g = Double.valueOf(pvalue).doubleValue();
                 } catch (NumberFormatException nfe) {
-					String template = errorstrings.getString("Error_number_format");
-					Object[] arguments = { "g" };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_number_format");
+                    Object[] arguments = { "g" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else
                 throw new JuggleExceptionUser(errorstrings.getString("Error_path_badmod")+": '"+pname+"'");
@@ -135,7 +135,7 @@ public class bouncePath extends Path {
             this.bouncefracsqrt = 1.0;
         }
         this.g = g;
-        
+
         this.az = new double[bounces + 1];
         this.bz = new double[bounces + 1];
         this.cz = new double[bounces + 1];
@@ -151,7 +151,7 @@ public class bouncePath extends Path {
         if ((start_coord == null) || (end_coord == null))
             return;
 
-        double	t2 = getDuration();
+        double  t2 = getDuration();
         // First do the x and y coordinates -- these are simple.
         cx = start_coord.x;
         bx = (end_coord.x - start_coord.x) / t2;
@@ -178,7 +178,7 @@ public class bouncePath extends Path {
             double kk = k * k;
             double gt = this.g * t2;
             double v0;
-            
+
             // We are solving the following equation for v0 (the throw velocity), where
             // the constants are as defined above:
             //
@@ -203,7 +203,7 @@ public class bouncePath extends Path {
 
             double[] realroot = new double[4];
             int numrealroots = 0;
-            
+
             if (numbounces > 1) {
                 // More than one bounce, need to solve the quartic case
                 for (int i = 0; i < 4; i++)
@@ -235,15 +235,15 @@ public class bouncePath extends Path {
             for (int i = 0; i < numroots; i++)
                 System.out.println("   v0["+i+"] = "+root[i]+" -- "+(liftcatch[i]?"lift catch":"forced catch"));
             */
-            
+
             if (numroots == 0)
-                continue;	// no solution -> go to the next fewer number of bounces
-            
+                continue;   // no solution -> go to the next fewer number of bounces
+
             // Select which root to use.  First try to get the forced and hyper values as
             // desired.  If no solution, try to get forced, then try to get hyper as desired.
 
             boolean choseroot = false;
-            v0 = root[0];	// default
+            v0 = root[0];   // default
             for (int i = 0; i < numroots; i++) {
                 if ((forced && (root[i]>0.0)) || (!forced && (root[i]<0.0)))
                     continue;
@@ -277,7 +277,7 @@ public class bouncePath extends Path {
             double rhs = f1 * Math.sqrt(v0*v0+c);
             System.out.println("Using root v0 = "+v0+" -- lhs = "+lhs+", rhs = "+rhs);
             */
-            
+
             // finally, set the remaining path variables based on our solution of v0
             bz[0] = v0;
             if (az[0] < 0.0)
@@ -292,8 +292,8 @@ public class bouncePath extends Path {
                 endtime[i] = endtime[i-1] - vrebound / az[i];
                 vrebound = bouncefracsqrt * vrebound;
             }
-            endtime[numbounces] = getDuration();	// fix this assignment from the above loop
-            
+            endtime[numbounces] = getDuration();    // fix this assignment from the above loop
+
             return;
         }
 
@@ -388,7 +388,7 @@ public class bouncePath extends Path {
         return result;
     }
 
-    
+
     /*
     // Find the real roots of the polynomial equation x^3 + k2*x^2 + k1*x + k0 = 0
     //
@@ -397,7 +397,7 @@ public class bouncePath extends Path {
         double q = k2*k2/9.0 - k1/3.0;
         double r = k2*k2*k2/27.0 - k1*k2/6.0 + k0/2.0;
         double D = r*r - q*q*q;
-        
+
         if (D > 0.0) {
             // one real root
             double k = Math.pow(Math.sqrt(D) + Math.abs(r), 1.0/3.0);
@@ -426,10 +426,10 @@ public class bouncePath extends Path {
         double m0 = 4.0*k2*k0 - k1*k1 - k3*k3*k0;
         double[] realroots = new double[3];
         findRealRootsCubic(m0, m1, m2, realroots);
-    
+
         double Rsq = 0.25*k3*k3 - k2 + realroots[0];
         if (Rsq < 0.0)
-            return 0;		// no real roots
+            return 0;       // no real roots
 
         int numroots = 0;
         double R = Math.sqrt(Rsq);
@@ -446,8 +446,8 @@ public class bouncePath extends Path {
         return numroots;
     }
     */
-    
-    
+
+
     static protected double evalPolynomial(double[] coef, int degree, double x) {
         double result = coef[0];
         double term = x;
@@ -457,7 +457,7 @@ public class bouncePath extends Path {
             term *= x;
         }
 
-        return (result + term);		// add on x^n term
+        return (result + term);     // add on x^n term
     }
 
     // returns other endpoint of interval
@@ -476,14 +476,14 @@ public class bouncePath extends Path {
 
     // Find roots of polynomial by successive bisection
     static protected double findRoot(double[] coef, int degree, double xlow, double xhigh) {
-        double	val1, val2, valtemp, t;
+        double  val1, val2, valtemp, t;
 
         val1 = evalPolynomial(coef, degree, xlow);
         val2 = evalPolynomial(coef, degree, xhigh);
-    
+
         if (val1*val2 > 0.0)
-            return 0.5*(xlow+xhigh);			// should never happen!
-    
+            return 0.5*(xlow+xhigh);            // should never happen!
+
         while (Math.abs(xlow-xhigh) > 1e-6) {
             t = 0.5*(xlow+xhigh);
             valtemp = evalPolynomial(coef, degree, t);
@@ -497,7 +497,7 @@ public class bouncePath extends Path {
         }
         return xlow;
     }
-     
+
     // Find real roots of the polynomial expression:
     //    c0 + c1*x + c2*x^2 + ... + c(n-1)*x^(n-1) + x^n = 0
     //
@@ -574,7 +574,7 @@ public class bouncePath extends Path {
             }
             return numroots;
         }
-        
+
         // Sort the extrema using a bubble sort
         for (int i = 0; i < numextrema; i++) {
             for (int j = i; j < numextrema; j++) {

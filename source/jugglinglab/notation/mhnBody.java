@@ -1,6 +1,6 @@
 // mhnBody.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -30,12 +30,8 @@ import jugglinglab.util.*;
 
 
 public class mhnBody {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected int jugglers = 0;
     protected int[] size = null;
@@ -109,7 +105,7 @@ public class mhnBody {
                             throw new JuggleExceptionUser(errorstrings.getString("Error_body_noparen"));
                         if (k == 2) {
                             bodypath[j][pos][numcoords] = new double[4];
-                            bodypath[j][pos][numcoords][3] = 100.0;		// default z
+                            bodypath[j][pos][numcoords][3] = 100.0;     // default z
 
                             String str2 = str.substring(l+1, endindex);
 
@@ -137,9 +133,9 @@ public class mhnBody {
                         continue;
                     }
 
-					String template = errorstrings.getString("Error_body_character");
-					Object[] arguments = { Character.toString(ch) };					
-					throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    String template = errorstrings.getString("Error_body_character");
+                    Object[] arguments = { Character.toString(ch) };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
 
                 if (k == 0) {

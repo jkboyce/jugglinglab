@@ -40,16 +40,14 @@ import jugglinglab.util.*;
 
 
 public class AnimationPanel extends JPanel implements Runnable {
-    static ResourceBundle guistrings;
-    // static ResourceBundle errorstrings;
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
     static AudioClip catchclip;
     static AudioClip bounceclip;
     protected static final double snapangle = JLMath.toRad(15.0);
 
     static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        // errorstrings = JLLocale.getBundle("ErrorStrings");
-
         // load audio resources
         URL catchurl = AnimationPanel.class.getResource("/catch.au");
         if (catchurl != null)

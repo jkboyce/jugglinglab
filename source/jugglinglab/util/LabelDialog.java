@@ -27,15 +27,13 @@ import javax.swing.*;
 
 
 public class LabelDialog {
-
-	public LabelDialog(Component parent, String title, String msg) {
+    public LabelDialog(Component parent, String title, String msg) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 JOptionPane.showMessageDialog(parent, msg, title, JOptionPane.INFORMATION_MESSAGE);
             }
         });
-	}
-
+    }
 }
 
