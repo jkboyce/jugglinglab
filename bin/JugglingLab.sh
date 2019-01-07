@@ -6,13 +6,12 @@
 # Released under the GNU General Public License v2
 
 
-DIR=$(dirname $0)
-export JL_WORKING_DIR=`pwd`
+DIR=$(dirname "$0")
+export JL_WORKING_DIR="`pwd`"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # running on Mac OS X; launch using executable in application bundle
-
-    OSX_JL_EXEC=${DIR}/Juggling\ Lab.app/Contents/MacOS/Juggling\ Lab
+    OSX_JL_EXEC="${DIR}/Juggling Lab.app/Contents/MacOS/Juggling Lab"
 
     if [[ -x "${OSX_JL_EXEC}" ]]; then
         "${OSX_JL_EXEC}"
@@ -23,7 +22,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     # running on other OS. Make sure an adequate version of Java is installed,
     # then launch the jar.
-
     if type java >/dev/null 2>&1; then
         # echo found java executable in PATH
         _java=java
@@ -45,10 +43,10 @@ else
         fi
     fi
 
-    JL_JAR=${DIR}/JugglingLab.jar
+    JL_JAR="${DIR}/JugglingLab.jar"
 
     if [ -a "${JL_JAR}" ]; then
-        "$_java" -cp "${JL_JAR}" JugglingLab
+        "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab
     else
         echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
         exit 1
