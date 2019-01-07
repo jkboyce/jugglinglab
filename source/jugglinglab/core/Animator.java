@@ -48,16 +48,17 @@ import jugglinglab.util.*;
 public class Animator {
     protected JMLPattern        pat;
     protected AnimationPrefs    jc;
-    protected jugglinglab.renderer.Renderer ren1 = null, ren2 = null;
-    protected Coordinate        overallmax = null, overallmin = null;
+    protected jugglinglab.renderer.Renderer ren1, ren2;
+    protected Coordinate        overallmax, overallmin;
 
-    protected int[]             animpropnum = null, temppropnum = null;
-    protected Permutation       invpathperm = null;
+    protected int[]             animpropnum;
+    protected Permutation       invpathperm;
     protected int               num_frames;
     protected double            sim_time;
     protected double            sim_interval_secs;
     protected long              real_interval_millis;
 
+    // camera angles for viewing
     protected double[]          camangle;
     protected double[]          camangle1;     // for stereo display
     protected double[]          camangle2;
@@ -72,39 +73,41 @@ public class Animator {
     }
 
     // Do a full (re)start of the animator with a new pattern, new animation
-    // preferences, or both.
+    // preferences, or both. Passing in null indicates no update for that item.
     public void restartAnimator(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-        // try to lay out new pattern first so that if there's an error we
+        // try to lay out new pattern first so if there's an error we
         // won't stop the current animation
-        if ((pat != null) && !pat.isLaidout())
+        if (pat != null && !pat.isLaidout())
             pat.layoutPattern();
 
-        if (pat != null)    this.pat = pat;
-        if (newjc != null)  this.jc = newjc;
+        if (pat != null)
+            this.pat = pat;
+        if (newjc != null)
+            this.jc = newjc;
 
         if (this.pat == null)
             return;
 
-        ren1 = new Renderer2D();
+        this.ren1 = new Renderer2D();
         if (this.jc.stereo)
-            ren2 = new Renderer2D();
+            this.ren2 = new Renderer2D();
 
-        ren1.setPattern(this.pat);
+        this.ren1.setPattern(this.pat);
         if (this.jc.stereo)
-            ren2.setPattern(this.pat);
+            this.ren2.setPattern(this.pat);
 
         initAnimator();
 
+        double[] ca = new double[2];
         if (this.pat.getNumberOfJugglers() == 1) {
-            this.camangle[0] = JLMath.toRad(0.0);
-            this.camangle[1] = JLMath.toRad(90.0);
+            ca[0] = JLMath.toRad(0.0);
+            ca[1] = JLMath.toRad(90.0);
         } else {
-            this.camangle[0] = JLMath.toRad(340.0);
-            this.camangle[1] = JLMath.toRad(70.0);
+            ca[0] = JLMath.toRad(340.0);
+            ca[1] = JLMath.toRad(70.0);
         }
-
-        setCameraAngle(camangle);
+        setCameraAngle(ca);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(this.pat);
@@ -149,15 +152,13 @@ public class Animator {
 
     public void drawFrame(double sim_time, Graphics g, boolean draw_axes)
                         throws JuggleExceptionInternal {
-        int[] pnum = this.animpropnum;
-
         if (this.jc.stereo) {
-            this.ren1.drawFrame(sim_time, pnum,
+            this.ren1.drawFrame(sim_time, this.animpropnum,
                                 g.create(0, 0, this.dim.width/2, this.dim.height));
-            this.ren2.drawFrame(sim_time, pnum,
+            this.ren2.drawFrame(sim_time, this.animpropnum,
                                 g.create(this.dim.width/2, 0, this.dim.width/2, this.dim.height));
         } else {
-            this.ren1.drawFrame(sim_time, pnum, g);
+            this.ren1.drawFrame(sim_time, this.animpropnum, g);
         }
 
         if (draw_axes) {
@@ -226,13 +227,17 @@ public class Animator {
         }
     }
 
+    // After each cycle through the pattern we need to assign props to new paths,
+    // to maintain continuity. After pat.getPeriod() times through this the props
+    // will return to their original assignments.
     public void advanceProps() {
-        int[] pnum = this.animpropnum;
+        int paths = this.pat.getNumberOfPaths();
+        int[] temppropnum = new int[paths];
 
-        for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            temppropnum[invpathperm.getMapping(i+1)-1] = pnum[i];
-        for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            pnum[i] = temppropnum[i];
+        for (int i = 0; i < paths; i++)
+            temppropnum[this.invpathperm.getMapping(i + 1) - 1] = this.animpropnum[i];
+        for (int i = 0; i < paths; i++)
+            this.animpropnum[i] = temppropnum[i];
     }
 
     // Rescales the animator so that the pattern and key parts of the juggler
@@ -241,16 +246,17 @@ public class Animator {
         findMaxMin();
         syncRenderersToSize();
 
-        // figure out timing constants; adjust fps to get integer number of frames in loop
-        num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) * jc.slowdown * jc.fps);
-        sim_interval_secs = (pat.getLoopEndTime()-pat.getLoopStartTime()) / num_frames;
-        real_interval_millis = (long)(1000.0 * sim_interval_secs * jc.slowdown);
+        // figure out timing constants; this in effect adjusts fps to get an integer
+        // number of frames in one repetition of the pattern
+        this.num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *
+                                jc.slowdown * jc.fps);
+        this.sim_interval_secs = (pat.getLoopEndTime() - pat.getLoopStartTime()) / num_frames;
+        this.real_interval_millis = (long)(1000.0 * sim_interval_secs * jc.slowdown);
 
-        animpropnum = new int[pat.getNumberOfPaths()];
-        for (int i = 1; i <= pat.getNumberOfPaths(); i++)
-            animpropnum[i-1] = pat.getPropAssignment(i);
-        temppropnum = new int[pat.getNumberOfPaths()];
-        invpathperm = pat.getPathPermutation().getInverse();
+        this.animpropnum = new int[pat.getNumberOfPaths()];
+        for (int i = 0; i < pat.getNumberOfPaths(); i++)
+            this.animpropnum[i] = pat.getPropAssignment(i + 1);
+        this.invpathperm = pat.getPathPermutation().getInverse();
     }
 
     // Find the overall bounding box of the juggler and pattern, in real-space
@@ -356,7 +362,6 @@ public class Animator {
 
     public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
                         IOException, JuggleExceptionInternal {
-
         ImageWriter iw = ImageIO.getImageWritersByFormatName("gif").next();
         ImageOutputStream ios = new MemoryCacheImageOutputStream(os);
         iw.setOutput(ios);
@@ -364,27 +369,32 @@ public class Animator {
 
         BufferedImage image = new BufferedImage(this.dim.width, this.dim.height,
                                                 BufferedImage.TYPE_INT_RGB);
-        Graphics g = image.getGraphics();
+        Graphics2D g = image.createGraphics();
+        // antialiased rendering creates too many distinct color values for
+        // GIF to handle well
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_OFF);
 
-        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        // reset prop assignments so we'll generate an identical GIF every time
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            gifpropnum[i] = pat.getPropAssignment(i+1);
-        int patperiod = pat.getPeriod();
-        int totalframes = patperiod * num_frames;
+            this.animpropnum[i] = pat.getPropAssignment(i + 1);
+
+        int totalframes = pat.getPeriod() * this.num_frames;
         int framecount = 0;
 
         // delay time is embedded in GIF header in terms of hundredths of a second
-        String delayTime = String.valueOf((int)(real_interval_millis/10));
+        String delayTime = String.valueOf((int)(0.5 + this.real_interval_millis / 10));
 
         ImageWriteParam iwp = iw.getDefaultWriteParam();
         IIOMetadata metadata = null;
 
-        for (int i = 0; i < patperiod; i++)  {
+        for (int i = 0; i < pat.getPeriod(); i++)  {
             double time = pat.getLoopStartTime();
 
-            for (int j = 0; j < num_frames; j++) {
+            for (int j = 0; j < this.num_frames; j++) {
                 this.drawFrame(time, g, false);
 
+                // after the second frame all subsequent frames have identical metadata
                 if (framecount < 2) {
                     metadata = iw.getDefaultImageMetadata(
                             new ImageTypeSpecifier(image), iwp);
@@ -394,7 +404,7 @@ public class Animator {
                 IIOImage ii = new IIOImage(image, null, metadata);
                 iw.writeToSequence(ii, (ImageWriteParam) null);
 
-                time += sim_interval_secs;
+                time += this.sim_interval_secs;
                 framecount++;
 
                 if (wgm != null) {
@@ -418,7 +428,7 @@ public class Animator {
 
     // Helper method for writeGIF() above
     // Adapted from https://community.oracle.com/thread/1264385
-    public static void configureGIFMetadata(IIOMetadata meta,
+    private static void configureGIFMetadata(IIOMetadata meta,
                                             String delayTime,
                                             int imageIndex) {
         String metaFormat = meta.getNativeMetadataFormatName();
@@ -475,7 +485,7 @@ public class Animator {
     // the color map when there are many individual colors, for example with the
     // image prop.
     /*
-    public void writeGIF_old(OutputStream os, Animator.WriteGIFMonitor wgm) throws
+    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
                 IOException, JuggleExceptionInternal {
 
         // Create the object that will actually do the writing
@@ -485,13 +495,17 @@ public class Animator {
         int appHeight = this.dim.height;
 
         BufferedImage image = new BufferedImage(appWidth, appHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics g = image.getGraphics();
+        Graphics2D g = image.createGraphics();
+        // antialiased rendering creates too many distinct color values for
+        // GIF to handle well
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_OFF);
 
-        int[] gifpropnum = new int[pat.getNumberOfPaths()];
+        // reset prop assignments so we'll generate an identical GIF every time
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            gifpropnum[i] = pat.getPropAssignment(i+1);
-        int patperiod = pat.getPeriod();
-        int totalframes = patperiod * num_frames * 2;
+            this.animpropnum[i] = pat.getPropAssignment(i + 1);
+
+        int totalframes = pat.getPeriod() * this.num_frames * 2;
         int framecount = 0;
 
         // loop through the individual frames twice, first to build the
@@ -500,12 +514,12 @@ public class Animator {
             if (pass == 1)
                 gaw.writeHeader(os);
 
-            for (int i = 0; i < patperiod; i++)  {
+            for (int i = 0; i < pat.getPeriod(); i++)  {
                 double time = pat.getLoopStartTime();
 
-                for (int j = 0; j < num_frames; j++) {
+                for (int j = 0; j < this.num_frames; j++) {
                     if (pass == 1)
-                        gaw.writeDelay((int)(real_interval_millis/10), os);
+                        gaw.writeDelay((int)(0.5 + real_interval_millis / 10), os);
 
                     this.drawFrame(time, g, false);
 
@@ -523,7 +537,7 @@ public class Animator {
                         }
                     }
 
-                    time += sim_interval_secs;
+                    time += this.sim_interval_secs;
                 }
 
                 this.advanceProps();
