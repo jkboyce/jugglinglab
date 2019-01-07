@@ -39,6 +39,11 @@ import jugglinglab.notation.Notation;
 import jugglinglab.view.View;
 
 
+// Still including this for old times' sake. When we move to Java 11 applets will
+// be officially dead so we'll remove it. In the meantime note this hasn't been
+// tested in quite a while.
+
+
 public class JugglingLabApplet extends JApplet {
     static ResourceBundle guistrings;
     static ResourceBundle errorstrings;
