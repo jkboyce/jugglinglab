@@ -147,7 +147,7 @@ public class JMLView extends View implements DocumentListener {
     public AnimationPanel getAnimationPanel() { return ja; }
 
     @Override
-    public void disposeView() { ja.dispose(); }
+    public void disposeView() { ja.disposeAnimation(); }
 
     @Override
     public JMLPattern getPattern() { return ja.getPattern(); }

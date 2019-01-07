@@ -22,13 +22,14 @@
 
 package jugglinglab.core;
 
-import java.applet.Applet;
-import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.ProgressMonitor;
@@ -43,18 +44,25 @@ public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static AudioClip catchclip;
-    static AudioClip bounceclip;
+    protected static Clip catchclip;
+    protected static Clip bounceclip;
+
     protected static final double snapangle = JLMath.toRad(15.0);
 
     static {
-        // load audio resources
-        URL catchurl = AnimationPanel.class.getResource("/catch.au");
-        if (catchurl != null)
-            AnimationPanel.catchclip = Applet.newAudioClip(catchurl);
-        URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
-        if (bounceurl != null)
-            AnimationPanel.bounceclip = Applet.newAudioClip(bounceurl);
+        // load audio clips
+        try {
+            URL catchurl = AnimationPanel.class.getResource("/catch.au");
+            AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
+            AnimationPanel.catchclip = AudioSystem.getClip();
+            AnimationPanel.catchclip.open(catchAudioIn);
+        } catch (Exception e) {}
+        try {
+            URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
+            AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
+            AnimationPanel.bounceclip = AudioSystem.getClip();
+            AnimationPanel.bounceclip.open(bounceAudioIn);
+        } catch (Exception e) {}
     }
 
     protected Animator          anim;
@@ -331,19 +339,25 @@ public class AnimationPanel extends JPanel implements Runnable {
                     setTime(getTime() + anim.sim_interval_secs);
                     newtime = getTime();
 
-                    if (jc.catchSound && (catchclip != null)) {
+                    if (jc.catchSound && catchclip != null) {
                         for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                             if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
                                 // System.out.println("Caught path "+path);
-                                catchclip.play();
+                                if (catchclip.isRunning())
+                                    catchclip.stop();
+                                catchclip.setFramePosition(0);
+                                catchclip.start();
                             }
                         }
                     }
-                    if (jc.bounceSound && (bounceclip != null)) {
+                    if (jc.bounceSound && bounceclip != null) {
                         for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                             if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
                                 // System.out.println("Caught path "+path);
-                                bounceclip.play();
+                                if (bounceclip.isRunning())
+                                    bounceclip.stop();
+                                bounceclip.setFramePosition(0);
+                                bounceclip.start();
                             }
                         }
                     }
@@ -439,8 +453,7 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     public AnimationPrefs getAnimationPrefs() { return jc; }
 
-    public void dispose() { killAnimationThread(); }
-
+    public void disposeAnimation() { killAnimationThread(); }
 
     // Called in View.java when the user selects the "Save as Animated GIF..."
     // menu option.
@@ -477,12 +490,13 @@ public class AnimationPanel extends JPanel implements Runnable {
         @Override
         public void run() {
             try {
+                File file = null;
                 try {
                     int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(AnimationPanel.this);
 
                     if (option == JFileChooser.APPROVE_OPTION) {
                         if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                            File file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                            file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
                             FileOutputStream out = new FileOutputStream(file);
 
                             ProgressMonitor pm = new ProgressMonitor(parent,
@@ -504,21 +518,17 @@ public class AnimationPanel extends JPanel implements Runnable {
                             anim.writeGIF(out, wgm);
                         }
                     }
-                } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionInternal("AnimGIFSave file not found: "+fnfe.getMessage());
                 } catch (IOException ioe) {
-                    throw new JuggleExceptionInternal("AnimGIFSave IOException: "+ioe.getMessage());
-                } catch (IllegalArgumentException iae) {
-                    throw new JuggleExceptionInternal("AnimGIFSave IllegalArgumentException: "+iae.getMessage());
+                    throw new JuggleExceptionUser("Problem writing to file: " + file.toString());
                 }
-            } catch (Exception e) {
-                ErrorDialog.handleFatalException(e);
+            } catch (JuggleExceptionUser jeu) {
+                new ErrorDialog(GIFWriter.this.parent, jeu.getMessage());
+            } catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
             }
 
             if (cleanup != null)
                 SwingUtilities.invokeLater(cleanup);
         }
     }
-
-
 }

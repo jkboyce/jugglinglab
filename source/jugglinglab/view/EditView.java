@@ -110,7 +110,7 @@ public class EditView extends View {
     public AnimationPanel getAnimationPanel() { return jae; }
 
     @Override
-    public void disposeView() { jae.dispose(); }
+    public void disposeView() { jae.disposeAnimation(); }
 
     @Override
     public JMLPattern getPattern() { return jae.getPattern(); }

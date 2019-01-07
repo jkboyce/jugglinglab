@@ -171,7 +171,7 @@ public class SelectionView extends View {
     @Override
     public void disposeView() {
         for (int i = 0; i < 9; i++)
-            ja[i].dispose();
+            ja[i].disposeAnimation();
     }
 
     @Override
