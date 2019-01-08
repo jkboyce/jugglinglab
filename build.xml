@@ -25,7 +25,7 @@
         <javac debug="${debug}" srcdir="${src}/." destdir="${build}/."
             target="1.8" source="1.8" deprecation="${deprecation}"
             includeAntRuntime="false" includes="**"
-            excludes="jugglinglab/MacOS/*,gifwriter/*,resources/*,resources_win/*,jugglinglab/notation/*.jj">
+            excludes="jugglinglab/MacOS/*,gifwriter/*,resources/*,jugglinglab/notation/*.jj">
             <classpath refid="master-classpath" />
             <compilerarg value="-Xlint:-options"/>
             <compilerarg value="-Xlint:unchecked"/>
@@ -42,7 +42,6 @@
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}/resources" includes="*.au" />
-            <fileset dir="${src}/resources" includes="*.gif" />
             <fileset dir="${src}/resources" includes="*.png" />
         </jar>
     </target>
@@ -95,7 +94,7 @@
             <fx:platform>
                 <fx:property name="JL_run_as_bundle" value="true" />
             </fx:platform>
-        </fx:deploy>    
+        </fx:deploy>
     </target>
 
 
@@ -140,7 +139,6 @@
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}" includes="resources/*.au" />
-            <fileset dir="${src}" includes="resources/*.gif" />
             <fileset dir="${src}" includes="resources/*.png" />
         </jar>
         <!-- copy application stub -->
