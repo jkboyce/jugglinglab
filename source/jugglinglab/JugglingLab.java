@@ -311,7 +311,7 @@ public class JugglingLab {
                 Animator anim = new Animator();
                 if (jc == null) {
                     jc = anim.getAnimationPrefs();
-                    jc.fps = 30.0;      // default frames per sec for GIFs
+                    jc.fps = 33.3;      // default frames per sec for GIFs
                 }
                 anim.setDimension(new Dimension(jc.width, jc.height));
                 anim.restartAnimator(pat, jc);
