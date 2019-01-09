@@ -55,7 +55,6 @@ Source: "Juggling Lab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppIconsName}"; Check: returnTrue()
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}";  IconFilename: "{app}\{#MyAppIconsName}"; Check: returnFalse()
 
-
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "-Xappcds:generatecache"; Check: returnFalse()
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Juggling Lab}"; Flags: nowait postinstall skipifsilent; Check: returnTrue()

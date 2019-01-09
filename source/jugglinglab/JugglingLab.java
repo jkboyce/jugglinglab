@@ -24,7 +24,6 @@ package jugglinglab;
 
 import java.awt.Dimension;
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
