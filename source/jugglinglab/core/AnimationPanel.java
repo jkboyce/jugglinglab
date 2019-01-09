@@ -44,38 +44,22 @@ public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected static Clip catchclip;
-    protected static Clip bounceclip;
-
     protected static final double snapangle = JLMath.toRad(15.0);
-
-    static {
-        // load audio clips
-        try {
-            URL catchurl = AnimationPanel.class.getResource("/catch.au");
-            AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
-            AnimationPanel.catchclip = AudioSystem.getClip();
-            AnimationPanel.catchclip.open(catchAudioIn);
-        } catch (Exception e) {}
-        try {
-            URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
-            AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
-            AnimationPanel.bounceclip = AudioSystem.getClip();
-            AnimationPanel.bounceclip.open(bounceAudioIn);
-        } catch (Exception e) {}
-    }
 
     protected Animator          anim;
     protected AnimationPrefs    jc;
 
     protected Thread            engine;
-    protected boolean           engineStarted = false;;
+    protected boolean           engineStarted = false;
     protected boolean           enginePaused = false;
     protected boolean           engineRunning = false;
     protected double            sim_time;
     public boolean              writingGIF = false;
     public JuggleException      exception;
     public String               message;
+
+    protected Clip              catchclip;
+    protected Clip              bounceclip;
 
     protected boolean           waspaused = false;      // for pause on mouse away
     protected boolean           outside = true;
@@ -92,6 +76,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         this.anim = new Animator();
         this.jc = new AnimationPrefs();
         this.setOpaque(true);
+        this.loadAudioClips();
         this.initHandlers();
     }
 
@@ -110,6 +95,21 @@ public class AnimationPanel extends JPanel implements Runnable {
     @Override
     public Dimension getMinimumSize() {
         return new Dimension(10, 10);
+    }
+
+    protected void loadAudioClips() {
+        try {
+            URL catchurl = AnimationPanel.class.getResource("/catch.au");
+            AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
+            this.catchclip = AudioSystem.getClip();
+            this.catchclip.open(catchAudioIn);
+        } catch (Exception e) {}
+        try {
+            URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
+            AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
+            this.bounceclip = AudioSystem.getClip();
+            this.bounceclip.open(bounceAudioIn);
+        } catch (Exception e) {}
     }
 
     protected void initHandlers() {
@@ -456,10 +456,8 @@ public class AnimationPanel extends JPanel implements Runnable {
     public void disposeAnimation() { killAnimationThread(); }
 
     // Called in View.java when the user selects the "Save as Animated GIF..."
-    // menu option.
-    //
-    // This does all of the processing in a thread separate from the main event
-    // loop. This may be overkill since the processing is usually pretty quick.
+    // menu option. This does all of the processing in a thread separate from
+    // the main event loop.
     public void writeGIF() {
         this.writingGIF = true;
         boolean origpause = this.getPaused();
@@ -492,11 +490,11 @@ public class AnimationPanel extends JPanel implements Runnable {
             try {
                 File file = null;
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(AnimationPanel.this);
+                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(parent);
 
                     if (option == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                            file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                        file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                        if (file != null) {
                             FileOutputStream out = new FileOutputStream(file);
 
                             ProgressMonitor pm = new ProgressMonitor(parent,
