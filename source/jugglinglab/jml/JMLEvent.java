@@ -29,12 +29,8 @@ import java.io.*;
 
 
 public class JMLEvent {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected double x, y, z;		// coordinates in local frame
     protected double gx, gy, gz;	// coordinates in global frame
@@ -255,7 +251,7 @@ public class JMLEvent {
 			int pnum = Integer.valueOf(path).intValue();
 			if ((pnum > npaths) || (pnum < 1))
 				throw new JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"));
-				
+
             if (type.equalsIgnoreCase("throw"))
                 addTransition(new JMLTransition(JMLTransition.TRANS_THROW, pnum, throwtype, mod));
             else if (type.equalsIgnoreCase("catch"))

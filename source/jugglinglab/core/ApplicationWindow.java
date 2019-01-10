@@ -27,8 +27,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.*;
 import javax.swing.*;
 import org.xml.sax.*;
 
@@ -37,50 +37,45 @@ import jugglinglab.notation.*;
 import jugglinglab.util.*;
 
 
-
 public class ApplicationWindow extends JFrame implements ActionListener, WindowListener {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     public ApplicationWindow(String title) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
-		NotationGUI ng = new NotationGUI(this);
+        NotationGUI ng = new NotationGUI(this);
 
         JMenuBar mb = new JMenuBar();
-		JMenu filemenu = createFileMenu();
+        JMenu filemenu = createFileMenu();
         mb.add(filemenu);
         JMenu notationmenu = ng.createNotationMenu();
         if (Notation.builtinNotations.length > 1)
             mb.add(notationmenu);
         JMenu helpmenu = createHelpMenu();
-		if (helpmenu != null)
-			mb.add(helpmenu);
+        if (helpmenu != null)
+            mb.add(helpmenu);
         setJMenuBar(mb);
 
         PlatformSpecific.getPlatformSpecific().registerParent(this);
         PlatformSpecific.getPlatformSpecific().setupPlatform();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		ng.setDoubleBuffered(true);
-		this.setBackground(new Color(0.9f, 0.9f, 0.9f));
+        ng.setDoubleBuffered(true);
+        this.setBackground(new Color(0.9f, 0.9f, 0.9f));
         setContentPane(ng);
         ng.setNotation(Notation.NOTATION_SITESWAP);
 
-		Locale loc = JLLocale.getLocale();
-		this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        Locale loc = JLLocale.getLocale();
+        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         // make siteswap notation the default
-		notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
-		pack();
-		setResizable(false);
+        notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
+        pack();
+        setResizable(false);
+        setLocation(100, 50);
         setVisible(true);
-		addWindowListener(this);
+        addWindowListener(this);
     }
-
 
     protected static final String[] fileItems = new String[]
     { "Open JML...", null, "Quit" };
@@ -89,7 +84,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
     protected static final char[] fileShortcuts =
     { 'O', ' ', 'Q' };
 
-	protected JMenu createFileMenu() {
+    protected JMenu createFileMenu() {
         // When we move to Java 9+ we can use Desktop.setQuitHandler() here.
         boolean include_quit = true;
 
@@ -99,17 +94,17 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
-				JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
-				if (fileShortcuts[i] != ' ')
-					fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-							Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-				fileitem.setActionCommand(fileCommands[i]);
-				fileitem.addActionListener(this);
-				filemenu.add(fileitem);
+                JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
+                if (fileShortcuts[i] != ' ')
+                    fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                fileitem.setActionCommand(fileCommands[i]);
+                fileitem.addActionListener(this);
+                filemenu.add(fileitem);
             }
         }
-		return filemenu;
-	}
+        return filemenu;
+    }
 
     protected static final String[] helpItems = new String[]
     { "About Juggling Lab", "Juggling Lab Online Help" };
@@ -138,11 +133,11 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
     }
 
     @Override
-	public void actionPerformed(ActionEvent ae) {
+    public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
         try {
-			if (command.equals("open"))
+            if (command.equals("open"))
                 doMenuCommand(FILE_OPEN);
             else if (command.equals("exit"))
                 doMenuCommand(FILE_EXIT);
@@ -150,8 +145,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 doMenuCommand(HELP_ABOUT);
             else if (command.equals("online"))
                 doMenuCommand(HELP_ONLINE);
-        } catch (Exception e) {
-            ErrorDialog.handleException(e);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
         }
     }
 
@@ -167,19 +162,19 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 break;
 
             case FILE_OPEN:
-				javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
-					public boolean accept(File f) {
-						StringTokenizer st = new StringTokenizer(f.getName(), ".");
-						String ext = "";
-						while (st.hasMoreTokens())
-							ext = st.nextToken();
-						return (ext.equals("jml") || f.isDirectory());
-					}
+                javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
+                    public boolean accept(File f) {
+                        StringTokenizer st = new StringTokenizer(f.getName(), ".");
+                        String ext = "";
+                        while (st.hasMoreTokens())
+                            ext = st.nextToken();
+                        return (ext.equals("jml") || f.isDirectory());
+                    }
 
-					public String getDescription() {
-						return "JML Files";
-					}
-				};
+                    public String getDescription() {
+                        return "JML Files";
+                    }
+                };
 
                 try {
                     if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) == JFileChooser.APPROVE_OPTION) {
@@ -254,8 +249,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             } catch (IOException ioe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_IO")+": "+ioe.getMessage());
             } catch (SAXParseException spe) {
-				String template = errorstrings.getString("Error_parsing");
-				Object[] arguments = { new Integer(spe.getLineNumber()) };
+                String template = errorstrings.getString("Error_parsing");
+                Object[] arguments = { new Integer(spe.getLineNumber()) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             } catch (SAXException se) {
                 throw new JuggleExceptionUser(se.getMessage());
@@ -278,7 +273,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         JPanel aboutPanel = new JPanel(new BorderLayout());
         aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
 
-        java.net.URL url = ApplicationWindow.class.getResource("/resources/about.gif");
+        java.net.URL url = ApplicationWindow.class.getResource("/about.png");
         if (url != null) {
             ImageIcon aboutPicture = new ImageIcon(url, "A lab");
             if (aboutPicture != null) {
@@ -301,7 +296,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         String template = guistrings.getString("Version");
         Object[] arguments = { Constants.version };
         JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
-        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 16));
         textPanel.add(abouttext5);
         gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
                                                        new Insets(0,15,0,15)));
@@ -309,13 +304,13 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         String template2 = guistrings.getString("Copyright_message");
         Object[] arguments2 = { Constants.year };
         JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
-        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext6);
         gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
                                                        new Insets(15,15,15,15)));
 
         JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
-        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext3);
         gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
                                                        new Insets(0,15,0,15)));
@@ -336,6 +331,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
         aboutBox.pack();
         aboutBox.setResizable(false);
+        aboutBox.setLocationRelativeTo(null);    // center frame on screen
         aboutBox.setVisible(true);
     }
 
@@ -356,23 +352,23 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
     // WindowListener methods
     @Override
-	public void windowOpened(WindowEvent e) { }
+    public void windowOpened(WindowEvent e) { }
     @Override
-	public void windowClosing(WindowEvent e) {
-		try {
-			doMenuCommand(FILE_EXIT);
+    public void windowClosing(WindowEvent e) {
+        try {
+            doMenuCommand(FILE_EXIT);
         } catch (Exception ex) {
             System.exit(0);
         }
-	}
+    }
     @Override
-	public void windowClosed(WindowEvent e) { }
+    public void windowClosed(WindowEvent e) { }
     @Override
-	public void windowIconified(WindowEvent e) { }
+    public void windowIconified(WindowEvent e) { }
     @Override
-	public void windowDeiconified(WindowEvent e) { }
+    public void windowDeiconified(WindowEvent e) { }
     @Override
-	public void windowActivated(WindowEvent e) { }
+    public void windowActivated(WindowEvent e) { }
     @Override
-	public void windowDeactivated(WindowEvent e) { }
+    public void windowDeactivated(WindowEvent e) { }
 }

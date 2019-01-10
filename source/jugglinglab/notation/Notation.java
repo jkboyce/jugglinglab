@@ -1,6 +1,6 @@
 // Notation.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,7 +22,6 @@
 
 package jugglinglab.notation;
 
-
 import java.awt.*;
 import java.util.*;
 
@@ -32,21 +31,17 @@ import jugglinglab.util.*;
 
 
 public abstract class Notation {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     static Hashtable<String, Notation> hash = null;
 
     // The built-in notations
     public static final String[] builtinNotations = { "Siteswap" };
 
-	// these should be in the same order as in the builtinNotations array
+    // these should be in the same order as in the builtinNotations array
     public static final int NOTATION_NONE = 0;
-    public static final int	NOTATION_SITESWAP = 1;
+    public static final int NOTATION_SITESWAP = 1;
 
     // This is a factory to create Notations from names.  Note the
     // naming convention.

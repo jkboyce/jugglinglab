@@ -1,6 +1,6 @@
 // JuggleExceptionInternal.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,7 +27,6 @@ package jugglinglab.util;
 // problems that occur.
 
 public class JuggleExceptionInternal extends JuggleException {
-	public JuggleExceptionInternal()  			{ super();	}
-	public JuggleExceptionInternal(String s)	{ super(s);	}
+    public JuggleExceptionInternal()            { super();  }
+    public JuggleExceptionInternal(String s)    { super(s); }
 }
-

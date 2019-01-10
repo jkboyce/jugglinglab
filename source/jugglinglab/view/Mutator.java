@@ -1,6 +1,6 @@
 // Mutator.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -38,26 +38,26 @@ Possible mutations:
 */
 
 public class Mutator {
-	protected JPanel controls = null;
-	
+    protected JPanel controls = null;
+
     public Mutator() {
     }
 
-	public JMLPattern mutatePattern(JMLPattern pat) {
-		return pat;
-	}
-	
-	public JPanel getControlPanel() {
-		if (controls == null)
-			controls = makeControlPanel();
-		return controls;
-	}
-	
-	
-	protected JPanel makeControlPanel() {
-		JPanel p = new JPanel();
-		
-		p.add(new JButton("Hello"));
-		return p;
-	}
+    public JMLPattern mutatePattern(JMLPattern pat) {
+        return pat;
+    }
+
+    public JPanel getControlPanel() {
+        if (controls == null)
+            controls = makeControlPanel();
+        return controls;
+    }
+
+
+    protected JPanel makeControlPanel() {
+        JPanel p = new JPanel();
+
+        p.add(new JButton("Hello"));
+        return p;
+    }
 }

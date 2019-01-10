@@ -20,14 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+package jugglinglab;
+
 import java.awt.Dimension;
 import java.io.*;
-import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
 import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
@@ -38,20 +41,44 @@ import jugglinglab.util.*;
 
 
 public class JugglingLab {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
+    // Localized strings for UI
+    public static ResourceBundle guistrings;
+    public static ResourceBundle errorstrings;
+
+    // Base directory for file operations
+    public static Path base_dir;
+
     static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
+        JugglingLab.guistrings = JLLocale.getBundle("GUIStrings");
+        JugglingLab.errorstrings = JLLocale.getBundle("ErrorStrings");
+
+        // Decide on a base directory for file operations. First look for
+        // working directory set by an enclosing script, which indicates Juggling
+        // Lab is running from the command line.
+        String working_dir = System.getenv("JL_WORKING_DIR");
+
+        if (working_dir == null) {
+            // If not found, then user.dir (current working directory when Java
+            // was invoked) is the most logical choice, UNLESS we're running in
+            // an application bundle. For bundled apps user.dir is buried inside
+            // the app directory structure so we default to user.home instead.
+            String isBundle = System.getProperty("JL_run_as_bundle");
+
+            if (isBundle == null || !isBundle.equals("true"))
+                working_dir = System.getProperty("user.dir");
+            else
+                working_dir = System.getProperty("user.home");
+        }
+
+        JugglingLab.base_dir = Paths.get(working_dir);
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
-    protected static ArrayList<String> jlargs = null;
-
+    private static ArrayList<String> jlargs = null;
 
     // Look in jlargs to see if there's an output path specified, and if so
     // then record it and trim out of jlargs. Otherwise return null.
-    protected static String parse_outpath() {
+    private static String parse_outpath() {
         for (int i = 0; i < jlargs.size(); i++) {
             if (jlargs.get(i).equalsIgnoreCase("-out")) {
                 jlargs.remove(i);
@@ -68,7 +95,7 @@ public class JugglingLab {
 
     // Look in jlargs to see if animator preferences are supplied, and if so then
     // parse them and return an AnimationPrefs object. Otherwise (or on error) return null.
-    protected static AnimationPrefs parse_animprefs() {
+    private static AnimationPrefs parse_animprefs() {
         for (int i = 0; i < jlargs.size(); i++) {
             if (jlargs.get(i).equalsIgnoreCase("-prefs")) {
                 jlargs.remove(i);
@@ -92,8 +119,8 @@ public class JugglingLab {
     }
 
     // Look at beginning of jlargs to see if there's a pattern, and if so then
-    // parse it at return it. Otherwise print an error message and return null.
-    protected static JMLPattern parse_pattern() {
+    // parse it and return it. Otherwise print an error message and return null.
+    private static JMLPattern parse_pattern() {
         if (jlargs.size() == 0) {
             System.out.println("Error: expected pattern input, none found");
             return null;
@@ -107,10 +134,14 @@ public class JugglingLab {
                 return null;
             }
 
-            String inpath = jlargs.remove(0);
+            String inpath_string = jlargs.remove(0);
+            Path inpath = Paths.get(inpath_string);
+            if (!inpath.isAbsolute() && JugglingLab.base_dir != null)
+                inpath = Paths.get(base_dir.toString(), inpath_string);
+
             try {
                 JMLParser parser = new JMLParser();
-                parser.parse(new FileReader(new File(inpath)));
+                parser.parse(new FileReader(inpath.toFile()));
 
                 switch (parser.getFileType()) {
                     case JMLParser.JML_PATTERN:
@@ -125,14 +156,11 @@ public class JugglingLab {
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error parsing JML: " + jeu.getMessage());
                 return null;
-            } catch (FileNotFoundException fnfe) {
-                System.out.println("Error: cannot read from JML file");
-                return null;
             } catch (SAXException se) {
                 System.out.println("Error: formatting error in JML file");
                 return null;
             } catch (IOException ioe) {
-                System.out.println("Error: problem reading JML file");
+                System.out.println("Error: problem reading JML file from path " + inpath.toString());
                 return null;
             }
         }
@@ -160,6 +188,7 @@ public class JugglingLab {
         // do some os-specific setup
         String osname = System.getProperty("os.name").toLowerCase();
         boolean isMacOS = osname.startsWith("mac os x");
+        boolean isWindows = osname.startsWith("windows");
         if (isMacOS) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
@@ -185,7 +214,7 @@ public class JugglingLab {
             } catch (JuggleExceptionUser jeu) {
                 new ErrorDialog(null, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleException(jei);
+                ErrorDialog.handleFatalException(jei);
             }
             return;
         }
@@ -203,13 +232,26 @@ public class JugglingLab {
             Object[] arg2 = { Constants.year };
             output += MessageFormat.format(template, arg2) + "\n";
             output += guistrings.getString("GPL_message") + "\n\n";
-            output += guistrings.getString("CLI_help");
-
+            output += guistrings.getString("CLI_help1");
+            String examples = guistrings.getString("CLI_help2");
+            if (isWindows) {
+                // replace single quotes with double quotes in Windows examples
+                examples = examples.replaceAll("\'", "\"");
+            }
+            output += examples;
             System.out.println(output);
             return;
         }
 
-        String outpath = JugglingLab.parse_outpath();
+        String outpath_string = JugglingLab.parse_outpath();
+        Path outpath = null;
+        if (outpath_string != null) {
+            outpath = Paths.get(outpath_string);
+
+            if (!outpath.isAbsolute() && JugglingLab.base_dir != null)
+                outpath = Paths.get(base_dir.toString(), outpath_string);
+        }
+
         AnimationPrefs jc = JugglingLab.parse_animprefs();
 
         if (firstarg.equals("gen")) {
@@ -220,10 +262,10 @@ public class JugglingLab {
             try {
                 PrintStream ps = System.out;
                 if (outpath != null)
-                    ps = new PrintStream(new File(outpath));
+                    ps = new PrintStream(outpath.toFile());
                 siteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
             } catch (FileNotFoundException fnfe) {
-                System.out.println("Error: cannot write to file path " + outpath);
+                System.out.println("Error: problem writing to file path " + outpath.toString());
             }
             if (jc != null)
                 System.out.println("Note: animator prefs not used in generator mode; ignored");
@@ -250,7 +292,7 @@ public class JugglingLab {
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleException(jei);
+                ErrorDialog.handleFatalException(jei);
             }
             return;
         }
@@ -269,22 +311,17 @@ public class JugglingLab {
                 Animator anim = new Animator();
                 if (jc == null) {
                     jc = anim.getAnimationPrefs();
-                    jc.fps = 30.0;      // default frames per sec for GIFs
+                    jc.fps = 33.3;      // default frames per sec for GIFs
                 }
                 anim.setDimension(new Dimension(jc.width, jc.height));
                 anim.restartAnimator(pat, jc);
-
-                try {
-                    anim.writeGIF(new FileOutputStream(new File(outpath)), null);
-                } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-                } catch (IOException ioe) {
-                    throw new JuggleExceptionUser("error writing GIF to path " + outpath);
-                }
+                anim.writeGIF(new FileOutputStream(outpath.toFile()), null);
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
                 System.out.println("Internal Error: " + jei.getMessage());
+            } catch (IOException ioe) {
+                System.out.println("Error: problem writing GIF to path " + outpath.toString());
             }
             return;
         }
@@ -295,11 +332,11 @@ public class JugglingLab {
                 System.out.print(pat.toString());
             else {
                 try {
-                    FileWriter fw = new FileWriter(new File(outpath));
+                    FileWriter fw = new FileWriter(outpath.toFile());
                     pat.writeJML(fw, true);
                     fw.close();
                 } catch (IOException ioe) {
-                    System.out.println("Error: problem writing JML to path " + outpath);
+                    System.out.println("Error: problem writing JML to path " + outpath.toString());
                 }
             }
             if (jc != null)

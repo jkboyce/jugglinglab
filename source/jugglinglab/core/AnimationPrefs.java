@@ -1,6 +1,6 @@
 // AnimationPrefs.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,19 +22,16 @@
 
 package jugglinglab.core;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
 import jugglinglab.util.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationPrefs {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;
@@ -52,31 +49,31 @@ public class AnimationPrefs {
     public double   fps = fps_def;
     public double   slowdown = slowdown_def;
     public int      border = border_def;
-    public boolean	stereo = stereo_def;
-    public boolean	startPause = startPause_def;
-	public boolean  mousePause = mousePause_def;
-    public boolean	catchSound = catchSound_def;
-    public boolean	bounceSound = bounceSound_def;
+    public boolean  stereo = stereo_def;
+    public boolean  startPause = startPause_def;
+    public boolean  mousePause = mousePause_def;
+    public boolean  catchSound = catchSound_def;
+    public boolean  bounceSound = bounceSound_def;
 
     public AnimationPrefs() { super(); }
 
     public AnimationPrefs(AnimationPrefs jc) {
         if (jc.width > 0)           this.width = jc.width;
         if (jc.height > 0)          this.height = jc.height;
-        if (jc.slowdown >= 0.0)		this.slowdown = jc.slowdown;
-        if (jc.fps >= 0.0)			this.fps = jc.fps;
-        if (jc.border >= 0)			this.border = jc.border;
+        if (jc.slowdown >= 0.0)     this.slowdown = jc.slowdown;
+        if (jc.fps >= 0.0)          this.fps = jc.fps;
+        if (jc.border >= 0)         this.border = jc.border;
         this.startPause = jc.startPause;
-		this.mousePause = jc.mousePause;
+        this.mousePause = jc.mousePause;
         this.stereo = jc.stereo;
         this.catchSound = jc.catchSound;
         this.bounceSound = jc.bounceSound;
     }
 
     public void parseInput(String input) throws JuggleExceptionUser {
-        int	tempint;
-        double 	tempdouble;
-        String	value = null;
+        int tempint;
+        double  tempdouble;
+        String  value = null;
 
         ParameterList pl = new ParameterList(input);
 
@@ -95,9 +92,9 @@ public class AnimationPrefs {
                 tempdouble = Double.valueOf(value).doubleValue();
                 this.fps = tempdouble;
             } catch (NumberFormatException e) {
-				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "fps" };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "fps" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
         if ((value = pl.getParameter("slowdown")) != null) {
@@ -105,9 +102,9 @@ public class AnimationPrefs {
                 tempdouble = Double.valueOf(value).doubleValue();
                 this.slowdown = tempdouble;
             } catch (NumberFormatException e) {
-				String template = errorstrings.getString("Error_number_format");
-				Object[] arguments = { "slowdown" };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "slowdown" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
         if ((value = pl.getParameter("border")) != null) {
@@ -172,5 +169,3 @@ public class AnimationPrefs {
         return result;
     }
 }
-
-

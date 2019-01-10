@@ -26,7 +26,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 import jugglinglab.util.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLEvent;
+import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationEditPanel extends AnimationPanel {
@@ -39,7 +40,6 @@ public class AnimationEditPanel extends AnimationPanel {
     protected boolean dragging_left = false;
     protected int xstart, ystart, xdelta, ydelta;
 
-
     public AnimationEditPanel() {
         super();
     }
@@ -49,19 +49,19 @@ public class AnimationEditPanel extends AnimationPanel {
         final JMLPattern fpat = anim.pat;
 
         this.addMouseListener(new MouseAdapter() {
-			long lastpress = 0L;
-			long lastenter = 1L;
+            long lastpress = 0L;
+            long lastenter = 1L;
 
             public void mousePressed(MouseEvent me) {
-				lastpress = me.getWhen();
+                lastpress = me.getWhen();
 
-				// The following (and the equivalent in mouseReleased()) is a hack to swallow
-				// a mouseclick when the browser stops reporting enter/exit events because the
-				// user has clicked on something else.  The system reports simultaneous enter/press
-				// events when the user mouses down in the component; we want to swallow this as a
-				// click, and just use it to get focus back.
-				if (jc.mousePause && (lastpress == lastenter))
-					return;
+                // The following (and the equivalent in mouseReleased()) is a hack to swallow
+                // a mouseclick when the browser stops reporting enter/exit events because the
+                // user has clicked on something else.  The system reports simultaneous enter/press
+                // events when the user mouses down in the component; we want to swallow this as a
+                // click, and just use it to get focus back.
+                if (jc.mousePause && (lastpress == lastenter))
+                    return;
 
                 if (exception != null)
                     return;
@@ -96,8 +96,8 @@ public class AnimationEditPanel extends AnimationPanel {
             }
 
             public void mouseReleased(MouseEvent me) {
-				if (jc.mousePause && (lastpress == lastenter))
-					return;
+                if (jc.mousePause && (lastpress == lastenter))
+                    return;
                 if (exception != null)
                     return;
                 if (!engineStarted && (engine != null) && engine.isAlive()) {
@@ -143,23 +143,23 @@ public class AnimationEditPanel extends AnimationPanel {
                     repaint();
             }
 
-			public void mouseEntered(MouseEvent me) {
-				lastenter = me.getWhen();
-				if (jc.mousePause /*&& waspaused_valid*/)
-					setPaused(waspaused);
-				outside = false;
-				outside_valid = true;
-			}
+            public void mouseEntered(MouseEvent me) {
+                lastenter = me.getWhen();
+                if (jc.mousePause /*&& waspaused_valid*/)
+                    setPaused(waspaused);
+                outside = false;
+                outside_valid = true;
+            }
 
-			public void mouseExited(MouseEvent me) {
-				if (jc.mousePause) {
-					waspaused = getPaused();
-					// waspaused_valid = true;
-					setPaused(true);
-				}
-				outside = true;
-				outside_valid = true;
-			}
+            public void mouseExited(MouseEvent me) {
+                if (jc.mousePause) {
+                    waspaused = getPaused();
+                    // waspaused_valid = true;
+                    setPaused(true);
+                }
+                outside = true;
+                outside_valid = true;
+            }
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
@@ -251,7 +251,6 @@ public class AnimationEditPanel extends AnimationPanel {
         return Math.abs(delta);
     }
 
-
     @Override
     public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -259,7 +258,6 @@ public class AnimationEditPanel extends AnimationPanel {
         if (event_active)
             createEventView();
     }
-
 
     public void setLadderDiagram(LadderDiagram ladder) {
         this.ladder = ladder;
@@ -293,7 +291,7 @@ public class AnimationEditPanel extends AnimationPanel {
             Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
             Coordinate dc = Coordinate.sub(c, c2);
             double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
-            int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
+            int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
 
             int[] center = anim.ren1.getXY(c);
             xlow1 = center[0] - boxhw;
@@ -307,7 +305,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
                 Coordinate dc = Coordinate.sub(c, c2);
                 double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
-                int boxhw = (int)(0.5 + 5.0 / dl);	// pixels corresponding to 5cm in juggler space
+                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
 
                 int[] center = anim.ren2.getXY(c);
                 xlow2 = center[0] - boxhw;
@@ -317,7 +315,6 @@ public class AnimationEditPanel extends AnimationPanel {
             }
         }
     }
-
 
     @Override
     public void paintComponent(Graphics g) {

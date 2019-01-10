@@ -1,6 +1,6 @@
 // siteswapGeneratorControl.java
 //
-// Copyright 2011 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,28 +22,20 @@
 
 package jugglinglab.generator;
 
-
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
-import java.util.regex.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import javax.swing.*;
 
-import jugglinglab.util.*;
-import jugglinglab.core.*;
-
+import jugglinglab.util.JLLocale;
 
 
 class siteswapGeneratorControl extends JPanel {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
-				// text fields in control panel
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+                // text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, /*tf6,*/ tf7, /*tf8,*/ tf9;
     protected JRadioButton cb1, cb2, /*cb3,*/ cb4, cb5, cb6;
     protected JCheckBox cb7, cb8, cb9, cb10, cb12, cb13, cb14, cb15, cb16, cb17;
@@ -53,12 +45,12 @@ class siteswapGeneratorControl extends JPanel {
     protected final static int border = 10;
 
     public siteswapGeneratorControl() {
-		this.setOpaque(false);
+        this.setOpaque(false);
         GridBagLayout gb = new GridBagLayout();
 
-        this.setLayout(gb);		
+        this.setLayout(gb);
 
-        JPanel p2 = new JPanel();			// top of window
+        JPanel p2 = new JPanel();           // top of window
         p2.setLayout(gb);
         JLabel lab6 = new JLabel(guistrings.getString("balls"));
         p2.add(lab6);
@@ -204,13 +196,13 @@ class siteswapGeneratorControl extends JPanel {
         p9.add(cb14);
         gb.setConstraints(cb14, make_constraints(GridBagConstraints.LINE_START,0,4,
                                                  new Insets(0,10,0,0)));
-												 
+
         cb16 = new JCheckBox(guistrings.getString("true_multiplexing"), null);
         p9.add(cb16);
         gb.setConstraints(cb16, make_constraints(GridBagConstraints.LINE_START,0,5,
                                                  new Insets(0,10,0,0)));
 
-        JPanel p4 = new JPanel();		// whole middle part of window
+        JPanel p4 = new JPanel();       // whole middle part of window
         p4.setLayout(gb);
         p4.add(p6);
         gb.setConstraints(p6, make_constraints(GridBagConstraints.FIRST_LINE_START,0,0));
@@ -229,11 +221,11 @@ class siteswapGeneratorControl extends JPanel {
         tf5 = new JTextField(10);
         p1.add(tf5);
         gb.setConstraints(tf5, make_constraints(GridBagConstraints.LINE_START,1,1));
-		/*
+        /*
         tf6 = new JTextField(10);
         p1.add(tf6);
         gb.setConstraints(tf6, make_constraints(GridBagConstraints.LINE_START,0,2));
-		*/
+        */
         tf7 = new JTextField(3);
         p1.add(tf7);
         gb.setConstraints(tf7, make_constraints(GridBagConstraints.LINE_START,1,2,
@@ -251,12 +243,12 @@ class siteswapGeneratorControl extends JPanel {
         p1.add(lab2);
         gb.setConstraints(lab2, make_constraints(GridBagConstraints.LINE_END,0,1,
                                                  new Insets(0,0,0,3)));
-		/*
+        /*
         lab3 = new JLabel(guistrings.getString("Exclude_these_passes"));
         p1.add(lab3);
         gb.setConstraints(lab3, make_constraints(GridBagConstraints.LINE_END,1,2,
                                                  new Insets(0,0,0,3)));
-		*/
+        */
         lab4 = new JLabel(guistrings.getString("Passing_communication_delay"));
         p1.add(lab4);
         gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_END,0,2,
@@ -268,7 +260,7 @@ class siteswapGeneratorControl extends JPanel {
                                                   new Insets(0,0,0,3)));
          */
 
-        this.add(p2);		// now make the whole window
+        this.add(p2);       // now make the whole window
         gb.setConstraints(p2, make_constraints(GridBagConstraints.CENTER,0,0,
                                                new Insets(border,border,5,border)));
         this.add(p4);
@@ -284,15 +276,15 @@ class siteswapGeneratorControl extends JPanel {
                     // lab3.setEnabled(true);
                     // lab5.setEnabled(true);
                     // tf6.setEnabled(true);
-					cb15.setEnabled(true);
-					cb17.setEnabled(cb7.isSelected() && cb8.isSelected());
+                    cb15.setEnabled(true);
+                    cb17.setEnabled(cb7.isSelected() && cb8.isSelected());
                     if (cb7.isSelected() && !cb8.isSelected()) {
                         lab4.setEnabled(true);
                         tf7.setEnabled(true);
                     } else {
                         lab4.setEnabled(false);
                         tf7.setEnabled(false);
-					}
+                    }
                     // tf8.setEnabled(true);
                     // lab1.setText(guistrings.getString("Exclude_these_self_throws"));
                     // lab2.setText(guistrings.getString("Include_these_self_throws"));
@@ -300,8 +292,8 @@ class siteswapGeneratorControl extends JPanel {
                     // lab3.setEnabled(false);
                     // lab5.setEnabled(false);
                     // tf6.setEnabled(false);
-					cb15.setEnabled(false);
-					cb17.setEnabled(false);
+                    cb15.setEnabled(false);
+                    cb17.setEnabled(false);
                     lab4.setEnabled(false);
                     tf7.setEnabled(false);
                     // tf8.setEnabled(false);
@@ -321,18 +313,18 @@ class siteswapGeneratorControl extends JPanel {
                     cb14.setEnabled(true);
                     lab13.setEnabled(true);
                     tf9.setEnabled(true);
-					cb16.setEnabled(true);
+                    cb16.setEnabled(true);
                 } else {
                     cb13.setEnabled(false);
                     cb14.setEnabled(false);
                     lab13.setEnabled(false);
                     tf9.setEnabled(false);
-					cb16.setEnabled(false);
+                    cb16.setEnabled(false);
                 }
             }
         });
-		
-		ActionListener temp = new ActionListener() {
+
+        ActionListener temp = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 if (!cb7.isSelected() || cb8.isSelected()) {
                     lab4.setEnabled(false);
@@ -343,57 +335,57 @@ class siteswapGeneratorControl extends JPanel {
                         tf7.setEnabled(true);
                     }
                 }
-				
-				cb17.setEnabled(cb7.isSelected() && cb8.isSelected() && (c1.getSelectedIndex() > 0));
-				cb9.setEnabled(cb8.isSelected());
+
+                cb17.setEnabled(cb7.isSelected() && cb8.isSelected() && (c1.getSelectedIndex() > 0));
+                cb9.setEnabled(cb8.isSelected());
             }
         };
-		cb7.addActionListener(temp);
+        cb7.addActionListener(temp);
         cb8.addActionListener(temp);
 
-        this.resetControl();	// apply defaults
+        this.resetControl();    // apply defaults
     }
 
     public void resetControl() {
-        tf1.setText("5");		// balls
-        tf2.setText("7");		// max throw
-        tf3.setText("5");		// period
-        cb1.setSelected(true);		// asynch mode
-        cb5.setSelected(true);		// show all compositions
-        cb7.setSelected(true);		// ground state patterns
-        cb8.setSelected(true);		// excited state patterns
-        cb9.setSelected(false);		// starting/ending sequences
-        cb10.setSelected(false);	// don't show rotated versions
-		cb17.setSelected(false);	// don't show permuted jugglers
-		cb15.setSelected(true);		// connected patterns
-        cb12.setSelected(false);	// multiplexing
-        tf9.setText("2");		// number multiplexed throws
-        cb13.setSelected(true);		// no simultaneous catches
-        cb14.setSelected(false);	// allow clustered throws
-        cb16.setSelected(false);	// true multiplexing
-		tf4.setText("");		// excluded throws
-        tf5.setText("");		// included throws
-        // tf6.setText("");		// excluded passes
-        tf7.setText("0");		// passing communication delay
-        // tf8.setText("1");		// passing leader slot number
-        c1.setSelectedIndex(0);		// one juggler
+        tf1.setText("5");       // balls
+        tf2.setText("7");       // max throw
+        tf3.setText("5");       // period
+        cb1.setSelected(true);      // asynch mode
+        cb5.setSelected(true);      // show all compositions
+        cb7.setSelected(true);      // ground state patterns
+        cb8.setSelected(true);      // excited state patterns
+        cb9.setSelected(false);     // starting/ending sequences
+        cb10.setSelected(false);    // don't show rotated versions
+        cb17.setSelected(false);    // don't show permuted jugglers
+        cb15.setSelected(true);     // connected patterns
+        cb12.setSelected(false);    // multiplexing
+        tf9.setText("2");       // number multiplexed throws
+        cb13.setSelected(true);     // no simultaneous catches
+        cb14.setSelected(false);    // allow clustered throws
+        cb16.setSelected(false);    // true multiplexing
+        tf4.setText("");        // excluded throws
+        tf5.setText("");        // included throws
+        // tf6.setText("");     // excluded passes
+        tf7.setText("0");       // passing communication delay
+        // tf8.setText("1");        // passing leader slot number
+        c1.setSelectedIndex(0);     // one juggler
 
-        // lab3.setEnabled(false);	// passing is initially off
-		cb15.setEnabled(false);
-		cb17.setEnabled(false);
+        // lab3.setEnabled(false);  // passing is initially off
+        cb15.setEnabled(false);
+        cb17.setEnabled(false);
         lab4.setEnabled(false);
         // lab5.setEnabled(false);
         // tf6.setEnabled(false);
         tf7.setEnabled(false);
         // tf8.setEnabled(false);
 
-        cb13.setEnabled(false);	// multiplexing initially off
+        cb13.setEnabled(false); // multiplexing initially off
         cb14.setEnabled(false);
         lab13.setEnabled(false);
         tf9.setEnabled(false);
-		cb16.setEnabled(false);
+        cb16.setEnabled(false);
 
-        cb9.setEnabled(true);	// excited-state patterns initially on
+        cb9.setEnabled(true);   // excited-state patterns initially on
     }
 
     protected static GridBagConstraints make_constraints(int location, int gridx, int gridy) {
@@ -425,14 +417,14 @@ class siteswapGeneratorControl extends JPanel {
     public String getParams() {
         StringBuffer sb = new StringBuffer(256);
 
-		String maxthrow = tf2.getText();
-		if (maxthrow.trim().length() == 0)
-			maxthrow = "-";
-			
-		String period = tf3.getText();
-		if (period.trim().length() == 0)
-			period = "-";
-			
+        String maxthrow = tf2.getText();
+        if (maxthrow.trim().length() == 0)
+            maxthrow = "-";
+
+        String period = tf3.getText();
+        if (period.trim().length() == 0)
+            period = "-";
+
         sb.append(tf1.getText() + " " + maxthrow + " " + period);
 
         if (cb2.isSelected())
@@ -443,15 +435,15 @@ class siteswapGeneratorControl extends JPanel {
             sb.append(" -j "+jugglers);
             if (tf7.isEnabled() && (tf7.getText().length() > 0))
                 sb.append(" -d " + tf7.getText() + " -l 1");
-				
-			if (cb17.isEnabled()) {
-				if (cb17.isSelected())
-					sb.append(" -jp");		// juggler permutations
-			} else
-				sb.append(" -jp");
 
-			if (cb15.isSelected())
-				sb.append(" -cp");		// connected patterns
+            if (cb17.isEnabled()) {
+                if (cb17.isSelected())
+                    sb.append(" -jp");      // juggler permutations
+            } else
+                sb.append(" -jp");
+
+            if (cb15.isSelected())
+                sb.append(" -cp");      // connected patterns
         }
 
         if (cb5.isSelected())
@@ -476,8 +468,8 @@ class siteswapGeneratorControl extends JPanel {
                 sb.append(" -mf");
             if (cb14.isSelected())
                 sb.append(" -mc");
-			if (cb16.isSelected())
-				sb.append(" -mt");
+            if (cb16.isSelected())
+                sb.append(" -mt");
         }
 
         if (tf4.getText().length() > 0)

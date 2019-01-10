@@ -31,12 +31,8 @@ import jugglinglab.renderer.*;
 
 
 public abstract class Prop {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected String initString;
 
@@ -46,7 +42,7 @@ public abstract class Prop {
         try {
             Object obj = Class.forName("jugglinglab.prop."+name.toLowerCase()+"Prop").newInstance();
             if (obj instanceof Prop)
-				return (Prop)obj;
+                return (Prop)obj;
         }
         catch (ClassNotFoundException cnfe) {
         }
@@ -55,9 +51,9 @@ public abstract class Prop {
         catch (InstantiationException ie) {
         }
 
-		String template = errorstrings.getString("Error_prop_type");
-		Object[] arguments = { name };
-		throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        String template = errorstrings.getString("Error_prop_type");
+        Object[] arguments = { name };
+        throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
 
     public abstract String getName();
@@ -80,8 +76,8 @@ public abstract class Prop {
     public abstract Dimension getProp2DCenter(double zoom);
     public abstract Dimension getProp2DGrip(double zoom);
 
-	/*
+    /*
     public abstract Object getPropIDX3D();
     public abstract Coordinate getPropIDX3DGrip();
-	*/
+    */
 }

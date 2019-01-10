@@ -1,6 +1,6 @@
 // JuggleExceptionUser.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,7 +27,7 @@ package jugglinglab.util;
 // problems that occur.
 
 public class JuggleExceptionUser extends JuggleException {
-	public JuggleExceptionUser()  			{ super();	}
-	public JuggleExceptionUser(String s)	{ super(s);	}
+    public JuggleExceptionUser()            { super();  }
+    public JuggleExceptionUser(String s)    { super(s); }
 }
 

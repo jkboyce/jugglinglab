@@ -1,6 +1,6 @@
 // mhnNotationControl.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -21,7 +21,6 @@
 */
 
 package jugglinglab.notation;
-
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -57,11 +56,11 @@ public class mhnNotationControl extends NotationControl {
         "<(90).|(270,-125).|(90,125).|(270,-250).|(90,250).|(270,-375).>",
         "<(90,75).|(270,-75,50).|(270,-75,-50).|(270,-75,150).|(270,-75,-150).>",
         "<(270,35).|(90,-35).|(0,0,35).|(180,0,-35).>",
-		"<(0).|(0,100).|(0,-100).|(0,200).|(0,-200).|(0,300).>",
+        "<(0).|(0,100).|(0,-100).|(0,200).|(0,-200).|(0,300).>",
         "(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)..."
     };
 
-				// text fields in control panel
+                // text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, tf6;
     protected JComboBox<String> cb1, cb2, cb3;
     protected boolean cb1_selected = false, cb2_selected = false;
@@ -72,7 +71,7 @@ public class mhnNotationControl extends NotationControl {
 
 
     public mhnNotationControl() {
-		this.setOpaque(false);
+        this.setOpaque(false);
         this.setLayout(new BorderLayout());
 
         JPanel p1 = new JPanel();
@@ -111,9 +110,9 @@ public class mhnNotationControl extends NotationControl {
         cb1 = new JComboBox<String>();
         cb1.addItem(guistrings.getString("MHNHands_name_default"));
         for (int i = 0; i < builtinHandsNames.length; i++) {
-			String item = "MHNHands_name_" + builtinHandsNames[i];
-			cb1.addItem(guistrings.getString(item));
-		}
+            String item = "MHNHands_name_" + builtinHandsNames[i];
+            cb1.addItem(guistrings.getString(item));
+        }
         cb1.addItem(guistrings.getString("MHNHands_name_custom"));
         p1.add(cb1);
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,3,
@@ -160,9 +159,9 @@ public class mhnNotationControl extends NotationControl {
         cb2 = new JComboBox<String>();
         cb2.addItem(guistrings.getString("MHNBody_name_default"));
         for (int i = 0; i < builtinBodyNames.length; i++) {
-			String item = "MHNBody_name_" + builtinBodyNames[i];
-			cb2.addItem(guistrings.getString(item));
-		}
+            String item = "MHNBody_name_" + builtinBodyNames[i];
+            cb2.addItem(guistrings.getString(item));
+        }
         cb2.addItem(guistrings.getString("MHNBody_name_custom"));
         p1.add(cb2);
         gb.setConstraints(cb2, make_constraints(GridBagConstraints.LINE_START,1,5,
@@ -201,20 +200,20 @@ public class mhnNotationControl extends NotationControl {
                     cb2.setSelectedIndex(builtinBodyNames.length+1);
             }
         });
-		
-		JLabel prop_label = new JLabel(guistrings.getString("Prop_type"));
-		p1.add(prop_label);
-		gb.setConstraints(prop_label, make_constraints(GridBagConstraints.LINE_END,0,7,
-													   new Insets(vspacing,border,0,hspacing)));
-		cb3 = new JComboBox<String>();
-		for (int i = 0; i < Prop.builtinProps.length; i++) {
-			String item = "Prop_name_" + Prop.builtinProps[i].toLowerCase();
-			cb3.addItem(guistrings.getString(item));
-		}
-		p1.add(cb3);
-		gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,1,7,
+
+        JLabel prop_label = new JLabel(guistrings.getString("Prop_type"));
+        p1.add(prop_label);
+        gb.setConstraints(prop_label, make_constraints(GridBagConstraints.LINE_END,0,7,
+                                                       new Insets(vspacing,border,0,hspacing)));
+        cb3 = new JComboBox<String>();
+        for (int i = 0; i < Prop.builtinProps.length; i++) {
+            String item = "Prop_name_" + Prop.builtinProps[i].toLowerCase();
+            cb3.addItem(guistrings.getString(item));
+        }
+        p1.add(cb3);
+        gb.setConstraints(cb3, make_constraints(GridBagConstraints.LINE_START,1,7,
                                                 new Insets(vspacing,0,0,border)));
-		
+
 
         JLabel lab6 = new JLabel(guistrings.getString("Manual_settings"));
         p1.add(lab6);
@@ -226,7 +225,7 @@ public class mhnNotationControl extends NotationControl {
                                                    new Insets(5,border+hspacing,0,border));
         gbc6.gridwidth = 2;
         gb.setConstraints(tf6, gbc6);
-        
+
         this.resetNotationControl();
         this.add(p1, BorderLayout.PAGE_START);
     }
@@ -262,7 +261,7 @@ public class mhnNotationControl extends NotationControl {
 
         sb.append("pattern=");
         sb.append(tf1.getText());
-		sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
+        sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
             if (!tf2.getText().equals(new Double(mhnPattern.dwell_default).toString())) {
                 sb.append(";dwell=");
@@ -289,15 +288,15 @@ public class mhnNotationControl extends NotationControl {
     }
 
     public void resetNotationControl() {
-        tf1.setText("3");												// pattern
-        tf2.setText(new Double(mhnPattern.dwell_default).toString());	// dwell beats
-        tf3.setText("");												// beats per second
+        tf1.setText("3");                                               // pattern
+        tf2.setText(new Double(mhnPattern.dwell_default).toString());   // dwell beats
+        tf3.setText("");                                                // beats per second
         tf4.setText("");
         cb1.setSelectedIndex(0);
         tf5.setText("");
         cb2.setSelectedIndex(0);
         tf6.setText("");
-		cb3.setSelectedIndex(0);
+        cb3.setSelectedIndex(0);
     }
 
     public String getHandsName() {

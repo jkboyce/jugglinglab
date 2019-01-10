@@ -1,6 +1,6 @@
 // Path.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -27,15 +27,11 @@ import jugglinglab.util.*;
 
 
 public abstract class Path {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected double		start_time, end_time;
-    protected Coordinate	start_coord = null, end_coord = null;
+    protected double        start_time, end_time;
+    protected Coordinate    start_coord = null, end_coord = null;
 
     // The built-in path types
     public static final String[] builtinPaths = { "Toss", "Bounce" };
@@ -48,8 +44,8 @@ public abstract class Path {
 
         try {
             Object obj = Class.forName("jugglinglab.path."+name.toLowerCase()+"Path").newInstance();
-            //			if (obj == null)
-            //				throw new JuggleExceptionUser("Cannot create Path type '"+name+"'");
+            //          if (obj == null)
+            //              throw new JuggleExceptionUser("Cannot create Path type '"+name+"'");
             if (!(obj instanceof Path))
                 throw new JuggleExceptionUser("Path type '"+name+"' doesn't work");
             return (Path)obj;
@@ -82,10 +78,10 @@ public abstract class Path {
 
     public abstract void calcPath() throws JuggleExceptionInternal;
 
-    public double getStartTime()		{ return start_time; }
-    public double getEndTime()			{ return end_time; }
-    public double getDuration()			{ return (end_time-start_time); }
-    public void	translateTime(double deltat) {
+    public double getStartTime()        { return start_time; }
+    public double getEndTime()          { return end_time; }
+    public double getDuration()         { return (end_time-start_time); }
+    public void translateTime(double deltat) {
         start_time += deltat;
         end_time += deltat;
     }
@@ -96,8 +92,8 @@ public abstract class Path {
     public abstract void getCoordinate(double time, Coordinate newPosition);
 
     // for screen layout purposes
-    public Coordinate getMax() 	{ return getMax2(start_time, end_time); }
-    public Coordinate getMin() 	{ return getMin2(start_time, end_time); }
+    public Coordinate getMax()  { return getMax2(start_time, end_time); }
+    public Coordinate getMin()  { return getMin2(start_time, end_time); }
     public Coordinate getMax(double begin, double end) {
         if ((end < start_time) || (begin > end_time))
             return null;

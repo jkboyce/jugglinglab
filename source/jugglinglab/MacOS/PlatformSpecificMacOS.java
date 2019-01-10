@@ -1,6 +1,6 @@
 // PlatformSpecificMacOS.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -31,23 +31,30 @@ import java.io.*;
 
 import com.apple.eawt.*;
 
+import jugglinglab.JugglingLab;
+
+
+// Note this class is currently unused because Apple's API is not part of Java 8.
+// Eventually we can replicate this functionality in Java 9+ with the Desktop class.
+
 
 public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
-
     public FileDialog fd = null;
-	public Application app = null;
-	
-
+    public Application app = null;
+    
+    @Override
     public boolean isMacOS() { return true; }
     
+    @Override
     public void setupPlatform() {
-		// Apple provides some hooks to make the application look more like
-		// a native OS X application
-		app = com.apple.eawt.Application.getApplication();
-		
+        // Apple provides some hooks to make the application look more like
+        // a native OS X application
+        app = com.apple.eawt.Application.getApplication();
+        
         app.setAboutHandler(new AboutHandler() {
             public void handleAbout(AppEvent.AboutEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         jlw.getNotationGUI().doMenuCommand(NotationGUI.HELP_ABOUT);
                     }
@@ -58,6 +65,7 @@ public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
         app.setQuitHandler(new QuitHandler() {
             public void handleQuitRequestWith(AppEvent.QuitEvent e, QuitResponse response) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             jlw.doMenuCommand(ApplicationWindow.FILE_EXIT);
@@ -71,9 +79,10 @@ public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
 
         app.setOpenFileHandler(new OpenFilesHandler() {
             public void openFiles(AppEvent.OpenFilesEvent e) {
-				final File toopen = e.getFiles().get(0);
-				
+                final File toopen = e.getFiles().get(0);
+                
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         // System.out.println("trying to open file "+filename);
                         try {
@@ -87,105 +96,53 @@ public class PlatformSpecificMacOS extends jugglinglab.core.PlatformSpecific {
                 });
             }
         });
-        
-        
-        /*
-		app.addApplicationListener(new ApplicationAdapter() {
-			public void handleAbout(ApplicationEvent event) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        jlw.getNotationGUI().doMenuCommand(NotationGUI.HELP_ABOUT);
-                    }
-                });
-				event.setHandled(true);
-			}
-			
-			public void handleQuit(ApplicationEvent event) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            jlw.doMenuCommand(ApplicationWindow.FILE_EXIT);
-                        } catch (JuggleExceptionInternal jei) {
-                            ErrorDialog.handleException(jei);
-                        }
-                    }
-                });
-				event.setHandled(true);
-			}
-			
-			public void handleOpenFile(ApplicationEvent event) {
-				final File toopen = new File(event.getFilename());
-				
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // System.out.println("trying to open file "+filename);
-                        try {
-                            jlw.showJMLWindow(toopen);
-                        } catch (JuggleExceptionUser je) {
-                            new ErrorDialog(jlw, je.getMessage());
-                        } catch (JuggleExceptionInternal jei) {
-                            ErrorDialog.handleException(jei);
-                        }
-                    }
-                });
-				event.setHandled(true);
-			}
-		});
-        */
-	}
-
-    public int showOpenDialog(Component c) {
-        // return super.showOpenDialog(c);
-
-        return showOpenDialog(c, null);
     }
-	
-	public int showOpenDialog(Component c, javax.swing.filechooser.FileFilter ff) {
-		FilenameFilter filter = null;
-		if (ff != null) {
-			final javax.swing.filechooser.FileFilter fff = ff;
-			filter = new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return fff.accept(new File(dir, name));
-				}
-			};
-		}
-		
-		if (fd == null) {
-            Frame f = (Frame)jlw;
-            if (c instanceof Frame)
-                f = (Frame)c;
-            fd = new FileDialog(f);
-            fd.setDirectory(System.getProperty("user.dir"));
+
+    @Override
+    public int showOpenDialog(Component c, javax.swing.filechooser.FileFilter ff) {
+        FilenameFilter filter = null;
+        if (ff != null) {
+            final javax.swing.filechooser.FileFilter fff = ff;
+            filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return fff.accept(new File(dir, name));
+                }
+            };
         }
-		fd.setFilenameFilter(filter);  // filter == null => no filter
-        fd.setMode(FileDialog.LOAD);
-        fd.setVisible(true);			// fd.show();
-        if (fd.getFile() == null)
-            return JFileChooser.CANCEL_OPTION;
-        return JFileChooser.APPROVE_OPTION;
-    }
-
-    public int showSaveDialog(Component c) {
-        // return super.showSaveDialog(c);
-
+        
         if (fd == null) {
             Frame f = (Frame)jlw;
             if (c instanceof Frame)
                 f = (Frame)c;
             fd = new FileDialog(f);
-            fd.setDirectory(System.getProperty("user.dir"));
+            fd.setDirectory(JugglingLab.base_dir.toString());
         }
-        fd.setMode(FileDialog.SAVE);
-        fd.setVisible(true);		// fd.show();
+        fd.setFilenameFilter(filter);  // filter == null => no filter
+        fd.setMode(FileDialog.LOAD);
+        fd.setVisible(true);            // fd.show();
         if (fd.getFile() == null)
             return JFileChooser.CANCEL_OPTION;
         return JFileChooser.APPROVE_OPTION;
     }
 
-    public File getSelectedFile() {
-        // return super.getSelectedFile();
+    @Override
+    public int showSaveDialog(Component c) {
+        if (fd == null) {
+            Frame f = (Frame)jlw;
+            if (c instanceof Frame)
+                f = (Frame)c;
+            fd = new FileDialog(f);
+            fd.setDirectory(JugglingLab.base_dir.toString());
+        }
+        fd.setMode(FileDialog.SAVE);
+        fd.setVisible(true);        // fd.show();
+        if (fd.getFile() == null)
+            return JFileChooser.CANCEL_OPTION;
+        return JFileChooser.APPROVE_OPTION;
+    }
 
+    @Override
+    public File getSelectedFile() {
         if (fd == null)
             return null;
         return new File(fd.getDirectory(), fd.getFile());

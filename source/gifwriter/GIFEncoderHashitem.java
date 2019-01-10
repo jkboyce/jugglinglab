@@ -1,6 +1,6 @@
 // GIFEncoderHashitem.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -20,7 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-
 package gifwriter;
 
 import java.awt.*;
@@ -30,12 +29,12 @@ public class GIFEncoderHashitem {
     public int rgb;
     public int count;
     public int index;
-	public Color color;
-	
+    public Color color;
+
     public GIFEncoderHashitem(int rgb, Color color, int count, int index) {
-		this.rgb = rgb;
-		this.count = count;
-		this.index = index;
-		this.color = color;
-	}
+        this.rgb = rgb;
+        this.count = count;
+        this.index = index;
+        this.color = color;
+    }
 }

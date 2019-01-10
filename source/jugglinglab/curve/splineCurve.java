@@ -1,6 +1,6 @@
 // splineCurve.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -26,12 +26,12 @@ import jugglinglab.util.*;
 
 
 public class splineCurve extends Curve {
-    protected int			n;				// number of spline segments
-    protected double[][]	a, b, c, d;		// spline coefficients
-    protected double[]		durations;		// durations of segments
+    protected int           n;              // number of spline segments
+    protected double[][]    a, b, c, d;     // spline coefficients
+    protected double[]      durations;      // durations of segments
 
-    public void initCurve(String st) {
-    }
+    @Override
+    public void initCurve(String st) {}
 
     // Calculate the coefficients a, b, c, d for each portion of the spline path.
     // To solve for these four unknowns, we need four boundary conditions: the
@@ -41,7 +41,8 @@ public class splineCurve extends Curve {
     // are not known and must be assigned -- we assign them according to one of three
     // minimization techniques.
 
-    public void	calcCurve() throws JuggleExceptionInternal {
+    @Override
+    public void calcCurve() throws JuggleExceptionInternal {
         int i, j;
         boolean edgeVelocitiesKnown = ((start_velocity != null) && (end_velocity != null));
 
@@ -117,7 +118,7 @@ public class splineCurve extends Curve {
         if (n < 2) return;
 
         double[] Adiag = new double[n-1];
-        double[] Aoffd = new double[n-1];	// A is symmetric
+        double[] Aoffd = new double[n-1];   // A is symmetric
         double[] b = new double[n-1];
 
         for (int i = 0; i < n-1; i++) {
@@ -146,8 +147,8 @@ public class splineCurve extends Curve {
             }
         }
 
-        double[] vtemp = new double[n-1];				// n-1 unknown velocities
-        tridag(Aoffd, Adiag, Aoffd, b, vtemp, n-1);		// solve
+        double[] vtemp = new double[n-1];               // n-1 unknown velocities
+        tridag(Aoffd, Adiag, Aoffd, b, vtemp, n-1);     // solve
         for (int i = 0; i < n-1; i++)
             v[i+1] = vtemp[i];
     }
@@ -168,8 +169,8 @@ public class splineCurve extends Curve {
         if (n < 2) return;
 
         double[] Adiag = new double[n];
-        double[] Aoffd = new double[n];		// A is symmetric
-        double Acorner = 0.0;				// nonzero element in UR/LL corners of A
+        double[] Aoffd = new double[n];     // A is symmetric
+        double Acorner = 0.0;               // nonzero element in UR/LL corners of A
         double[] b = new double[n];
 
         for (int i = 0; i < n; i++) {
@@ -186,7 +187,7 @@ public class splineCurve extends Curve {
                         b[i] = 3.0*(x[i+1]-x[i])/(t[i]*t[i]) +
                             3.0*(x[i]-x[i-1])/(t[i-1]*t[i-1]);
                     }
-                    Aoffd[i] = 1.0/t[i];		// not used for i=n-1
+                    Aoffd[i] = 1.0/t[i];        // not used for i=n-1
                     break;
                 case rmsvel:
                     if (i == 0) {
@@ -202,14 +203,14 @@ public class splineCurve extends Curve {
             }
         }
 
-        /*		System.out.println("\nBeginning solution.  RHS:");
+        /*      System.out.println("\nBeginning solution.  RHS:");
         for (int i = 0; i < n; i++)
             System.out.println("  b["+i+"] = "+b[i]); */
 
         // Woodbury's formula: solve the problem ignoring A's nonzero corners
         tridag(Aoffd, Adiag, Aoffd, b, v, n);
 
-        if (n > 2) {		// need to deal with nonzero corners?
+        if (n > 2) {        // need to deal with nonzero corners?
                     // solve a few auxiliary problems:
             double[] z1 = new double[n];
             b[0] = Acorner;
@@ -242,7 +243,7 @@ public class splineCurve extends Curve {
         }
         v[n] = v[0];
 
-        /*		// do the matrix multiply to check the answer
+        /*      // do the matrix multiply to check the answer
             System.out.println("Final result RHS:");
         for (int i = 0; i < n; i++) {
             double res = v[i] * Adiag[i];
@@ -263,7 +264,8 @@ public class splineCurve extends Curve {
     // subdiagonal, b[] the diagonal, c[] the superdiagonal.  a, b, c, r, and
     // u are indexed from 0.  Only the array u[] is changed.
 
-    static protected void tridag(double[] a, double[] b, double[] c, double[] r, double[] u, int n) throws JuggleExceptionInternal {
+    static protected void tridag(double[] a, double[] b, double[] c, double[] r, double[] u, int n)
+                        throws JuggleExceptionInternal {
         int j;
         double bet;
         double[] gam = new double[n];
@@ -283,7 +285,7 @@ public class splineCurve extends Curve {
             u[j-1] -= gam[j]*u[j];
     }
 
-
+    @Override
     public void getCoordinate(double time, Coordinate newPosition) {
         if ((time < times[0]) || (time > times[n]))
             return;
@@ -296,12 +298,12 @@ public class splineCurve extends Curve {
             i = n-1;
 
         time -= times[i];
-        newPosition.setCoordinate(
-                                  a[i][0]+time*(b[i][0]+time*(c[i][0]+time*d[i][0])),
+        newPosition.setCoordinate(a[i][0]+time*(b[i][0]+time*(c[i][0]+time*d[i][0])),
                                   a[i][1]+time*(b[i][1]+time*(c[i][1]+time*d[i][1])),
                                   a[i][2]+time*(b[i][2]+time*(c[i][2]+time*d[i][2])) );
     }
 
+    @Override
     protected Coordinate getMax2(double begin, double end) {
         if ((end < times[0]) || (begin > times[n]))
             return null;
@@ -345,6 +347,7 @@ public class splineCurve extends Curve {
         return result;
     }
 
+    @Override
     protected Coordinate getMin2(double begin, double end) {
         if ((end < times[0]) || (begin > times[n]))
             return null;

@@ -1,6 +1,6 @@
 // Generator.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,25 +22,18 @@
 
 package jugglinglab.generator;
 
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import javax.swing.JPanel;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.util.*;
-import java.io.*;
-import java.net.*;
 import jugglinglab.util.*;
-                         
 
-	// This class defines a general object that is capable of generating tricks
-	// and converting them into commands that the animator understands.
+
+    // This class defines a general object that is capable of generating tricks
+    // and converting them into commands that the animator understands.
 public abstract class Generator {
-    static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     // The built-in generators
     public static final String[] builtinGenerators = { "siteswap" };
@@ -82,7 +75,7 @@ public abstract class Generator {
     public abstract void initGenerator(String[] args) throws JuggleExceptionUser;
 
     public void initGenerator(String arg) throws JuggleExceptionUser {
-        int	i, numargs;
+        int i, numargs;
         StringTokenizer st = new StringTokenizer(arg, " \n");
 
         numargs = st.countTokens();

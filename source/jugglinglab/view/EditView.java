@@ -49,20 +49,20 @@ public class EditView extends View {
         ladder.setLayout(new BorderLayout());
         ladder.setPreferredSize(new Dimension(ladder_width, 1));
         ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
-		ladder.setBackground(Color.white);
+        ladder.setBackground(Color.white);
 
-		Locale loc = JLLocale.getLocale();
-		if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-			jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
-			jsp.setResizeWeight(1.0);
-		} else {
-			jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
-			jsp.setResizeWeight(0.0);
-		}
-		jsp.setBorder(new EmptyBorder(0,0,0,0));
-		jsp.setBackground(Color.white);
+        Locale loc = JLLocale.getLocale();
+        if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
+            jsp.setResizeWeight(1.0);
+        } else {
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
+            jsp.setResizeWeight(0.0);
+        }
+        jsp.setBorder(new EmptyBorder(0,0,0,0));
+        jsp.setBackground(Color.white);
 
-		this.setBackground(Color.white);
+        this.setBackground(Color.white);
         this.setLayout(new BorderLayout());
         this.add(jsp, BorderLayout.CENTER);
     }
@@ -110,10 +110,10 @@ public class EditView extends View {
     public AnimationPanel getAnimationPanel() { return jae; }
 
     @Override
-    public void disposeView() { jae.dispose(); }
+    public void disposeView() { jae.disposeAnimation(); }
 
     @Override
-	public JMLPattern getPattern() { return jae.getPattern(); }
+    public JMLPattern getPattern() { return jae.getPattern(); }
 
     @Override
     public boolean getPaused() { return jae.getPaused(); }

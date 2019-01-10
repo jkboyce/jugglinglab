@@ -1,6 +1,6 @@
 // mhnSymmetry.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -26,12 +26,12 @@ import jugglinglab.util.*;
 
 
 public class mhnSymmetry {
-    int		type;
-    int		numjugglers;
+    int         type;
+    int         numjugglers;
     Permutation jugglerperm = null;
-    int		delay = -1;
+    int         delay = -1;
 
-    static final public int TYPE_DELAY = 1;		// types of symmetries
+    static final public int TYPE_DELAY = 1;     // types of symmetries
     static final public int TYPE_SWITCH = 2;
     static final public int TYPE_SWITCHDELAY = 3;
 
@@ -41,11 +41,11 @@ public class mhnSymmetry {
         setJugglerPerm(numjugglers, jugperm);
         setDelay(delay);
     }
-    
-    public int getType()		{ return type; }
-    protected void setType(int type)	{ this.type = type; }
-    public int getNumberOfJugglers()	{ return numjugglers; }
-    public Permutation getJugglerPerm()	{ return jugglerperm; }
+
+    public int getType()        { return type; }
+    protected void setType(int type)    { this.type = type; }
+    public int getNumberOfJugglers()    { return numjugglers; }
+    public Permutation getJugglerPerm() { return jugglerperm; }
     protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionUser {
         this.numjugglers = nj;
         try {
@@ -57,6 +57,6 @@ public class mhnSymmetry {
             throw new JuggleExceptionUser(je.getMessage());
         }
     }
-    public int getDelay()		{ return delay; }
-    protected void setDelay(int del)	{ this.delay = del; }
+    public int getDelay()       { return delay; }
+    protected void setDelay(int del)    { this.delay = del; }
 }

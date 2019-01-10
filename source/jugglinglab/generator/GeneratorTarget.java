@@ -1,6 +1,6 @@
 // GeneratorTarget.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -22,13 +22,14 @@
 
 package jugglinglab.generator;
 
-import java.io.*;
-import javax.swing.*;
+import java.io.PrintStream;
+import javax.swing.SwingUtilities;
 
-import jugglinglab.core.*;
+import jugglinglab.core.PatternList;
+import jugglinglab.core.PatternListWindow;
 
 
-	// This is used as an adapter to handle the generator output
+    // This is used as an adapter to handle the generator output
 public class GeneratorTarget {
     PatternList ltarget = null;
     PrintStream ptarget = null;
@@ -46,18 +47,17 @@ public class GeneratorTarget {
         this.ptarget = ps;
     }
 
-
     public void writePattern(final String display, final String notation, final String anim) {
         if (ltarget != null) {
-			// This method isn't necessarily being called from the event dispatch
-			// thread, so do it this way to ensure the displayed list is only
-			// updated from the event dispatch thread.
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					ltarget.addPattern(display, null, notation, anim, null);
-				}
-			});
-		}
+            // This method isn't necessarily being called from the event dispatch
+            // thread, so do it this way to ensure the displayed list is only
+            // updated from the event dispatch thread.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ltarget.addPattern(display, null, notation, anim, null);
+                }
+            });
+        }
         if (ptarget != null)
             ptarget.println(display);
     }

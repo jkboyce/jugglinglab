@@ -1,6 +1,6 @@
 // mhnPattern.java
 //
-// Copyright 2003 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -28,19 +28,15 @@ import jugglinglab.util.*;
 
 
 public class mhnPattern {
-    // static ResourceBundle guistrings;
-    static ResourceBundle errorstrings;
-    static {
-        // guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
-    }
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected static double bps_default = -1.0;	// calculate bps
+    protected static double bps_default = -1.0; // calculate bps
     protected static double dwell_default = 1.3;
     protected static double gravity_default = 980.0;
     protected static double propdiam_default = 10.0;
     protected static double bouncefrac_default = 0.9;
-	protected static String prop_default = "ball";
+    protected static String prop_default = "ball";
 
     // original config string:
     protected String config;
@@ -52,7 +48,7 @@ public class mhnPattern {
     protected double gravity = gravity_default;
     protected double propdiam = propdiam_default;
     protected double bouncefrac = bouncefrac_default;
-	protected String prop = prop_default;
+    protected String prop = prop_default;
     protected String[] color = null;
 
     // internal variables:
@@ -71,21 +67,21 @@ public class mhnPattern {
     public static final int LEFT_HAND = 1;
 
 
-    protected int getNumberOfJugglers() 	{ return numjugglers; }
-    protected int getNumberOfPaths()		{ return numpaths; }
-    protected int getPeriod() 			{ return period; }
-    protected int getIndexes()			{ return indexes; }
-    protected int getMaxOccupancy() 		{ return max_occupancy; }
-    protected int getMaxThrow()			{ return max_throw; }
-    protected mhnThrow[][][][] getThrows() 	{ return th; }
-    protected int getNumberOfSymmetries()	{ return symmetry.size(); }
-	protected String getPropName() { return prop; }
+    protected int getNumberOfJugglers()     { return numjugglers; }
+    protected int getNumberOfPaths()        { return numpaths; }
+    protected int getPeriod()           { return period; }
+    protected int getIndexes()          { return indexes; }
+    protected int getMaxOccupancy()         { return max_occupancy; }
+    protected int getMaxThrow()         { return max_throw; }
+    protected mhnThrow[][][][] getThrows()  { return th; }
+    protected int getNumberOfSymmetries()   { return symmetry.size(); }
+    protected String getPropName() { return prop; }
     protected void addSymmetry(mhnSymmetry ss) { symmetry.add(ss); }
     protected mhnSymmetry getSymmetry(int i) { return symmetry.get(i); }
 
 
     public void parseInput(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1)	{ // just the pattern
+        if (config.indexOf((int)'=') == -1) { // just the pattern
             config = "pattern=" + config;
         }
 
@@ -139,17 +135,17 @@ public class mhnPattern {
             }
         }
 
-		if ((temp = pl.getParameter("prop")) != null) {
-			prop = temp;
-		}
+        if ((temp = pl.getParameter("prop")) != null) {
+            prop = temp;
+        }
 
         if ((temp = pl.getParameter("colors")) != null) {
             if (temp.trim().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
 
-            StringTokenizer	st1 = new StringTokenizer(temp, "}", false);
-            StringTokenizer	st2 = null;
-            String			str = null;
+            StringTokenizer st1 = new StringTokenizer(temp, "}", false);
+            StringTokenizer st2 = null;
+            String          str = null;
 
             int numcolors = st1.countTokens();
             color = new String[numcolors];
