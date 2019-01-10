@@ -40,4 +40,3 @@ else
     echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
     exit 1
 fi
->>>>>>> master
