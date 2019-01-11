@@ -138,8 +138,8 @@ public class AnimationEditPanel extends AnimationPanel {
                 }
                 AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
-                if ((me.getX() == startx) && (me.getY() == starty) &&
-                    (engine != null) && engine.isAlive())
+                if (me.getX() == startx && me.getY() == starty &&
+                                engine != null && engine.isAlive())
                     setPaused(!enginePaused);
                 if (AnimationEditPanel.this.getPaused())
                     repaint();
@@ -205,7 +205,8 @@ public class AnimationEditPanel extends AnimationPanel {
                 while (ca[0] >= JLMath.toRad(360.0))
                     ca[0] -= JLMath.toRad(360.0);
 
-                AnimationEditPanel.this.anim.setCameraAngle(ca);
+                double[] snappedcamangle = snapCamera(ca);
+                AnimationEditPanel.this.anim.setCameraAngle(snappedcamangle);
 
                 if (event_active)
                     createEventView();
@@ -231,12 +232,26 @@ public class AnimationEditPanel extends AnimationPanel {
 
     @Override
     protected double[] snapCamera(double[] ca) {
-        double[] result = super.snapCamera(ca);
+        double[] result = new double[2];
+        result[0] = ca[0];
+        result[1] = ca[1];
 
-        if (event_active) {
-            double a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(),
-                                                        event.getT()));
+        if (result[1] < snapangle)
+            result[1] = 0.000001;
+        if (result[1] > (JLMath.toRad(90.0) - snapangle))
+            result[1] = JLMath.toRad(90.0);
 
+        double a = 0.0;
+        boolean snap_horizontal = true;
+
+        if (event_active)
+            a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+        else if (anim.pat.getNumberOfJugglers() == 1)
+            a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+        else
+            snap_horizontal = false;
+
+        if (snap_horizontal) {
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
             else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
@@ -247,14 +262,6 @@ public class AnimationEditPanel extends AnimationPanel {
                 result[0] = a + 270.0*0.0174532925194;
         }
         return result;
-    }
-
-    protected double anglediff(double delta) {
-        while (delta > JLMath.toRad(180.0))
-            delta -= JLMath.toRad(360.0);
-        while (delta <= JLMath.toRad(-180.0))
-            delta += JLMath.toRad(360.0);
-        return Math.abs(delta);
     }
 
     @Override
