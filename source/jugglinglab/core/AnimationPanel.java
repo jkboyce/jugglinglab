@@ -153,7 +153,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if ((me.getX() == startx) && (me.getY() == starty) &&
                                 (engine != null) && engine.isAlive()) {
                     setPaused(!enginePaused);
-                    // AnimationPanel.this.getParent().dispatchEvent(me);
+                    AnimationPanel.this.getParent().dispatchEvent(me);
                 }
                 if (AnimationPanel.this.getPaused())
                     repaint();
