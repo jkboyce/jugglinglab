@@ -19,9 +19,10 @@ Juggling Lab has been in development since 1997 -- the earliest days of the Java
 Over that long span of time the project has seen contributions from many people, including:
 
 - Jack Boyce – Most Juggling Lab code, project administration
+- Daniel Bareket – Hebrew translations
 - Vincent Bruel – Suggestions for improved bouncing support (hyperlift/hyperforce patterns), ball-bounce audio sample
 - Brian Campbell – Bookmarklet
-- Jason Haslam – Ring prop, bitmapped-image prop, improved ball graphic, visual editor enhancements, internationalization of user interface including Spanish and Portuguese translations, and many bug fixes
+- Jason Haslam – Rig prop, bitmapped-image prop, improved ball graphic, visual editor enhancements, internationalization of user interface including Spanish and Portuguese translations, and many bug fixes
 - Steve Healy (JAG) – Many invaluable design suggestions and bug reports, especially of siteswap notation component
 - Anselm Heaton – Orbit-finding code, other design suggestions
 - Lewis Jardine – Apache Ant build file, GPL clarifications
