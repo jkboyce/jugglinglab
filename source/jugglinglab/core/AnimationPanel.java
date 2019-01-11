@@ -188,7 +188,6 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (!engineStarted)
                     return;
                 if (!cameradrag) {
-                    // return;
                     AnimationPanel.this.cameradrag = true;
                     AnimationPanel.this.lastx = AnimationPanel.this.startx;
                     AnimationPanel.this.lasty = AnimationPanel.this.starty;
@@ -202,8 +201,8 @@ public class AnimationPanel extends JPanel implements Runnable {
                 double[] ca = AnimationPanel.this.dragcamangle;
                 ca[0] += (double)(xdelta) * 0.02;
                 ca[1] -= (double)(ydelta) * 0.02;
-                if (ca[1] < 0.000001)
-                    ca[1] = 0.000001;
+                if (ca[1] < 0.0001)
+                    ca[1] = 0.0001;
                 if (ca[1] > JLMath.toRad(90.0))
                     ca[1] = JLMath.toRad(90.0);
                 while (ca[0] < 0.0)
@@ -212,7 +211,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     ca[0] -= JLMath.toRad(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
-                anim.setCameraAngle(snappedcamangle);
+                AnimationPanel.this.anim.setCameraAngle(snappedcamangle);
 
                 if (AnimationPanel.this.getPaused())
                     repaint();
@@ -234,17 +233,35 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     protected double[] snapCamera(double[] ca) {
         double[] result = new double[2];
-
         result[0] = ca[0];
         result[1] = ca[1];
 
         if (result[1] < snapangle)
             result[1] = 0.000001;
-        if ((result[1] > (JLMath.toRad(90.0) - snapangle)) /*&& (result[1] < (JLMath.toRad(90.0) + snapangle)) */)
+        if (result[1] > (JLMath.toRad(90.0) - snapangle))
             result[1] = JLMath.toRad(90.0);
-        // if (result[1] > (JLMath.toRad(180.0) - snapangle))
-        //  result[1] = JLMath.toRad(179.99999);
+
+        if (anim.pat.getNumberOfJugglers() == 1) {
+            double a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+
+            if (anglediff(a - result[0]) < snapangle)
+                result[0] = a;
+            else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
+                result[0] = a + 90.0*0.0174532925194;
+            else if (anglediff(a + 180.0*0.0174532925194 - result[0]) < snapangle)
+                result[0] = a + 180.0*0.0174532925194;
+            else if (anglediff(a + 270.0*0.0174532925194 - result[0]) < snapangle)
+                result[0] = a + 270.0*0.0174532925194;
+        }
         return result;
+    }
+
+    protected double anglediff(double delta) {
+        while (delta > JLMath.toRad(180.0))
+            delta -= JLMath.toRad(360.0);
+        while (delta <= JLMath.toRad(-180.0))
+            delta += JLMath.toRad(360.0);
+        return Math.abs(delta);
     }
 
     public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
