@@ -83,9 +83,11 @@ public class SelectionView extends View {
         }
 
         pleft.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent me) {
             }
 
+            @Override
             public void mouseReleased(MouseEvent me) {
                 Component c = me.getComponent();
                 int num;
@@ -99,6 +101,7 @@ public class SelectionView extends View {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
                 } catch (final JuggleExceptionUser jeu) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             new ErrorDialog(SelectionView.this, jeu.getMessage());
                         }

@@ -136,11 +136,11 @@ public class View extends JPanel implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-    { "Simple", "Visual editor", /*"Selection editor",*/ "JML editor", null, "Restart", "Animation Preferences..." };
+    { "Simple", "Visual editor", "Selection editor", "JML editor", null, "Restart", "Animation Preferences..." };
     protected static final String[] viewCommands = new String[]
-    { "simple", "edit", /*"selection",*/ "jml", null, "restart", "prefs" };
+    { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
     protected static final char[] viewShortcuts =
-    { '1', '2', '3', /*'4',*/ ' ', ' ', 'P' };
+    { '1', '2', '3', '4', ' ', ' ', 'P' };
 
     public JMenu createViewMenu() {
         JMenu viewmenu = new JMenu(guistrings.getString("View"));
