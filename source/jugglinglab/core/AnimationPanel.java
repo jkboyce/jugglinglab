@@ -140,18 +140,18 @@ public class AnimationPanel extends JPanel implements Runnable {
 
             @Override
             public void mouseReleased(MouseEvent me) {
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
                 if (exception != null)
                     return;
                 AnimationPanel.this.cameradrag = false;
 
-                if (!engineStarted && (engine != null) && engine.isAlive()) {
+                if (!engineStarted && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
                     return;
                 }
-                if ((me.getX() == startx) && (me.getY() == starty) &&
-                                (engine != null) && engine.isAlive()) {
+                if (me.getX() == startx && me.getY() == starty &&
+                                engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
                     // AnimationPanel.this.getParent().dispatchEvent(me);
                 }
@@ -162,7 +162,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
-                if (jc.mousePause /*&& waspaused_valid*/)
+                if (jc.mousePause)
                     setPaused(waspaused);
                 outside = false;
                 outside_valid = true;
@@ -172,7 +172,6 @@ public class AnimationPanel extends JPanel implements Runnable {
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause) {
                     waspaused = getPaused();
-                    // waspaused_valid = true;
                     setPaused(true);
                 }
                 outside = true;
@@ -294,10 +293,8 @@ public class AnimationPanel extends JPanel implements Runnable {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         engineStarted = false;
 
-        if (jc.mousePause) {
+        if (jc.mousePause)
             waspaused = jc.startPause;
-            // waspaused_valid = outside_valid;
-        }
 
         try {
             engineRunning = true;   // ok to start rendering
@@ -328,15 +325,14 @@ public class AnimationPanel extends JPanel implements Runnable {
                 else
                     setPaused(true);    // assume mouse is outside animator, if not known
                 waspaused = false;
-                // waspaused_valid = true;
             }
 
             while (engineRunning)  {
                 setTime(anim.pat.getLoopStartTime());
                 engineStarted = true;
 
-                for (int i = 0; engineRunning &&
-                                (getTime() < (anim.pat.getLoopEndTime() - 0.5*anim.sim_interval_secs)); i++) {
+                for (int i = 0; engineRunning && getTime() < (anim.pat.getLoopEndTime() -
+                                    0.5 * anim.sim_interval_secs); i++) {
                     repaint();
                     try {
                         real_time_wait = anim.real_interval_millis -
@@ -365,7 +361,6 @@ public class AnimationPanel extends JPanel implements Runnable {
                     if (jc.catchSound && catchclip != null) {
                         for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                             if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                // System.out.println("Caught path "+path);
                                 if (catchclip.isRunning())
                                     catchclip.stop();
                                 catchclip.setFramePosition(0);
@@ -376,7 +371,6 @@ public class AnimationPanel extends JPanel implements Runnable {
                     if (jc.bounceSound && bounceclip != null) {
                         for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                             if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                // System.out.println("Caught path "+path);
                                 if (bounceclip.isRunning())
                                     bounceclip.stop();
                                 bounceclip.setFramePosition(0);
@@ -427,16 +421,9 @@ public class AnimationPanel extends JPanel implements Runnable {
         enginePaused = wanttopause;
     }
 
-    public double getTime() { return sim_time; };
+    public double getTime()             { return sim_time; };
 
-    public void setTime(double time) {
-        /*      while (time < pat.getLoopStartTime())
-        time += (pat.getLoopEndTime() - pat.getLoopStartTime());
-        while (time > pat.getLoopEndTime())
-        time -= (pat.getLoopEndTime() - pat.getLoopStartTime());
-        */
-        sim_time = time;
-    }
+    public void setTime(double time)    { sim_time = time; }
 
     @Override
     public void paintComponent(Graphics g) {
