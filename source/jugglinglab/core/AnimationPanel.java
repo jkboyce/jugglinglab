@@ -117,6 +117,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             long lastpress = 0L;
             long lastenter = 1L;
 
+            @Override
             public void mousePressed(MouseEvent me) {
                 lastpress = me.getWhen();
 
@@ -137,6 +138,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 AnimationPanel.this.starty = me.getY();
             }
 
+            @Override
             public void mouseReleased(MouseEvent me) {
                 if (jc.mousePause && (lastpress == lastenter))
                     return;
@@ -157,6 +159,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     repaint();
             }
 
+            @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
                 if (jc.mousePause /*&& waspaused_valid*/)
@@ -165,6 +168,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 outside_valid = true;
             }
 
+            @Override
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause) {
                     waspaused = getPaused();
@@ -177,6 +181,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent me) {
                 if (exception != null)
                     return;
@@ -215,6 +220,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         });
 
         this.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 if (exception != null)
                     return;

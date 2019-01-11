@@ -81,6 +81,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             return;
 
         this.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(final MouseEvent me) {
                 int my = me.getY();
                 if (my < border_top)
@@ -157,6 +158,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 }
             }
 
+            @Override
             public void mouseReleased(final MouseEvent me) {
                 if (me.isPopupTrigger()) {
                     switch (gui_state) {
@@ -251,6 +253,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent me) {
                 int my = me.getY();
                 if (my < border_top)
@@ -535,7 +538,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         popup.setBorder(new BevelBorder(BevelBorder.RAISED));
 
         popup.addPopupMenuListener(new PopupMenuListener() {
+            @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
+            @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 // System.out.println("popup becoming invisible");
                 if (gui_state == STATE_POPUP) {
@@ -544,6 +549,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         animator.setPaused(anim_paused);
                 }
             }
+            @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
         });
     }
@@ -801,6 +807,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         JButton okbutton = new JButton(guistrings.getString("OK"));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String newtitle = tf.getText();
                 pat.setTitle(newtitle);
@@ -839,6 +846,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         JButton okbutton = new JButton(guistrings.getString("OK"));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 jd.dispose();
             }
@@ -992,6 +1000,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                 new Insets(0,10,0,0)));
         cb1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
                 //              System.out.println("Got an action item: "+type);
@@ -1023,6 +1032,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         p3.add(cancelbutton);
         gb.setConstraints(cancelbutton, make_constraints(GridBagConstraints.LINE_END,0,0,new Insets(0,0,0,0)));
         cancelbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 jd.dispose();
                 animator.setPaused(paused);
@@ -1032,6 +1042,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         p3.add(okbutton);
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,1,0,new Insets(0,10,0,0)));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
 
@@ -1144,6 +1155,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(cb1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                 new Insets(0,10,0,0)));
         cb1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
                 // System.out.println("Got an action item: "+type);
@@ -1175,6 +1187,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         p3.add(cancelbutton);
         gb.setConstraints(cancelbutton, make_constraints(GridBagConstraints.LINE_END,0,0,new Insets(0,0,0,0)));
         cancelbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 jd.dispose();
             }
@@ -1184,6 +1197,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,1,0,
                                                      new Insets(0,10,0,0)));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
                 tr.setThrowType(type.toLowerCase());
@@ -1286,6 +1300,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     tf.setText(def.toString());
 
                     tf.addCaretListener(new CaretListener() {
+                        @Override
                         public void caretUpdate(CaretEvent e) {
                             //System.out.println("Caret Update");
                         }
@@ -1310,6 +1325,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
                     // Clicking on the icon launches a file chooser for getting a new image
                     label.addMouseListener(new MouseAdapter() {
+                        @Override
                         public void mouseClicked(MouseEvent e) {
                             FileFilter filter = new FileFilter() {
                                 public boolean accept(File f) {

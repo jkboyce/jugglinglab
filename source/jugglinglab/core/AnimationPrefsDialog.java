@@ -107,6 +107,7 @@ public class AnimationPrefsDialog extends JDialog {
         but_cancel = new JButton(guistrings.getString("Cancel"));
 
         but_cancel.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
@@ -118,6 +119,7 @@ public class AnimationPrefsDialog extends JDialog {
         but_ok = new JButton(guistrings.getString("OK"));
 
         but_ok.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 int tempint;
                 double tempdouble;

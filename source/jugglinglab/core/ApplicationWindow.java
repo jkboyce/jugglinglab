@@ -320,6 +320,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
                                                      new Insets(15,15,15,15)));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 aboutBox.setVisible(false);
                 aboutBox.dispose();

@@ -122,6 +122,7 @@ public class ErrorDialog {
         butp.setLayout(new FlowLayout(FlowLayout.LEADING));
         JButton quitbutton = new JButton(guistrings.getString("Quit"));
         quitbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
@@ -129,6 +130,7 @@ public class ErrorDialog {
         butp.add(quitbutton);
         JButton okbutton = new JButton(guistrings.getString("Continue"));
         okbutton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 exframe.setVisible(false);
                 exframe.dispose();

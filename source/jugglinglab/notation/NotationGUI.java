@@ -153,6 +153,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             np2.setLayout(new FlowLayout(FlowLayout.TRAILING));
             JButton nbut1 = new JButton(guistrings.getString("Defaults"));
             nbut1.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     try {
                         fcontrol.resetNotationControl();
@@ -165,6 +166,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             this.juggle = new JButton(guistrings.getString("Juggle"));
             this.juggle.setDefaultCapable(true);
             juggle.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     PatternWindow jaw2 = null;
                     try {
@@ -208,6 +210,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                 p2.setLayout(new FlowLayout(FlowLayout.TRAILING));
                 JButton but1 = new JButton(guistrings.getString("Defaults"));
                 but1.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
                         gen.resetGeneratorControls();
                     }
@@ -215,9 +218,10 @@ public class NotationGUI extends JPanel implements ActionListener {
                 p2.add(but1);
                 this.run = new JButton(guistrings.getString("Run"));
                 run.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
-
                         Thread t = new Thread() {
+                            @Override
                             public void run() {
                                 busy.setVisible(true);
                                 run.setEnabled(false);
@@ -278,6 +282,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 
                 // Change the default button when the tab changes
                 jtp.addChangeListener(new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent e) {
                         getRootPane().setDefaultButton(getDefaultButton());
                     }

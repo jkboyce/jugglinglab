@@ -53,6 +53,7 @@ public class GeneratorTarget {
             // thread, so do it this way to ensure the displayed list is only
             // updated from the event dispatch thread.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     ltarget.addPattern(display, null, notation, anim, null);
                 }

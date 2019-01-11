@@ -122,6 +122,7 @@ public class mhnNotationControl extends NotationControl {
         gb.setConstraints(tf4, make_constraints(GridBagConstraints.LINE_START,1,4,
                                                 new Insets(5,0,0,border)));
         cb1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 int index = cb1.getSelectedIndex();
                 cb1_selected = true;
@@ -140,12 +141,15 @@ public class mhnNotationControl extends NotationControl {
             }
         });
         tf4.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent de) {}
+            @Override
             public void insertUpdate(DocumentEvent de) {
                 if (!cb1_selected)
                     cb1.setSelectedIndex(builtinHandsNames.length+1);
                 cb1_selected = false;
             }
+            @Override
             public void removeUpdate(DocumentEvent de) {
                 if (!cb1_selected)
                     cb1.setSelectedIndex(builtinHandsNames.length+1);
@@ -171,6 +175,7 @@ public class mhnNotationControl extends NotationControl {
         gb.setConstraints(tf5, make_constraints(GridBagConstraints.LINE_START,1,6,
                                                 new Insets(5,0,0,border)));
         cb2.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 int index = cb2.getSelectedIndex();
                 cb2_selected = true;
@@ -189,12 +194,15 @@ public class mhnNotationControl extends NotationControl {
             }
         });
         tf5.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent de) {}
+            @Override
             public void insertUpdate(DocumentEvent de) {
                 if (!cb2_selected)
                     cb2.setSelectedIndex(builtinBodyNames.length+1);
                 cb2_selected = false;
             }
+            @Override
             public void removeUpdate(DocumentEvent de) {
                 if (!cb2_selected)
                     cb2.setSelectedIndex(builtinBodyNames.length+1);

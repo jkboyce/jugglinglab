@@ -52,6 +52,7 @@ public class AnimationEditPanel extends AnimationPanel {
             long lastpress = 0L;
             long lastenter = 1L;
 
+            @Override
             public void mousePressed(MouseEvent me) {
                 lastpress = me.getWhen();
 
@@ -95,6 +96,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 AnimationEditPanel.this.starty = me.getY();
             }
 
+            @Override
             public void mouseReleased(MouseEvent me) {
                 if (jc.mousePause && (lastpress == lastenter))
                     return;
@@ -143,6 +145,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     repaint();
             }
 
+            @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
                 if (jc.mousePause /*&& waspaused_valid*/)
@@ -151,6 +154,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 outside_valid = true;
             }
 
+            @Override
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause) {
                     waspaused = getPaused();
@@ -163,6 +167,7 @@ public class AnimationEditPanel extends AnimationPanel {
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent me) {
                 if (exception != null)
                     return;
@@ -210,6 +215,7 @@ public class AnimationEditPanel extends AnimationPanel {
         });
 
         this.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 if (exception != null)
                     return;
