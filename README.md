@@ -30,5 +30,6 @@ Over that long span of time the project has seen contributions from many people,
 - Herve Nicol – Bug fixes
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
+- Romain Richard and Frédéric Rayar – [Android version](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab)
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
