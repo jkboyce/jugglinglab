@@ -124,7 +124,10 @@ public class Animator {
     }
 
     public double[] getCameraAngle() {
-        return this.camangle;
+        double[] result = new double[2];
+        result[0] = this.camangle[0];
+        result[1] = this.camangle[1];
+        return result;
     }
 
     protected void setCameraAngle(double[] ca) {
