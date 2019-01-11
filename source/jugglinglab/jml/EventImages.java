@@ -1,6 +1,6 @@
 // EventImages.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -32,7 +32,7 @@ public class EventImages {
     protected Permutation loopperm = null;
 
     protected JMLEvent ev = null;
-    protected int evjuggler, evhand, evtransitions;	// hand is by index (0 or 1)
+    protected int evjuggler, evhand, evtransitions; // hand is by index (0 or 1)
     protected double evtime;
 
     protected Permutation[][][] ea = null;
@@ -48,7 +48,7 @@ public class EventImages {
         this.ev = ev;
         calcarray();
         resetPosition();
-        ev.delay = 0;					// delay relative to master -> none for ev
+        ev.delay = 0;                   // delay relative to master -> none for ev
         ev.delayunits = numentries;
     }
 
@@ -244,8 +244,8 @@ public class EventImages {
                     break;
             }
         }
-        for (int i = 0; i < numsyms; i++)	// assume exactly one delay symmetry
-            if (deltaentries[i] == -1)	// signals a switchdelay symmetry
+        for (int i = 0; i < numsyms; i++)   // assume exactly one delay symmetry
+            if (deltaentries[i] == -1)  // signals a switchdelay symmetry
                 deltaentries[i] = this.numentries / symperiod[i];
 
         // System.out.println("numentries = "+numentries);
@@ -253,7 +253,7 @@ public class EventImages {
         this.ea = new Permutation[numjugglers][2][numentries];
         this.transitiontype = new int[evtransitions];
 
-        Permutation idperm = new Permutation(numpaths, false);	// identity
+        Permutation idperm = new Permutation(numpaths, false);  // identity
         ev.setPathPermFromMaster(idperm);
         ea[evjuggler][evhand][0] = idperm;
         for (int i = 0; i < evtransitions; i++) {
@@ -308,7 +308,7 @@ public class EventImages {
         } while (changed);
         // System.out.println("**** done with event");
 
-        /*		int[][][] ea = eventlist.getEventArray();
+        /*      int[][][] ea = eventlist.getEventArray();
         for (int j = 0; j < numjugglers; j++) {
             for (int k = 0; k < 2; k++) {
                 for (int l = 0; l < numentries; l++) {

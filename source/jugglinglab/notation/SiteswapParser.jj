@@ -1,6 +1,6 @@
 // SiteswapParser.jj
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -57,7 +57,7 @@ public class SiteswapParser {
 	private static int current_juggler;
 	private static int current_beat;
 	private static int current_beat_sub;
-	
+
 	public static SiteswapTreeItem parsePattern(String pat) throws ParseException {
 		java.io.StringReader sr = new java.io.StringReader(pat);
 		java.io.Reader r = new java.io.BufferedReader(sr);
@@ -132,7 +132,7 @@ SiteswapTreeItem Pattern() :
 SiteswapTreeItem GroupedPattern() :
 { SiteswapTreeItem b, c; int n; }
 {
-	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_GROUPED_PATTERN); }	
+	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_GROUPED_PATTERN); }
 	"(" c=Pattern()
 		{
 			b.addChild(c);
@@ -152,7 +152,7 @@ SiteswapTreeItem SoloSequence() :
 		b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_SOLO_SEQUENCE);
 		current_juggler = 1;
 		current_beat = 0;
-	}	
+	}
 	(
 		LOOKAHEAD(SoloMultiThrow() | SoloPairedThrow() | SoloHandSpecifier())
 		(
@@ -190,7 +190,7 @@ SiteswapTreeItem SoloSequence() :
 SiteswapTreeItem SoloPairedThrow() :
 { SiteswapTreeItem b, c; }
 {
-	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_SOLO_PAIRED_THROW); }	
+	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_SOLO_PAIRED_THROW); }
 	"(" [<SPC>] c=SoloMultiThrow()
 		{ b.addChild(c); }
 	"," [<SPC>] c=SoloMultiThrow()
@@ -206,7 +206,7 @@ SiteswapTreeItem SoloPairedThrow() :
 SiteswapTreeItem SoloMultiThrow() :
 { SiteswapTreeItem b, c; }
 {
-	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_SOLO_MULTI_THROW); }	
+	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_SOLO_MULTI_THROW); }
 	(
 		c=SoloSingleThrow()
 			{ b.addChild(c); }
@@ -244,7 +244,7 @@ SiteswapTreeItem SoloSingleThrow() :
 			t=<NUM>
 				{ b.value = Character.digit((t.image.toCharArray())[0], 36); }
 		|
-			t=<LET> 
+			t=<LET>
 				{ b.value = Character.digit((t.image.toCharArray())[0], 36); }
 		|
 			"p"
@@ -253,7 +253,7 @@ SiteswapTreeItem SoloSingleThrow() :
 			"x"
 				{ b.value = 33; }
 		)
-		
+
 		["x"
 			{ b.x = true; }
 		] [mod=Modifier()
@@ -271,7 +271,7 @@ SiteswapTreeItem SoloSingleThrow() :
 SiteswapTreeItem SoloHandSpecifier() :
 { SiteswapTreeItem b; }
 {
-	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_HAND_SPEC); }	
+	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_HAND_SPEC); }
 	(
 		"R"
 			{ b.spec_left = false; }
@@ -444,7 +444,7 @@ SiteswapTreeItem PassingSingleThrow() :
 			t=<NUM>
 				{ b.value = Character.digit((t.image.toCharArray())[0], 36); }
 		|
-			t=<LET> 
+			t=<LET>
 				{ b.value = Character.digit((t.image.toCharArray())[0], 36); }
 		|
 			"p"
@@ -453,7 +453,7 @@ SiteswapTreeItem PassingSingleThrow() :
 			"x"
 				{ b.value = 33; }
 		)
-		
+
 		["x"
 			{ b.x = true; }
 		] ["p"
@@ -475,7 +475,7 @@ SiteswapTreeItem PassingSingleThrow() :
 SiteswapTreeItem PassingHandSpecifier() :
 { SiteswapTreeItem b; }
 {
-	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_HAND_SPEC); }	
+	{ b = new SiteswapTreeItem(SiteswapTreeItem.TYPE_HAND_SPEC); }
 	(
 		"R"
 			{ b.spec_left = false; }

@@ -1,6 +1,6 @@
 // JMLDefs.java
 //
-// Copyright 2002 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -24,11 +24,11 @@ package jugglinglab.jml;
 
 
 public class JMLDefs {
-	public static final String default_JML_on_save = "1.2";
+    public static final String default_JML_on_save = "1.2";
 
-	public static final String default_JML_on_load = "1.0";
-	
-	public static final String jmldtd =
+    public static final String default_JML_on_load = "1.0";
+
+    public static final String jmldtd =
 "<!ELEMENT jml (pattern|patternlist)>\n" +
 "<!ATTLIST jml\n" +
 "          version  CDATA   \"1.0\">\n" +
@@ -100,18 +100,18 @@ public class JMLDefs {
 
 
 
-	public static final String[] jmlprefix = {
-	    "<?xml version=\"1.0\"?>",
-	    "<!DOCTYPE jml SYSTEM \"file://jml.dtd\">"
-	};
+    public static final String[] jmlprefix = {
+        "<?xml version=\"1.0\"?>",
+        "<!DOCTYPE jml SYSTEM \"file://jml.dtd\">"
+    };
 
-	public static final String[] jmlsuffix = {
-	};
+    public static final String[] jmlsuffix = {
+    };
 
-	public static final String[] taglist = {
-	    "jml", "pattern", "patternlist", "title", "prop", "setup",
-		"symmetry", "event", "throw", "catch", "softcatch", "line",
-		"holding", "position"
-	};
+    public static final String[] taglist = {
+        "jml", "pattern", "patternlist", "title", "prop", "setup",
+        "symmetry", "event", "throw", "catch", "softcatch", "line",
+        "holding", "position"
+    };
 
 }

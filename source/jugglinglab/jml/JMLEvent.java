@@ -1,6 +1,6 @@
 // JMLEvent.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -32,9 +32,9 @@ public class JMLEvent {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected double x, y, z;		// coordinates in local frame
-    protected double gx, gy, gz;	// coordinates in global frame
-    protected boolean globaldirty;	// global coordinates need to be recalced?
+    protected double x, y, z;       // coordinates in local frame
+    protected double gx, gy, gz;    // coordinates in global frame
+    protected boolean globaldirty;  // global coordinates need to be recalced?
     protected double t;
     protected int juggler;
     protected int hand;
@@ -43,10 +43,10 @@ public class JMLEvent {
     protected int delay;
     protected int delayunits;
     protected Permutation pathpermfrommaster = null;
-    protected JMLEvent master;		// null if this is a master event
+    protected JMLEvent master;      // null if this is a master event
     public boolean calcpos;
 
-    protected JMLEvent prev, next;	// for doubly-linked event list
+    protected JMLEvent prev, next;  // for doubly-linked event list
 
 
     public JMLEvent() {
@@ -57,14 +57,14 @@ public class JMLEvent {
         this.globaldirty = true;
     }
 
-    public Coordinate getLocalCoordinate()	{ return new Coordinate(x,y,z); }
+    public Coordinate getLocalCoordinate()  { return new Coordinate(x,y,z); }
     public void setLocalCoordinate(Coordinate c) {
         this.x = c.x;
         this.y = c.y;
         this.z = c.z;
         this.globaldirty = true;
     }
-    public Coordinate getGlobalCoordinate()	{
+    public Coordinate getGlobalCoordinate() {
         return (globaldirty ? null : new Coordinate(gx,gy,gz));
     }
     public void setGlobalCoordinate(Coordinate c) {
@@ -73,10 +73,10 @@ public class JMLEvent {
         this.gz = c.z;
         this.globaldirty = false;
     }
-    public double getT()		{ return t; }
-    public void setT(double t)	{ this.t = t; }
+    public double getT()        { return t; }
+    public void setT(double t)  { this.t = t; }
 
-    public int getHand()		{ return hand; }
+    public int getHand()        { return hand; }
     public void setHand(String strhand) throws JuggleExceptionUser {
         int index = strhand.indexOf(":");
 
@@ -101,12 +101,12 @@ public class JMLEvent {
     }
     public void setHand(int j, int h) {
         this.juggler = j;
-        this.hand = h;		// HandLink.LEFT_HAND or HandLink.RIGHT_HAND
+        this.hand = h;      // HandLink.LEFT_HAND or HandLink.RIGHT_HAND
     }
 
-    public int getJuggler()		{ return juggler; }
+    public int getJuggler()     { return juggler; }
 
-    public int getNumberOfTransitions()	{ return transitions.size(); }
+    public int getNumberOfTransitions() { return transitions.size(); }
     public JMLTransition getTransition(int index) {
         return transitions.get(index);
     }
@@ -125,18 +125,16 @@ public class JMLEvent {
         }
     }
 
-    public boolean isMaster()			{ return (master==null); }
-    public JMLEvent getMaster()			{ return master; }
-    public void setMaster(JMLEvent master) {
-        this.master = master;
-    }
+    public boolean isMaster()                   { return (master==null); }
+    public JMLEvent getMaster()                 { return master; }
+    public void setMaster(JMLEvent master)      { this.master = master; }
 
-    public JMLEvent getPrevious()		{ return prev; }
-    public void setPrevious(JMLEvent prev)	{ this.prev = prev; }
-    public JMLEvent getNext()			{ return next; }
-    public void setNext(JMLEvent next)		{ this.next = next; }
+    public JMLEvent getPrevious()               { return prev; }
+    public void setPrevious(JMLEvent prev)      { this.prev = prev; }
+    public JMLEvent getNext()                   { return next; }
+    public void setNext(JMLEvent next)          { this.next = next; }
 
-    public Permutation getPathPermFromMaster()	{ return pathpermfrommaster; }
+    public Permutation getPathPermFromMaster()  { return pathpermfrommaster; }
     public void setPathPermFromMaster(Permutation p) {
         this.pathpermfrommaster = p;
     }
@@ -225,8 +223,8 @@ public class JMLEvent {
         if (handstr == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_unspecified_hand"));
         setHand(handstr);
-		if ((this.juggler > njugglers) || (this.juggler < 1))
-			throw new JuggleExceptionUser(errorstrings.getString("Error_juggler_out_of_range"));
+        if ((this.juggler > njugglers) || (this.juggler < 1))
+            throw new JuggleExceptionUser(errorstrings.getString("Error_juggler_out_of_range"));
 
         // process current event node children
         for (int i = 0; i < current.getNumberOfChildren(); i++) {
@@ -248,9 +246,9 @@ public class JMLEvent {
             if (path == null)
                 throw new JuggleExceptionUser(errorstrings.getString("Error_no_path"));
 
-			int pnum = Integer.valueOf(path).intValue();
-			if ((pnum > npaths) || (pnum < 1))
-				throw new JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"));
+            int pnum = Integer.valueOf(path).intValue();
+            if ((pnum > npaths) || (pnum < 1))
+                throw new JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"));
 
             if (type.equalsIgnoreCase("throw"))
                 addTransition(new JMLTransition(JMLTransition.TRANS_THROW, pnum, throwtype, mod));

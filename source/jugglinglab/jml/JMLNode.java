@@ -1,6 +1,6 @@
 // JMLNode.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -29,8 +29,8 @@ import jugglinglab.util.*;
 
 
 public class JMLNode {
-    protected String nodeType;		// from taglist in JMLDefs.java
-    protected String nodeValue;		// nodes with character content
+    protected String nodeType;      // from taglist in JMLDefs.java
+    protected String nodeValue;     // nodes with character content
     protected JMLNode parentNode;
     protected ArrayList<JMLNode> childNodes;
     protected JMLNode previousSibling;
@@ -43,22 +43,22 @@ public class JMLNode {
         attributes = new JMLAttributes(this);
     }
 
-    public String getNodeType() { return nodeType; }
-    public String getNodeValue() { return nodeValue; }
+    public String getNodeType()         { return nodeType; }
+    public String getNodeValue()        { return nodeValue; }
     public void setNodeValue(String nodeValue) {
         this.nodeValue = nodeValue;
     }
 
-    public JMLNode getParentNode() { return parentNode; }
+    public JMLNode getParentNode()      { return parentNode; }
     public void setParentNode(JMLNode parent) { parentNode = parent; }
 
-    public int getNumberOfChildren() { return childNodes.size(); }
+    public int getNumberOfChildren()    { return childNodes.size(); }
 
     public JMLNode getChildNode(int index) {
         return childNodes.get(index);
     }
 
-    public JMLNode getFirstChild() { return childNodes.get(0); }
+    public JMLNode getFirstChild()      { return childNodes.get(0); }
     public JMLNode getLastChild() {
         int n = childNodes.size();
         if (n > 0)
@@ -194,14 +194,14 @@ public class JMLNode {
         }
         write.flush();
     }
-	
-	public static String xmlescape(String in) {
-		String result = in.replace("&", "&amp;");
-		result = result.replace("<", "&lt;");
-		result = result.replace(">", "&gt;");
-		result = result.replace("'", "&apos;");
-		result = result.replace("\"", "&quot;");
-		return result;
-	}
+
+    public static String xmlescape(String in) {
+        String result = in.replace("&", "&amp;");
+        result = result.replace("<", "&lt;");
+        result = result.replace(">", "&gt;");
+        result = result.replace("'", "&apos;");
+        result = result.replace("\"", "&quot;");
+        return result;
+    }
 }
 

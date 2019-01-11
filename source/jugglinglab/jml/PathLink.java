@@ -78,6 +78,7 @@ public class PathLink {
     public int getHoldingHand()     { return hand; }
     public boolean isMaster()       { return ismaster; }
 
+    @Override
     public String toString() {
         String result = null;
 

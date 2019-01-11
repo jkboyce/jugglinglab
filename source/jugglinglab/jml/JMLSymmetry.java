@@ -1,6 +1,6 @@
 // JMLSymmetry.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -32,31 +32,32 @@ public class JMLSymmetry {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    int		type;
-    int		numjugglers;
-    int		numpaths;
+    int type;
+    int numjugglers;
+    int numpaths;
     Permutation jugglerperm = null;
     Permutation pathperm = null;
-    double	delay = -1.0;
+    double delay = -1.0;
 
-    static final public int TYPE_DELAY = 1;		// types of symmetries
+    static final public int TYPE_DELAY = 1;     // types of symmetries
     static final public int TYPE_SWITCH = 2;
     static final public int TYPE_SWITCHDELAY = 3;
 
 
     public JMLSymmetry() {}
 
-    public JMLSymmetry(int type, int numjugglers, String jugperm, int numpaths, String pathperm, double delay) throws JuggleExceptionUser {
+    public JMLSymmetry(int type, int numjugglers, String jugperm, int numpaths,
+                String pathperm, double delay) throws JuggleExceptionUser {
         setType(type);
         setJugglerPerm(numjugglers, jugperm);
         setPathPerm(numpaths, pathperm);
         setDelay(delay);
     }
 
-    public int getType()			{ return type; }
-    protected void setType(int type)		{ this.type = type; }
-    public int getNumberOfJugglers()		{ return numjugglers; }
-    public Permutation getJugglerPerm()		{ return jugglerperm; }
+    public int getType()                    { return type; }
+    protected void setType(int type)        { this.type = type; }
+    public int getNumberOfJugglers()        { return numjugglers; }
+    public Permutation getJugglerPerm()     { return jugglerperm; }
     protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionUser {
         this.numjugglers = nj;
         try {
@@ -68,8 +69,8 @@ public class JMLSymmetry {
             throw new JuggleExceptionUser(je.getMessage());
         }
     }
-    public int getNumberOfPaths() 		{ return numpaths; }
-    public Permutation getPathPerm()		{ return pathperm; }
+    public int getNumberOfPaths()           { return numpaths; }
+    public Permutation getPathPerm()        { return pathperm; }
     protected void setPathPerm(int np, String pp) throws JuggleExceptionUser {
         this.numpaths = np;
         try {
@@ -81,8 +82,8 @@ public class JMLSymmetry {
             throw new JuggleExceptionUser(je.getMessage());
         }
     }
-    public double getDelay()			{ return delay; }
-    public void setDelay(double del)		{ this.delay = del; }
+    public double getDelay()                { return delay; }
+    public void setDelay(double del)        { this.delay = del; }
 
     public void readJML(JMLNode current, int numjug, int numpat, String version) throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
