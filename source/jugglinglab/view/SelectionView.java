@@ -39,7 +39,9 @@ public class SelectionView extends View {
     public SelectionView(Dimension dim) {
         this.dtemp = new Dimension();
 
-        final JPanel pleft = new JPanel() {
+        JPanel pleft = new JPanel();
+        /* {
+            @Override
             public void paint(Graphics g) {
                 super.paint(g);
 
@@ -72,9 +74,9 @@ public class SelectionView extends View {
                 g.setColor(Color.black);
                 g.drawString(message, x, y);
             }
-        };
+        };*/
 
-        pleft.setLayout(new GridLayout(3,3));
+        pleft.setLayout(new GridLayout(3, 3));
         this.ja = new AnimationPanel[9];
         for (int i = 0; i < 9; i++) {
             ja[i] = new AnimationPanel();
@@ -83,9 +85,11 @@ public class SelectionView extends View {
         }
 
         pleft.addMouseListener(new MouseAdapter() {
+            /*
             @Override
             public void mousePressed(MouseEvent me) {
             }
+            */
 
             @Override
             public void mouseReleased(MouseEvent me) {
@@ -99,21 +103,21 @@ public class SelectionView extends View {
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
-                } catch (final JuggleExceptionUser jeu) {
+                } catch (JuggleExceptionUser jeu) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             new ErrorDialog(SelectionView.this, jeu.getMessage());
                         }
                     });
-                } catch (final JuggleExceptionInternal jei) {
+                } catch (JuggleExceptionInternal jei) {
                     ErrorDialog.handleFatalException(jei);
                 }
             }
         });
 
         this.mutator = new Mutator();
-        final JPanel pright = mutator.getControlPanel();
+        JPanel pright = mutator.getControlPanel();
 
         GridBagLayout gb = new GridBagLayout();
         this.setLayout(gb);
