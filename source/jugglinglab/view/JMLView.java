@@ -70,6 +70,7 @@ public class JMLView extends View implements DocumentListener {
         lower.setLayout(new FlowLayout(FlowLayout.LEADING));
         this.compile = new JButton(guistrings.getString("JMLView_compile_button"));
         compile.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
                     JMLView.this.compilePattern();
@@ -81,6 +82,7 @@ public class JMLView extends View implements DocumentListener {
         lower.add(compile);
         this.revert = new JButton(guistrings.getString("JMLView_revert_button"));
         revert.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
                     JMLView.this.revertPattern();
