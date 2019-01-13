@@ -39,13 +39,14 @@ import jugglinglab.util.*;
 public class JMLView extends View implements DocumentListener {
     protected boolean isdirty = false;
 
-    protected AnimationPanel ja = null;
-    protected JSplitPane jsp = null;
-    protected JTextArea ta = null;
-    protected JButton compile = null;
-    protected JButton revert = null;
-    //  protected JLabel dirty = null;
-    protected JLabel lab = null;
+    protected AnimationPanel ja;
+    protected JSplitPane jsp;
+    protected JTextArea ta;
+    protected JButton compile;
+    protected JButton revert;
+    //  protected JLabel dirty;
+    protected JLabel lab;
+
 
     public JMLView(Dimension dim) {
         this.setLayout(new BorderLayout());
@@ -68,6 +69,7 @@ public class JMLView extends View implements DocumentListener {
 
         JPanel lower = new JPanel();
         lower.setLayout(new FlowLayout(FlowLayout.LEADING));
+
         this.compile = new JButton(guistrings.getString("JMLView_compile_button"));
         compile.addActionListener(new ActionListener() {
             @Override
@@ -80,6 +82,7 @@ public class JMLView extends View implements DocumentListener {
             }
         });
         lower.add(compile);
+
         this.revert = new JButton(guistrings.getString("JMLView_revert_button"));
         revert.addActionListener(new ActionListener() {
             @Override
@@ -146,21 +149,38 @@ public class JMLView extends View implements DocumentListener {
     }
 
     @Override
-    public AnimationPanel getAnimationPanel() { return ja; }
+    public void disposeView()                   { ja.disposeAnimation(); }
 
     @Override
-    public void disposeView() { ja.disposeAnimation(); }
+    public JMLPattern getPattern()              { return ja.getPattern(); }
 
     @Override
-    public JMLPattern getPattern() { return ja.getPattern(); }
+    public AnimationPrefs getAnimationPrefs()   { return ja.getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused() { return ja.getPaused(); }
+    public boolean getPaused()                  { return ja.getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);
+    }
+
+    @Override
+    public void writeGIF() {
+        ja.writingGIF = true;
+        boolean origpause = getPaused();
+        setPaused(true);
+
+        Runnable cleanup = new Runnable() {
+            @Override
+            public void run() {
+                setPaused(origpause);
+                ja.writingGIF = false;
+            }
+        };
+
+        new View.GIFWriter(parent, ja, cleanup);
     }
 
     protected void compilePattern() {

@@ -51,12 +51,11 @@ public class Animator {
     protected jugglinglab.renderer.Renderer ren1, ren2;
     protected Coordinate        overallmax, overallmin;
 
-    protected int[]             animpropnum;
-    protected Permutation       invpathperm;
     protected int               num_frames;
-    protected double            sim_time;
     protected double            sim_interval_secs;
     protected long              real_interval_millis;
+    protected int[]             animpropnum;
+    protected Permutation       invpathperm;
 
     // camera angles for viewing
     protected double[]          camangle;
@@ -74,15 +73,16 @@ public class Animator {
 
     // Do a full (re)start of the animator with a new pattern, new animation
     // preferences, or both. Passing in null indicates no update for that item.
-    public void restartAnimator(JMLPattern pat, AnimationPrefs newjc)
+    public void restartAnimator(JMLPattern newpat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-        // try to lay out new pattern first so if there's an error we
-        // won't stop the current animation
-        if (pat != null && !pat.isLaidout())
-            pat.layoutPattern();
 
-        if (pat != null)
-            this.pat = pat;
+        // try to lay out new pattern first so if there's an error we
+        // won't disrupt the current animation
+        if (newpat != null && !newpat.isLaidout())
+            newpat.layoutPattern();
+
+        if (newpat != null)
+            this.pat = newpat;
         if (newjc != null)
             this.jc = newjc;
 
@@ -90,12 +90,12 @@ public class Animator {
             return;
 
         this.ren1 = new Renderer2D();
-        if (this.jc.stereo)
-            this.ren2 = new Renderer2D();
-
         this.ren1.setPattern(this.pat);
-        if (this.jc.stereo)
+        if (this.jc.stereo) {
+            this.ren2 = new Renderer2D();
             this.ren2.setPattern(this.pat);
+        } else
+            this.ren2 = null;
 
         initAnimator();
 
@@ -113,12 +113,10 @@ public class Animator {
             System.out.println(this.pat);
     }
 
-    public Dimension getDimension() {
-        return this.dim;
-    }
+    public Dimension getDimension() { return new Dimension(this.dim); }
 
-    public void setDimension(Dimension dim) {
-        this.dim = dim;
+    public void setDimension(Dimension d) {
+        this.dim = new Dimension(d);
         if (ren1 != null)
             syncRenderersToSize();
     }
@@ -142,7 +140,7 @@ public class Animator {
         if (jc.stereo) {
             this.camangle1[0] = ca[0] - 0.05;
             this.camangle1[1] = ca[1];
-            this.ren1.setCameraAngle(this.camangle1);
+            ren1.setCameraAngle(this.camangle1);
             this.camangle2[0] = ca[0] + 0.05;
             this.camangle2[1] = ca[1];
             ren2.setCameraAngle(this.camangle2);
@@ -249,6 +247,10 @@ public class Animator {
         findMaxMin();
         syncRenderersToSize();
 
+        // System.out.println("initializing animator with pattern:");
+        // System.out.println(pat.toString());
+
+
         // figure out timing constants; this in effect adjusts fps to get an integer
         // number of frames in one repetition of the pattern
         this.num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *
@@ -351,11 +353,9 @@ public class Animator {
             this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
     }
 
-    public int[] getAnimPropNum() { return animpropnum; }
-
-    public Color getBackground() { return ren1.getBackground(); }
-
-    public AnimationPrefs getAnimationPrefs() { return jc; }
+    public int[] getAnimPropNum()               { return animpropnum; }
+    public Color getBackground()                { return ren1.getBackground(); }
+    public AnimationPrefs getAnimationPrefs()   { return jc; }
 
 
     // There are two versions of writeGIF, one that uses Java's ImageIO library
@@ -557,7 +557,7 @@ public class Animator {
         // callback method invoked when a processing step is completed
         public void update(int step, int steps_total);
 
-        // callback method returns true when user wants to cancel
+        // callback method should return true when user wants to cancel
         public boolean isCanceled();
     }
 }

@@ -23,36 +23,110 @@
 package jugglinglab.view;
 
 import javax.swing.*;
-import jugglinglab.jml.*;
 
+import jugglinglab.jml.*;
+import jugglinglab.util.*;
 
 /*
-Possible mutations:
-1)  Change positions of events (in-plane)
-2)  Change positions of events (out of plane)
-3)  Change times of events
-4)  Add new events
-5)  Remove events
-6)  Change throw types
-7)  Add throw/catch pair
+
+small mutations:
+- change positions of events (in-plane)
+- change times of events
+- change overall timing of pattern (uniform speedup/slowdown)
+
+moderate mutations:
+- add new (tweaked) event to a given hand
+- remove event
+
+large mutations:
+- add throw/catch pair
+- delete a throw/catch pair (turn into a hold)
+- move a catch/throw pair to the opposite hand
+
+not for consideration:
+- remove symmetries
+- change throw types
+- change positions of events out of plane
+- change # of objects
+- change # of jugglers
+- change positions or angles of jugglers
+- change props
+
 */
 
 public class Mutator {
-    protected JPanel controls = null;
+    protected JPanel controls;
+
+    // amount that event positions can move, in centimeters
+    protected double mutationScaleCm = 20.0;
+
 
     public Mutator() {
+        this.controls = makeControlPanel();
     }
 
-    public JMLPattern mutatePattern(JMLPattern pat) {
-        return pat;
+    // return a mutated version of the input pattern.
+    // Important: This should not change the input pattern in any way
+    public JMLPattern mutatePattern(final JMLPattern pat) throws JuggleExceptionInternal {
+        JMLPattern mutant = null;
+        try {
+            mutant = mutateEventPositions(pat);
+        } catch (JuggleExceptionUser jeu) {
+            throw new JuggleExceptionInternal("Mutator: User error: " + jeu.getMessage());
+        }
+        return mutant;
     }
+
+    protected JMLPattern mutateEventPositions(JMLPattern pat) throws JuggleExceptionUser,
+                    JuggleExceptionInternal {
+        JMLPattern result = (JMLPattern)pat.clone();
+        JMLEvent ev = pickEvent(result);
+        Coordinate pos = ev.getLocalCoordinate();
+
+        // leave y component of position unchanged to maintain plane of juggling
+        pos.x += 2.0 * mutationScaleCm * (Math.random() - 0.5);
+        pos.z += 2.0 * mutationScaleCm * (Math.random() - 0.5);
+        ev.setLocalCoordinate(pos);
+        result.setNeedsLayout(true);
+        return result;
+    }
+
+    // return a random master event from the pattern
+    protected JMLEvent pickEvent(JMLPattern pat) throws JuggleExceptionUser,
+                    JuggleExceptionInternal {
+        if (!pat.isLaidout())
+            pat.layoutPattern();
+
+        JMLEvent eventlist = pat.getEventList();
+        int master_count = 0;
+
+        JMLEvent current = eventlist;
+        do {
+            if (current.isMaster())
+                master_count++;
+            current = current.getNext();
+        } while (current != null);
+
+        // pick a number from 0 to (master_count - 1) inclusive
+        int event_num = (int)(Math.random() * master_count);
+
+        current = eventlist;
+        do {
+            if (current.isMaster()) {
+                if (event_num == 0)
+                    return current;
+                event_num--;
+            }
+            current = current.getNext();
+        } while (current != null);
+
+        throw new JuggleExceptionInternal("Mutator: pickEvent() failed");
+    }
+
 
     public JPanel getControlPanel() {
-        if (controls == null)
-            controls = makeControlPanel();
-        return controls;
+        return this.controls;
     }
-
 
     protected JPanel makeControlPanel() {
         JPanel p = new JPanel();

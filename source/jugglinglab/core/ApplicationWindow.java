@@ -41,7 +41,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    public ApplicationWindow(String title) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public ApplicationWindow(String title) throws JuggleExceptionUser,
+                                        JuggleExceptionInternal {
         super(title);
         NotationGUI ng = new NotationGUI(this);
 

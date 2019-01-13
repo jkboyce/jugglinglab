@@ -24,13 +24,15 @@ package jugglinglab.view;
 
 import java.awt.*;
 import javax.swing.*;
+
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
 public class SimpleView extends View {
-    protected AnimationPanel ja = null;
+    protected AnimationPanel ja;
+
 
     public SimpleView(Dimension dim) {
         this.ja = new AnimationPanel();
@@ -45,7 +47,8 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws
+                                JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
     }
 
@@ -60,20 +63,37 @@ public class SimpleView extends View {
     }
 
     @Override
-    public AnimationPanel getAnimationPanel() { return ja; }
+    public void disposeView()                   { ja.disposeAnimation(); }
 
     @Override
-    public void disposeView() { ja.disposeAnimation(); }
+    public JMLPattern getPattern()              { return ja.getPattern(); }
 
     @Override
-    public JMLPattern getPattern() { return ja.getPattern(); }
+    public AnimationPrefs getAnimationPrefs()   { return ja.getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused() { return ja.getPaused(); }
+    public boolean getPaused()                  { return ja.getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
         if (ja.message == null)
             ja.setPaused(pause);
+    }
+
+    @Override
+    public void writeGIF() {
+        ja.writingGIF = true;
+        boolean origpause = getPaused();
+        setPaused(true);
+
+        Runnable cleanup = new Runnable() {
+            @Override
+            public void run() {
+                setPaused(origpause);
+                ja.writingGIF = false;
+            }
+        };
+
+        new View.GIFWriter(parent, ja, cleanup);
     }
 }

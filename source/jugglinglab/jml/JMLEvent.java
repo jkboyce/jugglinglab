@@ -38,11 +38,11 @@ public class JMLEvent {
     protected double t;
     protected int juggler;
     protected int hand;
-    protected ArrayList<JMLTransition> transitions = null;
+    protected ArrayList<JMLTransition> transitions;
     protected int[][][] eventarray;
     protected int delay;
     protected int delayunits;
-    protected Permutation pathpermfrommaster = null;
+    protected Permutation pathpermfrommaster;
     protected JMLEvent master;      // null if this is a master event
     public boolean calcpos;
 
@@ -50,8 +50,6 @@ public class JMLEvent {
 
 
     public JMLEvent() {
-        this.master = null;
-        this.prev = this.next = null;
         this.calcpos = false;
         this.transitions = new ArrayList<JMLTransition>();
         this.globaldirty = true;
@@ -104,7 +102,7 @@ public class JMLEvent {
         this.hand = h;      // HandLink.LEFT_HAND or HandLink.RIGHT_HAND
     }
 
-    public int getJuggler()     { return juggler; }
+    public int getJuggler() { return juggler; }
 
     public int getNumberOfTransitions() { return transitions.size(); }
     public JMLTransition getTransition(int index) {
@@ -145,7 +143,7 @@ public class JMLEvent {
 
         if (mast1 != mast2)
             return false;
-        if ((this.getJuggler() != ev2.getJuggler()) || (this.getHand() != ev2.getHand()))
+        if (this.getJuggler() != ev2.getJuggler() || this.getHand() != ev2.getHand())
             return false;
 
         int totaldelay = this.delay - ev2.delay;
@@ -158,12 +156,9 @@ public class JMLEvent {
     }
 
     public JMLTransition getPathTransition(int path, int transtype) {
-        for (int i = 0; i < getNumberOfTransitions(); i++) {
-            JMLTransition tr = getTransition(i);
-
+        for (JMLTransition tr : transitions) {
             if (tr.getPath() == path) {
-                if ((transtype == JMLTransition.TRANS_ANY) ||
-                    (transtype == tr.getType()))
+                if (transtype == JMLTransition.TRANS_ANY || transtype == tr.getType())
                     return tr;
             }
         }

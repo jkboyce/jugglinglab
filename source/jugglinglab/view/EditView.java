@@ -107,20 +107,38 @@ public class EditView extends View {
     }
 
     @Override
-    public AnimationPanel getAnimationPanel() { return jae; }
+    public void disposeView()                   { jae.disposeAnimation(); }
 
     @Override
-    public void disposeView() { jae.disposeAnimation(); }
+    public JMLPattern getPattern()              { return jae.getPattern(); }
 
     @Override
-    public JMLPattern getPattern() { return jae.getPattern(); }
+    public AnimationPrefs getAnimationPrefs()   { return jae.getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused() { return jae.getPaused(); }
+    public boolean getPaused()                  { return jae.getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
         if (jae.message == null)
             jae.setPaused(pause);
+    }
+
+    @Override
+    public void writeGIF() {
+        jae.writingGIF = true;
+        jae.deactivateEvent();       // so we don't draw event box in animated GIF
+        boolean origpause = getPaused();
+        setPaused(true);
+
+        Runnable cleanup = new Runnable() {
+            @Override
+            public void run() {
+                setPaused(origpause);
+                jae.writingGIF = false;
+            }
+        };
+
+        new View.GIFWriter(parent, jae, cleanup);
     }
 }

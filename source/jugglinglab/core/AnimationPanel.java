@@ -30,10 +30,7 @@ import java.util.ResourceBundle;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingUtilities;
 
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
@@ -190,7 +187,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     AnimationPanel.this.cameradrag = true;
                     AnimationPanel.this.lastx = AnimationPanel.this.startx;
                     AnimationPanel.this.lasty = AnimationPanel.this.starty;
-                    AnimationPanel.this.dragcamangle = AnimationPanel.this.anim.getCameraAngle();
+                    AnimationPanel.this.dragcamangle = AnimationPanel.this.getCameraAngle();
                 }
 
                 int xdelta = me.getX() - AnimationPanel.this.lastx;
@@ -210,7 +207,11 @@ public class AnimationPanel extends JPanel implements Runnable {
                     ca[0] -= JLMath.toRad(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
-                AnimationPanel.this.anim.setCameraAngle(snappedcamangle);
+                AnimationPanel.this.setCameraAngle(snappedcamangle);
+
+                // send event to the parent so that SelectionView can update
+                // camera angles of other animations
+                AnimationPanel.this.getParent().dispatchEvent(me);
 
                 if (AnimationPanel.this.getPaused())
                     repaint();
@@ -265,7 +266,6 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-
         // stop the current animation thread, if one is running
         killAnimationThread();
 
@@ -288,7 +288,7 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     @Override
     public void run()  {        // Called when this object becomes a thread
-        long    real_time_start, real_time_wait;
+        long real_time_start, real_time_wait;
 
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         engineStarted = false;
@@ -314,7 +314,6 @@ public class AnimationPanel extends JPanel implements Runnable {
             }
 
             message = null;
-            // setCameraAngle(camangle);
 
             real_time_start = System.currentTimeMillis();
             double oldtime, newtime;
@@ -386,16 +385,19 @@ public class AnimationPanel extends JPanel implements Runnable {
             repaint();
         } finally {
             engineStarted = engineRunning = enginePaused = false;
-            engine = null;  // this is critical as it signals restartJuggle() that exit is occurring
+            // this is critical to signal killAnimationThread() that exit is occurring:
+            engine = null;
         }
         synchronized (this) {
-            notify();   // tell possible thread wait()ing in restartJuggle() that animator thread is exiting
+            // tell possible thread waiting in killAnimationThread() that animator
+            // thread is exiting:
+            notify();
         }
     }
 
     // stop the current animation thread, if one is running
     protected synchronized void killAnimationThread() {
-        while ((engine != null) && engine.isAlive()) {
+        while (engine != null && engine.isAlive()) {
             setPaused(false);       // get thread out of pause so it can exit
             engineRunning = false;
             try {
@@ -404,7 +406,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             }
         }
 
-        engine = null;          // just in case animator doesn't initialize these
+        engine = null;
         engineStarted = false;
         enginePaused = false;
         engineRunning = false;
@@ -412,18 +414,19 @@ public class AnimationPanel extends JPanel implements Runnable {
         message = null;
     }
 
-    public boolean getPaused() { return enginePaused; }
+    public boolean getPaused()              { return enginePaused; }
 
     public synchronized void setPaused(boolean wanttopause) {
-        if ((enginePaused == true) && (wanttopause == false)) {
+        if (enginePaused == true && wanttopause == false)
             notify();       // wake up wait() in run() method
-        }
         enginePaused = wanttopause;
     }
 
-    public double getTime()             { return sim_time; };
+    public double getTime()                 { return sim_time; };
+    public void setTime(double time)        { sim_time = time; }
 
-    public void setTime(double time)    { sim_time = time; }
+    public double[] getCameraAngle()        { return anim.getCameraAngle(); }
+    public void setCameraAngle(double[] ca) { anim.setCameraAngle(ca); }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -435,7 +438,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             try {
                 anim.drawFrame(getTime(), g, this.cameradrag);
             } catch (JuggleExceptionInternal jei) {
-                this.killAnimationThread();
+                killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
                 // ErrorDialog.handleFatalException(jei);
@@ -444,99 +447,21 @@ public class AnimationPanel extends JPanel implements Runnable {
     }
 
     protected void drawString(String message, Graphics g) {
-        int x, y, width;
-        Dimension appdim = this.getSize();
-        int appWidth = appdim.width;
-        int appHeight = appdim.height;
         FontMetrics fm = g.getFontMetrics();
+        int message_width = fm.stringWidth(message);
 
-        width = fm.stringWidth(message);
-        x = (appWidth > width) ? (appWidth-width)/2 : 0;
-        y = (appHeight + fm.getHeight()) / 2;
+        Dimension dim = this.getSize();
+        int x = (dim.width > message_width) ? (dim.width - message_width)/2 : 0;
+        int y = (dim.height + fm.getHeight()) / 2;
+
         g.setColor(Color.white);
-        g.fillRect(0, 0, appWidth, appHeight);
+        g.fillRect(0, 0, dim.width, dim.height);
         g.setColor(Color.black);
         g.drawString(message, x, y);
     }
 
-    public JMLPattern getPattern() { return anim.pat; }
-
-    public AnimationPrefs getAnimationPrefs() { return jc; }
-
-    public void disposeAnimation() { killAnimationThread(); }
-
-    // Called in View.java when the user selects the "Save as Animated GIF..."
-    // menu option. This does all of the processing in a thread separate from
-    // the main event loop.
-    public void writeGIF() {
-        this.writingGIF = true;
-        boolean origpause = this.getPaused();
-        this.setPaused(true);
-
-        Runnable cleanup = new Runnable() {
-            @Override
-            public void run() {
-                AnimationPanel.this.setPaused(origpause);
-                AnimationPanel.this.writingGIF = false;
-            }
-        };
-
-        new GIFWriter(this, cleanup);
-    }
-
-    private class GIFWriter extends Thread {
-        private Component parent = null;
-        private Runnable cleanup = null;
-
-        public GIFWriter(Component parent, Runnable cleanup) {
-            this.parent = parent;
-            this.cleanup = cleanup;
-            this.setPriority(Thread.MIN_PRIORITY);
-            this.start();
-        }
-
-        @Override
-        public void run() {
-            try {
-                File file = null;
-                try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(parent);
-
-                    if (option == JFileChooser.APPROVE_OPTION) {
-                        file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
-                        if (file != null) {
-                            FileOutputStream out = new FileOutputStream(file);
-
-                            ProgressMonitor pm = new ProgressMonitor(parent,
-                                    AnimationPanel.guistrings.getString("Saving_animated_GIF"), "", 0, 1);
-                            pm.setMillisToPopup(1000);
-
-                            Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
-                                @Override
-                                public void update(int step, int steps_total) {
-                                    pm.setMaximum(steps_total);
-                                    pm.setProgress(step);
-                                }
-
-                                @Override
-                                public boolean isCanceled() {
-                                    return pm.isCanceled();
-                                }
-                            };
-                            anim.writeGIF(out, wgm);
-                        }
-                    }
-                } catch (IOException ioe) {
-                    throw new JuggleExceptionUser("Problem writing to file: " + file.toString());
-                }
-            } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(GIFWriter.this.parent, jeu.getMessage());
-            } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-            }
-
-            if (cleanup != null)
-                SwingUtilities.invokeLater(cleanup);
-        }
-    }
+    public JMLPattern getPattern()              { return anim.pat; }
+    public Animator getAnimator()               { return anim; }
+    public AnimationPrefs getAnimationPrefs()   { return jc; }
+    public void disposeAnimation()              { killAnimationThread(); }
 }

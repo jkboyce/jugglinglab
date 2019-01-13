@@ -22,28 +22,40 @@
 
 package jugglinglab.view;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
+
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
 public class SelectionView extends View {
-    protected AnimationPanel[] ja = null;
-    protected Mutator mutator = null;
-    protected Dimension dtemp = null;
+    protected static final int rows = 3;
+    protected static final int columns = 3;
+    protected static final int count = rows * columns;
+    protected static final int center = (count - 1) / 2;
+
+    protected AnimationPanel[] ja;
+    protected Mutator mutator;
 
 
     public SelectionView(Dimension dim) {
-        this.dtemp = new Dimension();
+        this.ja = new AnimationPanel[count];
+        for (int i = 0; i < count; i++)
+            this.ja[i] = new AnimationPanel();
 
-        JPanel pleft = new JPanel();
-        /* {
+        this.mutator = new Mutator();
+
+        // will probably want this to be a JLayeredPane so that we can draw grid
+        // lines etc. on top of the grid of animations
+        // https://docs.oracle.com/javase/tutorial/uiswing/components/layeredpane.html
+
+        JPanel pleft = new JPanel() /* {
             @Override
-            public void paint(Graphics g) {
-                super.paint(g);
+            public void paintComponent(Graphics g) {
+                // super.paint(g);
 
                 ja[0].getSize(dtemp);
                 int vline1x = dtemp.width;
@@ -74,49 +86,60 @@ public class SelectionView extends View {
                 g.setColor(Color.black);
                 g.drawString(message, x, y);
             }
-        };*/
+        } */ ;
 
-        pleft.setLayout(new GridLayout(3, 3));
-        this.ja = new AnimationPanel[9];
-        for (int i = 0; i < 9; i++) {
-            ja[i] = new AnimationPanel();
-            ja[i].setAnimationPanelPreferredSize(dim);
-            pleft.add(ja[i]);
+        pleft.setLayout(new GridLayout(rows, columns));
+        for (int i = 0; i < count; i++) {
+            this.ja[i].setAnimationPanelPreferredSize(dim);
+            pleft.add(this.ja[i]);
         }
 
         pleft.addMouseListener(new MouseAdapter() {
-            /*
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-            */
-
+            // will only receive mouseReleased events here when one of the
+            // AnimationPanel objects dispatches it to us in its
+            // mouseReleased() method.
             @Override
             public void mouseReleased(MouseEvent me) {
                 Component c = me.getComponent();
                 int num;
-                for (num = 0; num < 9; num++) {
+                for (num = 0; num < count; num++) {
                     if (c == SelectionView.this.ja[num])
                         break;
                 }
-                if (num == 9)
+                if (num == count)
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
                 } catch (JuggleExceptionUser jeu) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new ErrorDialog(SelectionView.this, jeu.getMessage());
-                        }
-                    });
+                    new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
                     ErrorDialog.handleFatalException(jei);
                 }
             }
         });
 
-        this.mutator = new Mutator();
+        pleft.addMouseMotionListener(new MouseMotionAdapter() {
+            // Dispatched here from one of the AnimationPanels when the
+            // user drags the mouse for a camera angle change. Copy to the
+            // other animations.
+            @Override
+            public void mouseDragged(MouseEvent me) {
+                Component c = me.getComponent();
+                int num;
+                for (num = 0; num < count; num++) {
+                    if (c == SelectionView.this.ja[num])
+                        break;
+                }
+                if (num == count)
+                    return;
+                double[] ca = ja[num].getCameraAngle();
+                for (int i = 0; i < count; i++) {
+                    if (i != num)
+                        ja[i].setCameraAngle(ca);
+                }
+            }
+        });
+
         JPanel pright = mutator.getControlPanel();
 
         GridBagLayout gb = new GridBagLayout();
@@ -146,51 +169,71 @@ public class SelectionView extends View {
 
     @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < count; i++)
             ja[i].restartJuggle();
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
-        ja[4].restartJuggle(p, c);
-        for (int i = 0; i < 9; i++) {
-            if (i != 4) {
-                JMLPattern newpat = mutator.mutatePattern(p);
-                ja[i].restartJuggle(newpat, c);
+    public void restartView(JMLPattern p, AnimationPrefs c) throws
+                        JuggleExceptionUser, JuggleExceptionInternal {
+        ja[center].restartJuggle(p, c);
+        for (int i = 0; i < count; i++) {
+            if (i != center) {
+                JMLPattern newp = (p == null ? null : mutator.mutatePattern(p));
+                ja[i].restartJuggle(newp, c);
             }
         }
     }
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < count; i++)
             ja[i].setAnimationPanelPreferredSize(d);
     }
 
     @Override
     public Dimension getAnimationPanelSize() {
-        return ja[4].getSize(new Dimension());
+        return ja[center].getSize(new Dimension());
     }
 
     @Override
-    public AnimationPanel getAnimationPanel() { return ja[4]; }
-
-    @Override
     public void disposeView() {
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < count; i++)
             ja[i].disposeAnimation();
     }
 
     @Override
-    public JMLPattern getPattern() { return ja[4].getPattern(); }
+    public JMLPattern getPattern()              { return ja[center].getPattern(); }
 
     @Override
-    public boolean getPaused() { return ja[4].getPaused(); }
+    public AnimationPrefs getAnimationPrefs()   { return ja[center].getAnimationPrefs(); }
+
+    @Override
+    public boolean getPaused()                  { return ja[center].getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
-        if (ja[4].message == null)
-            for (int i = 0; i < 9; i++)
+        if (ja[center].message == null)
+            for (int i = 0; i < count; i++)
                 ja[i].setPaused(pause);
+    }
+
+    @Override
+    public void writeGIF() {
+        for (int i = 0; i < count; i++)
+            ja[i].writingGIF = true;
+        boolean origpause = getPaused();
+        setPaused(true);
+
+        Runnable cleanup = new Runnable() {
+            @Override
+            public void run() {
+                setPaused(origpause);
+                for (int i = 0; i < count; i++)
+                    ja[i].writingGIF = false;
+            }
+        };
+
+        new View.GIFWriter(parent, ja[center], cleanup);
     }
 }

@@ -230,6 +230,8 @@ public class AnimationPrefsDialog extends JDialog {
     }
 
     public AnimationPrefs getPrefs(AnimationPrefs oldjc) {
+        // do this so if user clicks cancel, we return the same object that
+        // was passed in:
         newjc = oldjc;
 
         tf_width.setText(Integer.toString(oldjc.width));
@@ -243,7 +245,9 @@ public class AnimationPrefsDialog extends JDialog {
         cb_catchsounds.setSelected(oldjc.catchSound);
         cb_bouncesounds.setSelected(oldjc.bounceSound);
 
+        // blocks until user clicks OK or Cancel button:
         this.setVisible(true);
+
         return newjc;
     }
 }

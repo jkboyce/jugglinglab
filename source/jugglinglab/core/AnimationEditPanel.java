@@ -380,10 +380,4 @@ public class AnimationEditPanel extends AnimationPanel {
             g2.drawLine(xlow2+xdelta, yhigh2+ydelta, xlow2+xdelta, ylow2+ydelta);
         }
     }
-
-    @Override
-    public void writeGIF() {
-        deactivateEvent();       // so we don't draw event box in animated GIF
-        super.writeGIF();
-    }
 }
