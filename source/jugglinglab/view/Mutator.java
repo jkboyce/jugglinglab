@@ -67,28 +67,29 @@ public class Mutator {
 
     // return a mutated version of the input pattern.
     // Important: This should not change the input pattern in any way
-    public JMLPattern mutatePattern(final JMLPattern pat) throws JuggleExceptionInternal {
+    public JMLPattern mutatePattern(JMLPattern pat) throws JuggleExceptionInternal {
+        JMLPattern clone = (JMLPattern)pat.clone();
         JMLPattern mutant = null;
         try {
-            mutant = mutateEventPositions(pat);
+            mutant = mutateEventPositions(clone);
         } catch (JuggleExceptionUser jeu) {
             throw new JuggleExceptionInternal("Mutator: User error: " + jeu.getMessage());
         }
         return mutant;
     }
 
+    // First type of mutation: Tweak the position of an event
     protected JMLPattern mutateEventPositions(JMLPattern pat) throws JuggleExceptionUser,
                     JuggleExceptionInternal {
-        JMLPattern result = (JMLPattern)pat.clone();
-        JMLEvent ev = pickEvent(result);
+        JMLEvent ev = pickEvent(pat);
         Coordinate pos = ev.getLocalCoordinate();
 
         // leave y component of position unchanged to maintain plane of juggling
         pos.x += 2.0 * mutationScaleCm * (Math.random() - 0.5);
         pos.z += 2.0 * mutationScaleCm * (Math.random() - 0.5);
         ev.setLocalCoordinate(pos);
-        result.setNeedsLayout(true);
-        return result;
+        pat.setNeedsLayout(true);
+        return pat;
     }
 
     // return a random master event from the pattern
@@ -123,15 +124,12 @@ public class Mutator {
         throw new JuggleExceptionInternal("Mutator: pickEvent() failed");
     }
 
-
-    public JPanel getControlPanel() {
-        return this.controls;
-    }
-
     protected JPanel makeControlPanel() {
         JPanel p = new JPanel();
 
         p.add(new JButton("Hello"));
         return p;
     }
+
+    public JPanel getControlPanel() { return this.controls; }
 }
