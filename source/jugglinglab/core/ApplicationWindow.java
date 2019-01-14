@@ -26,7 +26,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
@@ -37,9 +36,10 @@ import jugglinglab.notation.*;
 import jugglinglab.util.*;
 
 
-public class ApplicationWindow extends JFrame implements ActionListener, WindowListener {
+public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
 
     public ApplicationWindow(String title) throws JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
@@ -69,12 +69,25 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         // make siteswap notation the default
-        notationmenu.getItem(Notation.NOTATION_SITESWAP-1).setSelected(true);
+        notationmenu.getItem(Notation.NOTATION_SITESWAP - 1).setSelected(true);
         pack();
         setResizable(false);
         setLocation(100, 50);
         setVisible(true);
-        addWindowListener(this);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    doMenuCommand(FILE_EXIT);
+                } catch (Exception ex) {
+                    System.exit(0);
+                }
+            }
+        });
+
+        // create a background thread to check for updates online
+        new UpdateChecker(this);
     }
 
     protected static final String[] fileItems = new String[]
@@ -177,9 +190,11 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
                 };
 
                 try {
-                    if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null)
-                            showJMLWindow(PlatformSpecific.getPlatformSpecific().getSelectedFile());
+                    if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) ==
+                                    JFileChooser.APPROVE_OPTION) {
+                        File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                        if (f != null)
+                            showJMLWindow(f);
                     }
                 } catch (JuggleExceptionUser je) {
                     new ErrorDialog(this, je.getMessage());
@@ -196,19 +211,20 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
 
             case HELP_ONLINE:
                 boolean browse_supported = (Desktop.isDesktopSupported() &&
-                                            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+                                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
                 boolean browse_problem = false;
 
                 if (browse_supported) {
                     try {
-                        Desktop.getDesktop().browse(new URI(jugglinglab.core.Constants.help_URL));
+                        Desktop.getDesktop().browse(new URI(Constants.help_URL));
                     } catch (Exception e) {
                         browse_problem = true;
                     }
                 }
 
                 if (!browse_supported || browse_problem) {
-                    new LabelDialog(this, "Help", "Find online help at " + jugglinglab.core.Constants.help_URL);
+                    new LabelDialog(this, "Help", "Find online help at " +
+                                    Constants.help_URL);
                 }
                 break;
         }
@@ -271,7 +287,7 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         JPanel aboutPanel = new JPanel(new BorderLayout());
-        aboutBox.getContentPane().add(aboutPanel, BorderLayout.CENTER);
+        aboutPanel.setOpaque(true);
 
         java.net.URL url = ApplicationWindow.class.getResource("/about.png");
         if (url != null) {
@@ -327,6 +343,8 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
             }
         });
 
+        aboutBox.setContentPane(aboutPanel);
+
         Locale loc = JLLocale.getLocale();
         aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
@@ -349,27 +367,4 @@ public class ApplicationWindow extends JFrame implements ActionListener, WindowL
         gbc.weightx = gbc.weighty = 0.0;
         return gbc;
     }
-
-
-    // WindowListener methods
-    @Override
-    public void windowOpened(WindowEvent e) { }
-    @Override
-    public void windowClosing(WindowEvent e) {
-        try {
-            doMenuCommand(FILE_EXIT);
-        } catch (Exception ex) {
-            System.exit(0);
-        }
-    }
-    @Override
-    public void windowClosed(WindowEvent e) { }
-    @Override
-    public void windowIconified(WindowEvent e) { }
-    @Override
-    public void windowDeiconified(WindowEvent e) { }
-    @Override
-    public void windowActivated(WindowEvent e) { }
-    @Override
-    public void windowDeactivated(WindowEvent e) { }
 }

@@ -72,10 +72,9 @@ public class ErrorDialog {
 
         final JFrame exframe = new JFrame(errorstrings.getString("Error_internal_title"));
         exframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        exframe.getContentPane().setLayout(new BorderLayout());
 
         JPanel exp = new JPanel();
-        exframe.getContentPane().add(exp, BorderLayout.PAGE_START);
+        exp.setOpaque(true);
         GridBagLayout gb = new GridBagLayout();
         exp.setLayout(gb);
 
@@ -141,11 +140,14 @@ public class ErrorDialog {
         gb.setConstraints(butp, make_constraints(GridBagConstraints.LINE_END,0,6,
                                                  new Insets(10,10,10,10)));
 
+        exframe.setContentPane(exp);
+
         Locale loc = JLLocale.getLocale();
         exframe.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         exframe.pack();
         exframe.setResizable(false);
+        exframe.setLocationRelativeTo(null);    // center frame on screen
         exframe.setVisible(true);
     }
 
