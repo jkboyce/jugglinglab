@@ -247,10 +247,6 @@ public class Animator {
         findMaxMin();
         syncRenderersToSize();
 
-        // System.out.println("initializing animator with pattern:");
-        // System.out.println(pat.toString());
-
-
         // figure out timing constants; this in effect adjusts fps to get an integer
         // number of frames in one repetition of the pattern
         this.num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *

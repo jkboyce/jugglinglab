@@ -33,7 +33,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
-public class PatternWindow extends JFrame implements ActionListener, WindowListener {
+public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -73,7 +73,14 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
         view.restartView(pat, jc);
         setLocationRelativeTo(null);    // center frame on screen
         setVisible(true);
-        addWindowListener(this);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (exit_on_close)
+                    System.exit(0);
+            }
+        });
     }
 
     public void setExitOnClose(boolean value) {
@@ -331,6 +338,7 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
 
         newview.setParent(this);
         newview.setPaused(paused);
+        newview.setOpaque(true);
         setContentPane(newview);
 
         if (view != null) {
@@ -363,26 +371,4 @@ public class PatternWindow extends JFrame implements ActionListener, WindowListe
             view = null;
         }
     }
-
-    // WindowListener interface methods
-
-    @Override
-    public void windowOpened(WindowEvent e) { }
-    @Override
-    public void windowClosing(WindowEvent e) {
-        if (this.exit_on_close)
-            System.exit(0);
-    }
-    @Override
-    public void windowClosed(WindowEvent e) { }
-    @Override
-    public void windowIconified(WindowEvent e) { }
-    @Override
-    public void windowDeiconified(WindowEvent e) { }
-    @Override
-    public void windowActivated(WindowEvent e) { }
-    @Override
-    public void windowDeactivated(WindowEvent e) { }
-
 }
-
