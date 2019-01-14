@@ -139,6 +139,6 @@ public class EditView extends View {
             }
         };
 
-        new View.GIFWriter(parent, jae, cleanup);
+        new View.GIFWriter(jae, cleanup);
     }
 }

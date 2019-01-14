@@ -180,7 +180,7 @@ public class JMLView extends View implements DocumentListener {
             }
         };
 
-        new View.GIFWriter(parent, ja, cleanup);
+        new View.GIFWriter(ja, cleanup);
     }
 
     protected void compilePattern() {

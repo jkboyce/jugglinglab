@@ -94,6 +94,6 @@ public class SimpleView extends View {
             }
         };
 
-        new View.GIFWriter(parent, ja, cleanup);
+        new View.GIFWriter(ja, cleanup);
     }
 }

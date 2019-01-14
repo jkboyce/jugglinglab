@@ -22,7 +22,6 @@
 
 package jugglinglab.view;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.io.*;
 import java.util.ResourceBundle;
@@ -65,20 +64,16 @@ public abstract class View extends JPanel {
 
     public abstract void setPaused(boolean pause);
 
-    // Called in PatternWindow when the user selects the "Save as Animated GIF..."
-    // menu option. This does all of the processing in a thread separate from
-    // the main event loop.
     public abstract void writeGIF();
 
 
-    // Utility class for the various View subclasses to use for writing GIFs
+    // Utility class for the various View subclasses to use for writing GIFs.
+    // This does the processing in a thread separate from the EDT.
     protected class GIFWriter extends Thread {
-        private Component parent;
         private AnimationPanel ap;
         private Runnable cleanup;
 
-        public GIFWriter(Component parent, AnimationPanel ap, Runnable cleanup) {
-            this.parent = parent;
+        public GIFWriter(AnimationPanel ap, Runnable cleanup) {
             this.ap = ap;
             this.cleanup = cleanup;
             this.setPriority(Thread.MIN_PRIORITY);
@@ -125,7 +120,7 @@ public abstract class View extends JPanel {
                     throw new JuggleExceptionUser("Problem writing to file: " + file.toString());
                 }
             } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(GIFWriter.this.parent, jeu.getMessage());
+                new ErrorDialog(parent, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleFatalException(jei);
             }
