@@ -36,33 +36,30 @@ import javax.swing.*;
 import jugglinglab.core.Constants;
 
 
+// Background thread that checks online for an updated version of the application.
+// If it finds one, open a dialog box that offers to take the user to the
+// download location.
+
 public class UpdateChecker extends Thread {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected Component parent;
-
-
-    public UpdateChecker(Component parent) {
-        this.parent = parent;
+    public UpdateChecker() {
         this.setPriority(Thread.MIN_PRIORITY);
         this.start();
     }
 
     @Override
     public void run() {
-        // download web page at https://jugglinglab.org
-        // parse for the most recent version number
-        // if newer than this one, pop up a dialog asking if they'd like to download an update
-        // if user clicks yes, open a browser window to https://jugglinglab.org
-
+        // first download the Juggling Lab home page, looking for the line
+        // containing version information
         InputStream is = null;
         InputStreamReader isr = null;
         String line = null;
 
         try {
             URL url = new URL(Constants.site_URL);
-            is = url.openStream();  // throws an IOException
+            is = url.openStream();
             isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
 
@@ -85,8 +82,8 @@ public class UpdateChecker extends Thread {
         if (line == null)
             return;
 
-        // regular expression looks for a span tag with id "versionstring"
-        // surrounding the version number string
+        // Use regular expression matching to find the span tag with
+        // id "versionstring" surrounding the version number string we want
         String pattern = ".*versionstring.*?>(.*?)<.*";
         final String current_version = line.replaceAll(pattern, "$1");
         String running_version = Constants.version;

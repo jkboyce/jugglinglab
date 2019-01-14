@@ -86,8 +86,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
             }
         });
 
-        // create a background thread to check for updates online
-        new UpdateChecker(this);
+        // launch a background thread to check for updates online
+        new UpdateChecker();
     }
 
     protected static final String[] fileItems = new String[]
