@@ -38,6 +38,7 @@ public class SelectionView extends View {
     protected static final int center = (count - 1) / 2;
 
     protected AnimationPanel[] ja;
+    protected JLayeredPane layered;
     protected Mutator mutator;
 
 
@@ -46,55 +47,46 @@ public class SelectionView extends View {
         for (int i = 0; i < count; i++)
             this.ja[i] = new AnimationPanel();
 
+        // JLayeredPane on the left so we can show a grid of animations with
+        // an overlay drawn on top
+        this.layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay());
+
         this.mutator = new Mutator();
+        JPanel controls = mutator.getControlPanel();
 
-        // will probably want this to be a JLayeredPane so that we can draw grid
-        // lines etc. on top of the grid of animations
-        // https://docs.oracle.com/javase/tutorial/uiswing/components/layeredpane.html
+        GridBagLayout gb = new GridBagLayout();
+        this.setLayout(gb);
 
-        JPanel pleft = new JPanel() /* {
-            @Override
-            public void paintComponent(Graphics g) {
-                // super.paint(g);
+        this.add(layered);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridheight = gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = gbc.weighty = 1.0;
+        gb.setConstraints(layered, gbc);
 
-                ja[0].getSize(dtemp);
-                int vline1x = dtemp.width;
-                int vline2x = 2 * vline1x;
-                int hline1y = dtemp.height;
-                int hline2y = 2 * hline1y;
-                int w = 3 * vline1x;
-                int h = 3 * hline1y;
+        this.add(controls);
+        gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridheight = gbc.gridwidth = 1;
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        gbc.weighty = 1.0;
+        gb.setConstraints(controls, gbc);
+    }
 
-                g.setColor(Color.black);
-                g.drawLine(vline1x, hline1y, vline1x, hline2y);
-                g.drawLine(vline1x, hline2y, vline2x, hline2y);
-                g.drawLine(vline2x, hline2y, vline2x, hline1y);
-                g.drawLine(vline2x, hline1y, vline1x, hline1y);
+    protected JPanel makeAnimationGrid() {
+        JPanel pgrid = new JPanel();
 
+        pgrid.setLayout(new GridLayout(rows, columns));
+        for (int i = 0; i < count; i++)
+            pgrid.add(ja[i]);
 
-                int x, y, width;
-                Dimension appdim = this.getSize();
-                int appWidth = appdim.width;
-                int appHeight = appdim.height;
-                FontMetrics fm = g.getFontMetrics();
-                String message = "Selection view isn't working yet";
-                width = fm.stringWidth(message);
-                x = (appWidth > width) ? (appWidth-width)/2 : 0;
-                y = (appHeight + fm.getHeight()) / 2;
-                g.setColor(this.getBackground());
-                g.fillRect(x-10, appHeight/2 - fm.getHeight(), width+20, 2*fm.getHeight());
-                g.setColor(Color.black);
-                g.drawString(message, x, y);
-            }
-        } */ ;
-
-        pleft.setLayout(new GridLayout(rows, columns));
-        for (int i = 0; i < count; i++) {
-            this.ja[i].setAnimationPanelPreferredSize(dim);
-            pleft.add(this.ja[i]);
-        }
-
-        pleft.addMouseListener(new MouseAdapter() {
+        pgrid.addMouseListener(new MouseAdapter() {
             // will only receive mouseReleased events here when one of the
             // AnimationPanel objects dispatches it to us in its
             // mouseReleased() method.
@@ -118,7 +110,7 @@ public class SelectionView extends View {
             }
         });
 
-        pleft.addMouseMotionListener(new MouseMotionAdapter() {
+        pgrid.addMouseMotionListener(new MouseMotionAdapter() {
             // Dispatched here from one of the AnimationPanels when the
             // user drags the mouse for a camera angle change. Copy to the
             // other animations.
@@ -139,33 +131,65 @@ public class SelectionView extends View {
                 }
             }
         });
-
-        JPanel pright = mutator.getControlPanel();
-
-        GridBagLayout gb = new GridBagLayout();
-        this.setLayout(gb);
-
-        this.add(pleft);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridheight = gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = gbc.weighty = 1.0;
-        gb.setConstraints(pleft, gbc);
-
-        this.add(pright);
-        gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.gridheight = gbc.gridwidth = 1;
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 0.0;
-        gbc.weighty = 1.0;
-        gb.setConstraints(pright, gbc);
+        return pgrid;
     }
+
+    protected JPanel makeOverlay() {
+        JPanel poverlay = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                Dimension d = getSize();
+                int xleft = (d.width * ((columns - 1) / 2)) / columns;
+                int ytop = (d.height * ((rows - 1) / 2)) / rows;
+                int width = d.width / columns;
+                int height = d.height / rows;
+
+                Graphics2D g2 = (Graphics2D)g.create();
+                Stroke stroke = new BasicStroke(2, BasicStroke.CAP_BUTT,
+                            BasicStroke.JOIN_BEVEL, 0);
+                g2.setStroke(stroke);
+                g2.setColor(Color.lightGray);
+                g2.drawRect(xleft, ytop, width, height);
+                g2.dispose();
+            }
+        };
+        poverlay.setOpaque(false);
+        return poverlay;
+    }
+
+    protected JLayeredPane makeLayeredPane(Dimension d, JPanel grid, JPanel overlay) {
+        JLayeredPane layered = new JLayeredPane();
+
+        // ensure the entire grid fits on the screen, rescaling if needed
+        int pref_width = columns * d.width;
+        int pref_height = rows * d.height;
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int max_width = screenSize.width - 200;    // allocation for controls
+        int max_height = screenSize.height - 50;
+
+        if (pref_width > max_width || pref_height > max_height) {
+            double scale = Math.min((double)max_width / (double)pref_width,
+                                    (double)max_height / (double)pref_height);
+            pref_width = (int)(scale * pref_width);
+            pref_height = (int)(scale * pref_height);
+        }
+        layered.setPreferredSize(new Dimension(pref_width, pref_height));
+
+        layered.add(grid, JLayeredPane.DEFAULT_LAYER);
+        layered.add(overlay, JLayeredPane.PALETTE_LAYER);
+
+        layered.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Dimension d = layered.getSize();
+                grid.setBounds(0, 0, d.width, d.height);
+                overlay.setBounds(0, 0, d.width, d.height);
+            }
+        });
+        return layered;
+    }
+
 
     @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -187,8 +211,14 @@ public class SelectionView extends View {
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        for (int i = 0; i < count; i++)
-            ja[i].setAnimationPanelPreferredSize(d);
+        // This works differently for this view since the JLayeredPane has no
+        // layout manager, so preferred size info can't propagate up from the
+        // individual animation panels. So we go the other direction: set a
+        // preferred size for the overall JLayeredPane, which gets propagated to
+        // the grid (and the individual animations) by the ComponentAdapter above.
+        int width = columns * d.width;
+        int height = rows * d.height;
+        layered.setPreferredSize(new Dimension(width, height));
     }
 
     @Override
@@ -234,6 +264,6 @@ public class SelectionView extends View {
             }
         };
 
-        new View.GIFWriter(parent, ja[center], cleanup);
+        new View.GIFWriter(ja[center], cleanup);
     }
 }
