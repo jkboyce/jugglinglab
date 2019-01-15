@@ -40,8 +40,7 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-
-    protected static final double snapangle = JLMath.toRad(15.0);
+    static final double snapangle = JLMath.toRad(15.0);
 
     protected Animator          anim;
     protected AnimationPrefs    jc;
@@ -72,9 +71,9 @@ public class AnimationPanel extends JPanel implements Runnable {
     public AnimationPanel() {
         this.anim = new Animator();
         this.jc = new AnimationPrefs();
-        this.setOpaque(true);
-        this.loadAudioClips();
-        this.initHandlers();
+        setOpaque(true);
+        loadAudioClips();
+        initHandlers();
     }
 
     public void setAnimationPanelPreferredSize(Dimension d) {

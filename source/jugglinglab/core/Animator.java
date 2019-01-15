@@ -75,7 +75,6 @@ public class Animator {
     // preferences, or both. Passing in null indicates no update for that item.
     public void restartAnimator(JMLPattern newpat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-
         // try to lay out new pattern first so if there's an error we
         // won't disrupt the current animation
         if (newpat != null && !newpat.isLaidout())
@@ -165,7 +164,8 @@ public class Animator {
         if (draw_axes) {
             if (g instanceof Graphics2D) {
                 Graphics2D g2 = (Graphics2D)g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
             }
 
             double[] ca = ren1.getCameraAngle();
@@ -319,7 +319,8 @@ public class Animator {
         }
 
         // make the x-coordinate origin at the center of the view
-        double maxabsx = Math.max(Math.abs(this.overallmin.x), Math.abs(this.overallmax.x));
+        double maxabsx = Math.max(Math.abs(this.overallmin.x),
+                                  Math.abs(this.overallmax.x));
         this.overallmin.x = -maxabsx;
         this.overallmax.x = maxabsx;
 
