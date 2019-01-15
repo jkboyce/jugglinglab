@@ -36,6 +36,10 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 
 
+// This class represents the entire displayed contents of a PatternWindow.
+// Subclasses of this are used to show different pattern views, which the
+// user can select from a menu on the pattern window.
+
 public abstract class View extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
@@ -44,17 +48,18 @@ public abstract class View extends JPanel {
 
     public void setParent(JFrame p) { this.parent = p; }
 
-    public abstract void restartView() throws JuggleExceptionUser, JuggleExceptionInternal;
-
-    // In the following, a null argument means no update for that item
+    // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
 
-    public abstract void setAnimationPanelPreferredSize(Dimension d);
+    // restart without changing pattern or preferences
+    public abstract void restartView() throws JuggleExceptionUser,
+                            JuggleExceptionInternal;
 
+    // size of just the juggler animation, not any extra elements
     public abstract Dimension getAnimationPanelSize();
 
-    public abstract void disposeView();
+    public abstract void setAnimationPanelPreferredSize(Dimension d);
 
     public abstract JMLPattern getPattern();
 
@@ -63,6 +68,8 @@ public abstract class View extends JPanel {
     public abstract boolean getPaused();
 
     public abstract void setPaused(boolean pause);
+
+    public abstract void disposeView();
 
     public abstract void writeGIF();
 
@@ -76,8 +83,8 @@ public abstract class View extends JPanel {
         public GIFWriter(AnimationPanel ap, Runnable cleanup) {
             this.ap = ap;
             this.cleanup = cleanup;
-            this.setPriority(Thread.MIN_PRIORITY);
-            this.start();
+            setPriority(Thread.MIN_PRIORITY);
+            start();
         }
 
         @Override

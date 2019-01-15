@@ -37,8 +37,6 @@ import jugglinglab.util.*;
 
 
 public class JMLView extends View implements DocumentListener {
-    protected boolean isdirty = false;
-
     protected AnimationPanel ja;
     protected JSplitPane jsp;
     protected JTextArea ta;
@@ -47,18 +45,20 @@ public class JMLView extends View implements DocumentListener {
     //  protected JLabel dirty;
     protected JLabel lab;
 
+    protected boolean isdirty = false;
+
 
     public JMLView(Dimension dim) {
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         this.ja = new AnimationPanel();
         ja.setAnimationPanelPreferredSize(dim);
 
         this.ta = new JTextArea();
-        this.ta.getDocument().addDocumentListener(this);
+        ta.getDocument().addDocumentListener(this);
 
         JScrollPane jscroll = new JScrollPane(ta);
-        jscroll.setPreferredSize(new Dimension(400,1));
+        jscroll.setPreferredSize(new Dimension(400, 1));
         if (true /*PlatformSpecific.getPlatformSpecific().isMacOS()*/) {
             jscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -107,16 +107,7 @@ public class JMLView extends View implements DocumentListener {
         this.lab = new JLabel("");
         lower.add(lab);
 
-        this.add(lower, BorderLayout.PAGE_END);
-    }
-
-    @Override
-    public void restartView() {
-        try {
-            ja.restartJuggle();
-        } catch (JuggleException je) {
-            lab.setText(je.getMessage());
-        }
+        add(lower, BorderLayout.PAGE_END);
     }
 
     @Override
@@ -138,9 +129,12 @@ public class JMLView extends View implements DocumentListener {
     }
 
     @Override
-    public void setAnimationPanelPreferredSize(Dimension d) {
-        ja.setAnimationPanelPreferredSize(d);
-        jsp.resetToPreferredSizes();
+    public void restartView() {
+        try {
+            ja.restartJuggle();
+        } catch (JuggleException je) {
+            lab.setText(je.getMessage());
+        }
     }
 
     @Override
@@ -149,7 +143,10 @@ public class JMLView extends View implements DocumentListener {
     }
 
     @Override
-    public void disposeView()                   { ja.disposeAnimation(); }
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        ja.setAnimationPanelPreferredSize(d);
+        jsp.resetToPreferredSizes();
+    }
 
     @Override
     public JMLPattern getPattern()              { return ja.getPattern(); }
@@ -165,6 +162,9 @@ public class JMLView extends View implements DocumentListener {
         if (ja.message == null)
             ja.setPaused(pause);
     }
+
+    @Override
+    public void disposeView()                   { ja.disposeAnimation(); }
 
     @Override
     public void writeGIF() {
@@ -236,22 +236,22 @@ public class JMLView extends View implements DocumentListener {
     protected void setDirty(boolean dirty) {
         this.isdirty = dirty;
         //      this.dirty.setVisible(dirty);
-        this.compile.setEnabled(dirty);
-        this.revert.setEnabled(dirty);
+        compile.setEnabled(dirty);
+        revert.setEnabled(dirty);
     }
 
     // DocumentListener methods
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        this.setDirty(true);
+        setDirty(true);
     }
     @Override
     public void removeUpdate(DocumentEvent e) {
-        this.setDirty(true);
+        setDirty(true);
     }
     @Override
     public void changedUpdate(DocumentEvent e) {
-        this.setDirty(true);
+        setDirty(true);
     }
 }

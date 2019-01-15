@@ -37,13 +37,8 @@ public class SimpleView extends View {
     public SimpleView(Dimension dim) {
         this.ja = new AnimationPanel();
         ja.setAnimationPanelPreferredSize(dim);
-        this.setLayout(new BorderLayout());
-        this.add(ja, BorderLayout.CENTER);
-    }
-
-    @Override
-    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        ja.restartJuggle();
+        setLayout(new BorderLayout());
+        add(ja, BorderLayout.CENTER);
     }
 
     @Override
@@ -53,8 +48,8 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void setAnimationPanelPreferredSize(Dimension d) {
-        ja.setAnimationPanelPreferredSize(d);
+    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
+        ja.restartJuggle();
     }
 
     @Override
@@ -63,7 +58,9 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void disposeView()                   { ja.disposeAnimation(); }
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        ja.setAnimationPanelPreferredSize(d);
+    }
 
     @Override
     public JMLPattern getPattern()              { return ja.getPattern(); }
@@ -79,6 +76,9 @@ public class SimpleView extends View {
         if (ja.message == null)
             ja.setPaused(pause);
     }
+
+    @Override
+    public void disposeView()                   { ja.disposeAnimation(); }
 
     @Override
     public void writeGIF() {

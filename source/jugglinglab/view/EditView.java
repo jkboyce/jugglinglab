@@ -33,9 +33,9 @@ import jugglinglab.util.*;
 
 
 public class EditView extends View {
-    protected AnimationEditPanel jae = null;
-    protected JPanel ladder = null;
-    protected JSplitPane jsp = null;
+    protected AnimationEditPanel jae;
+    protected JPanel ladder;
+    protected JSplitPane jsp;
 
     static protected int ladder_width = 150;
     static protected int ladder_min_width = 80;
@@ -53,27 +53,23 @@ public class EditView extends View {
 
         Locale loc = JLLocale.getLocale();
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
+            this.jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
             jsp.setResizeWeight(1.0);
         } else {
-            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
+            this.jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
             jsp.setResizeWeight(0.0);
         }
         jsp.setBorder(new EmptyBorder(0,0,0,0));
         jsp.setBackground(Color.white);
 
-        this.setBackground(Color.white);
-        this.setLayout(new BorderLayout());
-        this.add(jsp, BorderLayout.CENTER);
+        setBackground(Color.white);
+        setLayout(new BorderLayout());
+        add(jsp, BorderLayout.CENTER);
     }
 
     @Override
-    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        jae.restartJuggle();
-    }
-
-    @Override
-    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser,
+                                        JuggleExceptionInternal {
         jae.restartJuggle(p, c);
         if (p != null) {
             LadderDiagram new_ladder;
@@ -96,9 +92,8 @@ public class EditView extends View {
     }
 
     @Override
-    public void setAnimationPanelPreferredSize(Dimension d) {
-        jae.setAnimationPanelPreferredSize(d);
-        jsp.resetToPreferredSizes();
+    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
+        jae.restartJuggle();
     }
 
     @Override
@@ -107,7 +102,10 @@ public class EditView extends View {
     }
 
     @Override
-    public void disposeView()                   { jae.disposeAnimation(); }
+    public void setAnimationPanelPreferredSize(Dimension d) {
+        jae.setAnimationPanelPreferredSize(d);
+        jsp.resetToPreferredSizes();
+    }
 
     @Override
     public JMLPattern getPattern()              { return jae.getPattern(); }
@@ -123,6 +121,9 @@ public class EditView extends View {
         if (jae.message == null)
             jae.setPaused(pause);
     }
+
+    @Override
+    public void disposeView()                   { jae.disposeAnimation(); }
 
     @Override
     public void writeGIF() {

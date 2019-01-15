@@ -44,7 +44,6 @@ public class JMLTransition {
         this.transitiontype = transtype;
         this.type = type;
         this.mod = mod;
-        this.ipl = this.opl = null;
         this.path = path;
     }
 
@@ -63,8 +62,7 @@ public class JMLTransition {
     public PathLink getOutgoingPathLink()           { return opl; }
 
     public JMLTransition duplicate() {
-        JMLTransition tr = new JMLTransition(transitiontype, path,
-                                             type, mod);
+        JMLTransition tr = new JMLTransition(transitiontype, path, type, mod);
         return tr;
     }
 
