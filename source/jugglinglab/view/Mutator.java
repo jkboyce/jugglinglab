@@ -27,16 +27,19 @@ import javax.swing.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
-/*
+/* ----------------------------------------------------------------------------
+This class is used by SelectionView to create random variations of a pattern.
+It does this by selecting from the following list of operations:
 
 small mutations:
-- change positions of events (in-plane)
-- change times of events
+- change position of a randomly-selected event (but keep in-plane)
+- change time of a randomly-selected event
 - change overall timing of pattern (uniform speedup/slowdown)
 
 moderate mutations:
-- add new (tweaked) event to a given hand
-- remove event
+- add a new event with no transitions to a hand, at a random time and
+  changed position
+- remove a randomly-selected event with no transitions
 
 large mutations:
 - add throw/catch pair
@@ -51,15 +54,15 @@ not for consideration:
 - change # of jugglers
 - change positions or angles of jugglers
 - change props
-
-*/
+---------------------------------------------------------------------------- */
 
 public class Mutator {
     protected JPanel controls;
 
     // amount that event positions can move, in centimeters
     protected double mutationScaleCm = 20.0;
-
+    protected double mutationMinEventDeltaT = 0.03;
+    protected double mutationTimingScale = 1.5;
 
     public Mutator() {
         this.controls = makeControlPanel();
@@ -71,17 +74,33 @@ public class Mutator {
         JMLPattern clone = (JMLPattern)pat.clone();
         JMLPattern mutant = null;
         try {
-            mutant = mutateEventPositions(clone);
+            do {
+                int type = (int)(3.0 * Math.random());
+
+                switch (type) {
+                    case 0:
+                        mutant = mutateEventPosition(clone);
+                        break;
+                    case 1:
+                        mutant = mutateEventTime(clone);
+                        break;
+                    case 2:
+                        mutant = mutatePatternTiming(clone);
+                        break;
+                }
+            } while (mutant == null);
         } catch (JuggleExceptionUser jeu) {
             throw new JuggleExceptionInternal("Mutator: User error: " + jeu.getMessage());
         }
         return mutant;
     }
 
-    // First type of mutation: Tweak the position of an event
-    protected JMLPattern mutateEventPositions(JMLPattern pat) throws JuggleExceptionUser,
+    // ------------------------------------------------------------------------
+
+    // Pick a random event and tweak its position
+    protected JMLPattern mutateEventPosition(JMLPattern pat) throws JuggleExceptionUser,
                     JuggleExceptionInternal {
-        JMLEvent ev = pickEvent(pat);
+        JMLEvent ev = pickMasterEvent(pat);
         Coordinate pos = ev.getLocalCoordinate();
 
         // leave y component of position unchanged to maintain plane of juggling
@@ -92,8 +111,92 @@ public class Mutator {
         return pat;
     }
 
+    // Pick a random event and tweak its time
+    protected JMLPattern mutateEventTime(JMLPattern pat) throws JuggleExceptionUser,
+                    JuggleExceptionInternal {
+        JMLEvent ev = pickMasterEvent(pat);
+
+        JMLEvent ev_prev = ev.getPrevious();
+        while (ev_prev != null) {
+            if (ev_prev.getJuggler() == ev.getJuggler() &&
+                        ev_prev.getHand() == ev.getHand())
+                break;
+            ev_prev = ev_prev.getPrevious();
+        }
+        double tmin = (ev_prev == null ? pat.getLoopStartTime() :
+                       Math.max(pat.getLoopStartTime(), ev_prev.getT()) +
+                       mutationMinEventDeltaT);
+
+        JMLEvent ev_next = ev.getNext();
+        while (ev_next != null) {
+            if (ev_next.getJuggler() == ev.getJuggler() &&
+                        ev_next.getHand() == ev.getHand())
+                break;
+            ev_next = ev_next.getNext();
+        }
+        double tmax = (ev_next == null ? pat.getLoopEndTime() :
+                       Math.min(pat.getLoopEndTime(), ev_next.getT()) -
+                       mutationMinEventDeltaT);
+
+        if (tmax <= tmin)
+            return null;
+
+        // Sample t from two one-sided triangular distributions: Event time has
+        // equal probability of going down or up.
+        double r = Math.random();
+        double tnow = ev.getT();
+        double t = 0.0;
+        if (r < 0.5)
+            t = tmin + (tnow - tmin) * Math.sqrt(2 * r);
+        else
+            t = tmax - (tmax - tnow) * Math.sqrt(2 * (1 - r));
+
+        ev.setT(t);
+        pat.setNeedsLayout(true);
+        return pat;
+    }
+
+    // rescale overall pattern timing faster or slower
+    protected JMLPattern mutatePatternTiming(JMLPattern pat) throws JuggleExceptionUser,
+                    JuggleExceptionInternal {
+        // sample new scale from two one-sided triangular distributions: Scale has
+        // equal probability of going up or down
+        double r = Math.random();
+        double scalemin = 1.0 / mutationTimingScale;
+        double scalemax = mutationTimingScale;
+        double scale = 0.0;
+        if (r < 0.5)
+            scale = scalemin + (1.0 - scalemin) * Math.sqrt(2 * r);
+        else
+            scale = scalemax - (scalemax - 1.0) * Math.sqrt(2 * (1 - r));
+
+        JMLEvent ev = pat.getEventList();
+        while (ev != null) {
+            if (ev.isMaster())
+                ev.setT(ev.getT() * scale);
+            ev = ev.getNext();
+        }
+        JMLPosition pos = pat.getPositionList();
+        while (pos != null) {
+            pos.setT(pos.getT() * scale);
+            pos = pos.getNext();
+        }
+
+        for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
+            JMLSymmetry sym = pat.getSymmetry(i);
+            double delay = sym.getDelay();
+            if (delay > 0.0)
+                sym.setDelay(delay * scale);
+        }
+
+        pat.setNeedsLayout(true);
+        return pat;
+    }
+
+    // ------------------------------------------------------------------------
+
     // return a random master event from the pattern
-    protected JMLEvent pickEvent(JMLPattern pat) throws JuggleExceptionUser,
+    protected JMLEvent pickMasterEvent(JMLPattern pat) throws JuggleExceptionUser,
                     JuggleExceptionInternal {
         if (!pat.isLaidout())
             pat.layoutPattern();

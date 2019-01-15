@@ -27,7 +27,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import jugglinglab.core.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 
 
@@ -50,14 +50,12 @@ public class SelectionView extends View {
         // JLayeredPane on the left so we can show a grid of animations with
         // an overlay drawn on top
         this.layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay());
-
         this.mutator = new Mutator();
-        JPanel controls = mutator.getControlPanel();
 
         GridBagLayout gb = new GridBagLayout();
-        this.setLayout(gb);
+        setLayout(gb);
 
-        this.add(layered);
+        add(layered);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.fill = GridBagConstraints.BOTH;
@@ -67,7 +65,8 @@ public class SelectionView extends View {
         gbc.weightx = gbc.weighty = 1.0;
         gb.setConstraints(layered, gbc);
 
-        this.add(controls);
+        JPanel controls = mutator.getControlPanel();
+        add(controls);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;
         gbc.fill = GridBagConstraints.NONE;
@@ -80,13 +79,12 @@ public class SelectionView extends View {
     }
 
     protected JPanel makeAnimationGrid() {
-        JPanel pgrid = new JPanel();
+        JPanel grid = new JPanel(new GridLayout(rows, columns));
 
-        pgrid.setLayout(new GridLayout(rows, columns));
         for (int i = 0; i < count; i++)
-            pgrid.add(ja[i]);
+            grid.add(ja[i]);
 
-        pgrid.addMouseListener(new MouseAdapter() {
+        grid.addMouseListener(new MouseAdapter() {
             // will only receive mouseReleased events here when one of the
             // AnimationPanel objects dispatches it to us in its
             // mouseReleased() method.
@@ -110,7 +108,7 @@ public class SelectionView extends View {
             }
         });
 
-        pgrid.addMouseMotionListener(new MouseMotionAdapter() {
+        grid.addMouseMotionListener(new MouseMotionAdapter() {
             // Dispatched here from one of the AnimationPanels when the
             // user drags the mouse for a camera angle change. Copy to the
             // other animations.
@@ -131,11 +129,11 @@ public class SelectionView extends View {
                 }
             }
         });
-        return pgrid;
+        return grid;
     }
 
     protected JPanel makeOverlay() {
-        JPanel poverlay = new JPanel() {
+        JPanel overlay = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
                 Dimension d = getSize();
@@ -153,8 +151,8 @@ public class SelectionView extends View {
                 g2.dispose();
             }
         };
-        poverlay.setOpaque(false);
-        return poverlay;
+        overlay.setOpaque(false);
+        return overlay;
     }
 
     protected JLayeredPane makeLayeredPane(Dimension d, JPanel grid, JPanel overlay) {
@@ -179,6 +177,8 @@ public class SelectionView extends View {
         layered.add(grid, JLayeredPane.DEFAULT_LAYER);
         layered.add(overlay, JLayeredPane.PALETTE_LAYER);
 
+        // JLayeredPane has no layout manager, so we have to "manually"
+        // arrange the components inside when its size changes
         layered.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
