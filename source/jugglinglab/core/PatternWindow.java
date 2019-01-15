@@ -173,28 +173,20 @@ public class PatternWindow extends JFrame implements ActionListener {
             else if (command.equals("prefs"))
                 doMenuCommand(VIEW_ANIMPREFS);
             else if (command.equals("simple")) {
-                if (getViewMode() != VIEW_SIMPLE) {
+                if (getViewMode() != VIEW_SIMPLE)
                     setViewMode(VIEW_SIMPLE);
-                    pack();
-                }
             }
             else if (command.equals("edit")) {
-                if (getViewMode() != VIEW_EDIT) {
+                if (getViewMode() != VIEW_EDIT)
                     setViewMode(VIEW_EDIT);
-                    pack();
-                }
             }
             else if (command.equals("jml")) {
-                if (getViewMode() != VIEW_JML) {
+                if (getViewMode() != VIEW_JML)
                     setViewMode(VIEW_JML);
-                    pack();
-                }
             }
             else if (command.equals("selection")) {
-                if (getViewMode() != VIEW_SELECTION) {
+                if (getViewMode() != VIEW_SELECTION)
                     setViewMode(VIEW_SELECTION);
-                    pack();
-                }
             }
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
@@ -344,8 +336,10 @@ public class PatternWindow extends JFrame implements ActionListener {
         if (view != null) {
             view.disposeView();
             view = newview;
+            pack();
             view.restartView(pat, jc);
         } else
+            // pack() and restartView() happen in constructor
             view = newview;
     }
 
