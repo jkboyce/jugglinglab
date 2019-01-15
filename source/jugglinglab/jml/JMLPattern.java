@@ -985,6 +985,21 @@ done2:
         throw new JuggleExceptionInternal("time t=" + time + " is out of path range");
     }
 
+    // returns true if a given hand is holding the path at a given time
+    public boolean isHandHoldingPath(int juggler, int hand, double time, int path) {
+        for (PathLink pl : pathlinks.get(path - 1)) {
+            if (!pl.isInHand())
+                continue;
+            if (pl.getHoldingJuggler() != juggler)
+                continue;
+            if (pl.getHoldingHand() != hand)
+                continue;
+            if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT())
+                return true;
+        }
+        return false;
+    }
+
     // returns orientation of prop on given path, in global frame
     // result is {pitch, yaw, roll}
     public double getPathOrientation(int path, double time, Coordinate axis) {
