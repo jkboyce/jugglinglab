@@ -45,7 +45,7 @@ public class SelectionView extends View {
     public SelectionView(Dimension dim) {
         this.ja = new AnimationPanel[count];
         for (int i = 0; i < count; i++)
-            this.ja[i] = new AnimationPanel();
+            ja[i] = new AnimationPanel();
 
         // JLayeredPane on the left so we can show a grid of animations with
         // an overlay drawn on top
@@ -178,7 +178,8 @@ public class SelectionView extends View {
         layered.add(overlay, JLayeredPane.PALETTE_LAYER);
 
         // JLayeredPane has no layout manager, so we have to "manually"
-        // arrange the components inside when its size changes
+        // arrange the components inside when its size changes. This will cause
+        // the grid's GridLayout to lay out each individual animation panel.
         layered.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -190,12 +191,6 @@ public class SelectionView extends View {
         return layered;
     }
 
-
-    @Override
-    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        for (int i = 0; i < count; i++)
-            ja[i].restartJuggle();
-    }
 
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
@@ -210,6 +205,17 @@ public class SelectionView extends View {
     }
 
     @Override
+    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
+        for (int i = 0; i < count; i++)
+            ja[i].restartJuggle();
+    }
+
+    @Override
+    public Dimension getAnimationPanelSize() {
+        return ja[center].getSize(new Dimension());
+    }
+
+    @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
         // This works differently for this view since the JLayeredPane has no
         // layout manager, so preferred size info can't propagate up from the
@@ -219,17 +225,6 @@ public class SelectionView extends View {
         int width = columns * d.width;
         int height = rows * d.height;
         layered.setPreferredSize(new Dimension(width, height));
-    }
-
-    @Override
-    public Dimension getAnimationPanelSize() {
-        return ja[center].getSize(new Dimension());
-    }
-
-    @Override
-    public void disposeView() {
-        for (int i = 0; i < count; i++)
-            ja[i].disposeAnimation();
     }
 
     @Override
@@ -246,6 +241,12 @@ public class SelectionView extends View {
         if (ja[center].message == null)
             for (int i = 0; i < count; i++)
                 ja[i].setPaused(pause);
+    }
+
+    @Override
+    public void disposeView() {
+        for (int i = 0; i < count; i++)
+            ja[i].disposeAnimation();
     }
 
     @Override

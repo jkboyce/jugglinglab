@@ -63,6 +63,7 @@ public class Mutator {
     protected double mutationScaleCm = 20.0;
     protected double mutationMinEventDeltaT = 0.03;
     protected double mutationTimingScale = 1.5;
+    protected double mutationNewEventTweakCm = 10.0;
 
     public Mutator() {
         this.controls = makeControlPanel();
@@ -75,7 +76,7 @@ public class Mutator {
         JMLPattern mutant = null;
         try {
             do {
-                int type = (int)(3.0 * Math.random());
+                int type = (int)(4.0 * Math.random());
 
                 switch (type) {
                     case 0:
@@ -86,6 +87,9 @@ public class Mutator {
                         break;
                     case 2:
                         mutant = mutatePatternTiming(clone);
+                        break;
+                    case 3:
+                        mutant = mutateAddEvent(clone);
                         break;
                 }
             } while (mutant == null);
@@ -189,6 +193,85 @@ public class Mutator {
                 sym.setDelay(delay * scale);
         }
 
+        pat.setNeedsLayout(true);
+        return pat;
+    }
+
+    // add an event with no transitions to a randomly-selected juggler/hand,
+    // with a tweaked position
+    protected JMLPattern mutateAddEvent(JMLPattern pat) throws JuggleExceptionUser,
+                    JuggleExceptionInternal {
+        if (!pat.isLaidout())
+            pat.layoutPattern();
+
+        int juggler = 1 + (int)(pat.getNumberOfJugglers() * Math.random());
+        int hand = Math.random() < 0.5 ? HandLink.LEFT_HAND : HandLink.RIGHT_HAND;
+
+        // Choose the time at which to add the event. We want to bias the
+        // selection so that we tend to pick times not too close to other
+        // events for that same juggler/hand. Find the bracketing events and
+        // pick from a triangular distribution.
+        double tmin = pat.getLoopStartTime();
+        double tmax = pat.getLoopEndTime();
+        double t = tmin + (tmax - tmin) * Math.random();
+
+        JMLEvent ev = pat.getEventList();
+        while (ev != null) {
+            if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t)
+                break;
+            ev = ev.getNext();
+        }
+        if (ev == null)
+            return null;
+        tmax = ev.getT();
+
+        while (ev != null) {
+            if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t)
+                break;
+            ev = ev.getPrevious();
+        }
+        if (ev == null)
+            return null;
+        tmin = ev.getT();
+
+        double r = Math.random();
+        if (r < 0.5)
+            t = tmin + (tmax - tmin) * Math.sqrt(0.5 * r);
+        else
+            t = tmax - (tmax - tmin) * Math.sqrt(0.5 * (1 - r));
+
+        // want its time to be within this range since it's a master event
+        while (t < pat.getLoopStartTime())
+            t += (pat.getLoopEndTime() - pat.getLoopStartTime());
+        while (t > pat.getLoopEndTime())
+            t -= (pat.getLoopEndTime() - pat.getLoopStartTime());
+
+        ev = new JMLEvent();
+        ev.setHand(juggler, hand);
+        ev.setT(t);
+        ev.setMaster(null);     // null signifies a master event
+
+        // Now choose a spatial location for the event. Figure out where the
+        // hand is currently and adjust it.
+        Coordinate pos = new Coordinate();
+        pat.getHandCoordinate(juggler, hand, t, pos);
+        pos = pat.convertGlobalToLocal(pos, juggler, t);
+        // leave y component of position unchanged to maintain plane of juggling
+        pos.x += 2.0 * mutationNewEventTweakCm * (Math.random() - 0.5);
+        pos.z += 2.0 * mutationNewEventTweakCm * (Math.random() - 0.5);
+        ev.setLocalCoordinate(pos);
+
+        // Last step: add a "holding" transition for every path that the hand
+        // is holding at the chosen time
+        for (int path = 1; path <= pat.getNumberOfPaths(); path++) {
+            if (pat.isHandHoldingPath(juggler, hand, t, path)) {
+                JMLTransition trans = new JMLTransition(
+                            JMLTransition.TRANS_HOLDING, path, null, null);
+                ev.addTransition(trans);
+            }
+        }
+
+        pat.addEvent(ev);
         pat.setNeedsLayout(true);
         return pat;
     }
