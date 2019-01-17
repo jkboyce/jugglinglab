@@ -35,21 +35,27 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
 
+// This class represents the entire contents of the ApplicationWindow frame.
+// For a given notation type it creates a tabbed pane with a notation entry
+// panel in one tab, and a generator in the other tab.
+//
+// Currently only a single notation (siteswap) is included with Juggling Lab
+// so the notation menu is suppressed.
 
 public class NotationGUI extends JPanel implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected JTabbedPane jtp = null;
-    protected JFrame parent = null;
-    protected View animtarget = null;
-    protected PatternList patlist = null;
+    protected JTabbedPane jtp;
+    protected JFrame parent;
+    protected View animtarget;
+    protected PatternList patlist;
     protected boolean patlisttab = false;
 
     protected int currentnum = -1;
-    protected JButton juggle = null;
-    protected JButton run = null;
-    protected JLabel busy = null;
+    protected JButton juggle;
+    protected JButton run;
+    protected JLabel busy;
 
     // Execution limits for generator
     protected static final int max_patterns = 1000;
