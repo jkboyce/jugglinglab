@@ -105,10 +105,12 @@ public class Mutator {
         this.rate = (slider_rate == null ? 1.0 : slider_rates[slider_rate.getValue()]);
 
         JMLPattern mutant = null;
+        int tries = 0;
         try {
             do {
                 JMLPattern clone = (JMLPattern)pat.clone();
                 double r = freq_sum * Math.random();
+                tries++;
 
                 if (r < cdf[0])
                     mutant = mutateEventPosition(clone);
@@ -120,10 +122,13 @@ public class Mutator {
                     mutant = mutateAddEvent(clone);
                 else
                     mutant = mutateRemoveEvent(clone);
-            } while (mutant == null);
+            } while (mutant == null && tries < 5);
         } catch (JuggleExceptionUser jeu) {
+            // this shouldn't be able to happen, so treat it as an internal error
             throw new JuggleExceptionInternal("Mutator: User error: " + jeu.getMessage());
         }
+        if (mutant == null)
+            return (JMLPattern)pat.clone();
         return mutant;
     }
 
