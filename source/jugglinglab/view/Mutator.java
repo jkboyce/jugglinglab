@@ -236,35 +236,47 @@ public class Mutator {
         if (!pat.isLaidout())
             pat.layoutPattern();
 
-        int juggler = 1 + (int)(pat.getNumberOfJugglers() * Math.random());
-        int hand = Math.random() < 0.5 ? HandLink.LEFT_HAND : HandLink.RIGHT_HAND;
+        JMLEvent ev = null;
+        double tmin, tmax, t;
+        int juggler, hand;
+        int tries = 0;
 
-        // Choose the time at which to add the event. We want to bias the
-        // selection so that we tend to pick times not too close to other
-        // events for that same juggler/hand. Find the bracketing events and
-        // pick from a triangular distribution.
-        double tmin = pat.getLoopStartTime();
-        double tmax = pat.getLoopEndTime();
-        double t = tmin + (tmax - tmin) * Math.random();
+        do {
+            juggler = 1 + (int)(pat.getNumberOfJugglers() * Math.random());
+            hand = Math.random() < 0.5 ? HandLink.LEFT_HAND : HandLink.RIGHT_HAND;
 
-        JMLEvent ev = pat.getEventList();
-        while (ev != null) {
-            if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t)
-                break;
-            ev = ev.getNext();
-        }
-        if (ev == null)
+            // Choose the time at which to add the event. We want to bias the
+            // selection so that we tend to pick times not too close to other
+            // events for that same juggler/hand. Find the bracketing events and
+            // pick from a triangular distribution.
+            tmin = pat.getLoopStartTime();
+            tmax = pat.getLoopEndTime();
+            t = tmin + (tmax - tmin) * Math.random();
+
+            ev = pat.getEventList();
+            while (ev != null) {
+                if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t)
+                    break;
+                ev = ev.getNext();
+            }
+            if (ev == null)
+                return null;
+            tmax = ev.getT() - mutationMinEventDeltaSec;
+
+            while (ev != null) {
+                if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t)
+                    break;
+                ev = ev.getPrevious();
+            }
+            if (ev == null)
+                return null;
+            tmin = ev.getT() + mutationMinEventDeltaSec;
+
+            tries++;
+        } while (tmin > tmax && tries < 5);
+
+        if (tries == 5)
             return null;
-        tmax = ev.getT();
-
-        while (ev != null) {
-            if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t)
-                break;
-            ev = ev.getPrevious();
-        }
-        if (ev == null)
-            return null;
-        tmin = ev.getT();
 
         double r = Math.random();
         if (r < 0.5)
