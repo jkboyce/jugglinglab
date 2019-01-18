@@ -48,9 +48,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         super(name);
 
         JMenuBar mb = new JMenuBar();
-        filemenu = createFileMenu();
+        this.filemenu = createFileMenu();
         mb.add(filemenu);
-        viewmenu = createViewMenu();
+        this.viewmenu = createViewMenu();
         mb.add(viewmenu);
         setJMenuBar(mb);
 
@@ -88,11 +88,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] fileItems = new String[]
-    { "Close", null, "Save JML As...", "Save Animated GIF As..." };
+        { "Close", null, "Save JML As...", "Save Animated GIF As...", null, "Duplicate" };
     protected static final String[] fileCommands = new String[]
-    { "close", null, "saveas", "savegifanim" };
+        { "close", null, "saveas", "savegifanim", null, "duplicate" };
     protected static final char[] fileShortcuts =
-    { 'W', ' ', 'S', ' ', ' ' };
+        { 'W', ' ', 'S', ' ', ' ', 'D' };
 
     protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
@@ -100,11 +100,12 @@ public class PatternWindow extends JFrame implements ActionListener {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
-                JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
+                JMenuItem fileitem = new JMenuItem(
+                        guistrings.getString(fileItems[i].replace(' ', '_')));
 
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
@@ -115,11 +116,12 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-    { "Simple", "Visual editor", "Selection editor", "JML editor", null, "Restart", "Animation Preferences..." };
+        { "Simple", "Visual editor", "Selection editor", "JML editor", null,
+          "Restart", "Animation Preferences..." };
     protected static final String[] viewCommands = new String[]
-    { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
+        { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
     protected static final char[] viewShortcuts =
-    { '1', '2', '3', '4', ' ', ' ', 'P' };
+        { '1', '2', '3', '4', ' ', ' ', 'P' };
 
     protected JMenu createViewMenu() {
         JMenu viewmenu = new JMenu(guistrings.getString("View"));
@@ -131,22 +133,24 @@ public class PatternWindow extends JFrame implements ActionListener {
                 viewmenu.addSeparator();
                 addingviews = false;
             } else if (addingviews) {
-                JRadioButtonMenuItem viewitem = new JRadioButtonMenuItem(guistrings.getString(viewItems[i].replace(' ', '_')));
+                JRadioButtonMenuItem viewitem = new JRadioButtonMenuItem(
+                        guistrings.getString(viewItems[i].replace(' ', '_')));
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);
                 viewmenu.add(viewitem);
                 buttonGroup.add(viewitem);
             } else {
-                JMenuItem viewitem = new JMenuItem(guistrings.getString(viewItems[i].replace(' ', '_')));
+                JMenuItem viewitem = new JMenuItem(
+                        guistrings.getString(viewItems[i].replace(' ', '_')));
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);
@@ -165,9 +169,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(FILE_CLOSE);
             else if (command.equals("saveas"))
                 doMenuCommand(FILE_SAVE);
-            else if (command.equals("savegifanim")) {
+            else if (command.equals("savegifanim"))
                 doMenuCommand(FILE_GIFSAVE);
-            }
+            else if (command.equals("duplicate"))
+                doMenuCommand(FILE_DUPLICATE);
             else if (command.equals("restart"))
                 doMenuCommand(VIEW_RESTART);
             else if (command.equals("prefs"))
@@ -199,6 +204,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int FILE_CLOSE = 1;
     protected static final int FILE_SAVE = 2;
     protected static final int FILE_GIFSAVE = 3;
+    protected static final int FILE_DUPLICATE = 4;
     protected static final int VIEW_RESTART = 5;
     protected static final int VIEW_ANIMPREFS = 6;
 
@@ -216,8 +222,9 @@ public class PatternWindow extends JFrame implements ActionListener {
                     try {
                         int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
                         if (option == JFileChooser.APPROVE_OPTION) {
-                            if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                                FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
+                            File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                            if (f != null) {
+                                FileWriter fw = new FileWriter(f);
                                 view.getPattern().writeJML(fw, true);
                                 fw.close();
                             }
@@ -235,6 +242,16 @@ public class PatternWindow extends JFrame implements ActionListener {
             case FILE_GIFSAVE:
                 if (view != null)
                     view.writeGIF();
+                break;
+
+            case FILE_DUPLICATE:
+                try {
+                    new PatternWindow(this.getTitle(),
+                                      (JMLPattern)view.getPattern().clone(),
+                                      new AnimationPrefs(view.getAnimationPrefs()));
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
+                }
                 break;
 
             case VIEW_RESTART:
@@ -289,7 +306,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int VIEW_SELECTION = 3;
     protected static final int VIEW_JML = 4;
 
-    protected void setViewMode(int mode) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected void setViewMode(int mode) throws JuggleExceptionUser,
+                        JuggleExceptionInternal {
         View newview = null;
 
         // items to carry over from old view to the new:
