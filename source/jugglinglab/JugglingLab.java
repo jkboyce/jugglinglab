@@ -75,7 +75,7 @@ public class JugglingLab {
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
-    private static ArrayList<String> jlargs = null;
+    private static ArrayList<String> jlargs;
 
     // Look in jlargs to see if there's an output path specified, and if so
     // then record it and trim out of jlargs. Otherwise return null.
