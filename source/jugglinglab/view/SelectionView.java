@@ -143,9 +143,8 @@ public class SelectionView extends View {
                 int height = d.height / rows;
 
                 Graphics2D g2 = (Graphics2D)g.create();
-                Stroke stroke = new BasicStroke(2, BasicStroke.CAP_BUTT,
-                            BasicStroke.JOIN_BEVEL, 0);
-                g2.setStroke(stroke);
+                g2.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT,
+                                             BasicStroke.JOIN_BEVEL, 0));
                 g2.setColor(Color.lightGray);
                 g2.drawRect(xleft, ytop, width, height);
                 g2.dispose();
@@ -163,8 +162,8 @@ public class SelectionView extends View {
         int pref_height = rows * d.height;
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int max_width = screenSize.width - 200;    // allocation for controls
-        int max_height = screenSize.height - 50;
+        int max_width = screenSize.width - 300;    // allocation for controls
+        int max_height = screenSize.height - 70;
 
         if (pref_width > max_width || pref_height > max_height) {
             double scale = Math.min((double)max_width / (double)pref_width,
