@@ -134,7 +134,10 @@ public class JMLPattern {
         setNeedsLayout(true);
     }
 
-    public void addProp(PropDef pd)         { props.add(pd); }
+    public void addProp(PropDef pd) {
+        props.add(pd);
+        setNeedsLayout(true);
+    }
     public void removeProp(int propnum) {
         props.remove(propnum - 1);
         for (int i = 1; i <= getNumberOfPaths(); i++) {
