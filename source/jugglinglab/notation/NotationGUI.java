@@ -35,21 +35,27 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
 
+// This class represents the entire contents of the ApplicationWindow frame.
+// For a given notation type it creates a tabbed pane with a notation entry
+// panel in one tab, and a generator in the other tab.
+//
+// Currently only a single notation (siteswap) is included with Juggling Lab
+// so the notation menu is suppressed.
 
 public class NotationGUI extends JPanel implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected JTabbedPane jtp = null;
-    protected JFrame parent = null;
-    protected View animtarget = null;
-    protected PatternList patlist = null;
+    protected JTabbedPane jtp;
+    protected JFrame parent;
+    protected View animtarget;
+    protected PatternList patlist;
     protected boolean patlisttab = false;
 
     protected int currentnum = -1;
-    protected JButton juggle = null;
-    protected JButton run = null;
-    protected JLabel busy = null;
+    protected JButton juggle;
+    protected JButton run;
+    protected JLabel busy;
 
     // Execution limits for generator
     protected static final int max_patterns = 1000;
@@ -153,6 +159,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             np2.setLayout(new FlowLayout(FlowLayout.TRAILING));
             JButton nbut1 = new JButton(guistrings.getString("Defaults"));
             nbut1.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     try {
                         fcontrol.resetNotationControl();
@@ -165,6 +172,7 @@ public class NotationGUI extends JPanel implements ActionListener {
             this.juggle = new JButton(guistrings.getString("Juggle"));
             this.juggle.setDefaultCapable(true);
             juggle.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     PatternWindow jaw2 = null;
                     try {
@@ -208,6 +216,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                 p2.setLayout(new FlowLayout(FlowLayout.TRAILING));
                 JButton but1 = new JButton(guistrings.getString("Defaults"));
                 but1.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
                         gen.resetGeneratorControls();
                     }
@@ -215,9 +224,10 @@ public class NotationGUI extends JPanel implements ActionListener {
                 p2.add(but1);
                 this.run = new JButton(guistrings.getString("Run"));
                 run.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
-
                         Thread t = new Thread() {
+                            @Override
                             public void run() {
                                 busy.setVisible(true);
                                 run.setEnabled(false);
@@ -278,6 +288,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 
                 // Change the default button when the tab changes
                 jtp.addChangeListener(new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent e) {
                         getRootPane().setDefaultButton(getDefaultButton());
                     }

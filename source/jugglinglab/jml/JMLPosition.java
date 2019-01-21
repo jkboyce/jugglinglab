@@ -1,6 +1,6 @@
 // JMLPosition.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -34,25 +34,25 @@ public class JMLPosition {
 
     protected double x, y, z, t, angle;
     protected int juggler;
-    protected JMLPosition prev, next;	// for doubly-linked event list
+    protected JMLPosition prev, next;   // for doubly-linked event list
 
 
     public JMLPosition() {
         this.prev = this.next = null;
     }
 
-    public Coordinate getCoordinate()			{ return new Coordinate(x,y,z); }
+    public Coordinate getCoordinate()           { return new Coordinate(x,y,z); }
     public void setCoordinate(Coordinate c) {
         this.x = c.x;
         this.y = c.y;
         this.z = c.z;
     }
 
-    public double getAngle()					{ return angle; }
-    public void setAngle(double angle)			{ this.angle = angle; }
-    public double getT()						{ return t; }
-    public void setT(double t)					{ this.t = t; }
-    public int getJuggler()						{ return juggler; }
+    public double getAngle()                    { return angle; }
+    public void setAngle(double angle)          { this.angle = angle; }
+    public double getT()                        { return t; }
+    public void setT(double t)                  { this.t = t; }
+    public int getJuggler()                     { return juggler; }
     public void setJuggler(String strjuggler) throws JuggleExceptionUser {
         this.juggler = Integer.parseInt(strjuggler);
     }
@@ -60,10 +60,10 @@ public class JMLPosition {
         this.juggler = j;
     }
 
-    public JMLPosition getPrevious()			{ return prev; }
-    public void setPrevious(JMLPosition prev)	{ this.prev = prev; }
-    public JMLPosition getNext()				{ return next; }
-    public void setNext(JMLPosition next)		{ this.next = next; }
+    public JMLPosition getPrevious()            { return prev; }
+    public void setPrevious(JMLPosition prev)   { this.prev = prev; }
+    public JMLPosition getNext()                { return next; }
+    public void setNext(JMLPosition next)       { this.next = next; }
 
 
     // Methods to handle JML
@@ -74,7 +74,7 @@ public class JMLPosition {
 
         try {
             for (int i = 0; i < at.getNumberOfAttributes(); i++) {
-                //			System.out.println("att. "+i+" = "+at.getAttributeValue(i));
+                //          System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equalsIgnoreCase("x"))
                     tempx = Double.valueOf(at.getAttributeValue(i)).doubleValue();
                 else if (at.getAttributeName(i).equalsIgnoreCase("y"))

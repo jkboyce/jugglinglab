@@ -271,6 +271,7 @@ class siteswapGeneratorControl extends JPanel {
                                                new Insets(5,border,5,border)));
         // now add action listeners to enable/disable items depending on context
         c1.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent ex) {
                 if (c1.getSelectedIndex() > 0) {
                     // lab3.setEnabled(true);
@@ -307,6 +308,7 @@ class siteswapGeneratorControl extends JPanel {
         });
 
         cb12.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent iv) {
                 if (cb12.isSelected()) {
                     cb13.setEnabled(true);
@@ -325,6 +327,7 @@ class siteswapGeneratorControl extends JPanel {
         });
 
         ActionListener temp = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 if (!cb7.isSelected() || cb8.isSelected()) {
                     lab4.setEnabled(false);

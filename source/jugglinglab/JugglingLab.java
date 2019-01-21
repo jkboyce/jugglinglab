@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import javax.swing.SwingUtilities;
 import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
@@ -74,7 +75,7 @@ public class JugglingLab {
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
-    private static ArrayList<String> jlargs = null;
+    private static ArrayList<String> jlargs;
 
     // Look in jlargs to see if there's an output path specified, and if so
     // then record it and trim out of jlargs. Otherwise return null.
@@ -209,13 +210,18 @@ public class JugglingLab {
         }
 
         if (run_application) {
-            try {
-                new ApplicationWindow("Juggling Lab");
-            } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(null, jeu.getMessage());
-            } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        new ApplicationWindow("Juggling Lab");
+                    } catch (JuggleExceptionUser jeu) {
+                        new ErrorDialog(null, jeu.getMessage());
+                    } catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+                }
+            });
             return;
         }
 
@@ -224,6 +230,7 @@ public class JugglingLab {
 
         if (show_help) {
             // Print a help message and return
+            System.setProperty("java.awt.headless", "true");
             String template = guistrings.getString("Version");
             Object[] arg1 = { Constants.version };
             String output = "Juggling Lab " +
@@ -279,6 +286,7 @@ public class JugglingLab {
 
         if (jlargs.size() > 0) {
             // any remaining arguments that parsing didn't consume?
+            System.setProperty("java.awt.headless", "true");
             String arglist = String.join(", ", jlargs);
             System.out.println("Error unrecognized input: " + arglist);
             return;
@@ -286,14 +294,22 @@ public class JugglingLab {
 
         if (firstarg.equals("anim")) {
             // open pattern in a window
-            try {
-                PatternWindow pw = new PatternWindow(pat.getTitle(), pat, jc);
-                pw.setExitOnClose(true);
-            } catch (JuggleExceptionUser jeu) {
-                System.out.println("Error: " + jeu.getMessage());
-            } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-            }
+            final JMLPattern fpat = pat;
+            final AnimationPrefs fjc = jc;
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PatternWindow pw = new PatternWindow(fpat.getTitle(), fpat, fjc);
+                        pw.setExitOnClose(true);
+                    } catch (JuggleExceptionUser jeu) {
+                        System.out.println("Error: " + jeu.getMessage());
+                    } catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+                }
+            });
             return;
         }
 

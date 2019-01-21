@@ -107,6 +107,7 @@ public class AnimationPrefsDialog extends JDialog {
         but_cancel = new JButton(guistrings.getString("Cancel"));
 
         but_cancel.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
@@ -118,6 +119,7 @@ public class AnimationPrefsDialog extends JDialog {
         but_ok = new JButton(guistrings.getString("OK"));
 
         but_ok.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 int tempint;
                 double tempdouble;
@@ -228,6 +230,8 @@ public class AnimationPrefsDialog extends JDialog {
     }
 
     public AnimationPrefs getPrefs(AnimationPrefs oldjc) {
+        // do this so if user clicks cancel, we return the same object that
+        // was passed in:
         newjc = oldjc;
 
         tf_width.setText(Integer.toString(oldjc.width));
@@ -241,7 +245,9 @@ public class AnimationPrefsDialog extends JDialog {
         cb_catchsounds.setSelected(oldjc.catchSound);
         cb_bouncesounds.setSelected(oldjc.bounceSound);
 
+        // blocks until user clicks OK or Cancel button:
         this.setVisible(true);
+
         return newjc;
     }
 }

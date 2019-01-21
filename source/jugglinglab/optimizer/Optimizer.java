@@ -659,7 +659,7 @@ public class Optimizer {
 			coord.x = newx;
 			ev.setLocalCoordinate(coord);
 		}
-		pat.dirty();
+		pat.setNeedsLayout(true);
 	}
 
 

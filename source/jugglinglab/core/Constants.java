@@ -26,6 +26,8 @@ public class Constants {
     public static final String version = "1.0";
     public static final String year = "2019";
 
+    public static final String site_URL = "http://jugglinglab.org";
+    public static final String download_URL = "https://jugglinglab.org/#download";
     public static final String help_URL = "https://jugglinglab.org/#help";
 
     public static final boolean DEBUG_LAYOUT = false;

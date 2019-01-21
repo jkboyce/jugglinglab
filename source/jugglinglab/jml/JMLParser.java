@@ -1,6 +1,6 @@
 // JMLParser.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -38,10 +38,10 @@ public class JMLParser extends DefaultHandler {
     protected boolean patternStarted;
     protected boolean patternFinished;
 
-    protected JMLNode rootNode;			// tree of JML tags
+    protected JMLNode rootNode;         // tree of JML tags
     protected JMLNode currentNode;
 
-    protected static final boolean saxdebug = false;	// print messages during parsing?
+    protected static final boolean saxdebug = false;    // print messages during parsing?
 
     public static final int JML_INVALID = 0;
     public static final int JML_PATTERN = 1;
@@ -54,23 +54,23 @@ public class JMLParser extends DefaultHandler {
 
     // --------------- call parser to create pattern from XML -----------------
 
-
     public void parse(Reader read) throws SAXException, IOException {
-		try {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setValidating(true);
-			SAXParser parser = factory.newSAXParser();
-			
-			// Parse the document.
-			parser.parse(new InputSource(read), this);
-		} catch (ParserConfigurationException pce) {
-			throw new SAXException(pce.getMessage());
-		}
-	}
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setValidating(true);
+            SAXParser parser = factory.newSAXParser();
+
+            // Parse the document.
+            parser.parse(new InputSource(read), this);
+        } catch (ParserConfigurationException pce) {
+            throw new SAXException(pce.getMessage());
+        }
+    }
 
 
     // Implementation of org.xml.sax.EntityResolver
-	
+
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) {
         if (saxdebug) {
             System.out.print("Resolve entity:");
@@ -78,7 +78,7 @@ public class JMLParser extends DefaultHandler {
                 System.out.print(" publicId=\"" + publicId + '"');
             System.out.println(" systemId=\"" + systemId + '"');
         }
-		
+
         if (systemId.equalsIgnoreCase("file://jml.dtd")) {
             if (saxdebug) {
                 System.out.println("--------- jml.dtd -----------");
@@ -89,9 +89,10 @@ public class JMLParser extends DefaultHandler {
         }
         return null;
     }
-	
+
     // Implementation of org.xml.sax.DTDHandler
-	
+
+    @Override
     public void notationDecl(String name, String publicId, String systemId) {
         if (saxdebug) {
             System.out.print("Notation declaration: " + name);
@@ -102,7 +103,8 @@ public class JMLParser extends DefaultHandler {
             System.out.print('\n');
         }
     }
-	
+
+    @Override
     public void unparsedEntityDecl(String name,
                                    String publicId,
                                    String systemId,
@@ -116,15 +118,17 @@ public class JMLParser extends DefaultHandler {
             System.out.println(" notationName=\"" + notationName + '"');
         }
     }
-	
+
     // Implementation of org.xml.sax.ContentHandler
-	
+
+    @Override
     public void setDocumentLocator(Locator locator) {
-		super.setDocumentLocator(locator);
+        super.setDocumentLocator(locator);
         if (saxdebug)
             System.out.println("Document locator supplied.");
     }
-	
+
+    @Override
     public void startDocument() throws SAXException {
         if (saxdebug)
             System.out.println("Start document");
@@ -134,7 +138,8 @@ public class JMLParser extends DefaultHandler {
             throw new SAXException(je.getMessage());
         }
     }
-	
+
+    @Override
     public void endDocument() throws SAXException {
         if (saxdebug)
             System.out.println("End document");
@@ -144,8 +149,9 @@ public class JMLParser extends DefaultHandler {
             throw new SAXException(je.getMessage());
         }
     }
-	
-	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+
+    @Override
+    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
         if (saxdebug) {
             System.out.println("Start element: " + qName);
             for (int i = 0; i < atts.getLength(); i++) {
@@ -163,8 +169,9 @@ public class JMLParser extends DefaultHandler {
             throw new SAXException(je.getMessage());
         }
     }
-	
-	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+
+    @Override
+    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
         if (saxdebug)
             System.out.println("End element: " + qName);
         try {
@@ -173,7 +180,8 @@ public class JMLParser extends DefaultHandler {
             throw new SAXException(je.getMessage());
         }
     }
-	
+
+    @Override
     public void characters(char ch[], int start, int length) throws SAXException {
         if (saxdebug) {
             System.out.print("Characters: ");
@@ -185,49 +193,54 @@ public class JMLParser extends DefaultHandler {
             throw new SAXException(je.getMessage());
         }
     }
-	
+
+    @Override
     public void ignorableWhitespace(char ch[], int start, int length) {
         if (saxdebug) {
             System.out.print("Ignorable Whitespace: ");
             display(ch, start, length);
         }
     }
-	
+
+    @Override
     public void processingInstruction(String target, String data) {
         if (saxdebug)
             System.out.println("Processing instruction: " + target + ' ' + data);
     }
-	
+
     // Implementation of org.xml.sax.ErrorHandler
-	
+
+    @Override
     public void warning(SAXParseException exception) throws SAXException {
-        //		throw new SAXException("Warning: " +
-        //					exception.getMessage() + " (" +
-        //					exception.getSystemId() + ':' +
-        //					exception.getLineNumber() + ',' +
-        //					exception.getColumnNumber() + ')');
-		throw exception;
+        //      throw new SAXException("Warning: " +
+        //                  exception.getMessage() + " (" +
+        //                  exception.getSystemId() + ':' +
+        //                  exception.getLineNumber() + ',' +
+        //                  exception.getColumnNumber() + ')');
+        throw exception;
     }
-	
+
+    @Override
     public void error(SAXParseException exception) throws SAXException {
-        //		throw new SAXException("Recoverable Error: " +
-        //					exception.getMessage() + " (" +
-        //					exception.getSystemId() + ':' +
-        //					exception.getLineNumber() + ',' +
-        //					exception.getColumnNumber() + ')');
+        //      throw new SAXException("Recoverable Error: " +
+        //                  exception.getMessage() + " (" +
+        //                  exception.getSystemId() + ':' +
+        //                  exception.getLineNumber() + ',' +
+        //                  exception.getColumnNumber() + ')');
         throw exception;
     }
-	
+
+    @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        //		throw new SAXException("Fatal Error: " +
-        //					exception.getMessage() + " (" +
-        //					exception.getSystemId() + ':' +
-        //					exception.getLineNumber() + ',' +
-        //					exception.getColumnNumber() + ')');
+        //      throw new SAXException("Fatal Error: " +
+        //                  exception.getMessage() + " (" +
+        //                  exception.getSystemId() + ':' +
+        //                  exception.getLineNumber() + ',' +
+        //                  exception.getColumnNumber() + ')');
         throw exception;
     }
-	
-	
+
+
     // Utility routines.
 
     /**
@@ -307,11 +320,11 @@ public class JMLParser extends DefaultHandler {
         if (currentNode == null)
             throw new JuggleExceptionInternal("addJMLText(): no element to add to");
 
-		String newvalue = null;
-		if (currentNode.getNodeValue() == null)
-			newvalue = text;
-		else
-			newvalue = currentNode.getNodeValue() + text;
+        String newvalue = null;
+        if (currentNode.getNodeValue() == null)
+            newvalue = text;
+        else
+            newvalue = currentNode.getNodeValue() + text;
         currentNode.setNodeValue(newvalue);
     }
 
@@ -328,7 +341,7 @@ public class JMLParser extends DefaultHandler {
         patternFinished = true;
     }
 
-    public JMLNode getTree()	{ return rootNode; }
+    public JMLNode getTree()    { return rootNode; }
 
     public int getFileType() {
         if (rootNode.getNodeType().equalsIgnoreCase("jml")) {

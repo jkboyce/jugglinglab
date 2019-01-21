@@ -31,7 +31,7 @@ import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationEditPanel extends AnimationPanel {
-    protected LadderDiagram ladder = null;
+    protected LadderDiagram ladder;
     protected boolean event_active = false;
     protected JMLEvent event;
     protected int xlow1, xhigh1, ylow1, yhigh1;
@@ -52,6 +52,7 @@ public class AnimationEditPanel extends AnimationPanel {
             long lastpress = 0L;
             long lastenter = 1L;
 
+            @Override
             public void mousePressed(MouseEvent me) {
                 lastpress = me.getWhen();
 
@@ -60,18 +61,18 @@ public class AnimationEditPanel extends AnimationPanel {
                 // user has clicked on something else.  The system reports simultaneous enter/press
                 // events when the user mouses down in the component; we want to swallow this as a
                 // click, and just use it to get focus back.
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
 
-                if (exception != null)
+                if (!engineAnimating)
                     return;
-                if (!engineStarted)
+                if (writingGIF)
                     return;
 
                 if (event_active) {
                     int mx = me.getX();
                     int my = me.getY();
-                    if ((mx >= xlow1) && (mx <= xhigh1) && (my >= ylow1) && (my <= yhigh1)) {
+                    if (mx >= xlow1 && mx <= xhigh1 && my >= ylow1 && my <= yhigh1) {
                         dragging = true;
                         dragging_left = true;
                         xstart = mx;
@@ -80,7 +81,7 @@ public class AnimationEditPanel extends AnimationPanel {
                         return;
                     }
                     int t = AnimationEditPanel.this.getSize().width / 2;
-                    if ((mx >= (xlow2+t)) && (mx <= (xhigh2+t)) && (my >= ylow2) && (my <= yhigh2)) {
+                    if (mx >= (xlow2+t) && mx <= (xhigh2+t) && my >= ylow2 && my <= yhigh2) {
                         dragging = true;
                         dragging_left = false;
                         xstart = mx;
@@ -95,12 +96,13 @@ public class AnimationEditPanel extends AnimationPanel {
                 AnimationEditPanel.this.starty = me.getY();
             }
 
+            @Override
             public void mouseReleased(MouseEvent me) {
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
-                if (exception != null)
+                if (writingGIF)
                     return;
-                if (!engineStarted && (engine != null) && engine.isAlive()) {
+                if (!engineAnimating && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
                     return;
                 }
@@ -110,20 +112,18 @@ public class AnimationEditPanel extends AnimationPanel {
                     boolean flipx = (event.getHand() != master.getHand());
 
                     Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
-                                                                          event.getGlobalCoordinate(), xdelta, ydelta
-                                                                          );
+                            event.getGlobalCoordinate(), xdelta, ydelta);
                     if (AnimationEditPanel.this.jc.stereo) {
                         Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
-                                                                               event.getGlobalCoordinate(), xdelta, ydelta
-                                                                               );
+                                event.getGlobalCoordinate(), xdelta, ydelta);
                         newgc = Coordinate.add(newgc, newgc2);
                         newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
                     }
 
                     Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
-                                                              event.getJuggler(), event.getT());
+                                            event.getJuggler(), event.getT());
                     Coordinate deltalc = Coordinate.sub(newlc,
-                                                        event.getLocalCoordinate());
+                                            event.getLocalCoordinate());
 
                     if (flipx)
                         deltalc.x = -deltalc.x;
@@ -136,23 +136,25 @@ public class AnimationEditPanel extends AnimationPanel {
                 }
                 AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
-                if ((me.getX() == startx) && (me.getY() == starty) &&
-                    (engine != null) && engine.isAlive())
+                if (me.getX() == startx && me.getY() == starty &&
+                                engine != null && engine.isAlive())
                     setPaused(!enginePaused);
                 if (AnimationEditPanel.this.getPaused())
                     repaint();
             }
 
+            @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
-                if (jc.mousePause /*&& waspaused_valid*/)
+                if (jc.mousePause && !writingGIF)
                     setPaused(waspaused);
                 outside = false;
                 outside_valid = true;
             }
 
+            @Override
             public void mouseExited(MouseEvent me) {
-                if (jc.mousePause) {
+                if (jc.mousePause && !writingGIF) {
                     waspaused = getPaused();
                     // waspaused_valid = true;
                     setPaused(true);
@@ -163,10 +165,11 @@ public class AnimationEditPanel extends AnimationPanel {
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent me) {
-                if (exception != null)
+                if (!engineAnimating)
                     return;
-                if (!engineStarted)
+                if (writingGIF)
                     return;
                 if (dragging) {
                     int mx = me.getX();
@@ -200,7 +203,8 @@ public class AnimationEditPanel extends AnimationPanel {
                 while (ca[0] >= JLMath.toRad(360.0))
                     ca[0] -= JLMath.toRad(360.0);
 
-                AnimationEditPanel.this.anim.setCameraAngle(ca);
+                double[] snappedcamangle = snapCamera(ca);
+                AnimationEditPanel.this.anim.setCameraAngle(snappedcamangle);
 
                 if (event_active)
                     createEventView();
@@ -210,10 +214,11 @@ public class AnimationEditPanel extends AnimationPanel {
         });
 
         this.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
-                if (exception != null)
+                if (!engineAnimating)
                     return;
-                if (!engineStarted)
+                if (writingGIF)
                     return;
                 anim.setDimension(AnimationEditPanel.this.getSize());
                 if (event_active)
@@ -225,12 +230,26 @@ public class AnimationEditPanel extends AnimationPanel {
 
     @Override
     protected double[] snapCamera(double[] ca) {
-        double[] result = super.snapCamera(ca);
+        double[] result = new double[2];
+        result[0] = ca[0];
+        result[1] = ca[1];
 
-        if (event_active) {
-            double a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(),
-                                                        event.getT()));
+        if (result[1] < snapangle)
+            result[1] = 0.000001;
+        if (result[1] > (JLMath.toRad(90.0) - snapangle))
+            result[1] = JLMath.toRad(90.0);
 
+        double a = 0.0;
+        boolean snap_horizontal = true;
+
+        if (event_active)
+            a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+        else if (anim.pat.getNumberOfJugglers() == 1)
+            a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+        else
+            snap_horizontal = false;
+
+        if (snap_horizontal) {
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
             else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
@@ -241,14 +260,6 @@ public class AnimationEditPanel extends AnimationPanel {
                 result[0] = a + 270.0*0.0174532925194;
         }
         return result;
-    }
-
-    protected double anglediff(double delta) {
-        while (delta > JLMath.toRad(180.0))
-            delta -= JLMath.toRad(360.0);
-        while (delta <= JLMath.toRad(-180.0))
-            delta += JLMath.toRad(360.0);
-        return Math.abs(delta);
     }
 
     @Override
@@ -318,16 +329,14 @@ public class AnimationEditPanel extends AnimationPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        if (exception != null)
-            drawString(exception.getMessage(), g);
-        else if (message != null)
+        if (message != null)
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
                 anim.drawFrame(getTime(), g, this.cameradrag);
                 drawEvent(g);
             } catch (JuggleExceptionInternal jei) {
-                this.killAnimationThread();
+                killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
                 // ErrorDialog.handleException(jei);
@@ -366,11 +375,5 @@ public class AnimationEditPanel extends AnimationPanel {
             g2.drawLine(xhigh2+xdelta, yhigh2+ydelta, xlow2+xdelta, yhigh2+ydelta);
             g2.drawLine(xlow2+xdelta, yhigh2+ydelta, xlow2+xdelta, ylow2+ydelta);
         }
-    }
-
-    @Override
-    public void writeGIF() {
-        deactivateEvent();       // so we don't draw event box in animated GIF
-        super.writeGIF();
     }
 }

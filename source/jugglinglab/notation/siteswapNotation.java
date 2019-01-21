@@ -53,7 +53,7 @@ public class siteswapNotation extends mhnNotation {
         String origpattern = p.pattern;
 
         // see if we need to repeat the pattern to match hand or body periods:
-        if ((p.hands != null) || (p.bodies != null)) {
+        if (p.hands != null || p.bodies != null) {
             p.parsePattern();
             int patperiod = p.getNorepPeriod();
 
@@ -79,18 +79,6 @@ public class siteswapNotation extends mhnNotation {
             }
         }
         p.parsePattern();
-
-        // The following is a hack to support the legacy "mat_HR" parameter
-        // from JuggleAnim.  Adjust bps to achieve the desired maximum throw height.
-        /*
-        if (p.mat_hr > 0.0) {
-            try {
-                p.bps = Math.sqrt(p.gravity / (800.0 * p.mat_hr * (double)p.getMaxThrow())) *
-                ((double)p.getMaxThrow() - p.dwell);
-            } catch (ArithmeticException e) {
-            }
-        }
-        */
 
         JMLPattern result = getJML(p);
         result.setTitle(origpattern);

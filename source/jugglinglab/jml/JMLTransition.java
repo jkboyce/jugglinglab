@@ -1,6 +1,6 @@
 // JMLTransition.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -44,27 +44,25 @@ public class JMLTransition {
         this.transitiontype = transtype;
         this.type = type;
         this.mod = mod;
-        this.ipl = this.opl = null;
         this.path = path;
     }
 
-    public int getType()			{ return transitiontype; }
-    public void setType(int t)			{ this.transitiontype = t; }
-    public int getPath()			{ return path; }
-    public void setPath(int p)			{ this.path = p; }
-    public String getThrowType()		{ return type; }
-    public void setThrowType(String type)	{ this.type = type; }
-    public String getMod()			{ return mod; }
-    public void setMod(String mod)		{ this.mod = mod; }
+    public int getType()                            { return transitiontype; }
+    public void setType(int t)                      { this.transitiontype = t; }
+    public int getPath()                            { return path; }
+    public void setPath(int p)                      { this.path = p; }
+    public String getThrowType()                    { return type; }
+    public void setThrowType(String type)           { this.type = type; }
+    public String getMod()                          { return mod; }
+    public void setMod(String mod)                  { this.mod = mod; }
 
-    public void setIncomingPathLink(PathLink ipl)	{ this.ipl = ipl; }
-    public PathLink getIncomingPathLink()		{ return ipl; }
-    public void setOutgoingPathLink(PathLink opl)	{ this.opl = opl; }
-    public PathLink getOutgoingPathLink()		{ return opl; }
+    public void setIncomingPathLink(PathLink ipl)   { this.ipl = ipl; }
+    public PathLink getIncomingPathLink()           { return ipl; }
+    public void setOutgoingPathLink(PathLink opl)   { this.opl = opl; }
+    public PathLink getOutgoingPathLink()           { return opl; }
 
     public JMLTransition duplicate() {
-        JMLTransition tr = new JMLTransition(transitiontype, path,
-                                             type, mod);
+        JMLTransition tr = new JMLTransition(transitiontype, path, type, mod);
         return tr;
     }
 

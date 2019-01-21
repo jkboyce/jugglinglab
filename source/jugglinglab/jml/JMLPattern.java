@@ -1,6 +1,6 @@
 // JMLPattern.java
 //
-// Copyright 2004 by Jack Boyce (jboyce@users.sourceforge.net) and others
+// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -37,57 +37,57 @@ import jugglinglab.renderer.*;
 
 
 /*
-	This is one of the core classes, representing a juggling pattern in generalized
-	form.  It is used in three steps:
+    This is one of the core classes, representing a juggling pattern in generalized
+    form.  It is used in three steps:
 
-	1)  Define a pattern, in one of three ways:
+    1)  Define a pattern, in one of three ways:
 
-		A)  Manually, by calling methods in this class.
-		B)  Parsing from pre-existing JML stream (file, user input, etc.).
-			(JML = Juggling Markup Language, an XML document type)
-		C)  Output from a Notation class, which converts from other notations.
+        A)  Manually, by calling methods in this class.
+        B)  Parsing from pre-existing JML stream (file, user input, etc.).
+            (JML = Juggling Markup Language, an XML document type)
+        C)  Output from a Notation class, which converts from other notations.
 
-	2)  Call layoutPattern() to calculate flight paths for all the props and
-	    hands.
+    2)  Call layoutPattern() to calculate flight paths for all the props and
+        hands.
 
-	3)  Call various methods to get information about the pattern, e.g., prop/hand
-		coordinates at points in time.
+    3)  Call various methods to get information about the pattern, e.g., prop/hand
+        coordinates at points in time.
 */
 
 public class JMLPattern {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected String version = JMLDefs.default_JML_on_save;	// JML version number
+    protected String version = JMLDefs.default_JML_on_save; // JML version number
     protected String title;
     protected int numjugglers;
     protected int numpaths;
     protected ArrayList<PropDef> props;
     protected int[] propassignment;
-    protected boolean laidout, valid;
-	
-	// everything below this is set in layoutPattern()
-	
-    protected boolean[][] hasVDHandJMLTransition;	// whether pattern has a velocity-defining transition,
-													// for each juggler/hand
-    protected boolean[] hasVDPathJMLTransition;		// for each path
+
+    // whether pattern has a velocity-defining transition
+    protected boolean[] hasVDPathJMLTransition;     // for a given path
+    protected boolean[][] hasVDHandJMLTransition;   // for a given juggler/hand
+
     protected ArrayList<JMLSymmetry> symmetries;
     protected JMLEvent eventlist;
     protected JMLPosition positionlist;
+    protected boolean laidout;
+    protected boolean valid;
 
-    protected ArrayList<ArrayList<PathLink>> pathlinks;		// for each path
-    protected ArrayList<ArrayList<ArrayList<HandLink>>> handlinks;		// for each juggler/hand
-    protected Curve[] jugglercurve;		// coordinates for each juggler
-    protected Curve[] jugglerangle;		// angles for each juggler
+    // list of PathLink objects for each path
+    protected ArrayList<ArrayList<PathLink>> pathlinks;
+
+    // list of HandLink objects for each juggler/hand combination
+    protected ArrayList<ArrayList<ArrayList<HandLink>>> handlinks;
+
+    protected Curve[] jugglercurve;     // coordinates for each juggler
+    protected Curve[] jugglerangle;     // angles for each juggler
 
 
     public JMLPattern() {
         laidout = false;
-        valid = true;  // false;
-        eventlist = null;
-        positionlist = null;
-        pathlinks = null;
-        handlinks = null;
+        valid = true;
         props = new ArrayList<PropDef>();
         symmetries = new ArrayList<JMLSymmetry>();
     }
@@ -118,35 +118,51 @@ public class JMLPattern {
     //   Methods to define the pattern
     // ------------------------------------------------------------------------
 
-    //	public void setJMLVersion(String version)	{ this.version = version; }
+    //  public void setJMLVersion(String version)   { this.version = version; }
 
-    public void setTitle(String title)		{ this.title = title == null ? null : title.trim(); }
-    public void setNumberOfJugglers(int n)	{ this.dirty(); this.numjugglers = n; }
-    public void setNumberOfPaths(int n)		{ this.dirty(); this.numpaths = n; }
+    public void setTitle(String title) {
+        this.title = title == null ? null : title.trim();
+    }
 
-    public void addProp(PropDef pd) 		{ this.dirty(); props.add(pd); }
+    public void setNumberOfJugglers(int n) {
+        this.numjugglers = n;
+        setNeedsLayout(true);
+    }
+
+    public void setNumberOfPaths(int n) {
+        this.numpaths = n;
+        setNeedsLayout(true);
+    }
+
+    public void addProp(PropDef pd) {
+        props.add(pd);
+        setNeedsLayout(true);
+    }
     public void removeProp(int propnum) {
-		this.dirty();
-        props.remove(propnum-1);
-
+        props.remove(propnum - 1);
         for (int i = 1; i <= getNumberOfPaths(); i++) {
             if (getPropAssignment(i) > propnum)
-                setPropAssignment(i, getPropAssignment(i)-1);
+                setPropAssignment(i, getPropAssignment(i) - 1);
         }
+        setNeedsLayout(true);
     }
     public void setPropAssignment(int pathnum, int propnum) {
-		this.dirty();
-        propassignment[pathnum-1] = propnum;
+        propassignment[pathnum - 1] = propnum;
+        setNeedsLayout(true);
     }
-    public void setPropAssignments(int[] pa) 	{ this.dirty(); this.propassignment = pa; }
+    public void setPropAssignments(int[] pa) {
+        this.propassignment = pa;
+        setNeedsLayout(true);
+    }
 
-    public void addSymmetry(JMLSymmetry sym)	{ this.dirty(); symmetries.add(sym); }
-
+    public void addSymmetry(JMLSymmetry sym) {
+        symmetries.add(sym);
+        setNeedsLayout(true);
+    }
 
     public void addEvent(JMLEvent ev) {
-		this.dirty();
-		
-        if ((eventlist == null) || (eventlist.getT() > ev.getT())) {
+        setNeedsLayout(true);
+        if (eventlist == null || eventlist.getT() > ev.getT()) {
             ev.setPrevious(null);
             ev.setNext(eventlist);
             if (eventlist != null)
@@ -156,7 +172,6 @@ public class JMLPattern {
         }
 
         JMLEvent current = eventlist;
-
         while (current.getNext() != null) {
             current = current.getNext();
 
@@ -175,8 +190,7 @@ public class JMLPattern {
     }
 
     public void removeEvent(JMLEvent ev) {
-		this.dirty();
-		
+        setNeedsLayout(true);
         if (eventlist == ev) {
             eventlist = ev.getNext();
             if (eventlist != null)
@@ -192,16 +206,20 @@ public class JMLPattern {
             prev.setNext(next);
     }
 
-    public JMLEvent getEventList()	{ return eventlist; }
+    public void setNeedsLayout(boolean needslayout) {
+        this.laidout = !needslayout;
+    }
+
+    public JMLEvent getEventList()  { return eventlist; }
 
 	public ArrayList<ArrayList<PathLink>> getPathlinks()  { return pathlinks; }
-	
-    public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
-        if ((pos.getT() < getLoopStartTime()) || (pos.getT() > getLoopEndTime()))
-            return;  // throw new JuggleExceptionUser("<position> time out of range");
 
-		this.dirty();
-        if ((positionlist == null) || (positionlist.getT() > pos.getT())) {
+    public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
+        if (pos.getT() < getLoopStartTime() || pos.getT() > getLoopEndTime())
+            return;  // throw new JuggleExceptionUser("<position> time out of range");
+        setNeedsLayout(true);
+
+        if (positionlist == null || positionlist.getT() > pos.getT()) {
             pos.setPrevious(null);
             pos.setNext(positionlist);
             if (positionlist != null)
@@ -230,7 +248,7 @@ public class JMLPattern {
     }
 
     public void removePosition(JMLPosition pos) {
-		this.dirty();
+        setNeedsLayout(true);
         if (positionlist == pos) {
             positionlist = pos.getNext();
             if (positionlist != null)
@@ -286,9 +304,11 @@ public class JMLPattern {
         laidout = true;
     }
 
-
+    // ------------------------------------------------------------------------
     // Step 1: construct the list of events
-    // extend events in list using known symmetries
+    // Extend events in list using known symmetries
+    // ------------------------------------------------------------------------
+
     public void buildEventList() throws JuggleExceptionInternal, JuggleExceptionUser {
         // figure out how many events there are
         int numevents = 0;
@@ -335,16 +355,16 @@ public class JMLPattern {
                     hasVDHandJMLTransition[i][1] = ei[j].hasVDJMLTransitionForHand(i+1, HandLink.RIGHT_HAND);
             }
             if (hasJMLTransitionForLeft == false) {
-				String template = errorstrings.getString("Error_no_left_events");
-				Object[] arguments = { new Integer(i+1) };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-			}
+                String template = errorstrings.getString("Error_no_left_events");
+                Object[] arguments = { new Integer(i+1) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
             if (hasJMLTransitionForRight == false) {
- 				String template = errorstrings.getString("Error_no_right_events");
-				Object[] arguments = { new Integer(i+1) };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-			}
-            needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0];	// set up for later
+                String template = errorstrings.getString("Error_no_right_events");
+                Object[] arguments = { new Integer(i+1) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+            needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0];   // set up for later
             needVDHandEvent[i][1] = hasVDHandJMLTransition[i][1];
             needHandEvent[i][0] = needHandEvent[i][1] = true;
         }
@@ -359,18 +379,18 @@ public class JMLPattern {
                     hasVDPathJMLTransition[i] = ei[j].hasVDJMLTransitionForPath(i+1);
             }
             if (hasPathJMLTransition == false) {
- 				String template = errorstrings.getString("Error_no_path_events");
-				Object[] arguments = { new Integer(i+1) };
-				throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-			}
-            needPathEvent[i] = true;			// set up for later
+                String template = errorstrings.getString("Error_no_path_events");
+                Object[] arguments = { new Integer(i+1) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+            needPathEvent[i] = true;            // set up for later
             needSpecialPathEvent[i] = false;
         }
 
         // queue used to store events while building event list
         JMLEvent[] eventqueue = new JMLEvent[numevents];
         for (int i = 0; i < numevents; i++)
-            eventqueue[i] = ei[i].getPrevious();	// seed the queue
+            eventqueue[i] = ei[i].getPrevious();    // seed the queue
 
         // start by extending each master event backward in time
         boolean contin = false;
@@ -387,8 +407,8 @@ public class JMLPattern {
                 }
             }
 
-            this.addEvent(maxevent);						// add to event list
-            eventqueue[maxnum] = ei[maxnum].getPrevious();	// restock queue
+            this.addEvent(maxevent);                        // add to event list
+            eventqueue[maxnum] = ei[maxnum].getPrevious();  // restock queue
 
             // now update the needs arrays, so we know when to stop
             if (maxtime < this.getLoopStartTime()) {
@@ -412,11 +432,11 @@ public class JMLPattern {
                             break;
                         case JMLTransition.TRANS_SOFTCATCH:
                             if (needVDHandEvent[jug][han] == true)
-                                needSpecialPathEvent[path] = true;	// need corresponding throw to get velocity
+                                needSpecialPathEvent[path] = true;  // need corresponding throw to get velocity
                             needVDHandEvent[jug][han] = needHandEvent[jug][han] = false;
                             break;
                         case JMLTransition.TRANS_HOLDING:
-                            if (hasVDPathJMLTransition[path] == false)	// if no throws for this path, then done
+                            if (hasVDPathJMLTransition[path] == false)  // if no throws for this path, then done
                                 needPathEvent[path] = false;
                             break;
                     }
@@ -464,8 +484,8 @@ public class JMLPattern {
                 }
             }
 
-            this.addEvent(minevent);					// add to event list
-            eventqueue[minnum] = ei[minnum].getNext();	// restock queue
+            this.addEvent(minevent);                    // add to event list
+            eventqueue[minnum] = ei[minnum].getNext();  // restock queue
 
             // now update the needs arrays, so we know when to stop
             if (mintime > this.getLoopEndTime()) {
@@ -476,7 +496,7 @@ public class JMLPattern {
                 // past a certain time, due to how the hand layout is done in this case
                 // (see layoutHandPaths() below)
                 if ((hasVDHandJMLTransition[jug][han] == false) &&
-                    (mintime > (2 * getLoopEndTime() - getLoopStartTime())))
+                            (mintime > (2 * getLoopEndTime() - getLoopStartTime())))
                     needHandEvent[jug][han] = false;
 
                 for (int i = 0; i < minevent.getNumberOfTransitions(); i++) {
@@ -501,8 +521,8 @@ public class JMLPattern {
                             needSpecialPathEvent[path] = false;
                             break;
                         case JMLTransition.TRANS_HOLDING:
-                            if (hasVDPathJMLTransition[path] == false)		// if no throws for this path,
-                                needPathEvent[path] = false;			// then done
+                            if (hasVDPathJMLTransition[path] == false)      // if no throws for this path,
+                                needPathEvent[path] = false;            // then done
                             break;
                     }
                 }
@@ -522,7 +542,10 @@ public class JMLPattern {
         } while (contin);
     }
 
+    // ------------------------------------------------------------------------
     // Step 2: figure out which events should be considered master events
+    // ------------------------------------------------------------------------
+
     public void findMasterEvents() throws JuggleExceptionInternal, JuggleExceptionUser {
         boolean rebuildList = false;
         JMLEvent ev = eventlist;
@@ -564,9 +587,12 @@ public class JMLPattern {
             buildEventList();
     }
 
+    // ------------------------------------------------------------------------
     // Step 3: find positions/angles for all jugglers at all points in time,
-    // using specified <position> tags.  This is done by finding spline functions
-    // passing through the specified locations and angles.
+    // using <position> tags. This is done by finding spline functions passing
+    // through the specified locations and angles.
+    // ------------------------------------------------------------------------
+
     public void findPositions() throws JuggleExceptionInternal {
         this.jugglercurve = new splineCurve[this.getNumberOfJugglers()];
         this.jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
@@ -584,9 +610,9 @@ public class JMLPattern {
             }
 
             if (num == 0) {
-                jugglercurve[i-1] = new splineCurve();
-                jugglerangle[i-1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                      (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                jugglercurve[i - 1] = new splineCurve();
+                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
+                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
                 double[] times = new double[2];
                 times[0] = this.getLoopStartTime();
                 times[1] = this.getLoopEndTime();
@@ -595,7 +621,7 @@ public class JMLPattern {
                 positions[0] = new Coordinate();
                 angles[0] = new Coordinate();
 
-				// default juggler body positions
+                // default juggler body positions
                 if (this.getNumberOfJugglers() == 1) {
                     positions[0].setCoordinate(0.0, 0.0, 100.0);
                     angles[0].setCoordinate(0.0, 0.0, 0.0);
@@ -611,14 +637,14 @@ public class JMLPattern {
 
                 positions[1] = positions[0];
                 angles[1] = angles[0];
-                jugglercurve[i-1].setCurve(positions, times);
-                jugglercurve[i-1].calcCurve();
-                jugglerangle[i-1].setCurve(angles, times);
-                jugglerangle[i-1].calcCurve();
+                jugglercurve[i - 1].setCurve(positions, times);
+                jugglercurve[i - 1].calcCurve();
+                jugglerangle[i - 1].setCurve(angles, times);
+                jugglerangle[i - 1].calcCurve();
             } else {
-                jugglercurve[i-1] = new splineCurve();
-                jugglerangle[i-1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                      (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                jugglercurve[i - 1] = new splineCurve();
+                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
+                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
                 double[] times = new double[num+1];
                 Coordinate[] positions = new Coordinate[num+1];
                 Coordinate[] angles = new Coordinate[num+1];
@@ -646,15 +672,18 @@ public class JMLPattern {
                         angles[j].x += 360.0;
                 }
 
-                jugglercurve[i-1].setCurve(positions, times);
-                jugglercurve[i-1].calcCurve();
-                jugglerangle[i-1].setCurve(angles, times);
-                jugglerangle[i-1].calcCurve();
+                jugglercurve[i - 1].setCurve(positions, times);
+                jugglercurve[i - 1].calcCurve();
+                jugglerangle[i - 1].setCurve(angles, times);
+                jugglerangle[i - 1].calcCurve();
             }
         }
     }
 
+    // ------------------------------------------------------------------------
     // Step 4: transform event coordinates from local to global reference frame
+    // ------------------------------------------------------------------------
+
     public void gotoGlobalCoordinates() {
         JMLEvent ev = eventlist;
 
@@ -668,7 +697,10 @@ public class JMLPattern {
         }
     }
 
+    // ------------------------------------------------------------------------
     // Step 5: construct the links connecting events; build PathLink and HandLink lists
+    // ------------------------------------------------------------------------
+
     protected void buildLinkLists() throws JuggleExceptionUser, JuggleExceptionInternal {
         int i, j, k;
 
@@ -686,7 +718,7 @@ done1:
                     // find the next transition for this path
                     JMLTransition tr = null;
                     while (true) {
-                        tr = ev.getPathTransition(i+1, JMLTransition.TRANS_ANY);
+                        tr = ev.getPathTransition(i + 1, JMLTransition.TRANS_ANY);
                         if (tr != null)
                             break;
                         ev = ev.getNext();
@@ -695,42 +727,42 @@ done1:
                     }
 
                     if (lastev != null) {
-                        PathLink pl = new PathLink(i+1, lastev, ev);
+                        PathLink pl = new PathLink(i + 1, lastev, ev);
 
                         switch (tr.getType()) {
                             case JMLTransition.TRANS_THROW:
                             case JMLTransition.TRANS_HOLDING:
                                 if (lasttr.getType() == JMLTransition.TRANS_THROW) {
-									String template = errorstrings.getString("Error_successive_throws");
-									Object[] arguments = { new Integer(i+1) };
-									throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-								}
+                                    String template = errorstrings.getString("Error_successive_throws");
+                                    Object[] arguments = { new Integer(i+1) };
+                                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                                }
                                 if (lastev.getJuggler() != ev.getJuggler()) {
-									String template = errorstrings.getString("Error_juggler_changed");
-									Object[] arguments = { new Integer(i+1) };
-									throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-								}
-								if (lastev.getHand() != ev.getHand()) {
-									String template = errorstrings.getString("Error_hand_changed");
-									Object[] arguments = { new Integer(i+1) };
-									throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-								}
-								pl.setInHand(ev.getJuggler(), ev.getHand());
+                                    String template = errorstrings.getString("Error_juggler_changed");
+                                    Object[] arguments = { new Integer(i+1) };
+                                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                                }
+                                if (lastev.getHand() != ev.getHand()) {
+                                    String template = errorstrings.getString("Error_hand_changed");
+                                    Object[] arguments = { new Integer(i+1) };
+                                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                                }
+                                pl.setInHand(ev.getJuggler(), ev.getHand());
                                 break;
                             case JMLTransition.TRANS_CATCH:
                                 if (lasttr.getType() != JMLTransition.TRANS_THROW) {
-									String template = errorstrings.getString("Error_successive_catches");
-									Object[] arguments = { new Integer(i+1) };
-									throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-								}
+                                    String template = errorstrings.getString("Error_successive_catches");
+                                    Object[] arguments = { new Integer(i+1) };
+                                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                                }
                                 pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
                                 break;
                             case JMLTransition.TRANS_SOFTCATCH:
                                 if (lasttr.getType() != JMLTransition.TRANS_THROW) {
-									String template = errorstrings.getString("Error_successive_catches");
-									Object[] arguments = { new Integer(i+1) };
-									throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-								}
+                                    String template = errorstrings.getString("Error_successive_catches");
+                                    Object[] arguments = { new Integer(i+1) };
+                                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                                }
                                 pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
                                 break;
                         }
@@ -774,8 +806,7 @@ done2:
                     while (true) {
                         // find the next event touching hand
                         while (true) {
-                            if ((ev.getJuggler() == (i+1)) &&
-                                (ev.getHand() == handnum))
+                            if (ev.getJuggler() == (i+1) && ev.getHand() == handnum)
                                 break;
                             ev = ev.getNext();
                             if (ev == null)
@@ -784,7 +815,7 @@ done2:
 
                         // find velocity of hand path ending
                         vr = null;
-                        if ((ev.getJuggler() == (i+1)) && (ev.getHand() == handnum)) {
+                        if (ev.getJuggler() == (i+1) && ev.getHand() == handnum) {
                             for (k = 0; k < ev.getNumberOfTransitions(); k++) {
                                 JMLTransition tr = ev.getTransition(k);
                                 if (tr.getType() == JMLTransition.TRANS_THROW) {
@@ -802,7 +833,7 @@ done2:
                         if (lastev != null) {
                             // add HandLink from lastev to ev
                             HandLink hl = new HandLink(i, handnum, lastev, ev);
-                            hl.setStartVelocityRef(lastvr);	// may be null, which is ok
+                            hl.setStartVelocityRef(lastvr); // may be null, which is ok
                             hl.setEndVelocityRef(vr);
                             handlinks.get(i).get(j).add(hl);
                         }
@@ -816,8 +847,11 @@ done2:
         }
     }
 
+    // ------------------------------------------------------------------------
     // Step 6: do a physical layout of the handlink paths
     // (Props were physically laid out in PathLink.setThrow() in Step 5 above)
+    // ------------------------------------------------------------------------
+
     protected void layoutHandPaths() throws JuggleExceptionInternal {
 
         // go through HandLink lists, creating Path objects and calculating paths
@@ -886,7 +920,7 @@ done2:
                     for (int chain = 0; chain < 2; chain++) {
                         HandLink startlink = hl;
                         JMLEvent startevent = startlink.getStartEvent();
-                        int num = 1;	// number of links in chain
+                        int num = 1;    // number of links in chain
                         while (hl.getEndEvent().isDelayOf(startevent) == false) {
                             hl = handlinks.get(i).get(j).get(++k);
                             num++;
@@ -917,23 +951,20 @@ done2:
     // ------------------------------------------------------------------------
     // Methods used by animator to get prop and body locations at specified times.
     // ------------------------------------------------------------------------
-    public String getTitle()				{ return title; }
-    public int getNumberOfJugglers() 		{ return numjugglers; }
-    public int getNumberOfPaths()			{ return numpaths; }
 
-    public int getNumberOfProps() 			{ return props.size(); }
-    public Prop getProp(int propnum) {
-        return getPropDef(propnum).getProp();
-    }
-    public PropDef getPropDef(int propnum) {
-        return props.get(propnum-1);
-    }
-    public int getPropAssignment(int path)	{ return propassignment[path-1]; }
+    public String getTitle()                { return title; }
+    public int getNumberOfJugglers()        { return numjugglers; }
+    public int getNumberOfPaths()           { return numpaths; }
 
-    public int getNumberOfSymmetries()		{ return symmetries.size(); }
-    public JMLSymmetry getSymmetry(int index)	{ return symmetries.get(index); }
+    public int getNumberOfProps()           { return props.size(); }
+    public Prop getProp(int propnum)        { return getPropDef(propnum).getProp(); }
+    public PropDef getPropDef(int propnum)  { return props.get(propnum - 1); }
+    public int getPropAssignment(int path)  { return propassignment[path - 1]; }
 
-    public double getLoopStartTime() 	{ return 0.0; }
+    public int getNumberOfSymmetries()      { return symmetries.size(); }
+    public JMLSymmetry getSymmetry(int index)   { return symmetries.get(index); }
+
+    public double getLoopStartTime()        { return 0.0; }
     public double getLoopEndTime() {
         for (int i = 0; i < getNumberOfSymmetries(); i++)
             if (getSymmetry(i).getType() == JMLSymmetry.TYPE_DELAY)
@@ -943,8 +974,7 @@ done2:
 
     // returns path coordinate in global frame
     public void getPathCoordinate(int path, double time, Coordinate newPosition) throws JuggleExceptionInternal {
-        for (int i = 0; i < pathlinks.get(path-1).size(); i++) {
-            PathLink pl = pathlinks.get(path-1).get(i);
+        for (PathLink pl : pathlinks.get(path - 1)) {
             if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT()) {
                 if (pl.isInHand()) {
                     int jug = pl.getHoldingJuggler();
@@ -957,21 +987,36 @@ done2:
                 }
             }
         }
-        throw new JuggleExceptionInternal("time t="+time+" is out of path range");
+        throw new JuggleExceptionInternal("time t=" + time + " is out of path range");
     }
 
-	// returns orientation of prop on given path, in global frame
-	// result is {pitch, yaw, roll}
+    // returns true if a given hand is holding the path at a given time
+    public boolean isHandHoldingPath(int juggler, int hand, double time, int path) {
+        for (PathLink pl : pathlinks.get(path - 1)) {
+            if (!pl.isInHand())
+                continue;
+            if (pl.getHoldingJuggler() != juggler)
+                continue;
+            if (pl.getHoldingHand() != hand)
+                continue;
+            if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT())
+                return true;
+        }
+        return false;
+    }
+
+    // returns orientation of prop on given path, in global frame
+    // result is {pitch, yaw, roll}
     public double getPathOrientation(int path, double time, Coordinate axis) {
-        axis.x = 0.0;		// components of unit vector to rotate around
-		axis.y = 0.0;
-		axis.z = 1.0;
-		return (3.0*time);
+        axis.x = 0.0;       // components of unit vector to rotate around
+        axis.y = 0.0;
+        axis.z = 1.0;
+        return (3.0 * time);
     }
 
     // returns juggler coordinate in global frame
     public void getJugglerPosition(int juggler, double time, Coordinate newPosition) {
-        Curve p = jugglercurve[juggler-1];
+        Curve p = jugglercurve[juggler - 1];
 
         while (time < p.getStartTime())
             time += (this.getLoopEndTime() - this.getLoopStartTime());
@@ -984,7 +1029,7 @@ done2:
     // returns angle (in degrees) between local x axis and global x axis
     // (rotation around vertical z axis)
     public double getJugglerAngle(int juggler, double time) {
-        Curve p = jugglerangle[juggler-1];
+        Curve p = jugglerangle[juggler - 1];
 
         while (time < p.getStartTime())
             time += (this.getLoopEndTime() - this.getLoopStartTime());
@@ -1004,8 +1049,7 @@ done2:
         double angle = JLMath.toRad(this.getJugglerAngle(juggler, time));
         lc.y += Juggler.pattern_y;
 
-        Coordinate gc = new Coordinate(
-                                       origin.x + lc.x * Math.cos(angle) - lc.y * Math.sin(angle),
+        Coordinate gc = new Coordinate(origin.x + lc.x * Math.cos(angle) - lc.y * Math.sin(angle),
                                        origin.y + lc.x * Math.sin(angle) + lc.y * Math.cos(angle),
                                        origin.z + lc.z);
         return gc;
@@ -1027,13 +1071,12 @@ done2:
     }
 
     // returns hand coordinate in global frame
-    public void getHandCoordinate(int juggler, int hand, double time, Coordinate newPosition) throws JuggleExceptionInternal {
+    public void getHandCoordinate(int juggler, int hand, double time, Coordinate newPosition)
+                        throws JuggleExceptionInternal {
         int handindex = (hand == HandLink.LEFT_HAND) ? 0 : 1;
 
-        for (int i = 0; i < handlinks.get(juggler-1).get(handindex).size(); i++) {
-            HandLink hl = handlinks.get(juggler-1).get(handindex).get(i);
-            if ((time >= hl.getStartEvent().getT()) &&
-                (time < hl.getEndEvent().getT())) {
+        for (HandLink hl : handlinks.get(juggler - 1).get(handindex)) {
+            if (time >= hl.getStartEvent().getT() && time < hl.getEndEvent().getT()) {
                 Curve hp = hl.getHandCurve();
                 if (hp == null)
                     throw new JuggleExceptionInternal("getHandCoordinate() null pointer");
@@ -1051,31 +1094,31 @@ done2:
         boolean wasinair = false;
         boolean gotcatch = false;
 
-        for (i = 0; i < pathlinks.get(path-1).size(); i++) {
-            pl1 = pathlinks.get(path-1).get(i);
-            if ((time1 >= pl1.getStartEvent().getT()) && (time1 <= pl1.getEndEvent().getT()))
+        for (i = 0; i < pathlinks.get(path - 1).size(); i++) {
+            pl1 = pathlinks.get(path - 1).get(i);
+            if (time1 >= pl1.getStartEvent().getT() && time1 <= pl1.getEndEvent().getT())
                 break;
         }
-		if (i == pathlinks.get(path-1).size())
-			return 0.0;
+        if (i == pathlinks.get(path - 1).size())
+            return 0.0;
         while (true) {
-            pl2 = pathlinks.get(path-1).get(i);
+            pl2 = pathlinks.get(path - 1).get(i);
             if (!pl2.isInHand())
                 wasinair = true;
             if (pl2.isInHand() && wasinair) {
                 gotcatch = true;
                 break;
             }
-            if ((time2 >= pl2.getStartEvent().getT()) && (time2 <= pl2.getEndEvent().getT()))
+            if (time2 >= pl2.getStartEvent().getT() && time2 <= pl2.getEndEvent().getT())
                 break;
 
             i++;
-            if (i == pathlinks.get(path-1).size())
+            if (i == pathlinks.get(path - 1).size())
                 i = 0;
         }
 
-        // Java 1.2 doesn't provide a way to adjust the playback volume of an audio clip,
-        // so this is just yes/no for now
+        // We don't adjust the playback volume of the audio clip, so this is just
+        // yes/no for now
         if (gotcatch)
             return 1.0;
 
@@ -1087,15 +1130,15 @@ done2:
         int i;
         PathLink pl = null;
 
-        for (i = 0; i < pathlinks.get(path-1).size(); i++) {
-            pl = pathlinks.get(path-1).get(i);
-            if ((time1 >= pl.getStartEvent().getT()) && (time1 <= pl.getEndEvent().getT()))
+        for (i = 0; i < pathlinks.get(path - 1).size(); i++) {
+            pl = pathlinks.get(path - 1).get(i);
+            if (time1 >= pl.getStartEvent().getT() && time1 <= pl.getEndEvent().getT())
                 break;
         }
-		if (i == pathlinks.get(path-1).size())
-			return 0.0;
+        if (i == pathlinks.get(path - 1).size())
+            return 0.0;
         while (true) {
-            pl = pathlinks.get(path-1).get(i);
+            pl = pathlinks.get(path - 1).get(i);
             Path p = pl.getPath();
             if (p instanceof bouncePath) {
                 bouncePath bp = (bouncePath)p;
@@ -1103,24 +1146,24 @@ done2:
                 if (vol > 0.0)
                     return vol;
             }
-            if ((time2 >= pl.getStartEvent().getT()) && (time2 <= pl.getEndEvent().getT()))
+            if (time2 >= pl.getStartEvent().getT() && time2 <= pl.getEndEvent().getT())
                 break;
 
             i++;
-            if (i == pathlinks.get(path-1).size())
+            if (i == pathlinks.get(path - 1).size())
                 i = 0;
         }
 
         return 0.0;
     }
 
-    public Coordinate getPathMax(int path) {	// maximum of each coordinate
+    public Coordinate getPathMax(int path) {    // maximum of each coordinate
         Coordinate result = null;
         double t1 = getLoopStartTime();
         double t2 = getLoopEndTime();
 
-        for (int i = 0; i < pathlinks.get(path-1).size(); i++) {
-            PathLink pl = pathlinks.get(path-1).get(i);
+        for (int i = 0; i < pathlinks.get(path - 1).size(); i++) {
+            PathLink pl = pathlinks.get(path - 1).get(i);
             if (pl.isInHand())
                 result = Coordinate.max(result,
                                         getHandMax(pl.getHoldingJuggler(),
@@ -1137,8 +1180,8 @@ done2:
         double t1 = getLoopStartTime();
         double t2 = getLoopEndTime();
 
-        for (int i = 0; i < pathlinks.get(path-1).size(); i++) {
-            PathLink pl = pathlinks.get(path-1).get(i);
+        for (int i = 0; i < pathlinks.get(path - 1).size(); i++) {
+            PathLink pl = pathlinks.get(path - 1).get(i);
             if (pl.isInHand())
                 result = Coordinate.min(result,
                                         getHandMin(pl.getHoldingJuggler(),
@@ -1156,8 +1199,8 @@ done2:
         double t2 = getLoopEndTime();
         int handnum = (hand == HandLink.LEFT_HAND) ? 0 : 1;
 
-        for (int i = 0; i < handlinks.get(juggler-1).get(handnum).size(); i++) {
-            HandLink hl = handlinks.get(juggler-1).get(handnum).get(i);
+        for (int i = 0; i < handlinks.get(juggler - 1).get(handnum).size(); i++) {
+            HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
             Curve hp = hl.getHandCurve();
             if (hp != null)
                 result = Coordinate.max(result, hp.getMax(t1, t2));
@@ -1171,8 +1214,8 @@ done2:
         double t2 = getLoopEndTime();
         int handnum = (hand == HandLink.LEFT_HAND) ? 0 : 1;
 
-        for (int i = 0; i < handlinks.get(juggler-1).get(handnum).size(); i++) {
-            HandLink hl = handlinks.get(juggler-1).get(handnum).get(i);
+        for (int i = 0; i < handlinks.get(juggler - 1).get(handnum).size(); i++) {
+            HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
             Curve hp = hl.getHandCurve();
             if (hp != null)
                 result = Coordinate.min(result, hp.getMin(t1, t2));
@@ -1181,11 +1224,11 @@ done2:
     }
 
     public Coordinate getJugglerMax(int juggler) {
-        return jugglercurve[juggler-1].getMax();
+        return jugglercurve[juggler - 1].getMax();
     }
 
     public Coordinate getJugglerMin(int juggler) {
-        return jugglercurve[juggler-1].getMin();
+        return jugglercurve[juggler - 1].getMin();
     }
 
     public Permutation getPathPermutation() {
@@ -1211,8 +1254,8 @@ done2:
             if (notdone[i]) {
                 int[] cycle = perm.getCycle(i+1);
                 for (j = 0; j < cycle.length; j++) {
-                    notdone[cycle[j]-1] = false;
-                    cycle[j] = propassign[cycle[j]-1];
+                    notdone[cycle[j] - 1] = false;
+                    cycle[j] = propassign[cycle[j] - 1];
                 }
                 // now find the period of the current cycle
                 for (cperiod = 1; cperiod < cycle.length; cperiod++) {
@@ -1236,8 +1279,7 @@ done2:
 
     public boolean isValid()	{ return valid; }
     public boolean isLaidout()	{ return laidout; }
-	public void dirty()			{ laidout = false; }
-	
+
     protected void printEventList() {
         JMLEvent current = eventlist;
         java.io.PrintWriter pw = new java.io.PrintWriter(System.out);
@@ -1303,7 +1345,7 @@ done2:
                 try {
                     for (int i = 0; i < numpaths; i++) {
                         pa[i] = Integer.valueOf(st.nextToken()).intValue();
-                        if ((pa[i] < 1) || (pa[i] > getNumberOfProps()))
+                        if (pa[i] < 1 || pa[i] > getNumberOfProps())
                             throw new JuggleExceptionUser(errorstrings.getString("Error_prop_number"));
                     }
                 } catch (NumberFormatException nfe) {
@@ -1320,19 +1362,19 @@ done2:
             this.addSymmetry(sym);
         } else if (type.equalsIgnoreCase("event")) {
             JMLEvent ev = new JMLEvent();
-            ev.readJML(current, loadingversion, getNumberOfJugglers(), getNumberOfPaths());	// look at subnodes
+            ev.readJML(current, loadingversion, getNumberOfJugglers(), getNumberOfPaths()); // look at subnodes
             this.addEvent(ev);
-            return;		// stop recursive descent
+            return;     // stop recursive descent
         } else if (type.equalsIgnoreCase("position")) {
             JMLPosition pos = new JMLPosition();
             pos.readJML(current, loadingversion);
             this.addPosition(pos);
             return;
         } else {
-			String template = errorstrings.getString("Error_unknown_tag");
-			Object[] arguments = { type };
-			throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-		}
+            String template = errorstrings.getString("Error_unknown_tag");
+            Object[] arguments = { type };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        }
 
         for (int i = 0; i < current.getNumberOfChildren(); i++)
             readJML(current.getChildNode(i));
@@ -1428,6 +1470,7 @@ done2:
         write.flush();
     }
 
+    @Override
     public String toString() {
         StringWriter sw = new StringWriter();
         try {
@@ -1438,6 +1481,7 @@ done2:
         return sw.toString();
     }
 
+    @Override
     public Object clone() {
         try {
             return new JMLPattern(new StringReader(this.toString()));

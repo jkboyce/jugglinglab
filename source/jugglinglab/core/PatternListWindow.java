@@ -58,7 +58,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         if (pl.getTitle() != null)
             title = pl.getTitle();
         else
-            title = ResourceBundle.getBundle("JugglingLabStrings").getString("Patterns");
+            title = guistrings.getString("Patterns");
 
         setTitle(title);
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -117,6 +117,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     public static final int FILE_SAVETEXT = 3;
 
     // Implements ActionListener to wait for MenuItem events
+    @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
