@@ -409,9 +409,12 @@ public class mhnNotation extends Notation {
 
 
     // The following are default spatial coordinates to use
-    protected static final double[] samethrowx =     { 0.0, 20.0, 25.0, 12.0, 10.0,  7.5,  5.0,  5.0,  5.0 };
-    protected static final double[] crossingthrowx = { 0.0, 20.0, 25.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0 };
-    protected static final double[] catchx =         { 0.0, 30.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0 };
+    protected static final double[] samethrowx =
+        { 0.0, 20.0, 25.0, 12.0, 10.0,  7.5,  5.0,  5.0,  5.0 };
+    protected static final double[] crossingthrowx =
+        { 0.0, 20.0, 25.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0 };
+    protected static final double[] catchx =
+        { 0.0, 30.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0 };
     protected static final double restingx = 25.0;
 
     // The following is used when multiple catches are made in a hand, on the same beat.
@@ -419,9 +422,9 @@ public class mhnNotation extends Notation {
     protected static final double splitcatchfactor = 0.4;
 
 
-    protected static JMLPattern convertPatternToJML(mhnPattern p) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected static JMLPattern convertPatternToJML(mhnPattern p) throws
+                        JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = new JMLPattern();
-        // result.setJMLVersion("1.1");
 
         // Step 1 -- Set up the basic pattern information:
 
@@ -569,7 +572,7 @@ public class mhnNotation extends Notation {
                 for (int h = 0; h < 2; h++) {
 
                     mhnThrow sst = th[j][h][k][0];
-                    if ((sst == null) || (sst.master != sst))
+                    if (sst == null || sst.master != sst)
                         continue;
 
                     // Step 3a -- Add transitions to the on-beat event (throw or holding transitions):
@@ -1177,7 +1180,8 @@ top:
     }
 
 
-    protected static final double[] throwspersec = { 2.00, 2.00, 2.00, 2.90, 3.40, 4.10, 4.25, 5.00, 5.00, 5.50 };
+    protected static final double[] throwspersec =
+        { 2.00, 2.00, 2.00, 2.90, 3.40, 4.10, 4.25, 5.00, 5.00, 5.50 };
 
     protected static double calcBps(mhnPattern p) {
         double result = 0.0;

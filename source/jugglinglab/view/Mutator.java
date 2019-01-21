@@ -77,8 +77,8 @@ public class Mutator {
     static final double[] mutation_freq = { 0.4, 0.1, 0.1, 0.2, 0.2 };
 
     // overall scale of adjustment, per mutation
-    protected double rate;
     static final double[] slider_rates = { 0.2, 0.4, 0.7, 1.0, 1.3, 1.6, 2.0 };
+    protected double rate;
 
     protected JPanel controls;
     protected JCheckBox[] cb;

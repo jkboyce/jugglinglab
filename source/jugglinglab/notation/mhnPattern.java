@@ -49,7 +49,7 @@ public class mhnPattern {
     protected double propdiam = propdiam_default;
     protected double bouncefrac = bouncefrac_default;
     protected String prop = prop_default;
-    protected String[] color = null;
+    protected String[] color;
 
     // internal variables:
     protected int numjugglers;
@@ -57,27 +57,26 @@ public class mhnPattern {
     protected int period;
     protected int max_occupancy;
     protected mhnThrow[][][][] th;
-    protected mhnHands hands = null;
-    protected mhnBody bodies = null;
+    protected mhnHands hands;
+    protected mhnBody bodies;
     protected int max_throw;
     protected int indexes;
-    protected ArrayList<mhnSymmetry> symmetry = null;
+    protected ArrayList<mhnSymmetry> symmetry;
 
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
 
-
-    protected int getNumberOfJugglers()     { return numjugglers; }
-    protected int getNumberOfPaths()        { return numpaths; }
-    protected int getPeriod()           { return period; }
-    protected int getIndexes()          { return indexes; }
-    protected int getMaxOccupancy()         { return max_occupancy; }
-    protected int getMaxThrow()         { return max_throw; }
-    protected mhnThrow[][][][] getThrows()  { return th; }
-    protected int getNumberOfSymmetries()   { return symmetry.size(); }
-    protected String getPropName() { return prop; }
-    protected void addSymmetry(mhnSymmetry ss) { symmetry.add(ss); }
-    protected mhnSymmetry getSymmetry(int i) { return symmetry.get(i); }
+    protected int getNumberOfJugglers()         { return numjugglers; }
+    protected int getNumberOfPaths()            { return numpaths; }
+    protected int getPeriod()                   { return period; }
+    protected int getIndexes()                  { return indexes; }
+    protected int getMaxOccupancy()             { return max_occupancy; }
+    protected int getMaxThrow()                 { return max_throw; }
+    protected mhnThrow[][][][] getThrows()      { return th; }
+    protected int getNumberOfSymmetries()       { return symmetry.size(); }
+    protected String getPropName()              { return prop; }
+    protected void addSymmetry(mhnSymmetry ss)  { symmetry.add(ss); }
+    protected mhnSymmetry getSymmetry(int i)    { return symmetry.get(i); }
 
 
     public void parseInput(String config) throws JuggleExceptionUser, JuggleExceptionInternal {

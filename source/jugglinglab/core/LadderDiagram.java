@@ -57,9 +57,9 @@ public class LadderDiagram extends JPanel {
     private boolean has_switch_symmetry;
     private boolean has_switchdelay_symmetry;
 
-    protected ArrayList<LadderEventItem> laddereventitems = null;
-    protected ArrayList<LadderPathItem> ladderpathitems = null;
-    protected Image laddercache = null;
+    protected ArrayList<LadderEventItem> laddereventitems;
+    protected ArrayList<LadderPathItem> ladderpathitems;
+    protected Image laddercache;
     protected boolean laddercachedirty;
     protected int cacheframesleft;
 
