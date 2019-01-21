@@ -194,11 +194,18 @@ public class SelectionView extends View {
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                         JuggleExceptionUser, JuggleExceptionInternal {
-        ja[center].restartJuggle(p, c);
+        AnimationPrefs newjc = null;
+        if (c != null) {
+            newjc = new AnimationPrefs(c);
+            // disable startPause for grid of animations
+            newjc.startPause = false;
+        }
+
+        ja[center].restartJuggle(p, newjc);
         for (int i = 0; i < count; i++) {
             if (i != center) {
                 JMLPattern newp = (p == null ? null : mutator.mutatePattern(p));
-                ja[i].restartJuggle(newp, c);
+                ja[i].restartJuggle(newp, newjc);
             }
         }
     }
