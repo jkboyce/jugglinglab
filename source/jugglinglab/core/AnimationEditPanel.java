@@ -64,8 +64,6 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (jc.mousePause && lastpress == lastenter)
                     return;
 
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -101,8 +99,6 @@ public class AnimationEditPanel extends AnimationPanel {
             @Override
             public void mouseReleased(MouseEvent me) {
                 if (jc.mousePause && lastpress == lastenter)
-                    return;
-                if (exception != null)
                     return;
                 if (writingGIF)
                     return;
@@ -171,8 +167,6 @@ public class AnimationEditPanel extends AnimationPanel {
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -222,8 +216,6 @@ public class AnimationEditPanel extends AnimationPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -337,9 +329,7 @@ public class AnimationEditPanel extends AnimationPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        if (exception != null)
-            drawString(exception.getMessage(), g);
-        else if (message != null)
+        if (message != null)
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {

@@ -51,7 +51,6 @@ public class AnimationPanel extends JPanel implements Runnable {
     protected boolean           engineAnimating = false;
     protected double            sim_time;
     public boolean              writingGIF = false;
-    public JuggleException      exception;
     public String               message;
 
     protected Clip              catchclip;
@@ -125,8 +124,6 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (jc.mousePause && lastpress == lastenter)
                     return;
 
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -139,8 +136,6 @@ public class AnimationPanel extends JPanel implements Runnable {
             @Override
             public void mouseReleased(MouseEvent me) {
                 if (jc.mousePause && lastpress == lastenter)
-                    return;
-                if (exception != null)
                     return;
                 if (writingGIF)
                     return;
@@ -182,8 +177,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -226,8 +219,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                if (exception != null)
-                    return;
                 if (!engineAnimating)
                     return;
                 if (writingGIF)
@@ -404,7 +395,6 @@ public class AnimationPanel extends JPanel implements Runnable {
             engineRunning = false;
             enginePaused = false;
             engineAnimating = false;
-            exception = null;
             message = null;
         }
     }
@@ -425,9 +415,7 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     @Override
     public void paintComponent(Graphics g) {
-        if (exception != null)
-            drawString(exception.getMessage(), g);
-        else if (message != null)
+        if (message != null)
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
