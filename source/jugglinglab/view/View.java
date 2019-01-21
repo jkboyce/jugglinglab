@@ -117,7 +117,7 @@ public abstract class View extends JPanel {
 
                                 @Override
                                 public boolean isCanceled() {
-                                    return pm.isCanceled();
+                                    return (pm.isCanceled() || GIFWriter.this.interrupted());
                                 }
                             };
                             ap.getAnimator().writeGIF(out, wgm);

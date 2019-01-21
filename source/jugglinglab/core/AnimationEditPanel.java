@@ -31,7 +31,7 @@ import jugglinglab.jml.JMLPattern;
 
 
 public class AnimationEditPanel extends AnimationPanel {
-    protected LadderDiagram ladder = null;
+    protected LadderDiagram ladder;
     protected boolean event_active = false;
     protected JMLEvent event;
     protected int xlow1, xhigh1, ylow1, yhigh1;
@@ -61,18 +61,20 @@ public class AnimationEditPanel extends AnimationPanel {
                 // user has clicked on something else.  The system reports simultaneous enter/press
                 // events when the user mouses down in the component; we want to swallow this as a
                 // click, and just use it to get focus back.
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
 
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
 
                 if (event_active) {
                     int mx = me.getX();
                     int my = me.getY();
-                    if ((mx >= xlow1) && (mx <= xhigh1) && (my >= ylow1) && (my <= yhigh1)) {
+                    if (mx >= xlow1 && mx <= xhigh1 && my >= ylow1 && my <= yhigh1) {
                         dragging = true;
                         dragging_left = true;
                         xstart = mx;
@@ -81,7 +83,7 @@ public class AnimationEditPanel extends AnimationPanel {
                         return;
                     }
                     int t = AnimationEditPanel.this.getSize().width / 2;
-                    if ((mx >= (xlow2+t)) && (mx <= (xhigh2+t)) && (my >= ylow2) && (my <= yhigh2)) {
+                    if (mx >= (xlow2+t) && mx <= (xhigh2+t) && my >= ylow2 && my <= yhigh2) {
                         dragging = true;
                         dragging_left = false;
                         xstart = mx;
@@ -98,11 +100,13 @@ public class AnimationEditPanel extends AnimationPanel {
 
             @Override
             public void mouseReleased(MouseEvent me) {
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
                 if (exception != null)
                     return;
-                if (!engineStarted && (engine != null) && engine.isAlive()) {
+                if (writingGIF)
+                    return;
+                if (!engineAnimating && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
                     return;
                 }
@@ -112,20 +116,18 @@ public class AnimationEditPanel extends AnimationPanel {
                     boolean flipx = (event.getHand() != master.getHand());
 
                     Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
-                                                                          event.getGlobalCoordinate(), xdelta, ydelta
-                                                                          );
+                            event.getGlobalCoordinate(), xdelta, ydelta);
                     if (AnimationEditPanel.this.jc.stereo) {
                         Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
-                                                                               event.getGlobalCoordinate(), xdelta, ydelta
-                                                                               );
+                                event.getGlobalCoordinate(), xdelta, ydelta);
                         newgc = Coordinate.add(newgc, newgc2);
                         newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
                     }
 
                     Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
-                                                              event.getJuggler(), event.getT());
+                                            event.getJuggler(), event.getT());
                     Coordinate deltalc = Coordinate.sub(newlc,
-                                                        event.getLocalCoordinate());
+                                            event.getLocalCoordinate());
 
                     if (flipx)
                         deltalc.x = -deltalc.x;
@@ -148,7 +150,7 @@ public class AnimationEditPanel extends AnimationPanel {
             @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
-                if (jc.mousePause /*&& waspaused_valid*/)
+                if (jc.mousePause && !writingGIF)
                     setPaused(waspaused);
                 outside = false;
                 outside_valid = true;
@@ -156,7 +158,7 @@ public class AnimationEditPanel extends AnimationPanel {
 
             @Override
             public void mouseExited(MouseEvent me) {
-                if (jc.mousePause) {
+                if (jc.mousePause && !writingGIF) {
                     waspaused = getPaused();
                     // waspaused_valid = true;
                     setPaused(true);
@@ -171,7 +173,9 @@ public class AnimationEditPanel extends AnimationPanel {
             public void mouseDragged(MouseEvent me) {
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
                 if (dragging) {
                     int mx = me.getX();
@@ -220,7 +224,9 @@ public class AnimationEditPanel extends AnimationPanel {
             public void componentResized(ComponentEvent e) {
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
                 anim.setDimension(AnimationEditPanel.this.getSize());
                 if (event_active)
@@ -340,7 +346,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 anim.drawFrame(getTime(), g, this.cameradrag);
                 drawEvent(g);
             } catch (JuggleExceptionInternal jei) {
-                this.killAnimationThread();
+                killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
                 // ErrorDialog.handleException(jei);

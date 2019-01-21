@@ -46,9 +46,9 @@ public class AnimationPanel extends JPanel implements Runnable {
     protected AnimationPrefs    jc;
 
     protected Thread            engine;
-    protected boolean           engineStarted = false;
-    protected boolean           enginePaused = false;
     protected boolean           engineRunning = false;
+    protected boolean           enginePaused = false;
+    protected boolean           engineAnimating = false;
     protected double            sim_time;
     public boolean              writingGIF = false;
     public JuggleException      exception;
@@ -122,12 +122,14 @@ public class AnimationPanel extends JPanel implements Runnable {
                 // user has clicked on something else.  The system reports simultaneous enter/press
                 // events when the user mouses down in the component; we want to swallow this as a
                 // click, and just use it to get focus back.
-                if (jc.mousePause && (lastpress == lastenter))
+                if (jc.mousePause && lastpress == lastenter)
                     return;
 
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
 
                 AnimationPanel.this.startx = me.getX();
@@ -140,9 +142,11 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 if (exception != null)
                     return;
+                if (writingGIF)
+                    return;
                 AnimationPanel.this.cameradrag = false;
 
-                if (!engineStarted && engine != null && engine.isAlive()) {
+                if (!engineAnimating && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
                     return;
                 }
@@ -158,7 +162,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             @Override
             public void mouseEntered(MouseEvent me) {
                 lastenter = me.getWhen();
-                if (jc.mousePause)
+                if (jc.mousePause && !writingGIF)
                     setPaused(waspaused);
                 outside = false;
                 outside_valid = true;
@@ -166,7 +170,7 @@ public class AnimationPanel extends JPanel implements Runnable {
 
             @Override
             public void mouseExited(MouseEvent me) {
-                if (jc.mousePause) {
+                if (jc.mousePause && !writingGIF) {
                     waspaused = getPaused();
                     setPaused(true);
                 }
@@ -180,7 +184,9 @@ public class AnimationPanel extends JPanel implements Runnable {
             public void mouseDragged(MouseEvent me) {
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
                 if (!cameradrag) {
                     AnimationPanel.this.cameradrag = true;
@@ -222,7 +228,9 @@ public class AnimationPanel extends JPanel implements Runnable {
             public void componentResized(ComponentEvent e) {
                 if (exception != null)
                     return;
-                if (!engineStarted)
+                if (!engineAnimating)
+                    return;
+                if (writingGIF)
                     return;
                 anim.setDimension(AnimationPanel.this.getSize());
                 repaint();
@@ -284,37 +292,32 @@ public class AnimationPanel extends JPanel implements Runnable {
         restartJuggle(null, null);
     }
 
-
     @Override
-    public void run()  {        // Called when this object becomes a thread
-        long real_time_start, real_time_wait;
-
+    public void run()  {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-        engineStarted = false;
+
+        engineRunning = true;       // ok to start painting
+        engineAnimating = false;
 
         if (jc.mousePause)
             waspaused = jc.startPause;
 
         try {
-            engineRunning = true;   // ok to start rendering
-
             if (jc.startPause) {
                 message = guistrings.getString("Message_click_to_start");
                 repaint();
                 enginePaused = true;
-                while (enginePaused && engineRunning) {
+                while (enginePaused) {
                     synchronized (this) {
-                        try {
-                            wait();
-                        } catch (InterruptedException ie) {
-                        }
+                        wait();
                     }
                 }
             }
 
             message = null;
 
-            real_time_start = System.currentTimeMillis();
+            long real_time_start = System.currentTimeMillis();
+            long real_time_wait;
             double oldtime, newtime;
 
             if (jc.mousePause) {
@@ -325,30 +328,27 @@ public class AnimationPanel extends JPanel implements Runnable {
                 waspaused = false;
             }
 
-            while (engineRunning)  {
-                setTime(anim.pat.getLoopStartTime());
-                engineStarted = true;
+            engineAnimating = true;
 
-                for (int i = 0; engineRunning && getTime() < (anim.pat.getLoopEndTime() -
+            while (true)  {
+                setTime(anim.pat.getLoopStartTime());
+
+                for (int i = 0; getTime() < (anim.pat.getLoopEndTime() -
                                     0.5 * anim.sim_interval_secs); i++) {
                     repaint();
-                    try {
-                        real_time_wait = anim.real_interval_millis -
-                                    (System.currentTimeMillis() - real_time_start);
-                        if (real_time_wait > 0)
-                            Thread.sleep(real_time_wait);
-                        real_time_start = System.currentTimeMillis();
-                    } catch (InterruptedException ie)  {
-                        // What should we do here?
-                        throw new JuggleExceptionInternal("Animator was interrupted");
-                    }
+                    real_time_wait = anim.real_interval_millis -
+                                (System.currentTimeMillis() - real_time_start);
 
-                    while (enginePaused && engineRunning) {
+                    if (real_time_wait > 0)
+                        Thread.sleep(real_time_wait);
+                    else if (engine == null || engine.interrupted())
+                        throw new InterruptedException();
+
+                    real_time_start = System.currentTimeMillis();
+
+                    while (enginePaused) {
                         synchronized (this) {
-                            try {
-                                wait();
-                            } catch (InterruptedException ie) {
-                            }
+                            wait();
                         }
                     }
 
@@ -357,60 +357,56 @@ public class AnimationPanel extends JPanel implements Runnable {
                     newtime = getTime();
 
                     if (jc.catchSound && catchclip != null) {
-                        for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
-                            if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                if (catchclip.isRunning())
-                                    catchclip.stop();
-                                catchclip.setFramePosition(0);
-                                catchclip.start();
+                        // use synchronized here to prevent editing actions in
+                        // EditLadderDiagram from creating data consistency problems
+                        synchronized (anim.pat) {
+                            for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
+                                if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
+                                    if (catchclip.isRunning())
+                                        catchclip.stop();
+                                    catchclip.setFramePosition(0);
+                                    catchclip.start();
+                                }
                             }
                         }
                     }
                     if (jc.bounceSound && bounceclip != null) {
-                        for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
-                            if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                if (bounceclip.isRunning())
-                                    bounceclip.stop();
-                                bounceclip.setFramePosition(0);
-                                bounceclip.start();
+                        synchronized (anim.pat) {
+                            for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
+                                if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
+                                    if (bounceclip.isRunning())
+                                        bounceclip.stop();
+                                    bounceclip.setFramePosition(0);
+                                    bounceclip.start();
+                                }
                             }
                         }
                     }
                 }
                 anim.advanceProps();
             }
-        } catch (JuggleException je) {
-            exception = je;
-            repaint();
-        } finally {
-            engineStarted = engineRunning = enginePaused = false;
-            // this is critical to signal killAnimationThread() that exit is occurring:
-            engine = null;
-        }
-        synchronized (this) {
-            // tell possible thread waiting in killAnimationThread() that animator
-            // thread is exiting:
-            notify();
+        } catch (InterruptedException ie) {
+            return;
         }
     }
 
     // stop the current animation thread, if one is running
-    protected synchronized void killAnimationThread() {
-        while (engine != null && engine.isAlive()) {
-            setPaused(false);       // get thread out of pause so it can exit
-            engineRunning = false;
-            try {
-                wait();             // wait for notify() from exiting run() method
-            } catch (InterruptedException ie) {
+    protected void killAnimationThread() {
+        try {
+            if (engine != null && engine.isAlive()) {
+                engine.interrupt();
+                engine.join();
             }
+        } catch (InterruptedException ie) {
+            return;
+        } finally {
+            engine = null;
+            engineRunning = false;
+            enginePaused = false;
+            engineAnimating = false;
+            exception = null;
+            message = null;
         }
-
-        engine = null;
-        engineStarted = false;
-        enginePaused = false;
-        engineRunning = false;
-        exception = null;
-        message = null;
     }
 
     public boolean getPaused()              { return enginePaused; }

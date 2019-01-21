@@ -47,8 +47,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final protected double min_throw_time = 0.05;
     static final protected double min_hold_time = 0.05;
 
-    protected AnimationEditPanel animator = null;
-    protected JFrame parent = null;
+    protected AnimationEditPanel animator;
+    protected JFrame parent;
 
     static final private int STATE_INACTIVE = 0;
     static final private int STATE_EVENT_SELECTED = 1;
@@ -85,6 +85,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(final MouseEvent me) {
+                if (animator != null && animator.writingGIF)
+                    return;
                 int my = me.getY();
                 if (my < border_top)
                     my = border_top;
@@ -167,6 +169,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
             @Override
             public void mouseReleased(final MouseEvent me) {
+                if (animator != null && animator.writingGIF)
+                    return;
                 if (me.isPopupTrigger()) {
                     switch (gui_state) {
                         case STATE_INACTIVE:
@@ -175,8 +179,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         case STATE_MOVING_TRACKER:
                             // skip this code for MOVING_TRACKER state, since already
                             // executed in mousePressed() above
-                            if ((gui_state != STATE_MOVING_TRACKER) &&
-                                        (animator != null)) {
+                            if (gui_state != STATE_MOVING_TRACKER  &&
+                                        animator != null) {
                                 int my = me.getY();
                                 if (my < border_top)
                                     my = border_top;
@@ -264,6 +268,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
+                if (animator != null && animator.writingGIF)
+                    return;
+
                 int my = me.getY();
                 if (my < border_top)
                         my = border_top;
@@ -1524,7 +1531,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     public void activeEventMoved() {
-        if ((active_eventitem == null) || (animator == null))
+        if (active_eventitem == null || animator == null)
             return;
         // find the screen coordinates of the event that moved
         int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
@@ -1540,7 +1547,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     protected void layoutPattern() {
         try {
-            pat.layoutPattern();
+            // use synchronized here to avoid data consistency problems with animation
+            // thread in AnimationPanel's run() method
+            synchronized (pat) {
+                pat.layoutPattern();
+            }
             if (animator != null) {
                 animator.anim.initAnimator();
                 animator.repaint();
