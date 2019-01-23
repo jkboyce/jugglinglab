@@ -185,13 +185,13 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (getViewMode() != VIEW_EDIT)
                     setViewMode(VIEW_EDIT);
             }
-            else if (command.equals("jml")) {
-                if (getViewMode() != VIEW_JML)
-                    setViewMode(VIEW_JML);
-            }
             else if (command.equals("selection")) {
                 if (getViewMode() != VIEW_SELECTION)
                     setViewMode(VIEW_SELECTION);
+            }
+            else if (command.equals("jml")) {
+                if (getViewMode() != VIEW_JML)
+                    setViewMode(VIEW_JML);
             }
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
@@ -368,10 +368,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             return VIEW_SIMPLE;
         if (view instanceof EditView)
             return VIEW_EDIT;
-        if (view instanceof JMLView)
-            return VIEW_JML;
         if (view instanceof SelectionView)
             return VIEW_SELECTION;
+        if (view instanceof JMLView)
+            return VIEW_JML;
         return VIEW_NONE;
     }
 
