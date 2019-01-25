@@ -1,6 +1,6 @@
 // JugglingLab.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -198,12 +198,10 @@ public class JugglingLab {
         // want no command line arguments to run the full application, so that
         // it launches correctly when the user double-clicks on the jar.
 
-        boolean run_application = false;
+        boolean run_application = true;
         String firstarg = null;
 
-        if (args.length == 0)
-            run_application = true;
-        else {
+        if (args.length > 0) {
             JugglingLab.jlargs = new ArrayList<String>(Arrays.asList(args));
             firstarg = jlargs.remove(0).toLowerCase();
             run_application = firstarg.equals("start");

@@ -2,7 +2,7 @@
 ;I.e. current directory will contain folder Juggling Lab with application files
 
 #define MyAppName "Juggling Lab"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppYear "2019"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
@@ -40,7 +40,7 @@ SetupIconFile=Juggling Lab\{#MyAppIconsName}
 UninstallDisplayIcon={app}\{#MyAppIconsName}
 UninstallDisplayName={#MyAppName}
 WizardImageStretch=No
-WizardSmallImageFile={#MyWizardImageFileName}   
+WizardSmallImageFile={#MyWizardImageFileName}
 ArchitecturesInstallIn64BitMode=x64
 
 
@@ -79,6 +79,6 @@ begin
 // Possible future improvements:
 //   if version less or same => just launch app
 //   if upgrade => check if same app is running and wait for it to exit
-//   Add pack200/unpack200 support? 
+//   Add pack200/unpack200 support?
   Result := True;
-end;  
+end;
