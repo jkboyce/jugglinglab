@@ -129,6 +129,7 @@ public class SelectionView extends View {
                 }
             }
         });
+        grid.setOpaque(true);
         return grid;
     }
 
@@ -157,22 +158,7 @@ public class SelectionView extends View {
     protected JLayeredPane makeLayeredPane(Dimension d, JPanel grid, JPanel overlay) {
         JLayeredPane layered = new JLayeredPane();
 
-        // ensure the entire grid fits on the screen, rescaling if needed
-        int pref_width = columns * d.width;
-        int pref_height = rows * d.height;
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int max_width = screenSize.width - 300;    // allocation for controls
-        int max_height = screenSize.height - 70;
-
-        if (pref_width > max_width || pref_height > max_height) {
-            double scale = Math.min((double)max_width / (double)pref_width,
-                                    (double)max_height / (double)pref_height);
-            pref_width = (int)(scale * pref_width);
-            pref_height = (int)(scale * pref_height);
-        }
-        layered.setPreferredSize(new Dimension(pref_width, pref_height));
-
+        layered.setLayout(null);
         layered.add(grid, JLayeredPane.DEFAULT_LAYER);
         layered.add(overlay, JLayeredPane.PALETTE_LAYER);
 
@@ -187,6 +173,26 @@ public class SelectionView extends View {
                 overlay.setBounds(0, 0, d.width, d.height);
             }
         });
+
+        // ensure the entire grid fits on the screen, rescaling if needed
+        int pref_width = columns * d.width;
+        int pref_height = rows * d.height;
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int max_width = screenSize.width - 300;    // allocation for controls etc.
+        int max_height = screenSize.height - 120;
+
+        if (pref_width > max_width || pref_height > max_height) {
+            double scale = Math.min((double)max_width / (double)pref_width,
+                                    (double)max_height / (double)pref_height);
+            pref_width = (int)(scale * pref_width);
+            pref_height = (int)(scale * pref_height);
+        }
+        layered.setPreferredSize(new Dimension(pref_width, pref_height));
+        // set initial positions of children, since there is no layout manager
+        // see https://docs.oracle.com/javase/tutorial/uiswing/layout/none.html
+        grid.setBounds(0, 0, pref_width, pref_height);
+        overlay.setBounds(0, 0, pref_width, pref_height);
         return layered;
     }
 

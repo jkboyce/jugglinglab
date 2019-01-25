@@ -1,6 +1,6 @@
 // Constants.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com) and others
 
 /*
     This file is part of Juggling Lab.
@@ -23,7 +23,7 @@
 package jugglinglab.core;
 
 public class Constants {
-    public static final String version = "1.0";
+    public static final String version = "1.1";
     public static final String year = "2019";
 
     public static final String site_URL = "http://jugglinglab.org";
