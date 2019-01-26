@@ -94,14 +94,15 @@ public class UpdateChecker extends Thread {
 
         try {
             Thread.sleep(3000);
-        } catch (Exception e) {}
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                showUpdateBox(current_version);
-            }
-        });
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    showUpdateBox(current_version);
+                }
+            });
+        } catch (InterruptedException e) {
+        }
     }
 
     // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
