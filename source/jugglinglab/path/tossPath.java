@@ -115,7 +115,7 @@ public class tossPath extends Path {
 
         if (az < 0.0) {
             double te = -bz / (2.0*az) + start_time;
-            if ((tlow < te) && (te < thigh))
+            if (tlow < te && te < thigh)
                 result = check(result, te, true);
         }
         return result;
@@ -132,7 +132,7 @@ public class tossPath extends Path {
 
         if (az > 0.0) {
             double te = -by / (2.0*az) + start_time;
-            if ((tlow < te) && (te < thigh))
+            if (tlow < te && te < thigh)
                 result = check(result, te, false);
         }
         return result;

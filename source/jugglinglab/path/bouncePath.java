@@ -152,7 +152,7 @@ public class bouncePath extends Path {
     // the ground
     @Override
     public void calcPath() throws JuggleExceptionInternal {
-        if ((start_coord == null) || (end_coord == null))
+        if (start_coord == null || end_coord == null)
             return;
 
         double  t2 = getDuration();
@@ -268,7 +268,8 @@ public class bouncePath extends Path {
             }
             if (!choseroot) {
                 for (int i = 0; i < numroots; i++) {
-                    if ((hyper && !(liftcatch[i]^(root[i]<0.0))) || (!hyper && (liftcatch[i]^(root[i]<0.0))))
+                    if ((hyper && !(liftcatch[i]^(root[i]<0.0))) ||
+                                    (!hyper && (liftcatch[i]^(root[i]<0.0))))
                         continue;
                     v0 = root[i];
                     choseroot = true;
@@ -317,13 +318,13 @@ public class bouncePath extends Path {
 
     @Override
     public void getCoordinate(double time, Coordinate newPosition) {
-        if ((time < start_time) || (time > end_time))
+        if (time < start_time || time > end_time)
             return;
         time -= start_time;
 
         double zpos = 0.0;
         for (int i = 0; i <= numbounces; i++) {
-            if ((time < endtime[i]) || (i == numbounces)) {
+            if (time < endtime[i] || i == numbounces) {
                 zpos = cz[i] + time*(bz[i] + az[i]*time);
                 break;
             }
@@ -379,10 +380,10 @@ public class bouncePath extends Path {
         }
         if (az[numbounces] > 0.0) {
             double te = -bz[numbounces] / (2.0*az[numbounces]) + start_time;
-            if ((Math.max(tlow,start_time+endtime[numbounces-1]) < te) && (te < thigh))
+            if (Math.max(tlow,start_time+endtime[numbounces-1]) < te && te < thigh)
                 result = check(result, te, false);
         }
-        if ((tlow < (start_time+endtime[0])) && ((start_time+endtime[0]) < thigh))
+        if (tlow < (start_time+endtime[0]) && (start_time+endtime[0]) < thigh)
             result = check(result, start_time+endtime[0], false);
         for (int i = 1; i < numbounces; i++) {
             if (az[i] > 0.0) {
@@ -391,7 +392,7 @@ public class bouncePath extends Path {
                     (te < Math.min(thigh, start_time+endtime[i])))
                     result = check(result, te, false);
             }
-            if ((tlow < (start_time+endtime[i])) && ((start_time+endtime[i]) < thigh))
+            if (tlow < (start_time+endtime[i]) && (start_time+endtime[i]) < thigh)
                 result = check(result, start_time+endtime[i], false);
         }
         return result;
