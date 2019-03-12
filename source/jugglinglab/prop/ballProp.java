@@ -118,20 +118,20 @@ public class ballProp extends Prop {
                     int red = 0, green = 0, blue = 0;
                     String token = null;
                     try {
-                        token = st2.nextToken();
+                        token = st2.nextToken().trim();
                         red = Integer.valueOf(token).intValue();
-                        token = st2.nextToken();
+                        token = st2.nextToken().trim();
                         green = Integer.valueOf(token).intValue();
-                        token = st2.nextToken();
+                        token = st2.nextToken().trim();
                         blue = Integer.valueOf(token).intValue();
                     } catch (NumberFormatException nfe) {
                         String template = errorstrings.getString("Error_number_format");
                         Object[] arguments = { token };
-                        throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                        throw new JuggleExceptionUser("Ball prop color: " + MessageFormat.format(template, arguments));
                     }
                     temp = new Color(red, green, blue);
                 } else
-                    throw new JuggleExceptionUser(errorstrings.getString("Error_token_count"));
+                    throw new JuggleExceptionUser("Ball prop color: " + errorstrings.getString("Error_token_count"));
             }
 
             if (temp != null)
@@ -146,7 +146,7 @@ public class ballProp extends Prop {
         String diamstr = pl.getParameter("diam");
         if (diamstr != null) {
             try {
-                Double ddiam = Double.valueOf(diamstr);
+                Double ddiam = Double.valueOf(diamstr.trim());
                 double temp = ddiam.doubleValue();
                 if (temp > 0.0)
                     diam = temp;
@@ -155,7 +155,7 @@ public class ballProp extends Prop {
             } catch (NumberFormatException nfe) {
                 String template = errorstrings.getString("Error_number_format");
                 Object[] arguments = { "diam" };
-                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                throw new JuggleExceptionUser("Ball prop diameter: " + MessageFormat.format(template, arguments));
             }
         }
 
