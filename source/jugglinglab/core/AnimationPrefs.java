@@ -24,6 +24,7 @@ package jugglinglab.core;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import jugglinglab.util.*;
 import jugglinglab.jml.JMLPattern;
@@ -43,6 +44,7 @@ public class AnimationPrefs {
     public static final boolean mousePause_def = false;
     public static final boolean catchSound_def = false;
     public static final boolean bounceSound_def = true;
+    public static final boolean camangleGiven_def = false;
 
     public int      width = width_def;
     public int      height = height_def;
@@ -54,6 +56,9 @@ public class AnimationPrefs {
     public boolean  mousePause = mousePause_def;
     public boolean  catchSound = catchSound_def;
     public boolean  bounceSound = bounceSound_def;
+    public boolean  camangleGiven = camangleGiven_def;
+    public double[] camangle = null;
+
 
     public AnimationPrefs() { super(); }
 
@@ -68,6 +73,12 @@ public class AnimationPrefs {
         this.stereo = jc.stereo;
         this.catchSound = jc.catchSound;
         this.bounceSound = jc.bounceSound;
+        this.camangleGiven = jc.camangleGiven;
+        if (this.camangleGiven) {
+            this.camangle = new double[2];
+            this.camangle[0] = jc.camangle[0];
+            this.camangle[1] = jc.camangle[1];
+        }
     }
 
     public void parseInput(String input) throws JuggleExceptionUser {
@@ -137,6 +148,37 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
+        if ((value = pl.getParameter("camangle")) != null) {
+            try {
+                double[] ca = new double[2];
+                ca[1] = 90.0;       // default if second angle isn't given
+
+                value = value.replace("(", "");
+                value = value.replace(")", "");
+                value = value.replace("{", "");
+                value = value.replace("}", "");
+
+                StringTokenizer st = new StringTokenizer(value, ",");
+                int numangles = st.countTokens();
+                if (numangles > 2) {
+                    String template = errorstrings.getString("Error_too_many_elements");
+                    Object[] arguments = { "camangle" };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                }
+
+                for (int i = 0; i < numangles; i++)
+                    ca[i] = Double.valueOf(st.nextToken().trim()).doubleValue();
+
+                this.camangle = new double[2];
+                this.camangle[0] = ca[0];
+                this.camangle[1] = ca[1];
+                this.camangleGiven = true;
+            } catch (NumberFormatException e) {
+                String template = errorstrings.getString("Error_number_format");
+                Object[] arguments = { "camangle" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+        }
     }
 
     public String toString() {
@@ -162,6 +204,8 @@ public class AnimationPrefs {
             result += "catchsound=" + this.catchSound + ";";
         if (this.bounceSound != bounceSound_def)
             result += "bouncesound=" + this.bounceSound + ";";
+        if (this.camangleGiven != camangleGiven_def)
+            result += "camangle=(" + this.camangle[0] + "," + this.camangle[1] + ");";
 
         if (result.length() != 0)
             result = result.substring(0, result.length()-1);

@@ -99,12 +99,17 @@ public class Animator {
         initAnimator();
 
         double[] ca = new double[2];
-        if (this.pat.getNumberOfJugglers() == 1) {
-            ca[0] = JLMath.toRad(0.0);
-            ca[1] = JLMath.toRad(90.0);
+        if (this.jc.camangleGiven) {
+            ca[0] = JLMath.toRad(this.jc.camangle[0]);
+            ca[1] = JLMath.toRad(this.jc.camangle[1]);
         } else {
-            ca[0] = JLMath.toRad(340.0);
-            ca[1] = JLMath.toRad(70.0);
+            if (this.pat.getNumberOfJugglers() == 1) {
+                ca[0] = JLMath.toRad(0.0);
+                ca[1] = JLMath.toRad(90.0);
+            } else {
+                ca[0] = JLMath.toRad(340.0);
+                ca[1] = JLMath.toRad(70.0);
+            }
         }
         setCameraAngle(ca);
 

@@ -62,8 +62,11 @@ public class PatternWindow extends JFrame implements ActionListener {
             viewmenu.getItem(1).setSelected(true);
         }
 
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         view.setDoubleBuffered(true);
+        if (jc != null)
+            view.setAnimationPanelPreferredSize(new Dimension(jc.width, jc.height));
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(Color.white);
 
         Locale loc = JLLocale.getLocale();
