@@ -11,10 +11,12 @@ import jugglinglab.util.*;
 
 
 public class siteswapNotation extends mhnNotation {
+    @Override
     public String getName() {
         return "Siteswap";
     }
 
+    @Override
     public JMLPattern getJMLPattern(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
 
         // This entire method will need to be double-checked for suitability with siteswap2 notation
