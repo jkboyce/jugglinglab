@@ -69,8 +69,8 @@ public class NotationGUI extends JPanel implements ActionListener {
         JMenu notationmenu = new JMenu(guistrings.getString("Notation"));
         ButtonGroup buttonGroup = new ButtonGroup();
 
-        for (int i = 0; i < Notation.builtinNotations.length; i++) {
-            JRadioButtonMenuItem notationitem = new JRadioButtonMenuItem(Notation.builtinNotations[i]);
+        for (int i = 0; i < Pattern.builtinNotations.length; i++) {
+            JRadioButtonMenuItem notationitem = new JRadioButtonMenuItem(Pattern.builtinNotations[i]);
             notationitem.setActionCommand("notation"+(i+1));
             notationitem.addActionListener(this);
             notationmenu.add(notationitem);
@@ -103,25 +103,16 @@ public class NotationGUI extends JPanel implements ActionListener {
         }
     }
 
-    // input is for example Notation.NOTATION_SITESWAP
+    // input is for example Pattern.NOTATION_SITESWAP
     public void setNotation(int num) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (num > Notation.builtinNotations.length)
+        if (num > Pattern.builtinNotations.length)
             return;
 
-        Notation not = null;
         NotationControl control = null;
-        if (num != Notation.NOTATION_NONE) {
-            try {
-                not = Notation.getNotation(Notation.builtinNotations[num-1]);
-                Class<?> nc = Class.forName("jugglinglab.notation."+Notation.builtinNotations[num-1].toLowerCase()+"NotationControl");
-                control = (NotationControl)(nc.newInstance());
-            } catch (JuggleExceptionUser je) {
-                throw new JuggleExceptionInternal("Could not create notation \""+Notation.builtinNotations[num-1]+"\"");
-            } catch (ClassNotFoundException cnfe) {
-                throw new JuggleExceptionUser("Could not find "+Notation.builtinNotations[num-1].toLowerCase()+"NotationControl class");
-            } catch (IllegalAccessException iae) {
-            } catch (InstantiationException ie) {
-            }
+        switch (num) {
+            case Pattern.NOTATION_SITESWAP:
+                control = new SiteswapNotationControl();
+                break;
         }
 
         if (jtp != null)
@@ -131,7 +122,6 @@ public class NotationGUI extends JPanel implements ActionListener {
         PatternList pl = patlist;
 
         if (control != null) {
-            final Notation fnot = not;
             final NotationControl fcontrol = control;
 
             JPanel np1 = new JPanel();
@@ -158,8 +148,10 @@ public class NotationGUI extends JPanel implements ActionListener {
                 public void actionPerformed(ActionEvent ae) {
                     PatternWindow jaw2 = null;
                     try {
-                        String p = fcontrol.getPattern();
-                        JMLPattern pat = fnot.getJMLPattern(p);
+                        Pattern p = fcontrol.newPattern();
+                        p.fromString(fcontrol.getConfigString());
+                        JMLPattern pat = p.getJMLPattern();
+
                         String handsname = fcontrol.getHandsName();
                         if (handsname != null)
                             pat.setTitle(pat.getTitle() + " " + handsname);
@@ -184,10 +176,13 @@ public class NotationGUI extends JPanel implements ActionListener {
 
             jtp.addTab(guistrings.getString("Pattern_entry"), np1);
 
-            final Generator gen = Generator.getGenerator(Notation.builtinNotations[num-1]);
+            final Generator gen = Generator.newGenerator(Pattern.builtinNotations[num-1]);
 
+            if (gen == null)
+                System.out.println("Got a null generator");
+            
             if (gen != null) {
-                if ((pl == null) && patlisttab)
+                if (pl == null && patlisttab)
                     pl = new PatternList(animtarget);
                 final PatternList plf = pl;
 
@@ -222,7 +217,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                                         pwot = new GeneratorTarget(plf);
                                         //jtp.setSelectedComponent(plf);
                                     } else {
-                                        pw = new PatternListWindow(fnot.getName()+" "+guistrings.getString("Patterns"));
+                                        pw = new PatternListWindow(gen.getNotationName()+" "+guistrings.getString("Patterns"));
                                         pwot = new GeneratorTarget(pw);
                                     }
                                     gen.runGenerator(pwot, max_patterns, max_time);

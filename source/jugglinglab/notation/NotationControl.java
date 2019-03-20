@@ -13,7 +13,8 @@ public abstract class NotationControl extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    public abstract String getPattern();
+    public abstract Pattern newPattern();
+    public abstract String getConfigString();
     public abstract void resetNotationControl();
     public abstract String getHandsName();
 }

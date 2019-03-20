@@ -16,5 +16,5 @@ public class Constants {
     public static final boolean DEBUG_PARSING = false;
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
-    public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.splineCurve.rmsaccel;
+    public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.SplineCurve.rmsaccel;
 }

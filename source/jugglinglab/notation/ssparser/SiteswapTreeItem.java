@@ -2,56 +2,56 @@
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
-package jugglinglab.notation;
+package jugglinglab.notation.ssparser;
 
 import java.util.*;
 
 
 public class SiteswapTreeItem {
-    static final int TYPE_PATTERN = 1;
-    static final int TYPE_GROUPED_PATTERN = 2;
-    static final int TYPE_SOLO_SEQUENCE = 3;
-    static final int TYPE_SOLO_PAIRED_THROW = 4;
-    static final int TYPE_SOLO_MULTI_THROW = 5;
-    static final int TYPE_SOLO_SINGLE_THROW = 6;
-    static final int TYPE_PASSING_SEQUENCE = 7;
-    static final int TYPE_PASSING_GROUP = 8;
-    static final int TYPE_PASSING_THROWS = 9;
-    static final int TYPE_PASSING_PAIRED_THROW = 10;
-    static final int TYPE_PASSING_MULTI_THROW = 11;
-    static final int TYPE_PASSING_SINGLE_THROW = 12;
-    static final int TYPE_WILDCARD = 13;
-    static final int TYPE_HAND_SPEC = 14;
+    public static final int TYPE_PATTERN = 1;
+    public static final int TYPE_GROUPED_PATTERN = 2;
+    public static final int TYPE_SOLO_SEQUENCE = 3;
+    public static final int TYPE_SOLO_PAIRED_THROW = 4;
+    public static final int TYPE_SOLO_MULTI_THROW = 5;
+    public static final int TYPE_SOLO_SINGLE_THROW = 6;
+    public static final int TYPE_PASSING_SEQUENCE = 7;
+    public static final int TYPE_PASSING_GROUP = 8;
+    public static final int TYPE_PASSING_THROWS = 9;
+    public static final int TYPE_PASSING_PAIRED_THROW = 10;
+    public static final int TYPE_PASSING_MULTI_THROW = 11;
+    public static final int TYPE_PASSING_SINGLE_THROW = 12;
+    public static final int TYPE_WILDCARD = 13;
+    public static final int TYPE_HAND_SPEC = 14;
 
-    int type;
-    ArrayList<SiteswapTreeItem> children;
+    public int type;
+    public ArrayList<SiteswapTreeItem> children;
 
     // variables that the parser determines:
-    int jugglers;                   // for type 1, 7, 8
-    int repeats;                    // for type 2
-    boolean switchrepeat = false;   // for type 1
-    int beats;                      // for types 3, 7, 8, 9, 13
-    int seq_beatnum;                // for types 4, 5, 6, 8, 9, 10, 11, 12, 14
-    int source_juggler;             // for types 3, 4, 5, 6, 9, 10, 11, 12, 14
-    int value;                      // for types 6, 12
-    boolean x = false;              // for types 6, 12
-    int dest_juggler;               // for types 6, 12      // Note: can be > # jugglers -> mod down into range
-    String mod;                     // for types 6, 12
-    boolean spec_left = false;      // for type 14
+    public int jugglers;                    // for type 1, 7, 8
+    public int repeats;                     // for type 2
+    public boolean switchrepeat = false;    // for type 1
+    public int beats;                       // for types 3, 7, 8, 9, 13
+    public int seq_beatnum;                 // for types 4, 5, 6, 8, 9, 10, 11, 12, 14
+    public int source_juggler;              // for types 3, 4, 5, 6, 9, 10, 11, 12, 14
+    public int value;                       // for types 6, 12
+    public boolean x = false;               // for types 6, 12
+    public int dest_juggler;                // for types 6, 12      // Note: can be > # jugglers -> mod down into range
+    public String mod;                      // for types 6, 12
+    public boolean spec_left = false;       // for type 14
 
     // variables determined by subsequent layout stages:
-    int throw_sum;
-    int beatnum;
-    boolean left;
-    boolean vanilla_asynch;
-    boolean synch_throw;
-    SiteswapTreeItem transition;    // used only for Wildcard type -- holds the calculated transition sequence
+    public int throw_sum;
+    public int beatnum;
+    public boolean left;
+    public boolean vanilla_async;
+    public boolean sync_throw;
+    public SiteswapTreeItem transition;     // used only for Wildcard type -- holds the calculated transition sequence
 
 
     public SiteswapTreeItem(int type) {
         this.type = type;
         this.children = new ArrayList<SiteswapTreeItem>();
-        this.synch_throw = false;
+        this.sync_throw = false;
     }
 
     public void addChild(SiteswapTreeItem item) {

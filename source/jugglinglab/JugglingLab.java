@@ -149,11 +149,12 @@ public class JugglingLab {
         }
 
         // otherwise assume pattern is in siteswap notation
-        String sspattern = jlargs.remove(0);
         JMLPattern pat = null;
         try {
-            Notation not = Notation.getNotation("siteswap");
-            pat = not.getJMLPattern(sspattern);
+            SiteswapPattern p = new SiteswapPattern();
+            String sspattern = jlargs.remove(0);
+            p.fromString(sspattern);
+            pat = p.getJMLPattern();
         } catch (JuggleExceptionUser jeu) {
             System.out.println("Error: " + jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
@@ -250,7 +251,7 @@ public class JugglingLab {
                 PrintStream ps = System.out;
                 if (outpath != null)
                     ps = new PrintStream(outpath.toFile());
-                siteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
+                SiteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
             } catch (FileNotFoundException fnfe) {
                 System.out.println("Error: problem writing to file path " + outpath.toString());
             }

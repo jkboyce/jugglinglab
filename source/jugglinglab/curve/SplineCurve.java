@@ -1,4 +1,4 @@
-// splineCurve.java
+// SplineCurve.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -7,7 +7,7 @@ package jugglinglab.curve;
 import jugglinglab.util.*;
 
 
-public class splineCurve extends Curve {
+public class SplineCurve extends Curve {
     protected int           n;              // number of spline segments
     protected double[][]    a, b, c, d;     // spline coefficients
     protected double[]      durations;      // durations of segments
@@ -26,7 +26,7 @@ public class splineCurve extends Curve {
     @Override
     public void calcCurve() throws JuggleExceptionInternal {
         int i, j;
-        boolean edgeVelocitiesKnown = ((start_velocity != null) && (end_velocity != null));
+        boolean edgeVelocitiesKnown = (start_velocity != null && end_velocity != null);
 
         this.n = numpoints - 1;
         if (n < 1)
@@ -269,7 +269,7 @@ public class splineCurve extends Curve {
 
     @Override
     public void getCoordinate(double time, Coordinate newPosition) {
-        if ((time < times[0]) || (time > times[n]))
+        if (time < times[0] || time > times[n])
             return;
 
         int i;
@@ -287,7 +287,7 @@ public class splineCurve extends Curve {
 
     @Override
     protected Coordinate getMax2(double begin, double end) {
-        if ((end < times[0]) || (begin > times[n]))
+        if (end < times[0] || begin > times[n])
             return null;
 
         Coordinate result = null;
@@ -297,7 +297,7 @@ public class splineCurve extends Curve {
         result = check(result, thigh, true);
 
         for (int i = 0; i <= n; i++) {
-            if ((tlow <= times[i]) && (times[i] <= thigh))
+            if (tlow <= times[i] && times[i] <= thigh)
                 result = check(result, times[i], true);
             if (i != n) {
                 double tlowtemp = Math.max(tlow, times[i]);
@@ -312,13 +312,13 @@ public class splineCurve extends Curve {
                             double k = c[i][index]*c[i][index] - 3.0*b[i][index]*d[i][index];
                             if (k > 0.0) {
                                 double te = times[i] + (-c[i][index]-Math.sqrt(k))/(3*d[i][index]);
-                                if ((tlowtemp < te) && (te < thightemp))
+                                if (tlowtemp < te && te < thightemp)
                                     result = check(result, te, true);
                             }
                         } else if (c[i][index] < 0.0) {
                             double te = -b[i][index]/(2.0*c[i][index]);
                             te += times[i];
-                            if ((tlowtemp < te) && (te < thightemp))
+                            if (tlowtemp < te && te < thightemp)
                                 result = check(result, te, true);
                         }
                     }
@@ -331,7 +331,7 @@ public class splineCurve extends Curve {
 
     @Override
     protected Coordinate getMin2(double begin, double end) {
-        if ((end < times[0]) || (begin > times[n]))
+        if (end < times[0] || begin > times[n])
             return null;
 
         Coordinate result = null;
@@ -341,7 +341,7 @@ public class splineCurve extends Curve {
         result = check(result, thigh, false);
 
         for (int i = 0; i <= n; i++) {
-            if ((tlow <= times[i]) && (times[i] <= thigh))
+            if (tlow <= times[i] && times[i] <= thigh)
                 result = check(result, times[i], false);
             if (i != n) {
                 double tlowtemp = Math.max(tlow, times[i]);
@@ -356,13 +356,13 @@ public class splineCurve extends Curve {
                             double k = c[i][index]*c[i][index] - 3.0*b[i][index]*d[i][index];
                             if (k > 0.0) {
                                 double te = times[i] + (-c[i][index]+Math.sqrt(k))/(3*d[i][index]);
-                                if ((tlowtemp < te) && (te < thightemp))
+                                if (tlowtemp < te && te < thightemp)
                                     result = check(result, te, false);
                             }
                         } else if (c[i][index] > 0.0) {
                             double te = -b[i][index]/(2.0*c[i][index]);
                             te += times[i];
-                            if ((tlowtemp < te) && (te < thightemp))
+                            if (tlowtemp < te && te < thightemp)
                                 result = check(result, te, false);
                         }
                     }

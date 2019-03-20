@@ -1,4 +1,4 @@
-// siteswapGeneratorControl.java
+// SiteswapGeneratorControl.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -13,7 +13,7 @@ import javax.swing.*;
 import jugglinglab.util.JLLocale;
 
 
-class siteswapGeneratorControl extends JPanel {
+class SiteswapGeneratorControl extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -26,7 +26,7 @@ class siteswapGeneratorControl extends JPanel {
 
     protected final static int border = 10;
 
-    public siteswapGeneratorControl() {
+    public SiteswapGeneratorControl() {
         this.setOpaque(false);
         GridBagLayout gb = new GridBagLayout();
 

@@ -1,4 +1,4 @@
-// mhnHands.java
+// MHNHands.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -10,18 +10,18 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 
 
-public class mhnHands {
+public class MHNHands {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected int jugglers = 0;
-    protected int[] size = null;
-    protected int[][] coords = null;
-    protected int[][] catches = null;
-    protected double[][][][] handpath = null;
+    protected int[] size;
+    protected int[][] coords;
+    protected int[][] catches;
+    protected double[][][][] handpath;
 
 
-    public mhnHands(String hands) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public MHNHands(String hands) throws JuggleExceptionUser, JuggleExceptionInternal {
         // delete the '<' and '>' characters first
         int pos;
         while ((pos = hands.indexOf('<')) >= 0) {
@@ -89,7 +89,7 @@ public class mhnHands {
                         l++;
                         continue;
                     }
-                    if ((ch == 'T') || (ch == 't')) {
+                    if (ch == 'T' || ch == 't') {
                         if (numcoords != 0)
                             throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Tnotstart"));
                         if (gotthrow)
@@ -98,7 +98,7 @@ public class mhnHands {
                         l++;
                         continue;
                     }
-                    if ((ch == 'C') || (ch == 'c')) {
+                    if (ch == 'C' || ch == 'c') {
                         if (numcoords == 0)
                             throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Catstart"));
                         if (gotcatch)

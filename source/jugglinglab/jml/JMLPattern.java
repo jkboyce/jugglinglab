@@ -573,10 +573,10 @@ public class JMLPattern {
     // ------------------------------------------------------------------------
 
     public void findPositions() throws JuggleExceptionInternal {
-        this.jugglercurve = new splineCurve[this.getNumberOfJugglers()];
+        this.jugglercurve = new SplineCurve[this.getNumberOfJugglers()];
         this.jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                              (Curve[])(new lineCurve[this.getNumberOfJugglers()]) :
-                              (Curve[])(new splineCurve[this.getNumberOfJugglers()]) );
+                              (Curve[])(new LineCurve[this.getNumberOfJugglers()]) :
+                              (Curve[])(new SplineCurve[this.getNumberOfJugglers()]) );
 
         for (int i = 1; i <= this.getNumberOfJugglers(); i++) {
             int num = 0;
@@ -589,9 +589,9 @@ public class JMLPattern {
             }
 
             if (num == 0) {
-                jugglercurve[i - 1] = new splineCurve();
+                jugglercurve[i - 1] = new SplineCurve();
                 jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                                        (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[2];
                 times[0] = this.getLoopStartTime();
                 times[1] = this.getLoopEndTime();
@@ -621,9 +621,9 @@ public class JMLPattern {
                 jugglerangle[i - 1].setCurve(angles, times);
                 jugglerangle[i - 1].calcCurve();
             } else {
-                jugglercurve[i - 1] = new splineCurve();
+                jugglercurve[i - 1] = new SplineCurve();
                 jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                                        (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[num+1];
                 Coordinate[] positions = new Coordinate[num+1];
                 Coordinate[] angles = new Coordinate[num+1];
@@ -857,7 +857,7 @@ done2:
                         if ((hl.getEndVelocityRef() != null) && (startlink != null)) {
                             Coordinate[] pos = new Coordinate[num+1];
                             double[] times = new double[num+1];
-                            Curve hp = new splineCurve();
+                            Curve hp = new SplineCurve();
 
                             for (int l = 0; l < num; l++) {
                                 HandLink hl2 = handlinks.get(i).get(j).get(k-num+1+l);
@@ -906,7 +906,7 @@ done2:
                         }
                         Coordinate[] pos = new Coordinate[num+1];
                         double[] times = new double[num+1];
-                        Curve hp = new splineCurve();
+                        Curve hp = new SplineCurve();
 
                         for (int l = 0; l < num; l++) {
                             HandLink hl2 = handlinks.get(i).get(j).get(k-num+1+l);

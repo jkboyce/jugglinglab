@@ -1,26 +1,91 @@
-// siteswapPattern.java
+// SiteswapPattern.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
 import java.util.*;
-import java.text.*;
+import java.text.MessageFormat;
+
+import jugglinglab.jml.*;
 import jugglinglab.util.*;
+import jugglinglab.notation.ssparser.*;
 
 
-public class siteswapPattern extends mhnPattern {
+public class SiteswapPattern extends MHNPattern {
+    protected String orig_pattern;
     protected boolean oddperiod = false;
 
-    // only works after parsePattern() is called:
+    @Override
+    public String getNotationName() {
+        return "Siteswap";
+    }
+
+    @Override
+    public void fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
+        // This entire method will need to be double-checked for suitability with siteswap2 notation
+
+        // delete newlines and carriage returns from string
+        int pos;
+        while ((pos = config.indexOf('\n')) >= 0) {
+            config = config.substring(0,pos) + config.substring(pos+1,config.length());
+        }
+        while ((pos = config.indexOf('\r')) >= 0) {
+            config = config.substring(0,pos) + config.substring(pos+1,config.length());
+        }
+
+        parseConfig(config);
+        this.orig_pattern = this.pattern;
+
+        // see if we need to repeat the pattern to match hand or body periods:
+        if (hands != null || bodies != null) {
+            parseSiteswapNotation();
+            int patperiod = getNorepPeriod();
+
+            int handperiod = 1;
+            if (hands != null) {
+                for (int i = 1; i <= getNumberOfJugglers(); i++)
+                    handperiod = Permutation.lcm(handperiod, hands.getPeriod(i));
+            }
+
+            int bodyperiod = 1;
+            if (bodies != null) {
+                for (int i = 1; i <= getNumberOfJugglers(); i++)
+                    bodyperiod = Permutation.lcm(bodyperiod, bodies.getPeriod(i));
+            }
+
+            int totalperiod = patperiod;
+            totalperiod = Permutation.lcm(totalperiod, handperiod);
+            totalperiod = Permutation.lcm(totalperiod, bodyperiod);
+
+            if (totalperiod != patperiod) {
+                int repeats = totalperiod / patperiod;
+                pattern = "(" + pattern + "^" + repeats + ")";
+            }
+        }
+        parseSiteswapNotation();
+    }
+
+    @Override
+    public JMLPattern getJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
+        JMLPattern result = super.getJMLPattern();
+        result.setTitle(orig_pattern);
+
+        if (jugglinglab.core.Constants.DEBUG_LAYOUT)
+            System.out.println(result);
+
+        return result;
+    }
+
+    // only works after parseSiteswapNotation() is called:
     protected int getNorepPeriod() {
         return (oddperiod ? getPeriod() / 2 : getPeriod());
     }
 
-    public void parsePattern() throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected void parseSiteswapNotation() throws JuggleExceptionUser, JuggleExceptionInternal {
         // first clear out the internal variables
         th = null;
-        symmetry = new ArrayList<mhnSymmetry>();
+        symmetry = new ArrayList<MHNSymmetry>();
 
         SiteswapTreeItem tree = null;   // should probably be class variable
 
@@ -73,7 +138,7 @@ public class siteswapPattern extends mhnPattern {
         doFirstPass(tree);
 
         if (!tree.switchrepeat) {
-            if (tree.vanilla_asynch && tree.beats % 2 == 1) {
+            if (tree.vanilla_async && tree.beats % 2 == 1) {
                 tree.switchrepeat = true;
                 tree.beats *= 2;
                 tree.throw_sum *= 2;
@@ -86,7 +151,7 @@ public class siteswapPattern extends mhnPattern {
             throw new JuggleExceptionUser(errorstrings.getString("Error_siteswap_bad_average"));
         this.numpaths = tree.throw_sum / tree.beats;
         this.indexes = this.max_throw + this.period + 1;
-        this.th = new mhnThrow[numjugglers][2][indexes][max_occupancy];
+        this.th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
 
         /*
         System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
@@ -96,16 +161,16 @@ public class siteswapPattern extends mhnPattern {
         doSecondPass(tree, false, 0);
 
         // Finally, add pattern symmetries
-        addSymmetry(new mhnSymmetry(mhnSymmetry.TYPE_DELAY, numjugglers, null, period));
+        addSymmetry(new MHNSymmetry(MHNSymmetry.TYPE_DELAY, numjugglers, null, period));
         if (tree.switchrepeat) {    // know that tree is of type Pattern
             StringBuffer sb = new StringBuffer();
             for (int i = 1; i <= numjugglers; i++)
                 sb.append("("+i+","+i+"*)");
-            addSymmetry(new mhnSymmetry(mhnSymmetry.TYPE_SWITCHDELAY, numjugglers, sb.toString(), period/2));
+            addSymmetry(new MHNSymmetry(MHNSymmetry.TYPE_SWITCHDELAY, numjugglers, sb.toString(), period/2));
         }
 
         // Random error check, not sure where this should go
-        if ((bodies != null) && (bodies.getNumberOfJugglers() < this.getNumberOfJugglers()))
+        if (bodies != null && bodies.getNumberOfJugglers() < this.getNumberOfJugglers())
             throw new JuggleExceptionUser(errorstrings.getString("Error_jugglers_body"));
     }
 
@@ -136,13 +201,13 @@ public class siteswapPattern extends mhnPattern {
 
     // What we need to evaluate wildcards:
     //
-    boolean[] right_on_even;    // asynch throws on even beat numbers made with right hand?
+    boolean[] right_on_even;    // async throws on even beat numbers made with right hand?
 
     protected void doFirstPass(SiteswapTreeItem sti) throws JuggleExceptionUser, JuggleExceptionInternal {
         SiteswapTreeItem child = null;
 
         sti.throw_sum = 0;
-        sti.vanilla_asynch = true;
+        sti.vanilla_async = true;
 
         switch (sti.type) {
             case SiteswapTreeItem.TYPE_PATTERN:
@@ -248,7 +313,7 @@ public class siteswapPattern extends mhnPattern {
                     doFirstPass(child);
                     sti.beats += child.beats;
                     sti.throw_sum += child.throw_sum;
-                    sti.vanilla_asynch &= child.vanilla_asynch;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 if (sti.switchrepeat) {
                     sti.beats *= 2;
@@ -272,7 +337,7 @@ public class siteswapPattern extends mhnPattern {
                 }
                 sti.beats = child.beats * sti.repeats;
                 sti.throw_sum = child.throw_sum * sti.repeats;
-                sti.vanilla_asynch &= child.vanilla_asynch;
+                sti.vanilla_async &= child.vanilla_async;
                 break;
             case SiteswapTreeItem.TYPE_SOLO_SEQUENCE:
                 // Contains Solo Paired Throw, Solo Multi Throw, or Hand Specifier types
@@ -281,7 +346,7 @@ public class siteswapPattern extends mhnPattern {
                     child.beatnum = sti.beatnum + child.seq_beatnum;
                     doFirstPass(child);
                     sti.throw_sum += child.throw_sum;
-                    sti.vanilla_asynch &= child.vanilla_asynch;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 break;
             case SiteswapTreeItem.TYPE_SOLO_PAIRED_THROW:
@@ -291,10 +356,10 @@ public class siteswapPattern extends mhnPattern {
                     child.beatnum = sti.beatnum;
                     doFirstPass(child);
                     child.left = (i == 0);
-                    child.synch_throw = true;
+                    child.sync_throw = true;
                     sti.throw_sum += child.throw_sum;
                 }
-                sti.vanilla_asynch = false;
+                sti.vanilla_async = false;
                 break;
             case SiteswapTreeItem.TYPE_SOLO_MULTI_THROW:
                 // Contains only Solo Single Throw type
@@ -325,7 +390,7 @@ public class siteswapPattern extends mhnPattern {
                     child.beatnum = sti.beatnum;
                     doFirstPass(child);
                     sti.throw_sum += child.throw_sum;
-                    sti.vanilla_asynch &= child.vanilla_asynch;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 break;
             case SiteswapTreeItem.TYPE_PASSING_THROWS:
@@ -335,7 +400,7 @@ public class siteswapPattern extends mhnPattern {
                     child.beatnum = sti.beatnum + child.seq_beatnum;
                     doFirstPass(child);
                     sti.throw_sum += child.throw_sum;
-                    sti.vanilla_asynch &= child.vanilla_asynch;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 break;
             case SiteswapTreeItem.TYPE_PASSING_PAIRED_THROW:
@@ -345,10 +410,10 @@ public class siteswapPattern extends mhnPattern {
                     child.beatnum = sti.beatnum;
                     doFirstPass(child);
                     child.left = (i == 0);
-                    child.synch_throw = true;
+                    child.sync_throw = true;
                     sti.throw_sum += child.throw_sum;
                 }
-                sti.vanilla_asynch = false;
+                sti.vanilla_async = false;
                 break;
             case SiteswapTreeItem.TYPE_PASSING_MULTI_THROW:
                 // Contains only Passing Single Throw type
@@ -376,7 +441,7 @@ public class siteswapPattern extends mhnPattern {
                     doFirstPass(sti.transition);
                     // copy variables from sti.transition to sti
                     sti.throw_sum = sti.transition.throw_sum;
-                    sti.vanilla_asynch = sti.transition.vanilla_asynch;
+                    sti.vanilla_async = sti.transition.vanilla_async;
                     sti.beats = sti.transition.beats;
                 } else
                     throw new JuggleExceptionInternal("Wildcard not resolved");
@@ -388,7 +453,7 @@ public class siteswapPattern extends mhnPattern {
                     right_on_even[sti.source_juggler - 1] = sti.spec_left;
                 sti.throw_sum = 0;
                 if (sti.beatnum > 0)
-                    sti.vanilla_asynch = false;
+                    sti.vanilla_async = false;
                 break;
         }
 
@@ -441,14 +506,14 @@ public class siteswapPattern extends mhnPattern {
                         else
                             source_hand = (sti.left ? LEFT_HAND : RIGHT_HAND);
 
-                        int dest_hand = ((child.value % 2) == 0) ? source_hand : (1-source_hand);
+                        int dest_hand = (child.value % 2 == 0) ? source_hand : (1-source_hand);
                         if (child.x)
                             dest_hand = 1 - dest_hand;
 
                         String mod = child.mod;
                         if (mod == null) {
                             mod = "T";      // default throw modifier
-                            if ((child.source_juggler == child.dest_juggler) && (source_hand == dest_hand)) {
+                            if (child.source_juggler == child.dest_juggler && source_hand == dest_hand) {
                                 if (child.value <= 2)   // want something more sophisticated?
                                     mod = "H";
                             }
@@ -458,11 +523,11 @@ public class siteswapPattern extends mhnPattern {
                         if (dest_juggler > getNumberOfJugglers())
                             dest_juggler = 1 + (dest_juggler-1) % getNumberOfJugglers();
 
-                        mhnThrow t = new mhnThrow(child.source_juggler, source_hand, index, i,
+                        MHNThrow t = new MHNThrow(child.source_juggler, source_hand, index, i,
                                           dest_juggler, dest_hand, index+child.value, -1, mod);
                         if (hands != null) {
                             int idx = index;
-                            if (sti.synch_throw && (source_hand == RIGHT_HAND))
+                            if (sti.sync_throw && source_hand == RIGHT_HAND)
                                 idx++;
                             idx %= hands.getPeriod(child.source_juggler);
                             t.handsindex = idx;

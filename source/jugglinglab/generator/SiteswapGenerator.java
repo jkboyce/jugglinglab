@@ -1,4 +1,4 @@
-// siteswapGenerator.java
+// SiteswapGenerator.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -38,7 +38,7 @@ import jugglinglab.core.Constants;
 /*   Bug fix to find_start_end() on 02/18/99                            */
 /************************************************************************/
 
-public class siteswapGenerator extends Generator {
+public class SiteswapGenerator extends Generator {
     // Different types of siteswaps
     protected final static int ASYNCH = 0;  /* different types of modes */
     protected final static int SYNCH = 1;
@@ -95,8 +95,13 @@ public class siteswapGenerator extends Generator {
     protected int loop_counter;         // gen_loop() counter for checking timeout
     protected final static int loop_counter_max = 20000;
 
-    protected siteswapGeneratorControl control; // contains controls for generator
+    protected SiteswapGeneratorControl control; // contains controls for generator
 
+    @Override
+    public String getNotationName() {
+        return "Siteswap";
+    }
+    
     @Override
     public String getStartupMessage() {
         return "Welcome to the J2 Siteswap Generator";
@@ -105,7 +110,7 @@ public class siteswapGenerator extends Generator {
     @Override
     public JPanel getGeneratorControls() {
         if (control == null)
-            control = new siteswapGeneratorControl();
+            control = new SiteswapGeneratorControl();
         return control;
     }
 
@@ -1663,7 +1668,7 @@ findending2:
             return;
 
         try {
-            siteswapGenerator ssg = new siteswapGenerator();
+            SiteswapGenerator ssg = new SiteswapGenerator();
             ssg.initGenerator(args);
             ssg.runGenerator(target);
         } catch (Exception e) {
@@ -1672,7 +1677,7 @@ findending2:
     }
 
     public static void main(String[] args) {
-        siteswapGenerator.runGeneratorCLI(args, new GeneratorTarget(System.out));
+        SiteswapGenerator.runGeneratorCLI(args, new GeneratorTarget(System.out));
     }
 
 }

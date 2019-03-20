@@ -31,7 +31,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JMenu filemenu = createFileMenu();
         mb.add(filemenu);
         JMenu notationmenu = ng.createNotationMenu();
-        if (Notation.builtinNotations.length > 1)
+        if (Pattern.builtinNotations.length > 1)
             mb.add(notationmenu);
         JMenu helpmenu = createHelpMenu();
         if (helpmenu != null)
@@ -45,13 +45,13 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         ng.setDoubleBuffered(true);
         this.setBackground(new Color(0.9f, 0.9f, 0.9f));
         setContentPane(ng);
-        ng.setNotation(Notation.NOTATION_SITESWAP);
+        ng.setNotation(Pattern.NOTATION_SITESWAP);
 
         Locale loc = JLLocale.getLocale();
         this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         // make siteswap notation the default
-        notationmenu.getItem(Notation.NOTATION_SITESWAP - 1).setSelected(true);
+        notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true);
         pack();
         setResizable(false);
         setLocation(100, 50);

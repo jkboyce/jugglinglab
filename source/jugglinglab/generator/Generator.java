@@ -11,41 +11,23 @@ import javax.swing.JPanel;
 import jugglinglab.util.*;
 
 
-    // This class defines a general object that is capable of generating tricks
-    // and converting them into commands that the animator understands.
+// This class defines a general object that is capable of generating tricks
+// and converting them into commands that the animator understands.
+
 public abstract class Generator {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     // The built-in generators
-    public static final String[] builtinGenerators = { "siteswap" };
+    public static final String[] builtinGenerators = { "Siteswap" };
 
-    // This is a factory to create Generators from names.  Note the
-    // naming convention.
-    public static Generator getGenerator(String name) {
-        try {
-            Object obj = Class.forName("jugglinglab.generator."+
-                                       name.toLowerCase()+"Generator").newInstance();
-            if (!(obj instanceof Generator)) {
-                return null;
-                // throw new JuggleExceptionUser("Generator type '"+name+"' doesn't work");
-            }
-            return (Generator)obj;
-        }
-        catch (ClassNotFoundException cnfe) {
-            return null;
-            // throw new JuggleExceptionUser("Generator type '"+name+"' not found");
-        }
-        catch (IllegalAccessException iae) {
-            return null;
-            // throw new JuggleExceptionUser("Cannot access '"+name+"' generator file (security)");
-        }
-        catch (InstantiationException ie) {
-            return null;
-            // throw new JuggleExceptionUser("Couldn't create '"+name+"' generator");
-        }
+    public static Generator newGenerator(String name) {
+        if (name.equalsIgnoreCase("siteswap"))
+            return new SiteswapGenerator();
+        return null;
     }
 
+    public abstract String getNotationName();
     public abstract String getStartupMessage();
     public abstract JPanel getGeneratorControls();
     public abstract void resetGeneratorControls();
