@@ -6,6 +6,8 @@
 <line display="All credit to Dominik Braun for"/>
 <line display="these amazing patterns!"/>
 <line display=""/>
+<line display="Note: View these from the front"/>
+<line display=""/>
 <line display="Juggling Jugglers"
       animprefs="camangle=(0,90);width=400;height=600"
       notation="siteswap">
@@ -143,7 +145,7 @@ prop=ball;
 bouncefrac=1.5;
 </line>
 <line display=""/>
-<line display="Warning! This one takes nearly"/>
+<line display="Warning -- this one takes nearly"/>
 <line display="5 minutes to compile:"/>
 <line display="My Face"
       animprefs="camangle=0"
