@@ -43,22 +43,24 @@ public class ringProp extends Prop {
     protected static final int colornum_def = 8;    // red
     protected static final double outside_diam_def = 25.0;  // in cm
     protected static final double inside_diam_def = 20.0;   // in cm
+    protected static final int polysides = 200;
 
-    protected double outside_diam = outside_diam_def;
-    protected double inside_diam = inside_diam_def;
-    protected int colornum = colornum_def;
-    protected Color color;
+    protected double        outside_diam = outside_diam_def;
+    protected double        inside_diam = inside_diam_def;
+    protected int           colornum = colornum_def;
+    protected Color         color;
 
     protected BufferedImage image;
 
-    protected double lastzoom = 0.0;
-    protected double[] lastcamangle = {0.0, 0.0};
+    protected double        lastzoom = 0.0;
+    protected double[]      lastcamangle = {0.0, 0.0};
 
-    protected Dimension size = null;
-    protected Dimension center = null;
-    protected Dimension grip = null;
-    int polysides = 200;
-    int[] px, py;
+    protected Dimension     size;
+    protected Dimension     center;
+    protected Dimension     grip;
+    protected Coordinate    propmax;
+    protected Coordinate    propmin;
+    protected int[]         px, py;
 
     @Override
     public String getName() {
@@ -174,12 +176,16 @@ public class ringProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(outside_diam/2, 0, outside_diam/2);
+        if (this.propmax == null)
+            this.propmax = new Coordinate(outside_diam / 2.0, 0.0, outside_diam / 2.0);
+        return this.propmax;
     }
 
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-outside_diam/2, 0, -outside_diam/2);
+        if (this.propmin == null)
+            this.propmin = new Coordinate(-outside_diam / 2.0, 0.0, -outside_diam / 2.0);
+        return this.propmin;
     }
 
     @Override
@@ -199,14 +205,14 @@ public class ringProp extends Prop {
 
     @Override
     public Dimension getProp2DCenter(double zoom) {
-        if ((center == null) || (zoom != lastzoom))     // first call or display resized?
+        if (center == null || zoom != lastzoom)     // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return center;
     }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if ((grip == null) || (zoom != lastzoom))       // first call or display resized?
+        if (grip == null || zoom != lastzoom)       // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return grip;
     }
@@ -266,8 +272,10 @@ public class ringProp extends Prop {
         image = new BufferedImage(bbwidth, bbheight, BufferedImage.TYPE_INT_ARGB_PRE);
         Graphics2D g = image.createGraphics();
 
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        /*
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_ON);
+        */
         g.setColor(color);
         for (int i = 0; i < polysides; i++) {
             px[i] -= pxmin;

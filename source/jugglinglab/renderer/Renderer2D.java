@@ -36,32 +36,38 @@ import jugglinglab.util.JuggleExceptionInternal;
 import jugglinglab.prop.Prop;
 
 
+// Class that draws the juggling into the frame.
+//
+// It is designed so that no object allocation happens in drawFrame(),
+// i.e., we don't add to the garbage while the animation runs.
+
 public class Renderer2D extends Renderer {
     public static final int RENDER_POINT_FIELD = 0;
     public static final int RENDER_WIRE_FRAME = 1;
     public static final int RENDER_FLAT_SOLID = 2;
     protected int render_type = RENDER_FLAT_SOLID; // One of the above
 
-    protected Color         background = null;
-    protected Coordinate    left = null, right = null;
-    protected JLVector      cameracenter;
-    protected double[]      cameraangle;
-    protected double        cameradistance;
-    protected JLMatrix  m;
+    protected Color             background;
+    protected Coordinate        left, right;
+    protected JLVector          cameracenter;
+    protected double[]          cameraangle;
+    protected double            cameradistance;
+    protected JLMatrix          m;
 
-    protected int           width, height;
-    protected JMLPattern    pat = null;
+    protected int               width, height;
+    protected JMLPattern        pat;
 
-    protected double        zoom;
-    protected int           originx, originz;
-    protected int           polysides;  // # sides in polygon for head
-    protected double[]      headcos, headsin;
-    protected int[]         headx, heady;
+    protected double            zoom;
+    protected int               originx, originz;
+    protected int               polysides;  // # sides in polygon for head
+    protected double[]          headcos, headsin;
+    protected int[]             headx, heady;
 
-    protected DrawObject2D[]    obj = null, obj2 = null;
-    protected JLVector[][]  jugglervec = null;
-    protected Coordinate    tempc = null;
-    protected JLVector      tempv = null;
+    protected DrawObject2D[]    obj, obj2;
+    protected JLVector[][]      jugglervec;
+    protected double            propmin;    // for drawing floor
+    protected Coordinate        tempc;
+    protected JLVector          tempv1, tempv2;
 
     public Renderer2D() {
         this.background = Color.white;
@@ -76,17 +82,18 @@ public class Renderer2D extends Renderer {
             headsin[i] = Math.sin((double)i * JLMath.toRad(360.0) / polysides);
         }
         this.tempc = new Coordinate();
-        this.tempv = new JLVector();
+        this.tempv1 = new JLVector();
+        this.tempv2 = new JLVector();
     }
 
     @Override
     public void setPattern(JMLPattern pat) {
         this.pat = pat;
-        int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
-        this.obj = new DrawObject2D[numobjects];
-        for (int i = 0; i < numobjects; i++)
-            obj[i] = new DrawObject2D(numobjects);
-        this.obj2 = new DrawObject2D[numobjects];
+        int maxobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths() + 18;
+        this.obj = new DrawObject2D[maxobjects];
+        for (int i = 0; i < maxobjects; i++)
+            obj[i] = new DrawObject2D(maxobjects);
+        this.obj2 = new DrawObject2D[maxobjects];
         this.jugglervec = new JLVector[pat.getNumberOfJugglers()][12];
     }
 
@@ -162,17 +169,8 @@ public class Renderer2D extends Renderer {
 
     @Override
     public void drawFrame(double time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
-        // Turn off antialiased rendering of the juggler. It doesn't improve the
-        // appearance and it makes GIF encoding have trouble since we get a lot of
-        // distinct color values.
-        /*
-        if (g instanceof Graphics2D) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        */
+        int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths() + 18;
 
-        int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths();
         // first reset the objects in the object pool
         for (int i = 0; i < numobjects; i++)
             obj[i].covering.clear();
@@ -180,13 +178,15 @@ public class Renderer2D extends Renderer {
         // first create a list of objects in the display
         int index = 0;
 
+        // props
+        double propmin = 0.0;
         for (int i = 1; i <= pat.getNumberOfPaths(); i++) {
             obj[index].type = DrawObject2D.TYPE_PROP;
             obj[index].number = i;
             pat.getPathCoordinate(i, time, tempc);
             if (!tempc.isValid())
                 tempc.setCoordinate(0.0,0.0,0.0);
-            getXYZ(Renderer.toVector(tempc, tempv), obj[index].coord[0]);
+            getXYZ(Renderer.toVector(tempc, tempv1), obj[index].coord[0]);
             int x = (int)(0.5f + obj[index].coord[0].x);
             int y = (int)(0.5f + obj[index].coord[0].y);
             Prop pr = pat.getProp(pnum[i-1]);
@@ -198,9 +198,61 @@ public class Renderer2D extends Renderer {
                 obj[index].boundingbox.width = size.width;
                 obj[index].boundingbox.height = size.height;
             }
+            propmin = Math.min(propmin, pr.getMin().z);
             index++;
         }
 
+        // ground (set of lines)
+        if (pat.isBouncePattern()) {
+            for (int i = 0; i < 18; i++) {
+                obj[index].type = DrawObject2D.TYPE_LINE;
+                obj[index].number = 0;      // unused
+
+                // first 9 lines for ground:
+                // (x, y, z): (-50 + 100 * i / 8, 0, -50) to
+                //            (-50 + 100 * i / 8, 0,  50)
+                // next 9 lines:
+                // (x, y, z): (-50, 0, -50 + 100 * (i - 9) / 8) to
+                //            ( 50, 0, -50 + 100 * (i - 9) / 8)
+               if (i < 9) {
+                    // use jugglervec[0] as temp storage
+                    tempv1.x = -50.0 + 100.0 * i / 8.0;
+                    tempv1.y = propmin;
+                    tempv1.z = -50.0;
+                    tempv2.x = tempv1.x;
+                    tempv2.y = propmin;
+                    tempv2.z = 50.0;
+                } else {
+                    tempv1.x = -50.0;
+                    tempv1.y = propmin;
+                    tempv1.z = -50.0 + 100.0 * (i - 9) / 8.0;
+                    tempv2.x = 50.0;
+                    tempv2.y = propmin;
+                    tempv2.z = tempv1.z;
+                }
+                /*
+                System.out.printf("line from (%.3f, %.3f, %.3f) to (%.3f, %.3f, %.3f)\n",
+                        tempv1.x, tempv1.y, tempv1.z, tempv2.x, tempv2.y, tempv2.z);
+                */
+                getXYZ(tempv1, obj[index].coord[0]);
+                getXYZ(tempv2, obj[index].coord[1]);
+                int x = Math.min((int)(0.5f + obj[index].coord[0].x),
+                                 (int)(0.5f + obj[index].coord[1].x));
+                int y = Math.min((int)(0.5f + obj[index].coord[0].y),
+                                 (int)(0.5f + obj[index].coord[1].y));
+                int width = Math.abs((int)(0.5f + obj[index].coord[0].x)
+                                     - (int)(0.5f + obj[index].coord[1].x)) + 1;
+                int height = Math.abs((int)(0.5f + obj[index].coord[0].y)
+                                      - (int)(0.5f + obj[index].coord[1].y)) + 1;
+                obj[index].boundingbox.x = x;
+                obj[index].boundingbox.y = y;
+                obj[index].boundingbox.width = width;
+                obj[index].boundingbox.height = height;
+                index++;
+            }
+        }
+
+        // jugglers
         Juggler.findJugglerCoordinates(pat, time, jugglervec);
 
         for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
@@ -239,10 +291,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i-1][2+j], obj[index].coord[0]);  // entire arm
                     getXYZ(jugglervec[i-1][0+j], obj[index].coord[1]);
-                    int x = Math.min((int)(0.5f + obj[index].coord[0].x), (int)(0.5f + obj[index].coord[1].x));
-                    int y = Math.min((int)(0.5f + obj[index].coord[0].y), (int)(0.5f + obj[index].coord[1].y));
-                    int width = Math.abs((int)(0.5f + obj[index].coord[0].x) - (int)(0.5f + obj[index].coord[1].x)) + 1;
-                    int height = Math.abs((int)(0.5f + obj[index].coord[0].y) - (int)(0.5f + obj[index].coord[1].y)) + 1;
+                    int x = Math.min((int)(0.5f + obj[index].coord[0].x),
+                                     (int)(0.5f + obj[index].coord[1].x));
+                    int y = Math.min((int)(0.5f + obj[index].coord[0].y),
+                                     (int)(0.5f + obj[index].coord[1].y));
+                    int width = Math.abs((int)(0.5f + obj[index].coord[0].x)
+                                         - (int)(0.5f + obj[index].coord[1].x)) + 1;
+                    int height = Math.abs((int)(0.5f + obj[index].coord[0].y)
+                                          - (int)(0.5f + obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -253,10 +309,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i-1][2+j], obj[index].coord[0]);  // upper arm
                     getXYZ(jugglervec[i-1][4+j], obj[index].coord[1]);
-                    int x = Math.min((int)(0.5f + obj[index].coord[0].x), (int)(0.5f + obj[index].coord[1].x));
-                    int y = Math.min((int)(0.5f + obj[index].coord[0].y), (int)(0.5f + obj[index].coord[1].y));
-                    int width = Math.abs((int)(0.5f + obj[index].coord[0].x) - (int)(0.5f + obj[index].coord[1].x)) + 1;
-                    int height = Math.abs((int)(0.5f + obj[index].coord[0].y) - (int)(0.5f + obj[index].coord[1].y)) + 1;
+                    int x = Math.min((int)(0.5f + obj[index].coord[0].x),
+                                     (int)(0.5f + obj[index].coord[1].x));
+                    int y = Math.min((int)(0.5f + obj[index].coord[0].y),
+                                     (int)(0.5f + obj[index].coord[1].y));
+                    int width = Math.abs((int)(0.5f + obj[index].coord[0].x)
+                                         - (int)(0.5f + obj[index].coord[1].x)) + 1;
+                    int height = Math.abs((int)(0.5f + obj[index].coord[0].y)
+                                          - (int)(0.5f + obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -267,10 +327,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i-1][4+j], obj[index].coord[0]);  // lower arm
                     getXYZ(jugglervec[i-1][0+j], obj[index].coord[1]);
-                    x = Math.min((int)(0.5f + obj[index].coord[0].x), (int)(0.5f + obj[index].coord[1].x));
-                    y = Math.min((int)(0.5f + obj[index].coord[0].y), (int)(0.5f + obj[index].coord[1].y));
-                    width = Math.abs((int)(0.5f + obj[index].coord[0].x) - (int)(0.5f + obj[index].coord[1].x)) + 1;
-                    height = Math.abs((int)(0.5f + obj[index].coord[0].y) - (int)(0.5f + obj[index].coord[1].y)) + 1;
+                    x = Math.min((int)(0.5f + obj[index].coord[0].x),
+                                 (int)(0.5f + obj[index].coord[1].x));
+                    y = Math.min((int)(0.5f + obj[index].coord[0].y),
+                                 (int)(0.5f + obj[index].coord[1].y));
+                    width = Math.abs((int)(0.5f + obj[index].coord[0].x)
+                                     - (int)(0.5f + obj[index].coord[1].x)) + 1;
+                    height = Math.abs((int)(0.5f + obj[index].coord[0].y)
+                                      - (int)(0.5f + obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -292,7 +356,7 @@ public class Renderer2D extends Renderer {
             obj[i].drawn = false;
         }
 
-        // now figure out a drawing order
+        // figure out a drawing order
         index = 0;
         boolean changed = true;
         while (changed) {
@@ -349,12 +413,17 @@ public class Renderer2D extends Renderer {
                         draw3DProp(ob.object, g);
                     } */
 
-                    // g.setColor(Color.black);
-                    // g.drawLine(ob.boundingbox.x, ob.boundingbox.y, ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y);
-                    // g.drawLine(ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y, ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y + ob.boundingbox.height);
-                    // g.drawLine(ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y + ob.boundingbox.height, ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height);
-                    // g.drawLine(ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height, ob.boundingbox.x, ob.boundingbox.y);
-
+                    /*
+                    g.setColor(Color.black);
+                    g.drawLine(ob.boundingbox.x, ob.boundingbox.y,
+                               ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y);
+                    g.drawLine(ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y,
+                               ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y + ob.boundingbox.height);
+                    g.drawLine(ob.boundingbox.x + ob.boundingbox.width, ob.boundingbox.y + ob.boundingbox.height,
+                               ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height);
+                    g.drawLine(ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height,
+                               ob.boundingbox.x, ob.boundingbox.y);
+                    */
                     break;
                 case DrawObject2D.TYPE_BODY:
                     int[] bodyx = new int[4];
@@ -397,12 +466,17 @@ public class Renderer2D extends Renderer {
                     break;
             }
 
-            // g.setColor(Color.black);
-            // g.drawLine(ob.boundingbox.x, ob.boundingbox.y, ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y);
-            // g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y, ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1);
-            // g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1, ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1);
-            // g.drawLine(ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1, ob.boundingbox.x, ob.boundingbox.y);
-
+            /*
+            g.setColor(Color.black);
+            g.drawLine(ob.boundingbox.x, ob.boundingbox.y,
+                       ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y);
+            g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y,
+                       ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1);
+            g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1,
+                       ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1);
+            g.drawLine(ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1,
+                       ob.boundingbox.x, ob.boundingbox.y);
+            */
         }
     }
 
@@ -425,7 +499,6 @@ public class Renderer2D extends Renderer {
         max = Coordinate.add(max, new Coordinate(Juggler.shoulder_hw, Juggler.shoulder_hw,  // Juggler.head_hw,
                                                  Juggler.shoulder_h + Juggler.neck_h + Juggler.head_h));
         return max;
-        // return new Coordinate(Math.max(max.x, max.y), Math.max(max.x, max.y), max.z);
     }
 
     @Override
@@ -437,7 +510,6 @@ public class Renderer2D extends Renderer {
         min = Coordinate.add(min, new Coordinate(-Juggler.shoulder_hw, -Juggler.shoulder_hw, // -Juggler.head_hw,
                                                  Juggler.shoulder_h));
         return min;
-        // return new Coordinate(Math.min(min.x, min.y), Math.min(min.x, min.y), min.z);
     }
 
 

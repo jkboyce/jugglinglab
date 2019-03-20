@@ -44,18 +44,20 @@ public class ballProp extends Prop {
     protected static final double diam_def = 10.0;  // in cm
     protected static final boolean highlight_def = false;
 
-    protected double    diam = diam_def;    // diameter, in cm
-    protected int       colornum = colornum_def;
-    protected Color     color;
-    protected boolean   highlight = highlight_def;
+    protected double        diam = diam_def;    // diameter, in cm
+    protected int           colornum = colornum_def;
+    protected Color         color;
+    protected boolean       highlight = highlight_def;
     // protected int    ball_pixel_size;
 
-    protected BufferedImage     ballimage;
-    protected double    lastzoom = 0.0;
-    // protected int    offsetx, offsety;
-    protected Dimension size = null;
-    protected Dimension center = null;
-    protected Dimension grip = null;
+    protected BufferedImage ballimage;
+    protected double        lastzoom = 0.0;
+    // protected int        offsetx, offsety;
+    protected Dimension     size;
+    protected Dimension     center;
+    protected Dimension     grip;
+    protected Coordinate    propmax;
+    protected Coordinate    propmin;
 
     @Override
     public String getName() {
@@ -168,38 +170,42 @@ public class ballProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(diam/2,0,diam/2);
+        if (this.propmax == null)
+            this.propmax = new Coordinate(diam / 2.0, 0.0, diam / 2.0);
+        return this.propmax;
     }
 
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-diam/2,0,-diam/2);
+        if (this.propmin == null)
+            this.propmin = new Coordinate(-diam / 2.0, 0, -diam / 2.0);
+        return this.propmin;
     }
 
     @Override
     public Image getProp2DImage(double zoom, double[] camangle) {
-        if ((ballimage == null) || (zoom != lastzoom))  // first call or display resized?
+        if (ballimage == null || zoom != lastzoom)  // first call or display resized?
             recalc2D(zoom);
         return ballimage;
     }
 
     @Override
     public Dimension getProp2DSize(double zoom) {
-        if ((size == null) || (zoom != lastzoom))       // first call or display resized?
+        if (size == null || zoom != lastzoom)       // first call or display resized?
             recalc2D(zoom);
         return size;
     }
 
     @Override
     public Dimension getProp2DCenter(double zoom) {
-        if ((center == null) || (zoom != lastzoom))
+        if (center == null || zoom != lastzoom)
             recalc2D(zoom);
         return center;
     }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if ((grip == null) || (zoom != lastzoom))       // first call or display resized?
+        if (grip == null || zoom != lastzoom)       // first call or display resized?
             recalc2D(zoom);
         return grip;
     }
@@ -216,8 +222,10 @@ public class ballProp extends Prop {
         ballimage = new BufferedImage(ball_pixel_size+1, ball_pixel_size+1, BufferedImage.TYPE_INT_ARGB_PRE);
         Graphics2D ballg = ballimage.createGraphics();
 
-        ballg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        /*
+        ballg.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                               RenderingHints.VALUE_ANTIALIAS_ON);
+        */
         if (this.highlight) {
             float highlightOvals = ball_pixel_size / 1.2f;  // Number of concentric circles to draw.
             float[] rgb = new float[3];

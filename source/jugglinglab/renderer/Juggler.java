@@ -23,14 +23,15 @@
 package jugglinglab.renderer;
 
 import jugglinglab.util.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
+import jugglinglab.jml.HandLink;
 
 
-//  This class calculates the coordinates of the juggler elbows, shoulders, etc.
+// This class calculates the coordinates of the juggler elbows, shoulders, etc.
 
 public class Juggler {
-        // juggler dimensions, in cm
-    public final static double shoulder_hw = 23.0;  // shoulder half-width (m)
+        // juggler dimensions, in centimeters
+    public final static double shoulder_hw = 23.0;  // shoulder half-width (cm)
     public final static double shoulder_h = 40.0;   // throw pos. to shoulder
     public final static double waist_hw = 17.0;     // waist half-width
     public final static double waist_h = -5.0;

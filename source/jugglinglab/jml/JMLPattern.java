@@ -1275,6 +1275,16 @@ done2:
         return period;
     }
 
+    public boolean isBouncePattern() {
+        for (int path = 1; path <= this.getNumberOfPaths(); path++) {
+            for (PathLink pl : pathlinks.get(path - 1)) {
+                if (pl.getPath() instanceof bouncePath)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isValid()    { return valid; }
     public boolean isLaidout()  { return laidout; }
 
