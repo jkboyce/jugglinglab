@@ -195,26 +195,19 @@ public class Renderer2D extends Renderer {
                 // next 9 lines:
                 // (x, y, z): (-50, 0, -50 + 100 * (i - 9) / 8) to
                 //            ( 50, 0, -50 + 100 * (i - 9) / 8)
-               if (i < 9) {
-                    // use jugglervec[0] as temp storage
+                if (i < 9) {
                     tempv1.x = -50.0 + 100.0 * i / 8.0;
-                    tempv1.y = propmin;
                     tempv1.z = -50.0;
                     tempv2.x = tempv1.x;
-                    tempv2.y = propmin;
                     tempv2.z = 50.0;
                 } else {
                     tempv1.x = -50.0;
-                    tempv1.y = propmin;
                     tempv1.z = -50.0 + 100.0 * (i - 9) / 8.0;
                     tempv2.x = 50.0;
-                    tempv2.y = propmin;
                     tempv2.z = tempv1.z;
                 }
-                /*
-                System.out.printf("line from (%.3f, %.3f, %.3f) to (%.3f, %.3f, %.3f)\n",
-                        tempv1.x, tempv1.y, tempv1.z, tempv2.x, tempv2.y, tempv2.z);
-                */
+                tempv1.y = tempv2.y = propmin;
+
                 getXYZ(tempv1, obj[index].coord[0]);
                 getXYZ(tempv2, obj[index].coord[1]);
                 int x = Math.min((int)(0.5f + obj[index].coord[0].x),
