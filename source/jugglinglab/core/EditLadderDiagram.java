@@ -285,7 +285,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         EditLadderDiagram.this.repaint();
                         if (animator != null) {
                             double scale = (fpat.getLoopEndTime() - fpat.getLoopStartTime()) /
-                            (double)(height - 2*border_top);
+                                    (double)(height - 2*border_top);
                             double newtime = (double)(my - border_top) * scale;
                             animator.setTime(newtime);
                             animator.repaint();
@@ -1504,12 +1504,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     public void setAnimationPanel(AnimationEditPanel anim) {
         this.animator = anim;
-    }
-
-    public void setTime(double time) {
-        if (gui_state == STATE_MOVING_TRACKER)
-            return;
-        super.setTime(time);
     }
 
     public void activeEventMoved() {

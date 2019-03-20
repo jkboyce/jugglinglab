@@ -58,8 +58,8 @@ public class LadderDiagram extends JPanel {
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
         for (int i = 0; i < laddereventitems.size(); i++) {
             LadderEventItem item = laddereventitems.get(i);
-            if ((x >= item.xlow) && (x <= item.xhigh) &&
-                (y >= item.ylow) && (y <= item.yhigh))
+            if (x >= item.xlow && x <= item.xhigh &&
+                y >= item.ylow && y <= item.yhigh)
                 return item;
         }
         return null;
@@ -69,7 +69,7 @@ public class LadderDiagram extends JPanel {
         LadderPathItem result = null;
         double dmin = 0.0;
 
-        if ((y < (border_top - slop)) || (y > (height - border_top + slop)))
+        if (y < (border_top - slop) || y > (height - border_top + slop))
             return null;
 
         for (int i = 0; i < ladderpathitems.size(); i++) {
@@ -77,19 +77,19 @@ public class LadderDiagram extends JPanel {
             double d;
 
             if (item.type == LadderPathItem.TYPE_SELF) {
-                if ((y < (item.ystart - slop)) || (y > (item.yend + slop)))
+                if (y < (item.ystart - slop) || y > (item.yend + slop))
                     continue;
                 d = (x - item.xcenter)*(x - item.xcenter) +
                     (y - item.ycenter)*(y - item.ycenter);
                 d = Math.abs(Math.sqrt(d) - item.radius);
             }
             else {
-                int xmin = ((item.xstart < item.xend) ? item.xstart : item.xend);
-                int xmax = ((item.xstart < item.xend) ? item.xend : item.xstart);
+                int xmin = (item.xstart < item.xend) ? item.xstart : item.xend;
+                int xmax = (item.xstart < item.xend) ? item.xend : item.xstart;
 
-                if ((x < (xmin - slop)) || (x > (xmax + slop)))
+                if (x < (xmin - slop) || x > (xmax + slop))
                     continue;
-                if ((y < (item.ystart - slop)) || (y > (item.yend + slop)))
+                if (y < (item.ystart - slop) || y > (item.yend + slop))
                     continue;
                 d = (item.xend - item.xstart)*(y - item.ystart) -
                     (x - item.xstart)*(item.yend - item.ystart);
@@ -98,7 +98,7 @@ public class LadderDiagram extends JPanel {
             }
 
             if ((int)d < slop) {
-                if ((result == null) || (d < dmin)) {
+                if (result == null || d < dmin) {
                     result = item;
                     dmin = d;
                 }
@@ -120,12 +120,15 @@ public class LadderDiagram extends JPanel {
             return;
 
         this.sim_time = time;
+        setTrackerPosition();
+        repaint();
+    }
 
+    protected void setTrackerPosition() {
         double loop_start = pat.getLoopStartTime();
         double loop_end = pat.getLoopEndTime();
         tracker_y = (int)(0.5 + (double)(height-2*border_top) * (sim_time-loop_start) /
                           (loop_end - loop_start)) + border_top;
-        repaint();
     }
 
     protected void createView() {
@@ -296,17 +299,15 @@ public class LadderDiagram extends JPanel {
             }
         }
 
+        // update position of tracker bar
+        setTrackerPosition();
     }
 
     protected void paintBackground(Graphics gr) {
         // check if ladder was resized
         Dimension dim = this.getSize();
-        if ((dim.width != width) || (dim.height != height)) {
+        if (dim.width != width || dim.height != height)
             updateView();
-            //active_eventitem = null;
-            //if (animator != null)
-            //  animator.deactivateEvent();
-        }
 
         if (laddercachedirty) {
             Graphics g = gr;
@@ -392,7 +393,8 @@ public class LadderDiagram extends JPanel {
     protected void paintComponent(Graphics gr) {
         if (gr instanceof Graphics2D) {
             Graphics2D gr2 = (Graphics2D)gr;
-            gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                 RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
         paintBackground(gr);
