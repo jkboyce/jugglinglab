@@ -81,13 +81,7 @@ public abstract class MHNPattern extends Pattern {
         }
 
         // delete newlines and carriage returns from string
-        int pos;
-        while ((pos = config.indexOf('\n')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
-        while ((pos = config.indexOf('\r')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
+        config = config.replace("\n","").replace("\r","");
 
         ParameterList pl = new ParameterList(config);
         String temp = null;
