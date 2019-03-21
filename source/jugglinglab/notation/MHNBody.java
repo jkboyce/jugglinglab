@@ -4,12 +4,17 @@
 
 package jugglinglab.notation;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPosition;
 import jugglinglab.util.*;
 
+
+// This class parses the "body" parameter in MHN notation.
 
 public class MHNBody {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -21,20 +26,9 @@ public class MHNBody {
     protected double[][][][] bodypath;
 
     public MHNBody(String bodies) throws JuggleExceptionUser, JuggleExceptionInternal {
-        // delete the '<' and '>' characters first
-        int pos;
-        while ((pos = bodies.indexOf('<')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('>')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('{')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('}')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
+        // delete the '<' and '>' characters
+        String pat = "[" + Pattern.quote("<>{}") + "]";
+        bodies = bodies.replaceAll(pat, "");
 
         StringTokenizer st1 = new StringTokenizer(bodies, "|!", false);
         jugglers = st1.countTokens();
@@ -48,7 +42,7 @@ public class MHNBody {
             // System.out.println("str["+j+"] = "+str);
 
             for (int k = 0; k < 3; k++) {
-                pos = 0;
+                int pos = 0;
                 int numcoords = 0;
 
                 for (int l = 0; l < str.length(); ) {
@@ -107,7 +101,7 @@ public class MHNBody {
                             } catch (NumberFormatException e) {
                                 throw new JuggleExceptionUser(errorstrings.getString("Error_body_coordinate"));
                             } catch (NoSuchElementException e) {
-                                throw new JuggleExceptionInternal("No such element exception in \"body\"");
+                                throw new JuggleExceptionInternal("No such element exception in MHNBody");
                             }
                         }
                         numcoords++;
@@ -149,7 +143,7 @@ public class MHNBody {
 
     // pos and index start from 0:
     public JMLPosition getPosition(int juggler, int pos, int index) {
-        if ((pos >= getPeriod(juggler)) || (index >= getNumberOfPositions(juggler, pos)))
+        if (pos >= getPeriod(juggler) || index >= getNumberOfPositions(juggler, pos))
             return null;
         int j = (juggler - 1) % jugglers;
         if (bodypath[j][pos][index] == null)
