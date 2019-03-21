@@ -5,11 +5,10 @@
 package jugglinglab.prop;
 
 import java.awt.*;
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
 
 
 public abstract class Prop {
@@ -20,34 +19,33 @@ public abstract class Prop {
 
     public static final String[] builtinProps = { "Ball", "Image", "Ring" };
 
-    public static Prop getProp(String name) throws JuggleExceptionUser {
-        try {
-            Object obj = Class.forName("jugglinglab.prop."+name.toLowerCase()+"Prop").newInstance();
-            if (obj instanceof Prop)
-                return (Prop)obj;
-        }
-        catch (ClassNotFoundException cnfe) {
-        }
-        catch (IllegalAccessException iae) {
-        }
-        catch (InstantiationException ie) {
-        }
+    // Creates a new prop of the given type
+    public static Prop newProp(String type) throws JuggleExceptionUser {
+        if (type == null)
+            throw new JuggleExceptionUser("Prop type not specified");
+
+        if (type.equalsIgnoreCase("ball"))
+            return new BallProp();
+        else if (type.equalsIgnoreCase("image"))
+            return new ImageProp();
+        else if (type.equalsIgnoreCase("ring"))
+            return new RingProp();
 
         String template = errorstrings.getString("Error_prop_type");
-        Object[] arguments = { name };
+        Object[] arguments = { type };
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
-
-    public abstract String getName();
-
-    public abstract Color getEditorColor();
-
-    public abstract ParameterDescriptor[] getParameterDescriptors();
 
     public void initProp(String st) throws JuggleExceptionUser {
         initString = st;
         this.init(st);
     }
+
+    public abstract String getType();
+
+    public abstract Color getEditorColor();
+
+    public abstract ParameterDescriptor[] getParameterDescriptors();
 
     protected abstract void init(String st) throws JuggleExceptionUser;
     public abstract Coordinate getMax();

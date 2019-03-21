@@ -4,13 +4,17 @@
 
 package jugglinglab.notation;
 
-import java.util.*;
+import java.util.ArrayList;
 import java.text.MessageFormat;
 
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
 
+
+// This class represents a pattern in the generalized form of siteswap notation
+// used by Juggling Lab. The real work here is to parse siteswap notation into
+// the internal format used by MHNPattern.
 
 public class SiteswapPattern extends MHNPattern {
     protected String orig_pattern;
@@ -23,23 +27,13 @@ public class SiteswapPattern extends MHNPattern {
 
     @Override
     public void fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        // This entire method will need to be double-checked for suitability with siteswap2 notation
-
-        // delete newlines and carriage returns from string
-        int pos;
-        while ((pos = config.indexOf('\n')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
-        while ((pos = config.indexOf('\r')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
-
         parseConfig(config);
-        this.orig_pattern = this.pattern;
+        this.orig_pattern = pattern;    // save to use as JMLPattern title
+
+        parseSiteswapNotation();
 
         // see if we need to repeat the pattern to match hand or body periods:
         if (hands != null || bodies != null) {
-            parseSiteswapNotation();
             int patperiod = getNorepPeriod();
 
             int handperiod = 1;
@@ -61,9 +55,9 @@ public class SiteswapPattern extends MHNPattern {
             if (totalperiod != patperiod) {
                 int repeats = totalperiod / patperiod;
                 pattern = "(" + pattern + "^" + repeats + ")";
+                parseSiteswapNotation();
             }
         }
-        parseSiteswapNotation();
     }
 
     @Override
@@ -82,12 +76,13 @@ public class SiteswapPattern extends MHNPattern {
         return (oddperiod ? getPeriod() / 2 : getPeriod());
     }
 
+
     protected void parseSiteswapNotation() throws JuggleExceptionUser, JuggleExceptionInternal {
         // first clear out the internal variables
         th = null;
         symmetry = new ArrayList<MHNSymmetry>();
 
-        SiteswapTreeItem tree = null;   // should probably be class variable
+        SiteswapTreeItem tree = null;
 
         try {
             // System.out.println("---------------");
@@ -112,18 +107,18 @@ public class SiteswapPattern extends MHNPattern {
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
 
-        // Need to use tree to fill in mhnPattern internal variables:
+        // Need to use tree to fill in MHNPattern internal variables:
         /*
         protected int numjugglers;
         protected int numpaths;
         protected int period;
         protected int max_occupancy;
-        protected mhnThrow[][][][] th;
-        protected mhnHands hands = null;
-        protected mhnBody bodies = null;
+        protected MHNThrow[][][][] th;
+        protected MHNHands hands;
+        protected MHNBody bodies;
         protected int max_throw;
         protected int indexes;
-        protected Vector symmetry = null;
+        protected ArrayList<MHNSymmetry> symmetry;
         */
 
         this.numjugglers = tree.jugglers;
@@ -460,8 +455,9 @@ public class SiteswapPattern extends MHNPattern {
     }
 
     // Second pass through the tree:
-    // 1)  Fill in the th[] array with mhnThrow objects
-    protected void doSecondPass(SiteswapTreeItem sti, boolean switchhands, int beatoffset) throws JuggleExceptionUser {
+    // 1)  Fill in the th[] array with MHNThrow objects
+    protected void doSecondPass(SiteswapTreeItem sti, boolean switchhands, int beatoffset)
+                                            throws JuggleExceptionUser {
         SiteswapTreeItem child = null;
 
         switch (sti.type) {

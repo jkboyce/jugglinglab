@@ -32,7 +32,7 @@ public class PropDef {
     public Prop getProp()               { return prop; }
 
     public void layoutProp() throws JuggleExceptionUser {
-        this.prop = Prop.getProp(getType());
+        this.prop = Prop.newProp(getType());
         prop.initProp(getMod());
     }
 

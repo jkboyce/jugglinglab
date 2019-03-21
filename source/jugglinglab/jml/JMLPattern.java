@@ -1119,8 +1119,8 @@ done2:
         while (true) {
             pl = pathlinks.get(path - 1).get(i);
             Path p = pl.getPath();
-            if (p instanceof bouncePath) {
-                bouncePath bp = (bouncePath)p;
+            if (p instanceof BouncePath) {
+                BouncePath bp = (BouncePath)p;
                 double vol = bp.getBounceVolume(time1, time2);
                 if (vol > 0.0)
                     return vol;
@@ -1259,7 +1259,7 @@ done2:
     public boolean isBouncePattern() {
         for (int path = 1; path <= this.getNumberOfPaths(); path++) {
             for (PathLink pl : pathlinks.get(path - 1)) {
-                if (pl.getPath() instanceof bouncePath)
+                if (pl.getPath() instanceof BouncePath)
                     return true;
             }
         }

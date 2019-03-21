@@ -1,4 +1,4 @@
-// ballProp.java
+// BallProp.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -15,7 +15,7 @@ import jugglinglab.util.*;
 import jugglinglab.renderer.*;
 
 
-public class ballProp extends Prop {
+public class BallProp extends Prop {
     static String[] colornames = {"black", "blue", "cyan", "gray",
         "green", "magenta", "orange", "pink", "red", "white", "yellow"};
     static Color[] colorvals = {Color.black, Color.blue, Color.cyan,
@@ -42,7 +42,7 @@ public class ballProp extends Prop {
     protected Coordinate    propmin;
 
     @Override
-    public String getName() {
+    public String getType() {
         return "Ball";
     }
 

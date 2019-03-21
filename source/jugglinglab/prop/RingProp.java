@@ -1,21 +1,19 @@
-// ringProp.java
+// RingProp.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.prop;
 
-import java.util.*;
 import java.awt.*;
-import java.awt.image.*;
-import java.lang.reflect.*;
+import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
-import jugglinglab.core.*;
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
 
 
-public class ringProp extends Prop {
+public class RingProp extends Prop {
     static String[] colornames = {"black", "blue", "cyan", "gray",
         "green", "magenta", "orange", "pink", "red", "white", "yellow"};
     static Color[] colorvals = {Color.black, Color.blue, Color.cyan,
@@ -45,7 +43,7 @@ public class ringProp extends Prop {
     protected int[]         px, py;
 
     @Override
-    public String getName() {
+    public String getType() {
         return "Ring";
     }
 

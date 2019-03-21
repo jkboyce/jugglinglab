@@ -1030,10 +1030,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 //              System.out.println("Got an action item: "+type);
                 try {
                     Prop pt;
-                    if (type.equalsIgnoreCase(startprop.getName()))
+                    if (type.equalsIgnoreCase(startprop.getType()))
                         pt = startprop;
                     else
-                        pt = Prop.getProp(type);
+                        pt = Prop.newProp(type);
                     makeParametersPanel(p2, pt.getParameterDescriptors());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(jd, jeu.getMessage());
@@ -1044,7 +1044,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         });
         String[] bp = Prop.builtinProps;
         for (int i = 0; i < bp.length; i++) {
-            if (bp[i].equalsIgnoreCase(startprop.getName())) {
+            if (bp[i].equalsIgnoreCase(startprop.getType())) {
                 cb1.setSelectedIndex(i);
                 break;
             }
@@ -1195,7 +1195,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     if (type.equalsIgnoreCase(tr.getThrowType()))
                         ppt = tr.getOutgoingPathLink().getPath();
                     else
-                        ppt = Path.getPath(type);
+                        ppt = Path.newPath(type);
                     makeParametersPanel(p2, ppt.getParameterDescriptors());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(jd, jeu.getMessage());

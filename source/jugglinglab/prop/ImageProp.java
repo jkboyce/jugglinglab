@@ -1,4 +1,4 @@
-// imageProp.java
+// ImageProp.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -13,14 +13,12 @@ import java.text.MessageFormat;
 import javax.imageio.ImageIO;
 
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
-import jugglinglab.core.*;
 
 
-public class imageProp extends Prop {
+public class ImageProp extends Prop {
     static URL image_url_default;
     static {
-        image_url_default = imageProp.class.getResource("/ball.png");
+        image_url_default = ImageProp.class.getResource("/ball.png");
     }
 
     protected URL           url;
@@ -37,9 +35,9 @@ public class imageProp extends Prop {
 
     private double          last_zoom = 0.0;
 
-    public imageProp() throws JuggleExceptionUser {
+    public ImageProp() throws JuggleExceptionUser {
         if (image_url_default == null)
-            throw new JuggleExceptionUser("imageProp error: Default image not set");
+            throw new JuggleExceptionUser("ImageProp error: Default image not set");
         this.url = image_url_default;
         loadImage();
         rescaleImage(1.0);
@@ -97,7 +95,7 @@ public class imageProp extends Prop {
     }
 
     @Override
-    public String getName() {
+    public String getType() {
         return "Image";
     }
 

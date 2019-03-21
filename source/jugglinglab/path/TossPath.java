@@ -1,4 +1,4 @@
-// tossPath.java
+// TossPath.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -8,7 +8,7 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 
 
-public class tossPath extends Path {
+public class TossPath extends Path {
     protected static final double g_def = 980;  // using CGS units
 
     protected double    bx, cx;
@@ -18,7 +18,7 @@ public class tossPath extends Path {
     protected double    g = g_def;
 
     @Override
-    public String getName() { return "Toss"; }
+    public String getType() { return "Toss"; }
 
     @Override
     public ParameterDescriptor[] getParameterDescriptors() {

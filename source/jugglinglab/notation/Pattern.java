@@ -4,13 +4,14 @@
 
 package jugglinglab.notation;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ResourceBundle;
 
-import jugglinglab.core.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 
+
+// This is the base class for all non-JML pattern types in Juggling Lab.
+// This is used to parse strings to create the JMLPatterns that are animated.
 
 public abstract class Pattern {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -23,13 +24,19 @@ public abstract class Pattern {
     public static final int NOTATION_NONE = 0;
     public static final int NOTATION_SITESWAP = 1;
 
+    // creates a new blank pattern in the given notation
     public static Pattern newPattern(String notation) throws JuggleExceptionUser,
                                                 JuggleExceptionInternal {
+        if (notation == null)
+            throw new JuggleExceptionUser("Notation type not specified");
+
         if (notation.equalsIgnoreCase("siteswap"))
             return new SiteswapPattern();
-        return null;
+
+        throw new JuggleExceptionUser("Notation type '"+notation+"' not recognized");
     }
 
+    // return the notation name
     public abstract String getNotationName();
 
     // read pattern from textual representation

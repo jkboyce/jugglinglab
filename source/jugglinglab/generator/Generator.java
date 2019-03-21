@@ -27,17 +27,6 @@ public abstract class Generator {
         return null;
     }
 
-    public abstract String getNotationName();
-    public abstract String getStartupMessage();
-    public abstract JPanel getGeneratorControls();
-    public abstract void resetGeneratorControls();
-
-    // use parameters from controller frame
-    public abstract void initGenerator() throws JuggleExceptionUser;
-
-    // use command line args
-    public abstract void initGenerator(String[] args) throws JuggleExceptionUser;
-
     public void initGenerator(String arg) throws JuggleExceptionUser {
         int i, numargs;
         StringTokenizer st = new StringTokenizer(arg, " \n");
@@ -51,9 +40,28 @@ public abstract class Generator {
         this.initGenerator(args);
     }
 
+    // return the notation name
+    public abstract String getNotationName();
+
+    // return a startup text message
+    public abstract String getStartupMessage();
+
+    // return a JPanel to be used by NotationGUI in the UI
+    public abstract JPanel getGeneratorControl();
+
+    // reset control values to defaults
+    public abstract void resetGeneratorControl();
+
+    // use parameters from generator control
+    public abstract void initGenerator() throws JuggleExceptionUser;
+
+    // use command line args
+    public abstract void initGenerator(String[] args) throws JuggleExceptionUser;
+
+    // run the generator with no limits
     public abstract int runGenerator(GeneratorTarget t);
-    // The following is identical to the above, but imposes
-    // bounds in space and time
+
+    // run the generator with bounds on space and time
     public abstract int runGenerator(GeneratorTarget t, int max_num,
                                      double secs) throws JuggleExceptionUser;
 }

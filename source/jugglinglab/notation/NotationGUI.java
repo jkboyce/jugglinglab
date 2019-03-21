@@ -180,7 +180,7 @@ public class NotationGUI extends JPanel implements ActionListener {
 
             if (gen == null)
                 System.out.println("Got a null generator");
-            
+
             if (gen != null) {
                 if (pl == null && patlisttab)
                     pl = new PatternList(animtarget);
@@ -188,14 +188,14 @@ public class NotationGUI extends JPanel implements ActionListener {
 
                 JPanel p1 = new JPanel();
                 p1.setLayout(new BorderLayout());
-                p1.add(gen.getGeneratorControls(), BorderLayout.PAGE_START);
+                p1.add(gen.getGeneratorControl(), BorderLayout.PAGE_START);
                 JPanel p2 = new JPanel();
                 p2.setLayout(new FlowLayout(FlowLayout.TRAILING));
                 JButton but1 = new JButton(guistrings.getString("Defaults"));
                 but1.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        gen.resetGeneratorControls();
+                        gen.resetGeneratorControl();
                     }
                 });
                 p2.add(but1);

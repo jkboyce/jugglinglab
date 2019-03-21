@@ -17,13 +17,10 @@ import jugglinglab.jml.*;
 // transitions between elements in this matrix.
 //
 // MHN has no standardized string (textual) representation. Hence this class is
-// abstract since it lacks a getJMLPattern() method to parse a string-formatted
-// pattern into JML.
-//
-// This class is useful as a building block for other notations. Most importantly we
-// model siteswap notation as a type of MHN, with a parser to interpret siteswap
-// notation into the internal MHN matrix representation.
-// See siteswapNotation.getJMLPattern().
+// abstract because it lacks a fromString() method. This is however useful as a
+// building block for other notations. Most importantly we model siteswap notation
+// as a type of MHN, with a parser to interpret siteswap notation into the
+// internal MHN matrix representation.
 //
 // The main business of this class is to go from the matrix-based internal
 // representation of an MHN pattern to JML. Any notation that builds on MHN can
@@ -81,6 +78,15 @@ public abstract class MHNPattern extends Pattern {
     protected void parseConfig(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (config.indexOf((int)'=') == -1) { // just the pattern
             config = "pattern=" + config;
+        }
+
+        // delete newlines and carriage returns from string
+        int pos;
+        while ((pos = config.indexOf('\n')) >= 0) {
+            config = config.substring(0,pos) + config.substring(pos+1,config.length());
+        }
+        while ((pos = config.indexOf('\r')) >= 0) {
+            config = config.substring(0,pos) + config.substring(pos+1,config.length());
         }
 
         ParameterList pl = new ParameterList(config);

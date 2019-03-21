@@ -31,7 +31,7 @@ public class PathLink {
     }
 
     public void setThrow(String type, String mod) throws JuggleExceptionUser, JuggleExceptionInternal {
-        proppath = Path.getPath(type);
+        proppath = Path.newPath(type);
         proppath.initPath(mod);
         proppath.setStart(startevent.getGlobalCoordinate(), startevent.getT());
         proppath.setEnd(endevent.getGlobalCoordinate(), endevent.getT());

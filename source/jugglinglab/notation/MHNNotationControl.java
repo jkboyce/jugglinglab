@@ -7,11 +7,17 @@ package jugglinglab.notation;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.*;
 
 import jugglinglab.util.*;
 import jugglinglab.prop.Prop;
+
+
+// This class is abstract because MHNPattern is abstract; there is no
+// MHNPattern.fromString() method. The UI panel created here is inherited by
+// SiteswapNotationControl and it may be useful for other notations as well.
 
 public abstract class MHNNotationControl extends NotationControl {
     protected static final String[] builtinHandsNames = {

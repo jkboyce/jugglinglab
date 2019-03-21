@@ -1,4 +1,4 @@
-// bouncePath.java
+// BouncePath.java
 //
 // Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
@@ -8,7 +8,7 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 
 
-public class bouncePath extends Path {
+public class BouncePath extends Path {
     protected static final int bounces_def = 1;     // number of bounces
     protected static final boolean forced_def = false;
     protected static final boolean hyper_def = false;
@@ -31,7 +31,7 @@ public class bouncePath extends Path {
     protected int       numbounces;     // actual number of bounces (<= this.bounces)
 
     @Override
-    public String getName() { return "Bounce"; }
+    public String getType() { return "Bounce"; }
 
     @Override
     public ParameterDescriptor[] getParameterDescriptors() {
