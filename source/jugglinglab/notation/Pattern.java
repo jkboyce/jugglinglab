@@ -40,13 +40,13 @@ public abstract class Pattern {
     public abstract String getNotationName();
 
     // read pattern from textual representation
-    public abstract void fromString(String config) throws
+    public abstract Pattern fromString(String config) throws
                         JuggleExceptionUser, JuggleExceptionInternal;
 
     // output pattern to textual representation
     public abstract String toString();
 
     // convert pattern to JML
-    public abstract JMLPattern getJMLPattern() throws
+    public abstract JMLPattern asJMLPattern() throws
                         JuggleExceptionUser, JuggleExceptionInternal;
 }

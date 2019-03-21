@@ -26,7 +26,7 @@ public class SiteswapPattern extends MHNPattern {
     }
 
     @Override
-    public void fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         parseConfig(config);
         this.orig_pattern = pattern;    // save to use as JMLPattern title
 
@@ -58,11 +58,12 @@ public class SiteswapPattern extends MHNPattern {
                 parseSiteswapNotation();
             }
         }
+        return this;
     }
 
     @Override
-    public JMLPattern getJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
-        JMLPattern result = super.getJMLPattern();
+    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
+        JMLPattern result = super.asJMLPattern();
         result.setTitle(orig_pattern);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)

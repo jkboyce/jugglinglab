@@ -212,7 +212,7 @@ public abstract class MHNPattern extends Pattern {
     //--------------------------------------------------------------------------
 
     @Override
-    public JMLPattern getJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
+    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         // build out the JML pattern in a series of steps:
         findMasterThrows();
         assignPaths();
