@@ -1,36 +1,19 @@
 // Juggler.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.renderer;
 
 import jugglinglab.util.*;
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
+import jugglinglab.jml.HandLink;
 
 
-//  This class calculates the coordinates of the juggler elbows, shoulders, etc.
+// This class calculates the coordinates of the juggler elbows, shoulders, etc.
 
 public class Juggler {
-        // juggler dimensions, in cm
-    public final static double shoulder_hw = 23.0;  // shoulder half-width (m)
+        // juggler dimensions, in centimeters
+    public final static double shoulder_hw = 23.0;  // shoulder half-width (cm)
     public final static double shoulder_h = 40.0;   // throw pos. to shoulder
     public final static double waist_hw = 17.0;     // waist half-width
     public final static double waist_h = -5.0;

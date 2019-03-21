@@ -1,24 +1,6 @@
-// imageProp.java
+// ImageProp.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
- This file is part of Juggling Lab.
-
- Juggling Lab is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- Juggling Lab is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Juggling Lab; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.prop;
 
@@ -31,31 +13,31 @@ import java.text.MessageFormat;
 import javax.imageio.ImageIO;
 
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
-import jugglinglab.core.*;
 
 
-public class imageProp extends Prop {
+public class ImageProp extends Prop {
     static URL image_url_default;
     static {
-        image_url_default = imageProp.class.getResource("/ball.png");
+        image_url_default = ImageProp.class.getResource("/ball.png");
     }
 
-    protected URL url;
-    protected BufferedImage image = null;
-    protected BufferedImage scaled_image = null;
-    protected final float width_default = 10f;  // in cm
-    protected float width;
-    protected float height;
-    protected Dimension size = null;
-    protected Dimension center = null;
-    protected Dimension grip = null;
+    protected URL           url;
+    protected BufferedImage image;
+    protected BufferedImage scaled_image;
+    protected final float   width_default = 10.0f;  // in centimeters
+    protected float         width;
+    protected float         height;
+    protected Dimension     size;
+    protected Dimension     center;
+    protected Dimension     grip;
+    protected Coordinate    propmax;
+    protected Coordinate    propmin;
 
-    private double last_zoom = 0;
+    private double          last_zoom = 0.0;
 
-    public imageProp() throws JuggleExceptionUser {
+    public ImageProp() throws JuggleExceptionUser {
         if (image_url_default == null)
-            throw new JuggleExceptionUser("imageProp error: Default image not set");
+            throw new JuggleExceptionUser("ImageProp error: Default image not set");
         this.url = image_url_default;
         loadImage();
         rescaleImage(1.0);
@@ -105,13 +87,15 @@ public class imageProp extends Prop {
 
         scaled_image = new BufferedImage(image_pixel_width, image_pixel_height, image.getType());
         Graphics2D g = scaled_image.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(image, 0, 0, image_pixel_width, image_pixel_height, 0, 0, image.getWidth(), image.getHeight(), null);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                           RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(image, 0, 0, image_pixel_width, image_pixel_height,
+                    0, 0, image.getWidth(), image.getHeight(), null);
         g.dispose();
     }
 
     @Override
-    public String getName() {
+    public String getType() {
         return "Image";
     }
 
@@ -179,11 +163,15 @@ public class imageProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(width/2, 0.0, width);
+        if (this.propmax == null)
+            this.propmax = new Coordinate(width / 2.0, 0.0, width);
+        return this.propmax;
     }
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-width/2, 0.0, 0.0);
+        if (this.propmin == null)
+            this.propmin = new Coordinate(-width / 2.0, 0.0, 0.0);
+        return this.propmin;
     }
 
     @Override
@@ -191,21 +179,21 @@ public class imageProp extends Prop {
 
     @Override
     public Dimension getProp2DSize(double zoom) {
-        if ((size == null) || (zoom != last_zoom))
+        if (size == null || zoom != last_zoom)
             rescaleImage(zoom);
         return size;
     }
 
     @Override
     public Dimension getProp2DCenter(double zoom) {
-        if ((center == null) || (zoom != last_zoom))
+        if (center == null || zoom != last_zoom)
             rescaleImage(zoom);
         return center;
     }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if ((grip == null) || (zoom != last_zoom))
+        if (grip == null || zoom != last_zoom)
             rescaleImage(zoom);
         return grip;
     }

@@ -1,24 +1,6 @@
-// siteswapGenerator.java
+// SiteswapGenerator.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.generator;
 
@@ -33,8 +15,8 @@ import jugglinglab.core.Constants;
 
 
 // This class is a port of the J2 siteswap pattern generator to Java.
-// For now the "custom" mode has been commented out, although at some
-// point it might be interesting to have a graphical rhythm editor.
+// For now the "custom" mode has been commented out but at some point it
+// might be interesting to have a graphical rhythm editor.
 
 /************************************************************************/
 /*   J version 2.3               by Jack Boyce        12/91             */
@@ -56,10 +38,10 @@ import jugglinglab.core.Constants;
 /*   Bug fix to find_start_end() on 02/18/99                            */
 /************************************************************************/
 
-public class siteswapGenerator extends Generator {
+public class SiteswapGenerator extends Generator {
     // Different types of siteswaps
-    protected final static int ASYNCH = 0;  /* different types of modes */
-    protected final static int SYNCH = 1;
+    protected final static int ASYNC = 0;  /* different types of modes */
+    protected final static int SYNC = 1;
     //  protected final static int CUSTOM = 2;
 
     // Types of multiplexing filter slots
@@ -73,8 +55,8 @@ public class siteswapGenerator extends Generator {
     // max. # of chars. printed per throw
     private final static int CHARS_PER_THROW = 50;
 
-    protected final static int asynch_rhythm_repunit[][] = { { 1 } };
-    protected final static int synch_rhythm_repunit[][] = { { 1, 0 }, { 1, 0 } };
+    protected final static int async_rhythm_repunit[][] = { { 1 } };
+    protected final static int sync_rhythm_repunit[][] = { { 1, 0 }, { 1, 0 } };
 
     // Instance variables
     protected int pattern_rhythm[][][], pattern_state[][][];
@@ -113,7 +95,12 @@ public class siteswapGenerator extends Generator {
     protected int loop_counter;         // gen_loop() counter for checking timeout
     protected final static int loop_counter_max = 20000;
 
-    protected siteswapGeneratorControl control; // contains controls for generator
+    protected SiteswapGeneratorControl control; // contains controls for generator
+
+    @Override
+    public String getNotationName() {
+        return "Siteswap";
+    }
 
     @Override
     public String getStartupMessage() {
@@ -121,14 +108,14 @@ public class siteswapGenerator extends Generator {
     }
 
     @Override
-    public JPanel getGeneratorControls() {
+    public JPanel getGeneratorControl() {
         if (control == null)
-            control = new siteswapGeneratorControl();
+            control = new SiteswapGeneratorControl();
         return control;
     }
 
     @Override
-    public void resetGeneratorControls() {
+    public void resetGeneratorControl() {
         if (control != null)
             control.resetControl();
     }
@@ -161,7 +148,7 @@ public class siteswapGenerator extends Generator {
         connected_patterns = false;
         juggler_permutations = false;
         sequenceflag = true;
-        mode = ASYNCH;          /* default mode */
+        mode = ASYNC;          /* default mode */
         jugglers = 1;
         target = null;
 
@@ -190,7 +177,7 @@ public class siteswapGenerator extends Generator {
             else if (args[i].equals("-se"))
                 sequenceflag = false;
             else if (args[i].equals("-s"))
-                mode = SYNCH;
+                mode = SYNC;
             /*  else if (!strcmp(argv[i], "-c")) {
                 mode = CUSTOM;
             if (i != (argc - 1))
@@ -209,7 +196,7 @@ public class siteswapGenerator extends Generator {
             else if (args[i].equals("-mt"))
                 true_multiplex = true;
             else if (args[i].equals("-m")) {
-                if ((i < (args.length - 1)) && (args[i + 1].charAt(0) != '-')) {
+                if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
                     try {
                         multiplex = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException nfe) {
@@ -222,7 +209,7 @@ public class siteswapGenerator extends Generator {
                 }
             }
             else if (args[i].equals("-j")) {
-                if ((i < (args.length - 1)) && (args[i + 1].charAt(0) != '-')) {
+                if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
                     try {
                         jugglers = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException nfe) {
@@ -235,7 +222,7 @@ public class siteswapGenerator extends Generator {
                 }
             }
             else if (args[i].equals("-d")) {
-                if ((i < (args.length - 1)) && (args[i + 1].charAt(0) != '-')) {
+                if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
                     try {
                         delaytime = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException nfe) {
@@ -249,7 +236,7 @@ public class siteswapGenerator extends Generator {
                 }
             }
             else if (args[i].equals("-l")) {
-                if ((i < (args.length - 1)) && (args[i + 1].charAt(0) != '-')) {
+                if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
                     try {
                         leader_person = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException nfe) {
@@ -263,7 +250,7 @@ public class siteswapGenerator extends Generator {
             }
             else if (args[i].equals("-x")) {
                 i++;
-                while ((i < args.length) && (args[i].charAt(0) != '-')) {
+                while (i < args.length && args[i].charAt(0) != '-') {
                     try {
                         String re = make_standard_RE(args[i]);
                         if (re.indexOf("^") < 0)
@@ -278,7 +265,7 @@ public class siteswapGenerator extends Generator {
             }
             else if (args[i].equals("-i")) {
                 i++;
-                while ((i < args.length) && (args[i].charAt(0) != '-')) {
+                while (i < args.length && args[i].charAt(0) != '-') {
                     try {
                         String re = make_standard_RE(args[i]);
                         if (re.indexOf("^") < 0)
@@ -371,7 +358,7 @@ public class siteswapGenerator extends Generator {
         if ((jugglers > 1) && !juggler_permutations && (groundflag != 0))
             throw new JuggleExceptionUser(errorstrings.getString("Error_juggler_permutations"));
 
-        if (((llow % rhythm_period) != 0) || (lhigh % rhythm_period) != 0) {
+        if ((llow % rhythm_period) != 0 || (lhigh % rhythm_period) != 0) {
             String template = errorstrings.getString("Error_period_multiple");
             Object[] arguments = { new Integer(rhythm_period) };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -386,7 +373,7 @@ public class siteswapGenerator extends Generator {
         /*  same structures are used to find starting and ending        */
         /*  sequences (containing as many as HT elements).              */
 
-        slot_size = ((ht > lhigh) ? ht : lhigh);
+        slot_size = (ht > lhigh ? ht : lhigh);
         slot_size += rhythm_period - (slot_size % rhythm_period);
 
         for (i = 0; i < hands; i++)
@@ -430,14 +417,14 @@ public class siteswapGenerator extends Generator {
             String include_RE = null;
 
             if (jugglers == 1) {
-                if (mode == ASYNCH)
+                if (mode == ASYNC)
                     include_RE = ".*\\[[^2]*\\].*";
-                else if (mode == SYNCH)
+                else if (mode == SYNC)
                     include_RE = ".*\\[([^2\\]]*2x)*[^2\\]]*\\].*";
             } else {
-                if (mode == ASYNCH)
+                if (mode == ASYNC)
                     include_RE = ".*\\[([^2\\]]*(2p|.p2|2p.))*[^2\\]]*\\].*";
-                else if (mode == SYNCH)
+                else if (mode == SYNC)
                     include_RE = ".*\\[([^2\\]]*(2p|.p2|2p.|2x|2xp|.xp2|2xp.))*[^2\\]]*\\].*";
             }
 
@@ -530,7 +517,7 @@ public class siteswapGenerator extends Generator {
 
     protected void initialize() {
         switch (mode) {
-            case ASYNCH:
+            case ASYNC:
                 rhythm_repunit = new int[jugglers][1];
                 holdthrow = new int[jugglers];
                 person_number = new int[jugglers];
@@ -538,12 +525,12 @@ public class siteswapGenerator extends Generator {
                 rhythm_period = 1;
                 pattern_printx = false;
                 for (int i = 0; i < hands; i++) {
-                    rhythm_repunit[i][0] = asynch_rhythm_repunit[0][0];
+                    rhythm_repunit[i][0] = async_rhythm_repunit[0][0];
                     holdthrow[i] = 2;
                     person_number[i] = i+1;
                 }
                 break;
-            case SYNCH:
+            case SYNC:
                 rhythm_repunit = new int[2*jugglers][2];
                 holdthrow = new int[2*jugglers];
                 person_number = new int[2*jugglers];
@@ -552,7 +539,7 @@ public class siteswapGenerator extends Generator {
                 pattern_printx = true;
                 for (int i = 0; i < hands; i++) {
                     for (int j = 0; j < rhythm_period; j++)
-                        rhythm_repunit[i][j] = synch_rhythm_repunit[i%2][j];
+                        rhythm_repunit[i][j] = sync_rhythm_repunit[i%2][j];
                     holdthrow[i] = 2;
                     person_number[i] = (i/2) + 1;
                 }
@@ -773,7 +760,7 @@ public class siteswapGenerator extends Generator {
                 return false;
         }
 
-        if ((mode == ASYNCH) && lameflag && (max_occupancy == 1)) {
+        if (mode == ASYNC && lameflag && max_occupancy == 1) {
             for (i = 0; i < (l - 1); i++)       /* check for '11' sequence */
                 for (j = 0; j < hands; j++)
                     if ((pattern_throw_value[i][j][0] == 1) &&
@@ -785,7 +772,7 @@ public class siteswapGenerator extends Generator {
 
         // Added 12/4/2002
         // Is the pattern composite?  If so, ensure we only print one rotation of it
-        if ((fullflag == 0) && (rotflag == 0)) {
+        if (fullflag == 0 && rotflag == 0) {
             for (i = 1; i < l; i++) {
                 if ((i % rhythm_period) == 0) {     // can we compare states?
                     if (compare_states(pattern_state[0], pattern_state[i]) == 0) {
@@ -1139,7 +1126,7 @@ public class siteswapGenerator extends Generator {
 
         if (groundflag != 1) {
             if (sequenceflag) {
-                if (mode == ASYNCH) {
+                if (mode == ASYNC) {
                     for (i = n - starting_seq_length; i > 0; i--)
                         outputline.append(" ");
                 }
@@ -1164,7 +1151,7 @@ public class siteswapGenerator extends Generator {
                 outputline.append(ending_seq, 0, ending_seq_length);
                 // add proper number of trailing spaces too, so formatting is aligned
                 // in RTL languages
-                if (mode == ASYNCH) {
+                if (mode == ASYNC) {
                     for (i = n - ending_seq_length; i > 0; i--)
                         outputline.append(" ");
                 }
@@ -1681,7 +1668,7 @@ findending2:
             return;
 
         try {
-            siteswapGenerator ssg = new siteswapGenerator();
+            SiteswapGenerator ssg = new SiteswapGenerator();
             ssg.initGenerator(args);
             ssg.runGenerator(target);
         } catch (Exception e) {
@@ -1690,7 +1677,7 @@ findending2:
     }
 
     public static void main(String[] args) {
-        siteswapGenerator.runGeneratorCLI(args, new GeneratorTarget(System.out));
+        SiteswapGenerator.runGeneratorCLI(args, new GeneratorTarget(System.out));
     }
 
 }

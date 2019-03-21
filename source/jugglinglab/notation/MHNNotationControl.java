@@ -1,37 +1,25 @@
-// mhnNotationControl.java
+// MHNNotationControl.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.*;
 
 import jugglinglab.util.*;
 import jugglinglab.prop.Prop;
 
-public class mhnNotationControl extends NotationControl {
+
+// This class is abstract because MHNPattern is abstract; there is no
+// MHNPattern.fromString() method. The UI panel created here is inherited by
+// SiteswapNotationControl and it may be useful for other notations as well.
+
+public abstract class MHNNotationControl extends NotationControl {
     protected static final String[] builtinHandsNames = {
         "inside",
         "outside",
@@ -70,7 +58,7 @@ public class mhnNotationControl extends NotationControl {
     protected final static int vspacing = 12;
 
 
-    public mhnNotationControl() {
+    public MHNNotationControl() {
         this.setOpaque(false);
         this.setLayout(new BorderLayout());
 
@@ -264,14 +252,15 @@ public class mhnNotationControl extends NotationControl {
         return gbc;
     }
 
-    public String getPattern() {
+    @Override
+    public String getConfigString() {
         StringBuffer sb = new StringBuffer(256);
 
         sb.append("pattern=");
         sb.append(tf1.getText());
         sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
-            if (!tf2.getText().equals(new Double(mhnPattern.dwell_default).toString())) {
+            if (!tf2.getText().equals(new Double(MHNPattern.dwell_default).toString())) {
                 sb.append(";dwell=");
                 sb.append(tf2.getText());
             }
@@ -295,9 +284,10 @@ public class mhnNotationControl extends NotationControl {
         return sb.toString();
     }
 
+    @Override
     public void resetNotationControl() {
         tf1.setText("3");                                               // pattern
-        tf2.setText(new Double(mhnPattern.dwell_default).toString());   // dwell beats
+        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
         tf3.setText("");                                                // beats per second
         tf4.setText("");
         cb1.setSelectedIndex(0);
@@ -307,9 +297,10 @@ public class mhnNotationControl extends NotationControl {
         cb3.setSelectedIndex(0);
     }
 
+    @Override
     public String getHandsName() {
         int index = cb1.getSelectedIndex();
-        if ((index == 0) || (index == (builtinHandsNames.length+1)))
+        if (index == 0 || index == (builtinHandsNames.length+1))
             return null;
 
         return builtinHandsNames[index-1];

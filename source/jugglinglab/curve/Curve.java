@@ -1,24 +1,6 @@
 // Curve.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.curve;
 
@@ -30,9 +12,9 @@ public abstract class Curve {
     public static final int lineCurve = 2;
 
     protected int           numpoints;
-    protected Coordinate[]  positions = null;
-    protected double[]      times = null;
-    protected Coordinate    start_velocity = null, end_velocity = null;
+    protected Coordinate[]  positions;
+    protected double[]      times;
+    protected Coordinate    start_velocity, end_velocity;
 
     public abstract void initCurve(String st) throws JuggleExceptionUser;
 
@@ -67,12 +49,12 @@ public abstract class Curve {
     public Coordinate getMax()  { return getMax2(times[0], times[numpoints-1]); }
     public Coordinate getMin()  { return getMin2(times[0], times[numpoints-1]); }
     public Coordinate getMax(double begin, double end) {
-        if ((end < getStartTime()) || (begin > getEndTime()))
+        if (end < getStartTime() || begin > getEndTime())
             return null;
         return getMax2(begin, end);
     }
     public Coordinate getMin(double begin, double end) {
-        if ((end < getStartTime()) || (begin > getEndTime()))
+        if (end < getStartTime() || begin > getEndTime())
             return null;
         return getMin2(begin, end);
     }

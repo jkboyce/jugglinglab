@@ -1,31 +1,13 @@
-// lineCurve.java
+// LineCurve.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.curve;
 
 import jugglinglab.util.*;
 
 
-public class lineCurve extends Curve {
+public class LineCurve extends Curve {
     protected int           n;              // number of line segments
     protected double[][]    a, b;           // line coefficients
     protected double[]      durations;      // durations of segments
@@ -64,7 +46,7 @@ public class lineCurve extends Curve {
 
     @Override
     public void getCoordinate(double time, Coordinate newPosition) {
-        if ((time < times[0]) || (time > times[n]))
+        if (time < times[0] || time > times[n])
             return;
 
         int i;
@@ -83,7 +65,7 @@ public class lineCurve extends Curve {
 
     @Override
     protected Coordinate getMax2(double begin, double end) {
-        if ((end < times[0]) || (begin > times[n]))
+        if (end < times[0] || begin > times[n])
             return null;
 
         Coordinate result = null;
@@ -93,7 +75,7 @@ public class lineCurve extends Curve {
         result = check(result, thigh, true);
 
         for (int i = 0; i <= n; i++) {
-            if ((tlow <= times[i]) && (times[i] <= thigh))
+            if (tlow <= times[i] && times[i] <= thigh)
                 result = check(result, times[i], true);
             if (i != n) {
                 double tlowtemp = Math.max(tlow, times[i]);
@@ -121,7 +103,7 @@ public class lineCurve extends Curve {
         result = check(result, thigh, false);
 
         for (int i = 0; i <= n; i++) {
-            if ((tlow <= times[i]) && (times[i] <= thigh))
+            if (tlow <= times[i] && times[i] <= thigh)
                 result = check(result, times[i], false);
             if (i != n) {
                 double tlowtemp = Math.max(tlow, times[i]);

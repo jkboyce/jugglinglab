@@ -1,25 +1,6 @@
 // JMLPattern.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.jml;
 
@@ -594,10 +575,10 @@ public class JMLPattern {
     // ------------------------------------------------------------------------
 
     public void findPositions() throws JuggleExceptionInternal {
-        this.jugglercurve = new splineCurve[this.getNumberOfJugglers()];
+        this.jugglercurve = new SplineCurve[this.getNumberOfJugglers()];
         this.jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                              (Curve[])(new lineCurve[this.getNumberOfJugglers()]) :
-                              (Curve[])(new splineCurve[this.getNumberOfJugglers()]) );
+                              (Curve[])(new LineCurve[this.getNumberOfJugglers()]) :
+                              (Curve[])(new SplineCurve[this.getNumberOfJugglers()]) );
 
         for (int i = 1; i <= this.getNumberOfJugglers(); i++) {
             int num = 0;
@@ -610,9 +591,9 @@ public class JMLPattern {
             }
 
             if (num == 0) {
-                jugglercurve[i - 1] = new splineCurve();
+                jugglercurve[i - 1] = new SplineCurve();
                 jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                                        (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[2];
                 times[0] = this.getLoopStartTime();
                 times[1] = this.getLoopEndTime();
@@ -642,9 +623,9 @@ public class JMLPattern {
                 jugglerangle[i - 1].setCurve(angles, times);
                 jugglerangle[i - 1].calcCurve();
             } else {
-                jugglercurve[i - 1] = new splineCurve();
+                jugglercurve[i - 1] = new SplineCurve();
                 jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
-                                        (Curve)(new lineCurve()) : (Curve)(new splineCurve()) );
+                                        (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[num+1];
                 Coordinate[] positions = new Coordinate[num+1];
                 Coordinate[] angles = new Coordinate[num+1];
@@ -878,7 +859,7 @@ done2:
                         if ((hl.getEndVelocityRef() != null) && (startlink != null)) {
                             Coordinate[] pos = new Coordinate[num+1];
                             double[] times = new double[num+1];
-                            Curve hp = new splineCurve();
+                            Curve hp = new SplineCurve();
 
                             for (int l = 0; l < num; l++) {
                                 HandLink hl2 = handlinks.get(i).get(j).get(k-num+1+l);
@@ -927,7 +908,7 @@ done2:
                         }
                         Coordinate[] pos = new Coordinate[num+1];
                         double[] times = new double[num+1];
-                        Curve hp = new splineCurve();
+                        Curve hp = new SplineCurve();
 
                         for (int l = 0; l < num; l++) {
                             HandLink hl2 = handlinks.get(i).get(j).get(k-num+1+l);
@@ -1140,8 +1121,8 @@ done2:
         while (true) {
             pl = pathlinks.get(path - 1).get(i);
             Path p = pl.getPath();
-            if (p instanceof bouncePath) {
-                bouncePath bp = (bouncePath)p;
+            if (p instanceof BouncePath) {
+                BouncePath bp = (BouncePath)p;
                 double vol = bp.getBounceVolume(time1, time2);
                 if (vol > 0.0)
                     return vol;
@@ -1277,8 +1258,18 @@ done2:
         return period;
     }
 
-    public boolean isValid()	{ return valid; }
-    public boolean isLaidout()	{ return laidout; }
+    public boolean isBouncePattern() {
+        for (int path = 1; path <= this.getNumberOfPaths(); path++) {
+            for (PathLink pl : pathlinks.get(path - 1)) {
+                if (pl.getPath() instanceof BouncePath)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isValid()    { return valid; }
+    public boolean isLaidout()  { return laidout; }
 
     protected void printEventList() {
         JMLEvent current = eventlist;

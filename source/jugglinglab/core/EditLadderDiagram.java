@@ -1,24 +1,6 @@
 // EditLadderDiagram.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -303,7 +285,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         EditLadderDiagram.this.repaint();
                         if (animator != null) {
                             double scale = (fpat.getLoopEndTime() - fpat.getLoopStartTime()) /
-                            (double)(height - 2*border_top);
+                                    (double)(height - 2*border_top);
                             double newtime = (double)(my - border_top) * scale;
                             animator.setTime(newtime);
                             animator.repaint();
@@ -1048,10 +1030,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 //              System.out.println("Got an action item: "+type);
                 try {
                     Prop pt;
-                    if (type.equalsIgnoreCase(startprop.getName()))
+                    if (type.equalsIgnoreCase(startprop.getType()))
                         pt = startprop;
                     else
-                        pt = Prop.getProp(type);
+                        pt = Prop.newProp(type);
                     makeParametersPanel(p2, pt.getParameterDescriptors());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(jd, jeu.getMessage());
@@ -1062,7 +1044,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         });
         String[] bp = Prop.builtinProps;
         for (int i = 0; i < bp.length; i++) {
-            if (bp[i].equalsIgnoreCase(startprop.getName())) {
+            if (bp[i].equalsIgnoreCase(startprop.getType())) {
                 cb1.setSelectedIndex(i);
                 break;
             }
@@ -1213,7 +1195,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     if (type.equalsIgnoreCase(tr.getThrowType()))
                         ppt = tr.getOutgoingPathLink().getPath();
                     else
-                        ppt = Path.getPath(type);
+                        ppt = Path.newPath(type);
                     makeParametersPanel(p2, ppt.getParameterDescriptors());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(jd, jeu.getMessage());
@@ -1522,12 +1504,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     public void setAnimationPanel(AnimationEditPanel anim) {
         this.animator = anim;
-    }
-
-    public void setTime(double time) {
-        if (gui_state == STATE_MOVING_TRACKER)
-            return;
-        super.setTime(time);
     }
 
     public void activeEventMoved() {

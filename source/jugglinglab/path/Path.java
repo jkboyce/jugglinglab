@@ -1,24 +1,6 @@
 // Path.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.path;
 
@@ -26,46 +8,31 @@ import java.util.*;
 import jugglinglab.util.*;
 
 
+// This is the base class for all Path types in Juggling Lab. A Path describes
+// the movement of an object during the time between throw and catch.
+
 public abstract class Path {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected double        start_time, end_time;
-    protected Coordinate    start_coord = null, end_coord = null;
+    protected Coordinate    start_coord, end_coord;
 
     // The built-in path types
     public static final String[] builtinPaths = { "Toss", "Bounce" };
 
-    // This is a factory to create Paths from names.  Note the
-    // naming convention.
-    public static Path getPath(String name) throws JuggleExceptionUser {
-        if (name == null)
-            throw new JuggleExceptionUser("Prop type not specified");
+    // Creates a new path of the given type
+    public static Path newPath(String type) throws JuggleExceptionUser {
+        if (type == null)
+            throw new JuggleExceptionUser("Path type not specified");
 
-        try {
-            Object obj = Class.forName("jugglinglab.path."+name.toLowerCase()+"Path").newInstance();
-            //          if (obj == null)
-            //              throw new JuggleExceptionUser("Cannot create Path type '"+name+"'");
-            if (!(obj instanceof Path))
-                throw new JuggleExceptionUser("Path type '"+name+"' doesn't work");
-            return (Path)obj;
-        }
-        catch (ClassNotFoundException cnfe) {
-            throw new JuggleExceptionUser("Path type '"+name+"' not found");
-        }
-        catch (IllegalAccessException iae) {
-            throw new JuggleExceptionUser("Cannot access '"+name+"' path file (security)");
-        }
-        catch (InstantiationException ie) {
-            throw new JuggleExceptionUser("Couldn't create '"+name+"' path");
-        }
+        if (type.equalsIgnoreCase("toss"))
+            return new TossPath();
+        else if (type.equalsIgnoreCase("bounce"))
+            return new BouncePath();
+
+        throw new JuggleExceptionUser("Path type '"+type+"' not recognized");
     }
-
-    public abstract String getName();
-
-    public abstract ParameterDescriptor[] getParameterDescriptors();
-
-    public abstract void initPath(String st) throws JuggleExceptionUser;
 
     public void setStart(Coordinate position, double time) {
         start_coord = position;
@@ -75,9 +42,6 @@ public abstract class Path {
         end_coord = position;
         end_time = time;
     }
-
-    public abstract void calcPath() throws JuggleExceptionInternal;
-
     public double getStartTime()        { return start_time; }
     public double getEndTime()          { return end_time; }
     public double getDuration()         { return (end_time-start_time); }
@@ -85,27 +49,20 @@ public abstract class Path {
         start_time += deltat;
         end_time += deltat;
     }
-    // for hand layout purposes
-    public abstract Coordinate getStartVelocity();
-    public abstract Coordinate getEndVelocity();
 
-    public abstract void getCoordinate(double time, Coordinate newPosition);
-
-    // for screen layout purposes
+    // for screen layout
     public Coordinate getMax()  { return getMax2(start_time, end_time); }
     public Coordinate getMin()  { return getMin2(start_time, end_time); }
     public Coordinate getMax(double begin, double end) {
-        if ((end < start_time) || (begin > end_time))
+        if (end < start_time || begin > end_time)
             return null;
         return getMax2(begin, end);
     }
     public Coordinate getMin(double begin, double end) {
-        if ((end < start_time) || (begin > end_time))
+        if (end < start_time || begin > end_time)
             return null;
         return getMin2(begin, end);
     }
-    protected abstract Coordinate getMax2(double begin, double end);
-    protected abstract Coordinate getMin2(double begin, double end);
 
     // utility for getMax/getMin
     protected Coordinate check(Coordinate result, double t, boolean findmax) {
@@ -118,4 +75,25 @@ public abstract class Path {
         return result;
     }
 
+    // string indicating the type of path
+    public abstract String getType();
+
+    // used for defining the path in the UI (EditLadderDiagram)
+    public abstract ParameterDescriptor[] getParameterDescriptors();
+
+    // defines the path from a config string
+    public abstract void initPath(String st) throws JuggleExceptionUser;
+
+    public abstract void calcPath() throws JuggleExceptionInternal;
+
+    // for hand layout purposes, only valid after calcPath()
+    public abstract Coordinate getStartVelocity();
+    public abstract Coordinate getEndVelocity();
+
+    // only valid after calcPath()
+    public abstract void getCoordinate(double time, Coordinate newPosition);
+
+    // for hand layout, only valid after calcPath()
+    protected abstract Coordinate getMax2(double begin, double end);
+    protected abstract Coordinate getMin2(double begin, double end);
 }

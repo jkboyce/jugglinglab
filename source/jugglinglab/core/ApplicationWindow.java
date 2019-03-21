@@ -1,24 +1,6 @@
 // ApplicationWindow.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -49,7 +31,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JMenu filemenu = createFileMenu();
         mb.add(filemenu);
         JMenu notationmenu = ng.createNotationMenu();
-        if (Notation.builtinNotations.length > 1)
+        if (Pattern.builtinNotations.length > 1)
             mb.add(notationmenu);
         JMenu helpmenu = createHelpMenu();
         if (helpmenu != null)
@@ -63,13 +45,13 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         ng.setDoubleBuffered(true);
         this.setBackground(new Color(0.9f, 0.9f, 0.9f));
         setContentPane(ng);
-        ng.setNotation(Notation.NOTATION_SITESWAP);
+        ng.setNotation(Pattern.NOTATION_SITESWAP);
 
         Locale loc = JLLocale.getLocale();
         this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         // make siteswap notation the default
-        notationmenu.getItem(Notation.NOTATION_SITESWAP - 1).setSelected(true);
+        notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true);
         pack();
         setResizable(false);
         setLocation(100, 50);
@@ -91,11 +73,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] fileItems = new String[]
-    { "Open JML...", null, "Quit" };
+        { "Open JML...", null, "Quit" };
     protected static final String[] fileCommands = new String[]
-    { "open", null, "exit" };
+        { "open", null, "exit" };
     protected static final char[] fileShortcuts =
-    { 'O', ' ', 'Q' };
+        { 'O', ' ', 'Q' };
 
     protected JMenu createFileMenu() {
         // When we move to Java 9+ we can use Desktop.setQuitHandler() here.
@@ -120,9 +102,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] helpItems = new String[]
-    { "About Juggling Lab", "Juggling Lab Online Help" };
+        { "About Juggling Lab", "Juggling Lab Online Help" };
     protected static final String[] helpCommands = new String[]
-    { "about", "online" };
+        { "about", "online" };
 
     protected JMenu createHelpMenu() {
         // When we move to Java 9+ we can use Desktop.setAboutHandler() here to

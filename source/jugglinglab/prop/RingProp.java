@@ -1,39 +1,19 @@
-// ringProp.java
+// RingProp.java
 //
-// Copyright 2018 by Jack Boyce (jboyce@gmail.com) and others
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.prop;
 
-import java.util.*;
 import java.awt.*;
-import java.awt.image.*;
-import java.lang.reflect.*;
+import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
-import jugglinglab.core.*;
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
 
 
-public class ringProp extends Prop {
+public class RingProp extends Prop {
     static String[] colornames = {"black", "blue", "cyan", "gray",
         "green", "magenta", "orange", "pink", "red", "white", "yellow"};
     static Color[] colorvals = {Color.black, Color.blue, Color.cyan,
@@ -43,25 +23,27 @@ public class ringProp extends Prop {
     protected static final int colornum_def = 8;    // red
     protected static final double outside_diam_def = 25.0;  // in cm
     protected static final double inside_diam_def = 20.0;   // in cm
+    protected static final int polysides = 200;
 
-    protected double outside_diam = outside_diam_def;
-    protected double inside_diam = inside_diam_def;
-    protected int colornum = colornum_def;
-    protected Color color;
+    protected double        outside_diam = outside_diam_def;
+    protected double        inside_diam = inside_diam_def;
+    protected int           colornum = colornum_def;
+    protected Color         color;
 
     protected BufferedImage image;
 
-    protected double lastzoom = 0.0;
-    protected double[] lastcamangle = {0.0, 0.0};
+    protected double        lastzoom = 0.0;
+    protected double[]      lastcamangle = {0.0, 0.0};
 
-    protected Dimension size = null;
-    protected Dimension center = null;
-    protected Dimension grip = null;
-    int polysides = 200;
-    int[] px, py;
+    protected Dimension     size;
+    protected Dimension     center;
+    protected Dimension     grip;
+    protected Coordinate    propmax;
+    protected Coordinate    propmin;
+    protected int[]         px, py;
 
     @Override
-    public String getName() {
+    public String getType() {
         return "Ring";
     }
 
@@ -174,12 +156,16 @@ public class ringProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(outside_diam/2, 0, outside_diam/2);
+        if (this.propmax == null)
+            this.propmax = new Coordinate(outside_diam / 2.0, 0.0, outside_diam / 2.0);
+        return this.propmax;
     }
 
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-outside_diam/2, 0, -outside_diam/2);
+        if (this.propmin == null)
+            this.propmin = new Coordinate(-outside_diam / 2.0, 0.0, -outside_diam / 2.0);
+        return this.propmin;
     }
 
     @Override
@@ -202,14 +188,14 @@ public class ringProp extends Prop {
 
     @Override
     public Dimension getProp2DCenter(double zoom) {
-        if ((center == null) || (zoom != lastzoom))     // first call or display resized?
+        if (center == null || zoom != lastzoom)     // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return center;
     }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if ((grip == null) || (zoom != lastzoom))       // first call or display resized?
+        if (grip == null || zoom != lastzoom)       // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return grip;
     }
@@ -269,8 +255,10 @@ public class ringProp extends Prop {
         image = new BufferedImage(bbwidth, bbheight, BufferedImage.TYPE_INT_ARGB_PRE);
         Graphics2D g = image.createGraphics();
 
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        /*
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_ON);
+        */
         g.setColor(color);
         for (int i = 0; i < polysides; i++) {
             px[i] -= pxmin;
