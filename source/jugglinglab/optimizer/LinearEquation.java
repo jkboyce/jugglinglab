@@ -6,34 +6,34 @@ package jugglinglab.optimizer;
 
 
 public class LinearEquation {
-	protected int			numVars;	// number of variables
-	protected double[]		coefs;		// coefficients in linear equation
-	protected boolean		done;		// flag for use with optimizer
+    protected int           numVars;    // number of variables
+    protected double[]      coefs;      // coefficients in linear equation
+    protected boolean       done;       // flag for use with optimizer
 
 
     public LinearEquation(int vars) {
-		this.numVars = vars;
-		this.coefs = new double[vars + 1];
-		this.done = false;
-	}
+        this.numVars = vars;
+        this.coefs = new double[vars + 1];
+        this.done = false;
+    }
 
-	public void setCoefficients(double[] c) {
-		this.coefs = c;
-	}
+    public void setCoefficients(double[] c) {
+        this.coefs = c;
+    }
 
-	public double coef(int col) {
-		return coefs[col];
-	}
+    public double coef(int col) {
+        return coefs[col];
+    }
 
-	public double constant() {
-		return coefs[numVars];
-	}
+    public double constant() {
+        return coefs[numVars];
+    }
 
-	public boolean done() {
-		return done;
-	}
+    public boolean done() {
+        return done;
+    }
 
-	public void setDone(boolean d) {
-		this.done = d;
-	}
+    public void setDone(boolean d) {
+        this.done = d;
+    }
 }

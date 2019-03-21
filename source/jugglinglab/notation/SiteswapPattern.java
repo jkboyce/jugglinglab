@@ -10,6 +10,7 @@ import java.text.MessageFormat;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
+import jugglinglab.optimizer.*;
 
 
 // This class represents a pattern in the generalized form of siteswap notation
@@ -64,6 +65,11 @@ public class SiteswapPattern extends MHNPattern {
     public JMLPattern getJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = super.getJMLPattern();
         result.setTitle(orig_pattern);
+
+        if (hands == null && bodies == null && result.getNumberOfJugglers() == 1) {
+            System.out.println("optimizing in SiteswapPattern");
+            result = Optimizer.optimize(result);
+        }
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(result);
