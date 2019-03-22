@@ -6,6 +6,8 @@ package jugglinglab.notation;
 
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import jugglinglab.util.*;
 
@@ -23,19 +25,8 @@ public class MHNHands {
 
     public MHNHands(String hands) throws JuggleExceptionUser, JuggleExceptionInternal {
         // delete the '<' and '>' characters first
-        int pos;
-        while ((pos = hands.indexOf('<')) >= 0) {
-            hands = hands.substring(0,pos) + hands.substring(pos+1,hands.length());
-        }
-        while ((pos = hands.indexOf('>')) >= 0) {
-            hands = hands.substring(0,pos) + hands.substring(pos+1,hands.length());
-        }
-        while ((pos = hands.indexOf('{')) >= 0) {
-            hands = hands.substring(0,pos) + hands.substring(pos+1,hands.length());
-        }
-        while ((pos = hands.indexOf('}')) >= 0) {
-            hands = hands.substring(0,pos) + hands.substring(pos+1,hands.length());
-        }
+        String pat = "[" + Pattern.quote("<>{}") + "]";
+        hands = hands.replaceAll(pat, "");
 
         StringTokenizer st1 = new StringTokenizer(hands, "|!", false);
         jugglers = st1.countTokens();
@@ -50,7 +41,7 @@ public class MHNHands {
             // System.out.println("str["+j+"] = "+str);
 
             for (int k = 0; k < 3; k++) {
-                pos = 0;
+                int pos = 0;
                 int numcoords = 0;
                 boolean gotthrow = false, gotcatch = false;
 
