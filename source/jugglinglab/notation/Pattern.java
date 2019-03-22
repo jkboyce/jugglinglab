@@ -11,7 +11,8 @@ import jugglinglab.util.*;
 
 
 // This is the base class for all non-JML pattern types in Juggling Lab.
-// This is used to parse strings to create the JMLPatterns that are animated.
+// It parses from a string representation and creates a JMLPattern version of
+// itself for the animator.
 
 public abstract class Pattern {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
