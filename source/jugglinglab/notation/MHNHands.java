@@ -30,6 +30,11 @@ public class MHNHands {
         String pat = "[" + Pattern.quote("<>{}") + "]";
         str = str.replaceAll(pat, "");
 
+        // take four passes through the string:
+        // pass 0: count the number of jugglers
+        //      1: count the number of beats per juggler (i.e. the period)
+        //      2: count the number of coordinates in each beat
+        //      3: record coordinates in the allocated arrays
         for (int pass = 0; pass < 4; pass++) {
             int juggler = 0;      // counters during parsing
             int beat = 0;
@@ -122,7 +127,7 @@ public class MHNHands {
                 }
                 if (ch == '|' || ch == '!') {
                     if (coordnum != 0)
-                        throw new JuggleExceptionUser(errorstrings.getString("Error_body_badending"));
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_badending"));
                     if (pass == 1) {
                         this.size[juggler] = beat;
                         this.catches[juggler] = new int[beat];
