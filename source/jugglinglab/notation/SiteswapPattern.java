@@ -29,6 +29,7 @@ public class SiteswapPattern extends MHNPattern {
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         parseConfig(config);
         this.orig_pattern = pattern;    // save to use as JMLPattern title
+        pattern = JLFunc.expandRepeats(pattern);
 
         parseSiteswapNotation();
 
@@ -55,6 +56,7 @@ public class SiteswapPattern extends MHNPattern {
             if (totalperiod != patperiod) {
                 int repeats = totalperiod / patperiod;
                 pattern = "(" + pattern + "^" + repeats + ")";
+                pattern = JLFunc.expandRepeats(pattern);
                 parseSiteswapNotation();
             }
         }
@@ -82,7 +84,6 @@ public class SiteswapPattern extends MHNPattern {
         // first clear out the internal variables
         th = null;
         symmetry = new ArrayList<MHNSymmetry>();
-
         SiteswapTreeItem tree = null;
 
         try {
@@ -95,12 +96,19 @@ public class SiteswapPattern extends MHNPattern {
             // System.out.println("---------------");
             // System.out.println("Parse error:");
             // System.out.println(pe.getMessage());
+            // System.out.println(pe.currentToken);
             // System.out.println("---------------");
 
-            String template = errorstrings.getString("Error_pattern_syntax");
-            String problem = ParseException.add_escapes(pe.currentToken.next.image);
-            Object[] arguments = { problem, new Integer(pe.currentToken.next.beginColumn) };
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            if (pe.currentToken == null) {
+                String template = errorstrings.getString("Error_pattern_parsing");
+                Object[] arguments = { pe.getMessage() };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            } else {
+                String template = errorstrings.getString("Error_pattern_syntax");
+                String problem = ParseException.add_escapes(pe.currentToken.next.image);
+                Object[] arguments = { problem, new Integer(pe.currentToken.next.beginColumn) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
         } catch (TokenMgrError tme) {
             String template = errorstrings.getString("Error_pattern_syntax");
             String problem = TokenMgrError.addEscapes(String.valueOf(tme.curChar));

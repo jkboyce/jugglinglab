@@ -140,6 +140,8 @@ public abstract class MHNPattern extends Pattern {
         if ((temp = pl.getParameter("colors")) != null) {
             if (temp.trim().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
+            else
+                temp = JLFunc.expandRepeats(temp);
 
             StringTokenizer st1 = new StringTokenizer(temp, "}", false);
             StringTokenizer st2 = null;
@@ -168,8 +170,6 @@ public abstract class MHNPattern extends Pattern {
                     default:
                         throw new JuggleExceptionUser(errorstrings.getString("Error_color_format"));
                 }
-
-                // System.out.println("color "+i+" = "+color[i]);
             }
         }
 
