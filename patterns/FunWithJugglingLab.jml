@@ -155,8 +155,8 @@ bouncefrac=1.5;
 <line display=""/>
 <line display="Warning -- this one takes nearly"/>
 <line display="5 minutes to compile:"/>
-<line display="My Face"
-      animprefs="camangle=0"
+<line display="Face Animation"
+      animprefs="camangle=(-40,90)"
       notation="siteswap">
 pattern=&lt;((4,4)|)^824(4,4)&gt;;
 body={((0).|)^824(0).};
