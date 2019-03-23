@@ -66,7 +66,7 @@ public class Juggler {
                         coord1.z + lower_hand_height, coord1.y);
 
             pat.getJugglerPosition(juggler, time, coord2);
-            double angle = JLFunc.toRad(pat.getJugglerAngle(juggler, time));
+            double angle = Math.toRadians(pat.getJugglerAngle(juggler, time));
             double s = Math.sin(angle);
             double c = Math.cos(angle);
 

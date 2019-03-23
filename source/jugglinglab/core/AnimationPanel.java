@@ -23,7 +23,7 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final double snapangle = JLFunc.toRad(15.0);
+    static final double snapangle = Math.toRadians(8.0);
 
     protected Animator          anim;
     protected AnimationPrefs    jc;
@@ -188,12 +188,12 @@ public class AnimationPanel extends JPanel implements Runnable {
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < 0.0001)
                     ca[1] = 0.0001;
-                if (ca[1] > JLFunc.toRad(90.0))
-                    ca[1] = JLFunc.toRad(90.0);
+                if (ca[1] > Math.toRadians(179.9999))
+                    ca[1] = Math.toRadians(179.9999);
                 while (ca[0] < 0.0)
-                    ca[0] += JLFunc.toRad(360.0);
-                while (ca[0] >= JLFunc.toRad(360.0))
-                    ca[0] -= JLFunc.toRad(360.0);
+                    ca[0] += Math.toRadians(360.0);
+                while (ca[0] >= Math.toRadians(360.0))
+                    ca[0] -= Math.toRadians(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
                 AnimationPanel.this.setCameraAngle(snappedcamangle);
@@ -226,30 +226,32 @@ public class AnimationPanel extends JPanel implements Runnable {
         result[1] = ca[1];
 
         if (result[1] < snapangle)
-            result[1] = 0.000001;
-        if (result[1] > (JLFunc.toRad(90.0) - snapangle))
-            result[1] = JLFunc.toRad(90.0);
+            result[1] = 0.0001;
+        else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
+            result[1] = Math.toRadians(90.0);
+        else if (result[1] > (Math.toRadians(180.0) - snapangle))
+            result[1] = Math.toRadians(179.9999);
 
         if (anim.pat.getNumberOfJugglers() == 1) {
-            double a = JLFunc.toRad(anim.pat.getJugglerAngle(1, getTime()));
+            double a = Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
 
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
-            else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 90.0*0.0174532925194;
-            else if (anglediff(a + 180.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 180.0*0.0174532925194;
-            else if (anglediff(a + 270.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 270.0*0.0174532925194;
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 0.5 * Math.PI;
+            else if (anglediff(a + Math.PI - result[0]) < snapangle)
+                result[0] = a + Math.PI;
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 1.5 * Math.PI;
         }
         return result;
     }
 
     protected double anglediff(double delta) {
-        while (delta > JLFunc.toRad(180.0))
-            delta -= JLFunc.toRad(360.0);
-        while (delta <= JLFunc.toRad(-180.0))
-            delta += JLFunc.toRad(360.0);
+        while (delta > Math.PI)
+            delta -= 2.0 * Math.PI;
+        while (delta <= -Math.PI)
+            delta += 2.0 * Math.PI;
         return Math.abs(delta);
     }
 

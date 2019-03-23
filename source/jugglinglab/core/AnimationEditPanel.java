@@ -178,12 +178,12 @@ public class AnimationEditPanel extends AnimationPanel {
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < 0.0001)
                     ca[1] = 0.0001;
-                if (ca[1] > JLFunc.toRad(90.0))
-                    ca[1] = JLFunc.toRad(90.0);
+                if (ca[1] > Math.toRadians(179.9999))
+                    ca[1] = Math.toRadians(179.9999);
                 while (ca[0] < 0.0)
-                    ca[0] += JLFunc.toRad(360.0);
-                while (ca[0] >= JLFunc.toRad(360.0))
-                    ca[0] -= JLFunc.toRad(360.0);
+                    ca[0] += Math.toRadians(360.0);
+                while (ca[0] >= Math.toRadians(360.0))
+                    ca[0] -= Math.toRadians(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
                 AnimationEditPanel.this.anim.setCameraAngle(snappedcamangle);
@@ -217,29 +217,31 @@ public class AnimationEditPanel extends AnimationPanel {
         result[1] = ca[1];
 
         if (result[1] < snapangle)
-            result[1] = 0.000001;
-        if (result[1] > (JLFunc.toRad(90.0) - snapangle))
-            result[1] = JLFunc.toRad(90.0);
+            result[1] = 0.0001;
+        else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
+            result[1] = Math.toRadians(90.0);
+        else if (result[1] > (Math.toRadians(180.0) - snapangle))
+            result[1] = Math.toRadians(179.9999);
 
         double a = 0.0;
         boolean snap_horizontal = true;
 
         if (event_active)
-            a = JLFunc.toRad(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+            a = Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
         else if (anim.pat.getNumberOfJugglers() == 1)
-            a = JLFunc.toRad(anim.pat.getJugglerAngle(1, getTime()));
+            a = Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
         else
             snap_horizontal = false;
 
         if (snap_horizontal) {
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
-            else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 90.0*0.0174532925194;
-            else if (anglediff(a + 180.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 180.0*0.0174532925194;
-            else if (anglediff(a + 270.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 270.0*0.0174532925194;
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 0.5 * Math.PI;
+            else if (anglediff(a + Math.PI - result[0]) < snapangle)
+                result[0] = a + Math.PI;
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 1.5 * Math.PI;
         }
         return result;
     }
