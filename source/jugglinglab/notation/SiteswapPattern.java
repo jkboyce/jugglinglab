@@ -55,7 +55,7 @@ public class SiteswapPattern extends MHNPattern {
 
             if (totalperiod != patperiod) {
                 int repeats = totalperiod / patperiod;
-                pattern = "(" + pattern + "^" + repeats + ")";
+                pattern = "(" + pattern + ")^" + repeats;
                 pattern = JLFunc.expandRepeats(pattern);
                 parseSiteswapNotation();
             }
