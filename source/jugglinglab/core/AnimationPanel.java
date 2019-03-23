@@ -22,7 +22,7 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final double snapangle = JLMath.toRad(15.0);
+    static final double snapangle = JLFunc.toRad(15.0);
 
     protected Animator          anim;
     protected AnimationPrefs    jc;
@@ -179,12 +179,12 @@ public class AnimationPanel extends JPanel implements Runnable {
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < 0.0001)
                     ca[1] = 0.0001;
-                if (ca[1] > JLMath.toRad(90.0))
-                    ca[1] = JLMath.toRad(90.0);
+                if (ca[1] > JLFunc.toRad(90.0))
+                    ca[1] = JLFunc.toRad(90.0);
                 while (ca[0] < 0.0)
-                    ca[0] += JLMath.toRad(360.0);
-                while (ca[0] >= JLMath.toRad(360.0))
-                    ca[0] -= JLMath.toRad(360.0);
+                    ca[0] += JLFunc.toRad(360.0);
+                while (ca[0] >= JLFunc.toRad(360.0))
+                    ca[0] -= JLFunc.toRad(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
                 AnimationPanel.this.setCameraAngle(snappedcamangle);
@@ -218,11 +218,11 @@ public class AnimationPanel extends JPanel implements Runnable {
 
         if (result[1] < snapangle)
             result[1] = 0.000001;
-        if (result[1] > (JLMath.toRad(90.0) - snapangle))
-            result[1] = JLMath.toRad(90.0);
+        if (result[1] > (JLFunc.toRad(90.0) - snapangle))
+            result[1] = JLFunc.toRad(90.0);
 
         if (anim.pat.getNumberOfJugglers() == 1) {
-            double a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+            double a = JLFunc.toRad(anim.pat.getJugglerAngle(1, getTime()));
 
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
@@ -237,10 +237,10 @@ public class AnimationPanel extends JPanel implements Runnable {
     }
 
     protected double anglediff(double delta) {
-        while (delta > JLMath.toRad(180.0))
-            delta -= JLMath.toRad(360.0);
-        while (delta <= JLMath.toRad(-180.0))
-            delta += JLMath.toRad(360.0);
+        while (delta > JLFunc.toRad(180.0))
+            delta -= JLFunc.toRad(360.0);
+        while (delta <= JLFunc.toRad(-180.0))
+            delta += JLFunc.toRad(360.0);
         return Math.abs(delta);
     }
 

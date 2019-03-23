@@ -607,10 +607,10 @@ public class JMLPattern {
                 } else {
                     double r = 70.0;
                     double theta = 360.0 / (double)this.getNumberOfJugglers();
-                    if (r * Math.sin(JLMath.toRad(0.5*theta)) < 65.0)
-                        r = 65.0 / Math.sin(JLMath.toRad(0.5*theta));
-                    positions[0].setCoordinate(r*Math.cos(JLMath.toRad(theta*(double)(i-1))),
-                                               r*Math.sin(JLMath.toRad(theta*(double)(i-1))), 100.0);
+                    if (r * Math.sin(JLFunc.toRad(0.5*theta)) < 65.0)
+                        r = 65.0 / Math.sin(JLFunc.toRad(0.5*theta));
+                    positions[0].setCoordinate(r*Math.cos(JLFunc.toRad(theta*(double)(i-1))),
+                                               r*Math.sin(JLFunc.toRad(theta*(double)(i-1))), 100.0);
                     angles[0].setCoordinate(90.0 + theta*(double)(i-1), 0.0, 0.0);
                 }
 
@@ -1025,7 +1025,7 @@ done2:
     public Coordinate convertLocalToGlobal(Coordinate lc, int juggler, double time) {
         Coordinate origin = new Coordinate();
         this.getJugglerPosition(juggler, time, origin);
-        double angle = JLMath.toRad(this.getJugglerAngle(juggler, time));
+        double angle = JLFunc.toRad(this.getJugglerAngle(juggler, time));
         lc.y += Juggler.pattern_y;
 
         Coordinate gc = new Coordinate(origin.x + lc.x * Math.cos(angle) - lc.y * Math.sin(angle),
@@ -1039,7 +1039,7 @@ done2:
     public Coordinate convertGlobalToLocal(Coordinate gc, int juggler, double t) {
         Coordinate origin = new Coordinate();
         this.getJugglerPosition(juggler, t, origin);
-        double angle = JLMath.toRad(this.getJugglerAngle(juggler, t));
+        double angle = JLFunc.toRad(this.getJugglerAngle(juggler, t));
         Coordinate c2 = Coordinate.sub(gc, origin);
 
         Coordinate lc = new Coordinate(c2.x * Math.cos(angle) + c2.y * Math.sin(angle),

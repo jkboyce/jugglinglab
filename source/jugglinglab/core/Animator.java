@@ -82,15 +82,15 @@ public class Animator {
 
         double[] ca = new double[2];
         if (this.jc.camangleGiven) {
-            ca[0] = JLMath.toRad(this.jc.camangle[0]);
-            ca[1] = JLMath.toRad(this.jc.camangle[1]);
+            ca[0] = JLFunc.toRad(this.jc.camangle[0]);
+            ca[1] = JLFunc.toRad(this.jc.camangle[1]);
         } else {
             if (this.pat.getNumberOfJugglers() == 1) {
-                ca[0] = JLMath.toRad(0.0);
-                ca[1] = JLMath.toRad(90.0);
+                ca[0] = JLFunc.toRad(0.0);
+                ca[1] = JLFunc.toRad(90.0);
             } else {
-                ca[0] = JLMath.toRad(340.0);
-                ca[1] = JLMath.toRad(70.0);
+                ca[0] = JLFunc.toRad(340.0);
+                ca[1] = JLFunc.toRad(70.0);
             }
         }
         setCameraAngle(ca);
@@ -116,9 +116,9 @@ public class Animator {
 
     protected void setCameraAngle(double[] ca) {
         while (ca[0] < 0.0)
-            ca[0] += JLMath.toRad(360.0);
-        while (ca[0] >= JLMath.toRad(360.0))
-            ca[0] -= JLMath.toRad(360.0);
+            ca[0] += JLFunc.toRad(360.0);
+        while (ca[0] >= JLFunc.toRad(360.0))
+            ca[0] -= JLFunc.toRad(360.0);
 
         this.camangle[0] = ca[0];
         this.camangle[1] = ca[1];

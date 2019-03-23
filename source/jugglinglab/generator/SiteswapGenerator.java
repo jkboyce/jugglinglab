@@ -341,7 +341,7 @@ public class SiteswapGenerator extends Generator {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_generator_must_be_prime_mode"));
             if (ht == -1)
                 throw new JuggleExceptionUser(errorstrings.getString("Error_generator_underspecified"));
-            lhigh = JLMath.choose(ht * hands, n);
+            lhigh = JLFunc.choose(ht * hands, n);
             lhigh -= (lhigh % rhythm_period);
         }
         if (ht == -1)

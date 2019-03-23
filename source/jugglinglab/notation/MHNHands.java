@@ -16,133 +16,144 @@ public class MHNHands {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected int jugglers = 0;
+    protected int jugglers;
     protected int[] size;
     protected int[][] coords;
     protected int[][] catches;
     protected double[][][][] handpath;
 
 
-    public MHNHands(String hands) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public MHNHands(String str) throws JuggleExceptionUser, JuggleExceptionInternal {
+        str = JLFunc.expandRepeats(str);
+
         // delete the '<' and '>' characters first
         String pat = "[" + Pattern.quote("<>{}") + "]";
-        hands = hands.replaceAll(pat, "");
+        str = str.replaceAll(pat, "");
 
-        StringTokenizer st1 = new StringTokenizer(hands, "|!", false);
-        jugglers = st1.countTokens();
+        for (int pass = 0; pass < 4; pass++) {
+            int juggler = 0;      // counters during parsing
+            int beat = 0;
+            int coordnum = 0;
+            boolean gotthrow = false, gotcatch = false;
 
-        size = new int[jugglers];
-        coords = new int[jugglers][];
-        catches = new int[jugglers][];
-        handpath = new double[jugglers][][][];
+            for (int pos = 0; pos < str.length(); ) {
+                char ch = str.charAt(pos);
 
-        for (int j = 0; j < jugglers; j++) {
-            String str = st1.nextToken();
-            // System.out.println("str["+j+"] = "+str);
+                if (ch == ' ') {
+                    pos++;
+                    continue;
+                }
+                if (ch == '.') {
+                    if (pass == 2) {
+                        coords[juggler][beat] = coordnum;
+                        if (coords[juggler][beat] < 2)
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toofewcoords"));
 
-            for (int k = 0; k < 3; k++) {
-                int pos = 0;
-                int numcoords = 0;
-                boolean gotthrow = false, gotcatch = false;
-
-                for (int l = 0; l < str.length(); ) {
-                    char ch = str.charAt(l);
-
-                    if (ch == ' ') {
-                        l++;
-                        continue;
+                        handpath[juggler][beat] = new double[coordnum][];
+                    } else if (pass == 3) {
+                        if (!gotcatch)
+                            catches[juggler][beat] = coords[juggler][beat] - 1;
+                        if (handpath[juggler][beat][0] == null)
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_nothrow"));
+                        if (handpath[juggler][beat][catches[juggler][beat]] == null)
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_nocatch"));
                     }
-                    if (ch == '.') {
-                        if (k == 1) {
-                            coords[j][pos] = numcoords;
-                            if (coords[j][pos] < 2)
-                                throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toofewcoords"));
+                    gotthrow = gotcatch = false;
+                    beat++;
+                    coordnum = 0;
+                    pos++;
+                    continue;
+                }
+                if (ch == '-') {
+                    if (pass == 3)
+                        handpath[juggler][beat][coordnum] = null;
+                    coordnum++;
+                    pos++;
+                    continue;
+                }
+                if (ch == 'T' || ch == 't') {
+                    if (coordnum != 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Tnotstart"));
+                    if (gotthrow)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycoords"));
+                    gotthrow = true;
+                    pos++;
+                    continue;
+                }
+                if (ch == 'C' || ch == 'c') {
+                    if (coordnum == 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Catstart"));
+                    if (gotcatch)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycatches"));
+                    if (pass == 2)
+                        catches[juggler][beat] = coordnum;
+                    gotcatch = true;
+                    pos++;
+                    continue;
+                }
+                if (ch == '(') {
+                    int closeindex = str.indexOf(')', pos + 1);
+                    if (closeindex < 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_hands_noparen"));
+                    if (pass == 3) {
+                        handpath[juggler][beat][coordnum] = new double[3];
 
-                            handpath[j][pos] = new double[numcoords][];
-                        } else if (k == 2) {
-                            if (!gotcatch)
-                                catches[j][pos] = coords[j][pos] - 1;
-                            if (handpath[j][pos][0] == null)
-                                throw new JuggleExceptionUser(errorstrings.getString("Error_hands_nothrow"));
-                            if (handpath[j][pos][catches[j][pos]] == null)
-                                throw new JuggleExceptionUser(errorstrings.getString("Error_hands_nocatch"));
-                        }
-                        gotthrow = gotcatch = false;
-                        pos++;
-                        numcoords = 0;
-                        l++;
-                        continue;
-                    }
-                    if (ch == '-') {
-                        if (k == 2)
-                            handpath[j][pos][numcoords] = null;
-                        numcoords++;
-                        l++;
-                        continue;
-                    }
-                    if (ch == 'T' || ch == 't') {
-                        if (numcoords != 0)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Tnotstart"));
-                        if (gotthrow)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycoords"));
-                        gotthrow = true;
-                        l++;
-                        continue;
-                    }
-                    if (ch == 'C' || ch == 'c') {
-                        if (numcoords == 0)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_Catstart"));
-                        if (gotcatch)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycatches"));
-                        if (k == 1)
-                            catches[j][pos] = numcoords;
-                        gotcatch = true;
-                        l++;
-                        continue;
-                    }
-                    if (ch == '(') {
-                        int endindex = str.indexOf(')', l+1);
-                        if (endindex < 0)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_noparen"));
-                        if (k == 2) {
-                            handpath[j][pos][numcoords] = new double[3];
-                            String str2 = str.substring(l+1, endindex);
+                        String str2 = str.substring(pos + 1, closeindex);
 
-                            try {
-                                StringTokenizer st4 = new StringTokenizer(str2, ",", false);
-                                handpath[j][pos][numcoords][0] =
+                        try {
+                            StringTokenizer st4 = new StringTokenizer(str2, ",", false);
+                            handpath[juggler][beat][coordnum][0] =
+                                Double.valueOf(st4.nextToken()).doubleValue();
+                            if (st4.hasMoreTokens())
+                                handpath[juggler][beat][coordnum][2] =
                                     Double.valueOf(st4.nextToken()).doubleValue();
-                                if (st4.hasMoreTokens())
-                                    handpath[j][pos][numcoords][2] =
-                                        Double.valueOf(st4.nextToken()).doubleValue();
-                                if (st4.hasMoreTokens())
-                                    handpath[j][pos][numcoords][1] =
-                                        Double.valueOf(st4.nextToken()).doubleValue();
-                            } catch (NumberFormatException e) {
-                                throw new JuggleExceptionUser(errorstrings.getString("Error_hands_coordinate"));
-                            } catch (NoSuchElementException e) {
-                                throw new JuggleExceptionInternal("No such element exception in \"hands\"");
-                            }
+                            if (st4.hasMoreTokens())
+                                handpath[juggler][beat][coordnum][1] =
+                                    Double.valueOf(st4.nextToken()).doubleValue();
+                        } catch (NumberFormatException e) {
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_hands_coordinate"));
+                        } catch (NoSuchElementException e) {
+                            throw new JuggleExceptionInternal("No such element exception in \"hands\"");
                         }
-                        numcoords++;
-                        l = endindex + 1;
-                        continue;
                     }
-
-                    String template = errorstrings.getString("Error_hands_character");
-                    Object[] arguments = { Character.toString(ch) };
-                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    coordnum++;
+                    pos = closeindex + 1;
+                    continue;
+                }
+                if (ch == '|' || ch == '!') {
+                    if (coordnum != 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_body_badending"));
+                    if (pass == 1) {
+                        this.size[juggler] = beat;
+                        this.catches[juggler] = new int[beat];
+                        this.coords[juggler] = new int[beat];
+                        this.handpath[juggler] = new double[beat][][];
+                    }
+                    beat = 0;
+                    juggler++;
+                    pos++;
+                    continue;
                 }
 
-                if (k == 0) {
-                    size[j] = pos;
-                    catches[j] = new int[pos];
-                    coords[j] = new int[pos];
-                    handpath[j] = new double[pos][][];
-                }
+                String template = errorstrings.getString("Error_hands_character");
+                Object[] arguments = { Character.toString(ch) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
 
-                if (numcoords != 0)
-                    throw new JuggleExceptionUser(errorstrings.getString("Error_hands_badending"));
+            if (coordnum != 0)
+                throw new JuggleExceptionUser(errorstrings.getString("Error_hands_badending"));
+
+            if (pass == 0) {
+                this.jugglers = juggler + 1;
+                this.size = new int[jugglers];
+                this.coords = new int[jugglers][];
+                this.catches = new int[jugglers][];
+                this.handpath = new double[jugglers][][][];
+            } else if (pass == 1) {
+                this.size[juggler] = beat;
+                this.catches[juggler] = new int[beat];
+                this.coords[juggler] = new int[beat];
+                this.handpath[juggler] = new double[beat][][];
             }
         }
 

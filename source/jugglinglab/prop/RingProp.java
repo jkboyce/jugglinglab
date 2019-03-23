@@ -230,7 +230,7 @@ public class RingProp extends Prop {
 
         int pxmin=0, pxmax=0, pymin=0, pymax=0;
         for (int i = 0; i < polysides; i++) {
-            double theta = (double)i * 2.0 * JLMath.pi / (double)polysides;
+            double theta = (double)i * 2.0 * JLFunc.pi / (double)polysides;
             double x = (double)width * Math.cos(theta) * 0.5;
             double y = (double)height * Math.sin(theta) * 0.5;
             px[i] = (int)(ca*x - sa*y + 0.5);
@@ -268,7 +268,7 @@ public class RingProp extends Prop {
         g.setColor(new Color(1f, 1f, 1f, 0f));
 
         for (int i = 0; i < polysides; i++) {
-            double theta = (double)i * 2.0 * JLMath.pi / (double)polysides;
+            double theta = (double)i * 2.0 * JLFunc.pi / (double)polysides;
             double x = (double)inside_width * Math.cos(theta) * 0.5;
             double y = (double)inside_height * Math.sin(theta) * 0.5;
             px[i] = (int)(ca*x - sa*y + 0.5) - pxmin;
@@ -305,7 +305,7 @@ public class RingProp extends Prop {
                 new Integer(10), new Integer(10)});
             Method rotate = ob.getMethod("rotate", new Class[] {Float.TYPE, Float.TYPE, Float.TYPE});
             Method scale = ob.getMethod("scale", new Class[] {Float.TYPE, Float.TYPE, Float.TYPE});
-            rotate.invoke(result, new Object[] {new Float(0f), new Float(JLMath.pi/2), new Float(0f)});
+            rotate.invoke(result, new Object[] {new Float(0f), new Float(JLFunc.pi/2), new Float(0f)});
             scale.invoke(result, new Object[] {new Float(0.1f), new Float(1f), new Float(1f)});
             Method setcolor = mat.getMethod("setColor", new Class[] {Integer.TYPE});
             Object surf = mat.newInstance();

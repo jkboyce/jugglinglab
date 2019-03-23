@@ -178,12 +178,12 @@ public class AnimationEditPanel extends AnimationPanel {
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < 0.0001)
                     ca[1] = 0.0001;
-                if (ca[1] > JLMath.toRad(90.0))
-                    ca[1] = JLMath.toRad(90.0);
+                if (ca[1] > JLFunc.toRad(90.0))
+                    ca[1] = JLFunc.toRad(90.0);
                 while (ca[0] < 0.0)
-                    ca[0] += JLMath.toRad(360.0);
-                while (ca[0] >= JLMath.toRad(360.0))
-                    ca[0] -= JLMath.toRad(360.0);
+                    ca[0] += JLFunc.toRad(360.0);
+                while (ca[0] >= JLFunc.toRad(360.0))
+                    ca[0] -= JLFunc.toRad(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
                 AnimationEditPanel.this.anim.setCameraAngle(snappedcamangle);
@@ -218,16 +218,16 @@ public class AnimationEditPanel extends AnimationPanel {
 
         if (result[1] < snapangle)
             result[1] = 0.000001;
-        if (result[1] > (JLMath.toRad(90.0) - snapangle))
-            result[1] = JLMath.toRad(90.0);
+        if (result[1] > (JLFunc.toRad(90.0) - snapangle))
+            result[1] = JLFunc.toRad(90.0);
 
         double a = 0.0;
         boolean snap_horizontal = true;
 
         if (event_active)
-            a = JLMath.toRad(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+            a = JLFunc.toRad(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
         else if (anim.pat.getNumberOfJugglers() == 1)
-            a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+            a = JLFunc.toRad(anim.pat.getJugglerAngle(1, getTime()));
         else
             snap_horizontal = false;
 
