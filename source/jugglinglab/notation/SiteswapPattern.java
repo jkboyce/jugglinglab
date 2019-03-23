@@ -28,9 +28,9 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         parseConfig(config);
+
         this.orig_pattern = pattern;    // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);
-
         parseSiteswapNotation();
 
         // see if we need to repeat the pattern to match hand or body periods:
