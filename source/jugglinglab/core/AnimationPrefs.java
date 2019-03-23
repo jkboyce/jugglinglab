@@ -151,6 +151,11 @@ public class AnimationPrefs {
                 for (int i = 0; i < numangles; i++)
                     ca[i] = Double.valueOf(st.nextToken().trim()).doubleValue();
 
+                if (ca[1] < Math.toRadians(0.0001))
+                    ca[1] = Math.toRadians(0.0001);
+                if (ca[1] > Math.toRadians(179.9999))
+                    ca[1] = Math.toRadians(179.9999);
+
                 this.camangle = new double[2];
                 this.camangle[0] = ca[0];
                 this.camangle[1] = ca[1];

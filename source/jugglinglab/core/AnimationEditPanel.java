@@ -176,8 +176,8 @@ public class AnimationEditPanel extends AnimationPanel {
                 double[] ca = AnimationEditPanel.this.dragcamangle;
                 ca[0] += (double)(xdelta) * 0.02;
                 ca[1] -= (double)(ydelta) * 0.02;
-                if (ca[1] < 0.0001)
-                    ca[1] = 0.0001;
+                if (ca[1] < Math.toRadians(0.0001))
+                    ca[1] = Math.toRadians(0.0001);
                 if (ca[1] > Math.toRadians(179.9999))
                     ca[1] = Math.toRadians(179.9999);
                 while (ca[0] < 0.0)
@@ -217,7 +217,7 @@ public class AnimationEditPanel extends AnimationPanel {
         result[1] = ca[1];
 
         if (result[1] < snapangle)
-            result[1] = 0.0001;
+            result[1] = Math.toRadians(0.0001);
         else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
             result[1] = Math.toRadians(90.0);
         else if (result[1] > (Math.toRadians(180.0) - snapangle))
