@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
 
 import jugglinglab.jml.*;
@@ -78,15 +79,23 @@ public class AnimationPanel extends JPanel implements Runnable {
         try {
             URL catchurl = AnimationPanel.class.getResource("/catch.au");
             AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
-            this.catchclip = AudioSystem.getClip();
+            DataLine.Info info = new DataLine.Info(Clip.class, catchAudioIn.getFormat());
+            this.catchclip = (Clip)AudioSystem.getLine(info);
             this.catchclip.open(catchAudioIn);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // System.out.println("Error loading catch.au: " + e.getMessage());
+            this.catchclip = null;
+        }
         try {
             URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
             AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
-            this.bounceclip = AudioSystem.getClip();
+            DataLine.Info info = new DataLine.Info(Clip.class, bounceAudioIn.getFormat());
+            this.bounceclip = (Clip)AudioSystem.getLine(info);
             this.bounceclip.open(bounceAudioIn);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // System.out.println("Error loading bounce.au: " + e.getMessage());
+            this.bounceclip = null;
+        }
     }
 
     protected void initHandlers() {
@@ -335,7 +344,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                    if (catchclip.isRunning())
+                                    if (catchclip.isActive())
                                         catchclip.stop();
                                     catchclip.setFramePosition(0);
                                     catchclip.start();
@@ -347,7 +356,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                    if (bounceclip.isRunning())
+                                    if (bounceclip.isActive())
                                         bounceclip.stop();
                                     bounceclip.setFramePosition(0);
                                     bounceclip.start();
