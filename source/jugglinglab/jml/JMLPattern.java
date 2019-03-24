@@ -1370,54 +1370,6 @@ done2:
     }
 
 
-    public static String toStringTruncated(double val, int digits) {
-        String result = Double.toString(val);
-
-        if (result.indexOf('E') > 0) {
-            if (val < 0.0) {
-                val = -val;
-                result = "-";
-            } else
-                result = "";
-
-            result += Integer.toString((int)val);
-            if (digits < 1)
-                return result;
-            result += ".";
-            val -= (double)((int)val);
-            for (int i = 0; i < digits; i++)
-                val *= 10.0;
-            String rem = Integer.toString((int)val);
-            for (int i = rem.length(); i < digits; i++)
-                result += "0";
-            result += rem;
-        }
-
-        int decimalpos = result.indexOf('.');
-        if (decimalpos < 0)
-            return result;
-
-        int endpos = decimalpos + digits + 1;
-        if (endpos > result.length())
-            endpos = result.length();
-
-        while (endpos > 0) {
-            int ch = result.charAt(endpos-1);
-
-            if (ch == '.') {
-                endpos--;
-                break;
-            }
-            else if (ch == '0') {
-                endpos--;
-            }
-            else
-                break;
-        }
-
-        return result.substring(0, endpos);
-    }
-
     public void writeJML(Writer wr, boolean title) throws IOException {
         PrintWriter write = new PrintWriter(wr);
 
