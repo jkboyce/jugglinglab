@@ -30,8 +30,14 @@ public class AnimationPrefs {
     public static final boolean startPause_def = false;
     public static final boolean mousePause_def = false;
     public static final boolean catchSound_def = false;
-    public static final boolean bounceSound_def = true;
+    public static final boolean bounceSound_def;
     public static final boolean camangleGiven_def = false;
+
+    static {
+        String osname = System.getProperty("os.name").toLowerCase();
+        // audio clip playback seems to block on Linux
+        bounceSound_def = !osname.startsWith("linux");
+    }
 
     public int      width = width_def;
     public int      height = height_def;
