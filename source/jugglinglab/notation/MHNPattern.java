@@ -81,13 +81,7 @@ public abstract class MHNPattern extends Pattern {
         }
 
         // delete newlines and carriage returns from string
-        int pos;
-        while ((pos = config.indexOf('\n')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
-        while ((pos = config.indexOf('\r')) >= 0) {
-            config = config.substring(0,pos) + config.substring(pos+1,config.length());
-        }
+        config = config.replace("\n","").replace("\r","");
 
         ParameterList pl = new ParameterList(config);
         String temp = null;
@@ -146,6 +140,8 @@ public abstract class MHNPattern extends Pattern {
         if ((temp = pl.getParameter("colors")) != null) {
             if (temp.trim().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
+            else
+                temp = JLFunc.expandRepeats(temp);
 
             StringTokenizer st1 = new StringTokenizer(temp, "}", false);
             StringTokenizer st2 = null;
@@ -174,8 +170,6 @@ public abstract class MHNPattern extends Pattern {
                     default:
                         throw new JuggleExceptionUser(errorstrings.getString("Error_color_format"));
                 }
-
-                // System.out.println("color "+i+" = "+color[i]);
             }
         }
 
@@ -212,7 +206,7 @@ public abstract class MHNPattern extends Pattern {
     //--------------------------------------------------------------------------
 
     @Override
-    public JMLPattern getJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
+    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         // build out the JML pattern in a series of steps:
         findMasterThrows();
         assignPaths();

@@ -107,7 +107,7 @@ public class JMLSymmetry {
         switch(getType()) {
             case TYPE_DELAY:
                 out += "delay\" pperm=\""+pathperm.toString(true)+
-                "\" delay=\""+JMLPattern.toStringTruncated(getDelay(),4)
+                "\" delay=\""+JLFunc.toStringTruncated(getDelay(),4)
                 +"\"/>";
                 break;
             case TYPE_SWITCH:

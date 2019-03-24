@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.Coordinate;
-import jugglinglab.util.JLMath;
+import jugglinglab.util.JLFunc;
 import jugglinglab.util.JuggleExceptionInternal;
 import jugglinglab.prop.Prop;
 
@@ -59,8 +59,8 @@ public class Renderer2D extends Renderer {
         headx = new int[polysides];
         heady = new int[polysides];
         for (int i = 0; i < polysides; i++) {
-            headcos[i] = Math.cos((double)i * JLMath.toRad(360.0) / polysides);
-            headsin[i] = Math.sin((double)i * JLMath.toRad(360.0) / polysides);
+            headcos[i] = Math.cos((double)i * 2.0 * Math.PI / polysides);
+            headsin[i] = Math.sin((double)i * 2.0 * Math.PI / polysides);
         }
         this.tempc = new Coordinate();
         this.tempv1 = new JLVector();
@@ -104,8 +104,8 @@ public class Renderer2D extends Renderer {
             return;
 
         m = JLMatrix.shiftMatrix(-cameracenter.x, -cameracenter.y, -cameracenter.z);
-        m.transform(JLMatrix.rotateMatrix(0.0, JLMath.toRad(180.0) - cameraangle[0], 0.0));
-        m.transform(JLMatrix.rotateMatrix(JLMath.toRad(90.0) - cameraangle[1], 0.0, 0.0));
+        m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraangle[0], 0.0));
+        m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0.0, 0.0));
         m.transform(JLMatrix.shiftMatrix(cameracenter.x, cameracenter.y, cameracenter.z));
 
         m.transform(JLMatrix.scaleMatrix(1.0, -1.0, 1.0));  // larger y values -> smaller y pixel coord
@@ -166,7 +166,7 @@ public class Renderer2D extends Renderer {
             obj[index].number = i;
             pat.getPathCoordinate(i, time, tempc);
             if (!tempc.isValid())
-                tempc.setCoordinate(0.0,0.0,0.0);
+                tempc.setCoordinate(0.0, 0.0, 0.0);
             getXYZ(Renderer.toVector(tempc, tempv1), obj[index].coord[0]);
             int x = (int)(0.5f + obj[index].coord[0].x);
             int y = (int)(0.5f + obj[index].coord[0].y);
@@ -184,7 +184,7 @@ public class Renderer2D extends Renderer {
         }
 
         // ground (set of lines)
-        if (pat.isBouncePattern()) {
+        if (this.showground) {
             for (int i = 0; i < 18; i++) {
                 obj[index].type = DrawObject2D.TYPE_LINE;
                 obj[index].number = 0;      // unused

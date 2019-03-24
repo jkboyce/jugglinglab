@@ -152,9 +152,7 @@ public class JugglingLab {
         JMLPattern pat = null;
         try {
             SiteswapPattern p = new SiteswapPattern();
-            String sspattern = jlargs.remove(0);
-            p.fromString(sspattern);
-            pat = p.getJMLPattern();
+            pat = p.fromString(jlargs.remove(0)).asJMLPattern();
         } catch (JuggleExceptionUser jeu) {
             System.out.println("Error: " + jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {

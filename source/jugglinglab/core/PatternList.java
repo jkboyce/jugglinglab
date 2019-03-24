@@ -62,8 +62,7 @@ public class PatternList extends JPanel {
                             pat = new JMLPattern(rec.pattern, PatternList.this.loadingversion);
                         } else if (rec.notation != null && rec.anim != null) {
                             Pattern p = Pattern.newPattern(rec.notation);
-                            p.fromString(rec.anim);
-                            pat = p.getJMLPattern();
+                            pat = p.fromString(rec.anim).asJMLPattern();
                         } else
                             return;
 

@@ -4,12 +4,17 @@
 
 package jugglinglab.notation;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPosition;
 import jugglinglab.util.*;
 
+
+// This class parses the "body" parameter in MHN notation.
 
 public class MHNBody {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -20,117 +25,119 @@ public class MHNBody {
     protected int[][] coords;
     protected double[][][][] bodypath;
 
-    public MHNBody(String bodies) throws JuggleExceptionUser, JuggleExceptionInternal {
-        // delete the '<' and '>' characters first
-        int pos;
-        while ((pos = bodies.indexOf('<')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('>')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('{')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
-        while ((pos = bodies.indexOf('}')) >= 0) {
-            bodies = bodies.substring(0,pos) + bodies.substring(pos+1,bodies.length());
-        }
+    public MHNBody(String str) throws JuggleExceptionUser, JuggleExceptionInternal {
+        str = JLFunc.expandRepeats(str);
 
-        StringTokenizer st1 = new StringTokenizer(bodies, "|!", false);
-        jugglers = st1.countTokens();
+        // delete the '<' and '>' characters
+        String pat = "[" + Pattern.quote("<>{}") + "]";
+        str = str.replaceAll(pat, "");
 
-        size = new int[jugglers];
-        coords = new int[jugglers][];
-        bodypath = new double[jugglers][][][];
+        // take four passes through the string:
+        // pass 0: count the number of jugglers
+        //      1: count the number of beats per juggler (i.e. the period)
+        //      2: count the number of coordinates in each beat
+        //      3: record coordinates in the allocated arrays
+        for (int pass = 0; pass < 4; pass++) {
+            int juggler = 0;      // counters during parsing
+            int beat = 0;
+            int coordnum = 0;
 
-        for (int j = 0; j < jugglers; j++) {
-            String str = st1.nextToken();
-            // System.out.println("str["+j+"] = "+str);
+            for (int pos = 0; pos < str.length(); ) {
+                char ch = str.charAt(pos);
 
-            for (int k = 0; k < 3; k++) {
-                pos = 0;
-                int numcoords = 0;
-
-                for (int l = 0; l < str.length(); ) {
-                    char ch = str.charAt(l);
-
-                    if (ch == ' ') {
-                        l++;
-                        continue;
-                    }
-                    if (ch == '.') {
-                        if (numcoords == 0) {
-                            if (k == 1) {
-                                coords[j][pos] = 1;
-                                bodypath[j][pos] = new double[1][];
-                                bodypath[j][pos][0] = null;
-                            }
-                        } else if (k == 1) {
-                            coords[j][pos] = numcoords;
-                            bodypath[j][pos] = new double[numcoords][];
+                if (ch == ' ') {
+                    pos++;
+                    continue;
+                }
+                if (ch == '.') {
+                    if (pass == 2) {
+                        if (coordnum == 0) {
+                            coords[juggler][beat] = 1;
+                            bodypath[juggler][beat] = new double[1][];
+                            bodypath[juggler][beat][0] = null;
+                        } else {
+                            coords[juggler][beat] = coordnum;
+                            bodypath[juggler][beat] = new double[coordnum][];
                         }
-                        pos++;
-                        numcoords = 0;
-                        l++;
-                        continue;
                     }
-                    if (ch == '-') {
-                        if (k == 2)
-                            bodypath[j][pos][numcoords] = null;
-                        numcoords++;
-                        l++;
-                        continue;
-                    }
-                    if (ch == '(') {
-                        int endindex = str.indexOf(')', l+1);
-                        if (endindex < 0)
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_body_noparen"));
-                        if (k == 2) {
-                            bodypath[j][pos][numcoords] = new double[4];
-                            bodypath[j][pos][numcoords][3] = 100.0;     // default z
+                    beat++;
+                    coordnum = 0;
+                    pos++;
+                    continue;
+                }
+                if (ch == '-') {
+                    if (pass == 3)
+                        bodypath[juggler][beat][coordnum] = null;
+                    coordnum++;
+                    pos++;
+                    continue;
+                }
+                if (ch == '(') {
+                    int closeindex = str.indexOf(')', pos + 1);
+                    if (closeindex < 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_body_noparen"));
+                    if (pass == 3) {
+                        bodypath[juggler][beat][coordnum] = new double[4];
+                        bodypath[juggler][beat][coordnum][3] = 100.0;     // default z
 
-                            String str2 = str.substring(l+1, endindex);
+                        String str2 = str.substring(pos + 1, closeindex);
 
-                            try {
-                                StringTokenizer st4 = new StringTokenizer(str2, ",", false);
-                                bodypath[j][pos][numcoords][0] =
+                        try {
+                            StringTokenizer st4 = new StringTokenizer(str2, ",", false);
+                            bodypath[juggler][beat][coordnum][0] =
+                                Double.valueOf(st4.nextToken()).doubleValue();
+                            if (st4.hasMoreTokens())
+                                bodypath[juggler][beat][coordnum][1] =
                                     Double.valueOf(st4.nextToken()).doubleValue();
-                                if (st4.hasMoreTokens())
-                                    bodypath[j][pos][numcoords][1] =
-                                        Double.valueOf(st4.nextToken()).doubleValue();
-                                if (st4.hasMoreTokens())
-                                    bodypath[j][pos][numcoords][2] =
-                                        Double.valueOf(st4.nextToken()).doubleValue();
-                                if (st4.hasMoreTokens())
-                                    bodypath[j][pos][numcoords][3] =
-                                        Double.valueOf(st4.nextToken()).doubleValue();
-                            } catch (NumberFormatException e) {
-                                throw new JuggleExceptionUser(errorstrings.getString("Error_body_coordinate"));
-                            } catch (NoSuchElementException e) {
-                                throw new JuggleExceptionInternal("No such element exception in \"body\"");
-                            }
+                            if (st4.hasMoreTokens())
+                                bodypath[juggler][beat][coordnum][2] =
+                                    Double.valueOf(st4.nextToken()).doubleValue();
+                            if (st4.hasMoreTokens())
+                                bodypath[juggler][beat][coordnum][3] =
+                                    Double.valueOf(st4.nextToken()).doubleValue();
+                        } catch (NumberFormatException e) {
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_body_coordinate"));
+                        } catch (NoSuchElementException e) {
+                            throw new JuggleExceptionInternal("No such element exception in MHNBody");
                         }
-                        numcoords++;
-                        l = endindex + 1;
-                        continue;
                     }
-
-                    String template = errorstrings.getString("Error_body_character");
-                    Object[] arguments = { Character.toString(ch) };
-                    throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                    coordnum++;
+                    pos = closeindex + 1;
+                    continue;
+                }
+                if (ch == '|' || ch == '!') {
+                    if (coordnum != 0)
+                        throw new JuggleExceptionUser(errorstrings.getString("Error_body_badending"));
+                    if (pass == 1) {
+                        this.size[juggler] = beat;
+                        this.coords[juggler] = new int[beat];
+                        this.bodypath[juggler] = new double[beat][][];
+                    }
+                    beat = 0;
+                    juggler++;
+                    pos++;
+                    continue;
                 }
 
-                if (k == 0) {
-                    size[j] = pos;
-                    coords[j] = new int[pos];
-                    bodypath[j] = new double[pos][][];
-                }
+                String template = errorstrings.getString("Error_body_character");
+                Object[] arguments = { Character.toString(ch) };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
 
-                if (numcoords != 0)
-                    throw new JuggleExceptionUser(errorstrings.getString("Error_body_badending"));
+            if (coordnum != 0)
+                throw new JuggleExceptionUser(errorstrings.getString("Error_body_badending"));
+
+            if (pass == 0) {
+                this.jugglers = juggler + 1;
+                this.size = new int[jugglers];
+                this.coords = new int[jugglers][];
+                this.bodypath = new double[jugglers][][][];
+            } else if (pass == 1) {
+                this.size[juggler] = beat;
+                this.coords[juggler] = new int[beat];
+                this.bodypath[juggler] = new double[beat][][];
             }
         }
-
     }
 
     public int getNumberOfJugglers() {
@@ -149,7 +156,7 @@ public class MHNBody {
 
     // pos and index start from 0:
     public JMLPosition getPosition(int juggler, int pos, int index) {
-        if ((pos >= getPeriod(juggler)) || (index >= getNumberOfPositions(juggler, pos)))
+        if (pos >= getPeriod(juggler) || index >= getNumberOfPositions(juggler, pos))
             return null;
         int j = (juggler - 1) % jugglers;
         if (bodypath[j][pos][index] == null)

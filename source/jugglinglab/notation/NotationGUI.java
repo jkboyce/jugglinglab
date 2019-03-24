@@ -17,9 +17,10 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
 
+
 // This class represents the entire contents of the ApplicationWindow frame.
 // For a given notation type it creates a tabbed pane with a notation entry
-// panel in one tab, and a generator in the other tab.
+// panel in one tab, and a generator (if available) in the other tab.
 //
 // Currently only a single notation (siteswap) is included with Juggling Lab
 // so the notation menu is suppressed.
@@ -149,8 +150,8 @@ public class NotationGUI extends JPanel implements ActionListener {
                     PatternWindow jaw2 = null;
                     try {
                         Pattern p = fcontrol.newPattern();
-                        p.fromString(fcontrol.getConfigString());
-                        JMLPattern pat = p.getJMLPattern();
+                        JMLPattern pat = p.fromString(fcontrol.getConfigString())
+                                          .asJMLPattern();
 
                         String handsname = fcontrol.getHandsName();
                         if (handsname != null)

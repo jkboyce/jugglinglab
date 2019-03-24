@@ -609,10 +609,10 @@ public class JMLPattern {
                 } else {
                     double r = 70.0;
                     double theta = 360.0 / (double)this.getNumberOfJugglers();
-                    if (r * Math.sin(JLMath.toRad(0.5*theta)) < 65.0)
-                        r = 65.0 / Math.sin(JLMath.toRad(0.5*theta));
-                    positions[0].setCoordinate(r*Math.cos(JLMath.toRad(theta*(double)(i-1))),
-                                               r*Math.sin(JLMath.toRad(theta*(double)(i-1))), 100.0);
+                    if (r * Math.sin(Math.toRadians(0.5*theta)) < 65.0)
+                        r = 65.0 / Math.sin(Math.toRadians(0.5*theta));
+                    positions[0].setCoordinate(r*Math.cos(Math.toRadians(theta*(double)(i-1))),
+                                               r*Math.sin(Math.toRadians(theta*(double)(i-1))), 100.0);
                     angles[0].setCoordinate(90.0 + theta*(double)(i-1), 0.0, 0.0);
                 }
 
@@ -1027,7 +1027,7 @@ done2:
     public Coordinate convertLocalToGlobal(Coordinate lc, int juggler, double time) {
         Coordinate origin = new Coordinate();
         this.getJugglerPosition(juggler, time, origin);
-        double angle = JLMath.toRad(this.getJugglerAngle(juggler, time));
+        double angle = Math.toRadians(this.getJugglerAngle(juggler, time));
         lc.y += Juggler.pattern_y;
 
         Coordinate gc = new Coordinate(origin.x + lc.x * Math.cos(angle) - lc.y * Math.sin(angle),
@@ -1041,7 +1041,7 @@ done2:
     public Coordinate convertGlobalToLocal(Coordinate gc, int juggler, double t) {
         Coordinate origin = new Coordinate();
         this.getJugglerPosition(juggler, t, origin);
-        double angle = JLMath.toRad(this.getJugglerAngle(juggler, t));
+        double angle = Math.toRadians(this.getJugglerAngle(juggler, t));
         Coordinate c2 = Coordinate.sub(gc, origin);
 
         Coordinate lc = new Coordinate(c2.x * Math.cos(angle) + c2.y * Math.sin(angle),
@@ -1371,54 +1371,6 @@ done2:
             readJML(current.getChildNode(i));
     }
 
-
-    public static String toStringTruncated(double val, int digits) {
-        String result = Double.toString(val);
-
-        if (result.indexOf('E') > 0) {
-            if (val < 0.0) {
-                val = -val;
-                result = "-";
-            } else
-                result = "";
-
-            result += Integer.toString((int)val);
-            if (digits < 1)
-                return result;
-            result += ".";
-            val -= (double)((int)val);
-            for (int i = 0; i < digits; i++)
-                val *= 10.0;
-            String rem = Integer.toString((int)val);
-            for (int i = rem.length(); i < digits; i++)
-                result += "0";
-            result += rem;
-        }
-
-        int decimalpos = result.indexOf('.');
-        if (decimalpos < 0)
-            return result;
-
-        int endpos = decimalpos + digits + 1;
-        if (endpos > result.length())
-            endpos = result.length();
-
-        while (endpos > 0) {
-            int ch = result.charAt(endpos-1);
-
-            if (ch == '.') {
-                endpos--;
-                break;
-            }
-            else if (ch == '0') {
-                endpos--;
-            }
-            else
-                break;
-        }
-
-        return result.substring(0, endpos);
-    }
 
     public void writeJML(Writer wr, boolean title) throws IOException {
         PrintWriter write = new PrintWriter(wr);

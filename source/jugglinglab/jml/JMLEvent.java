@@ -243,10 +243,10 @@ public class JMLEvent {
 
     public void writeJML(PrintWriter wr) throws IOException {
         Coordinate c = getLocalCoordinate();
-        wr.println("<event x=\""+JMLPattern.toStringTruncated(c.x,4)
-                   +"\" y=\""+JMLPattern.toStringTruncated(c.y,4)
-                   +"\" z=\""+JMLPattern.toStringTruncated(c.z,4)
-                   +"\" t=\""+JMLPattern.toStringTruncated(getT(),4)
+        wr.println("<event x=\""+JLFunc.toStringTruncated(c.x,4)
+                   +"\" y=\""+JLFunc.toStringTruncated(c.y,4)
+                   +"\" z=\""+JLFunc.toStringTruncated(c.z,4)
+                   +"\" t=\""+JLFunc.toStringTruncated(getT(),4)
                    +"\" hand=\""+Integer.toString(getJuggler())+":"+
                    (getHand() == HandLink.LEFT_HAND ? "left" : "right")+
                    "\">");

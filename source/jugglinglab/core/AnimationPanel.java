@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
 
 import jugglinglab.jml.*;
@@ -22,7 +23,7 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final double snapangle = JLMath.toRad(15.0);
+    static final double snapangle = Math.toRadians(8.0);
 
     protected Animator          anim;
     protected AnimationPrefs    jc;
@@ -78,15 +79,23 @@ public class AnimationPanel extends JPanel implements Runnable {
         try {
             URL catchurl = AnimationPanel.class.getResource("/catch.au");
             AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
-            this.catchclip = AudioSystem.getClip();
+            DataLine.Info info = new DataLine.Info(Clip.class, catchAudioIn.getFormat());
+            this.catchclip = (Clip)AudioSystem.getLine(info);
             this.catchclip.open(catchAudioIn);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // System.out.println("Error loading catch.au: " + e.getMessage());
+            this.catchclip = null;
+        }
         try {
             URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
             AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
-            this.bounceclip = AudioSystem.getClip();
+            DataLine.Info info = new DataLine.Info(Clip.class, bounceAudioIn.getFormat());
+            this.bounceclip = (Clip)AudioSystem.getLine(info);
             this.bounceclip.open(bounceAudioIn);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // System.out.println("Error loading bounce.au: " + e.getMessage());
+            this.bounceclip = null;
+        }
     }
 
     protected void initHandlers() {
@@ -177,14 +186,14 @@ public class AnimationPanel extends JPanel implements Runnable {
                 double[] ca = AnimationPanel.this.dragcamangle;
                 ca[0] += (double)(xdelta) * 0.02;
                 ca[1] -= (double)(ydelta) * 0.02;
-                if (ca[1] < 0.0001)
-                    ca[1] = 0.0001;
-                if (ca[1] > JLMath.toRad(90.0))
-                    ca[1] = JLMath.toRad(90.0);
+                if (ca[1] < Math.toRadians(0.0001))
+                    ca[1] = Math.toRadians(0.0001);
+                if (ca[1] > Math.toRadians(179.9999))
+                    ca[1] = Math.toRadians(179.9999);
                 while (ca[0] < 0.0)
-                    ca[0] += JLMath.toRad(360.0);
-                while (ca[0] >= JLMath.toRad(360.0))
-                    ca[0] -= JLMath.toRad(360.0);
+                    ca[0] += Math.toRadians(360.0);
+                while (ca[0] >= Math.toRadians(360.0))
+                    ca[0] -= Math.toRadians(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
                 AnimationPanel.this.setCameraAngle(snappedcamangle);
@@ -217,30 +226,32 @@ public class AnimationPanel extends JPanel implements Runnable {
         result[1] = ca[1];
 
         if (result[1] < snapangle)
-            result[1] = 0.000001;
-        if (result[1] > (JLMath.toRad(90.0) - snapangle))
-            result[1] = JLMath.toRad(90.0);
+            result[1] = Math.toRadians(0.0001);
+        else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
+            result[1] = Math.toRadians(90.0);
+        else if (result[1] > (Math.toRadians(180.0) - snapangle))
+            result[1] = Math.toRadians(179.9999);
 
         if (anim.pat.getNumberOfJugglers() == 1) {
-            double a = JLMath.toRad(anim.pat.getJugglerAngle(1, getTime()));
+            double a = Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
 
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
-            else if (anglediff(a + 90.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 90.0*0.0174532925194;
-            else if (anglediff(a + 180.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 180.0*0.0174532925194;
-            else if (anglediff(a + 270.0*0.0174532925194 - result[0]) < snapangle)
-                result[0] = a + 270.0*0.0174532925194;
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 0.5 * Math.PI;
+            else if (anglediff(a + Math.PI - result[0]) < snapangle)
+                result[0] = a + Math.PI;
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < snapangle)
+                result[0] = a + 1.5 * Math.PI;
         }
         return result;
     }
 
     protected double anglediff(double delta) {
-        while (delta > JLMath.toRad(180.0))
-            delta -= JLMath.toRad(360.0);
-        while (delta <= JLMath.toRad(-180.0))
-            delta += JLMath.toRad(360.0);
+        while (delta > Math.PI)
+            delta -= 2.0 * Math.PI;
+        while (delta <= -Math.PI)
+            delta += 2.0 * Math.PI;
         return Math.abs(delta);
     }
 
@@ -335,7 +346,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                    if (catchclip.isRunning())
+                                    if (catchclip.isActive())
                                         catchclip.stop();
                                     catchclip.setFramePosition(0);
                                     catchclip.start();
@@ -347,7 +358,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                    if (bounceclip.isRunning())
+                                    if (bounceclip.isActive())
                                         bounceclip.stop();
                                     bounceclip.setFramePosition(0);
                                     bounceclip.start();
