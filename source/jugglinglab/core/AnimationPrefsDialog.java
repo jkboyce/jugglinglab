@@ -17,9 +17,11 @@ public class AnimationPrefsDialog extends JDialog {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected JTextField    tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
-    protected JCheckBox     cb_paused, cb_mousepause, cb_stereo, cb_catchsounds, cb_bouncesounds;
-    protected JButton       but_cancel, but_ok;
+    protected JTextField        tf_width, tf_height, tf_fps, tf_slowdown, tf_border;
+    protected JCheckBox         cb_paused, cb_mousepause, cb_stereo,
+                                cb_catchsounds, cb_bouncesounds;
+    protected JComboBox<String> combo_showground;
+    protected JButton           but_cancel, but_ok;
 
     protected AnimationPrefs newjc;
     //  protected boolean finished = false;
@@ -37,45 +39,67 @@ public class AnimationPrefsDialog extends JDialog {
 
         JPanel p1 = new JPanel();           // to hold text boxes
         p1.setLayout(gb);
+
         JLabel lab1 = new JLabel(guistrings.getString("Width"));
         p1.add(lab1);
         gb.setConstraints(lab1, make_constraints(GridBagConstraints.LINE_START,1,0,
                                                  new Insets(0,3,0,0)));
         tf_width = new JTextField(4);
+        tf_width.setHorizontalAlignment(JTextField.CENTER);
         p1.add(tf_width);
         gb.setConstraints(tf_width, make_constraints(GridBagConstraints.LINE_START,0,0,
                                                  new Insets(0,0,0,0)));
+
         JLabel lab2 = new JLabel(guistrings.getString("Height"));
         p1.add(lab2);
         gb.setConstraints(lab2, make_constraints(GridBagConstraints.LINE_START,1,1,
                                                  new Insets(0,3,0,0)));
         tf_height = new JTextField(4);
+        tf_height.setHorizontalAlignment(JTextField.CENTER);
         p1.add(tf_height);
         gb.setConstraints(tf_height, make_constraints(GridBagConstraints.LINE_START,0,1,
                                                  new Insets(0,0,0,0)));
+
         JLabel lab3 = new JLabel(guistrings.getString("Frames_per_second"));
         p1.add(lab3);
         gb.setConstraints(lab3, make_constraints(GridBagConstraints.LINE_START,1,2,
                                                  new Insets(0,3,0,0)));
         tf_fps = new JTextField(4);
+        tf_fps.setHorizontalAlignment(JTextField.CENTER);
         p1.add(tf_fps);
         gb.setConstraints(tf_fps, make_constraints(GridBagConstraints.LINE_START,0,2,
                                                  new Insets(0,0,0,0)));
+
         JLabel lab4 = new JLabel(guistrings.getString("Slowdown_factor"));
         p1.add(lab4);
         gb.setConstraints(lab4, make_constraints(GridBagConstraints.LINE_START,1,3,
                                                  new Insets(0,3,0,0)));
         tf_slowdown = new JTextField(4);
+        tf_slowdown.setHorizontalAlignment(JTextField.CENTER);
         p1.add(tf_slowdown);
         gb.setConstraints(tf_slowdown, make_constraints(GridBagConstraints.LINE_START,0,3,
                                                  new Insets(0,0,0,0)));
+
         JLabel lab5 = new JLabel(guistrings.getString("Border_(pixels)"));
         p1.add(lab5);
         gb.setConstraints(lab5, make_constraints(GridBagConstraints.LINE_START,1,4,
                                                  new Insets(0,3,0,0)));
         tf_border = new JTextField(4);
+        tf_border.setHorizontalAlignment(JTextField.CENTER);
         p1.add(tf_border);
         gb.setConstraints(tf_border, make_constraints(GridBagConstraints.LINE_START,0,4,
+                                                 new Insets(0,0,0,0)));
+
+        JLabel lab6 = new JLabel(guistrings.getString("Prefs_show_ground"));
+        p1.add(lab6);
+        gb.setConstraints(lab6, make_constraints(GridBagConstraints.LINE_START,1,5,
+                                                 new Insets(0,3,0,0)));
+        combo_showground = new JComboBox<String>();
+        combo_showground.addItem(guistrings.getString("Prefs_show_ground_auto"));
+        combo_showground.addItem(guistrings.getString("Prefs_show_ground_yes"));
+        combo_showground.addItem(guistrings.getString("Prefs_show_ground_no"));
+        p1.add(combo_showground);
+        gb.setConstraints(combo_showground, make_constraints(GridBagConstraints.LINE_START,0,5,
                                                  new Insets(0,0,0,0)));
 
         cb_paused = new JCheckBox(guistrings.getString("Start_paused"));
@@ -127,7 +151,7 @@ public class AnimationPrefsDialog extends JDialog {
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
-                    tempdouble = Double.valueOf(tf_fps.getText()).doubleValue();
+                    tempdouble = Double.parseDouble(tf_fps.getText());
                     if (tempdouble > 0.0) newjc.fps = tempdouble;
                 } catch (NumberFormatException e) {
                     String template = errorstrings.getString("Error_number_format");
@@ -135,7 +159,7 @@ public class AnimationPrefsDialog extends JDialog {
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
                 try {
-                    tempdouble = Double.valueOf(tf_slowdown.getText()).doubleValue();
+                    tempdouble = Double.parseDouble(tf_slowdown.getText());
                     if (tempdouble > 0.0) newjc.slowdown = tempdouble;
                 } catch (NumberFormatException e) {
                     String template = errorstrings.getString("Error_number_format");
@@ -151,6 +175,7 @@ public class AnimationPrefsDialog extends JDialog {
                     new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
                 }
 
+                newjc.showGround = combo_showground.getSelectedIndex();
                 newjc.startPause = cb_paused.isSelected();
                 newjc.mousePause = cb_mousepause.isSelected();
                 newjc.stereo = cb_stereo.isSelected();
@@ -202,7 +227,7 @@ public class AnimationPrefsDialog extends JDialog {
         GridBagConstraints gbc = new GridBagConstraints();
 
         gbc.anchor = location;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridheight = gbc.gridwidth = 1;
         gbc.gridx = gridx;
         gbc.gridy = gridy;
@@ -221,6 +246,7 @@ public class AnimationPrefsDialog extends JDialog {
         tf_fps.setText(Double.toString(oldjc.fps));
         tf_slowdown.setText(Double.toString(oldjc.slowdown));
         tf_border.setText(Integer.toString(oldjc.border));
+        combo_showground.setSelectedIndex(oldjc.showGround);
         cb_paused.setSelected(oldjc.startPause);
         cb_mousepause.setSelected(oldjc.mousePause);
         cb_stereo.setSelected(oldjc.stereo);

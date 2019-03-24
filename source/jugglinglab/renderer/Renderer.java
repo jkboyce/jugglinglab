@@ -14,6 +14,19 @@ import jugglinglab.util.JuggleExceptionInternal;
 
 
 public abstract class Renderer {
+    protected boolean showground;
+
+    public void setGround(boolean showground) {
+        this.showground = showground;
+    }
+
+    protected static JLVector toVector(Coordinate c, JLVector result) {
+        result.x = c.x;
+        result.y = c.z;
+        result.z = c.y;
+        return result;
+    }
+
     public abstract void setPattern(JMLPattern pat);
     public abstract void initDisplay(Dimension dim, int border,
                 Coordinate overallmax, Coordinate overallmin);
@@ -37,11 +50,4 @@ public abstract class Renderer {
                 throws JuggleExceptionInternal;
 
     public abstract Color getBackground();
-
-    protected static JLVector toVector(Coordinate c, JLVector result) {
-        result.x = c.x;
-        result.y = c.z;
-        result.z = c.y;
-        return result;
-    }
 }

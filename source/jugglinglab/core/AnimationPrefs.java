@@ -16,11 +16,16 @@ public class AnimationPrefs {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    public static final int     GROUND_AUTO = 0;    // must be sequential
+    public static final int     GROUND_ON = 1;      // starting from 0
+    public static final int     GROUND_OFF = 2;
+
     public static final int     width_def = 400;
     public static final int     height_def = 450;
     public static final double  fps_def = 60.0;
     public static final double  slowdown_def = 2.0;
     public static final int     border_def = 0;
+    public static final int     showGround_def = GROUND_AUTO;
     public static final boolean stereo_def = false;
     public static final boolean startPause_def = false;
     public static final boolean mousePause_def = false;
@@ -33,13 +38,14 @@ public class AnimationPrefs {
     public double   fps = fps_def;
     public double   slowdown = slowdown_def;
     public int      border = border_def;
+    public int      showGround = showGround_def;
     public boolean  stereo = stereo_def;
     public boolean  startPause = startPause_def;
     public boolean  mousePause = mousePause_def;
     public boolean  catchSound = catchSound_def;
     public boolean  bounceSound = bounceSound_def;
     public boolean  camangleGiven = camangleGiven_def;
-    public double[] camangle = null;
+    public double[] camangle;       // in degrees!
 
 
     public AnimationPrefs() { super(); }
@@ -50,9 +56,10 @@ public class AnimationPrefs {
         if (jc.slowdown >= 0.0)     this.slowdown = jc.slowdown;
         if (jc.fps >= 0.0)          this.fps = jc.fps;
         if (jc.border >= 0)         this.border = jc.border;
+        this.showGround = jc.showGround;
+        this.stereo = jc.stereo;
         this.startPause = jc.startPause;
         this.mousePause = jc.mousePause;
-        this.stereo = jc.stereo;
         this.catchSound = jc.catchSound;
         this.bounceSound = jc.bounceSound;
         this.camangleGiven = jc.camangleGiven;
@@ -64,25 +71,25 @@ public class AnimationPrefs {
     }
 
     public void parseInput(String input) throws JuggleExceptionUser {
-        int tempint;
+        int     tempint;
         double  tempdouble;
         String  value = null;
 
         ParameterList pl = new ParameterList(input);
 
         if ((value = pl.getParameter("stereo")) != null)
-            this.stereo = Boolean.valueOf(value).booleanValue();
+            this.stereo = Boolean.parseBoolean(value);
         if ((value = pl.getParameter("startpaused")) != null)
-            this.startPause = Boolean.valueOf(value).booleanValue();
+            this.startPause = Boolean.parseBoolean(value);
         if ((value = pl.getParameter("mousepause")) != null)
-            this.mousePause = Boolean.valueOf(value).booleanValue();
+            this.mousePause = Boolean.parseBoolean(value);
         if ((value = pl.getParameter("catchsound")) != null)
-            this.catchSound = Boolean.valueOf(value).booleanValue();
+            this.catchSound = Boolean.parseBoolean(value);
         if ((value = pl.getParameter("bouncesound")) != null)
-            this.bounceSound = Boolean.valueOf(value).booleanValue();
+            this.bounceSound = Boolean.parseBoolean(value);
         if ((value = pl.getParameter("fps")) != null) {
             try {
-                tempdouble = Double.valueOf(value).doubleValue();
+                tempdouble = Double.parseDouble(value);
                 this.fps = tempdouble;
             } catch (NumberFormatException e) {
                 String template = errorstrings.getString("Error_number_format");
@@ -92,7 +99,7 @@ public class AnimationPrefs {
         }
         if ((value = pl.getParameter("slowdown")) != null) {
             try {
-                tempdouble = Double.valueOf(value).doubleValue();
+                tempdouble = Double.parseDouble(value);
                 this.slowdown = tempdouble;
             } catch (NumberFormatException e) {
                 String template = errorstrings.getString("Error_number_format");
@@ -130,10 +137,25 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
+        if ((value = pl.getParameter("showground")) != null) {
+            if (value.equalsIgnoreCase("auto"))
+                this.showGround = GROUND_AUTO;
+            else if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("on")
+                        || value.equalsIgnoreCase("yes"))
+                this.showGround = GROUND_ON;
+            else if (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("off")
+                        || value.equalsIgnoreCase("no"))
+                this.showGround = GROUND_OFF;
+            else {
+                String template = errorstrings.getString("Error_showground_value");
+                Object[] arguments = { value };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+        }
         if ((value = pl.getParameter("camangle")) != null) {
             try {
                 double[] ca = new double[2];
-                ca[1] = 90.0;       // default if second angle isn't given
+                ca[1] = 90.0;        // default if second angle isn't given
 
                 value = value.replace("(", "");
                 value = value.replace(")", "");
@@ -149,12 +171,7 @@ public class AnimationPrefs {
                 }
 
                 for (int i = 0; i < numangles; i++)
-                    ca[i] = Double.valueOf(st.nextToken().trim()).doubleValue();
-
-                if (ca[1] < Math.toRadians(0.0001))
-                    ca[1] = Math.toRadians(0.0001);
-                if (ca[1] > Math.toRadians(179.9999))
-                    ca[1] = Math.toRadians(179.9999);
+                    ca[i] = Double.parseDouble(st.nextToken().trim());
 
                 this.camangle = new double[2];
                 this.camangle[0] = ca[0];
@@ -176,11 +193,24 @@ public class AnimationPrefs {
         if (this.height != height_def)
             result += "height=" + this.height + ";";
         if (this.fps != fps_def)
-            result += "fps=" + JMLPattern.toStringTruncated(this.fps,2) + ";";
+            result += "fps=" + JLFunc.toStringTruncated(this.fps,2) + ";";
         if (this.slowdown != slowdown_def)
-            result += "slowdown=" + JMLPattern.toStringTruncated(this.slowdown,2) + ";";
+            result += "slowdown=" + JLFunc.toStringTruncated(this.slowdown,2) + ";";
         if (this.border != border_def)
             result += "border=" + this.border + ";";
+        if (this.showGround != showGround_def) {
+            switch (this.showGround) {
+                case GROUND_AUTO:
+                    result += "showground=auto;";
+                    break;
+                case GROUND_ON:
+                    result += "showground=true;";
+                    break;
+                case GROUND_OFF:
+                    result += "showground=false;";
+                    break;
+            }
+        }
         if (this.stereo != stereo_def)
             result += "stereo=" + this.stereo + ";";
         if (this.startPause != startPause_def)

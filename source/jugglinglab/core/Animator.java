@@ -21,6 +21,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 import org.w3c.dom.Node;
 
 import jugglinglab.jml.*;
+import jugglinglab.renderer.Renderer;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
@@ -30,7 +31,7 @@ import jugglinglab.util.*;
 public class Animator {
     protected JMLPattern        pat;
     protected AnimationPrefs    jc;
-    protected jugglinglab.renderer.Renderer ren1, ren2;
+    protected Renderer          ren1, ren2;
     protected Coordinate        overallmax, overallmin;
 
     protected int               num_frames;
@@ -40,8 +41,8 @@ public class Animator {
     protected Permutation       invpathperm;
 
     // camera angles for viewing
-    protected double[]          camangle;
-    protected double[]          camangle1;     // for stereo display
+    protected double[]          camangle;       // in radians
+    protected double[]          camangle1;      // for stereo display
     protected double[]          camangle2;
 
     protected Dimension         dim;
@@ -70,11 +71,16 @@ public class Animator {
         if (this.pat == null)
             return;
 
+        boolean sg = (this.jc.showGround == AnimationPrefs.GROUND_ON
+                || (this.jc.showGround == AnimationPrefs.GROUND_AUTO && this.pat.isBouncePattern()));
+
         this.ren1 = new Renderer2D();
         this.ren1.setPattern(this.pat);
+        this.ren1.setGround(sg);
         if (this.jc.stereo) {
             this.ren2 = new Renderer2D();
             this.ren2.setPattern(this.pat);
+            this.ren2.setGround(sg);
         } else
             this.ren2 = null;
 
@@ -83,7 +89,8 @@ public class Animator {
         double[] ca = new double[2];
         if (this.jc.camangleGiven) {
             ca[0] = Math.toRadians(this.jc.camangle[0]);
-            ca[1] = Math.toRadians(this.jc.camangle[1]);
+            double theta = Math.min(179.9999, Math.max(0.0001, this.jc.camangle[1]));
+            ca[1] = Math.toRadians(theta);
         } else {
             if (this.pat.getNumberOfJugglers() == 1) {
                 ca[0] = Math.toRadians(0.0);
@@ -116,9 +123,9 @@ public class Animator {
 
     protected void setCameraAngle(double[] ca) {
         while (ca[0] < 0.0)
-            ca[0] += Math.toRadians(360.0);
-        while (ca[0] >= Math.toRadians(360.0))
-            ca[0] -= Math.toRadians(360.0);
+            ca[0] += 2.0 * Math.PI;
+        while (ca[0] >= 2.0 * Math.PI)
+            ca[0] -= 2.0 * Math.PI;
 
         this.camangle[0] = ca[0];
         this.camangle[1] = ca[1];
@@ -160,16 +167,14 @@ public class Animator {
             double phi = ca[1];
 
             double xya = 30.0;
-            double xyb = xya * Math.sin(90.0*0.0174532925194 - phi);
-            double zlen = xya * Math.cos(90.0*0.0174532925194 - phi);
+            double xyb = xya * Math.cos(phi);
+            double zlen = xya * Math.sin(phi);
             int cx = 38;
             int cy = 45;
             int xx = cx + (int)(0.5 - xya * Math.cos(theta));
             int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
-            int yx = cx + (int)(0.5 - xya * Math.cos(theta +
-                                                    90.0*0.0174532925194));
-            int yy = cy + (int)(0.5 + xyb * Math.sin(theta +
-                                                    90.0*0.0174532925194));
+            int yx = cx + (int)(0.5 + xya * Math.sin(theta));
+            int yy = cy + (int)(0.5 + xyb * Math.cos(theta));
             int zx = cx;
             int zy = cy - (int)(0.5 + zlen);
 
@@ -191,14 +196,14 @@ public class Animator {
             double phi = ca[1];
 
             double xya = 30.0;
-            double xyb = xya * Math.sin(90.0*0.0174532925194 - phi);
-            double zlen = xya * Math.cos(90.0*0.0174532925194 - phi);
+            double xyb = xya * Math.cos(phi);
+            double zlen = xya * Math.sin(phi);
             int cx = 38 + this.dim.width/2;
             int cy = 45;
             int xx = cx + (int)(0.5 - xya * Math.cos(theta));
             int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
-            int yx = cx + (int)(0.5 - xya * Math.cos(theta + 90.0*0.0174532925194));
-            int yy = cy + (int)(0.5 + xyb * Math.sin(theta + 90.0*0.0174532925194));
+            int yx = cx + (int)(0.5 + xya * Math.sin(theta));
+            int yy = cy + (int)(0.5 + xyb * Math.cos(theta));
             int zx = cx;
             int zy = cy - (int)(0.5 + zlen);
 
