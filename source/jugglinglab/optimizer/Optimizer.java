@@ -167,12 +167,12 @@ public class Optimizer {
                 StringBuffer sb = new StringBuffer();
                 sb.append("  equation " + (row - eqn_start) + " = { ");
                 for (int j = 0; j < numincluded; j++) {
-                    sb.append(JMLPattern.toStringTruncated(me.marginsEqs[row].coef(varnum[j]), 4));
+                    sb.append(JLFunc.toStringTruncated(me.marginsEqs[row].coef(varnum[j]), 4));
                     if (j != (numincluded-1))
                         sb.append(", ");
                 }
                 sb.append(" : ");
-                sb.append(JMLPattern.toStringTruncated(me.marginsEqs[row].constant(), 4));
+                sb.append(JLFunc.toStringTruncated(me.marginsEqs[row].constant(), 4));
                 sb.append(" }");
 
                 System.out.println(sb.toString());
@@ -229,7 +229,7 @@ public class Optimizer {
                         StringBuffer sb = new StringBuffer();
                         sb.append("vector = { ");
                         for (int i = 0; i < numincluded; i++) {
-                            sb.append(JMLPattern.toStringTruncated(solution.getPoint()[i], 4));
+                            sb.append(JLFunc.toStringTruncated(solution.getPoint()[i], 4));
                             if (i != numincluded-1)
                                 sb.append(", ");
                         }
@@ -474,7 +474,7 @@ public class Optimizer {
                 StringBuffer sb = new StringBuffer();
                 sb.append("margins = { ");
                 for (int i = 0; i < me.marginsNum; i++) {
-                    sb.append(JMLPattern.toStringTruncated(me.getMargin(i), 4));
+                    sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
                     if (i != me.marginsNum-1)
                         sb.append(", ");
                 }
@@ -498,7 +498,7 @@ public class Optimizer {
             StringBuffer sb = new StringBuffer();
             sb.append("margins = { ");
             for (int i = 0; i < me.marginsNum; i++) {
-                sb.append(JMLPattern.toStringTruncated(me.getMargin(i), 4));
+                sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
                 if (i != me.marginsNum-1)
                     sb.append(", ");
             }
@@ -567,7 +567,7 @@ public class Optimizer {
                         double temp = me.marginsEqs[i].constant();
                         for (int j = 0; j < me.varsNum; j++)
                             temp += me.marginsEqs[i].coef(j) * solution.getPoint()[j];
-                        sb.append(JMLPattern.toStringTruncated(temp, 4));
+                        sb.append(JLFunc.toStringTruncated(temp, 4));
                         if (i != me.marginsNum-1)
                             sb.append(", ");
                     }
@@ -583,7 +583,7 @@ public class Optimizer {
                 StringBuffer sb = new StringBuffer();
                 sb.append("bestmargins = { ");
                 for (int i = 0; i < me.marginsNum; i++) {
-                    sb.append(JMLPattern.toStringTruncated(me.getMargin(i), 4));
+                    sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
                     if (i != me.marginsNum-1)
                         sb.append(", ");
                 }

@@ -395,7 +395,7 @@ public class MarginEquations {
                 sb.append("{ ");
                 double[] temp = eqns.get(i);
                 for (int j = 0; j <= this.varsNum; j++) {
-                    sb.append(JMLPattern.toStringTruncated(temp[j], 4));
+                    sb.append(JLFunc.toStringTruncated(temp[j], 4));
                     if (j == (this.varsNum - 1))
                         sb.append(" : ");
                     else if (j != this.varsNum)
@@ -404,7 +404,7 @@ public class MarginEquations {
                 double dtemp = temp[this.varsNum];
                 for (int j = 0; j < this.varsNum; j++)
                     dtemp += temp[j] * this.varsValues[j];
-                sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("eq[" + i + "] = " + sb.toString());
             }
@@ -454,7 +454,7 @@ public class MarginEquations {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
                 for (int j = 0; j <= this.varsNum; j++) {
-                    sb.append(JMLPattern.toStringTruncated(this.marginsEqs[i].coef(j), 4));
+                    sb.append(JLFunc.toStringTruncated(this.marginsEqs[i].coef(j), 4));
                     if (j == (this.varsNum - 1))
                         sb.append(" : ");
                     else if (j != this.varsNum)
@@ -463,7 +463,7 @@ public class MarginEquations {
                 double dtemp = this.marginsEqs[i].constant();
                 for (int j = 0; j < this.varsNum; j++)
                     dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
-                sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("eq[" + i + "] = " + sb.toString());
             }
@@ -477,7 +477,7 @@ public class MarginEquations {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
                 for (int j = 0; j <= this.varsNum; j++) {
-                    sb.append(JMLPattern.toStringTruncated(this.marginsEqs[i].coef(j), 4));
+                    sb.append(JLFunc.toStringTruncated(this.marginsEqs[i].coef(j), 4));
                     if (j == (this.varsNum - 1))
                         sb.append(" : ");
                     else if (j != this.varsNum)
@@ -486,7 +486,7 @@ public class MarginEquations {
                 double dtemp = this.marginsEqs[i].constant();
                 for (int j = 0; j < this.varsNum; j++)
                     dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
-                sb.append(" } --> " + JMLPattern.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("eq[" + i + "] = " + sb.toString());
             }
