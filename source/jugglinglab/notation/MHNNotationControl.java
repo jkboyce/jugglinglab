@@ -11,8 +11,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.*;
 
-import jugglinglab.util.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.prop.Prop;
+import jugglinglab.util.*;
 
 
 // This class is abstract because MHNPattern is abstract; there is no
@@ -253,7 +254,19 @@ public abstract class MHNNotationControl extends NotationControl {
     }
 
     @Override
-    public String getConfigString() {
+    public void resetNotationControl() {
+        tf1.setText("3");                                               // pattern
+        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
+        tf3.setText("");                                                // beats per second
+        tf4.setText("");
+        cb1.setSelectedIndex(0);
+        tf5.setText("");
+        cb2.setSelectedIndex(0);
+        tf6.setText("");
+        cb3.setSelectedIndex(0);
+    }
+
+    protected String getConfigString() {
         StringBuffer sb = new StringBuffer(256);
 
         sb.append("pattern=");
@@ -282,27 +295,5 @@ public abstract class MHNNotationControl extends NotationControl {
             sb.append(tf6.getText());
         }
         return sb.toString();
-    }
-
-    @Override
-    public void resetNotationControl() {
-        tf1.setText("3");                                               // pattern
-        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
-        tf3.setText("");                                                // beats per second
-        tf4.setText("");
-        cb1.setSelectedIndex(0);
-        tf5.setText("");
-        cb2.setSelectedIndex(0);
-        tf6.setText("");
-        cb3.setSelectedIndex(0);
-    }
-
-    @Override
-    public String getHandsName() {
-        int index = cb1.getSelectedIndex();
-        if (index == 0 || index == (builtinHandsNames.length+1))
-            return null;
-
-        return builtinHandsNames[index-1];
     }
 }
