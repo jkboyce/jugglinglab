@@ -4,16 +4,14 @@
 
 package jugglinglab.notation;
 
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.*;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import jugglinglab.jml.JMLPattern;
 import jugglinglab.prop.Prop;
-import jugglinglab.util.*;
 
 
 // This class is abstract because MHNPattern is abstract; there is no

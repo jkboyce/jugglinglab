@@ -15,7 +15,7 @@ public class SiteswapNotationControl extends MHNNotationControl {
         JMLPattern pat = (new SiteswapPattern()).fromString(getConfigString())
                                                 .asJMLPattern();
 
-        // if the hands setting not default, append its name to the title
+        // if the hands setting is not default, append its name to the title
         int index = cb1.getSelectedIndex();
         if (index > 0)
             pat.setTitle(pat.getTitle() + " " + cb1.getItemAt(index));
