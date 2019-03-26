@@ -17,9 +17,11 @@ import javax.swing.SwingUtilities;
 import org.xml.sax.SAXException;
 
 import jugglinglab.core.*;
-import jugglinglab.jml.*;
-import jugglinglab.generator.*;
-import jugglinglab.notation.*;
+import jugglinglab.jml.JMLParser;
+import jugglinglab.jml.JMLPattern;
+import jugglinglab.generator.SiteswapGenerator;
+import jugglinglab.generator.GeneratorTarget;
+import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
 
 
@@ -149,16 +151,15 @@ public class JugglingLab {
         }
 
         // otherwise assume pattern is in siteswap notation
-        JMLPattern pat = null;
         try {
-            SiteswapPattern p = new SiteswapPattern();
-            pat = p.fromString(jlargs.remove(0)).asJMLPattern();
+            return (new SiteswapPattern()).fromString(jlargs.remove(0))
+                                          .asJMLPattern();
         } catch (JuggleExceptionUser jeu) {
             System.out.println("Error: " + jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
             System.out.println("Internal Error: " + jei.getMessage());
         }
-        return pat;
+        return null;
     }
 
 
