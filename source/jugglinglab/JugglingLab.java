@@ -93,7 +93,7 @@ public class JugglingLab {
                     AnimationPrefs jc = new AnimationPrefs();
                     ParameterList pl = new ParameterList(jlargs.remove(i));
                     jc.parseParameters(pl);
-                    JLFunc.errorIfParametersLeft(pl);
+                    pl.errorIfParametersLeft();
                     return jc;
                 } catch (JuggleExceptionUser jeu) {
                     System.out.println("Error in animator prefs: " + jeu.getMessage() + "; ignoring");

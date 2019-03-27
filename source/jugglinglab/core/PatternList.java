@@ -73,7 +73,7 @@ public class PatternList extends JPanel {
                             if (rec.animprefs != null) {
                                 ParameterList pl = new ParameterList(rec.animprefs);
                                 ap.parseParameters(pl);
-                                JLFunc.errorIfParametersLeft(pl);
+                                pl.errorIfParametersLeft();
                             }
 
                             if (animtarget != null)

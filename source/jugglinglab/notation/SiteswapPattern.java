@@ -36,7 +36,7 @@ public class SiteswapPattern extends MHNPattern {
         ParameterList pl = new ParameterList(config);
         parseParameters(pl);
         // if anything is left over after parsing, raise an error
-        JLFunc.errorIfParametersLeft(pl);
+        pl.errorIfParametersLeft();
 
         this.orig_pattern = pattern;    // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);

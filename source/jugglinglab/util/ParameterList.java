@@ -4,10 +4,16 @@
 
 package jugglinglab.util;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 
 public class ParameterList {
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
     protected int size;
     protected ArrayList<String> names;
     protected ArrayList<String> values;
@@ -89,5 +95,26 @@ public class ParameterList {
         }
 
         return result;
+    }
+
+    // Utility function to throw an appropriate error if there are parameters
+    // left over after parsing.
+    public void errorIfParametersLeft() throws JuggleExceptionUser {
+        int count = getNumberOfParameters();
+
+        if (count == 0)
+            return;
+        else if (count == 1) {
+            String template = errorstrings.getString("Error_unrecognized_param");
+            Object[] arguments = { getParameterName(0) };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        } else {
+            String template = errorstrings.getString("Error_unrecognized_params");
+            ArrayList<String> names = new ArrayList<String>();
+            for (int i = 0; i < count; i++)
+                names.add(getParameterName(i));
+            Object[] arguments = { String.join(", ", names) };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        }
     }
 }
