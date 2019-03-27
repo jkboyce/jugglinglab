@@ -75,69 +75,63 @@ public abstract class MHNPattern extends Pattern {
     protected MHNSymmetry getSymmetry(int i)    { return symmetry.get(i); }
 
 
-    protected void parseConfig(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1) { // just the pattern
-            config = "pattern=" + config;
-        }
-
-        // delete newlines and carriage returns from string
-        config = config.replace("\n","").replace("\r","");
-
-        ParameterList pl = new ParameterList(config);
+    // pull out the MHN-related parameters from the given list, leaving any
+    // other parameters alone.
+    protected void parseParameters(ParameterList pl) throws JuggleExceptionUser, JuggleExceptionInternal {
         String temp = null;
 
-        pattern = pl.getParameter("pattern");
+        pattern = pl.removeParameter("pattern");
         if (pattern == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_no_pattern"));
 
-        if ((temp = pl.getParameter("bps")) != null) {
+        if ((temp = pl.removeParameter("bps")) != null) {
             try {
-                bps = Double.valueOf(temp).doubleValue();
+                bps = Double.parseDouble(temp);
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_bps_value"));
             }
         }
 
-        if ((temp = pl.getParameter("dwell")) != null) {
+        if ((temp = pl.removeParameter("dwell")) != null) {
             try {
-                dwell = Double.valueOf(temp).doubleValue();
+                dwell = Double.parseDouble(temp);
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_value"));
             }
         }
 
-        if ((temp = pl.getParameter("hands")) != null)
+        if ((temp = pl.removeParameter("hands")) != null)
             hands = new MHNHands(temp);
 
-        if ((temp = pl.getParameter("body")) != null)
+        if ((temp = pl.removeParameter("body")) != null)
             bodies = new MHNBody(temp);
 
-        if ((temp = pl.getParameter("gravity")) != null) {
+        if ((temp = pl.removeParameter("gravity")) != null) {
             try {
-                gravity = Double.valueOf(temp).doubleValue();
+                gravity = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("propdiam")) != null) {
+        if ((temp = pl.removeParameter("propdiam")) != null) {
             try {
-                propdiam = Double.valueOf(temp).doubleValue();
+                propdiam = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("bouncefrac")) != null) {
+        if ((temp = pl.removeParameter("bouncefrac")) != null) {
             try {
-                bouncefrac = Double.valueOf(temp).doubleValue();
+                bouncefrac = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("prop")) != null) {
+        if ((temp = pl.removeParameter("prop")) != null) {
             prop = temp;
         }
 
-        if ((temp = pl.getParameter("colors")) != null) {
+        if ((temp = pl.removeParameter("colors")) != null) {
             if (temp.trim().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
             else
@@ -172,8 +166,6 @@ public abstract class MHNPattern extends Pattern {
                 }
             }
         }
-
-        this.config = config;
     }
 
     @Override

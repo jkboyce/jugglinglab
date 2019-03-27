@@ -4,6 +4,9 @@
 
 package jugglinglab.util;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,8 +14,11 @@ import java.util.regex.Pattern;
 // Some useful functions
 
 public class JLFunc {
-    // a choose b
-    public static int choose(int a, int b) {
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+    // Binomial coefficient (a choose b)
+    public static int binomial(int a, int b) {
         int result = 1;
 
         for (int i = 0; i < b; i++) {
@@ -173,5 +179,26 @@ public class JLFunc {
         return result.substring(0, endpos);
     }
 
+    // Utility function to throw an appropriate error if there are parameters
+    // left over after parsing.
+    public static void errorIfParametersLeft(ParameterList pl) throws JuggleExceptionUser {
+        if (pl.getNumberOfParameters() == 0)
+            return;
+
+        int count = pl.getNumberOfParameters();
+
+        if (count == 1) {
+            String template = errorstrings.getString("Error_unrecognized_param");
+            Object[] arguments = { pl.getParameterName(0) };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        } else {
+            String template = errorstrings.getString("Error_unrecognized_params");
+            ArrayList<String> names = new ArrayList<String>();
+            for (int i = 0; i < count; i++)
+                names.add(pl.getParameterName(i));
+            Object[] arguments = { String.join(", ", names) };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        }
+    }
 }
 

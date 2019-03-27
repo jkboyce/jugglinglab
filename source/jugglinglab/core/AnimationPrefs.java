@@ -76,24 +76,22 @@ public class AnimationPrefs {
         }
     }
 
-    public void parseInput(String input) throws JuggleExceptionUser {
+    public void parseParameters(ParameterList pl) throws JuggleExceptionUser {
         int     tempint;
         double  tempdouble;
         String  value = null;
 
-        ParameterList pl = new ParameterList(input);
-
-        if ((value = pl.getParameter("stereo")) != null)
+        if ((value = pl.removeParameter("stereo")) != null)
             this.stereo = Boolean.parseBoolean(value);
-        if ((value = pl.getParameter("startpaused")) != null)
+        if ((value = pl.removeParameter("startpaused")) != null)
             this.startPause = Boolean.parseBoolean(value);
-        if ((value = pl.getParameter("mousepause")) != null)
+        if ((value = pl.removeParameter("mousepause")) != null)
             this.mousePause = Boolean.parseBoolean(value);
-        if ((value = pl.getParameter("catchsound")) != null)
+        if ((value = pl.removeParameter("catchsound")) != null)
             this.catchSound = Boolean.parseBoolean(value);
-        if ((value = pl.getParameter("bouncesound")) != null)
+        if ((value = pl.removeParameter("bouncesound")) != null)
             this.bounceSound = Boolean.parseBoolean(value);
-        if ((value = pl.getParameter("fps")) != null) {
+        if ((value = pl.removeParameter("fps")) != null) {
             try {
                 tempdouble = Double.parseDouble(value);
                 this.fps = tempdouble;
@@ -103,7 +101,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("slowdown")) != null) {
+        if ((value = pl.removeParameter("slowdown")) != null) {
             try {
                 tempdouble = Double.parseDouble(value);
                 this.slowdown = tempdouble;
@@ -113,7 +111,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("border")) != null) {
+        if ((value = pl.removeParameter("border")) != null) {
             try {
                 tempint = Integer.parseInt(value);
                 this.border = tempint;
@@ -123,7 +121,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("width")) != null) {
+        if ((value = pl.removeParameter("width")) != null) {
             try {
                 tempint = Integer.parseInt(value);
                 this.width = tempint;
@@ -133,7 +131,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("height")) != null) {
+        if ((value = pl.removeParameter("height")) != null) {
             try {
                 tempint = Integer.parseInt(value);
                 this.height = tempint;
@@ -143,7 +141,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("showground")) != null) {
+        if ((value = pl.removeParameter("showground")) != null) {
             if (value.equalsIgnoreCase("auto"))
                 this.showGround = GROUND_AUTO;
             else if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("on")
@@ -158,7 +156,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
-        if ((value = pl.getParameter("camangle")) != null) {
+        if ((value = pl.removeParameter("camangle")) != null) {
             try {
                 double[] ca = new double[2];
                 ca[1] = 90.0;        // default if second angle isn't given
@@ -199,9 +197,9 @@ public class AnimationPrefs {
         if (this.height != height_def)
             result += "height=" + this.height + ";";
         if (this.fps != fps_def)
-            result += "fps=" + JLFunc.toStringTruncated(this.fps,2) + ";";
+            result += "fps=" + JLFunc.toStringTruncated(this.fps, 2) + ";";
         if (this.slowdown != slowdown_def)
-            result += "slowdown=" + JLFunc.toStringTruncated(this.slowdown,2) + ";";
+            result += "slowdown=" + JLFunc.toStringTruncated(this.slowdown, 2) + ";";
         if (this.border != border_def)
             result += "border=" + this.border + ";";
         if (this.showGround != showGround_def) {
@@ -231,7 +229,7 @@ public class AnimationPrefs {
             result += "camangle=(" + this.camangle[0] + "," + this.camangle[1] + ");";
 
         if (result.length() != 0)
-            result = result.substring(0, result.length()-1);
+            result = result.substring(0, result.length() - 1);
 
         return result;
     }

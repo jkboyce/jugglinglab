@@ -27,7 +27,16 @@ public class SiteswapPattern extends MHNPattern {
 
     @Override
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        parseConfig(config);
+        if (config.indexOf((int)'=') == -1)                 // just the pattern
+            config = "pattern=" + config;
+        config = config.replace("\n","").replace("\r","");
+
+        this.config = config;
+
+        ParameterList pl = new ParameterList(config);
+        parseParameters(pl);
+        // if anything is left over after parsing, raise an error
+        JLFunc.errorIfParametersLeft(pl);
 
         this.orig_pattern = pattern;    // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);

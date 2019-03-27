@@ -32,9 +32,20 @@ public class ParameterList {
     }
 
     public String getParameter(String name) {
-        for (int i = size-1; i >= 0; i--)
+        for (int i = size - 1; i >= 0; i--)
             if (name.equalsIgnoreCase(getParameterName(i)))
                 return getParameterValue(i);
+        return null;
+    }
+
+    public String removeParameter(String name) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (name.equalsIgnoreCase(getParameterName(i))) {
+                size--;
+                names.remove(i);
+                return values.remove(i);
+            }
+        }
         return null;
     }
 

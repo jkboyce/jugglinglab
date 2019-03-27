@@ -89,15 +89,16 @@ public class JugglingLab {
                     return null;
                 }
 
-                String prefstring = jlargs.remove(i);
-                AnimationPrefs jc = new AnimationPrefs();
                 try {
-                    jc.parseInput(prefstring);
+                    AnimationPrefs jc = new AnimationPrefs();
+                    ParameterList pl = new ParameterList(jlargs.remove(i));
+                    jc.parseParameters(pl);
+                    JLFunc.errorIfParametersLeft(pl);
+                    return jc;
                 } catch (JuggleExceptionUser jeu) {
                     System.out.println("Error in animator prefs: " + jeu.getMessage() + "; ignoring");
                     return null;
                 }
-                return jc;
             }
         }
         return null;
