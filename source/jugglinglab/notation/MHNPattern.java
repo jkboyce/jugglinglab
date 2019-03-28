@@ -77,7 +77,9 @@ public abstract class MHNPattern extends Pattern {
 
     // pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
-    protected void parseParameters(ParameterList pl) throws JuggleExceptionUser, JuggleExceptionInternal {
+    @Override
+    public Pattern fromParameters(ParameterList pl) throws
+                                    JuggleExceptionUser, JuggleExceptionInternal {
         String temp = null;
 
         pattern = pl.removeParameter("pattern");
@@ -166,6 +168,7 @@ public abstract class MHNPattern extends Pattern {
                 }
             }
         }
+        return this;
     }
 
     @Override

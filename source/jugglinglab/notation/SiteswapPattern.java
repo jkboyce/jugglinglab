@@ -17,7 +17,7 @@ import jugglinglab.notation.ssparser.*;
 // the internal format used by MHNPattern.
 
 public class SiteswapPattern extends MHNPattern {
-    protected String orig_pattern;
+    protected String title;
     protected boolean oddperiod = false;
 
     @Override
@@ -31,14 +31,20 @@ public class SiteswapPattern extends MHNPattern {
             config = "pattern=" + config;
         config = config.replace("\n","").replace("\r","");
 
-        this.config = config;
+        this.config = config;       // save for toString()
 
         ParameterList pl = new ParameterList(config);
-        parseParameters(pl);
-        // if anything is left over after parsing, raise an error
+        fromParameters(pl);
         pl.errorIfParametersLeft();
+        return this;
+    }
 
-        this.orig_pattern = pattern;    // save to use as JMLPattern title
+    @Override
+    public Pattern fromParameters(ParameterList pl) throws
+                                JuggleExceptionUser, JuggleExceptionInternal {
+        super.fromParameters(pl);
+
+        this.title = pattern;    // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
 
@@ -72,10 +78,13 @@ public class SiteswapPattern extends MHNPattern {
         return this;
     }
 
+    public String getTitle()            { return this.title; }
+    public void setTitle(String title)  { this.title = title; }
+
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = super.asJMLPattern();
-        result.setTitle(orig_pattern);
+        result.setTitle(title);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(result);

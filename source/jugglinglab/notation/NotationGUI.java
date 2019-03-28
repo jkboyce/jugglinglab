@@ -149,11 +149,12 @@ public class NotationGUI extends JPanel implements ActionListener {
                 public void actionPerformed(ActionEvent ae) {
                     PatternWindow jaw2 = null;
                     try {
-                        JMLPattern pat = fcontrol.makePattern();
+                        JMLPattern pat = fcontrol.getPattern().asJMLPattern();
+                        AnimationPrefs jc = fcontrol.getAnimationPrefs();
                         if (animtarget != null)
-                            animtarget.restartView(pat, new AnimationPrefs());
+                            animtarget.restartView(pat, jc);
                         else
-                            jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
+                            jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
                     } catch (JuggleExceptionUser je) {
                         if (jaw2 != null)
                             jaw2.dispose();

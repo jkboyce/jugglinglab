@@ -7,6 +7,7 @@ package jugglinglab.notation;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 
+import jugglinglab.core.AnimationPrefs;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.JuggleExceptionUser;
 import jugglinglab.util.JuggleExceptionInternal;
@@ -22,7 +23,11 @@ public abstract class NotationControl extends JPanel {
     // reset to defaults
     public abstract void resetNotationControl();
 
-    // try to make a JMLPattern from the current control settings
-    public abstract JMLPattern makePattern()
+    // try to make a Pattern from the current control settings
+    public abstract Pattern getPattern()
+            throws JuggleExceptionUser, JuggleExceptionInternal;
+
+    // return AnimationPrefs for pattern
+    public abstract AnimationPrefs getAnimationPrefs()
             throws JuggleExceptionUser, JuggleExceptionInternal;
 }
