@@ -29,9 +29,7 @@ public class SiteswapPattern extends MHNPattern {
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (config.indexOf((int)'=') == -1)                 // just the pattern
             config = "pattern=" + config;
-        config = config.replace("\n","").replace("\r","");
-
-        this.config = config;       // save for toString()
+        // config = config.replace("\n","").replace("\r","");
 
         ParameterList pl = new ParameterList(config);
         fromParameters(pl);
@@ -42,9 +40,10 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public Pattern fromParameters(ParameterList pl) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
+        this.config = pl.toString();    // save for toString()
         super.fromParameters(pl);
 
-        this.title = pattern;    // save to use as JMLPattern title
+        this.title = pattern;           // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
 
@@ -84,7 +83,8 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = super.asJMLPattern();
-        result.setTitle(title);
+        if (title != null)
+            result.setTitle(title);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
             System.out.println(result);

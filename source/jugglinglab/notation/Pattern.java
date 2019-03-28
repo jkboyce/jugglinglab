@@ -48,7 +48,7 @@ public abstract class Pattern {
     public abstract Pattern fromParameters(ParameterList pl) throws
                         JuggleExceptionUser, JuggleExceptionInternal;
 
-    // output pattern to textual representation
+    // canonical string representation
     public abstract String toString();
 
     // convert pattern to JML

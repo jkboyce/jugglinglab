@@ -79,7 +79,7 @@ public class ParameterList {
             if (index > 0) {
                 String name = str.substring(0, index).trim();
                 String value = str.substring(index + 1).trim();
-                if ((name.length() != 0) && (value.length() != 0))
+                if (name.length() != 0 && value.length() != 0)
                     addParameter(name, value);
             }
         }
