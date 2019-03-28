@@ -27,9 +27,8 @@ public class SiteswapPattern extends MHNPattern {
 
     @Override
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1)                 // just the pattern
+        if (config.indexOf((int)'=') == -1)         // just the pattern
             config = "pattern=" + config;
-        // config = config.replace("\n","").replace("\r","");
 
         ParameterList pl = new ParameterList(config);
         fromParameters(pl);

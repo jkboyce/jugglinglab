@@ -71,6 +71,7 @@ public class ParameterList {
         if (source == null)
             return;
 
+        source = source.replace("\n","").replace("\r","");
         StringTokenizer st1 = new StringTokenizer(source, ";");
 
         while (st1.hasMoreTokens()) {
