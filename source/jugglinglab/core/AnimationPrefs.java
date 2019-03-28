@@ -76,7 +76,7 @@ public class AnimationPrefs {
         }
     }
 
-    public void parseParameters(ParameterList pl) throws JuggleExceptionUser {
+    public AnimationPrefs fromParameters(ParameterList pl) throws JuggleExceptionUser {
         int     tempint;
         double  tempdouble;
         String  value = null;
@@ -187,6 +187,7 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
+        return this;
     }
 
     public String toString() {

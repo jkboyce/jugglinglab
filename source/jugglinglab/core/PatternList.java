@@ -72,7 +72,7 @@ public class PatternList extends JPanel {
                             AnimationPrefs ap = new AnimationPrefs();
                             if (rec.animprefs != null) {
                                 ParameterList pl = new ParameterList(rec.animprefs);
-                                ap.parseParameters(pl);
+                                ap.fromParameters(pl);
                                 pl.errorIfParametersLeft();
                             }
 

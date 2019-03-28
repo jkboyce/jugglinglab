@@ -90,9 +90,8 @@ public class JugglingLab {
                 }
 
                 try {
-                    AnimationPrefs jc = new AnimationPrefs();
                     ParameterList pl = new ParameterList(jlargs.remove(i));
-                    jc.parseParameters(pl);
+                    AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
                     pl.errorIfParametersLeft();
                     return jc;
                 } catch (JuggleExceptionUser jeu) {
