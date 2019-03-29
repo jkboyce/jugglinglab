@@ -46,6 +46,7 @@ public abstract class MHNPattern extends Pattern {
     protected double bouncefrac = bouncefrac_default;
     protected String prop = prop_default;
     protected String[] color;
+    protected String title;
 
     // internal variables:
     protected int numjugglers;
@@ -80,12 +81,13 @@ public abstract class MHNPattern extends Pattern {
     @Override
     public Pattern fromParameters(ParameterList pl) throws
                                     JuggleExceptionUser, JuggleExceptionInternal {
-        String temp = null;
+        this.config = pl.toString();                // save for toString()
 
-        pattern = pl.removeParameter("pattern");
+        pattern = pl.removeParameter("pattern");    // only required parameter
         if (pattern == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_no_pattern"));
 
+        String temp = null;
         if ((temp = pl.removeParameter("bps")) != null) {
             try {
                 bps = Double.parseDouble(temp);
@@ -168,6 +170,9 @@ public abstract class MHNPattern extends Pattern {
                 }
             }
         }
+        if ((temp = pl.removeParameter("title")) != null) {
+            this.title = temp.trim();
+        }
         return this;
     }
 
@@ -182,7 +187,8 @@ public abstract class MHNPattern extends Pattern {
 
         // write the parameters out in a standard order
         List<String> keys = Arrays.asList("pattern", "bps", "dwell", "hands", "body",
-                                "gravity", "propdiam", "bouncefrac", "prop", "colors");
+                                "gravity", "propdiam", "bouncefrac", "prop", "colors",
+                                "title");
 
         for (String key : keys) {
             String value = pl.getParameter(key);
@@ -207,7 +213,10 @@ public abstract class MHNPattern extends Pattern {
         assignPaths();
         findThrowSources();
         setCatchOrder();
-        return convertPatternToJML();
+        JMLPattern pat = convertPatternToJML();
+        if (this.title != null)
+            pat.setTitle(title);
+        return pat;
     }
 
     protected void findMasterThrows() throws JuggleExceptionInternal {

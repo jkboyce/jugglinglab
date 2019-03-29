@@ -107,13 +107,13 @@ public class ParameterList {
             return;
         else if (count == 1) {
             String template = errorstrings.getString("Error_unused_param");
-            Object[] arguments = { "'" + getParameterName(0) + "'" };
+            Object[] arguments = { "\"" + getParameterName(0) + "\"" };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         } else {
             String template = errorstrings.getString("Error_unused_params");
             ArrayList<String> names = new ArrayList<String>();
             for (int i = 0; i < count; i++)
-                names.add("'" + getParameterName(i) + "'");
+                names.add("\"" + getParameterName(i) + "\"");
             Object[] arguments = { String.join(", ", names) };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }

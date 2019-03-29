@@ -39,10 +39,8 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public Pattern fromParameters(ParameterList pl) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
-        this.config = pl.toString();    // save for toString()
         super.fromParameters(pl);
 
-        this.title = pattern;           // save to use as JMLPattern title
         pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
 
@@ -75,9 +73,6 @@ public class SiteswapPattern extends MHNPattern {
         }
         return this;
     }
-
-    public String getTitle()            { return this.title; }
-    public void setTitle(String title)  { this.title = title; }
 
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
