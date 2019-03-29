@@ -27,11 +27,6 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
-        this(name, pat, jc, VIEW_NONE);
-    }
-
-    public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc, int view_type) throws
-                            JuggleExceptionUser, JuggleExceptionInternal {
         super(name);
 
         JMenuBar mb = new JMenuBar();
@@ -41,17 +36,17 @@ public class PatternWindow extends JFrame implements ActionListener {
         mb.add(viewmenu);
         setJMenuBar(mb);
 
-        if (view_type > VIEW_NONE && view_type <= VIEW_JML) {
-            setViewMode(view_type);
-            viewmenu.getItem(view_type - 1).setSelected(true);
+        if (jc != null && jc.view != View.VIEW_NONE) {
+            setViewMode(jc.view);
+            viewmenu.getItem(jc.view - 1).setSelected(true);
         } else {
             // no view type specified, use defaults
             if (pat.getNumberOfJugglers() > 1) {
-                setViewMode(VIEW_SIMPLE);
-                viewmenu.getItem(0).setSelected(true);
+                setViewMode(View.VIEW_SIMPLE);
+                viewmenu.getItem(View.VIEW_SIMPLE - 1).setSelected(true);
             } else {
-                setViewMode(VIEW_EDIT);
-                viewmenu.getItem(1).setSelected(true);
+                setViewMode(View.VIEW_EDIT);
+                viewmenu.getItem(View.VIEW_EDIT - 1).setSelected(true);
             }
         }
         view.setDoubleBuffered(true);
@@ -173,20 +168,20 @@ public class PatternWindow extends JFrame implements ActionListener {
             else if (command.equals("prefs"))
                 doMenuCommand(VIEW_ANIMPREFS);
             else if (command.equals("simple")) {
-                if (getViewMode() != VIEW_SIMPLE)
-                    setViewMode(VIEW_SIMPLE);
+                if (getViewMode() != View.VIEW_SIMPLE)
+                    setViewMode(View.VIEW_SIMPLE);
             }
             else if (command.equals("edit")) {
-                if (getViewMode() != VIEW_EDIT)
-                    setViewMode(VIEW_EDIT);
+                if (getViewMode() != View.VIEW_EDIT)
+                    setViewMode(View.VIEW_EDIT);
             }
             else if (command.equals("selection")) {
-                if (getViewMode() != VIEW_SELECTION)
-                    setViewMode(VIEW_SELECTION);
+                if (getViewMode() != View.VIEW_SELECTION)
+                    setViewMode(View.VIEW_SELECTION);
             }
             else if (command.equals("jml")) {
-                if (getViewMode() != VIEW_JML)
-                    setViewMode(VIEW_JML);
+                if (getViewMode() != View.VIEW_JML)
+                    setViewMode(View.VIEW_JML);
             }
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
@@ -243,8 +238,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 try {
                     new PatternWindow(getTitle(),
                                       (JMLPattern)view.getPattern().clone(),
-                                      new AnimationPrefs(view.getAnimationPrefs()),
-                                      getViewMode());
+                                      new AnimationPrefs(view.getAnimationPrefs()));
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(this, jeu.getMessage());
                 }
@@ -295,14 +289,6 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     }
 
-    // these should be in the same order as in the View menu, because of
-    // assumptions in PatternWindow's constructor
-    public static final int VIEW_NONE = 0;
-    public static final int VIEW_SIMPLE = 1;
-    public static final int VIEW_EDIT = 2;
-    public static final int VIEW_SELECTION = 3;
-    public static final int VIEW_JML = 4;
-
     protected void setViewMode(int mode) throws JuggleExceptionUser,
                         JuggleExceptionInternal {
         View newview = null;
@@ -325,18 +311,18 @@ public class PatternWindow extends JFrame implements ActionListener {
         }
 
         switch (mode) {
-            case VIEW_NONE:
+            case View.VIEW_NONE:
                 break;
-            case VIEW_SIMPLE:
+            case View.VIEW_SIMPLE:
                 newview = new SimpleView(animsize);
                 break;
-            case VIEW_EDIT:
+            case View.VIEW_EDIT:
                 newview = new EditView(animsize);
                 break;
-            case VIEW_SELECTION:
+            case View.VIEW_SELECTION:
                 newview = new SelectionView(animsize);
                 break;
-            case VIEW_JML:
+            case View.VIEW_JML:
                 newview = new JMLView(animsize);
                 break;
         }
@@ -360,16 +346,16 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     protected int getViewMode() {
         if (view == null)
-            return VIEW_NONE;
+            return View.VIEW_NONE;
         if (view instanceof SimpleView)
-            return VIEW_SIMPLE;
+            return View.VIEW_SIMPLE;
         if (view instanceof EditView)
-            return VIEW_EDIT;
+            return View.VIEW_EDIT;
         if (view instanceof SelectionView)
-            return VIEW_SELECTION;
+            return View.VIEW_SELECTION;
         if (view instanceof JMLView)
-            return VIEW_JML;
-        return VIEW_NONE;
+            return View.VIEW_JML;
+        return View.VIEW_NONE;
     }
 
     @Override

@@ -8,8 +8,9 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import jugglinglab.util.*;
 import jugglinglab.jml.JMLPattern;
+import jugglinglab.util.*;
+import jugglinglab.view.View;
 
 
 public class AnimationPrefs {
@@ -32,6 +33,7 @@ public class AnimationPrefs {
     public static final boolean catchSound_def = false;
     public static final boolean bounceSound_def;
     public static final boolean camangleGiven_def = false;
+    public static final int     view_def = View.VIEW_NONE;
 
     static {
         String osname = System.getProperty("os.name").toLowerCase();
@@ -51,7 +53,8 @@ public class AnimationPrefs {
     public boolean  catchSound = catchSound_def;
     public boolean  bounceSound = bounceSound_def;
     public boolean  camangleGiven = camangleGiven_def;
-    public double[] camangle;       // in degrees!
+    public double[] camangle;               // in degrees!
+    public int      view = view_def;        // one of the values in View
 
 
     public AnimationPrefs() { super(); }
@@ -74,6 +77,7 @@ public class AnimationPrefs {
             this.camangle[0] = jc.camangle[0];
             this.camangle[1] = jc.camangle[1];
         }
+        this.view = jc.view;
     }
 
     public AnimationPrefs fromParameters(ParameterList pl) throws JuggleExceptionUser {
@@ -187,6 +191,17 @@ public class AnimationPrefs {
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
+        if ((value = pl.removeParameter("view")) != null) {
+            this.view = -1;
+            for (int view_index = 0; view_index < View.viewNames.length; view_index++)
+                if (value.equalsIgnoreCase(View.viewNames[view_index]))
+                    this.view = view_index + 1;
+            if (this.view == -1) {
+                String template = errorstrings.getString("Error_unrecognized_view");
+                Object[] arguments = { "'" + value + "'" };
+                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+        }
         return this;
     }
 
@@ -228,6 +243,8 @@ public class AnimationPrefs {
             result += "bouncesound=" + this.bounceSound + ";";
         if (this.camangleGiven != camangleGiven_def)
             result += "camangle=(" + this.camangle[0] + "," + this.camangle[1] + ");";
+        if (this.view != view_def)
+            result += "view=" + View.viewNames[this.view - 1] + ";";
 
         if (result.length() != 0)
             result = result.substring(0, result.length() - 1);

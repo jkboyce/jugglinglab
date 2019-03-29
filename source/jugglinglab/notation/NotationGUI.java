@@ -152,34 +152,12 @@ public class NotationGUI extends JPanel implements ActionListener {
                         ParameterList pl = fcontrol.getParameterList();
                         Pattern p = fcontrol.newPattern().fromParameters(pl);
                         AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
-
-                        // Read View type from parameter list, if given. If not
-                        // specified then use VIEW_NONE and PatternWindow will
-                        // use its default view.
-                        int view_type = PatternWindow.VIEW_NONE;
-                        String view_str = pl.removeParameter("view");
-                        if (view_str != null) {
-                            if (view_str.equalsIgnoreCase("simple"))
-                                view_type = PatternWindow.VIEW_SIMPLE;
-                            else if (view_str.equalsIgnoreCase("edit"))
-                                view_type = PatternWindow.VIEW_EDIT;
-                            else if (view_str.equalsIgnoreCase("selection"))
-                                view_type = PatternWindow.VIEW_SELECTION;
-                            else if (view_str.equalsIgnoreCase("jml"))
-                                view_type = PatternWindow.VIEW_JML;
-                            else {
-                                String template = errorstrings.getString("Error_unrecognized_view");
-                                Object[] arguments = { "'" + view_str + "'" };
-                                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-                            }
-                        }
-
                         pl.errorIfParametersLeft();
                         JMLPattern pat = p.asJMLPattern();
                         if (animtarget != null)
                             animtarget.restartView(pat, jc);
                         else
-                            jaw2 = new PatternWindow(pat.getTitle(), pat, jc, view_type);
+                            jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
                     } catch (JuggleExceptionUser je) {
                         if (jaw2 != null)
                             jaw2.dispose();

@@ -26,6 +26,19 @@ public abstract class View extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    // these should be sequential and in the same order as in the View menu,
+    // because of assumptions in PatternWindow's constructor
+    public static final int VIEW_NONE = 0;
+    public static final int VIEW_SIMPLE = 1;
+    public static final int VIEW_EDIT = 2;
+    public static final int VIEW_SELECTION = 3;
+    public static final int VIEW_JML = 4;
+
+    // used for `view` parameter setting in AnimationPrefs, these must be in the
+    // same order as VIEW_ constants above
+    public static final String[] viewNames = new String[]
+        { "simple", "edit", "selection", "jml" };
+
     protected JFrame parent;
 
     public void setParent(JFrame p) { this.parent = p; }
