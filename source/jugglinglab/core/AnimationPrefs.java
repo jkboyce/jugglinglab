@@ -255,6 +255,15 @@ public class AnimationPrefs {
             result += "camangle=(" + this.camangle[0] + "," + this.camangle[1] + ");";
         if (this.view != view_def)
             result += "view=" + View.viewNames[this.view - 1] + ";";
+        if (this.hideJugglers != null) {
+            result += "hidejugglers=(";
+            for (int i = 0; i < this.hideJugglers.length; i++) {
+                result += Integer.toString(hideJugglers[i]);
+                if (i != this.hideJugglers.length - 1)
+                    result += ",";
+            }
+            result += ");";
+        }
 
         if (result.length() != 0)
             result = result.substring(0, result.length() - 1);
