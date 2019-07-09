@@ -4,11 +4,17 @@
 
 package jugglinglab.util;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.ResourceBundle.Control;
 
 
 public class JLLocale {
@@ -30,45 +36,53 @@ public class JLLocale {
         ResourceBundle bundle = null;
         Locale loc = JLLocale.getLocale();
 
+        // In Juggling Lab we save our language files in UTF-8 format.
+        // Java's default implementation of ResourceBundle.getBundle() loads
+        // properties files in ISO 8859-1 format, so we use our own version
+        // of ResourceBundle.Control to load as UTF-8:
+        Control ctrl = new UTF8Control();
+
         if (loc == null)
-            bundle = ResourceBundle.getBundle(baseName);    // use default
+            bundle = ResourceBundle.getBundle(baseName, ctrl);
         else
-            bundle = ResourceBundle.getBundle(baseName, loc);
+            bundle = ResourceBundle.getBundle(baseName, loc, ctrl);
 
-        if (!(bundle instanceof PropertyResourceBundle))
-            return bundle;
-
-        // RA: it seems that the default encoding of resources files is now UTF-8
-        //          -> no need to convert it internaly anymore ??
-        //          -> this works for French translation at least,
-        //             as the GUIStrings_fr.properties file seems
-        //             to be encoded in UTF-8
-        //          -> others translations not checked
-        // TODO: add an encoding check to decide if we should go through Utf8PropertyResourceBundle
         return bundle;
-        //return new Utf8PropertyResourceBundle((PropertyResourceBundle)bundle);
     }
 
-    private static class Utf8PropertyResourceBundle extends ResourceBundle {
-        PropertyResourceBundle bundle;
+    // see note above; this is to load bundle files with UTF-8 encodings
 
-        private Utf8PropertyResourceBundle(PropertyResourceBundle bundle) {
-            this.bundle = bundle;
-        }
-
-        public Enumeration<String> getKeys() {
-            return bundle.getKeys();
-        }
-
-        protected Object handleGetObject(String key) {
-            String value = (String)bundle.handleGetObject(key);
-            try {
-                return new String(value.getBytes("ISO-8859-1"),"UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                // Shouldn't fail - but should we still add logging message?
-                return null;
+    private static class UTF8Control extends Control {
+        public ResourceBundle newBundle
+            (String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
+                throws IllegalAccessException, InstantiationException, IOException
+        {
+            // The below is a copy of the default implementation.
+            String bundleName = toBundleName(baseName, locale);
+            String resourceName = toResourceName(bundleName, "properties");
+            ResourceBundle bundle = null;
+            InputStream stream = null;
+            if (reload) {
+                URL url = loader.getResource(resourceName);
+                if (url != null) {
+                    URLConnection connection = url.openConnection();
+                    if (connection != null) {
+                        connection.setUseCaches(false);
+                        stream = connection.getInputStream();
+                    }
+                }
+            } else {
+                stream = loader.getResourceAsStream(resourceName);
             }
+            if (stream != null) {
+                try {
+                    // Only this line is changed to make it to read properties files as UTF-8.
+                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, "UTF-8"));
+                } finally {
+                    stream.close();
+                }
+            }
+            return bundle;
         }
     }
-
 }
