@@ -38,7 +38,15 @@ public class JLLocale {
         if (!(bundle instanceof PropertyResourceBundle))
             return bundle;
 
-        return new Utf8PropertyResourceBundle((PropertyResourceBundle)bundle);
+        // RA: it seems that the default encoding of resources files is now UTF-8
+        //          -> no need to convert it internaly anymore ??
+        //          -> this works for French translation at least,
+        //             as the GUIStrings_fr.properties file seems
+        //             to be encoded in UTF-8
+        //          -> others translations not checked
+        // TODO: add an encoding check to decide if we should go through Utf8PropertyResourceBundle
+        return bundle;
+        //return new Utf8PropertyResourceBundle((PropertyResourceBundle)bundle);
     }
 
     private static class Utf8PropertyResourceBundle extends ResourceBundle {
