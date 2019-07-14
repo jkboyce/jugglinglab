@@ -18,7 +18,7 @@ import jugglinglab.optimizer.*;
 // the internal format used by MHNPattern.
 
 public class SiteswapPattern extends MHNPattern {
-    protected String orig_pattern;
+    protected String title;
     protected boolean oddperiod = false;
 
     @Override
@@ -28,9 +28,20 @@ public class SiteswapPattern extends MHNPattern {
 
     @Override
     public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        parseConfig(config);
+        if (config.indexOf((int)'=') == -1)         // just the pattern
+            config = "pattern=" + config;
 
-        this.orig_pattern = pattern;    // save to use as JMLPattern title
+        ParameterList pl = new ParameterList(config);
+        fromParameters(pl);
+        pl.errorIfParametersLeft();
+        return this;
+    }
+
+    @Override
+    public Pattern fromParameters(ParameterList pl) throws
+                                JuggleExceptionUser, JuggleExceptionInternal {
+        super.fromParameters(pl);
+
         pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
 
@@ -67,7 +78,8 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = super.asJMLPattern();
-        result.setTitle(orig_pattern);
+        if (title != null)
+            result.setTitle(title);
 
         if (hands == null && bodies == null && result.getNumberOfJugglers() == 1) {
             System.out.println("optimizing in SiteswapPattern");

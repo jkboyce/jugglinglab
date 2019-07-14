@@ -87,7 +87,7 @@ public class Animator {
         initAnimator();
 
         double[] ca = new double[2];
-        if (this.jc.camangleGiven) {
+        if (this.jc.camangle != null) {
             ca[0] = Math.toRadians(this.jc.camangle[0]);
             double theta = Math.min(179.9999, Math.max(0.0001, this.jc.camangle[1]));
             ca[1] = Math.toRadians(theta);
@@ -147,12 +147,12 @@ public class Animator {
     public void drawFrame(double sim_time, Graphics g, boolean draw_axes)
                         throws JuggleExceptionInternal {
         if (this.jc.stereo) {
-            this.ren1.drawFrame(sim_time, this.animpropnum,
+            this.ren1.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers,
                                 g.create(0, 0, this.dim.width/2, this.dim.height));
-            this.ren2.drawFrame(sim_time, this.animpropnum,
+            this.ren2.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers,
                                 g.create(this.dim.width/2, 0, this.dim.width/2, this.dim.height));
         } else {
-            this.ren1.drawFrame(sim_time, this.animpropnum, g);
+            this.ren1.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers, g);
         }
 
         if (draw_axes) {

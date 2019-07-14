@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 // Some useful functions
 
 public class JLFunc {
-    // a choose b
-    public static int choose(int a, int b) {
+    // Binomial coefficient (a choose b)
+    public static int binomial(int a, int b) {
         int result = 1;
 
         for (int i = 0; i < b; i++) {
@@ -172,6 +172,4 @@ public class JLFunc {
 
         return result.substring(0, endpos);
     }
-
 }
-

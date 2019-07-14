@@ -4,19 +4,19 @@
 
 package jugglinglab.notation;
 
-import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.*;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import jugglinglab.util.*;
 import jugglinglab.prop.Prop;
+import jugglinglab.util.ParameterList;
 
 
-// This class is abstract because MHNPattern is abstract; there is no
-// MHNPattern.fromString() method. The UI panel created here is inherited by
+// This class is abstract because MHNPattern is abstract; there is no way to
+// implement newPattern(). The UI panel created here is inherited by
 // SiteswapNotationControl and it may be useful for other notations as well.
 
 public abstract class MHNNotationControl extends NotationControl {
@@ -48,7 +48,7 @@ public abstract class MHNNotationControl extends NotationControl {
         "(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)..."
     };
 
-                // text fields in control panel
+    // text fields in control panel
     protected JTextField tf1, tf2, tf3, tf4, tf5, tf6;
     protected JComboBox<String> cb1, cb2, cb3;
     protected boolean cb1_selected = false, cb2_selected = false;
@@ -222,7 +222,7 @@ public abstract class MHNNotationControl extends NotationControl {
         gbc6.gridwidth = 2;
         gb.setConstraints(tf6, gbc6);
 
-        this.resetNotationControl();
+        this.resetControl();
         this.add(p1, BorderLayout.PAGE_START);
     }
 
@@ -253,7 +253,20 @@ public abstract class MHNNotationControl extends NotationControl {
     }
 
     @Override
-    public String getConfigString() {
+    public void resetControl() {
+        tf1.setText("3");                                               // pattern
+        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
+        tf3.setText("");                                                // beats per second
+        tf4.setText("");
+        cb1.setSelectedIndex(0);
+        tf5.setText("");
+        cb2.setSelectedIndex(0);
+        tf6.setText("");
+        cb3.setSelectedIndex(0);
+    }
+
+    @Override
+    public ParameterList getParameterList() {
         StringBuffer sb = new StringBuffer(256);
 
         sb.append("pattern=");
@@ -281,28 +294,12 @@ public abstract class MHNNotationControl extends NotationControl {
             sb.append(";");
             sb.append(tf6.getText());
         }
-        return sb.toString();
-    }
-
-    @Override
-    public void resetNotationControl() {
-        tf1.setText("3");                                               // pattern
-        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
-        tf3.setText("");                                                // beats per second
-        tf4.setText("");
-        cb1.setSelectedIndex(0);
-        tf5.setText("");
-        cb2.setSelectedIndex(0);
-        tf6.setText("");
-        cb3.setSelectedIndex(0);
-    }
-
-    @Override
-    public String getHandsName() {
+        String title = tf1.getText();                   // title is pattern,
         int index = cb1.getSelectedIndex();
-        if (index == 0 || index == (builtinHandsNames.length+1))
-            return null;
+        if (index > 0)
+            title = title + " " + cb1.getItemAt(index); // plus hands name if any
+        sb.append(";title=" + title);
 
-        return builtinHandsNames[index-1];
+        return new ParameterList(sb.toString());
     }
 }

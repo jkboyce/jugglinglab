@@ -14,6 +14,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
@@ -346,10 +347,17 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
-                                    if (catchclip.isActive())
-                                        catchclip.stop();
-                                    catchclip.setFramePosition(0);
-                                    catchclip.start();
+                                    // do audio playback on the EDT -- not strictly
+                                    // necessary but it seems to work better on Linux
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (catchclip.isActive())
+                                                catchclip.stop();
+                                            catchclip.setFramePosition(0);
+                                            catchclip.start();
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -358,10 +366,15 @@ public class AnimationPanel extends JPanel implements Runnable {
                         synchronized (anim.pat) {
                             for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                                 if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
-                                    if (bounceclip.isActive())
-                                        bounceclip.stop();
-                                    bounceclip.setFramePosition(0);
-                                    bounceclip.start();
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (bounceclip.isActive())
+                                                bounceclip.stop();
+                                            bounceclip.setFramePosition(0);
+                                            bounceclip.start();
+                                        }
+                                    });
                                 }
                             }
                         }

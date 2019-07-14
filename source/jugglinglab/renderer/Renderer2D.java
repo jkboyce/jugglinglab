@@ -149,7 +149,8 @@ public class Renderer2D extends Renderer {
     }
 
     @Override
-    public void drawFrame(double time, int[] pnum, Graphics g) throws JuggleExceptionInternal {
+    public void drawFrame(double time, int[] pnum, int[] hideJugglers, Graphics g)
+                            throws JuggleExceptionInternal {
         int numobjects = 5*pat.getNumberOfJugglers() + pat.getNumberOfPaths() + 18;
 
         // first reset the objects in the object pool
@@ -230,6 +231,15 @@ public class Renderer2D extends Renderer {
         Juggler.findJugglerCoordinates(pat, time, jugglervec);
 
         for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
+            if (hideJugglers != null) {
+                boolean hide = false;
+                for (int j = 0; j < hideJugglers.length; j++)
+                    if (hideJugglers[j] == i)
+                        hide = true;
+                if (hide)
+                    continue;
+            }
+
             obj[index].type = DrawObject2D.TYPE_BODY;
             obj[index].number = i;
             getXYZ(jugglervec[i-1][2], obj[index].coord[0]);    // left shoulder

@@ -46,7 +46,7 @@ public abstract class Renderer {
     public abstract Coordinate getScreenTranslatedCoordinate(Coordinate coord,
                 int dx, int dy);
 
-    public abstract void drawFrame(double time, int[] pnum, Graphics g)
+    public abstract void drawFrame(double time, int[] pnum, int[] hideJugglers, Graphics g)
                 throws JuggleExceptionInternal;
 
     public abstract Color getBackground();

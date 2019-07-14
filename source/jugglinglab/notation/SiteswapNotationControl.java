@@ -4,6 +4,7 @@
 
 package jugglinglab.notation;
 
+
 public class SiteswapNotationControl extends MHNNotationControl {
     @Override
     public Pattern newPattern() {

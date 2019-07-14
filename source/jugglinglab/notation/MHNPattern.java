@@ -46,6 +46,7 @@ public abstract class MHNPattern extends Pattern {
     protected double bouncefrac = bouncefrac_default;
     protected String prop = prop_default;
     protected String[] color;
+    protected String title;
 
     // internal variables:
     protected int numjugglers;
@@ -75,69 +76,66 @@ public abstract class MHNPattern extends Pattern {
     protected MHNSymmetry getSymmetry(int i)    { return symmetry.get(i); }
 
 
-    protected void parseConfig(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1) { // just the pattern
-            config = "pattern=" + config;
-        }
+    // pull out the MHN-related parameters from the given list, leaving any
+    // other parameters alone.
+    @Override
+    public Pattern fromParameters(ParameterList pl) throws
+                                    JuggleExceptionUser, JuggleExceptionInternal {
+        this.config = pl.toString();                // save for toString()
 
-        // delete newlines and carriage returns from string
-        config = config.replace("\n","").replace("\r","");
-
-        ParameterList pl = new ParameterList(config);
-        String temp = null;
-
-        pattern = pl.getParameter("pattern");
+        pattern = pl.removeParameter("pattern");    // only required parameter
         if (pattern == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_no_pattern"));
 
-        if ((temp = pl.getParameter("bps")) != null) {
+        String temp = null;
+        if ((temp = pl.removeParameter("bps")) != null) {
             try {
-                bps = Double.valueOf(temp).doubleValue();
+                bps = Double.parseDouble(temp);
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_bps_value"));
             }
         }
 
-        if ((temp = pl.getParameter("dwell")) != null) {
+        if ((temp = pl.removeParameter("dwell")) != null) {
             try {
-                dwell = Double.valueOf(temp).doubleValue();
+                dwell = Double.parseDouble(temp);
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_value"));
             }
         }
 
-        if ((temp = pl.getParameter("hands")) != null)
+        if ((temp = pl.removeParameter("hands")) != null)
             hands = new MHNHands(temp);
 
-        if ((temp = pl.getParameter("body")) != null)
+        if ((temp = pl.removeParameter("body")) != null)
             bodies = new MHNBody(temp);
 
-        if ((temp = pl.getParameter("gravity")) != null) {
+        if ((temp = pl.removeParameter("gravity")) != null) {
             try {
-                gravity = Double.valueOf(temp).doubleValue();
+                gravity = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("propdiam")) != null) {
+        if ((temp = pl.removeParameter("propdiam")) != null) {
             try {
-                propdiam = Double.valueOf(temp).doubleValue();
+                propdiam = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("bouncefrac")) != null) {
+        if ((temp = pl.removeParameter("bouncefrac")) != null) {
             try {
-                bouncefrac = Double.valueOf(temp).doubleValue();
+                bouncefrac = Double.parseDouble(temp);
             } catch (NumberFormatException e) {
             }
         }
 
-        if ((temp = pl.getParameter("prop")) != null) {
+        if ((temp = pl.removeParameter("prop")) != null) {
             prop = temp;
         }
 
-        if ((temp = pl.getParameter("colors")) != null) {
+        if ((temp = pl.removeParameter("colors")) != null) {
             if (temp.trim().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
             else
@@ -172,8 +170,10 @@ public abstract class MHNPattern extends Pattern {
                 }
             }
         }
-
-        this.config = config;
+        if ((temp = pl.removeParameter("title")) != null) {
+            this.title = temp.trim();
+        }
+        return this;
     }
 
     @Override
@@ -187,7 +187,8 @@ public abstract class MHNPattern extends Pattern {
 
         // write the parameters out in a standard order
         List<String> keys = Arrays.asList("pattern", "bps", "dwell", "hands", "body",
-                                "gravity", "propdiam", "bouncefrac", "prop", "colors");
+                                "gravity", "propdiam", "bouncefrac", "prop", "colors",
+                                "title");
 
         for (String key : keys) {
             String value = pl.getParameter(key);
@@ -212,7 +213,10 @@ public abstract class MHNPattern extends Pattern {
         assignPaths();
         findThrowSources();
         setCatchOrder();
-        return convertPatternToJML();
+        JMLPattern pat = convertPatternToJML();
+        if (this.title != null)
+            pat.setTitle(title);
+        return pat;
     }
 
     protected void findMasterThrows() throws JuggleExceptionInternal {

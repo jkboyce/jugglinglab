@@ -7,6 +7,10 @@ package jugglinglab.notation;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 
+import jugglinglab.util.JuggleExceptionUser;
+import jugglinglab.util.JuggleExceptionInternal;
+import jugglinglab.util.ParameterList;
+
 
 // This is the GUI that allows the user to enter a pattern in a given notation.
 // It is used by NotationGUI to assemble the interface.
@@ -15,16 +19,17 @@ public abstract class NotationControl extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    // create a new empty pattern
+    // Return a new (uninitialized) pattern in the target notation
     public abstract Pattern newPattern();
 
-    // read the elements in the UI to generate a config string that can be
-    // used by Pattern.fromString()
-    public abstract String getConfigString();
+    // Return parameters defining Pattern, AnimationPrefs, and View.
+    //
+    // The control doesn't need to do any error-checking on whether parameters
+    // are consistent, etc. -- those will be caught later when the parameters
+    // are used to create a Pattern, AnimationPrefs, and so on.
+    public abstract ParameterList getParameterList()
+            throws JuggleExceptionUser, JuggleExceptionInternal;
 
-    // reset to defaults
-    public abstract void resetNotationControl();
-
-    // optional string that's attached to JMLPattern title
-    public abstract String getHandsName();
+    // Reset control to defaults
+    public abstract void resetControl();
 }

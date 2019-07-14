@@ -40,11 +40,15 @@ public abstract class Pattern {
     // return the notation name
     public abstract String getNotationName();
 
-    // read pattern from textual representation
+    // define pattern from textual representation
     public abstract Pattern fromString(String config) throws
                         JuggleExceptionUser, JuggleExceptionInternal;
 
-    // output pattern to textual representation
+    // define pattern from ParameterList input
+    public abstract Pattern fromParameters(ParameterList pl) throws
+                        JuggleExceptionUser, JuggleExceptionInternal;
+
+    // canonical string representation
     public abstract String toString();
 
     // convert pattern to JML

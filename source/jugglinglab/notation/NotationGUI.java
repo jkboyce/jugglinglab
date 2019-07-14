@@ -135,7 +135,7 @@ public class NotationGUI extends JPanel implements ActionListener {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     try {
-                        fcontrol.resetNotationControl();
+                        fcontrol.resetControl();
                     } catch (Exception e) {
                         ErrorDialog.handleFatalException(e);
                     }
@@ -149,18 +149,15 @@ public class NotationGUI extends JPanel implements ActionListener {
                 public void actionPerformed(ActionEvent ae) {
                     PatternWindow jaw2 = null;
                     try {
-                        Pattern p = fcontrol.newPattern();
-                        JMLPattern pat = p.fromString(fcontrol.getConfigString())
-                                          .asJMLPattern();
-
-                        String handsname = fcontrol.getHandsName();
-                        if (handsname != null)
-                            pat.setTitle(pat.getTitle() + " " + handsname);
-
+                        ParameterList pl = fcontrol.getParameterList();
+                        Pattern p = fcontrol.newPattern().fromParameters(pl);
+                        AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
+                        pl.errorIfParametersLeft();
+                        JMLPattern pat = p.asJMLPattern();
                         if (animtarget != null)
-                            animtarget.restartView(pat, new AnimationPrefs());
+                            animtarget.restartView(pat, jc);
                         else
-                            jaw2 = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
+                            jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
                     } catch (JuggleExceptionUser je) {
                         if (jaw2 != null)
                             jaw2.dispose();

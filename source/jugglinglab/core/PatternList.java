@@ -70,8 +70,11 @@ public class PatternList extends JPanel {
                             pat.setTitle(rec.display);
 
                             AnimationPrefs ap = new AnimationPrefs();
-                            if (rec.animprefs != null)
-                                ap.parseInput(rec.animprefs);
+                            if (rec.animprefs != null) {
+                                ParameterList pl = new ParameterList(rec.animprefs);
+                                ap.fromParameters(pl);
+                                pl.errorIfParametersLeft();
+                            }
 
                             if (animtarget != null)
                                 animtarget.restartView(pat, ap);
