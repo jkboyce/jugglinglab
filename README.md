@@ -28,6 +28,7 @@ Over that long span of time the project has seen contributions from many people,
 - Steve Healy (JAG) – Many invaluable design suggestions and bug reports, especially of siteswap notation component
 - Anselm Heaton – Orbit-finding code, other design suggestions
 - Lewis Jardine – Apache Ant build file, GPL clarifications
+- [Roman Karavia](https://github.com/rkaravia) - CheerpJ conversion to run Juggling Lab in the browser
 - Ken Matsuoka – JuggleMaster pattern library, used here with his permission
 - Rupert Millard – Implementation of '*' shortcut for sync notation
 - Herve Nicol – Bug fixes
