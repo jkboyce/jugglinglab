@@ -6,13 +6,16 @@ package jugglinglab.optimizer;
 
 import java.util.*;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
+//import org.apache.commons.math3.linear.RealMatrix;
+//import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+//import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.optim.linear.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.exception.TooManyIterationsException;
+
+import Jama.Matrix;
+import Jama.SingularValueDecomposition;
 
 /*
 import org.ejml.data.DenseMatrix64F;
@@ -66,7 +69,7 @@ public class Optimizer {
     // set of constraints dot(r, x_i) > 0 for all i
     //
     // if a contradictory set is found, mark the related variables as pinned, mark
-    // the corresponding margin equations as done, and then return true.  if no
+    // the corresponding margin equations as done, and return true.  if no
     // contradictory set is found, return false
 
     protected boolean removeContradictory() {
@@ -112,6 +115,7 @@ public class Optimizer {
         // JKB END
         */
 
+        // r[] is a vector in the direction we want to step in
         for (int i = 0; i < me.varsNum; i++)
             r[i] = 0.0;
 
@@ -137,6 +141,8 @@ public class Optimizer {
         // We have a group of equations, and need to find a direction r that:
         // (a) advances them all at the same rate, and (b) doesn't move any of
         // the pinned variables.
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("analyzing group of equations " + eqn_start + " to " + eqn_end + "; included vars:");
         boolean[] varincluded = new boolean[me.varsNum];
         int[] varnum = new int[me.varsNum];
         int numincluded = 0;
@@ -156,7 +162,7 @@ public class Optimizer {
                     numincluded++;
                 }
             }
-            System.out.println("vi[" + i + "] = " + varincluded[i]);
+            System.out.println("   vi[" + i + "] = " + varincluded[i]);
         }
 
         if (Constants.DEBUG_OPTIMIZE) {
@@ -165,7 +171,7 @@ public class Optimizer {
 
             for (int row = eqn_start; row <= eqn_end; row++) {
                 StringBuffer sb = new StringBuffer();
-                sb.append("  equation " + (row - eqn_start) + " = { ");
+                sb.append("   equation " + (row - eqn_start) + " = { ");
                 for (int j = 0; j < numincluded; j++) {
                     sb.append(JLFunc.toStringTruncated(me.marginsEqs[row].coef(varnum[j]), 4));
                     if (j != (numincluded-1))
@@ -180,15 +186,15 @@ public class Optimizer {
         }
 
         if (numincluded <= (eqn_end - eqn_start)) {
-            if (Constants.DEBUG_OPTIMIZE) {
-                System.out.println("************* RUNNING LP *************");
-            }
-
             if (removeContradictory()) {
                 if (Constants.DEBUG_OPTIMIZE) {
-                    System.out.println("****** REMOVED CONTRADICTORY EQUATIONS ******");
+                    System.out.println("   success pinning one or more variables");
                 }
                 return findDirection();
+            }
+
+            if (Constants.DEBUG_OPTIMIZE) {
+                System.out.println("************* RUNNING LP *************");
             }
 
             boolean found = false;
@@ -276,31 +282,64 @@ public class Optimizer {
             */
         }
 
-        Array2DRowRealMatrix mat = new Array2DRowRealMatrix(eqn_end - eqn_start, numincluded);
+        // We want to find a vector r[] such that when we move our variables
+        // in this direction, the margins represented by each equation in our
+        // group all change at exactly the same rate. Do this with singular
+        // value decomposition of the difference matrix.
+        //
+        // The dimension of `mat` below is (eqn_end - eqn_start, numincluded),
+        // so the dimension of `vt` is (numincluded, numincluded).
+        //
+        // Note: If we get here then numincluded > (eqn_end - eqn_start)
+
+        //Array2DRowRealMatrix mat = new Array2DRowRealMatrix(eqn_end - eqn_start, numincluded);
+        Matrix mat = new Matrix(eqn_end - eqn_start, numincluded);
         int col = 0;
         for (int i = 0; i < me.varsNum; i++) {
             if (varincluded[i]) {
                 for (int row = eqn_start + 1; row <= eqn_end; row++) {
-                    mat.setEntry(row - eqn_start - 1, col, me.marginsEqs[row].coef(i) -
-                        me.marginsEqs[eqn_start].coef(i));
+                    //mat.setEntry(row - eqn_start - 1, col, me.marginsEqs[row].coef(i)
+                    //    - me.marginsEqs[eqn_start].coef(i));
+                    mat.set(row - eqn_start - 1, col, me.marginsEqs[row].coef(i)
+                        - me.marginsEqs[eqn_start].coef(i));
                 }
                 col++;
             }
         }
 
         SingularValueDecomposition svd = new SingularValueDecomposition(mat);
-        RealMatrix vt = svd.getVT();
+        //RealMatrix vt = svd.getVT();
+        Matrix v = svd.getV();
 
-        // Now the vectors we want are the last row(s) of vt.  The row numbers
-        // are (eqn_end - eqn_start) through (numincluded - 1), inclusive.
-        // Choose the row with the largest dot product with our vectors.
+        if (Constants.DEBUG_OPTIMIZE) {
+            //System.out.println("SVD complete; mat dim = ("
+            //    + mat.getRowDimension() + ", " + mat.getColumnDimension()
+            //    + "), VT dim = ("
+            //    + vt.getRowDimension() + ", " + vt.getColumnDimension() + ")");
+            System.out.println("SVD complete; mat dim = ("
+                + mat.getRowDimension() + ", " + mat.getColumnDimension()
+                + "), V dim = ("
+                + v.getRowDimension() + ", " + v.getColumnDimension() + ")");
+        }
+
+        // The vectors we want that span the null space of `mat` are the last
+        // row(s) of vt: The row numbers are (eqn_end - eqn_start) through
+        // (numincluded - 1), inclusive. Any row would work for r[] (or any
+        // linear combination of rows); we choose the row with the largest dot
+        // product with our vectors.
         double max_product = 0.0;
         int max_row = -1;
         int max_sign = 0;
         for (int row = eqn_end - eqn_start; row < numincluded; row++) {
+            /*
+            if (Constants.DEBUG_OPTIMIZE)
+                System.out.println("   getting row " + row + "...");
+            */
             double dot = 0.0;
-            for (int i = 0; i < numincluded; i++)
-                dot += vt.getEntry(row, i) * me.marginsEqs[eqn_start].coef(varnum[i]);
+            for (int i = 0; i < numincluded; i++) {
+                //dot += vt.getEntry(row, i) * me.marginsEqs[eqn_start].coef(varnum[i]);
+                dot += v.get(i, row) * me.marginsEqs[eqn_start].coef(varnum[i]);
+            }
             double abs_dot = (dot > 0.0) ? dot : -dot;
             if (max_row < 0 || abs_dot > max_product) {
                 max_product = abs_dot;
@@ -317,15 +356,17 @@ public class Optimizer {
         }
 
         for (int i = 0; i < numincluded; i++)
-            r[varnum[i]] = vt.getEntry(max_row, i) * max_sign;
+            //r[varnum[i]] = vt.getEntry(max_row, i) * max_sign;
+            r[varnum[i]] = v.get(i, max_row) * max_sign;
 
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("  found r using SVD");
+            System.out.println("   found r using SVD");
             for (int row = eqn_start; row <= eqn_end; row++) {
                 double dot = 0.0;
                 for (int i = 0; i < me.varsNum; i++)
                     dot += me.marginsEqs[row].coef(i) * r[i];
-                System.out.println("  dot product with equation " + row + " = " + dot);
+                System.out.println("   dot product with eq " + row + " = "
+                        + JLFunc.toStringTruncated(dot, 4));
             }
         }
         return true;
@@ -343,8 +384,13 @@ public class Optimizer {
         double pin_lambda = -1.0;
         int pinned_var = -1;
 
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("taking step...");
+
         for (int i = 0; i < me.varsNum; i++) {
-            System.out.println("pinned[" + i + "] = " + pinned[i] + ", r[" + i + "] = " + r[i]);
+            if (Constants.DEBUG_OPTIMIZE)
+                System.out.println("   pinned[" + i + "] = " + pinned[i] + ", r[" + i + "] = "
+                        + JLFunc.toStringTruncated(r[i], 4));
 
             if (!pinned[i] && r[i] != 0.0) {
                 // JKB START
@@ -492,6 +538,7 @@ public class Optimizer {
 
     // LP-based optimizer below
 
+    /*
     public double optimizeOnce() {
 
         if (Constants.DEBUG_OPTIMIZE) {
@@ -516,12 +563,11 @@ public class Optimizer {
             double tiny = 0.00001;
             for (int i = 0; i < me.varsNum; i++) {
                 objarray[i] = me.marginsEqs[row].coef(i);
-                /*
-                for (int j = 0; j < me.marginsNum; j++) {
-                    if (j != row)
-                        objarray[i] += tiny * (me.marginsEqs[j][i] - me.marginsEqs[row][i]);
-                }
-                */
+
+                //for (int j = 0; j < me.marginsNum; j++) {
+                //    if (j != row)
+                //        objarray[i] += tiny * (me.marginsEqs[j][i] - me.marginsEqs[row][i]);
+                //}
             }
             LinearObjectiveFunction f = new LinearObjectiveFunction(objarray, me.marginsEqs[row].constant());
 
@@ -625,7 +671,7 @@ public class Optimizer {
 
         } while (go);
     }
-
+    */
 
     public void updatePattern() {
         // update the pattern's JMLEvents with the current variable values

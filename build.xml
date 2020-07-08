@@ -21,6 +21,7 @@
     <path id="master-classpath">
         <pathelement location="${bin}/JugglingLab.jar" />
         <pathelement location="${bin}/commons-math3-3.6.1.jar" />
+        <pathelement location="${bin}/Jama-1.0.3.jar" />
     </path>
 
     <target name="compile" depends="init">

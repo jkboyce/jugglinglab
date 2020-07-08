@@ -82,7 +82,10 @@ public class SiteswapPattern extends MHNPattern {
             result.setTitle(title);
 
         if (hands == null && bodies == null && result.getNumberOfJugglers() == 1) {
-            System.out.println("optimizing in SiteswapPattern");
+            if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
+                System.out.println("------------------------------------------------------");
+                System.out.println("optimizing in SiteswapPattern.asJMLPattern()");
+            }
             result = Optimizer.optimize(result);
         }
 

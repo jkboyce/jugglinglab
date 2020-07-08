@@ -122,9 +122,9 @@ public class MarginEquations {
             ev = ev.getNext();
         }
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("number of variables = " + this.varsNum);
-            System.out.println("maxValue = " + maxValue);
-            System.out.println("g = " + g);
+            System.out.println("   number of variables = " + this.varsNum);
+            System.out.println("   maxValue = " + maxValue);
+            System.out.println("   g = " + g);
         }
 
         // step 3:  Set up the arrays containing the current values of our variables, their
@@ -149,7 +149,7 @@ public class MarginEquations {
                 this.varsMax[i] = 0.0;
             }
             if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("variable " + i + " min = " + this.varsMin[i] + ", max = " + this.varsMax[i]);
+                System.out.println("   variable " + i + " min = " + this.varsMin[i] + ", max = " + this.varsMax[i]);
         }
 
         // step 4:  Find the maximum radius of props in the pattern, used in the margin
@@ -162,7 +162,7 @@ public class MarginEquations {
                 propradius = thisprop;
         }
         if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("propradius = " + propradius);
+            System.out.println("   propradius = " + propradius);
 
         // step 5:  Identify the "master pathlinks", the non-hand pathlinks starting on
         // master events.  Put them into a linear array for convenience
@@ -186,7 +186,7 @@ public class MarginEquations {
                 masterpl = new PathLink[masterplNum];
         }
         if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("number of master pathlinks = " + masterplNum);
+            System.out.println("   number of master pathlinks = " + masterplNum);
 
 
         // step 6:  Figure out all distinct potential collisions in the pattern, and the
@@ -371,7 +371,7 @@ public class MarginEquations {
                         this.marginsNum++;
 
                         if (Constants.DEBUG_OPTIMIZE)
-                            System.out.println("mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
+                            System.out.println("   mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
                     }
 
                     if (sym_switchdelay) {
@@ -406,7 +406,7 @@ public class MarginEquations {
                     dtemp += temp[j] * this.varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
-                System.out.println("eq[" + i + "] = " + sb.toString());
+                System.out.println("   eq[" + i + "] = " + sb.toString());
             }
             System.out.println("de-duplicating equations...");
         }
@@ -430,7 +430,7 @@ public class MarginEquations {
 
             if (dupoverall) {
                 if (Constants.DEBUG_OPTIMIZE)
-                    System.out.println("removed duplicate equation " + orig_row);
+                    System.out.println("   removed duplicate equation " + orig_row);
                 eqns.remove(i);
                 i--;
                 this.marginsNum--;
@@ -465,7 +465,7 @@ public class MarginEquations {
                     dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
-                System.out.println("eq[" + i + "] = " + sb.toString());
+                System.out.println("   eq[" + i + "] = " + sb.toString());
             }
         }
 
@@ -488,7 +488,7 @@ public class MarginEquations {
                     dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
-                System.out.println("eq[" + i + "] = " + sb.toString());
+                System.out.println("   eq[" + i + "] = " + sb.toString());
             }
         }
     }
