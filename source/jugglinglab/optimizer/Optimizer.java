@@ -14,6 +14,11 @@ import org.apache.commons.math3.optim.linear.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.exception.TooManyIterationsException;
 
+import com.google.ortools.linearsolver.MPConstraint;
+import com.google.ortools.linearsolver.MPObjective;
+import com.google.ortools.linearsolver.MPSolver;
+import com.google.ortools.linearsolver.MPVariable;
+
 import Jama.Matrix;
 import Jama.SingularValueDecomposition;
 
@@ -30,6 +35,10 @@ import jugglinglab.core.*;
 public class Optimizer {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+    static {
+        System.loadLibrary("jniortools");
+    }
 
     protected JMLPattern        pat;
     protected MarginEquations   me;
@@ -62,7 +71,6 @@ public class Optimizer {
 
 
     // SVD-based optimizer below
-
 
     // try to find a contradictory set of vectors within the current group.
     // a set of vectors {x_i} is contradictory iff there is no solution r to the
@@ -673,6 +681,117 @@ public class Optimizer {
     }
     */
 
+    // MILP-based optimizer below
+
+    public void doOptimizationMILP() {
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("\noptimizing...");
+
+        MPSolver solver = new MPSolver(
+            "JugglingLab",
+            MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING
+        );
+
+        // Variables
+
+        MPVariable[] x = new MPVariable[me.varsNum];
+        for (int i = 0; i < me.varsNum; ++i) {
+            x[i] = solver.makeNumVar(me.varsMin[i], me.varsMax[i],
+                                     "x" + String.valueOf(i + 1));
+        }
+
+        MPVariable[] z = new MPVariable[me.marginsNum];
+        for (int i = 0; i < me.marginsNum; ++i) {
+            z[i] = solver.makeBoolVar("z" + String.valueOf(i + 1));
+        }
+
+        double infinity = java.lang.Double.POSITIVE_INFINITY;
+        MPVariable err = solver.makeNumVar(-infinity, infinity, "err");
+
+        // Constraints
+
+        MPConstraint[] c = new MPConstraint[me.marginsNum * 2];
+        for (int i = 0; i < me.marginsNum; ++i) {
+            double maxAx = 0.0;
+            double minAx = 0.0;
+
+            for (int j = 0; j < me.varsNum; ++j) {
+                double coef = me.marginsEqs[i].coef(j);
+
+                if (coef > 0.0) {
+                    maxAx += coef * me.varsMax[j];
+                    minAx += coef * me.varsMin[j];
+                } else {
+                    maxAx += coef * me.varsMin[j];
+                    minAx += coef * me.varsMax[j];
+                }
+            }
+
+            double bound = 2.0 * Math.max(Math.abs(maxAx), Math.abs(minAx)) + 1.0;
+
+            // (-Ax) <= -err + b_i + M_i * z_i
+            c[2*i] = solver.makeConstraint(-infinity, me.marginsEqs[i].constant(),
+                                           "c" + String.valueOf(i + 1) + "a");
+            c[2*i].setCoefficient(err, 1);
+            c[2*i].setCoefficient(z[i], -bound);
+            for (int j = 0; j < me.varsNum; ++j) {
+                double coef = me.marginsEqs[i].coef(j);
+
+                if (coef != 0.0)
+                    c[2*i].setCoefficient(x[j], -coef);
+            }
+
+            // Ax <= -err + b_i + M_i * (1 - z_i)
+            c[2*i+1] = solver.makeConstraint(-infinity, me.marginsEqs[i].constant() + bound,
+                                             "c" + String.valueOf(i + 1) + "b");
+            c[2*i+1].setCoefficient(err, 1);
+            c[2*i+1].setCoefficient(z[i], bound);
+            for (int j = 0; j < me.varsNum; ++j) {
+                double coef = me.marginsEqs[i].coef(j);
+
+                if (coef != 0.0)
+                    c[2*i+1].setCoefficient(x[j], coef);
+            }
+        }
+
+        // Objective: Maximize `err`.
+
+        MPObjective objective = solver.objective();
+        objective.setCoefficient(err, 1);
+        objective.setMaximization();
+
+        if (Constants.DEBUG_OPTIMIZE) {
+            System.out.println("Number of variables = " + solver.numVariables());
+            System.out.println("Number of constraints = " + solver.numConstraints());
+            System.out.println("starting solve...");
+        }
+
+        final MPSolver.ResultStatus resultStatus = solver.solve();
+
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("done");
+
+        if (resultStatus == MPSolver.ResultStatus.OPTIMAL) {
+            for (int i = 0; i < me.varsNum; ++i)
+                me.varsValues[i] = x[i].solutionValue();
+
+            if (Constants.DEBUG_OPTIMIZE) {
+                System.out.println("Solution:");
+                System.out.println("Objective value = " + objective.value());
+                for (int i = 0; i < me.varsNum; ++i)
+                    System.out.println("x[" + String.valueOf(i+1) + "] = " + x[i].solutionValue());
+
+                System.out.println("Problem solved in " + solver.wallTime() + " milliseconds");
+                System.out.println("Problem solved in " + solver.iterations() + " iterations");
+                System.out.println("Problem solved in " + solver.nodes() + " branch-and-bound nodes");
+            }
+        } else {
+            if (Constants.DEBUG_OPTIMIZE)
+                System.err.println("The problem does not have an optimal solution!");
+        }
+    }
+
+
     public void updatePattern() {
         // update the pattern's JMLEvents with the current variable values
         for (int i = 0; i < me.varsNum; i++) {
@@ -691,8 +810,9 @@ public class Optimizer {
         Optimizer opt = new Optimizer(pat);
 
         //opt.doOptimizationGradient();
-        opt.doOptimizationSVD();
+        //opt.doOptimizationSVD();
         //opt.doOptimizationLP();
+        opt.doOptimizationMILP();
         opt.updatePattern();
 
         return pat;
