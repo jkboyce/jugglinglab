@@ -46,11 +46,11 @@ public class MarginEquations {
     // returns current value of a given margin equation
 
     public double getMargin(int eqn) {
-        double m = marginsEqs[eqn].constant();
+        double m = 0.0;
         for (int i = 0; i < varsNum; i++)
             m += marginsEqs[eqn].coef(i) * varsValues[i];
 
-        return m;
+        return Math.abs(m) + marginsEqs[eqn].constant();
     }
 
     // returns minimum value of all margins together
@@ -138,15 +138,23 @@ public class MarginEquations {
         for (int i = 0; i < this.varsNum; i++) {
             ev = variableEvents.get(i);
             Coordinate coord = ev.getLocalCoordinate();
+            int type = ev.getTransition(0).getType();
+
             this.varsEvents[i] = ev;
             this.varsValues[i] = coord.x;
             // optimization won't move events to the other side of the body
             if (this.varsValues[i] > 0.0) {
                 this.varsMin[i] = 0.0;
                 this.varsMax[i] = maxValue;
+
+                if (type == JMLTransition.TRANS_THROW)
+                    this.varsMax[i] *= 0.9;
             } else {
                 this.varsMin[i] = -maxValue;
                 this.varsMax[i] = 0.0;
+
+                if (type == JMLTransition.TRANS_THROW)
+                    this.varsMin[i] *= 0.9;
             }
             if (Constants.DEBUG_OPTIMIZE)
                 System.out.println("   variable " + i + " min = " + this.varsMin[i] + ", max = " + this.varsMax[i]);

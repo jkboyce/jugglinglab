@@ -683,26 +683,25 @@ public class Optimizer {
 
     // MILP-based optimizer below
 
-    public void doOptimizationMILP() {
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("\noptimizing...");
-
+    public boolean runMILP() {
         MPSolver solver = new MPSolver(
             "JugglingLab",
             MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING
         );
 
+        // Define the problem for the MILP solver.
         // Variables
 
         MPVariable[] x = new MPVariable[me.varsNum];
         for (int i = 0; i < me.varsNum; ++i) {
-            x[i] = solver.makeNumVar(me.varsMin[i], me.varsMax[i],
-                                     "x" + String.valueOf(i + 1));
+            if (!pinned[i])
+                x[i] = solver.makeNumVar(me.varsMin[i], me.varsMax[i], "x" + i);
         }
 
         MPVariable[] z = new MPVariable[me.marginsNum];
         for (int i = 0; i < me.marginsNum; ++i) {
-            z[i] = solver.makeBoolVar("z" + String.valueOf(i + 1));
+            if (!me.marginsEqs[i].done())
+                z[i] = solver.makeBoolVar("z" + i);
         }
 
         double infinity = java.lang.Double.POSITIVE_INFINITY;
@@ -712,6 +711,9 @@ public class Optimizer {
 
         MPConstraint[] c = new MPConstraint[me.marginsNum * 2];
         for (int i = 0; i < me.marginsNum; ++i) {
+            if (me.marginsEqs[i].done())
+                continue;
+
             double maxAx = 0.0;
             double minAx = 0.0;
 
@@ -730,27 +732,39 @@ public class Optimizer {
             double bound = 2.0 * Math.max(Math.abs(maxAx), Math.abs(minAx)) + 1.0;
 
             // (-Ax) <= -err + b_i + M_i * z_i
-            c[2*i] = solver.makeConstraint(-infinity, me.marginsEqs[i].constant(),
-                                           "c" + String.valueOf(i + 1) + "a");
+            double rhs = me.marginsEqs[i].constant();
+            for (int j = 0; j < me.varsNum; ++j) {
+                if (pinned[j])
+                    rhs += me.marginsEqs[i].coef(j) * me.varsValues[j];
+            }
+            c[2*i] = solver.makeConstraint(-infinity, rhs, "c" + i + "a");
             c[2*i].setCoefficient(err, 1);
             c[2*i].setCoefficient(z[i], -bound);
             for (int j = 0; j < me.varsNum; ++j) {
-                double coef = me.marginsEqs[i].coef(j);
+                if (!pinned[j]) {
+                    double coef = me.marginsEqs[i].coef(j);
 
-                if (coef != 0.0)
-                    c[2*i].setCoefficient(x[j], -coef);
+                    if (coef != 0.0)
+                        c[2*i].setCoefficient(x[j], -coef);
+                }
             }
 
             // Ax <= -err + b_i + M_i * (1 - z_i)
-            c[2*i+1] = solver.makeConstraint(-infinity, me.marginsEqs[i].constant() + bound,
-                                             "c" + String.valueOf(i + 1) + "b");
+            rhs = me.marginsEqs[i].constant() + bound;
+            for (int j = 0; j < me.varsNum; ++j) {
+                if (pinned[j])
+                    rhs -= me.marginsEqs[i].coef(j) * me.varsValues[j];
+            }
+            c[2*i+1] = solver.makeConstraint(-infinity, rhs, "c" + i + "b");
             c[2*i+1].setCoefficient(err, 1);
             c[2*i+1].setCoefficient(z[i], bound);
             for (int j = 0; j < me.varsNum; ++j) {
-                double coef = me.marginsEqs[i].coef(j);
+                if (!pinned[j]) {
+                    double coef = me.marginsEqs[i].coef(j);
 
-                if (coef != 0.0)
-                    c[2*i+1].setCoefficient(x[j], coef);
+                    if (coef != 0.0)
+                        c[2*i+1].setCoefficient(x[j], coef);
+                }
             }
         }
 
@@ -761,46 +775,149 @@ public class Optimizer {
         objective.setMaximization();
 
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("Number of variables = " + solver.numVariables());
-            System.out.println("Number of constraints = " + solver.numConstraints());
+            System.out.println("MILP number of variables = " + solver.numVariables());
+            System.out.println("MILP number of constraints = " + solver.numConstraints());
             System.out.println("starting solve...");
         }
+
+        // Run solver
 
         final MPSolver.ResultStatus resultStatus = solver.solve();
 
         if (Constants.DEBUG_OPTIMIZE)
             System.out.println("done");
 
-        if (resultStatus == MPSolver.ResultStatus.OPTIMAL) {
-            for (int i = 0; i < me.varsNum; ++i)
-                me.varsValues[i] = x[i].solutionValue();
-
-            if (Constants.DEBUG_OPTIMIZE) {
-                System.out.println("Solution:");
-                System.out.println("Objective value = " + objective.value());
-                for (int i = 0; i < me.varsNum; ++i)
-                    System.out.println("x[" + String.valueOf(i+1) + "] = " + x[i].solutionValue());
-
-                System.out.println("Problem solved in " + solver.wallTime() + " milliseconds");
-                System.out.println("Problem solved in " + solver.iterations() + " iterations");
-                System.out.println("Problem solved in " + solver.nodes() + " branch-and-bound nodes");
-            }
-        } else {
+        if (resultStatus != MPSolver.ResultStatus.OPTIMAL) {
             if (Constants.DEBUG_OPTIMIZE)
                 System.err.println("The problem does not have an optimal solution!");
+            return false;
         }
+
+        for (int i = 0; i < me.varsNum; ++i) {
+            if (!pinned[i])
+                me.varsValues[i] = x[i].solutionValue();
+        }
+
+        if (Constants.DEBUG_OPTIMIZE) {
+            System.out.println("Solution:");
+            System.out.println("   Objective value = " + objective.value());
+            for (int i = 0; i < me.varsNum; ++i)
+                if (!pinned[i])
+                    System.out.println("   x[" + i + "] = " + x[i].solutionValue());
+            for (int i = 0; i < me.marginsNum; ++i)
+                if (!me.marginsEqs[i].done())
+                    System.out.println("   z[" + i + "] = " + z[i].solutionValue());
+
+            System.out.println("Problem solved in " + solver.wallTime() + " milliseconds");
+            System.out.println("                  " + solver.iterations() + " iterations");
+            System.out.println("                  " + solver.nodes() + " branch-and-bound nodes");
+        }
+
+        // Mark newly-pinned variables (present in minimum-margin equation(s))
+        double minmargin = infinity;
+        for (int i = 0; i < me.marginsNum; ++i) {
+            if (!me.marginsEqs[i].done() && me.getMargin(i) < minmargin)
+                minmargin = me.getMargin(i);
+        }
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("minimum active margin = " + minmargin);
+        for (int i = 0; i < me.marginsNum; ++i) {
+            if (me.marginsEqs[i].done())
+                continue;
+
+            double mar = me.getMargin(i);
+            if (Constants.DEBUG_OPTIMIZE)
+                System.out.println("   margin[" + i + "] = " + mar);
+
+            double diff = mar - minmargin;
+            if (diff < -epsilon || diff > epsilon)
+                continue;
+
+            for (int j = 0; j < me.varsNum; ++j) {
+                double cj = me.marginsEqs[i].coef(j);
+
+                if (!pinned[j] && (cj > epsilon || cj < -epsilon)) {
+                    pinned[j] = true;
+
+                    if (Constants.DEBUG_OPTIMIZE)
+                        System.out.println("pinned variable x" + j);
+                }
+
+            }
+        }
+
+        // Mark newly-completed equations (all variables pinned)
+        for (int row = 0; row < me.marginsNum; row++) {
+            if (me.marginsEqs[row].done())
+                continue;
+
+            boolean eqndone = true;
+            for (int i = 0; eqndone && i < me.varsNum; i++) {
+                double ci = me.marginsEqs[row].coef(i);
+                if (!pinned[i] && (ci > epsilon || ci < -epsilon))
+                    eqndone = false;
+            }
+            if (eqndone) {
+                me.marginsEqs[row].setDone(true);
+                if (Constants.DEBUG_OPTIMIZE)
+                    System.out.println("equation " + row + " done");
+            }
+        }
+
+        return true;
+    }
+
+    public boolean doOptimizationMILP() {
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("\noptimizing...");
+
+        int stage = 1;
+
+        while (true) {
+            if (Constants.DEBUG_OPTIMIZE)
+                System.out.println("---- MILP stage " + stage + ":");
+
+            boolean optimal = runMILP();
+
+            if (!optimal) {
+                if (Constants.DEBUG_OPTIMIZE)
+                    System.out.println("---- Bailing from optimizer");
+                return false;
+            }
+
+            boolean done = true;
+            for (int i = 0; i < me.marginsNum; ++i) {
+                if (!me.marginsEqs[i].done()) {
+                    done = false;
+                    break;
+                }
+            }
+
+            if (done)
+                break;
+
+            ++stage;
+        }
+
+        if (Constants.DEBUG_OPTIMIZE)
+            System.out.println("---- Optimizer finished, updating pattern");
+
+        return true;
     }
 
 
     public void updatePattern() {
-        // update the pattern's JMLEvents with the current variable values
+        // update the pattern's JMLEvents with the current variable values,
+        // for variables that were solved by optimizer.
         for (int i = 0; i < me.varsNum; i++) {
-            JMLEvent ev = me.varsEvents[i];
-            double newx = me.varsValues[i];
+            if (pinned[i]) {
+                JMLEvent ev = me.varsEvents[i];
+                double newx = me.varsValues[i];
 
-            Coordinate coord = ev.getLocalCoordinate();
-            coord.x = newx;
-            ev.setLocalCoordinate(coord);
+                Coordinate coord = ev.getLocalCoordinate();
+                coord.x = newx;
+                ev.setLocalCoordinate(coord);
+            }
         }
         pat.setNeedsLayout(true);
     }
@@ -812,8 +929,10 @@ public class Optimizer {
         //opt.doOptimizationGradient();
         //opt.doOptimizationSVD();
         //opt.doOptimizationLP();
-        opt.doOptimizationMILP();
-        opt.updatePattern();
+        boolean success = opt.doOptimizationMILP();
+
+        if (success)
+            opt.updatePattern();
 
         return pat;
     }
