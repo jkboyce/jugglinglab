@@ -5,6 +5,7 @@
 package jugglinglab.optimizer;
 
 import java.util.*;
+
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
@@ -13,6 +14,7 @@ import jugglinglab.util.*;
 public class MarginEquations {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static final protected double epsilon = 0.000001;
 
     public int              varsNum;        // number of variables in margin equations
     public JMLEvent[]       varsEvents;     // corresponding JMLEvents, one per variable
@@ -74,7 +76,7 @@ public class MarginEquations {
             System.out.println("finding margin equations");
 
         if (pat.getNumberOfJugglers() > 1)
-            throw new JuggleExceptionUser(errorstrings.getString("Error_no_optimize_passing"));
+            throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_passing"));
 
         // step 1:  Lay out the pattern.  This generates two things we need, the pattern event
         // list and the pattern pathlink list.
@@ -311,75 +313,78 @@ public class MarginEquations {
                         double v_y1 = 0.5 * g * (t_c1 - t_t1);
                         double v_y2 = 0.5 * g * (t_c2 - t_t2);
                         double denom = v_y1 * (tsame - t_t1) + v_y2 * (tsame - t_t2);
-                        denom *= Math.PI / 180.0;   // so margin will be in degrees
 
-                        double coef_t1 = (t_c1 - tsame) / ((t_c1 - t_t1) * denom);
-                        double coef_c1 = (tsame - t_t1) / ((t_c1 - t_t1) * denom);
-                        double coef_t2 = -(t_c2 - tsame) / ((t_c2 - t_t2) * denom);
-                        double coef_c2 = -(tsame - t_t2) / ((t_c2 - t_t2) * denom);
-                        double coef_0 = -2.0 * propradius / denom;
+                        if (denom > epsilon) {
+                            denom *= Math.PI / 180.0;   // so margin will be in degrees
 
-                        int t1_varnum, c1_varnum, t2_varnum, c2_varnum;
+                            double coef_t1 = (t_c1 - tsame) / ((t_c1 - t_t1) * denom);
+                            double coef_c1 = (tsame - t_t1) / ((t_c1 - t_t1) * denom);
+                            double coef_t2 = -(t_c2 - tsame) / ((t_c2 - t_t2) * denom);
+                            double coef_c2 = -(tsame - t_t2) / ((t_c2 - t_t2) * denom);
+                            double coef_0 = -2.0 * propradius / denom;
 
-                        JMLEvent mplev = mpl1.getStartEvent();
-                        if (!mplev.isMaster()) {
-                            if (mplev.getHand() != mplev.getMaster().getHand())
-                                coef_t1 = -coef_t1;
-                            mplev = mplev.getMaster();
-                        }
-                        t1_varnum = variableEvents.indexOf(mplev);
-                        mplev = mpl1.getEndEvent();
-                        if (!mplev.isMaster()) {
-                            if (mplev.getHand() != mplev.getMaster().getHand())
-                                coef_c1 = -coef_c1;
-                            mplev = mplev.getMaster();
-                        }
-                        c1_varnum = variableEvents.indexOf(mplev);
-                        mplev = mpl2.getStartEvent();
-                        if (!mplev.isMaster()) {
-                            if (mplev.getHand() != mplev.getMaster().getHand())
-                                coef_t2 = -coef_t2;
-                            mplev = mplev.getMaster();
-                        }
-                        t2_varnum = variableEvents.indexOf(mplev);
-                        mplev = mpl2.getEndEvent();
-                        if (!mplev.isMaster()) {
-                            if (mplev.getHand() != mplev.getMaster().getHand())
-                                coef_c2 = -coef_c2;
-                            mplev = mplev.getMaster();
-                        }
-                        c2_varnum = variableEvents.indexOf(mplev);
+                            int t1_varnum, c1_varnum, t2_varnum, c2_varnum;
 
-                        if (t1_varnum < 0 || c1_varnum < 0 || t2_varnum < 0 || c2_varnum < 0)
-                            throw new JuggleExceptionInternal("Could not find master event in variableEvents");
-
-                        if (invert_mpl2) {
-                            coef_t2 = -coef_t2;
-                            coef_c2 = -coef_c2;
-                        }
-
-                        coefs[t1_varnum] += coef_t1;
-                        coefs[c1_varnum] += coef_c1;
-                        coefs[t2_varnum] += coef_t2;
-                        coefs[c2_varnum] += coef_c2;
-                        coefs[this.varsNum] = coef_0;
-
-                        // define coefficients so distance (ignoring prop dimension) is nonnegative
-                        double dist = 0.0;
-                        for (int k = 0; k < this.varsNum; k++)
-                            dist += coefs[k] * this.varsValues[k];
-                        if (dist < 0.0) {
-                            for (int k = 0; k < this.varsNum; k++) {
-                                if (coefs[k] != 0.0)
-                                    coefs[k] = -coefs[k];
+                            JMLEvent mplev = mpl1.getStartEvent();
+                            if (!mplev.isMaster()) {
+                                if (mplev.getHand() != mplev.getMaster().getHand())
+                                    coef_t1 = -coef_t1;
+                                mplev = mplev.getMaster();
                             }
+                            t1_varnum = variableEvents.indexOf(mplev);
+                            mplev = mpl1.getEndEvent();
+                            if (!mplev.isMaster()) {
+                                if (mplev.getHand() != mplev.getMaster().getHand())
+                                    coef_c1 = -coef_c1;
+                                mplev = mplev.getMaster();
+                            }
+                            c1_varnum = variableEvents.indexOf(mplev);
+                            mplev = mpl2.getStartEvent();
+                            if (!mplev.isMaster()) {
+                                if (mplev.getHand() != mplev.getMaster().getHand())
+                                    coef_t2 = -coef_t2;
+                                mplev = mplev.getMaster();
+                            }
+                            t2_varnum = variableEvents.indexOf(mplev);
+                            mplev = mpl2.getEndEvent();
+                            if (!mplev.isMaster()) {
+                                if (mplev.getHand() != mplev.getMaster().getHand())
+                                    coef_c2 = -coef_c2;
+                                mplev = mplev.getMaster();
+                            }
+                            c2_varnum = variableEvents.indexOf(mplev);
+
+                            if (t1_varnum < 0 || c1_varnum < 0 || t2_varnum < 0 || c2_varnum < 0)
+                                throw new JuggleExceptionInternal("Could not find master event in variableEvents");
+
+                            if (invert_mpl2) {
+                                coef_t2 = -coef_t2;
+                                coef_c2 = -coef_c2;
+                            }
+
+                            coefs[t1_varnum] += coef_t1;
+                            coefs[c1_varnum] += coef_c1;
+                            coefs[t2_varnum] += coef_t2;
+                            coefs[c2_varnum] += coef_c2;
+                            coefs[this.varsNum] = coef_0;
+
+                            // define coefficients so distance (ignoring prop dimension) is nonnegative
+                            double dist = 0.0;
+                            for (int k = 0; k < this.varsNum; k++)
+                                dist += coefs[k] * this.varsValues[k];
+                            if (dist < 0.0) {
+                                for (int k = 0; k < this.varsNum; k++) {
+                                    if (coefs[k] != 0.0)
+                                        coefs[k] = -coefs[k];
+                                }
+                            }
+
+                            eqns.add(coefs);
+                            this.marginsNum++;
+
+                            if (Constants.DEBUG_OPTIMIZE)
+                                System.out.println("   mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
                         }
-
-                        eqns.add(coefs);
-                        this.marginsNum++;
-
-                        if (Constants.DEBUG_OPTIMIZE)
-                            System.out.println("   mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
                     }
 
                     if (sym_switchdelay) {
@@ -423,7 +428,6 @@ public class MarginEquations {
 
         for (int i = 1; i < this.marginsNum; i++) {
             boolean dupoverall = false;
-            final double epsilon = 0.000001;
             double[] rowi = eqns.get(i);
 
             for (int j = 0; !dupoverall && j < i; j++) {

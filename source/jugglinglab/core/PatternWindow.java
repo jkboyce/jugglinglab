@@ -11,6 +11,7 @@ import java.util.*;
 import javax.swing.*;
 
 import jugglinglab.jml.*;
+import jugglinglab.optimizer.Optimizer;
 import jugglinglab.util.*;
 import jugglinglab.view.*;
 
@@ -78,11 +79,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] fileItems = new String[]
-        { "Close", null, "Save JML As...", "Save Animated GIF As...", null, "Duplicate" };
+        { "Close", null, "Save JML As...", "Save Animated GIF As...", null, "Duplicate", "Optimize" };
     protected static final String[] fileCommands = new String[]
-        { "close", null, "saveas", "savegifanim", null, "duplicate" };
+        { "close", null, "saveas", "savegifanim", null, "duplicate", "optimize" };
     protected static final char[] fileShortcuts =
-        { 'W', ' ', 'S', ' ', ' ', 'D' };
+        { 'W', ' ', 'S', ' ', ' ', 'D', 'J' };
 
     protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
@@ -100,6 +101,9 @@ public class PatternWindow extends JFrame implements ActionListener {
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
                 filemenu.add(fileitem);
+
+                if (fileCommands[i].equals("optimize") && !Optimizer.optimizerAvailable())
+                    fileitem.setEnabled(false);
             }
         }
         return filemenu;
@@ -163,6 +167,8 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(FILE_GIFSAVE);
             else if (command.equals("duplicate"))
                 doMenuCommand(FILE_DUPLICATE);
+            else if (command.equals("optimize"))
+                doMenuCommand(FILE_OPTIMIZE);
             else if (command.equals("restart"))
                 doMenuCommand(VIEW_RESTART);
             else if (command.equals("prefs"))
@@ -195,8 +201,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int FILE_SAVE = 2;
     protected static final int FILE_GIFSAVE = 3;
     protected static final int FILE_DUPLICATE = 4;
-    protected static final int VIEW_RESTART = 5;
-    protected static final int VIEW_ANIMPREFS = 6;
+    protected static final int FILE_OPTIMIZE = 5;
+    protected static final int VIEW_RESTART = 6;
+    protected static final int VIEW_ANIMPREFS = 7;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
@@ -239,6 +246,23 @@ public class PatternWindow extends JFrame implements ActionListener {
                     new PatternWindow(getTitle(),
                                       (JMLPattern)view.getPattern().clone(),
                                       new AnimationPrefs(view.getAnimationPrefs()));
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
+                }
+                break;
+
+            case FILE_OPTIMIZE:
+                try {
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
+                        System.out.println("------------------------------------------------------");
+                        System.out.println("optimizing in PatternWindow.doMenuCommand()");
+                    }
+
+                    if (view != null) {
+                        JMLPattern pat = Optimizer.optimize((JMLPattern)view.getPattern());
+                        AnimationPrefs jc = view.getAnimationPrefs();
+                        view.restartView(pat, jc);
+                    }
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(this, jeu.getMessage());
                 }

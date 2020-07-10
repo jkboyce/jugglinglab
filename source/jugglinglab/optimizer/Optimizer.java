@@ -1,58 +1,71 @@
 // Optimizer.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.optimizer;
 
-import java.util.*;
-
-//import org.apache.commons.math3.linear.RealMatrix;
-//import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-//import org.apache.commons.math3.linear.SingularValueDecomposition;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.linear.*;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.exception.TooManyIterationsException;
+import java.util.ResourceBundle;
 
 import com.google.ortools.linearsolver.MPConstraint;
 import com.google.ortools.linearsolver.MPObjective;
 import com.google.ortools.linearsolver.MPSolver;
 import com.google.ortools.linearsolver.MPVariable;
 
-import Jama.Matrix;
-import Jama.SingularValueDecomposition;
-
-/*
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.alg.dense.decomposition.svd.*;
-*/
-
+import jugglinglab.core.Constants;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
-import jugglinglab.core.*;
 
+// Class that optimizes a JMLPattern by adjusting the throw and catch
+// positions to maximize the angular throwing margin of error in the pattern.
 
 public class Optimizer {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static final protected double epsilon = 0.0000001;
+    static final protected double infinity = java.lang.Double.POSITIVE_INFINITY;
+    static protected boolean optimizer_loaded = false;
 
     static {
-        System.loadLibrary("jniortools");
+        // Load the Google OR-Tools library, if available
+        try {
+            System.loadLibrary("jniortools");
+            optimizer_loaded = true;
+        } catch (java.lang.UnsatisfiedLinkError e) {}
     }
 
-    protected JMLPattern        pat;
-    protected MarginEquations   me;
+    public static boolean optimizerAvailable() {
+        return optimizer_loaded;
+    }
 
-    protected boolean[]         pinned;     // true when variable is done optimizing
-    protected double[]          r;          // direction vector for variables
-    protected int               eqn_start;  // index of first equation in active group
-    protected int               eqn_end;    // index of last equation in active group
-    protected double            dmdl;       // d(margin)/d(lambda) for active group
+    // Optimizes a pattern, if possible.
+    //
+    // This is the main entry point into the optimizer.
+    public static JMLPattern optimize(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
+        if (!optimizerAvailable()) {
+            if (Constants.DEBUG_OPTIMIZE)
+                System.out.println("---- Optimizer not loaded, bailing");
+            throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_unavailable"));
+        }
 
-    static final double epsilon = 0.0000001;
+        Optimizer opt = new Optimizer(pat);
+        boolean success = opt.doOptimizationMILP();
+        if (success)
+            opt.updatePattern();
+        else
+            throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_failed"));
+
+        return pat;
+    }
 
 
-    public Optimizer(JMLPattern p) throws JuggleExceptionInternal, JuggleExceptionUser {
+    // Instance variables and methods
+
+    protected JMLPattern pat;
+    protected MarginEquations me;
+    protected boolean[] pinned;     // true when variable is done optimizing
+
+
+    protected Optimizer(JMLPattern p) throws JuggleExceptionInternal, JuggleExceptionUser {
         this.pat = p;
         this.me = new MarginEquations(p);
 
@@ -60,630 +73,15 @@ public class Optimizer {
             return;
 
         this.pinned = new boolean[me.varsNum];
-        this.r = new double[me.varsNum];
-        this.eqn_start = this.eqn_end = 0;
     }
 
 
-    public double getMargin() {
-        return me.getMargin();
-    }
-
-
-    // SVD-based optimizer below
-
-    // try to find a contradictory set of vectors within the current group.
-    // a set of vectors {x_i} is contradictory iff there is no solution r to the
-    // set of constraints dot(r, x_i) > 0 for all i
+    // Runs the MILP solver to maximize the minimum throwing margin of error in
+    // the pattern.
     //
-    // if a contradictory set is found, mark the related variables as pinned, mark
-    // the corresponding margin equations as done, and return true.  if no
-    // contradictory set is found, return false
-
-    protected boolean removeContradictory() {
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("************* FINDING CONTRADICTORY VECTORS *************");
-
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("************* DONE WITH CONTRADICTORY VECTORS *************");
-
-        return false;
-    }
-
-
-    // figure out the direction vector r for the variables in the margin
-    // equations.  returns true when a direction is found, false when not (i.e.,
-    // the optimization is done)
-
-    protected boolean findDirection() throws JuggleExceptionInternal {
-        if (eqn_start >= me.marginsNum)
-            return false;
-
-        if (me.marginsEqs[eqn_start].done()) {
-            eqn_start++;
-            if (eqn_end < eqn_start)
-                eqn_end = eqn_start;
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("equation " + (eqn_start-1) + " done, continuing with group " + eqn_start +
-                                   " through " + eqn_end);
-            return findDirection();
-        }
-
-        /*
-        // JKB START
-        if (true) {
-        for (int i = 0; i < me.varsNum; i++) {
-            if (pinned[i])
-                r[i] = 0.0;
-            else
-                r[i] = me.marginsEqs[eqn_start].coef(i);
-        }
-        return true;
-        }
-        // JKB END
-        */
-
-        // r[] is a vector in the direction we want to step in
-        for (int i = 0; i < me.varsNum; i++)
-            r[i] = 0.0;
-
-        if (eqn_end == eqn_start) {
-            // we don't have a group, so we try to find an unpinned variable
-            // in our current equation, and move in a direction that increases
-            // margin.
-            for (int i = 0; i < me.varsNum; i++) {
-                double ci = me.marginsEqs[eqn_start].coef(i);
-                if (!pinned[i] && (ci > epsilon || ci < -epsilon)) {
-                    r[i] = (ci > 0.0) ? 1.0 : -1.0;
-
-                    if (Constants.DEBUG_OPTIMIZE)
-                        System.out.println("moving in direction of variable " + i);
-
-                    return true;
-                }
-            }
-
-            throw new JuggleExceptionInternal("couldn't find nonzero unpinned coefficient");
-        }
-
-        // We have a group of equations, and need to find a direction r that:
-        // (a) advances them all at the same rate, and (b) doesn't move any of
-        // the pinned variables.
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("analyzing group of equations " + eqn_start + " to " + eqn_end + "; included vars:");
-        boolean[] varincluded = new boolean[me.varsNum];
-        int[] varnum = new int[me.varsNum];
-        int numincluded = 0;
-        for (int i = 0; i < me.varsNum; i++) {
-            if (pinned[i])
-                varincluded[i] = false;
-            else {
-                boolean skip = true;
-                for (int row = eqn_start; skip && row <= eqn_end; row++) {
-                    double ci = me.marginsEqs[row].coef(i);
-                    if (ci > epsilon || ci < -epsilon)
-                        skip = false;
-                }
-                varincluded[i] = !skip;
-                if (!skip) {
-                    varnum[numincluded] = i;
-                    numincluded++;
-                }
-            }
-            System.out.println("   vi[" + i + "] = " + varincluded[i]);
-        }
-
-        if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("equations = " + (eqn_end - eqn_start + 1) +
-                               ", dimensions = " + numincluded);
-
-            for (int row = eqn_start; row <= eqn_end; row++) {
-                StringBuffer sb = new StringBuffer();
-                sb.append("   equation " + (row - eqn_start) + " = { ");
-                for (int j = 0; j < numincluded; j++) {
-                    sb.append(JLFunc.toStringTruncated(me.marginsEqs[row].coef(varnum[j]), 4));
-                    if (j != (numincluded-1))
-                        sb.append(", ");
-                }
-                sb.append(" : ");
-                sb.append(JLFunc.toStringTruncated(me.marginsEqs[row].constant(), 4));
-                sb.append(" }");
-
-                System.out.println(sb.toString());
-            }
-        }
-
-        if (numincluded <= (eqn_end - eqn_start)) {
-            if (removeContradictory()) {
-                if (Constants.DEBUG_OPTIMIZE) {
-                    System.out.println("   success pinning one or more variables");
-                }
-                return findDirection();
-            }
-
-            if (Constants.DEBUG_OPTIMIZE) {
-                System.out.println("************* RUNNING LP *************");
-            }
-
-            boolean found = false;
-            for (int trialrow = eqn_start; !found && trialrow <= eqn_end; trialrow++) {
-                double[] objarray = new double[numincluded];
-                for (int i = 0; i < numincluded; i++)
-                    objarray[i] = 0.0;
-                LinearObjectiveFunction f = new LinearObjectiveFunction(objarray, 1.0);
-
-                ArrayList<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
-                for (int row = eqn_start; row <= eqn_end; row++) {
-                    double[] constarray = new double[numincluded];
-                    for (int i = 0; i < numincluded; i++)
-                        constarray[i] = me.marginsEqs[row].coef(varnum[i]);
-
-                    if (row == trialrow)
-                        constraints.add(new LinearConstraint(constarray, Relationship.GEQ, 100.0*epsilon));
-                    else
-                        constraints.add(new LinearConstraint(constarray, Relationship.GEQ, 100.0*epsilon));
-                }
-                for (int i = 0; i < numincluded; i++) {
-                    double[] maxarray = new double[numincluded];
-                    maxarray[i] = 1.0;
-                    constraints.add(new LinearConstraint(maxarray, Relationship.LEQ, 1.0));
-                    double[] minarray = new double[numincluded];
-                    minarray[i] = -1.0;
-                    constraints.add(new LinearConstraint(minarray, Relationship.LEQ, 1.0));
-                }
-
-                SimplexSolver solver = new SimplexSolver();
-                LinearConstraintSet con = new LinearConstraintSet(constraints);
-                NonNegativeConstraint nnc = new NonNegativeConstraint(false);
-
-                try {
-                    PointValuePair solution = solver.optimize(f, con, GoalType.MAXIMIZE, nnc);
-
-                    if (Constants.DEBUG_OPTIMIZE) {
-                        StringBuffer sb = new StringBuffer();
-                        sb.append("vector = { ");
-                        for (int i = 0; i < numincluded; i++) {
-                            sb.append(JLFunc.toStringTruncated(solution.getPoint()[i], 4));
-                            if (i != numincluded-1)
-                                sb.append(", ");
-                        }
-                        sb.append(" }");
-                        System.out.println(sb.toString());
-                    }
-
-                    found = true;
-                    for (int row = eqn_start; row <= eqn_end; row++) {
-                        double dot = 0.0;
-                        for (int i = 0; i < numincluded; i++)
-                            dot += solution.getPoint()[i] * me.marginsEqs[row].coef(varnum[i]);
-                        if (dot < -epsilon)
-                            found = false;
-                        System.out.println("dot[" + row + "] = " + dot + ", found = " + found);
-                    }
-
-                    if (found) {
-                        for (int i = 0; i < numincluded; i++)
-                            r[varnum[i]] = solution.getPoint()[i];
-                        eqn_end = eqn_start;
-                        System.out.println("LP successful");
-                        return true;
-                    }
-                } catch (TooManyIterationsException e) {
-                    if (Constants.DEBUG_OPTIMIZE)
-                        System.out.println("optimization exception: " + e.getMessage());
-                }
-            }
-
-            if (Constants.DEBUG_OPTIMIZE) {
-                System.out.println("************** PUNTING **************");
-            }
-            for (int i = 0; i < numincluded; i++)
-                pinned[varnum[i]] = true;
-            markDoneEquations();
-            me.sort();
-            eqn_start = eqn_end + 1;
-            eqn_end = eqn_start;
-            return findDirection();
-            /*
-            throw new JuggleExceptionInternal("can't find direction: " + (eqn_end - eqn_start) +
-                                              " difference vectors and " + numincluded + " dimensions");
-            */
-        }
-
-        // We want to find a vector r[] such that when we move our variables
-        // in this direction, the margins represented by each equation in our
-        // group all change at exactly the same rate. Do this with singular
-        // value decomposition of the difference matrix.
-        //
-        // The dimension of `mat` below is (eqn_end - eqn_start, numincluded),
-        // so the dimension of `vt` is (numincluded, numincluded).
-        //
-        // Note: If we get here then numincluded > (eqn_end - eqn_start)
-
-        //Array2DRowRealMatrix mat = new Array2DRowRealMatrix(eqn_end - eqn_start, numincluded);
-        Matrix mat = new Matrix(eqn_end - eqn_start, numincluded);
-        int col = 0;
-        for (int i = 0; i < me.varsNum; i++) {
-            if (varincluded[i]) {
-                for (int row = eqn_start + 1; row <= eqn_end; row++) {
-                    //mat.setEntry(row - eqn_start - 1, col, me.marginsEqs[row].coef(i)
-                    //    - me.marginsEqs[eqn_start].coef(i));
-                    mat.set(row - eqn_start - 1, col, me.marginsEqs[row].coef(i)
-                        - me.marginsEqs[eqn_start].coef(i));
-                }
-                col++;
-            }
-        }
-
-        SingularValueDecomposition svd = new SingularValueDecomposition(mat);
-        //RealMatrix vt = svd.getVT();
-        Matrix v = svd.getV();
-
-        if (Constants.DEBUG_OPTIMIZE) {
-            //System.out.println("SVD complete; mat dim = ("
-            //    + mat.getRowDimension() + ", " + mat.getColumnDimension()
-            //    + "), VT dim = ("
-            //    + vt.getRowDimension() + ", " + vt.getColumnDimension() + ")");
-            System.out.println("SVD complete; mat dim = ("
-                + mat.getRowDimension() + ", " + mat.getColumnDimension()
-                + "), V dim = ("
-                + v.getRowDimension() + ", " + v.getColumnDimension() + ")");
-        }
-
-        // The vectors we want that span the null space of `mat` are the last
-        // row(s) of vt: The row numbers are (eqn_end - eqn_start) through
-        // (numincluded - 1), inclusive. Any row would work for r[] (or any
-        // linear combination of rows); we choose the row with the largest dot
-        // product with our vectors.
-        double max_product = 0.0;
-        int max_row = -1;
-        int max_sign = 0;
-        for (int row = eqn_end - eqn_start; row < numincluded; row++) {
-            /*
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("   getting row " + row + "...");
-            */
-            double dot = 0.0;
-            for (int i = 0; i < numincluded; i++) {
-                //dot += vt.getEntry(row, i) * me.marginsEqs[eqn_start].coef(varnum[i]);
-                dot += v.get(i, row) * me.marginsEqs[eqn_start].coef(varnum[i]);
-            }
-            double abs_dot = (dot > 0.0) ? dot : -dot;
-            if (max_row < 0 || abs_dot > max_product) {
-                max_product = abs_dot;
-                max_row = row;
-                max_sign = (dot > 0.0) ? 1 : -1;
-            }
-        }
-
-        if (max_product < epsilon) {
-            if (removeContradictory())
-                return findDirection();
-            else
-                throw new JuggleExceptionInternal("removeContradictory() unsuccessful after SVD failure");
-        }
-
-        for (int i = 0; i < numincluded; i++)
-            //r[varnum[i]] = vt.getEntry(max_row, i) * max_sign;
-            r[varnum[i]] = v.get(i, max_row) * max_sign;
-
-        if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("   found r using SVD");
-            for (int row = eqn_start; row <= eqn_end; row++) {
-                double dot = 0.0;
-                for (int i = 0; i < me.varsNum; i++)
-                    dot += me.marginsEqs[row].coef(i) * r[i];
-                System.out.println("   dot product with eq " + row + " = "
-                        + JLFunc.toStringTruncated(dot, 4));
-            }
-        }
-        return true;
-    }
-
-
-    // advance along direction r, until one of two things happens:  (a) a variable
-    // reaches a limit and gets pinned, or (b) the smallest active margin becomes
-    // equal to the margin of an equation later in the list
-
-    protected void takeStep() throws JuggleExceptionInternal {
-
-        // find the smallest lambda such that moving lambda*r will run
-        // one of the variables into a limit
-        double pin_lambda = -1.0;
-        int pinned_var = -1;
-
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("taking step...");
-
-        for (int i = 0; i < me.varsNum; i++) {
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("   pinned[" + i + "] = " + pinned[i] + ", r[" + i + "] = "
-                        + JLFunc.toStringTruncated(r[i], 4));
-
-            if (!pinned[i] && r[i] != 0.0) {
-                // JKB START
-                /*
-                if (me.varsValues[i] > me.varsMax[i]) {
-                    pinned[i] = true;
-                    me.varsValues[i] = me.varsMax[i];
-                    markDoneEquations();
-                    me.sort();
-                    return;
-                } else if (me.varsValues[i] < me.varsMin[i]) {
-                    pinned[i] = true;
-                    me.varsValues[i] = me.varsMax[i];
-                    markDoneEquations();
-                    me.sort();
-                    return;
-                } else {
-                */
-                double lambda = (r[i] > 0.0) ? (me.varsMax[i] - me.varsValues[i]) / r[i] :
-                                (me.varsMin[i] - me.varsValues[i]) / r[i];
-                // lambda += epsilon;
-                if (lambda < 0.0)
-                    throw new JuggleExceptionInternal("negative lambda in takeStep()");
-
-                if (pin_lambda < 0.0 || pin_lambda > lambda) {
-                    pin_lambda = lambda;
-                    pinned_var = i;
-                }
-            }
-        }
-
-        // find the smallest lambda that will make one of the later equations
-        // in the list have a margin equal to the current group
-        double join_lambda = -1.0;
-        int joined_eqn = -1;
-
-        double group_margin = me.getMargin(eqn_start);
-        double group_dmdl = 0.0;
-        for (int i = 0; i < me.varsNum; i++)
-            group_dmdl += me.marginsEqs[eqn_start].coef(i) * r[i];
-
-        for (int row = eqn_end + 1; row < me.marginsNum; row++) {
-            double test_margin = me.getMargin(row);
-            double test_dmdl = 0.0;
-            for (int i = 0; i < me.varsNum; i++)
-                test_dmdl += me.marginsEqs[row].coef(i) * r[i];
-
-            // solve:  test_margin + lambda * test_dmdl = group_margin + lambda * group_dmdl
-            if (test_dmdl - group_dmdl < 0.0) {
-                double lambda = (group_margin - test_margin) / (test_dmdl - group_dmdl);
-
-                if (lambda > 0.0 && (join_lambda < 0.0 || join_lambda > lambda)) {
-                    join_lambda = lambda;
-                    joined_eqn = row;
-                }
-            }
-        }
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("join_lambda = " + join_lambda + ", pin_lambda = " + pin_lambda);
-
-        // and now take our step
-        if (join_lambda >= 0.0 && join_lambda < pin_lambda) {
-
-            // move until new equation joins the group
-            for (int i = 0; i < me.varsNum; i++) {
-                if (!pinned[i])
-                    me.varsValues[i] += join_lambda * r[i];
-            }
-            eqn_end++;
-
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("equation " + joined_eqn + " joined group");
-        } else {
-            // move until we pin a variable
-            for (int i = 0; i < me.varsNum; i++) {
-                if (!pinned[i])
-                    me.varsValues[i] += pin_lambda * r[i];
-            }
-            me.varsValues[pinned_var] = (r[pinned_var] > 0.0 ? me.varsMax[pinned_var] : me.varsMin[pinned_var]);
-            pinned[pinned_var] = true;
-
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("variable " + pinned_var + " got pinned");
-            markDoneEquations();
-        }
-        me.sort();
-    }
-
-
-    protected void markDoneEquations() {
-        // check for equations that have all variables pinned, in which case they're done
-        for (int row = 0; row < me.marginsNum; row++) {
-            if (!me.marginsEqs[row].done()) {
-                boolean eqndone = true;
-                for (int i = 0; eqndone && i < me.varsNum; i++) {
-                    double ci = me.marginsEqs[row].coef(i);
-                    if (!pinned[i] && (ci > epsilon || ci < -epsilon))
-                        eqndone = false;
-                }
-                if (eqndone) {
-                    me.marginsEqs[row].setDone(true);
-                    eqn_start++;
-                    if (row >= eqn_end || eqn_end < eqn_start)
-                        eqn_end++;
-                    if (Constants.DEBUG_OPTIMIZE)
-                        System.out.println("equation " + row + " done, new group is " + eqn_start +
-                                           " through " + eqn_end);
-                }
-            }
-        }
-        me.sort();
-    }
-
-
-    public void doOptimizationSVD() throws JuggleExceptionInternal {
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("\noptimizing...");
-
-        int stage = 1;
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("---- stage 1");
-
-        while (findDirection()) {
-            takeStep();
-
-            if (Constants.DEBUG_OPTIMIZE) {
-                StringBuffer sb = new StringBuffer();
-                sb.append("margins = { ");
-                for (int i = 0; i < me.marginsNum; i++) {
-                    sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
-                    if (i != me.marginsNum-1)
-                        sb.append(", ");
-                }
-                sb.append(" }");
-                System.out.println(sb.toString());
-                stage++;
-                System.out.println("---- stage " + stage);
-            }
-        }
-
-        if (Constants.DEBUG_OPTIMIZE)
-            System.out.println("optimization done");
-    }
-
-
-    // LP-based optimizer below
-
-    /*
-    public double optimizeOnce() {
-
-        if (Constants.DEBUG_OPTIMIZE) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("margins = { ");
-            for (int i = 0; i < me.marginsNum; i++) {
-                sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
-                if (i != me.marginsNum-1)
-                    sb.append(", ");
-            }
-            sb.append(" }");
-            System.out.println(sb.toString());
-        }
-
-        double bestmargin = me.getMargin();
-
-        for (int row = 0; row < me.marginsNum; row++) {
-            if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("optimizing row " + row + "...");
-
-            double[] objarray = new double[me.varsNum];
-            double tiny = 0.00001;
-            for (int i = 0; i < me.varsNum; i++) {
-                objarray[i] = me.marginsEqs[row].coef(i);
-
-                //for (int j = 0; j < me.marginsNum; j++) {
-                //    if (j != row)
-                //        objarray[i] += tiny * (me.marginsEqs[j][i] - me.marginsEqs[row][i]);
-                //}
-            }
-            LinearObjectiveFunction f = new LinearObjectiveFunction(objarray, me.marginsEqs[row].constant());
-
-            ArrayList<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
-            for (int i = 0; i < me.marginsNum; i++) {
-                if (i != row) {
-                    double[] constarray = new double[me.varsNum];
-                    for (int j = 0; j < me.varsNum; j++)
-                        constarray[j] = me.marginsEqs[row].coef(j) - me.marginsEqs[i].coef(j);
-
-                    constraints.add(new LinearConstraint(constarray, Relationship.LEQ,
-                                                         me.marginsEqs[i].constant() - me.marginsEqs[row].constant()));
-                }
-            }
-            for (int i = 0; i < me.varsNum; i++) {
-                double[] maxarray = new double[me.varsNum];
-                maxarray[i] = 1.0;
-                constraints.add(new LinearConstraint(maxarray, Relationship.LEQ, me.varsMax[i]));
-                double[] minarray = new double[me.varsNum];
-                minarray[i] = -1.0;
-                constraints.add(new LinearConstraint(minarray, Relationship.LEQ, -me.varsMin[i]));
-            }
-
-            SimplexSolver solver = new SimplexSolver();
-            LinearConstraintSet con = new LinearConstraintSet(constraints);
-            NonNegativeConstraint nnc = new NonNegativeConstraint(false);
-
-            try {
-                PointValuePair solution = solver.optimize(f, con, GoalType.MAXIMIZE, nnc);
-
-                if (solution.getValue() > bestmargin) {
-                    bestmargin = solution.getValue();
-                    for (int i = 0; i < me.varsNum; i++)
-                        me.varsValues[i] = solution.getPoint()[i];
-                }
-                if (Constants.DEBUG_OPTIMIZE) {
-                    for (int i = 0; i < me.varsNum; i++)
-                        System.out.println("point " + i + " = " + solution.getPoint()[i]);
-                    System.out.println("Solution value = " + solution.getValue());
-                    StringBuffer sb = new StringBuffer();
-                    sb.append("margins = { ");
-                    for (int i = 0; i < me.marginsNum; i++) {
-                        double temp = me.marginsEqs[i].constant();
-                        for (int j = 0; j < me.varsNum; j++)
-                            temp += me.marginsEqs[i].coef(j) * solution.getPoint()[j];
-                        sb.append(JLFunc.toStringTruncated(temp, 4));
-                        if (i != me.marginsNum-1)
-                            sb.append(", ");
-                    }
-                    sb.append(" }");
-                    System.out.println(sb.toString());
-                }
-            } catch (TooManyIterationsException e) {
-                if (Constants.DEBUG_OPTIMIZE)
-                    System.out.println("optimization exception: " + e.getMessage());
-            }
-
-            if (Constants.DEBUG_OPTIMIZE) {
-                StringBuffer sb = new StringBuffer();
-                sb.append("bestmargins = { ");
-                for (int i = 0; i < me.marginsNum; i++) {
-                    sb.append(JLFunc.toStringTruncated(me.getMargin(i), 4));
-                    if (i != me.marginsNum-1)
-                        sb.append(", ");
-                }
-                sb.append(" }");
-                System.out.println(sb.toString());
-            }
-        }
-
-        return bestmargin;
-    }
-
-
-    public void doOptimizationLP() {
-
-        if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("doing optimization...");
-        }
-
-        double bestmargin = optimizeOnce();
-    }
-
-
-
-    public void doOptimizationGradient() {
-        int eqn = 0;
-        boolean go = true;
-        double step = 0.01;
-
-        do {
-            double rsq = 0.0;
-            for (int i = 0; i < me.varsNum; i++) {
-                r[i] = me.marginsEqs[eqn].coef(i);
-                rsq += r[i] * r[i];
-            }
-            rsq = Math.sqrt(rsq);
-            for (int i = 0; i < me.varsNum; i++)
-                r[i] /= rsq;
-
-
-        } while (go);
-    }
-    */
-
-    // MILP-based optimizer below
-
-    public boolean runMILP() {
+    // Returns true on success, false on failure.
+    protected boolean runMILP() {
+        // use COIN-OR CBC solver backend
         MPSolver solver = new MPSolver(
             "JugglingLab",
             MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING
@@ -698,13 +96,13 @@ public class Optimizer {
                 x[i] = solver.makeNumVar(me.varsMin[i], me.varsMax[i], "x" + i);
         }
 
+        // boolean variables are used to model disjunctive constraints below
         MPVariable[] z = new MPVariable[me.marginsNum];
         for (int i = 0; i < me.marginsNum; ++i) {
             if (!me.marginsEqs[i].done())
                 z[i] = solver.makeBoolVar("z" + i);
         }
 
-        double infinity = java.lang.Double.POSITIVE_INFINITY;
         MPVariable err = solver.makeNumVar(-infinity, infinity, "err");
 
         // Constraints
@@ -714,6 +112,9 @@ public class Optimizer {
             if (me.marginsEqs[i].done())
                 continue;
 
+            // Calculate upper bound on abs(Ax) in order to implement the
+            // constraint err < abs(Ax + b), which becomes two disjunctive
+            // constraints since the feasible set is concave.
             double maxAx = 0.0;
             double minAx = 0.0;
 
@@ -731,7 +132,7 @@ public class Optimizer {
 
             double bound = 2.0 * Math.max(Math.abs(maxAx), Math.abs(minAx)) + 1.0;
 
-            // (-Ax) <= -err + b_i + M_i * z_i
+            // (-Ax) <= -err + b_i + bound * z_i
             double rhs = me.marginsEqs[i].constant();
             for (int j = 0; j < me.varsNum; ++j) {
                 if (pinned[j])
@@ -749,21 +150,21 @@ public class Optimizer {
                 }
             }
 
-            // Ax <= -err + b_i + M_i * (1 - z_i)
+            // Ax <= -err + b_i + bound * (1 - z_i)
             rhs = me.marginsEqs[i].constant() + bound;
             for (int j = 0; j < me.varsNum; ++j) {
                 if (pinned[j])
                     rhs -= me.marginsEqs[i].coef(j) * me.varsValues[j];
             }
-            c[2*i+1] = solver.makeConstraint(-infinity, rhs, "c" + i + "b");
-            c[2*i+1].setCoefficient(err, 1);
-            c[2*i+1].setCoefficient(z[i], bound);
+            c[2*i + 1] = solver.makeConstraint(-infinity, rhs, "c" + i + "b");
+            c[2*i + 1].setCoefficient(err, 1);
+            c[2*i + 1].setCoefficient(z[i], bound);
             for (int j = 0; j < me.varsNum; ++j) {
                 if (!pinned[j]) {
                     double coef = me.marginsEqs[i].coef(j);
 
                     if (coef != 0.0)
-                        c[2*i+1].setCoefficient(x[j], coef);
+                        c[2*i + 1].setCoefficient(x[j], coef);
                 }
             }
         }
@@ -789,7 +190,7 @@ public class Optimizer {
 
         if (resultStatus != MPSolver.ResultStatus.OPTIMAL) {
             if (Constants.DEBUG_OPTIMIZE)
-                System.err.println("The problem does not have an optimal solution!");
+                System.out.println("The problem does not have an optimal solution!");
             return false;
         }
 
@@ -813,6 +214,17 @@ public class Optimizer {
             System.out.println("                  " + solver.nodes() + " branch-and-bound nodes");
         }
 
+        return true;
+    }
+
+
+    // Marks variables and equations that have been solved, and should be
+    // excluded from further optimization passes.
+    //
+    // The variables (throw and catch positions) participating in a minimum-
+    // margin equation are fixed; remaining variables need to be solved in
+    // subsequent runs.
+    protected void markFinished() {
         // Mark newly-pinned variables (present in minimum-margin equation(s))
         double minmargin = infinity;
         for (int i = 0; i < me.marginsNum; ++i) {
@@ -821,6 +233,7 @@ public class Optimizer {
         }
         if (Constants.DEBUG_OPTIMIZE)
             System.out.println("minimum active margin = " + minmargin);
+
         for (int i = 0; i < me.marginsNum; ++i) {
             if (me.marginsEqs[i].done())
                 continue;
@@ -842,7 +255,6 @@ public class Optimizer {
                     if (Constants.DEBUG_OPTIMIZE)
                         System.out.println("pinned variable x" + j);
                 }
-
             }
         }
 
@@ -852,10 +264,12 @@ public class Optimizer {
                 continue;
 
             boolean eqndone = true;
-            for (int i = 0; eqndone && i < me.varsNum; i++) {
+            for (int i = 0; i < me.varsNum; i++) {
                 double ci = me.marginsEqs[row].coef(i);
-                if (!pinned[i] && (ci > epsilon || ci < -epsilon))
+                if (!pinned[i] && (ci > epsilon || ci < -epsilon)) {
                     eqndone = false;
+                    break;
+                }
             }
             if (eqndone) {
                 me.marginsEqs[row].setDone(true);
@@ -863,11 +277,11 @@ public class Optimizer {
                     System.out.println("equation " + row + " done");
             }
         }
-
-        return true;
     }
 
-    public boolean doOptimizationMILP() {
+
+    // Executes the overall pattern optimization.
+    protected boolean doOptimizationMILP() {
         if (Constants.DEBUG_OPTIMIZE)
             System.out.println("\noptimizing...");
 
@@ -878,12 +292,13 @@ public class Optimizer {
                 System.out.println("---- MILP stage " + stage + ":");
 
             boolean optimal = runMILP();
-
             if (!optimal) {
                 if (Constants.DEBUG_OPTIMIZE)
                     System.out.println("---- Bailing from optimizer");
                 return false;
             }
+
+            markFinished();
 
             boolean done = true;
             for (int i = 0; i < me.marginsNum; ++i) {
@@ -892,7 +307,6 @@ public class Optimizer {
                     break;
                 }
             }
-
             if (done)
                 break;
 
@@ -906,13 +320,13 @@ public class Optimizer {
     }
 
 
-    public void updatePattern() {
-        // update the pattern's JMLEvents with the current variable values,
-        // for variables that were solved by optimizer.
+    // Updates the pattern's JMLEvents with the current variable values, for
+    // variables that were solved by optimizer.
+    protected void updatePattern() {
         for (int i = 0; i < me.varsNum; i++) {
             if (pinned[i]) {
                 JMLEvent ev = me.varsEvents[i];
-                double newx = me.varsValues[i];
+                double newx = (double)Math.round(me.varsValues[i] * 100d) / 100d;
 
                 Coordinate coord = ev.getLocalCoordinate();
                 coord.x = newx;
@@ -920,20 +334,5 @@ public class Optimizer {
             }
         }
         pat.setNeedsLayout(true);
-    }
-
-
-    public static JMLPattern optimize(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
-        Optimizer opt = new Optimizer(pat);
-
-        //opt.doOptimizationGradient();
-        //opt.doOptimizationSVD();
-        //opt.doOptimizationLP();
-        boolean success = opt.doOptimizationMILP();
-
-        if (success)
-            opt.updatePattern();
-
-        return pat;
     }
 }
