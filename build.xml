@@ -36,13 +36,14 @@
         </javac>
     </target>
 
-    <!-- This target is the main Juggling Lab jar file -->
+    <!-- Build the main Juggling Lab jar file (default action) -->
+
     <target name="jar" depends="compile">
         <jar index="yes" destfile="${bin}/JugglingLab.jar">
             <manifest>
                 <attribute name="Main-Class" value="jugglinglab.JugglingLab" />
             </manifest>
-            <fileset dir="${build}" excludes="jugglinglab/MacOS/*,gifwriter/*,jugglinglab/MacOS" />
+            <fileset dir="${build}" excludes="gifwriter/*" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}/resources" includes="*.au" />
@@ -51,6 +52,7 @@
     </target>
 
     <!-- Clean up -->
+
     <target name="clean" description="Remove build directory">
         <delete dir="${build}" />
         <delete file="${bin}/JugglingLab.jar" />
@@ -58,6 +60,7 @@
     </target>
 
     <!-- Run the application -->
+
     <target name="run" depends="jar" description="Run the application">
         <java classname="jugglinglab.JugglingLab" fork="true" classpathref="master-classpath">
             <sysproperty key="java.library.path" path="${lib}" />
@@ -66,6 +69,7 @@
     </target>
 
     <!-- Build the Mac OS X application -->
+
     <target name="fxjar" depends="compile">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
@@ -77,7 +81,7 @@
                 <fx:fileset dir="${lib}" includes="*.jar"/>
             </fx:resources>
 
-            <fileset dir="${build}" excludes="jugglinglab/MacOS/*,gifwriter/*,jugglinglab/MacOS" />
+            <fileset dir="${build}" excludes="gifwriter/*" />
             <fileset dir="${src}/resources" includes="GUIStrings*" />
             <fileset dir="${src}/resources" includes="ErrorStrings*" />
             <fileset dir="${src}/resources" includes="*.au" />
@@ -125,68 +129,6 @@
                 <fx:property name="JL_run_as_bundle" value="true" />
             </fx:platform>
         </fx:deploy>
-    </target>
-
-
-    <!-- UNUSED BELOW -->
-
-    <!-- This target executes only if invoked with something like 'ant signjar -Dkeystore=keystorepath -Dstorepass=password' -->
-    <target name="signjar" if="storepass,keystore" depends="jar">
-        <signjar jar="${bin}/JugglingLab.jar" signedjar="${bin}/SignedJugglingLab.jar" alias="jlkey" keystore="${keystore}" storepass="${storepass}" />
-    </target>
-
-    <!-- Old terget to build the Windows executables using launch4j -->
-    <!-- This is no longer the preferred method since the JRE is not bundled. -->
-    <target name="exe_old" depends="jar" description="Make Windows executables">
-        <property name="launch4j.dir" location="../launch4j" />
-        <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-        <launch4j configFile="./source/resources_win/Juggling Lab.xml" />
-        <launch4j configFile="./source/resources_win/j2.xml" />
-    </target>
-
-    <!-- Old target to build a Mac OS X application -->
-    <!-- This is no longer the preferred method since the JRE is not bundled. -->
-    <target name="osx_old" depends="compile" description="Make a double-clickable Mac OS X application">
-        <property name="resources_macosx" location="${src}/resources_osx" />
-        <property name="apple.appstub" location="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
-        <property name="application" location="./Juggling Lab.app" />
-        <property name="application.macos" location="${application}/Contents/MacOS" />
-        <property name="application.macos.stub" location="${application}/Contents/MacOS/Juggling Lab" />
-        <property name="application.resources" location="${application}/Contents/Resources" />
-        <property name="application.resources.java" location="${application}/Contents/Resources/Java" />
-
-        <javac debug="${debug}" srcdir="${src}/." destdir="${build}/." target="1.5" source="1.5"
-        deprecation="yes" includeAntRuntime="false" includes="jugglinglab/MacOS/*.java" />
-
-        <mkdir dir="${application.resources.java}" />
-        <mkdir dir="${application.macos}" />
-        <!-- put jar into application -->
-        <jar index="yes" destfile="${application.resources.java}/JugglingLab.jar">
-            <manifest>
-                <attribute name="Main-Class" value="JugglingLab" />
-            </manifest>
-            <fileset dir="${build}" excludes="Organizer*" />
-            <fileset dir="${src}/resources" includes="GUIStrings*" />
-            <fileset dir="${src}/resources" includes="ErrorStrings*" />
-            <fileset dir="${src}" includes="resources/*.au" />
-            <fileset dir="${src}" includes="resources/*.png" />
-        </jar>
-        <!-- copy application stub -->
-        <copy file="${apple.appstub}" toFile="${application.macos}/Juggling Lab" />
-        <!-- fix stub permissions -->
-        <exec executable="/bin/chmod">
-            <arg line="755 '${application.macos.stub}'" />
-        </exec>
-        <!-- copy Info.plist -->
-        <copy file="${resources_macosx}/Info.plist" toFile="${application}/Contents/Info.plist" />
-        <!-- copy PkgInfo -->
-        <copy file="${resources_macosx}/PkgInfo" toFile="${application}/Contents/PkgInfo" />
-        <!-- copy icons -->
-        <copy toDir="${application.resources}">
-            <fileset dir="${resources_macosx}">
-                <include name="*.icns" />
-            </fileset>
-        </copy>
     </target>
 
 </project>

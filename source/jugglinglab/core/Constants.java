@@ -1,12 +1,12 @@
 // Constants.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
 public class Constants {
-    public static final String version = "1.2.1";
-    public static final String year = "2019";
+    public static final String version = "1.3";
+    public static final String year = "2020";
 
     public static final String site_URL = "http://jugglinglab.org";
     public static final String download_URL = "https://jugglinglab.org/#download";
