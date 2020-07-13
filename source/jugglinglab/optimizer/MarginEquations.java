@@ -146,14 +146,14 @@ public class MarginEquations {
             this.varsValues[i] = coord.x;
             // optimization won't move events to the other side of the body
             if (this.varsValues[i] > 0.0) {
-                this.varsMin[i] = 0.0;
+                this.varsMin[i] = 0.1 * maxValue;
                 this.varsMax[i] = maxValue;
 
                 if (type == JMLTransition.TRANS_THROW)
                     this.varsMax[i] *= 0.9;
             } else {
                 this.varsMin[i] = -maxValue;
-                this.varsMax[i] = 0.0;
+                this.varsMax[i] = -0.1 * maxValue;
 
                 if (type == JMLTransition.TRANS_THROW)
                     this.varsMin[i] *= 0.9;

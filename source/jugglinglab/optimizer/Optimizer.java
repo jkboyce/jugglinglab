@@ -15,8 +15,13 @@ import jugglinglab.core.Constants;
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
-// Class that optimizes a JMLPattern by adjusting the throw and catch
-// positions to maximize the angular throwing margin of error in the pattern.
+
+// Class that optimizes a JMLPattern by maximizing the allowed margin of error
+// in throwing angle. (Maximize the minimum margin of error across all throws
+// in the pattern.)
+//
+// It does this by adjusting the throw and catch positions, leaving throw and
+// catch times unchanged.
 
 public class Optimizer {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
