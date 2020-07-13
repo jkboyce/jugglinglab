@@ -8,7 +8,7 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is written in Java 8 and uses standard Swing components so it runs anywhere Java 8 SE is available. The ``build.xml`` file defines Ant build targets for a variety of uses: A runnable JAR file, or standalone app bundles for Windows and Mac OS X.
+Juggling Lab is written in Java 8 and uses standard Swing components so it runs anywhere Java 8 SE is available. The ``build.xml`` file defines Ant build targets for a variety of uses: A runnable JAR file, or standalone app bundles for Windows and macOS.
 
 Please feel free to clone the repository and play around with it. Even better, contribute a bug fix or a new feature!
 
