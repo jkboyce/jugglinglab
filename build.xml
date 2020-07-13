@@ -10,7 +10,7 @@
     <property name="lib" value="bin/ortools-lib" />
     <property name="debug" value="off" />
     <property name="deprecation" value="on" />
-    <property name="javafx_ant_jar.osx" value="${java.home}/../lib/ant-javafx.jar" />
+    <property name="javafx_ant_jar.mac" value="${java.home}/../lib/ant-javafx.jar" />
     <property name="javafx_ant_jar.win" value="${java.home}/../lib/ant-javafx.jar" />
     <property name="packaging_resources" value="${src}/resources" />
     <property name="jlab_version" value="1.3" />
@@ -29,7 +29,7 @@
         <javac debug="${debug}" srcdir="${src}/." destdir="${build}/."
             target="1.8" source="1.8" deprecation="${deprecation}"
             includeAntRuntime="false" includes="**"
-            excludes="jugglinglab/MacOS/*,gifwriter/*,resources/*,jugglinglab/notation/*.jj">
+            excludes="gifwriter/*,resources/*,jugglinglab/notation/*.jj">
             <classpath refid="master-classpath" />
             <compilerarg value="-Xlint:-options"/>
             <compilerarg value="-Xlint:unchecked"/>
@@ -68,12 +68,12 @@
         </java>
     </target>
 
-    <!-- Build the Mac OS X application -->
+    <!-- Build the macOS application -->
 
-    <target name="fxjar" depends="compile">
+    <target name="fxjar_mac" depends="compile">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
-                 classpath="${packaging_resources}:${javafx_ant_jar.osx}" />
+                 classpath="${packaging_resources}:${javafx_ant_jar.mac}" />
         <fx:jar destfile="${bin}/JugglingLab_fx.jar">
             <fx:application name="Juggling Lab" mainClass="jugglinglab.JugglingLab" />
 
@@ -89,10 +89,10 @@
         </fx:jar>
     </target>
 
-    <target name="osx" depends="fxjar" description="Build OS X application">
+    <target name="mac" depends="fxjar_mac" description="Build macOS application">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
-                 classpath="${packaging_resources}:${javafx_ant_jar.osx}" />
+                 classpath="${packaging_resources}:${javafx_ant_jar.mac}" />
         <fx:deploy width="600" height="400" verbose="true" nativeBundles="dmg" outdir="./packages" outfile="Juggling Lab">
             <fx:application name="Juggling Lab" version="${jlab_version}" mainClass="jugglinglab.JugglingLab" />
             <fx:resources>
@@ -114,7 +114,26 @@
          https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/javafx_ant_task_reference.html -->
     <!-- For installer configuration in Juggling Lab.iss see:
          http://www.jrsoftware.org/ishelp/index.php?topic=setup_disabledirpage -->
-    <target name="exe" depends="jar" description="Build Windows installer exe">
+    <target name="fxjar_win" depends="compile">
+        <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+                 uri="javafx:com.sun.javafx.tools.ant"
+                 classpath="${packaging_resources}:${javafx_ant_jar.win}" />
+        <fx:jar destfile="${bin}/JugglingLab_fx.jar">
+            <fx:application name="Juggling Lab" mainClass="jugglinglab.JugglingLab" />
+
+            <fx:resources>
+                <fx:fileset dir="${lib}" includes="*.jar"/>
+            </fx:resources>
+
+            <fileset dir="${build}" excludes="gifwriter/*" />
+            <fileset dir="${src}/resources" includes="GUIStrings*" />
+            <fileset dir="${src}/resources" includes="ErrorStrings*" />
+            <fileset dir="${src}/resources" includes="*.au" />
+            <fileset dir="${src}/resources" includes="*.png" />
+        </fx:jar>
+    </target>
+
+    <target name="win" depends="fxjar_win" description="Build Windows installer exe">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
                  uri="javafx:com.sun.javafx.tools.ant"
                  classpath="${packaging_resources}:${javafx_ant_jar.win}" />
@@ -122,10 +141,13 @@
             <fx:application name="Juggling Lab" version="${jlab_version}" mainClass="jugglinglab.JugglingLab" />
             <fx:preferences shortcut="true" menu="true" install="true" />
             <fx:resources>
-                <fx:fileset dir="${bin}" includes="JugglingLab.jar" />
+                <fx:fileset dir="${bin}" includes="JugglingLab_fx.jar" />
+                <fx:fileset dir="${lib}" includes="*.jar" />
+                <fx:fileset dir="${lib}" />
             </fx:resources>
             <!-- set a Java property the code can use to tell it's running as a bundled app: -->
             <fx:platform>
+                <fx:jvmarg value="-Xss2048k" />
                 <fx:property name="JL_run_as_bundle" value="true" />
             </fx:platform>
         </fx:deploy>

@@ -2,8 +2,8 @@
 ;I.e. current directory will contain folder Juggling Lab with application files
 
 #define MyAppName "Juggling Lab"
-#define MyAppVersion "1.2.1"
-#define MyAppYear "2019"
+#define MyAppVersion "1.3"
+#define MyAppYear "2020"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
 #define MyWizardImageFileName "Juggling Lab-setup-icon.bmp"
