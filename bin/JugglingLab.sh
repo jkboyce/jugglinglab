@@ -35,7 +35,7 @@ fi
 JL_JAR="${DIR}/JugglingLab.jar"
 
 if [ -a "${JL_JAR}" ]; then
-    "$_java" -cp "${JL_JAR}:${DIR}/commons-math3-3.6.1.jar" jugglinglab.JugglingLab
+    "$_java" -cp "${JL_JAR}:ortools-lib/protobuf.jar:ortools-lib/com.google.ortools.jar" -Xss2048k -Djava.library.path=ortools-lib jugglinglab.JugglingLab
 else
     echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
     exit 1
