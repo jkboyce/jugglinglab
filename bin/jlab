@@ -10,7 +10,7 @@ DIR=$(dirname "$0")
 export JL_WORKING_DIR="`pwd`"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # running on Mac OS X; launch using executable in application bundle
+    # running on macOS; launch using executable in application bundle
     OSX_JL_EXEC="${DIR}/Juggling Lab.app/Contents/MacOS/Juggling Lab"
 
     if [[ -x "${OSX_JL_EXEC}" ]]; then
