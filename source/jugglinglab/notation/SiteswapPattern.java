@@ -1,12 +1,13 @@
 // SiteswapPattern.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
 import java.util.ArrayList;
 import java.text.MessageFormat;
 
+import jugglinglab.core.Constants;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
@@ -42,7 +43,7 @@ public class SiteswapPattern extends MHNPattern {
                                 JuggleExceptionUser, JuggleExceptionInternal {
         super.fromParameters(pl);
 
-        pattern = JLFunc.expandRepeats(pattern);
+        // pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
 
         // see if we need to repeat the pattern to match hand or body periods:
@@ -67,8 +68,9 @@ public class SiteswapPattern extends MHNPattern {
 
             if (totalperiod != patperiod) {
                 int repeats = totalperiod / patperiod;
-                pattern = "(" + pattern + ")^" + repeats;
-                pattern = JLFunc.expandRepeats(pattern);
+                pattern = "(" + pattern + "^" + repeats + ")";
+                // pattern = "(" + pattern + ")^" + repeats;
+                // pattern = JLFunc.expandRepeats(pattern);
                 parseSiteswapNotation();
             }
         }
@@ -100,17 +102,23 @@ public class SiteswapPattern extends MHNPattern {
         SiteswapTreeItem tree = null;
 
         try {
-            // System.out.println("---------------");
-            // System.out.println("Parsing pattern \"" + pattern + "\"");
+            if (Constants.DEBUG_PARSING) {
+                System.out.println("---------------");
+                System.out.println("Parsing pattern \"" + pattern + "\"");
+            }
             tree = SiteswapParser.parsePattern(pattern);
-            // System.out.println("");
-            // System.out.println(tree.toString());
+            if (Constants.DEBUG_PARSING) {
+                System.out.println("");
+                System.out.println(tree.toString());
+            }
         } catch (ParseException pe) {
-            // System.out.println("---------------");
-            // System.out.println("Parse error:");
-            // System.out.println(pe.getMessage());
-            // System.out.println(pe.currentToken);
-            // System.out.println("---------------");
+            if (Constants.DEBUG_PARSING) {
+                System.out.println("---------------");
+                System.out.println("Parse error:");
+                System.out.println(pe.getMessage());
+                System.out.println(pe.currentToken);
+                System.out.println("---------------");
+            }
 
             if (pe.currentToken == null) {
                 String template = errorstrings.getString("Error_pattern_parsing");
@@ -129,7 +137,7 @@ public class SiteswapPattern extends MHNPattern {
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
 
-        // Need to use tree to fill in MHNPattern internal variables:
+        // Use tree to fill in MHNPattern internal variables:
         /*
         protected int numjugglers;
         protected int numpaths;
@@ -154,13 +162,11 @@ public class SiteswapPattern extends MHNPattern {
         tree.beatnum = 0;
         doFirstPass(tree);
 
-        if (!tree.switchrepeat) {
-            if (tree.vanilla_async && tree.beats % 2 == 1) {
-                tree.switchrepeat = true;
-                tree.beats *= 2;
-                tree.throw_sum *= 2;
-                this.oddperiod = true;
-            }
+        if (!tree.switchrepeat && tree.vanilla_async && tree.beats % 2 == 1) {
+            tree.switchrepeat = true;
+            tree.beats *= 2;
+            tree.throw_sum *= 2;
+            this.oddperiod = true;
         }
 
         this.period = tree.beats;
@@ -170,10 +176,10 @@ public class SiteswapPattern extends MHNPattern {
         this.indexes = this.max_throw + this.period + 1;
         this.th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
 
-        /*
-        System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
+        if (Constants.DEBUG_PARSING) {
+            System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
                             max_throw+", max_occupancy = "+max_occupancy);
-        */
+        }
 
         doSecondPass(tree, false, 0);
 
@@ -339,6 +345,9 @@ public class SiteswapPattern extends MHNPattern {
                 break;
             case SiteswapTreeItem.TYPE_GROUPED_PATTERN:
                 // Contains only a Pattern type (single child)
+                if (sti.repeats > 20)
+                    throw new JuggleExceptionUser("Grouped repeats cannot exceed 20");
+
                 child = sti.getChild(0);
                 if (sti.getNumberOfChildren() > 1) {
                     sti.removeChildren();
