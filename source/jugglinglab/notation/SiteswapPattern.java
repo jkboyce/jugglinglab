@@ -83,7 +83,7 @@ public class SiteswapPattern extends MHNPattern {
         if (title != null)
             result.setTitle(title);
 
-        if (jugglinglab.core.Constants.DEBUG_LAYOUT)
+        if (Constants.DEBUG_LAYOUT)
             System.out.println(result);
 
         return result;
@@ -223,7 +223,9 @@ public class SiteswapPattern extends MHNPattern {
     // 6)  Resolve wildcards
 
     // What we need to evaluate wildcards:
-    //
+    // - state just before wildcard
+    // - target state just after wildcard
+
     boolean[] right_on_even;    // async throws on even beat numbers made with right hand?
 
     protected void doFirstPass(SiteswapTreeItem sti) throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -345,8 +347,11 @@ public class SiteswapPattern extends MHNPattern {
                 break;
             case SiteswapTreeItem.TYPE_GROUPED_PATTERN:
                 // Contains only a Pattern type (single child)
+
+                /*
                 if (sti.repeats > 20)
                     throw new JuggleExceptionUser("Grouped repeats cannot exceed 20");
+                */
 
                 child = sti.getChild(0);
                 if (sti.getNumberOfChildren() > 1) {
