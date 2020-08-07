@@ -13,7 +13,7 @@ public class Constants {
     public static final String help_URL = "https://jugglinglab.org/#help";
 
     public static final boolean DEBUG_LAYOUT = false;
-    public static final boolean DEBUG_PARSING = false;
+    public static final boolean DEBUG_PARSING = true;
     public static final boolean DEBUG_OPTIMIZE = false;
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
