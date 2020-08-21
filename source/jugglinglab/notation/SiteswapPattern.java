@@ -19,7 +19,6 @@ import jugglinglab.optimizer.*;
 // the internal format used by MHNPattern.
 
 public class SiteswapPattern extends MHNPattern {
-    protected String title;
     protected boolean oddperiod = false;
 
     @Override
@@ -28,7 +27,7 @@ public class SiteswapPattern extends MHNPattern {
     }
 
     @Override
-    public Pattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public SiteswapPattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (config.indexOf((int)'=') == -1)         // just the pattern
             config = "pattern=" + config;
 
@@ -39,7 +38,7 @@ public class SiteswapPattern extends MHNPattern {
     }
 
     @Override
-    public Pattern fromParameters(ParameterList pl) throws
+    public SiteswapPattern fromParameters(ParameterList pl) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
         super.fromParameters(pl);
 
@@ -74,19 +73,10 @@ public class SiteswapPattern extends MHNPattern {
                 parseSiteswapNotation();
             }
         }
+
+        super.buildRepresentation();
+
         return this;
-    }
-
-    @Override
-    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
-        JMLPattern result = super.asJMLPattern();
-        if (title != null)
-            result.setTitle(title);
-
-        if (Constants.DEBUG_LAYOUT)
-            System.out.println(result);
-
-        return result;
     }
 
     // only works after parseSiteswapNotation() is called:
@@ -94,6 +84,9 @@ public class SiteswapPattern extends MHNPattern {
         return (oddperiod ? getPeriod() / 2 : getPeriod());
     }
 
+    //--------------------------------------------------------------------------
+    // Parse siteswap notation into the MHNPattern data structures
+    //--------------------------------------------------------------------------
 
     protected void parseSiteswapNotation() throws JuggleExceptionUser, JuggleExceptionInternal {
         // first clear out the internal variables
@@ -152,7 +145,7 @@ public class SiteswapPattern extends MHNPattern {
         */
 
         this.numjugglers = tree.jugglers;
-        this.max_occupancy = 0;         // calculated in doFirstPass()
+        this.max_occupancy = 0;  // calculated in doFirstPass()
         this.max_throw = 0;
 
         this.right_on_even = new boolean[this.numjugglers];
@@ -197,22 +190,6 @@ public class SiteswapPattern extends MHNPattern {
             throw new JuggleExceptionUser(errorstrings.getString("Error_jugglers_body"));
     }
 
-    // The following are methods used to find transitions between patterns
-
-    // First item in array argument is assumed to be a GroupedPattern type
-    protected int[][] findExitState(SiteswapTreeItem[] item) {
-        return null;
-    }
-
-    // Last item in array argument is assumed to be a GroupedPattern type
-    protected int[][] findEntranceState(SiteswapTreeItem[] item) {
-        return null;
-    }
-
-    protected SiteswapTreeItem findShortestTransition(int[][] start, int[][] end, int minbeats, boolean evenbeats) {
-        return null;
-    }
-
 
     // First pass through the tree:
     // 1)  Assign hands to "Single Throw" types
@@ -220,11 +197,7 @@ public class SiteswapPattern extends MHNPattern {
     // 3)  Calculate sti.beats for Pattern and GroupedPattern types
     // 4)  Determine absolute beat numbers for each throw
     // 5)  Calculate max_throw, period, numpaths, and max_occupancy
-    // 6)  Resolve wildcards
-
-    // What we need to evaluate wildcards:
-    // - state just before wildcard
-    // - target state just after wildcard
+    // 6)  Resolve wildcards (not implemented)
 
     boolean[] right_on_even;    // async throws on even beat numbers made with right hand?
 
@@ -243,6 +216,7 @@ public class SiteswapPattern extends MHNPattern {
                     child = sti.getChild(i);
                     child.beatnum = sti.beatnum + sti.beats;
 
+                    /*
                     if (child.type == SiteswapTreeItem.TYPE_WILDCARD) {
                         // resolve this wildcard by finding a suitable transition sequence
 
@@ -281,14 +255,13 @@ public class SiteswapPattern extends MHNPattern {
                         for (int j = 0; index < sti.getNumberOfChildren(); j++, index++)
                             item2[j] = item[index];
                         for (int j = item2.length; j >= 0; j--) {
-                            /*  Need to assign beatnum to items in item2[]
+                            //  Need to assign beatnum to items in item2[]
 
-                                beatsum += c.beats;
-                                c.beatnum = sti.beat - beatsum;
-                                doFirstPass(c);     // make sure child has hands assigned
-                            */
+                            //  beatsum += c.beats;
+                            //  c.beatnum = sti.beat - beatsum;
+                            //  doFirstPass(c);     // make sure child has hands assigned
                         }
-                        int[][] start_state = findExitState(item2);
+                        // int[][] start_state = findExitState(item2);
 
                         // Next find the pattern state we need to end up at.  Two cases: even number of transition beats, and odd.
                         index = 0;
@@ -322,18 +295,18 @@ public class SiteswapPattern extends MHNPattern {
 
                         for (int transition_beats = 0; transition_beats < 2; transition_beats++) {
                             for (int j = 0; j < item2.length; j++) {
-                                /*  Need to assign beatnum to items in item2[]
+                                //  Need to assign beatnum to items in item2[]
 
-                                    beatsum += c.beats;
-                                    c.beatnum = sti.beat - beatsum;
-                                    doFirstPass(c);     // make sure child has hands assigned
-                                */
+                                //    beatsum += c.beats;
+                                //    c.beatnum = sti.beat - beatsum;
+                                //    doFirstPass(c);     // make sure child has hands assigned
                             }
                             int[][] finish_state = findEntranceState(item2);
 
                             // Rest of stuff goes here (find transition, fill in child.transition)
                         }
                     }
+                    */
 
                     doFirstPass(child);
                     sti.beats += child.beats;
@@ -492,6 +465,7 @@ public class SiteswapPattern extends MHNPattern {
 
     // Second pass through the tree:
     // 1)  Fill in the th[] array with MHNThrow objects
+
     protected void doSecondPass(SiteswapTreeItem sti, boolean switchhands, int beatoffset)
                                             throws JuggleExceptionUser {
         SiteswapTreeItem child = null;

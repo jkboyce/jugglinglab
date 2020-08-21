@@ -4,6 +4,8 @@
 
 package jugglinglab.util;
 
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -171,5 +173,24 @@ public class JLFunc {
         }
 
         return result.substring(0, endpos);
+    }
+
+    public static GridBagConstraints constraints(int location, int gridx, int gridy) {
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.anchor = location;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridheight = gbc.gridwidth = 1;
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
+        gbc.weightx = gbc.weighty = 0.0;
+        return gbc;
+    }
+
+    public static GridBagConstraints constraints(int location, int gridx, int gridy,
+                                                         Insets ins) {
+        GridBagConstraints gbc = constraints(location, gridx, gridy);
+        gbc.insets = ins;
+        return gbc;
     }
 }

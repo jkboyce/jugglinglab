@@ -1,6 +1,6 @@
 // ApplicationWindow.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -18,6 +18,13 @@ import jugglinglab.notation.*;
 import jugglinglab.util.*;
 
 
+// This is the main application window visible when Juggling Lab is launched
+// as an application. The contents of the window are split into a different
+// class (ApplicationPanel).
+//
+// Currently only a single notation (siteswap) is included with Juggling Lab
+// so the notation menu is suppressed.
+
 public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
@@ -25,38 +32,21 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     public ApplicationWindow(String title) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
         super(title);
-        NotationGUI ng = new NotationGUI(this);
+        createMenus();
 
-        JMenuBar mb = new JMenuBar();
-        JMenu filemenu = createFileMenu();
-        mb.add(filemenu);
-        JMenu notationmenu = ng.createNotationMenu();
-        if (Pattern.builtinNotations.length > 1)
-            mb.add(notationmenu);
-        JMenu helpmenu = createHelpMenu();
-        if (helpmenu != null)
-            mb.add(helpmenu);
-        setJMenuBar(mb);
-
+        // this does nothing (for now):
         PlatformSpecific.getPlatformSpecific().registerParent(this);
         PlatformSpecific.getPlatformSpecific().setupPlatform();
 
+        ApplicationPanel ap = new ApplicationPanel(this);
+        ap.setDoubleBuffered(true);
+        setBackground(new Color(0.9f, 0.9f, 0.9f));
+        setContentPane(ap);  // entire contents of window
+
+        // does the real work of adding controls etc.
+        ap.setNotation(Pattern.NOTATION_SITESWAP);
+
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        ng.setDoubleBuffered(true);
-        this.setBackground(new Color(0.9f, 0.9f, 0.9f));
-        setContentPane(ng);
-        ng.setNotation(Pattern.NOTATION_SITESWAP);
-
-        Locale loc = JLLocale.getLocale();
-        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-
-        // make siteswap notation the default
-        notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true);
-        pack();
-        setResizable(false);
-        setLocation(100, 50);
-        setVisible(true);
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -68,8 +58,35 @@ public class ApplicationWindow extends JFrame implements ActionListener {
             }
         });
 
+        Locale loc = JLLocale.getLocale();
+        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
+        pack();
+        setResizable(false);
+        setLocation(100, 50);
+        setVisible(true);
+
         // launch a background thread to check for updates online
         new UpdateChecker();
+    }
+
+    protected void createMenus() {
+        JMenuBar mb = new JMenuBar();
+
+        mb.add(createFileMenu());
+
+        if (Pattern.builtinNotations.length > 1) {
+            JMenu notationmenu = createNotationMenu();
+            mb.add(notationmenu);
+            // make siteswap notation the default selection
+            notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true);
+        }
+
+        JMenu helpmenu = createHelpMenu();
+        if (helpmenu != null)
+            mb.add(helpmenu);
+
+        setJMenuBar(mb);
     }
 
     protected static final String[] fileItems = new String[]
@@ -101,6 +118,21 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         return filemenu;
     }
 
+    protected JMenu createNotationMenu() {
+        JMenu notationmenu = new JMenu(guistrings.getString("Notation"));
+        ButtonGroup buttonGroup = new ButtonGroup();
+
+        for (int i = 0; i < Pattern.builtinNotations.length; i++) {
+            JRadioButtonMenuItem notationitem = new JRadioButtonMenuItem(Pattern.builtinNotations[i]);
+            notationitem.setActionCommand("notation"+(i+1));
+            notationitem.addActionListener(this);
+            notationmenu.add(notationitem);
+            buttonGroup.add(notationitem);
+        }
+
+        return notationmenu;
+    }
+
     protected static final String[] helpItems = new String[]
         { "About Juggling Lab", "Juggling Lab Online Help" };
     protected static final String[] helpCommands = new String[]
@@ -108,8 +140,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     protected JMenu createHelpMenu() {
         // When we move to Java 9+ we can use Desktop.setAboutHandler() here to
-        // do the about box in a more platform-realistic way. For now it's just a
-        // regular menu item.
+        // do the about box in a more platform-realistic way. For now it's just
+        // a regular menu item.
         boolean include_about = true;
 
         JMenu helpmenu = new JMenu(guistrings.getString("Help"));
@@ -288,7 +320,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JLabel abouttext1 = new JLabel("Juggling Lab");
         abouttext1.setFont(new Font("SansSerif", Font.BOLD, 18));
         textPanel.add(abouttext1);
-        gb.setConstraints(abouttext1, make_constraints(GridBagConstraints.LINE_START,0,0,
+        gb.setConstraints(abouttext1, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
                                                        new Insets(15,15,0,15)));
 
         String template = guistrings.getString("Version");
@@ -296,7 +328,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
         abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 16));
         textPanel.add(abouttext5);
-        gb.setConstraints(abouttext5, make_constraints(GridBagConstraints.LINE_START,0,1,
+        gb.setConstraints(abouttext5, JLFunc.constraints(GridBagConstraints.LINE_START,0,1,
                                                        new Insets(0,15,0,15)));
 
         String template2 = guistrings.getString("Copyright_message");
@@ -304,18 +336,18 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
         abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext6);
-        gb.setConstraints(abouttext6, make_constraints(GridBagConstraints.LINE_START,0,2,
+        gb.setConstraints(abouttext6, JLFunc.constraints(GridBagConstraints.LINE_START,0,2,
                                                        new Insets(15,15,15,15)));
 
         JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
         abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 14));
         textPanel.add(abouttext3);
-        gb.setConstraints(abouttext3, make_constraints(GridBagConstraints.LINE_START,0,3,
+        gb.setConstraints(abouttext3, JLFunc.constraints(GridBagConstraints.LINE_START,0,3,
                                                        new Insets(0,15,0,15)));
 
         JButton okbutton = new JButton(guistrings.getString("OK"));
         textPanel.add(okbutton);
-        gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,4,
+        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END,0,4,
                                                      new Insets(15,15,15,15)));
         okbutton.addActionListener(new ActionListener() {
             @Override
@@ -334,19 +366,5 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         aboutBox.setResizable(false);
         aboutBox.setLocationRelativeTo(null);    // center frame on screen
         aboutBox.setVisible(true);
-    }
-
-
-    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.anchor = location;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.gridheight = gbc.gridwidth = 1;
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.insets = ins;
-        gbc.weightx = gbc.weighty = 0.0;
-        return gbc;
     }
 }

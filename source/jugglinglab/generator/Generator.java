@@ -37,7 +37,7 @@ public abstract class Generator {
         for (i = 0; i < numargs; i++)
             args[i] = st.nextToken();
 
-        this.initGenerator(args);
+        initGenerator(args);
     }
 
     // return the notation name
@@ -46,7 +46,7 @@ public abstract class Generator {
     // return a startup text message
     public abstract String getStartupMessage();
 
-    // return a JPanel to be used by NotationGUI in the UI
+    // return a JPanel to be used by ApplicationPanel in the UI
     public abstract JPanel getGeneratorControl();
 
     // reset control values to defaults

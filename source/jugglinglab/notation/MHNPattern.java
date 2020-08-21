@@ -1,6 +1,6 @@
 // MHNPattern.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
@@ -17,8 +17,8 @@ import jugglinglab.jml.*;
 // transitions between elements in this matrix.
 //
 // MHN has no standardized string (textual) representation. Hence this class is
-// abstract because it lacks a fromString() method. This is however useful as a
-// building block for other notations. Most importantly we model siteswap notation
+// abstract because it lacks a fromString() method. It is however useful as a
+// building block for other notations. For example we model siteswap notation
 // as a type of MHN, with a parser to interpret siteswap notation into the
 // internal MHN matrix representation.
 //
@@ -27,7 +27,7 @@ import jugglinglab.jml.*;
 // avoid duplicating this functionality.
 
 public abstract class MHNPattern extends Pattern {
-    protected static double bps_default = -1.0; // calculate bps
+    protected static double bps_default = -1.0;  // calculate bps
     protected static double dwell_default = 1.3;
     protected static double gravity_default = 980.0;
     protected static double propdiam_default = 10.0;
@@ -63,23 +63,23 @@ public abstract class MHNPattern extends Pattern {
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
 
-    protected int getNumberOfJugglers()         { return numjugglers; }
-    protected int getNumberOfPaths()            { return numpaths; }
-    protected int getPeriod()                   { return period; }
-    protected int getIndexes()                  { return indexes; }
-    protected int getMaxOccupancy()             { return max_occupancy; }
-    protected int getMaxThrow()                 { return max_throw; }
-    protected MHNThrow[][][][] getThrows()      { return th; }
-    protected int getNumberOfSymmetries()       { return symmetry.size(); }
-    protected String getPropName()              { return prop; }
-    protected void addSymmetry(MHNSymmetry ss)  { symmetry.add(ss); }
-    protected MHNSymmetry getSymmetry(int i)    { return symmetry.get(i); }
+    public int getNumberOfJugglers()         { return numjugglers; }
+    public int getNumberOfPaths()            { return numpaths; }
+    public int getPeriod()                   { return period; }
+    public int getIndexes()                  { return indexes; }
+    public int getMaxOccupancy()             { return max_occupancy; }
+    public int getMaxThrow()                 { return max_throw; }
+    public MHNThrow[][][][] getThrows()      { return th; }
+    public int getNumberOfSymmetries()       { return symmetry.size(); }
+    public String getPropName()              { return prop; }
+    public void addSymmetry(MHNSymmetry ss)  { symmetry.add(ss); }
+    public MHNSymmetry getSymmetry(int i)    { return symmetry.get(i); }
 
 
     // pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
     @Override
-    public Pattern fromParameters(ParameterList pl) throws
+    public MHNPattern fromParameters(ParameterList pl) throws
                                     JuggleExceptionUser, JuggleExceptionInternal {
         this.config = pl.toString();                // save for toString()
 
@@ -170,9 +170,11 @@ public abstract class MHNPattern extends Pattern {
                 }
             }
         }
+
         if ((temp = pl.removeParameter("title")) != null) {
             this.title = temp.trim();
         }
+
         return this;
     }
 
@@ -203,20 +205,27 @@ public abstract class MHNPattern extends Pattern {
     }
 
     //--------------------------------------------------------------------------
-    // Convert from internal representation to JML
+    // Build out internal representation from parsed pattern
     //--------------------------------------------------------------------------
 
-    @Override
-    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
-        // build out the JML pattern in a series of steps:
+    protected void buildRepresentation() throws JuggleExceptionUser, JuggleExceptionInternal {
+        // build out the internal pattern representation in steps
+        //
+        // this will find and raise any errors in the pattern
         findMasterThrows();
         assignPaths();
         findThrowSources();
         setCatchOrder();
-        JMLPattern pat = convertPatternToJML();
-        if (this.title != null)
-            pat.setTitle(title);
-        return pat;
+
+        if (Constants.DEBUG_LAYOUT) {
+            String s = getInternalRepresentation();
+            if (s != null) {
+                System.out.println("-----------------------------------------------------");
+                System.out.println("Internal MHNPattern representation:\n");
+                System.out.println(s);
+                System.out.println("-----------------------------------------------------");
+            }
+        }
     }
 
     protected void findMasterThrows() throws JuggleExceptionInternal {
@@ -291,7 +300,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_LAYOUT) {
             for (int i = 0; i < indexes; i++) {
                 for (int j = 0; j < numjugglers; j++) {
                     for (int h = 0; h < 2; h++) {
@@ -387,7 +396,7 @@ public abstract class MHNPattern extends Pattern {
                             if (filler == null) {
                                 if (currentpath > numpaths) {
 
-                                    if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
+                                    if (Constants.DEBUG_LAYOUT) {
                                         System.out.println("j="+j+", h="+h+", index="+i+", slot="+slot+"\n");
                                         System.out.println("---------------------------");
                                         for (int tempi = 0; tempi <= i; tempi++) {
@@ -573,6 +582,70 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
+    // dump the internal state of the pattern to a string; intended to be used
+    // for debugging
+    protected String getInternalRepresentation() {
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("numjugglers = " + getNumberOfJugglers() + "\n");
+        sb.append("numpaths = " + getNumberOfPaths() + "\n");
+        sb.append("period = " + getPeriod() + "\n");
+        sb.append("max_occupancy = " + getMaxOccupancy() + "\n");
+        sb.append("max_throw = " + getMaxThrow() + "\n");
+        sb.append("indexes = " + getIndexes() + "\n");
+        sb.append("throws:\n");
+
+        for (int i = 0; i < getIndexes(); ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int s = 0; s < getMaxOccupancy(); ++s) {
+                        sb.append("  th[" + j + "][" + h + "][" + i + "][" + s + "] = ");
+                        MHNThrow mhnt = th[j][h][i][s];
+                        if (mhnt == null)
+                            sb.append("null\n");
+                        else
+                            sb.append(mhnt.toString() + "\n");
+                    }
+                }
+            }
+        }
+
+        sb.append("symmetries:\n");  // not finished
+        sb.append("hands:\n");
+        sb.append("bodies:\n");
+
+        return sb.toString();
+    }
+
+    // returns the pattern's starting state
+    //
+    // result is a matrix of dimension (jugglers) x 2 x (indexes), with values
+    // between 0 and (max_occupancy) inclusive
+    public int[][][] getStartingState(int indexes) {
+        int[][][] result = new int[getNumberOfJugglers()][2][indexes];
+
+        for (int i = getPeriod(); i < getIndexes(); ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int s = 0; s < getMaxOccupancy(); ++s) {
+                        MHNThrow mhnt = th[j][h][i][s];
+
+                        if (mhnt != null && mhnt.source.index < getPeriod()) {
+                            if ((i - getPeriod()) < indexes)
+                                result[j][h][i - getPeriod()]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    //--------------------------------------------------------------------------
+    // Convert from internal representation to JML
+    //--------------------------------------------------------------------------
+
     // The following are default spatial coordinates to use
     protected static final double[] samethrowx =
         { 0.0, 20.0, 25.0, 12.0, 10.0,  7.5,  5.0,  5.0,  5.0 };
@@ -586,8 +659,8 @@ public abstract class MHNPattern extends Pattern {
     // It specifies the fraction of a beat to spread the catches over.
     protected static final double splitcatchfactor = 0.4;
 
-    protected JMLPattern convertPatternToJML() throws
-                        JuggleExceptionUser, JuggleExceptionInternal {
+    @Override
+    public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = new JMLPattern();
 
         // Step 1 -- Set up the basic pattern information:
@@ -1337,7 +1410,10 @@ top:
             }
         }
 
-        if (jugglinglab.core.Constants.DEBUG_LAYOUT)
+        if (title != null)
+            result.setTitle(title);
+
+        if (Constants.DEBUG_LAYOUT)
             System.out.println(result);
 
         return result;

@@ -38,4 +38,42 @@ public class MHNThrow {
         this.targetslot = ts;
         this.mod = m;
     }
+
+    /*
+    public String toString() {
+        String s = "(" + juggler + ", " + hand + ", " + index + ", " + slot;
+        s = s + " -> " + targetjuggler + ", " + targethand + ", " + targetindex + ", " + targetslot + ")";
+        if (master == this)
+            s = s + "*";
+        return s;
+    }
+    */
+
+    // Indicates whether a throw will be treated as a hold, when rendered
+    public boolean isHold() {
+        if ((targetindex - index) > 2 || hand != targethand || juggler != targetjuggler)
+            return false;
+
+        if (mod != null && mod.indexOf('T') != -1)
+            return false;
+
+        return true;
+    }
+
+    // Establishes an ordering relation for throws.
+    //
+    // Returns 1 if mhnt1 > mhnt2, -1 if mhnt1 < mhnt2, and 0 iff the throws
+    // are identical.
+    public static int compareThrows(MHNThrow mhnt1, MHNThrow mhnt2) {
+        int beats1 = mhnt1.targetindex - mhnt1.index;
+        int beats2 = mhnt2.targetindex - mhnt2.index;
+
+        if (beats1 > beats2)
+            return 1;
+        else if (beats1 < beats2)
+            return -1;
+
+
+        return 0;
+    }
 }

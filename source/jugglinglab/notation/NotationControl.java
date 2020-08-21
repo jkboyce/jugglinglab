@@ -1,6 +1,6 @@
 // NotationControl.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
@@ -13,7 +13,7 @@ import jugglinglab.util.ParameterList;
 
 
 // This is the GUI that allows the user to enter a pattern in a given notation.
-// It is used by NotationGUI to assemble the interface.
+// It is used by ApplicationPanel to assemble the interface.
 
 public abstract class NotationControl extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
