@@ -184,7 +184,7 @@ public class SiteswapTransitioner extends Transitioner {
         out = new String[size];
         should_print = new boolean[size + 1];
 
-        // find (and store) the shortest transition back from B to A
+        // find (and store) the shortest transition from B back to A
         prev_siteswap = to_siteswap;
         return_trans = findShortestTrans(to_state, from_state);
 
@@ -198,14 +198,21 @@ public class SiteswapTransitioner extends Transitioner {
 
     @Override
     public int runTransitioner(GeneratorTarget t) throws JuggleExceptionInternal {
+        int num = 0;
+
         target = t;
         target.setPrefixSuffix("(" + from_pattern + "^2)",
                 "(" + to_pattern + "^2)" + return_trans);
 
-        int num = 0;
-        prev_siteswap = from_siteswap;
-        for (int l = lmin; l <= lmax; ++l)
-            num += findAllTrans(from_state, to_state, l);
+        if (lmin == 0) {
+            // no transitions needed
+            target.writePattern("", "siteswap", "");
+            num = 1;
+        } else {
+            prev_siteswap = from_siteswap;
+            for (int l = lmin; l <= lmax; ++l)
+                num += findAllTrans(from_state, to_state, l);
+        }
 
         if (num == 0)
             throw new JuggleExceptionInternal("No transitions found in runTransitioner()");
@@ -718,7 +725,7 @@ public class SiteswapTransitioner extends Transitioner {
             if (beats < 36)
                 sb.append(Character.toLowerCase(Character.forDigit(beats, 36)));
             else
-                sb.append('?');  // wildcard will parse, but not animate
+                sb.append('?');  // wildcard will parse but not animate
 
             if (is_crossed)
                 sb.append('x');
