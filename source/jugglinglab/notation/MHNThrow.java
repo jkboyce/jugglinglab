@@ -1,6 +1,6 @@
 // MHNThrow.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.notation;
 
@@ -16,9 +16,11 @@ public class MHNThrow {
     public int targethand;          // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int targetindex;
     public int targetslot;
+    public String mod;
+
+    // used during layout:
     public int handsindex;          // index of throw in hands sequence, if one exists
     public int pathnum = -1;
-    public String mod;
     public MHNThrow master;
     public MHNThrow source;
     public MHNThrow target;
@@ -62,17 +64,64 @@ public class MHNThrow {
 
     // Establishes an ordering relation for throws.
     //
+    // This assumes the throws are coming from the same juggler+hand+index
+    // combination, i.e., as part of a multiplex throw.
+    //
     // Returns 1 if mhnt1 > mhnt2, -1 if mhnt1 < mhnt2, and 0 iff the throws
     // are identical.
     public static int compareThrows(MHNThrow mhnt1, MHNThrow mhnt2) {
         int beats1 = mhnt1.targetindex - mhnt1.index;
         int beats2 = mhnt2.targetindex - mhnt2.index;
 
+        // more beats > fewer beats
         if (beats1 > beats2)
             return 1;
         else if (beats1 < beats2)
             return -1;
 
+        boolean is_pass1 = (mhnt1.targetjuggler != mhnt1.juggler);
+        boolean is_pass2 = (mhnt2.targetjuggler != mhnt2.juggler);
+        boolean is_cross1 = (mhnt1.targethand == mhnt1.hand) ^ (beats1 % 2 == 0);
+        boolean is_cross2 = (mhnt2.targethand == mhnt2.hand) ^ (beats2 % 2 == 0);
+
+        // passes > self-throws
+        if (is_pass1 && !is_pass2)
+            return 1;
+        else if (!is_pass1 && is_pass2)
+            return -1;
+
+        // for two passes, lower target juggler number wins
+        if (is_pass1) {
+            if (mhnt1.targetjuggler < mhnt2.targetjuggler)
+                return 1;
+            else if (mhnt1.targetjuggler > mhnt2.targetjuggler)
+                return -1;
+        }
+
+        // crossed throws beat non-crossed throws
+        if (is_cross1 && !is_cross2)
+            return 1;
+        else if (!is_cross1 && is_cross2)
+            return -1;
+
+        // if we get here then {targetjuggler, targethand, targetindex} are all
+        // equal
+
+        boolean has_mod1 = (mhnt1.mod != null);
+        boolean has_mod2 = (mhnt2.mod != null);
+
+        if (has_mod1 && !has_mod2)
+            return 1;  // throw with modifier beats one without
+        else if (!has_mod1 && has_mod2)
+            return -1;
+        else if (has_mod1 && has_mod2) {
+            int c = mhnt1.mod.compareTo(mhnt2.mod);
+
+            if (c < 0)
+                return 1;  // mhnt1.mod lexicographically precedes mhnt2.mod
+            else if (c > 0)
+                return -1;
+        }
 
         return 0;
     }
