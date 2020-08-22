@@ -188,6 +188,11 @@ public class SiteswapTransitioner extends Transitioner {
         prev_siteswap = to_siteswap;
         return_trans = findShortestTrans(to_state, from_state);
 
+        // if we added an 'R' at the end because of an odd number of beats in
+        // the transition, remove it.
+        if (return_trans.endsWith("R"))
+            return_trans = return_trans.substring(0, return_trans.length() - 1);
+
         if (Constants.DEBUG_TRANSITIONS) {
             System.out.println("lmin = " + lmin);
             System.out.println("lmax = " + lmax);
@@ -318,6 +323,15 @@ public class SiteswapTransitioner extends Transitioner {
                             StringBuffer sb = new StringBuffer();
                             for (int i = 0; i < l_target; ++i)
                                 sb.append(out[i]);
+
+                            // If transition is an odd number of beats long, end the
+                            // transition with an 'R', so that if the "To" pattern
+                            // has async throws JL will start assigning hands with R
+                            // rather than L. (The return transition assumed it started
+                            // with R.)
+                            if (l_target % 2 == 1)
+                                sb.append('R');
+
                             target.writePattern(sb.toString(), "siteswap", sb.toString().trim());
                         }
 
@@ -669,10 +683,13 @@ public class SiteswapTransitioner extends Transitioner {
                         sb.append("0");
                     break;
                 case 1:
-                    if (th[j][0][pos][0] != null)
+                    if (th[j][0][pos][0] != null) {
+                        // sb.append('R');
                         printMultiThrow(pos, j, 0, sb);
-                    else
+                    } else {
+                        // sb.append('L');
                         printMultiThrow(pos, j, 1, sb);
+                    }
                     if (print_double_beat)
                         sb.append("0");
                     break;
