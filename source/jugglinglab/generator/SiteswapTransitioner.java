@@ -21,6 +21,7 @@ public class SiteswapTransitioner extends Transitioner {
     protected int lmax;
     protected boolean mp_allow_simulcatches;
     protected boolean mp_allow_clusters;
+    protected boolean no_limits;
     protected SiteswapTransitionerControl control;
 
     protected String from_pattern;
@@ -97,6 +98,7 @@ public class SiteswapTransitioner extends Transitioner {
         max_occupancy = 1;
         mp_allow_simulcatches = false;
         mp_allow_clusters = true;
+        no_limits = false;
         target = null;
 
         for (int i = 2; i < args.length; ++i) {
@@ -116,7 +118,9 @@ public class SiteswapTransitioner extends Transitioner {
                     }
                     i++;
                 }
-            } else {
+            } else if (args[i].equals("-limits"))
+                no_limits = true;  // for CLI mode only
+            else {
                 String template = errorstrings.getString("Error_unrecognized_option");
                 Object[] arguments = { args[i] };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -874,8 +878,12 @@ public class SiteswapTransitioner extends Transitioner {
     // Static methods to run transitioner with command line input
     //--------------------------------------------------------------------------
 
+    // Execution limits
+    protected static final int trans_max_patterns = 1000;
+    protected static final double trans_max_time = 15.0;
+
     public static void runTransitionerCLI(String[] args, GeneratorTarget target) {
-        if (args.length < 3) {
+        if (args.length < 2) {
             String template = guistrings.getString("Version");
             Object[] arg1 = { Constants.version };
             String output = "Juggling Lab " +
@@ -886,7 +894,7 @@ public class SiteswapTransitioner extends Transitioner {
             output += MessageFormat.format(template, arg2) + "\n\n";
 
             output += guistrings.getString("GPL_message") + "\n\n";
-            // output += guistrings.getString("Generator_intro");
+            output += guistrings.getString("Transitioner_intro");
 
             System.out.println(output);
             return;
@@ -896,9 +904,15 @@ public class SiteswapTransitioner extends Transitioner {
             return;
 
         try {
-            SiteswapTransitioner ssg = new SiteswapTransitioner();
-            ssg.initTransitioner(args);
-            ssg.runTransitioner(target);
+            SiteswapTransitioner sst = new SiteswapTransitioner();
+            sst.initTransitioner(args);
+
+            if (sst.no_limits)
+                sst.runTransitioner(target);
+            else
+                sst.runTransitioner(target, trans_max_patterns, trans_max_time);
+        } catch (JuggleExceptionDone e) {
+            System.out.println(e.getMessage());
         } catch (Exception e) {
             System.out.println(errorstrings.getString("Error")+": "+e.getMessage());
         }

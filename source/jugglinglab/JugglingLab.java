@@ -20,6 +20,7 @@ import jugglinglab.core.*;
 import jugglinglab.jml.JMLParser;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.generator.SiteswapGenerator;
+import jugglinglab.generator.SiteswapTransitioner;
 import jugglinglab.generator.GeneratorTarget;
 import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
@@ -205,7 +206,7 @@ public class JugglingLab {
             return;
         }
 
-        List<String> modes = Arrays.asList("gen", "anim", "togif", "tojml");
+        List<String> modes = Arrays.asList("gen", "trans", "anim", "togif", "tojml");
         boolean show_help = !modes.contains(firstarg);
 
         if (show_help) {
@@ -227,6 +228,9 @@ public class JugglingLab {
             }
             output += examples;
             System.out.println(output);
+
+            if (firstarg != null)
+                System.out.println("\nUnrecognized option: " + firstarg);
             return;
         }
 
@@ -256,6 +260,24 @@ public class JugglingLab {
             }
             if (jc != null)
                 System.out.println("Note: animator prefs not used in generator mode; ignored");
+            return;
+        }
+
+        if (firstarg.equals("trans")) {
+            // run the siteswap transitioner
+            System.setProperty("java.awt.headless", "true");
+            String[] transargs = jlargs.toArray(new String[jlargs.size()]);
+
+            try {
+                PrintStream ps = System.out;
+                if (outpath != null)
+                    ps = new PrintStream(outpath.toFile());
+                SiteswapTransitioner.runTransitionerCLI(transargs, new GeneratorTarget(ps));
+            } catch (FileNotFoundException fnfe) {
+                System.out.println("Error: problem writing to file path " + outpath.toString());
+            }
+            if (jc != null)
+                System.out.println("Note: animator prefs not used in transitions mode; ignored");
             return;
         }
 
