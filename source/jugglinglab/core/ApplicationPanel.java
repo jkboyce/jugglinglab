@@ -223,7 +223,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pw = new PatternListWindow(trans.getNotationName()+" "+guistrings.getString("Patterns"));
                                 pwot = new GeneratorTarget(pw);
                             }
-                            trans.runTransitioner(pwot);
+                            trans.runTransitioner(pwot, max_patterns, max_time);
                             if (pl != null)
                                 jtp.setSelectedComponent(pl);
                         } catch (JuggleExceptionDone ex) {

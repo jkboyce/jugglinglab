@@ -40,8 +40,16 @@ public class SiteswapTransitioner extends Transitioner {
     protected boolean find_all;
     protected String[] out;
     protected boolean[] should_print;
+    protected boolean[][] async_hand_right;
     protected SiteswapPattern prev_siteswap;
     protected GeneratorTarget target;
+
+    protected int max_num;              // maximum number of transitions to find
+    protected double max_time;          // maximum number of seconds
+    protected long max_time_millis;     // maximum number of milliseconds
+    protected long start_time_millis;   // start time of run, in milliseconds
+    protected int loop_counter;         // gen_loop() counter for checking timeout
+    protected final static int loop_counter_max = 20000;
 
 
     @Override
@@ -183,6 +191,34 @@ public class SiteswapTransitioner extends Transitioner {
         throws_left = new int[size + 1][jugglers][2];
         out = new String[size];
         should_print = new boolean[size + 1];
+        async_hand_right = new boolean[jugglers][size + 1];
+
+        if (Constants.DEBUG_TRANSITIONS) {
+            System.out.println("lmin = " + lmin);
+            System.out.println("lmax = " + lmax);
+            System.out.println("lreturn = " + lreturn);
+        }
+    }
+
+    @Override
+    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionInternal {
+        try {
+            return runTransitioner(t, -1, -1.0);  // negative values --> no limits
+        } catch (JuggleExceptionUser je) {
+            throw new JuggleExceptionInternal("Got a user exception in runTransitioner()");
+        }
+    }
+
+    @Override
+    public int runTransitioner(GeneratorTarget t, int num_limit, double secs_limit)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
+        max_num = num_limit;
+        max_time = secs_limit;
+        if (max_time > 0) {
+            max_time_millis = (long)(1000.0 * secs_limit);
+            start_time_millis = System.currentTimeMillis();
+            loop_counter = 0;
+        }
 
         // find (and store) the shortest transition from B back to A
         prev_siteswap = to_siteswap;
@@ -190,24 +226,20 @@ public class SiteswapTransitioner extends Transitioner {
 
         // if we added an 'R' at the end because of an odd number of beats in
         // the transition, remove it.
+        //
+        // (we should also make this work with multiple jugglers)
         if (return_trans.endsWith("R"))
             return_trans = return_trans.substring(0, return_trans.length() - 1);
 
         if (Constants.DEBUG_TRANSITIONS) {
-            System.out.println("lmin = " + lmin);
-            System.out.println("lmax = " + lmax);
-            System.out.println("lreturn = " + lreturn);
             System.out.println("return trans = " + return_trans);
         }
-    }
-
-    @Override
-    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionInternal {
-        int num = 0;
 
         target = t;
         target.setPrefixSuffix("(" + from_pattern + "^2)",
                 "(" + to_pattern + "^2)" + return_trans);
+
+        int num = 0;
 
         if (lmin == 0) {
             // no transitions needed
@@ -238,7 +270,7 @@ public class SiteswapTransitioner extends Transitioner {
     //--------------------------------------------------------------------------
 
     // Finds a single example of a shortest transition from one state to another.
-    protected String findShortestTrans(int[][][] from_st, int[][][] to_st) throws JuggleExceptionInternal {
+    protected String findShortestTrans(int[][][] from_st, int[][][] to_st) throws JuggleExceptionDone, JuggleExceptionInternal {
         l_target = findMinLength(from_st, to_st);
         if (l_target == 0)
             return "";
@@ -256,7 +288,6 @@ public class SiteswapTransitioner extends Transitioner {
         target = new GeneratorTarget(sb);
 
         startBeat(0);
-        should_print[0] = true;
         find_all = false;
         int num = recurse(0, 0, 0);
 
@@ -272,7 +303,7 @@ public class SiteswapTransitioner extends Transitioner {
     // given by `l`.
     //
     // Returns the number of transitions found.
-    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) {
+    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionDone {
         l_target = l;
 
         for (int j = 0; j < jugglers; ++j) {
@@ -285,7 +316,6 @@ public class SiteswapTransitioner extends Transitioner {
         }
 
         startBeat(0);
-        should_print[0] = true;
         find_all = true;
         int num = recurse(0, 0, 0);
 
@@ -297,7 +327,18 @@ public class SiteswapTransitioner extends Transitioner {
     // `target`.
     //
     // returns the number of transitions found.
-    protected int recurse(int pos, int j, int h) {
+    protected int recurse(int pos, int j, int h) throws JuggleExceptionDone {
+        if (max_time > 0) {
+            if (++loop_counter > loop_counter_max) {
+                loop_counter = 0;
+                if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
+                    String template = guistrings.getString("Generator_timeout");
+                    Object[] arguments = { new Integer((int)max_time) };
+                    throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
+                }
+            }
+        }
+
         if (throws_left[pos][j][h] == 0) {
             // move to next juggler/hand combo
             if (h == 1) {
@@ -324,13 +365,33 @@ public class SiteswapTransitioner extends Transitioner {
                             for (int i = 0; i < l_target; ++i)
                                 sb.append(out[i]);
 
-                            // If transition is an odd number of beats long, end the
-                            // transition with an 'R', so that if the "To" pattern
-                            // has async throws JL will start assigning hands with R
-                            // rather than L. (The return transition assumed it started
-                            // with R.)
-                            if (l_target % 2 == 1)
-                                sb.append('R');
+                            // If, for any of the jugglers, the parser would assign
+                            // an async throw on the next beat to the left hand,
+                            // then add on a hands modifier to force it to switch.
+                            //
+                            // We laid out the "from" and "to" patterns starting
+                            // with the right hands, so we want to preserve this or
+                            // the patterns and transitions won't glue together
+                            // into a working whole.
+                            boolean needs_hands_modifier = false;
+                            for (int j2 = 0; j2 < jugglers; ++j2) {
+                                if (!async_hand_right[j2][pos]) {
+                                    needs_hands_modifier = true;
+                                    break;
+                                }
+                            }
+
+                            if (needs_hands_modifier) {
+                                if (jugglers > 1)
+                                    sb.append('<');
+                                for (int j2 = 0; j2 < jugglers; ++j2) {
+                                    sb.append('R');
+                                    if (j2 < (jugglers - 1))
+                                        sb.append('|');
+                                }
+                                if (jugglers > 1)
+                                    sb.append('>');
+                            }
 
                             target.writePattern(sb.toString(), "siteswap", sb.toString().trim());
                         }
@@ -393,6 +454,12 @@ public class SiteswapTransitioner extends Transitioner {
 
                         if (!find_all && num > 0)
                             return num;
+
+                        if (max_num > 0 && num >= max_num) {
+                            String template = guistrings.getString("Generator_spacelimit");
+                            Object[] arguments = { new Integer(max_num) };
+                            throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
+                        }
                     }
                 }
             }
@@ -446,11 +513,11 @@ public class SiteswapTransitioner extends Transitioner {
     protected int findMaxLength(int[][][] from_st, int[][][] to_st) {
         int length = 0;
 
-        for (int j = 0; j < jugglers; ++j) {
-            for (int h = 0; h < 2; ++h) {
-                for (int i = length; i < indexes; ++i) {
+        for (int i = 0; i < indexes; ++i) {
+            for (int j = 0; j < jugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
                     if (from_st[j][h][i] > 0)
-                        length = i;
+                        length = i + 1;
                 }
             }
         }
@@ -558,15 +625,12 @@ public class SiteswapTransitioner extends Transitioner {
                             // index in the reference frame of the previous pattern.
                             int index_overshoot = mhnt2.targetindex - (pos + period);
 
-                            //System.out.println("overshoot = " + index_overshoot + ", period = " + period);
-
                             // If the overshoot is not negative, and is some even
                             // multiple of the previous pattern's period, then on
                             // some earlier repetition of the pattern it will land at
                             // the target index.
                             boolean correct_index = ((index_overshoot >= 0)
                                                      && (index_overshoot % period == 0));
-                            //System.out.println("got a correct index (" + mhnt2.targetjuggler + ", " + mhnt.juggler + ", " + mhnt2.targethand + ", " + mhnt.hand + ", " + !mhnt2.isHold() + ")");
 
                             if (correct_index && mhnt2.targetjuggler == mhnt.juggler
                                     && mhnt2.targethand == mhnt.hand && !mhnt2.isHold()) {
@@ -626,7 +690,8 @@ public class SiteswapTransitioner extends Transitioner {
     }
 
     // Creates the string form of the assigned throws at this position in the
-    // pattern, and saves into the out[] array.
+    // pattern, and saves into the out[] array. This also determines the values
+    // of async_hand_right[][] for the next position in the pattern.
     //
     // This output must be accurately parsable by SiteswapPattern.
     //
@@ -646,6 +711,8 @@ public class SiteswapTransitioner extends Transitioner {
         if (!should_print[pos]) {
             // skipping this beat because we already printed on the previous one
             should_print[pos + 1] = true;
+            for (int j = 0; j < jugglers; ++j)
+                async_hand_right[j][pos + 1] = !async_hand_right[j][pos];
             out[pos] = "";
             return "";
         }
@@ -670,6 +737,8 @@ public class SiteswapTransitioner extends Transitioner {
             sb.append("<");
 
         for (int j = 0; j < jugglers; ++j) {
+            boolean async_hand_right_next = !async_hand_right[j][pos];
+
             int hands_throwing = 0;
             if (th[j][0][pos][0] != null)
                 ++hands_throwing;
@@ -684,10 +753,16 @@ public class SiteswapTransitioner extends Transitioner {
                     break;
                 case 1:
                     if (th[j][0][pos][0] != null) {
-                        // sb.append('R');
+                        if (!async_hand_right[j][pos]) {
+                            sb.append('R');
+                            async_hand_right_next = false;
+                        }
                         printMultiThrow(pos, j, 0, sb);
                     } else {
-                        // sb.append('L');
+                        if (async_hand_right[j][pos]) {
+                            sb.append('L');
+                            async_hand_right_next = true;
+                        }
                         printMultiThrow(pos, j, 1, sb);
                     }
                     if (print_double_beat)
@@ -703,6 +778,8 @@ public class SiteswapTransitioner extends Transitioner {
                         sb.append("!");
                     break;
             }
+
+            async_hand_right[j][pos + 1] = async_hand_right_next;
 
             if (j < (jugglers - 1))
                 sb.append("|");
@@ -762,6 +839,13 @@ public class SiteswapTransitioner extends Transitioner {
 
     // Initializes data structures to start filling in pattern at position `pos`.
     protected void startBeat(int pos) {
+        if (pos == 0) {
+            should_print[0] = true;
+
+            for (int j = 0; j < jugglers; ++j)
+                async_hand_right[j][0] = true;
+        }
+
         for (int j = 0; j < jugglers; ++j) {
             for (int h = 0; h < 2; ++h) {
                 for (int i = 0; i < (indexes - 1); ++i)
