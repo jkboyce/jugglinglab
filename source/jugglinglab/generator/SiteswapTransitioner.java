@@ -228,12 +228,9 @@ public class SiteswapTransitioner extends Transitioner {
         prev_siteswap = to_siteswap;
         return_trans = findShortestTrans(to_state, from_state);
 
-        // if we added an 'R' at the end because of an odd number of beats in
-        // the transition, remove it.
-        //
-        // (we should also make this work with multiple jugglers)
-        if (return_trans.endsWith("R"))
-            return_trans = return_trans.substring(0, return_trans.length() - 1);
+        // if we added a hands modifier at the end, such as 'R' or '<R|R>',
+        // then remove it
+        return_trans = return_trans.replaceAll("\\<?(R\\|)*R\\>?$", "");
 
         if (Constants.DEBUG_TRANSITIONS) {
             System.out.println("return trans = " + return_trans);
