@@ -368,7 +368,7 @@ public class SiteswapTransitioner extends Transitioner {
 
                             // If, for any of the jugglers, the parser would assign
                             // an async throw on the next beat to the left hand,
-                            // then add on a hands modifier to force it to switch.
+                            // then add on a hands modifier to force it to reset.
                             //
                             // We laid out the "from" and "to" patterns starting
                             // with the right hands, so we want to preserve this or
@@ -427,13 +427,21 @@ public class SiteswapTransitioner extends Transitioner {
         for (mhnt.slot = 0; th[j][h][pos][mhnt.slot] != null; ++mhnt.slot)
             ;
 
-        // target (juggler, hand, index, slot)
-        for (int tj = 0; tj < jugglers; ++tj) {
-            for (int th = 0; th < 2; ++th) {
-                for (int ti = pos + 1; ti < indexes + pos + 1; ++ti) {
-                    if ((ti - pos) > 35)
-                        break;  // can't have throws > 35 beats long
+        // loop over target (index, juggler, hand)
+        //
+        // Iterate over indices in a certain way to get the output ordering we
+        // want. The most "natural" transitions are where each throw fills the
+        // target state directly, so start with throws that are high enough to
+        // do this. Then loop around to small indices.
+        int ti_min = pos + 1;
+        int ti_max = Math.min(pos + indexes, pos + 35);
+        int ti_threshold = Math.max(l_target, ti_min);
 
+        int ti = ti_threshold;
+
+        while (true) {
+            for (int tj = 0; tj < jugglers; ++tj) {
+                for (int th = 0; th < 2; ++th) {
                     int ts = st[pos + 1][tj][th][ti - pos - 1];  // target slot
                     int finali = ti - l_target;  // target index in final state
 
@@ -464,7 +472,14 @@ public class SiteswapTransitioner extends Transitioner {
                     }
                 }
             }
+
+            ++ti;
+            if (ti > ti_max)
+                ti = ti_min;
+            if (ti == ti_threshold)
+                break;
         }
+
         return num;
     }
 
