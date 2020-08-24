@@ -788,7 +788,9 @@ public class SiteswapTransitioner extends Transitioner {
             if (is_crossed)
                 sb.append('x');
             if (is_pass) {
-                sb.append("p" + mhnt.targetjuggler);
+                sb.append('p');
+                if (jugglers > 2)
+                    sb.append(mhnt.targetjuggler);
 
                 boolean another_throw = ((s + 1) < max_occupancy)
                                          && (th[j][h][pos][s + 1] != null);
