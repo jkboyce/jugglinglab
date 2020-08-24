@@ -31,12 +31,20 @@ public class JugglingLab {
     public static ResourceBundle guistrings;
     public static ResourceBundle errorstrings;
 
+    // Platform info
+    public static boolean isMacOS;
+    public static boolean isWindows;
+
     // Base directory for file operations
     public static Path base_dir;
 
     static {
         JugglingLab.guistrings = JLLocale.getBundle("GUIStrings");
         JugglingLab.errorstrings = JLLocale.getBundle("ErrorStrings");
+
+        String osname = System.getProperty("os.name").toLowerCase();
+        isMacOS = osname.startsWith("mac os x");
+        isWindows = osname.startsWith("windows");
 
         // Decide on a base directory for file operations. First look for
         // working directory set by an enclosing script, which indicates Juggling
@@ -56,7 +64,7 @@ public class JugglingLab {
                 working_dir = System.getProperty("user.home");
         }
 
-        JugglingLab.base_dir = Paths.get(working_dir);
+        base_dir = Paths.get(working_dir);
     }
 
     // command line arguments as an ArrayList that we trim as portions are parsed
@@ -170,12 +178,8 @@ public class JugglingLab {
 
     public static void main(String[] args) {
         // do some os-specific setup
-        String osname = System.getProperty("os.name").toLowerCase();
-        boolean isMacOS = osname.startsWith("mac os x");
-        boolean isWindows = osname.startsWith("windows");
-        if (isMacOS) {
+        if (isMacOS)
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-        }
 
         // Figure out what mode to run in based on command line arguments. We
         // want no command line arguments to run the full application, so that
@@ -229,7 +233,7 @@ public class JugglingLab {
             output += examples;
             System.out.println(output);
 
-            if (firstarg != null)
+            if (firstarg != null && !firstarg.equals("help"))
                 System.out.println("\nUnrecognized option: " + firstarg);
             return;
         }

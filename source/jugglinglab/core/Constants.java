@@ -14,7 +14,7 @@ public class Constants {
 
     public static final boolean DEBUG_PARSING = false;
     public static final boolean DEBUG_LAYOUT = false;
-    public static final boolean DEBUG_TRANSITIONS = true;
+    public static final boolean DEBUG_TRANSITIONS = false;
     public static final boolean DEBUG_OPTIMIZE = false;
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
