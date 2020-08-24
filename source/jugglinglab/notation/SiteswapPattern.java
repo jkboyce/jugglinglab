@@ -40,6 +40,9 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public SiteswapPattern fromParameters(ParameterList pl) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
+        if (Constants.DEBUG_PARSING)
+            System.out.println("Starting siteswap parser...");
+
         super.fromParameters(pl);
 
         // pattern = JLFunc.expandRepeats(pattern);
@@ -70,11 +73,21 @@ public class SiteswapPattern extends MHNPattern {
                 pattern = "(" + pattern + "^" + repeats + ")";
                 // pattern = "(" + pattern + ")^" + repeats;
                 // pattern = JLFunc.expandRepeats(pattern);
+
+                if (Constants.DEBUG_PARSING) {
+                    System.out.println("-----------------------------------------------------");
+                    System.out.println("Repeating pattern to match hand/body period, restarting\n");
+                }
                 parseSiteswapNotation();
             }
         }
 
         super.buildRepresentation();
+
+        if (Constants.DEBUG_PARSING) {
+            System.out.println("Siteswap parser finished");
+            System.out.println("-----------------------------------------------------");
+        }
 
         return this;
     }
@@ -96,12 +109,11 @@ public class SiteswapPattern extends MHNPattern {
 
         try {
             if (Constants.DEBUG_PARSING) {
-                System.out.println("---------------");
                 System.out.println("Parsing pattern \"" + pattern + "\"");
             }
             tree = SiteswapParser.parsePattern(pattern);
             if (Constants.DEBUG_PARSING) {
-                System.out.println("");
+                System.out.println("Parse tree:\n");
                 System.out.println(tree.toString());
             }
         } catch (ParseException pe) {
@@ -152,6 +164,9 @@ public class SiteswapPattern extends MHNPattern {
         for (int i = 0; i < this.numjugglers; i++)
             right_on_even[i] = true;
 
+        if (Constants.DEBUG_PARSING)
+            System.out.println("Starting first pass...");
+
         tree.beatnum = 0;
         doFirstPass(tree);
 
@@ -160,6 +175,9 @@ public class SiteswapPattern extends MHNPattern {
             tree.beats *= 2;
             tree.throw_sum *= 2;
             this.oddperiod = true;
+
+            if (Constants.DEBUG_PARSING)
+                System.out.println("Vanilla async detected; applying switchdelay symmetry");
         }
 
         this.period = tree.beats;
@@ -172,6 +190,7 @@ public class SiteswapPattern extends MHNPattern {
         if (Constants.DEBUG_PARSING) {
             System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
                             max_throw+", max_occupancy = "+max_occupancy);
+            System.out.println("Starting second pass...");
         }
 
         doSecondPass(tree, false, 0);
@@ -188,6 +207,9 @@ public class SiteswapPattern extends MHNPattern {
         // Random error check, not sure where this should go
         if (bodies != null && bodies.getNumberOfJugglers() < this.getNumberOfJugglers())
             throw new JuggleExceptionUser(errorstrings.getString("Error_jugglers_body"));
+
+        if (Constants.DEBUG_PARSING)
+            System.out.println("Done with initial parse.");
     }
 
 
@@ -372,6 +394,7 @@ public class SiteswapPattern extends MHNPattern {
                     child.beatnum = sti.beatnum;
                     doFirstPass(child);
                     sti.throw_sum += child.value;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 if (sti.beatnum % 2 == 0)
                     sti.left = !right_on_even[sti.source_juggler - 1];
@@ -384,6 +407,7 @@ public class SiteswapPattern extends MHNPattern {
                 // No children
                 if (sti.value > this.max_throw)
                     this.max_throw = sti.value;
+                sti.vanilla_async = !sti.x;
                 break;
             case SiteswapTreeItem.TYPE_PASSING_SEQUENCE:
                 // Contains only Passing Group type
@@ -426,6 +450,7 @@ public class SiteswapPattern extends MHNPattern {
                     child.beatnum = sti.beatnum;
                     doFirstPass(child);
                     sti.throw_sum += child.value;
+                    sti.vanilla_async &= child.vanilla_async;
                 }
                 if (sti.beatnum % 2 == 0)
                     sti.left = !right_on_even[sti.source_juggler - 1];
@@ -438,6 +463,7 @@ public class SiteswapPattern extends MHNPattern {
                 // No children
                 if (sti.value > this.max_throw)
                     this.max_throw = sti.value;
+                sti.vanilla_async = !sti.x;
                 break;
             case SiteswapTreeItem.TYPE_WILDCARD:
                 if (sti.transition != null) {

@@ -41,7 +41,6 @@ public class MHNThrow {
         this.mod = m;
     }
 
-    /*
     public String toString() {
         String s = "(" + juggler + ", " + hand + ", " + index + ", " + slot;
         s = s + " -> " + targetjuggler + ", " + targethand + ", " + targetindex + ", " + targetslot + ")";
@@ -49,7 +48,6 @@ public class MHNThrow {
             s = s + "*";
         return s;
     }
-    */
 
     // Indicates whether a throw will be treated as a hold, when rendered
     public boolean isHold() {

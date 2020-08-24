@@ -212,16 +212,29 @@ public abstract class MHNPattern extends Pattern {
         // build out the internal pattern representation in steps
         //
         // this will find and raise any errors in the pattern
+        if (Constants.DEBUG_PARSING) {
+            System.out.println("-----------------------------------------------------");
+            System.out.println("Building internal MHNPattern representation...\n");
+            System.out.println("findMasterThrows()");
+        }
         findMasterThrows();
+
+        if (Constants.DEBUG_PARSING)
+            System.out.println("assignPaths()");
         assignPaths();
+
+        if (Constants.DEBUG_PARSING)
+            System.out.println("findThrowSources()");
         findThrowSources();
+
+        if (Constants.DEBUG_PARSING)
+            System.out.println("setCatchOrder()");
         setCatchOrder();
 
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PARSING) {
             String s = getInternalRepresentation();
             if (s != null) {
-                System.out.println("-----------------------------------------------------");
-                System.out.println("Internal MHNPattern representation:\n");
+                System.out.println("\nInternal MHNPattern representation:\n");
                 System.out.println(s);
                 System.out.println("-----------------------------------------------------");
             }
@@ -300,7 +313,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PARSING) {
             for (int i = 0; i < indexes; i++) {
                 for (int j = 0; j < numjugglers; j++) {
                     for (int h = 0; h < 2; h++) {
@@ -324,7 +337,7 @@ public abstract class MHNPattern extends Pattern {
                     for (int slot = 0; slot < max_occupancy; slot++) {
 
                         MHNThrow sst = th[j][h][i][slot];
-                        if (sst == null || sst.master != sst)   // loop over master throws
+                        if (sst == null || sst.master != sst)  // loop over master throws
                             continue;
 
                         int targetslot = 0;
@@ -354,8 +367,11 @@ public abstract class MHNPattern extends Pattern {
                                 break;
                             targetslot++;
                         }
-                        if (targetslot == max_occupancy)
+                        if (targetslot == max_occupancy) {
+                            if (Constants.DEBUG_PARSING)
+                                System.out.println("Error: targetslot == max_occupancy");
                             throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern"));
+                        }
 
                         // loop again over all throws that have sst as master
                         for (int i2 = 0; i2 < indexes; i2++) {
@@ -396,7 +412,7 @@ public abstract class MHNPattern extends Pattern {
                             if (filler == null) {
                                 if (currentpath > numpaths) {
 
-                                    if (Constants.DEBUG_LAYOUT) {
+                                    if (Constants.DEBUG_PARSING) {
                                         System.out.println("j="+j+", h="+h+", index="+i+", slot="+slot+"\n");
                                         System.out.println("---------------------------");
                                         for (int tempi = 0; tempi <= i; tempi++) {
@@ -1413,8 +1429,10 @@ top:
         if (title != null)
             result.setTitle(title);
 
-        if (Constants.DEBUG_LAYOUT)
+        if (Constants.DEBUG_LAYOUT) {
+            System.out.println("Pattern in JML format:\n");
             System.out.println(result);
+        }
 
         return result;
     }
