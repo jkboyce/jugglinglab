@@ -792,7 +792,7 @@ public class SiteswapTransitioner extends Transitioner {
                     sb.append(',');
                     printMultiThrow(pos, j, 0, sb);
                     sb.append(')');
-                    if (!print_double_beat)
+                    if (!print_double_beat || pos == l_target - 1)
                         sb.append('!');
                     break;
             }
