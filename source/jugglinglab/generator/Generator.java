@@ -59,9 +59,9 @@ public abstract class Generator {
     public abstract void initGenerator(String[] args) throws JuggleExceptionUser;
 
     // run the generator with no limits
-    public abstract int runGenerator(GeneratorTarget t);
+    public abstract int runGenerator(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal;
 
     // run the generator with bounds on space and time
     public abstract int runGenerator(GeneratorTarget t, int max_num,
-                                     double secs) throws JuggleExceptionUser;
+                                     double secs) throws JuggleExceptionUser, JuggleExceptionInternal;
 }

@@ -56,7 +56,7 @@ public abstract class Transitioner {
     public abstract void initTransitioner(String[] args) throws JuggleExceptionUser, JuggleExceptionInternal;
 
     // run the transitioner with no limits
-    public abstract int runTransitioner(GeneratorTarget t) throws JuggleExceptionInternal;
+    public abstract int runTransitioner(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal;
 
     // run the transitioner with bounds on space and time
     public abstract int runTransitioner(GeneratorTarget t, int num_limit,

@@ -7,8 +7,11 @@ package jugglinglab.generator;
 import java.io.PrintStream;
 import javax.swing.SwingUtilities;
 
+import jugglinglab.core.Constants;
 import jugglinglab.core.PatternList;
 import jugglinglab.core.PatternListWindow;
+import jugglinglab.notation.SiteswapPattern;
+import jugglinglab.util.*;
 
 
 // This class is an adapter to handle the generated output.
@@ -37,7 +40,7 @@ public class GeneratorTarget {
         this.btarget = sb;
     }
 
-    public void writePattern(String display, final String notation, String anim) {
+    public void writePattern(String display, final String notation, String anim) throws JuggleExceptionInternal {
         if (prefix != null) {
             display = prefix + display;
             anim = prefix + anim;
@@ -49,6 +52,17 @@ public class GeneratorTarget {
 
         final String fdisplay = display;
         final String fanim = anim;
+
+        if (Constants.VALIDATE_GENERATED_PATTERNS) {
+            if (notation.equalsIgnoreCase("siteswap") && anim.length() > 0) {
+                try {
+                    (new SiteswapPattern()).fromString(anim);
+                } catch (JuggleException je) {
+                    throw new JuggleExceptionInternal("Error: pattern \"" + anim + "\" did not validate");
+                }
+                System.out.println("pattern \"" + anim + "\" validated");
+            }
+        }
 
         if (ltarget != null) {
             // This method isn't necessarily being called from the event dispatch

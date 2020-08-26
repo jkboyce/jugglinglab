@@ -206,12 +206,8 @@ public class SiteswapTransitioner extends Transitioner {
     }
 
     @Override
-    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionInternal {
-        try {
-            return runTransitioner(t, -1, -1.0);  // negative values --> no limits
-        } catch (JuggleExceptionUser je) {
-            throw new JuggleExceptionInternal("Got a user exception in runTransitioner()");
-        }
+    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
+        return runTransitioner(t, -1, -1.0);  // negative values --> no limits
     }
 
     @Override
@@ -269,7 +265,7 @@ public class SiteswapTransitioner extends Transitioner {
     }
 
     //--------------------------------------------------------------------------
-    // Utility methods to generate transitions
+    // Non-public methods below
     //--------------------------------------------------------------------------
 
     // Finds a single example of a shortest transition from one state to another.
@@ -314,7 +310,7 @@ public class SiteswapTransitioner extends Transitioner {
     // given by `l`.
     //
     // Returns the number of transitions found.
-    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionDone {
+    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionDone, JuggleExceptionInternal {
         l_target = l;
 
         for (int j = 0; j < jugglers; ++j) {
@@ -349,7 +345,7 @@ public class SiteswapTransitioner extends Transitioner {
     // `target`.
     //
     // returns the number of transitions found.
-    protected int recurse(int pos, int j, int h) throws JuggleExceptionDone {
+    protected int recurse(int pos, int j, int h) throws JuggleExceptionDone, JuggleExceptionInternal {
         // do a time check
         if (max_time > 0) {
             if (++loop_counter > loop_counter_max) {
@@ -651,7 +647,7 @@ public class SiteswapTransitioner extends Transitioner {
     }
 
     // Outputs a completed pattern
-    protected void outputPattern() {
+    protected void outputPattern() throws JuggleExceptionInternal {
         if (target == null)
             return;
 
@@ -773,13 +769,13 @@ public class SiteswapTransitioner extends Transitioner {
                             sb.append('R');
                             async_hand_right_next = false;
                         }
-                        needs_slash = printMultiThrow(pos, j, 0, sb);
+                        needs_slash = outputMultiThrow(pos, j, 0, sb);
                     } else {
                         if (async_hand_right[j][pos]) {
                             sb.append('L');
                             async_hand_right_next = true;
                         }
-                        needs_slash = printMultiThrow(pos, j, 1, sb);
+                        needs_slash = outputMultiThrow(pos, j, 1, sb);
                     }
                     if (needs_slash)
                         sb.append('/');
@@ -788,9 +784,9 @@ public class SiteswapTransitioner extends Transitioner {
                     break;
                 case 2:
                     sb.append('(');
-                    printMultiThrow(pos, j, 1, sb);
+                    outputMultiThrow(pos, j, 1, sb);
                     sb.append(',');
-                    printMultiThrow(pos, j, 0, sb);
+                    outputMultiThrow(pos, j, 0, sb);
                     sb.append(')');
                     if (!print_double_beat || pos == l_target - 1)
                         sb.append('!');
@@ -808,7 +804,7 @@ public class SiteswapTransitioner extends Transitioner {
     //
     // Returns true if a following throw will need a '/' separator, false if
     // not.
-    protected boolean printMultiThrow(int pos, int j, int h, StringBuffer sb) {
+    protected boolean outputMultiThrow(int pos, int j, int h, StringBuffer sb) {
         boolean needs_slash = false;
 
         int num_throws = 0;
