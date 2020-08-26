@@ -90,11 +90,11 @@ public class SiteswapTransitioner extends Transitioner {
         }
 
         if (args.length < 2)
-            throw new JuggleExceptionUser("Too few arguments");
+            throw new JuggleExceptionUser(errorstrings.getString("Error_trans_too_few_args"));
         if (args[0].equals("-"))
-            throw new JuggleExceptionUser("'From pattern' not specified");
+            throw new JuggleExceptionUser(errorstrings.getString("Error_trans_from_pattern"));
         if (args[1].equals("-"))
-            throw new JuggleExceptionUser("'To pattern' not specified");
+            throw new JuggleExceptionUser(errorstrings.getString("Error_trans_to_pattern"));
 
         max_occupancy = 1;
         mp_allow_simulcatches = false;
@@ -138,28 +138,34 @@ public class SiteswapTransitioner extends Transitioner {
         try {
             from_siteswap.fromString(from_pattern);
         } catch (JuggleExceptionUser jeu) {
-            throw new JuggleExceptionUser("From pattern: " + jeu.getMessage());
+            String template = errorstrings.getString("Error_trans_in_from_pattern");
+            Object[] arguments = { jeu.getMessage() };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
         try {
             to_siteswap.fromString(to_pattern);
         } catch (JuggleExceptionUser jeu) {
-            throw new JuggleExceptionUser("To pattern: " + jeu.getMessage());
+            String template = errorstrings.getString("Error_trans_in_to_pattern");
+            Object[] arguments = { jeu.getMessage() };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
 
         // work out number of objects and jugglers, and beats (indexes) in states
         int from_n = from_siteswap.getNumberOfPaths();
         int to_n = to_siteswap.getNumberOfPaths();
         if (from_n != to_n) {
-            throw new JuggleExceptionUser("Patterns have unequal number of objects ("
-                    + from_n + " != " + to_n + ")");
+            String template = errorstrings.getString("Error_trans_unequal_objects");
+            Object[] arguments = { from_n, to_n };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
         n = from_n;
 
         int from_jugglers = from_siteswap.getNumberOfJugglers();
         int to_jugglers = to_siteswap.getNumberOfJugglers();
         if (from_jugglers != to_jugglers) {
-            throw new JuggleExceptionUser("Patterns have unequal number of jugglers ("
-                    + from_jugglers + " != " + to_jugglers + ")");
+            String template = errorstrings.getString("Error_trans_unequal_jugglers");
+            Object[] arguments = { from_jugglers, to_jugglers };
+            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
         jugglers = from_jugglers;
 
@@ -269,7 +275,7 @@ public class SiteswapTransitioner extends Transitioner {
     //--------------------------------------------------------------------------
 
     // Finds a single example of a shortest transition from one state to another.
-    protected String findShortestTrans(int[][][] from_st, int[][][] to_st) throws JuggleExceptionDone, JuggleExceptionInternal {
+    protected String findShortestTrans(int[][][] from_st, int[][][] to_st) throws JuggleExceptionUser, JuggleExceptionInternal {
         l_target = findMinLength(from_st, to_st);
         if (l_target == 0)
             return "";
@@ -310,7 +316,7 @@ public class SiteswapTransitioner extends Transitioner {
     // given by `l`.
     //
     // Returns the number of transitions found.
-    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionDone, JuggleExceptionInternal {
+    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionUser, JuggleExceptionInternal {
         l_target = l;
 
         for (int j = 0; j < jugglers; ++j) {
@@ -345,7 +351,10 @@ public class SiteswapTransitioner extends Transitioner {
     // `target`.
     //
     // returns the number of transitions found.
-    protected int recurse(int pos, int j, int h) throws JuggleExceptionDone, JuggleExceptionInternal {
+    protected int recurse(int pos, int j, int h) throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (Thread.interrupted())
+            throw new JuggleExceptionInterrupted();
+
         // do a time check
         if (max_time > 0) {
             if (++loop_counter > loop_counter_max) {

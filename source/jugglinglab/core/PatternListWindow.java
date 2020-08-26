@@ -1,6 +1,6 @@
 // PatternListWindow.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -25,12 +25,29 @@ public class PatternListWindow extends JFrame implements ActionListener {
     protected JMenuItem[] fileitems = null;
 
 
-    public PatternListWindow(String title) {
-        super(title);
-        this.title = title;
+    public PatternListWindow(String ti) {
+        super(ti);
+        title = ti;
         makeWindow();
-        pl.setTitle(title);
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        pl.setTitle(ti);
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    }
+
+    public PatternListWindow(String ti, Thread th) {
+        this(ti);
+        final Thread generator = th;
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    if (generator != null)
+                        generator.interrupt();
+                } catch (Exception ex) {
+                }
+            }
+        });
     }
 
     public PatternListWindow(JMLNode root) throws JuggleExceptionUser {
@@ -43,25 +60,26 @@ public class PatternListWindow extends JFrame implements ActionListener {
             title = guistrings.getString("Patterns");
 
         setTitle(title);
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     protected void makeWindow() {
-        this.pl = new PatternList(null);
+        pl = new PatternList(null);
 
         pl.setDoubleBuffered(true);
-        this.setBackground(Color.white);
-        this.setContentPane(pl);
+        setBackground(Color.white);
+        setContentPane(pl);
 
-        this.setSize(300,450);
+        setSize(300,450);
         createMenuBar();
 
         Locale loc = JLLocale.getLocale();
-        this.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         // list contents are always left-to-right -- DISABLE FOR NOW
         // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-        this.setLocation(150, 200);
-        this.setVisible(true);
+        setLocation(150, 200);
+        setVisible(true);
     }
 
     public PatternList getPatternList() { return pl; }

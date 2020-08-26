@@ -30,7 +30,7 @@ class SiteswapTransitionerControl extends JPanel {
         JPanel p1 = new JPanel();  // top part of window
         p1.setLayout(gb);
 
-        JLabel lab1 = new JLabel("From pattern");
+        JLabel lab1 = new JLabel(guistrings.getString("from_pattern"));
         p1.add(lab1);
         gb.setConstraints(lab1, JLFunc.constraints(GridBagConstraints.LINE_END,0,0,
                                                  new Insets(0,0,0,3)));
@@ -38,7 +38,7 @@ class SiteswapTransitionerControl extends JPanel {
         p1.add(tf1);
         gb.setConstraints(tf1, JLFunc.constraints(GridBagConstraints.LINE_START,1,0));
 
-        JLabel lab2 = new JLabel("To pattern");
+        JLabel lab2 = new JLabel(guistrings.getString("to_pattern"));
         p1.add(lab2);
         gb.setConstraints(lab2, JLFunc.constraints(GridBagConstraints.LINE_END,0,1,
                                                  new Insets(0,0,0,3)));
@@ -61,7 +61,7 @@ class SiteswapTransitionerControl extends JPanel {
         JPanel p2 = new JPanel();  // multiplexing part
         p2.setLayout(gb);
 
-        JLabel lab3 = new JLabel("Multiplexing in transitions");
+        JLabel lab3 = new JLabel(guistrings.getString("multiplexing_in_transitions"));
         p2.add(lab3);
         gb.setConstraints(lab3, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
                                                   new Insets(5,0,0,0)));

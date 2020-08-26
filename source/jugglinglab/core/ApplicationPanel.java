@@ -48,13 +48,13 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     }
 
     public ApplicationPanel(JFrame p, View v, PatternList pl, boolean patlisttab) {
-        this.parent = p;
+        parent = p;
 
         // fields below are currently unused; they supported the applet version
         // of Juggling Lab
-        this.animtarget = v;
-        this.patlist = pl;
-        this.patlisttab = (pl == null) ? patlisttab : true;
+        animtarget = v;
+        patlist = pl;
+        patlisttab = (pl == null) ? patlisttab : true;
     }
 
     @Override
@@ -220,7 +220,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pl);
                                 //jtp.setSelectedComponent(pl);
                             } else {
-                                pw = new PatternListWindow(trans.getNotationName()+" "+guistrings.getString("Patterns"));
+                                String title = trans.getNotationName() + " " + guistrings.getString("Patterns");
+                                pw = new PatternListWindow(title, this);
                                 pwot = new GeneratorTarget(pw);
                             }
                             trans.runTransitioner(pwot, max_patterns, max_time);
@@ -233,6 +234,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                             if (pw == null)
                                 parent = pl;
                             new LabelDialog(parent, guistrings.getString("Generator_stopped_title"), ex.getMessage());
+                        } catch (JuggleExceptionInterrupted jei) {
+                            //System.out.println("generator thread quit");
                         } catch (JuggleExceptionUser ex) {
                             if (pw != null)
                                 pw.dispose();
@@ -257,7 +260,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
         p1.add(p3, BorderLayout.PAGE_END);
 
-        jtp.addTab("Transitions" /*guistrings.getString("Generator")*/, p1);
+        jtp.addTab(guistrings.getString("Transitions"), p1);
     }
 
     protected void addGeneratorControl(Generator gen, PatternList pl) {
@@ -296,7 +299,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pl);
                                 //jtp.setSelectedComponent(pl);
                             } else {
-                                pw = new PatternListWindow(gen.getNotationName()+" "+guistrings.getString("Patterns"));
+                                String title = gen.getNotationName() + " " + guistrings.getString("Patterns");
+                                pw = new PatternListWindow(title, this);
                                 pwot = new GeneratorTarget(pw);
                             }
                             gen.runGenerator(pwot, max_patterns, max_time);
@@ -309,6 +313,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                             if (pw == null)
                                 parent = pl;
                             new LabelDialog(parent, guistrings.getString("Generator_stopped_title"), ex.getMessage());
+                        } catch (JuggleExceptionInterrupted jei) {
+                            //System.out.println("generator thread quit");
                         } catch (JuggleExceptionUser ex) {
                             if (pw != null)
                                 pw.dispose();

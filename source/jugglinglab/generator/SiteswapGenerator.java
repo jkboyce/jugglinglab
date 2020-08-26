@@ -652,7 +652,8 @@ public class SiteswapGenerator extends Generator {
     // int num;              // number of valid patterns counted
     protected int findLoops(int pos, int throws_made, int min_throw,
                             int min_hand, int num) throws JuggleExceptionUser, JuggleExceptionInternal {
-        int outputpos_save = outputpos;
+        if (Thread.interrupted())
+            throw new JuggleExceptionInterrupted();
 
         // do a time check
         if (max_time > 0) {
@@ -665,6 +666,8 @@ public class SiteswapGenerator extends Generator {
                 }
             }
         }
+
+        int outputpos_save = outputpos;
 
         if (pos == l) {
             if (compareStates(pattern_state[0], pattern_state[l]) == 0 && isPatternValid()) {
