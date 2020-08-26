@@ -694,10 +694,10 @@ public class SiteswapGenerator extends Generator {
     // Generates loops recursively from a particular starting state.
     //
     // Arguments:
-    // int pos;              // position in pattern that we're constructing
+    // int pos;              // beat number in pattern that we're constructing
     // int min_throw;        // lowest we can throw this time
     // int min_hand;         // lowest hand we can throw to this time
-    // int num;              // number of valid patterns counted
+    // int outputpos;        // current position in the char[] output buffer
     protected int findLoops(int pos, int min_throw, int min_hand, int outputpos)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Thread.interrupted())
@@ -718,66 +718,65 @@ public class SiteswapGenerator extends Generator {
             }
         }
 
-        if (pos == l) {
-            if (compareStates(pattern_state[0], pattern_state[l]) == 0
-                        && isPatternValid(outputpos)) {
-                if (Constants.DEBUG_GENERATOR) {
-                    StringBuffer sb = new StringBuffer();
-                    for (int t = 0; t < outputpos; ++t)
-                        sb.append(output[t]);
-                    System.out.println("got a pattern: " + sb.toString());
-                }
-
-                if (numflag != 2)
-                    outputPattern(outputpos);
-
-                return 1;
-            } else
-                return 0;
-        }
-
         // find the next hand with something to throw
         int h = 0;
-        while (h < hands && throws_left[pos][h] == 0)
+
+        while (throws_left[pos][h] == 0) {
             ++h;
 
-        //System.out.println("h = " + h);
-        //if (h < hands)
-        //    System.out.println("throws_left[pos][h] = " + throws_left[pos][h]);
+            //System.out.println("h = " + h);
+            //if (h < hands)
+            //    System.out.println("throws_left[pos][h] = " + throws_left[pos][h]);
 
-        if (h == hands) {
-            // Done with current beat
+            if (h == hands) {
+                // Done with this beat. Do some checks to see if things are valid
+                // so far.
 
-            // output the throw as a string so we can test for exclusions
-            int outputpos_new = outputBeat(output, outputpos, pattern_throw_value[pos],
-                            pattern_throw_to[pos], pattern_rhythm[pos]);
+                // output the throw as a string so we can test for exclusions
+                int outputpos_new = outputBeat(output, outputpos, pattern_throw_value[pos],
+                                pattern_throw_to[pos], pattern_rhythm[pos]);
 
-            if (!areThrowsValid(pos, outputpos_new))
-                return 0;
+                if (!areThrowsValid(pos, outputpos_new))
+                    return 0;
+                if (mp_filter != 0 && !isMultiplexingValid(pos))
+                    return 0;
 
-            calculateState(pos + 1);
+                calculateState(pos + 1);
+                if (!isStateValid(pos + 1))
+                    return 0;
 
-            if (!isStateValid(pos + 1))
-                return 0;
+                if (Constants.DEBUG_GENERATOR) {
+                    StringBuffer sb = new StringBuffer();
+                    for (int t = 0; t < pos; ++t)
+                        sb.append(".  ");
+                    for (int t = outputpos; t < outputpos_new; ++t)
+                        sb.append(output[t]);
+                    System.out.println(sb.toString());
+                }
 
-            if (mp_filter != 0 && !isMultiplexingValid(pos))
-                return 0;
+                // move to next beat
+                ++pos;
 
-            // move to the next beat
+                if (pos < l) {
+                    startBeat(pos);
+                    return findLoops(pos, 1, 0, outputpos_new);
+                }
 
-            if (Constants.DEBUG_GENERATOR) {
-                StringBuffer sb = new StringBuffer();
-                for (int t = 0; t < pos; ++t)
-                    sb.append(".  ");
-                for (int t = outputpos; t < outputpos_new; ++t)
-                    sb.append(output[t]);
-                System.out.println(sb.toString());
+                // at the target length; does the pattern work?
+                if (compareStates(pattern_state[0], pattern_state[l]) == 0
+                            && isPatternValid(outputpos_new)) {
+                    if (Constants.DEBUG_GENERATOR) {
+                        StringBuffer sb = new StringBuffer();
+                        for (int t = 0; t < outputpos_new; ++t)
+                            sb.append(output[t]);
+                        System.out.println("got a pattern: " + sb.toString());
+                    }
+                    if (numflag != 2)
+                        outputPattern(outputpos_new);
+                    return 1;
+                } else
+                    return 0;
             }
-
-            if (pos + 1 < l)
-                startBeat(pos + 1);
-
-            return findLoops(pos + 1, 1, 0, outputpos_new);
         }
 
         // Have a throw to assign. Iterate over all possibilities.
@@ -815,6 +814,7 @@ public class SiteswapGenerator extends Generator {
                     throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
                 }
             }
+
             k = 0;
         }
 
