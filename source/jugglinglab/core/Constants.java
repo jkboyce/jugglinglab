@@ -15,6 +15,7 @@ public class Constants {
     public static final boolean DEBUG_PARSING = false;
     public static final boolean DEBUG_LAYOUT = false;
     public static final boolean DEBUG_TRANSITIONS = false;
+    public static final boolean DEBUG_GENERATOR = false;
     public static final boolean DEBUG_OPTIMIZE = false;
     public static final boolean VALIDATE_GENERATED_PATTERNS = false;
 

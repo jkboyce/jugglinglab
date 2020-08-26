@@ -83,6 +83,7 @@ public class SiteswapTransitioner extends Transitioner {
     @Override
     public void initTransitioner(String[] args) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Constants.DEBUG_TRANSITIONS) {
+            System.out.println("-----------------------------------------------------");
             System.out.println("initializing transitioner with args:");
             for (int i = 0; i < args.length; ++i)
                 System.out.print(args[i] + " ");
