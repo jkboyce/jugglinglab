@@ -54,13 +54,15 @@ public class GeneratorTarget {
         final String fanim = anim;
 
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
-            if (notation.equalsIgnoreCase("siteswap") && anim.length() > 0) {
-                try {
-                    (new SiteswapPattern()).fromString(anim);
-                } catch (JuggleException je) {
-                    throw new JuggleExceptionInternal("Error: pattern \"" + anim + "\" did not validate");
+            if (ltarget != null || ptarget != null) {
+                if (notation.equalsIgnoreCase("siteswap") && anim.length() > 0) {
+                    try {
+                        (new SiteswapPattern()).fromString(anim);
+                    } catch (JuggleException je) {
+                        throw new JuggleExceptionInternal("Error: pattern \"" + anim + "\" did not validate");
+                    }
+                    System.out.println("pattern \"" + anim + "\" validated");
                 }
-                System.out.println("pattern \"" + anim + "\" validated");
             }
         }
 

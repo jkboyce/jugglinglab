@@ -56,16 +56,9 @@ public class SiteswapGenerator extends Generator {
 
     protected final static int async_rhythm_repunit[][] = { { 1 } };
     protected final static int sync_rhythm_repunit[][] = { { 1, 0 }, { 1, 0 } };
+    private final static int loop_counter_max = 20000;
 
-    protected int[][][] pattern_rhythm;
-    protected int[][][] pattern_state;
-    protected int[][] throws_left;
-    protected int[][] pattern_holes;
-    protected int[][][] pattern_throw_to;
-    protected int[][][] pattern_throw_value;
-    protected int[][][][] pattern_filter;
-    protected boolean pattern_printx;
-
+    // configuration variables
     protected int hands;
     protected int max_occupancy;
     protected int leader_person;
@@ -73,8 +66,6 @@ public class SiteswapGenerator extends Generator {
     protected int rhythm_period;
     protected int[] holdthrow;
     protected int[] person_number;
-    protected int[] scratch1;
-    protected int[] scratch2;
     protected int[][] ground_state;
     protected int ground_state_length;
     protected int n;
@@ -84,7 +75,6 @@ public class SiteswapGenerator extends Generator {
     protected int lhigh;
     protected ArrayList<Pattern> exclude;
     protected ArrayList<Pattern> include;
-    protected char[] output;
     protected int numflag;
     protected int groundflag;
     protected int rotflag;
@@ -96,28 +86,38 @@ public class SiteswapGenerator extends Generator {
     protected boolean lameflag;
     protected boolean sequenceflag;
     protected boolean connected_patterns;
-    protected boolean[] connections;
     protected boolean juggler_permutations;
-    protected boolean[] perm_scratch1;
-    protected boolean[] perm_scratch2;
     protected int mode;
     protected int jugglers;
     protected int slot_size;
+
+    // working variables
+    protected int[][][] pattern_rhythm;
+    protected int[][][] pattern_state;
+    protected int[][] throws_left;
+    protected int[][] pattern_holes;
+    protected int[][][] pattern_throw_to;
+    protected int[][][] pattern_throw_value;
+    protected int[][][][] pattern_filter;
+    protected boolean pattern_printx;
+    protected int[] scratch1;
+    protected int[] scratch2;
+    protected char[] output;
+    protected boolean[] connections;
+    protected boolean[] perm_scratch1;
+    protected boolean[] perm_scratch2;
     protected char[] starting_seq;
     protected char[] ending_seq;
     protected int starting_seq_length;
     protected int ending_seq_length;
-
-    protected GeneratorTarget target;
-
     protected int max_num;              // maximum number of patterns to print
     protected double max_time;          // maximum number of seconds
     protected long max_time_millis;     // maximum number of milliseconds
     protected long start_time_millis;   // start time of run, in milliseconds
     protected int loop_counter;         // gen_loop() counter for checking timeout
-    protected final static int loop_counter_max = 20000;
 
     protected SiteswapGeneratorControl control;
+    protected GeneratorTarget target;
 
 
     @Override
@@ -153,6 +153,53 @@ public class SiteswapGenerator extends Generator {
 
     @Override
     public void initGenerator(String[] args) throws JuggleExceptionUser {
+        configGenerator(args);
+        allocateWorkspace();
+    }
+
+    @Override
+    public int runGenerator(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
+        return runGenerator(t, -1, -1.0);  // no limits
+    }
+
+    @Override
+    public int runGenerator(GeneratorTarget t, int num_limit, double secs_limit) throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (groundflag == 1 && ground_state_length > ht)
+            return 0;
+
+        target = t;
+
+        max_num = num_limit;
+        max_time = secs_limit;
+        if (max_time > 0) {
+            max_time_millis = (long)(1000.0 * secs_limit);
+            start_time_millis = System.currentTimeMillis();
+            loop_counter = 0;
+        }
+
+        int num = 0;
+        for (l = llow; l <= lhigh; l += rhythm_period)
+            num += findPatterns(0, 0, 0);
+
+        if (numflag != 0) {
+            if (num == 1)
+                target.setStatus(guistrings.getString("Generator_patterns_1"));
+            else {
+                String template = guistrings.getString("Generator_patterns_ne1");
+                Object[] arguments = { new Integer(num) };
+                target.setStatus(MessageFormat.format(template, arguments));
+            }
+        }
+
+        return num;
+    }
+
+    //--------------------------------------------------------------------------
+    // Non-public methods below
+    //--------------------------------------------------------------------------
+
+    // Sets the generator configuration variables based on arguments
+    protected void configGenerator(String[] args) throws JuggleExceptionUser {
         if (Constants.DEBUG_GENERATOR) {
             System.out.println("-----------------------------------------------------");
             System.out.println("initializing generator with args:");
@@ -283,7 +330,7 @@ public class SiteswapGenerator extends Generator {
                 ++i;
                 while (i < args.length && args[i].charAt(0) != '-') {
                     try {
-                        String re = make_standard_RE(args[i]);
+                        String re = makeStandardRegex(args[i]);
                         if (re.indexOf("^") < 0)
                             re = ".*" + re + ".*";
                         exclude.add(Pattern.compile(re));
@@ -298,7 +345,7 @@ public class SiteswapGenerator extends Generator {
                 ++i;
                 while (i < args.length && args[i].charAt(0) != '-') {
                     try {
-                        String re = make_standard_RE(args[i]);
+                        String re = makeStandardRegex(args[i]);
                         if (re.indexOf("^") < 0)
                             re = ".*" + re;
                         if (re.indexOf("$") < 0)
@@ -317,7 +364,7 @@ public class SiteswapGenerator extends Generator {
             }
         }
 
-        initialize();
+        configMode();
 
         try {
             n = Integer.parseInt(args[0]);
@@ -426,31 +473,6 @@ public class SiteswapGenerator extends Generator {
         if (max_occupancy == 1)  // no multiplexing, turn off filter
             mp_filter = 0;
 
-        // allocate space for the states, rhythms, and throws in the pattern,
-        // plus other incidental variables
-        pattern_state = new int[lhigh + 1][hands][ground_state_length];  // last index not ht because of findStartEnd()
-        pattern_holes = new int[hands][lhigh + ht];
-        pattern_throw_to = new int[slot_size][hands][max_occupancy];  // first index not l because of findStartEnd()
-        pattern_throw_value = new int[slot_size][hands][max_occupancy];
-
-        pattern_rhythm = new int[slot_size+1][hands][ht];
-        for (int i = 0; i < (slot_size + 1); ++i)
-            for (int j = 0; j < hands; ++j)
-                for (int k = 0; k < ht; ++k)
-                    pattern_rhythm[i][j][k] =
-                        multiplex * rhythm_repunit[j][(k + i) % rhythm_period];
-
-
-        if (mp_filter != 0)         /* allocate space for filter variables */
-            pattern_filter = new int[lhigh+1][hands][slot_size][3];
-
-        throws_left = new int[lhigh][hands];
-
-        if (jugglers > 1) {       /* passing communication delay variables */
-            scratch1 = new int[hands];
-            scratch2 = new int[hands];
-        }
-
         // Include the regular expressions that define "true multiplexing"
         if (true_multiplex) {
             String include_RE = null;
@@ -470,86 +492,10 @@ public class SiteswapGenerator extends Generator {
             if (include_RE != null)
                 include.add(Pattern.compile(include_RE));
         }
-
-        if (connected_patterns)
-            connections = new boolean[jugglers];
-
-        if (jugglers > 1 && !juggler_permutations) {
-            perm_scratch1 = new boolean[lhigh];
-            perm_scratch2 = new boolean[lhigh];
-        }
     }
 
-    @Override
-    public int runGenerator(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
-        return runGenerator(t, -1, -1.0);  // no limits
-    }
-
-    @Override
-    public int runGenerator(GeneratorTarget t, int num_limit, double secs_limit) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (groundflag == 1 && ground_state_length > ht)
-            return 0;
-
-        target = t;
-
-        max_num = num_limit;
-        max_time = secs_limit;
-        if (max_time > 0) {
-            max_time_millis = (long)(1000.0 * secs_limit);
-            start_time_millis = System.currentTimeMillis();
-            loop_counter = 0;
-        }
-
-        int num = 0;
-        for (l = llow; l <= lhigh; l += rhythm_period)
-            num += findPatterns(0, 0, 0);
-
-        if (numflag != 0) {
-            if (num == 1)
-                target.setStatus(guistrings.getString("Generator_patterns_1"));
-            else {
-                String template = guistrings.getString("Generator_patterns_ne1");
-                Object[] arguments = { new Integer(num) };
-                target.setStatus(MessageFormat.format(template, arguments));
-            }
-        }
-
-        return num;
-    }
-
-    //--------------------------------------------------------------------------
-    // Non-public methods below
-    //--------------------------------------------------------------------------
-
-    // Reformats the exclude/include terms into standard regular expressions.
-    // Exchange "\x" for "x", where x is one of the RE metacharacters that conflicts
-    // with siteswap notation: []()|
-    protected String make_standard_RE(String term) {
-        String res;
-
-        res = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@");
-        res = Pattern.compile("\\[").matcher(res).replaceAll("\\\\[");
-        res = Pattern.compile("@").matcher(res).replaceAll("[");
-        res = Pattern.compile("\\\\\\]").matcher(res).replaceAll("@");
-        res = Pattern.compile("\\]").matcher(res).replaceAll("\\\\]");
-        res = Pattern.compile("@").matcher(res).replaceAll("]");
-
-        res = Pattern.compile("\\\\\\(").matcher(res).replaceAll("@");
-        res = Pattern.compile("\\(").matcher(res).replaceAll("\\\\(");
-        res = Pattern.compile("@").matcher(res).replaceAll("(");
-        res = Pattern.compile("\\\\\\)").matcher(res).replaceAll("@");
-        res = Pattern.compile("\\)").matcher(res).replaceAll("\\\\)");
-        res = Pattern.compile("@").matcher(res).replaceAll(")");
-
-        res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@");
-        res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|");
-        res = Pattern.compile("@").matcher(res).replaceAll("|");
-
-        return res;
-    }
-
-    // Initializes data structures to reflect operating mode.
-    protected void initialize() {
+    // Initializes configuration data structures to reflect operating mode.
+    protected void configMode() {
         switch (mode) {
             case ASYNC:
                 rhythm_repunit = new int[jugglers][1];
@@ -578,6 +524,41 @@ public class SiteswapGenerator extends Generator {
                     person_number[i] = (i / 2) + 1;
                 }
                 break;
+        }
+    }
+
+    // Allocates space for the states, rhythms, and throws in the pattern,
+    // plus other incidental variables.
+    protected void allocateWorkspace() {
+        pattern_state = new int[lhigh + 1][hands][ground_state_length];  // last index not ht because of findStartEnd()
+        pattern_holes = new int[hands][lhigh + ht];
+        pattern_throw_to = new int[slot_size][hands][max_occupancy];  // first index not l because of findStartEnd()
+        pattern_throw_value = new int[slot_size][hands][max_occupancy];
+
+        pattern_rhythm = new int[slot_size+1][hands][ht];
+        for (int i = 0; i < (slot_size + 1); ++i)
+            for (int j = 0; j < hands; ++j)
+                for (int k = 0; k < ht; ++k)
+                    pattern_rhythm[i][j][k] =
+                        multiplex * rhythm_repunit[j][(k + i) % rhythm_period];
+
+
+        if (mp_filter != 0)  // allocate space for filter variables
+            pattern_filter = new int[lhigh+1][hands][slot_size][3];
+
+        throws_left = new int[lhigh][hands];
+
+        if (jugglers > 1) {  // passing communication delay variables
+            scratch1 = new int[hands];
+            scratch2 = new int[hands];
+        }
+
+        if (connected_patterns)
+            connections = new boolean[jugglers];
+
+        if (jugglers > 1 && !juggler_permutations) {
+            perm_scratch1 = new boolean[lhigh];
+            perm_scratch2 = new boolean[lhigh];
         }
     }
 
@@ -1802,8 +1783,35 @@ public class SiteswapGenerator extends Generator {
     }
     */
 
+    // Reformats the exclude/include terms into standard regular expressions.
+    // Exchange "\x" for "x", where x is one of the RE metacharacters that conflicts
+    // with siteswap notation: []()|
+    protected static String makeStandardRegex(String term) {
+        String res;
+
+        res = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@");
+        res = Pattern.compile("\\[").matcher(res).replaceAll("\\\\[");
+        res = Pattern.compile("@").matcher(res).replaceAll("[");
+        res = Pattern.compile("\\\\\\]").matcher(res).replaceAll("@");
+        res = Pattern.compile("\\]").matcher(res).replaceAll("\\\\]");
+        res = Pattern.compile("@").matcher(res).replaceAll("]");
+
+        res = Pattern.compile("\\\\\\(").matcher(res).replaceAll("@");
+        res = Pattern.compile("\\(").matcher(res).replaceAll("\\\\(");
+        res = Pattern.compile("@").matcher(res).replaceAll("(");
+        res = Pattern.compile("\\\\\\)").matcher(res).replaceAll("@");
+        res = Pattern.compile("\\)").matcher(res).replaceAll("\\\\)");
+        res = Pattern.compile("@").matcher(res).replaceAll(")");
+
+        res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@");
+        res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|");
+        res = Pattern.compile("@").matcher(res).replaceAll("|");
+
+        return res;
+    }
+
     //--------------------------------------------------------------------------
-    // Static methods to run the generator with command line input
+    // Static methods to run the generator from the command line
     //--------------------------------------------------------------------------
 
     public static void runGeneratorCLI(String[] args, GeneratorTarget target) {
