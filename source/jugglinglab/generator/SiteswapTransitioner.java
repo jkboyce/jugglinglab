@@ -117,12 +117,9 @@ public class SiteswapTransitioner extends Transitioner {
                 num = 1;
             } else {
                 siteswap_prev = siteswap_from;
-                for (int l = l_min; l <= l_max; ++l)
+                for (int l = l_min; l <= l_max || num == 0; ++l)
                     num += findTrans(state_from, state_to, l, true);
             }
-
-            if (num == 0)
-                throw new JuggleExceptionInternal("No transitions found in runTransitioner()");
 
             if (num == 1)
                 target.setStatus(guistrings.getString("Generator_patterns_1"));
@@ -261,9 +258,9 @@ public class SiteswapTransitioner extends Transitioner {
             System.out.println("max_occupancy: " + max_occupancy);
             System.out.println("mp_allow_simulcatches: " + mp_allow_simulcatches);
             System.out.println("mp_allow_clusters: " + mp_allow_clusters);
-            System.out.println("l_min = " + l_min);
-            System.out.println("l_max = " + l_max);
-            System.out.println("l_return (initial) = " + l_return);
+            System.out.println("l_min: " + l_min);
+            System.out.println("l_max: " + l_max);
+            System.out.println("l_return (initial): " + l_return);
         }
     }
 
