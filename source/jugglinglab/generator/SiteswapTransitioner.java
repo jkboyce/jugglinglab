@@ -13,46 +13,48 @@ import jugglinglab.util.*;
 
 
 public class SiteswapTransitioner extends Transitioner {
+    protected final static int loop_counter_max = 20000;
+
+    // configuration variables
     protected int n;
     protected int jugglers;
     protected int indexes;
+    protected int l_min;
+    protected int l_max;
+    protected int target_occupancy;
     protected int max_occupancy;
-    protected int lmin;
-    protected int lmax;
     protected boolean mp_allow_simulcatches;
     protected boolean mp_allow_clusters;
     protected boolean no_limits;
-    protected SiteswapTransitionerControl control;
-
-    protected String from_pattern;
-    protected String to_pattern;
-    protected SiteswapPattern from_siteswap;
-    protected SiteswapPattern to_siteswap;
-    protected int[][][] from_state;
-    protected int[][][] to_state;
+    protected String pattern_from;
+    protected String pattern_to;
+    protected SiteswapPattern siteswap_from;
+    protected SiteswapPattern siteswap_to;
+    protected int[][][] state_from;
+    protected int[][][] state_to;
     protected String return_trans;
 
-    // working space for transition-finding; see recurse() below
-    protected int[][][][] st;
-    protected int[][][] st_target;
+    // working variables for transition-finding; see recurse() below
+    protected int[][][][] state;
+    protected int[][][] state_target;
     protected int l_target;
+    protected int l_return;
     protected MHNThrow[][][][] th;
     protected int[][][] throws_left;
     protected boolean find_all;
     protected String[][] out;
     protected boolean[] should_print;
     protected boolean[][] async_hand_right;
-    protected SiteswapPattern prev_siteswap;
+    protected SiteswapPattern siteswap_prev;
     protected int target_max_filled_index;
-    protected GeneratorTarget target;
-
     protected int max_num;              // maximum number of transitions to find
     protected double max_time;          // maximum number of seconds
     protected long max_time_millis;     // maximum number of milliseconds
     protected long start_time_millis;   // start time of run, in milliseconds
     protected int loop_counter;         // gen_loop() counter for checking timeout
-    protected final static int loop_counter_max = 20000;
 
+    protected SiteswapTransitionerControl control;
+    protected GeneratorTarget target;
 
     @Override
     public String getNotationName() {
@@ -82,6 +84,69 @@ public class SiteswapTransitioner extends Transitioner {
 
     @Override
     public void initTransitioner(String[] args) throws JuggleExceptionUser, JuggleExceptionInternal {
+        configTransitioner(args);
+        allocateWorkspace();
+    }
+
+    @Override
+    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
+        return runTransitioner(t, -1, -1.0);  // negative values --> no limits
+    }
+
+    @Override
+    public int runTransitioner(GeneratorTarget t, int num_limit, double secs_limit)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
+        max_num = num_limit;
+        max_time = secs_limit;
+        if (max_time > 0 || Constants.DEBUG_TRANSITIONS) {
+            max_time_millis = (long)(1000.0 * secs_limit);
+            start_time_millis = System.currentTimeMillis();
+            loop_counter = 0;
+        }
+
+        try {
+            t.setPrefixSuffix("(" + pattern_from + "^2)",
+                    "(" + pattern_to + "^2)" + findReturnTrans());
+
+            int num = 0;
+            target = t;
+
+            if (l_min == 0) {
+                // no transitions needed
+                target.writePattern("", "siteswap", "");
+                num = 1;
+            } else {
+                siteswap_prev = siteswap_from;
+                for (int l = l_min; l <= l_max; ++l)
+                    num += findTrans(state_from, state_to, l, true);
+            }
+
+            if (num == 0)
+                throw new JuggleExceptionInternal("No transitions found in runTransitioner()");
+
+            if (num == 1)
+                target.setStatus(guistrings.getString("Generator_patterns_1"));
+            else {
+                String template = guistrings.getString("Generator_patterns_ne1");
+                Object[] arguments = { new Integer(num) };
+                target.setStatus(MessageFormat.format(template, arguments));
+            }
+
+            return num;
+        } finally {
+            if (Constants.DEBUG_TRANSITIONS) {
+                long millis = System.currentTimeMillis() - start_time_millis;
+                System.out.println(String.format("time elapsed: %d.%03d s", millis/1000, millis%1000));
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    // Non-public methods below
+    //--------------------------------------------------------------------------
+
+    // Sets the transitioner configuration variables based on arguments
+    protected void configTransitioner(String[] args) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Constants.DEBUG_TRANSITIONS) {
             System.out.println("-----------------------------------------------------");
             System.out.println("initializing transitioner with args:");
@@ -97,7 +162,7 @@ public class SiteswapTransitioner extends Transitioner {
         if (args[1].equals("-"))
             throw new JuggleExceptionUser(errorstrings.getString("Error_trans_to_pattern"));
 
-        max_occupancy = 1;
+        target_occupancy = 1;
         mp_allow_simulcatches = false;
         mp_allow_clusters = true;
         no_limits = false;
@@ -111,7 +176,7 @@ public class SiteswapTransitioner extends Transitioner {
             else if (args[i].equals("-m")) {
                 if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
                     try {
-                        max_occupancy = Integer.parseInt(args[i + 1]);
+                        target_occupancy = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException nfe) {
                         String template = errorstrings.getString("Error_number_format");
                         String str = guistrings.getString("simultaneous_throws");
@@ -129,22 +194,22 @@ public class SiteswapTransitioner extends Transitioner {
             }
         }
 
-        from_pattern = args[0];
-        to_pattern = args[1];
+        pattern_from = args[0];
+        pattern_to = args[1];
 
         // parse patterns, error if either is invalid
-        from_siteswap = new SiteswapPattern();
-        to_siteswap = new SiteswapPattern();
+        siteswap_from = new SiteswapPattern();
+        siteswap_to = new SiteswapPattern();
 
         try {
-            from_siteswap.fromString(from_pattern);
+            siteswap_from.fromString(pattern_from);
         } catch (JuggleExceptionUser jeu) {
             String template = errorstrings.getString("Error_trans_in_from_pattern");
             Object[] arguments = { jeu.getMessage() };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
         try {
-            to_siteswap.fromString(to_pattern);
+            siteswap_to.fromString(pattern_to);
         } catch (JuggleExceptionUser jeu) {
             String template = errorstrings.getString("Error_trans_in_to_pattern");
             Object[] arguments = { jeu.getMessage() };
@@ -152,8 +217,8 @@ public class SiteswapTransitioner extends Transitioner {
         }
 
         // work out number of objects and jugglers, and beats (indexes) in states
-        int from_n = from_siteswap.getNumberOfPaths();
-        int to_n = to_siteswap.getNumberOfPaths();
+        int from_n = siteswap_from.getNumberOfPaths();
+        int to_n = siteswap_to.getNumberOfPaths();
         if (from_n != to_n) {
             String template = errorstrings.getString("Error_trans_unequal_objects");
             Object[] arguments = { from_n, to_n };
@@ -161,8 +226,8 @@ public class SiteswapTransitioner extends Transitioner {
         }
         n = from_n;
 
-        int from_jugglers = from_siteswap.getNumberOfJugglers();
-        int to_jugglers = to_siteswap.getNumberOfJugglers();
+        int from_jugglers = siteswap_from.getNumberOfJugglers();
+        int to_jugglers = siteswap_to.getNumberOfJugglers();
         if (from_jugglers != to_jugglers) {
             String template = errorstrings.getString("Error_trans_unequal_jugglers");
             Object[] arguments = { from_jugglers, to_jugglers };
@@ -170,175 +235,117 @@ public class SiteswapTransitioner extends Transitioner {
         }
         jugglers = from_jugglers;
 
-        indexes = Math.max(from_siteswap.getIndexes(), to_siteswap.getIndexes());
+        indexes = Math.max(siteswap_from.getIndexes(), siteswap_to.getIndexes());
+        max_occupancy = Math.max(target_occupancy,
+                Math.max(siteswap_from.getMaxOccupancy(), siteswap_to.getMaxOccupancy()));
 
         // find (and store) starting states for each pattern
-        from_state = from_siteswap.getStartingState(indexes);
-        to_state = to_siteswap.getStartingState(indexes);
+        state_from = siteswap_from.getStartingState(indexes);
+        state_to = siteswap_to.getStartingState(indexes);
+
+        // find length of transitions from A to B, and B to A
+        l_min = findMinLength(state_from, state_to);
+        l_max = findMaxLength(state_from, state_to);
+        l_return = findMinLength(state_to, state_from);  // may need to be longer
 
         if (Constants.DEBUG_TRANSITIONS) {
             System.out.println("from state:");
-            printState(from_state);
+            printState(state_from);
             System.out.println("to state:");
-            printState(to_state);
+            printState(state_to);
 
             System.out.println("objects: " + n);
             System.out.println("jugglers: " + jugglers);
             System.out.println("indexes: " + indexes);
+            System.out.println("target_occupancy: " + target_occupancy);
             System.out.println("max_occupancy: " + max_occupancy);
             System.out.println("mp_allow_simulcatches: " + mp_allow_simulcatches);
             System.out.println("mp_allow_clusters: " + mp_allow_clusters);
+            System.out.println("l_min = " + l_min);
+            System.out.println("l_max = " + l_max);
+            System.out.println("l_return (initial) = " + l_return);
         }
+    }
 
-        // find length of transitions from A to B, and B to A
-        lmin = findMinLength(from_state, to_state);
-        lmax = findMaxLength(from_state, to_state);
-        int lreturn = findMinLength(to_state, from_state);
+    // Allocates space for the states and throws in the transition, plus other
+    // incidental variables.
+    protected void allocateWorkspace() {
+        int size = Math.max(l_max, l_return);
 
-        // initialize working space
-        int size = Math.max(lmax, lreturn);
-        st = new int[size + 1][jugglers][2][indexes];
-        st_target = new int[jugglers][2][indexes];
+        state = new int[size + 1][jugglers][2][indexes];
+        state_target = new int[jugglers][2][indexes];
         th = new MHNThrow[jugglers][2][size][max_occupancy];
         throws_left = new int[size + 1][jugglers][2];
         out = new String[jugglers][size];
         should_print = new boolean[size + 1];
         async_hand_right = new boolean[jugglers][size + 1];
-
-        if (Constants.DEBUG_TRANSITIONS) {
-            System.out.println("lmin = " + lmin);
-            System.out.println("lmax = " + lmax);
-            System.out.println("lreturn = " + lreturn);
-        }
     }
 
-    @Override
-    public int runTransitioner(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
-        return runTransitioner(t, -1, -1.0);  // negative values --> no limits
-    }
-
-    @Override
-    public int runTransitioner(GeneratorTarget t, int num_limit, double secs_limit)
-                    throws JuggleExceptionUser, JuggleExceptionInternal {
-        max_num = num_limit;
-        max_time = secs_limit;
-        if (max_time > 0) {
-            max_time_millis = (long)(1000.0 * secs_limit);
-            start_time_millis = System.currentTimeMillis();
-            loop_counter = 0;
-        }
-
-        // find (and store) the shortest transition from B back to A
-        //
-        // if we added a hands modifier at the end, such as 'R' or '<R|R>',
-        // then remove it (unneeded at end of overall pattern)
-        prev_siteswap = to_siteswap;
-        return_trans = findShortestTrans(to_state, from_state)
-                       .replaceAll("R$", "")
-                       .replaceAll("\\<(R\\|)+R\\>$", "");
-
-        if (Constants.DEBUG_TRANSITIONS) {
-            System.out.println("return trans = " + return_trans);
-        }
-
-        target = t;
-        target.setPrefixSuffix("(" + from_pattern + "^2)",
-                "(" + to_pattern + "^2)" + return_trans);
-
-        int num = 0;
-
-        if (lmin == 0) {
-            // no transitions needed
-            target.writePattern("", "siteswap", "");
-            num = 1;
-        } else {
-            prev_siteswap = from_siteswap;
-            for (int l = lmin; l <= lmax; ++l)
-                num += findAllTrans(from_state, to_state, l);
-        }
-
-        if (num == 0)
-            throw new JuggleExceptionInternal("No transitions found in runTransitioner()");
-
-        if (num == 1)
-            target.setStatus(guistrings.getString("Generator_patterns_1"));
-        else {
-            String template = guistrings.getString("Generator_patterns_ne1");
-            Object[] arguments = { new Integer(num) };
-            target.setStatus(MessageFormat.format(template, arguments));
-        }
-
-        return num;
-    }
-
-    //--------------------------------------------------------------------------
-    // Non-public methods below
-    //--------------------------------------------------------------------------
-
-    // Finds a single example of a shortest transition from one state to another.
-    protected String findShortestTrans(int[][][] from_st, int[][][] to_st) throws JuggleExceptionUser, JuggleExceptionInternal {
-        l_target = findMinLength(from_st, to_st);
-        if (l_target == 0)
+    // Finds the shortest possible return transition from `to` back to `from`.
+    protected String findReturnTrans() throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (l_return == 0)
             return "";
-
-        for (int j = 0; j < jugglers; ++j) {
-            for (int h = 0; h < 2; ++h) {
-                for (int i = 0; i < indexes; ++i) {
-                    st[0][j][h][i] = from_st[j][h][i];
-                    st_target[j][h][i] = to_st[j][h][i];
-                }
-            }
-        }
 
         StringBuffer sb = new StringBuffer();
         target = new GeneratorTarget(sb);
+        siteswap_prev = siteswap_to;
 
-        target_max_filled_index = getMaxFilledIndex(st_target);
-        if (Constants.DEBUG_TRANSITIONS) {
-            System.out.println("-----------------------------------------------------");
-            System.out.println("starting findShortestTrans()...");
-            System.out.println("l_target = " + l_target);
-            System.out.println("target_max_filled_index = " + target_max_filled_index);
+        while (true) {
+            int num = findTrans(state_to, state_from, l_return, false);
+
+            if (Constants.DEBUG_TRANSITIONS)
+                System.out.println("l_return = " + l_return + " --> num = " + num);
+
+            if (num == 0) {
+                ++l_return;
+                allocateWorkspace();
+                continue;
+            }
+
+            if (num == 1)
+                break;
+
+            throw new JuggleExceptionInternal("Too many transitions in findReturnTrans()");
         }
 
-        startBeat(0);
-        find_all = false;
-        int num = recurse(0, 0, 0);
+        // if we added a hands modifier at the end, such as 'R' or '<R|R>',
+        // then remove it (unneeded at end of overall pattern)
+        String return_trans = sb.toString()
+                                .replaceAll("\n", "")
+                                .replaceAll("R$", "")
+                                .replaceAll("\\<(R\\|)+R\\>$", "");
 
-        if (num == 0)
-            throw new JuggleExceptionInternal("No transitions found in findShortestTrans()");
-        else if (num > 1)
-            throw new JuggleExceptionInternal("Too many transitions found in findShortestTrans()");
-
-        return sb.toString().replaceAll("\n", "");
+        if (Constants.DEBUG_TRANSITIONS)
+            System.out.println("return trans = " + return_trans);
+        return return_trans;
     }
 
-    // Finds all transitions from one state to another, with the number of beats
+    // Finds transitions from one state to another, with the number of beats
     // given by `l`.
     //
     // Returns the number of transitions found.
-    protected int findAllTrans(int[][][] from_st, int[][][] to_st, int l) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected int findTrans(int[][][] from_st, int[][][] to_st, int l, boolean all) throws JuggleExceptionUser, JuggleExceptionInternal {
         l_target = l;
 
         for (int j = 0; j < jugglers; ++j) {
             for (int h = 0; h < 2; ++h) {
                 for (int i = 0; i < indexes; ++i) {
-                    st[0][j][h][i] = from_st[j][h][i];
-                    st_target[j][h][i] = to_st[j][h][i];
+                    state[0][j][h][i] = from_st[j][h][i];
+                    state_target[j][h][i] = to_st[j][h][i];
                 }
             }
         }
 
-        target_max_filled_index = getMaxFilledIndex(st_target);
+        target_max_filled_index = getMaxFilledIndex(state_target);
         if (Constants.DEBUG_TRANSITIONS) {
             System.out.println("-----------------------------------------------------");
-            System.out.println("starting findAllTrans()...");
+            System.out.println("starting findTrans()...");
             System.out.println("l_target = " + l_target);
             System.out.println("target_max_filled_index = " + target_max_filled_index);
         }
 
         startBeat(0);
-        find_all = true;
+        find_all = all;
         int num = recurse(0, 0, 0);
 
         if (Constants.DEBUG_TRANSITIONS)
@@ -348,7 +355,7 @@ public class SiteswapTransitioner extends Transitioner {
     }
 
     // Finds valid transitions of length `l_target` from a given position in
-    // the pattern, to state `st_target`, and outputs them to GeneratorTarget
+    // the pattern, to state `state_target`, and outputs them to GeneratorTarget
     // `target`.
     //
     // returns the number of transitions found.
@@ -386,7 +393,7 @@ public class SiteswapTransitioner extends Transitioner {
                 }
 
                 // at the target length; does the transition work?
-                if (statesEqual(st[pos], st_target)) {
+                if (statesEqual(state[pos], state_target)) {
                     if (Constants.DEBUG_TRANSITIONS)
                         System.out.println("got a pattern");
                     outputPattern();
@@ -421,13 +428,13 @@ public class SiteswapTransitioner extends Transitioner {
         while (true) {
             for (int tj = 0; tj < jugglers; ++tj) {
                 for (int th = 0; th < 2; ++th) {
-                    int ts = st[pos + 1][tj][th][ti - pos - 1];  // target slot
+                    int ts = state[pos + 1][tj][th][ti - pos - 1];  // target slot
                     int finali = ti - l_target;  // target index in final state
 
                     if (finali >= 0 && finali < indexes) {
-                        if (ts >= st_target[tj][th][finali])
+                        if (ts >= state_target[tj][th][finali])
                             continue;  // inconsistent with final state
-                    } else if (ts >= max_occupancy)
+                    } else if (ts >= target_occupancy)
                         continue;
 
                     mhnt.targetjuggler = tj + 1;
@@ -435,27 +442,32 @@ public class SiteswapTransitioner extends Transitioner {
                     mhnt.targetindex = ti;
                     mhnt.targetslot = ts;
 
-                    if (isThrowValid(pos, mhnt)) {
-                        if (Constants.DEBUG_TRANSITIONS) {
-                            StringBuffer sb = new StringBuffer();
-                            for (int t = 0; t < pos; ++t)
-                                sb.append(".  ");
-                            sb.append(mhnt.toString());
-                            System.out.println(sb.toString());
-                        }
+                    if (Constants.DEBUG_TRANSITIONS) {
+                        System.out.println("trying throw " + mhnt.toString());
+                    }
 
-                        addThrow(pos, mhnt);
-                        num += recurse(pos, j, h);
-                        removeThrow(pos, mhnt);
+                    if (!isThrowValid(pos, mhnt))
+                        continue;
 
-                        if (!find_all && num > 0)
-                            return num;
+                    if (Constants.DEBUG_TRANSITIONS) {
+                        StringBuffer sb = new StringBuffer();
+                        for (int t = 0; t < pos; ++t)
+                            sb.append(".  ");
+                        sb.append(mhnt.toString());
+                        System.out.println(sb.toString());
+                    }
 
-                        if (max_num > 0 && num >= max_num) {
-                            String template = guistrings.getString("Generator_spacelimit");
-                            Object[] arguments = { new Integer(max_num) };
-                            throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
-                        }
+                    addThrow(pos, mhnt);
+                    num += recurse(pos, j, h);
+                    removeThrow(pos, mhnt);
+
+                    if (!find_all && num > 0)
+                        return num;
+
+                    if (max_num > 0 && num >= max_num) {
+                        String template = guistrings.getString("Generator_spacelimit");
+                        Object[] arguments = { new Integer(max_num) };
+                        throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
                     }
                 }
             }
@@ -489,18 +501,24 @@ public class SiteswapTransitioner extends Transitioner {
 
         // check #2: if we're going to throw on the next beat from the same
         // hand, throw can only be a 1x (i.e. a short hold)
-        int[][][] next_st = (pos + 1 == l_target ? st_target : st[pos + 1]);
+        int[][][] next_st = (pos + 1 == l_target ? state_target : state[pos + 1]);
         if (next_st[j][h][0] > 0) {
-            if (targetj != j || targeth != h || targeti != i + 1)
+            if (targetj != j || targeth != h || targeti != i + 1) {
+                if (Constants.DEBUG_TRANSITIONS)
+                    System.out.println("  failed check 2");
                 return false;
+            }
         }
 
         // check #3: if we threw from the same hand on the previous beat,
         // cannot throw a 1x (would have successive 1x throws, which are
         // equivalent to a long hold (2))
-        if (pos > 0 && st[pos - 1][j][h][0] > 0) {
-            if (targetj == j && targeth == h && targeti == i + 1)
+        if (pos > 0 && state[pos - 1][j][h][0] > 0) {
+            if (targetj == j && targeth == h && targeti == i + 1) {
+                if (Constants.DEBUG_TRANSITIONS)
+                    System.out.println("  failed check 3");
                 return false;
+            }
         }
 
         // check #4: if multiplexing, throw cannot be greater than any
@@ -510,8 +528,11 @@ public class SiteswapTransitioner extends Transitioner {
             if (prev == null)
                 break;
 
-            if (MHNThrow.compareThrows(mhnt, prev) == 1)
+            if (MHNThrow.compareThrows(mhnt, prev) == 1) {
+                if (Constants.DEBUG_TRANSITIONS)
+                    System.out.println("  failed check 4");
                 return false;
+            }
         }
 
         // check #5: if multiplexing, check for cluster throws if that setting
@@ -522,14 +543,17 @@ public class SiteswapTransitioner extends Transitioner {
                 if (prev == null)
                     break;
 
-                if (MHNThrow.compareThrows(mhnt, prev) == 0)
+                if (MHNThrow.compareThrows(mhnt, prev) == 0) {
+                    if (Constants.DEBUG_TRANSITIONS)
+                        System.out.println("  failed check 5");
                     return false;
+                }
             }
         }
 
         // check #6: if multiplexing, check for simultaneous catches if that
         // setting is enabled
-        if (max_occupancy > 1 && !mp_allow_simulcatches && th[j][h][pos][0] != null) {
+        if (target_occupancy > 1 && !mp_allow_simulcatches && th[j][h][pos][0] != null) {
             // count how many incoming throws are not holds
             int num_not_holds = 0;
 
@@ -553,9 +577,9 @@ public class SiteswapTransitioner extends Transitioner {
             }
 
             // case 2: incoming throws from the previous pattern
-            MHNThrow[][][][] th2 = prev_siteswap.getThrows();
-            int period = prev_siteswap.getPeriod();
-            int slots = prev_siteswap.getMaxOccupancy();
+            MHNThrow[][][][] th2 = siteswap_prev.getThrows();
+            int period = siteswap_prev.getPeriod();
+            int slots = siteswap_prev.getMaxOccupancy();
 
             for (int j2 = 0; j2 < jugglers; ++j2) {
                 for (int h2 = 0; h2 < 2; ++h2) {
@@ -591,6 +615,8 @@ public class SiteswapTransitioner extends Transitioner {
 
             if (num_not_holds > 1) {
                 //System.out.println("filtered out a pattern");
+                if (Constants.DEBUG_TRANSITIONS)
+                    System.out.println("  failed check 6");
                 return false;
             }
         }
@@ -601,17 +627,20 @@ public class SiteswapTransitioner extends Transitioner {
         if (targeti - i != 1 || targetj != j || targeth != h) {
             if (targeti - pos - 2 >= 0) {
                 // # of filled slots one beat before
-                int reserved = st[pos + 1][targetj][targeth][targeti - pos - 2];
+                int reserved = state[pos + 1][targetj][targeth][targeti - pos - 2];
 
                 // maximum allowed slot number
-                int max_slot = max_occupancy - 1;
+                int max_slot = target_occupancy - 1;
 
                 int finali = targeti - l_target;  // target index in final state
                 if (finali >= 0 && finali < indexes)
-                    max_slot = st_target[targetj][targeth][finali] - 1;
+                    max_slot = state_target[targetj][targeth][finali] - 1;
 
-                if (mhnt.targetslot > max_slot - reserved)
+                if (mhnt.targetslot > max_slot - reserved) {
+                    if (Constants.DEBUG_TRANSITIONS)
+                        System.out.println("  failed check 7");
                     return false;
+                }
             }
         }
 
@@ -633,7 +662,7 @@ public class SiteswapTransitioner extends Transitioner {
 
         // update future states
         for (int pos2 = pos + 1; pos2 <= l_target && pos2 <= di; ++pos2) {
-            ++st[pos2][dj][dh][di - pos2];
+            ++state[pos2][dj][dh][di - pos2];
         }
     }
 
@@ -652,7 +681,7 @@ public class SiteswapTransitioner extends Transitioner {
 
         // update future states
         for (int pos2 = pos + 1; pos2 <= l_target && pos2 <= di; ++pos2) {
-            --st[pos2][dj][dh][di - pos2];
+            --state[pos2][dj][dh][di - pos2];
         }
     }
 
@@ -747,7 +776,7 @@ public class SiteswapTransitioner extends Transitioner {
         for (int j = 0; j < jugglers; ++j) {
             if (th[j][0][pos][0] != null && th[j][1][pos][0] != null)
                 have_sync_throw = true;
-            if (st[pos + 1][j][0][0] > 0 || st[pos + 1][j][1][0] > 0)
+            if (state[pos + 1][j][0][0] > 0 || state[pos + 1][j][1][0] > 0)
                 have_throw_next_beat = true;
         }
 
@@ -880,10 +909,10 @@ public class SiteswapTransitioner extends Transitioner {
         for (int j = 0; j < jugglers; ++j) {
             for (int h = 0; h < 2; ++h) {
                 for (int i = 0; i < (indexes - 1); ++i)
-                    st[pos + 1][j][h][i] = st[pos][j][h][i + 1];
-                st[pos + 1][j][h][indexes - 1] = 0;
+                    state[pos + 1][j][h][i] = state[pos][j][h][i + 1];
+                state[pos + 1][j][h][indexes - 1] = 0;
 
-                throws_left[pos][j][h] = st[pos][j][h][0];
+                throws_left[pos][j][h] = state[pos][j][h][0];
             }
         }
     }

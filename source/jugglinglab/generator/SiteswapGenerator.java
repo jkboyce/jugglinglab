@@ -59,6 +59,20 @@ public class SiteswapGenerator extends Generator {
     private final static int loop_counter_max = 20000;
 
     // configuration variables
+    protected int n;
+    protected int jugglers;
+    protected int ht;
+    protected int l_min;
+    protected int l_max;
+    protected ArrayList<Pattern> exclude;
+    protected ArrayList<Pattern> include;
+    protected int numflag;
+    protected int groundflag;
+    protected int rotflag;
+    protected int fullflag;
+    protected int mpflag;
+    protected int multiplex;
+    protected int delaytime;
     protected int hands;
     protected int max_occupancy;
     protected int leader_person;
@@ -68,37 +82,23 @@ public class SiteswapGenerator extends Generator {
     protected int[] person_number;
     protected int[][] ground_state;
     protected int ground_state_length;
-    protected int n;
-    protected int ht;
-    protected int l;
-    protected int llow;
-    protected int lhigh;
-    protected ArrayList<Pattern> exclude;
-    protected ArrayList<Pattern> include;
-    protected int numflag;
-    protected int groundflag;
-    protected int rotflag;
-    protected int fullflag;
-    protected int mp_filter;
-    protected int multiplex;
-    protected int delaytime;
     protected boolean mp_clustered;
     protected boolean lameflag;
     protected boolean sequenceflag;
     protected boolean connected_patterns;
     protected boolean juggler_permutations;
     protected int mode;
-    protected int jugglers;
     protected int slot_size;
 
     // working variables
-    protected int[][][] pattern_rhythm;
-    protected int[][][] pattern_state;
+    protected int[][][] state;
+    protected int l_target;
+    protected int[][][] rhythm;
     protected int[][] throws_left;
-    protected int[][] pattern_holes;
-    protected int[][][] pattern_throw_to;
-    protected int[][][] pattern_throw_value;
-    protected int[][][][] pattern_filter;
+    protected int[][] holes;
+    protected int[][][] throw_to;
+    protected int[][][] throw_value;
+    protected int[][][][] mp_filter;
     protected boolean pattern_printx;
     protected int[] scratch1;
     protected int[] scratch2;
@@ -167,31 +167,38 @@ public class SiteswapGenerator extends Generator {
         if (groundflag == 1 && ground_state_length > ht)
             return 0;
 
-        target = t;
-
         max_num = num_limit;
         max_time = secs_limit;
-        if (max_time > 0) {
+        if (max_time > 0 || Constants.DEBUG_GENERATOR) {
             max_time_millis = (long)(1000.0 * secs_limit);
             start_time_millis = System.currentTimeMillis();
             loop_counter = 0;
         }
 
-        int num = 0;
-        for (l = llow; l <= lhigh; l += rhythm_period)
-            num += findPatterns(0, 0, 0);
+        try {
+            target = t;
 
-        if (numflag != 0) {
-            if (num == 1)
-                target.setStatus(guistrings.getString("Generator_patterns_1"));
-            else {
-                String template = guistrings.getString("Generator_patterns_ne1");
-                Object[] arguments = { new Integer(num) };
-                target.setStatus(MessageFormat.format(template, arguments));
+            int num = 0;
+            for (l_target = l_min; l_target <= l_max; l_target += rhythm_period)
+                num += findPatterns(0, 0, 0);
+
+            if (numflag != 0) {
+                if (num == 1)
+                    target.setStatus(guistrings.getString("Generator_patterns_1"));
+                else {
+                    String template = guistrings.getString("Generator_patterns_ne1");
+                    Object[] arguments = { new Integer(num) };
+                    target.setStatus(MessageFormat.format(template, arguments));
+                }
+            }
+
+            return num;
+        } finally {
+            if (Constants.DEBUG_GENERATOR) {
+                long millis = System.currentTimeMillis() - start_time_millis;
+                System.out.println(String.format("time elapsed: %d.%03d s", millis/1000, millis%1000));
             }
         }
-
-        return num;
     }
 
     //--------------------------------------------------------------------------
@@ -208,8 +215,6 @@ public class SiteswapGenerator extends Generator {
             System.out.print("\n");
         }
 
-        boolean true_multiplex = false;
-
         if (args.length < 3)
             throw new JuggleExceptionUser(errorstrings.getString("Error_generator_insufficient_input"));
 
@@ -218,7 +223,7 @@ public class SiteswapGenerator extends Generator {
         numflag = 0;
         groundflag = 0;
         rotflag = 0;
-        fullflag = mp_filter = 1;
+        fullflag = mpflag = 1;
         mp_clustered = true;
         multiplex = 1;
         delaytime = 0;
@@ -229,9 +234,10 @@ public class SiteswapGenerator extends Generator {
         mode = ASYNC;  // default mode
         jugglers = 1;
         target = null;
-
         exclude = new ArrayList<Pattern>();
         include = new ArrayList<Pattern>();
+
+        boolean true_multiplex = false;
 
         for (int i = 3; i < args.length; ++i) {
             if (args[i].equals("-n"))
@@ -268,7 +274,7 @@ public class SiteswapGenerator extends Generator {
             else if (args[i].equals("-cp"))
                 connected_patterns = true;
             else if (args[i].equals("-mf"))
-                mp_filter = 0;
+                mpflag = 0;
             else if (args[i].equals("-mc"))
                 mp_clustered = false;
             else if (args[i].equals("-mt"))
@@ -309,7 +315,7 @@ public class SiteswapGenerator extends Generator {
                         Object[] arguments = { str };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
-                    groundflag = 1;        // find only ground state tricks
+                    groundflag = 1;  // find only ground state tricks
                     ++i;
                 }
             }
@@ -387,21 +393,21 @@ public class SiteswapGenerator extends Generator {
         }
         try {
             if (args[2].equals("-")) {
-                llow = rhythm_period;
-                lhigh = -1;
+                l_min = rhythm_period;
+                l_max = -1;
             } else {
                 int divider = args[2].indexOf('-');
                 if (divider == 0) {
-                    llow = rhythm_period;
-                    lhigh = Integer.parseInt(args[2].substring(1));
+                    l_min = rhythm_period;
+                    l_max = Integer.parseInt(args[2].substring(1));
                 } else if (divider == (args[2].length() - 1)) {
-                    llow = Integer.parseInt(args[2].substring(0, divider));
-                    lhigh = -1;
+                    l_min = Integer.parseInt(args[2].substring(0, divider));
+                    l_max = -1;
                 } else if (divider > 0) {
-                    llow = Integer.parseInt(args[2].substring(0, divider));
-                    lhigh = Integer.parseInt(args[2].substring(divider + 1));
+                    l_min = Integer.parseInt(args[2].substring(0, divider));
+                    l_max = Integer.parseInt(args[2].substring(divider + 1));
                 } else {
-                    llow = lhigh = Integer.parseInt(args[2]);
+                    l_min = l_max = Integer.parseInt(args[2]);
                 }
             }
         } catch (NumberFormatException nfe) {
@@ -414,35 +420,35 @@ public class SiteswapGenerator extends Generator {
         if (Constants.DEBUG_GENERATOR) {
             System.out.println("objects: " + n);
             System.out.println("height: " + ht);
-            System.out.println("period_min: " + llow);
-            System.out.println("period_max: " + lhigh);
+            System.out.println("period_min: " + l_min);
+            System.out.println("period_max: " + l_max);
             System.out.println("hands: " + hands);
             System.out.println("rhythm_period: " + rhythm_period);
         }
 
         if (n < 1)
             throw new JuggleExceptionUser(errorstrings.getString("Error_generator_too_few_balls"));
-        if (lhigh == -1) {
+        if (l_max == -1) {
             if (fullflag != 2)
                 throw new JuggleExceptionUser(errorstrings.getString("Error_generator_must_be_prime_mode"));
             if (ht == -1)
                 throw new JuggleExceptionUser(errorstrings.getString("Error_generator_underspecified"));
-            lhigh = JLFunc.binomial(ht * hands, n);
-            lhigh -= (lhigh % rhythm_period);
+            l_max = JLFunc.binomial(ht * hands, n);
+            l_max -= (l_max % rhythm_period);
         }
         if (ht == -1)
-            ht = n * lhigh;
+            ht = n * l_max;
         if (ht < 1)
             throw new JuggleExceptionUser(errorstrings.getString("Error_generator_height_too_small"));
-        if (llow < 1 || lhigh < 1 || llow > lhigh)
+        if (l_min < 1 || l_max < 1 || l_min > l_max)
             throw new JuggleExceptionUser(errorstrings.getString("Error_generator_period_problem"));
 
-        output = new char[lhigh * CHARS_PER_THROW];
+        output = new char[l_max * CHARS_PER_THROW];
 
         if (jugglers > 1 && !juggler_permutations && groundflag != 0)
             throw new JuggleExceptionUser(errorstrings.getString("Error_juggler_permutations"));
 
-        if ((llow % rhythm_period) != 0 || (lhigh % rhythm_period) != 0) {
+        if ((l_min % rhythm_period) != 0 || (l_max % rhythm_period) != 0) {
             String template = errorstrings.getString("Error_period_multiple");
             Object[] arguments = { new Integer(rhythm_period) };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -462,7 +468,7 @@ public class SiteswapGenerator extends Generator {
         // than L sometimes, since these same structures are used to find
         // starting and ending sequences (containing as many as HT elements).
 
-        slot_size = Math.max(ht, lhigh);
+        slot_size = Math.max(ht, l_max);
         slot_size += rhythm_period - (slot_size % rhythm_period);
 
         for (int i = 0; i < hands; ++i)
@@ -471,7 +477,7 @@ public class SiteswapGenerator extends Generator {
 
         max_occupancy *= multiplex;
         if (max_occupancy == 1)  // no multiplexing, turn off filter
-            mp_filter = 0;
+            mpflag = 0;
 
         // Include the regular expressions that define "true multiplexing"
         if (true_multiplex) {
@@ -530,23 +536,23 @@ public class SiteswapGenerator extends Generator {
     // Allocates space for the states, rhythms, and throws in the pattern,
     // plus other incidental variables.
     protected void allocateWorkspace() {
-        pattern_state = new int[lhigh + 1][hands][ground_state_length];  // last index not ht because of findStartEnd()
-        pattern_holes = new int[hands][lhigh + ht];
-        pattern_throw_to = new int[slot_size][hands][max_occupancy];  // first index not l because of findStartEnd()
-        pattern_throw_value = new int[slot_size][hands][max_occupancy];
+        state = new int[l_max + 1][hands][ground_state_length];  // last index not ht because of findStartEnd()
+        holes = new int[hands][l_max + ht];
+        throw_to = new int[slot_size][hands][max_occupancy];  // first index not l because of findStartEnd()
+        throw_value = new int[slot_size][hands][max_occupancy];
 
-        pattern_rhythm = new int[slot_size+1][hands][ht];
+        rhythm = new int[slot_size + 1][hands][ht];
         for (int i = 0; i < (slot_size + 1); ++i)
             for (int j = 0; j < hands; ++j)
                 for (int k = 0; k < ht; ++k)
-                    pattern_rhythm[i][j][k] =
+                    rhythm[i][j][k] =
                         multiplex * rhythm_repunit[j][(k + i) % rhythm_period];
 
 
-        if (mp_filter != 0)  // allocate space for filter variables
-            pattern_filter = new int[lhigh+1][hands][slot_size][3];
+        if (mpflag != 0)  // allocate space for filter variables
+            mp_filter = new int[l_max + 1][hands][slot_size][3];
 
-        throws_left = new int[lhigh][hands];
+        throws_left = new int[l_max][hands];
 
         if (jugglers > 1) {  // passing communication delay variables
             scratch1 = new int[hands];
@@ -557,24 +563,24 @@ public class SiteswapGenerator extends Generator {
             connections = new boolean[jugglers];
 
         if (jugglers > 1 && !juggler_permutations) {
-            perm_scratch1 = new boolean[lhigh];
-            perm_scratch2 = new boolean[lhigh];
+            perm_scratch1 = new boolean[l_max];
+            perm_scratch2 = new boolean[l_max];
         }
     }
 
     // Generates all patterns.
     //
-    // It does this by generating all possible starting
-    // states, then calling findLoops() to find the loops for each one.
+    // It does this by generating all possible starting states recursively,
+    // then calling findCycles() to find the loops for each one.
     protected int findPatterns(int balls_placed, int min_value, int min_to) throws JuggleExceptionUser, JuggleExceptionInternal {
         // check if we're done making the state
         if (balls_placed == n || groundflag == 1) {
             if (groundflag == 1) {  // find only ground state patterns?
                 for (int i = 0; i < hands; ++i)
                     for (int j = 0; j < ht; ++j)
-                        pattern_state[0][i][j] = ground_state[i][j];
+                        state[0][i][j] = ground_state[i][j];
             } else if (groundflag == 2 &&
-                    compareStates(pattern_state[0], ground_state) == 0)
+                    compareStates(state[0], ground_state) == 0)
                 return 0;  // don't find ground state patterns
 
             // At this point our state is completed.  Check to see if it's
@@ -586,73 +592,73 @@ public class SiteswapGenerator extends Generator {
                 int j = 0;
 
                 for ( ; j < ht; ++j) {
-                    int k = pattern_state[0][i][j];
+                    int k = state[0][i][j];
 
-                    if (mp_filter != 0 && k == 0)
-                        pattern_filter[0][i][j][TYPE] = MP_EMPTY;
+                    if (mpflag != 0 && k == 0)
+                        mp_filter[0][i][j][TYPE] = MP_EMPTY;
                     else {
-                        if (mp_filter != 0) {
-                            pattern_filter[0][i][j][VALUE] = j + 1;
-                            pattern_filter[0][i][j][FROM] = i;
-                            pattern_filter[0][i][j][TYPE] = MP_LOWER_BOUND;
+                        if (mpflag != 0) {
+                            mp_filter[0][i][j][VALUE] = j + 1;
+                            mp_filter[0][i][j][FROM] = i;
+                            mp_filter[0][i][j][TYPE] = MP_LOWER_BOUND;
                         }
 
                         int m = j;
                         int q = 0;
 
-                        while ((m += l) < ht) {
-                            if ((q = pattern_state[0][i][m]) > k)
+                        while ((m += l_target) < ht) {
+                            if ((q = state[0][i][m]) > k)
                                 return 0;  // die (invalid state for this L)
-                            if (mp_filter != 0 && q != 0) {
+                            if (mpflag != 0 && q != 0) {
                                 if (q < k && j > holdthrow[i])
                                     return 0;  // different throws into same hand
-                                pattern_filter[0][i][j][VALUE] = m + 1;  // new bound
+                                mp_filter[0][i][j][VALUE] = m + 1;  // new bound
                             }
                         }
                     }
                 }
 
-                if (mp_filter != 0)
+                if (mpflag != 0)
                     for ( ; j < slot_size; ++j)
-                        pattern_filter[0][i][j][TYPE] = MP_EMPTY;  // clear rest of slot
+                        mp_filter[0][i][j][TYPE] = MP_EMPTY;  // clear rest of slot
             }
 
             if (numflag != 2 && sequenceflag)
                 findStartEnd();
 
             if (Constants.DEBUG_GENERATOR) {
-                System.out.println("Starting findLoops() from state:");
-                printState(pattern_state[0]);
+                System.out.println("Starting findCycles() from state:");
+                printState(state[0]);
             }
 
             for (int h = 0; h < hands; ++h) {
-                for (int ti = 0; ti < l + ht; ++ti) {
+                for (int ti = 0; ti < l_target + ht; ++ti) {
                     // calculate the number of throws we can make into a
                     // particular (hand, target index) combo
-                    int holes;
+                    int num_holes;
 
-                    // holes we have to fill...
-                    if (ti < l)
-                        holes = multiplex * rhythm_repunit[h][ti % rhythm_period];
+                    // maximum number of holes we have to fill...
+                    if (ti < l_target)
+                        num_holes = multiplex * rhythm_repunit[h][ti % rhythm_period];
                     else
-                        holes = pattern_state[0][h][ti - l];
+                        num_holes = state[0][h][ti - l_target];
 
                     // ...less those filled by throws before beat 0
                     if (ti < ht)
-                        holes -= pattern_state[0][h][ti];
+                        num_holes -= state[0][h][ti];
 
-                    pattern_holes[h][ti] = holes;
+                    holes[h][ti] = num_holes;
                 }
             }
 
             startBeat(0);
-            return findLoops(0, 1, 0, 0);  // find patterns thru state
+            return findCycles(0, 1, 0, 0);  // find patterns thru state
         }
 
         if (balls_placed == 0) {  // startup, clear state
             for (int i = 0; i < hands; ++i)
                 for (int j = 0; j < ht; ++j)
-                    pattern_state[0][i][j] = 0;
+                    state[0][i][j] = 0;
         }
 
         int num = 0;
@@ -660,10 +666,10 @@ public class SiteswapGenerator extends Generator {
         int j = min_to;  // ensures each state is generated only once
         for (int i = min_value; i < ht; ++i) {
             for ( ; j < hands; ++j) {
-                if (pattern_state[0][j][i] < pattern_rhythm[0][j][i]) {
-                    ++pattern_state[0][j][i];
+                if (state[0][j][i] < rhythm[0][j][i]) {
+                    ++state[0][j][i];
                     num += findPatterns(balls_placed + 1, i, j);  // next ball
-                    --pattern_state[0][j][i];
+                    --state[0][j][i];
                 }
             }
             j = 0;
@@ -672,20 +678,22 @@ public class SiteswapGenerator extends Generator {
         return num;
     }
 
-    // Generates loops recursively from a particular starting state.
+    // Generates cycles in the state graph, starting from some given vertex.
     //
     // Arguments:
     // int pos;              // beat number in pattern that we're constructing
     // int min_throw;        // lowest we can throw this time
     // int min_hand;         // lowest hand we can throw to this time
     // int outputpos;        // current position in the char[] output buffer
-    protected int findLoops(int pos, int min_throw, int min_hand, int outputpos)
+    //
+    // Returns the number of cycles found.
+    protected int findCycles(int pos, int min_throw, int min_hand, int outputpos)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Thread.interrupted())
             throw new JuggleExceptionInterrupted();
 
-        //System.out.println("starting findLoops with pos=" + pos + ", min_throw="+min_throw
-        //            +", min_hand=" + min_hand + ", num=" + num);
+        //System.out.println("starting findCycles with pos=" + pos + ", min_throw="
+        //        + min_throw + ", min_hand=" + min_hand);
 
         // do a time check
         if (max_time > 0) {
@@ -705,59 +713,55 @@ public class SiteswapGenerator extends Generator {
         while (throws_left[pos][h] == 0) {
             ++h;
 
-            //System.out.println("h = " + h);
-            //if (h < hands)
-            //    System.out.println("throws_left[pos][h] = " + throws_left[pos][h]);
+            if (h < hands)
+                continue;
 
-            if (h == hands) {
-                // Done with this beat. Do some checks to see if things are valid
-                // so far.
+            // Done with this beat. Do some checks to see if things are valid
+            // so far.
 
-                // output the throw as a string so we can test for exclusions
-                int outputpos_new = outputBeat(output, outputpos, pattern_throw_value[pos],
-                                pattern_throw_to[pos], pattern_rhythm[pos]);
+            // output the throw as a string so we can test for exclusions
+            int outputpos_new = outputBeat(pos, output, outputpos);
 
-                if (!areThrowsValid(pos, outputpos_new))
-                    return 0;
-                if (mp_filter != 0 && !isMultiplexingValid(pos))
-                    return 0;
+            if (!areThrowsValid(pos, outputpos_new))
+                return 0;
+            if (mpflag != 0 && !isMultiplexingValid(pos))
+                return 0;
 
-                calculateState(pos + 1);
-                if (!isStateValid(pos + 1))
-                    return 0;
+            calculateState(pos + 1);
+            if (!isStateValid(pos + 1))
+                return 0;
 
+            if (Constants.DEBUG_GENERATOR) {
+                StringBuffer sb = new StringBuffer();
+                for (int t = 0; t < pos; ++t)
+                    sb.append(".  ");
+                for (int t = outputpos; t < outputpos_new; ++t)
+                    sb.append(output[t]);
+                System.out.println(sb.toString());
+            }
+
+            // move to next beat
+            ++pos;
+
+            if (pos < l_target) {
+                startBeat(pos);
+                return findCycles(pos, 1, 0, outputpos_new);
+            }
+
+            // at the target length; does the pattern work?
+            if (compareStates(state[0], state[l_target]) == 0
+                        && isPatternValid(outputpos_new)) {
                 if (Constants.DEBUG_GENERATOR) {
                     StringBuffer sb = new StringBuffer();
-                    for (int t = 0; t < pos; ++t)
-                        sb.append(".  ");
-                    for (int t = outputpos; t < outputpos_new; ++t)
+                    for (int t = 0; t < outputpos_new; ++t)
                         sb.append(output[t]);
-                    System.out.println(sb.toString());
+                    System.out.println("got a pattern: " + sb.toString());
                 }
-
-                // move to next beat
-                ++pos;
-
-                if (pos < l) {
-                    startBeat(pos);
-                    return findLoops(pos, 1, 0, outputpos_new);
-                }
-
-                // at the target length; does the pattern work?
-                if (compareStates(pattern_state[0], pattern_state[l]) == 0
-                            && isPatternValid(outputpos_new)) {
-                    if (Constants.DEBUG_GENERATOR) {
-                        StringBuffer sb = new StringBuffer();
-                        for (int t = 0; t < outputpos_new; ++t)
-                            sb.append(output[t]);
-                        System.out.println("got a pattern: " + sb.toString());
-                    }
-                    if (numflag != 2)
-                        outputPattern(outputpos_new);
-                    return 1;
-                } else
-                    return 0;
-            }
+                if (numflag != 2)
+                    outputPattern(outputpos_new);
+                return 1;
+            } else
+                return 0;
         }
 
         // Have a throw to assign. Iterate over all possibilities.
@@ -767,27 +771,26 @@ public class SiteswapGenerator extends Generator {
         int slot = throws_left[pos][h];
         int k = min_hand;
         int num = 0;
-
         //System.out.println("check 1: k=" + k + ", min_throw=" + min_throw + ", slot=" + slot);
 
         for (int j = min_throw; j <= ht; ++j) {
             int ti = pos + j;  // target index
 
             for (; k < hands; ++k) {
-                if (pattern_holes[k][ti] == 0)  // can we throw to position?
+                if (holes[k][ti] == 0)  // can we throw to position?
                     continue;
 
-                --pattern_holes[k][ti];
+                --holes[k][ti];
 
-                pattern_throw_to[pos][h][slot] = k;
-                pattern_throw_value[pos][h][slot] = j;
+                throw_to[pos][h][slot] = k;
+                throw_value[pos][h][slot] = j;
 
                 if (slot != 0)
-                    num += findLoops(pos, j, k, outputpos);  // enforces ordering on multiplexed throws
+                    num += findCycles(pos, j, k, outputpos);  // enforces ordering on multiplexed throws
                 else
-                    num += findLoops(pos, 1, 0, outputpos);
+                    num += findCycles(pos, 1, 0, outputpos);
 
-                ++pattern_holes[k][ti];
+                ++holes[k][ti];
 
                 if (max_num >= 0 && num >= max_num) {
                     String template = guistrings.getString("Generator_spacelimit");
@@ -798,33 +801,30 @@ public class SiteswapGenerator extends Generator {
 
             k = 0;
         }
-
         //System.out.println("check 2");
 
         ++throws_left[pos][h];
-
         return num;
     }
 
-    // Calculates the state based on state and throws on previous beat.
+    // Calculates the state based on previous beat's state and throws.
     protected void calculateState(int pos) {
         if (pos == 0)
             return;
 
         for (int j = 0; j < hands; ++j) {  // shift state to the left
             for (int k = 0; k < ht - 1; ++k)
-                pattern_state[pos][j][k] = pattern_state[pos - 1][j][k + 1];
-            pattern_state[pos][j][ht - 1] = 0;
+                state[pos][j][k] = state[pos - 1][j][k + 1];
+            state[pos][j][ht - 1] = 0;
         }
 
-        // add on the last throw(s)
-        for (int j = 0; j < hands; ++j) {
+        for (int j = 0; j < hands; ++j) {  // add on the last throw(s)
             for (int k = 0; k < max_occupancy; ++k) {
-                int m = pattern_throw_value[pos - 1][j][k];
-                if (m == 0)
+                int v = throw_value[pos - 1][j][k];
+                if (v == 0)
                     break;
 
-                ++pattern_state[pos][pattern_throw_to[pos - 1][j][k]][m - 1];
+                ++state[pos][throw_to[pos - 1][j][k]][v - 1];
             }
         }
     }
@@ -833,11 +833,11 @@ public class SiteswapGenerator extends Generator {
     protected boolean isStateValid(int pos) {
         // Check if this is a valid state for a period-L pattern.
         // This check added 01/19/98.
-        if (ht > l) {
+        if (ht > l_target) {
             for (int j = 0; j < hands; ++j) {
-                for (int k = 0; k < l; ++k) {
-                    for (int o = k; o < ht - l; o += l) {
-                        if (pattern_state[pos][j][o + l] > pattern_state[pos][j][o])
+                for (int k = 0; k < l_target; ++k) {
+                    for (int o = k; o < ht - l_target; o += l_target) {
+                        if (state[pos][j][o + l_target] > state[pos][j][o])
                             return false;
                     }
                 }
@@ -845,9 +845,9 @@ public class SiteswapGenerator extends Generator {
         }
 
         if (pos % rhythm_period == 0) {
-            int cs = compareStates(pattern_state[0], pattern_state[pos]);
+            int cs = compareStates(state[0], state[pos]);
 
-            if (fullflag != 0 && pos != l && cs == 0)  // intersection
+            if (fullflag != 0 && pos != l_target && cs == 0)  // intersection
                 return false;
 
             if (rotflag == 0 && cs == 1)  // bad rotation
@@ -857,7 +857,7 @@ public class SiteswapGenerator extends Generator {
         if (fullflag == 2) {  // list only simple loops?
             for (int j = 1; j < pos; ++j) {
                 if ((pos - j) % rhythm_period == 0) {
-                    if (compareStates(pattern_state[j], pattern_state[pos]) == 0)
+                    if (compareStates(state[j], state[pos]) == 0)
                         return false;
                 }
             }
@@ -874,32 +874,32 @@ public class SiteswapGenerator extends Generator {
     protected boolean isMultiplexingValid(int pos) {
         for (int j = 0; j < hands; ++j) {  // shift filter frame to left
             for (int k = 0; k < (slot_size - 1); ++k) {
-                pattern_filter[pos + 1][j][k][TYPE] =
-                pattern_filter[pos][j][k + 1][TYPE];
-                pattern_filter[pos + 1][j][k][FROM] =
-                    pattern_filter[pos][j][k + 1][FROM];
-                pattern_filter[pos + 1][j][k][VALUE] =
-                    pattern_filter[pos][j][k + 1][VALUE];
+                mp_filter[pos + 1][j][k][TYPE] =
+                mp_filter[pos][j][k + 1][TYPE];
+                mp_filter[pos + 1][j][k][FROM] =
+                    mp_filter[pos][j][k + 1][FROM];
+                mp_filter[pos + 1][j][k][VALUE] =
+                    mp_filter[pos][j][k + 1][VALUE];
             }
-            pattern_filter[pos + 1][j][slot_size - 1][TYPE] = MP_EMPTY;
+            mp_filter[pos + 1][j][slot_size - 1][TYPE] = MP_EMPTY;
             // empty slots shift in
 
-            if (addThrowMPFilter(pattern_filter[pos + 1][j][l - 1],
-                            j, pattern_filter[pos][j][0][TYPE],
-                            pattern_filter[pos][j][0][VALUE],
-                            pattern_filter[pos][j][0][FROM]) != 0) {
+            if (addThrowMPFilter(mp_filter[pos + 1][j][l_target - 1],
+                            j, mp_filter[pos][j][0][TYPE],
+                            mp_filter[pos][j][0][VALUE],
+                            mp_filter[pos][j][0][FROM]) != 0) {
                 return false;
             }
         }
 
         for (int j = 0; j < hands; ++j) {  // add on last throw
             for (int k = 0; k < max_occupancy; ++k) {
-                int m = pattern_throw_value[pos][j][k];
+                int m = throw_value[pos][j][k];
                 if (m == 0)
                     break;
 
-                if (addThrowMPFilter(pattern_filter[pos + 1][pattern_throw_to[pos][j][k]][m - 1],
-                                pattern_throw_to[pos][j][k], MP_THROW, m, j) != 0) {
+                if (addThrowMPFilter(mp_filter[pos + 1][throw_to[pos][j][k]][m - 1],
+                                throw_to[pos][j][k], MP_THROW, m, j) != 0) {
                     return false;
                 }
             }
@@ -911,11 +911,11 @@ public class SiteswapGenerator extends Generator {
     // Initializes data structures to start filling in pattern at position `pos`.
     protected void startBeat(int pos) {
         for (int i = 0; i < hands; ++i) {
-            throws_left[pos][i] = pattern_state[pos][i][0];
+            throws_left[pos][i] = state[pos][i][0];
 
             for (int j = 0; j < max_occupancy; ++j) {
-                pattern_throw_to[pos][i][j] = i;  // clear throw matrix
-                pattern_throw_value[pos][i][j] = 0;
+                throw_to[pos][i][j] = i;  // clear throw matrix
+                throw_value[pos][i][j] = 0;
             }
         }
     }
@@ -937,11 +937,11 @@ public class SiteswapGenerator extends Generator {
         // check #2: if multiplexing, look for clustered throws if disallowed
         if (!mp_clustered) {
             for (int i = 0; i < hands; ++i) {
-                if (pattern_rhythm[pos][i][0] != 0) {
-                    for (int j = 0; j < max_occupancy && pattern_throw_value[pos][i][j] != 0; ++j) {
+                if (rhythm[pos][i][0] != 0) {
+                    for (int j = 0; j < max_occupancy && throw_value[pos][i][j] != 0; ++j) {
                         for (int l = 0; l < j; ++l) {
-                            if (pattern_throw_value[pos][i][j] == pattern_throw_value[pos][i][l]
-                                    && pattern_throw_to[pos][i][j] == pattern_throw_to[pos][i][l])
+                            if (throw_value[pos][i][j] == throw_value[pos][i][l]
+                                    && throw_to[pos][i][j] == throw_to[pos][i][l])
                                 return false;
                         }
                     }
@@ -956,9 +956,9 @@ public class SiteswapGenerator extends Generator {
             // multiplex or make no throw.
             int balls_thrown = 0;
             for (int i = 0; i < hands; ++i) {
-                if (pattern_rhythm[pos][i][0] != 0) {
+                if (rhythm[pos][i][0] != 0) {
                     ++balls_thrown;
-                    if (pattern_state[pos][i][0] != 1 && person_number[i] != leader_person)
+                    if (state[pos][i][0] != 1 && person_number[i] != leader_person)
                         return false;
                 }
             }
@@ -966,7 +966,7 @@ public class SiteswapGenerator extends Generator {
             int balls_left = n;
             for (int i = 0; i < ht && balls_left != 0; ++i) {
                 for (int j = 0; j < hands && balls_left != 0; ++j) {
-                    if (pattern_rhythm[pos + 1][j][i] != 0) {
+                    if (rhythm[pos + 1][j][i] != 0) {
                         if (--balls_left < balls_thrown) {
                             scratch1[balls_left] = j;  // dest hand #
                             scratch2[balls_left] = i + 1;  // dest value
@@ -979,12 +979,12 @@ public class SiteswapGenerator extends Generator {
                 return false;  // shouldn't happen, but die anyway
 
             for (int i = 0; i < hands; ++i) {
-                if (pattern_state[pos][i][0] != 0 && person_number[i] != leader_person) {
+                if (state[pos][i][0] != 0 && person_number[i] != leader_person) {
                     boolean found_spot = false;
 
                     for (int j = 0; j < balls_thrown; ++j)
-                        if (scratch1[j] == pattern_throw_to[pos][i][0] &&
-                                    scratch2[j] == pattern_throw_value[pos][i][0]) {
+                        if (scratch1[j] == throw_to[pos][i][0] &&
+                                    scratch2[j] == throw_value[pos][i][0]) {
                             scratch2[j] = 0;  // don't throw to spot again
                             found_spot = true;
                             break;
@@ -1012,12 +1012,12 @@ public class SiteswapGenerator extends Generator {
 
         // check #2: look for '11' sequence.
         if (mode == ASYNC && lameflag && max_occupancy == 1) {
-            for (int i = 0; i < (l - 1); ++i) {
+            for (int i = 0; i < (l_target - 1); ++i) {
                 for (int j = 0; j < hands; ++j) {
-                    if (pattern_throw_value[i][j][0] == 1 &&
-                                person_number[pattern_throw_to[i][j][0]] == person_number[j] &&
-                                pattern_throw_value[i+1][j][0] == 1 &&
-                                person_number[pattern_throw_to[i+1][j][0]] == person_number[j]) {
+                    if (throw_value[i][j][0] == 1 &&
+                                person_number[throw_to[i][j][0]] == person_number[j] &&
+                                throw_value[i+1][j][0] == 1 &&
+                                person_number[throw_to[i+1][j][0]] == person_number[j]) {
                         if (Constants.DEBUG_GENERATOR)
                             System.out.println("  pattern invalid: 11 sequence");
                         return false;
@@ -1029,9 +1029,9 @@ public class SiteswapGenerator extends Generator {
         // check #3: if pattern is composite, ensure we only print one rotation of it.
         // (Added 12/4/2002)
         if (fullflag == 0 && rotflag == 0) {
-            for (int i = 1; i < l; ++i) {
+            for (int i = 1; i < l_target; ++i) {
                 if (i % rhythm_period == 0) {  // can we compare states?
-                    if (compareStates(pattern_state[0], pattern_state[i]) == 0) {
+                    if (compareStates(state[0], state[i]) == 0) {
                         if (compareRotations(0, i) < 0) {
                             if (Constants.DEBUG_GENERATOR)
                                 System.out.println("   pattern invalid: bad rotation");
@@ -1052,12 +1052,12 @@ public class SiteswapGenerator extends Generator {
             while (changed) {
                 changed = false;
 
-                for (int i = 0; i < l; ++i) {
+                for (int i = 0; i < l_target; ++i) {
                     for (int j = 0; j < hands; ++j) {
                         if (connections[person_number[j] - 1])
                             continue;
-                        for (int k = 0; k < max_occupancy && pattern_throw_value[i][j][k] > 0; ++k) {
-                            int p = person_number[pattern_throw_to[i][j][k]];
+                        for (int k = 0; k < max_occupancy && throw_value[i][j][k] > 0; ++k) {
+                            int p = person_number[throw_to[i][j][k]];
 
                             if (connections[p - 1]) {
                                 connections[person_number[j] - 1] = true;
@@ -1084,24 +1084,24 @@ public class SiteswapGenerator extends Generator {
         if (jugglers > 1 && !juggler_permutations) {
             for (int m = 1; m <= (jugglers - 1); ++m) {
                 // compare juggler m against juggler (m+1)
-                for (int i = 0; i < l; ++i)
+                for (int i = 0; i < l_target; ++i)
                     perm_scratch1[i] = perm_scratch2[i] = false;
 
-                for (int p = 0; p < l; ++p) {
+                for (int p = 0; p < l_target; ++p) {
                     int scorem = -1, scoremp1 = -1, maxm = 0, maxmp1 = 0;
 
-                    for (int i = 0; i < l; ++i) {
+                    for (int i = 0; i < l_target; ++i) {
                         if (!perm_scratch1[i]) {
                             int scoretemp = 0;
 
                             for (int j = 0; j < hands; ++j) {
                                 if (person_number[j] != m)
                                     continue;
-                                for (int k = 0; k < max_occupancy && pattern_throw_value[i][j][k] > 0; ++k) {
-                                    scoretemp += 4 * pattern_throw_value[i][j][k] * (2*max_occupancy) * (2*max_occupancy);
-                                    if (pattern_throw_to[i][j][k] != j) {
+                                for (int k = 0; k < max_occupancy && throw_value[i][j][k] > 0; ++k) {
+                                    scoretemp += 4 * throw_value[i][j][k] * (2*max_occupancy) * (2*max_occupancy);
+                                    if (throw_to[i][j][k] != j) {
                                         scoretemp += 2 * (2*max_occupancy);
-                                        if (person_number[pattern_throw_to[i][j][k]] != m)
+                                        if (person_number[throw_to[i][j][k]] != m)
                                             scoretemp += 1;
                                     }
                                 }
@@ -1118,11 +1118,11 @@ public class SiteswapGenerator extends Generator {
                             for (int j = 0; j < hands; ++j) {
                                 if (person_number[j] != (m+1))
                                     continue;
-                                for (int k = 0; k < max_occupancy && pattern_throw_value[i][j][k] > 0; ++k) {
-                                    scoretemp += 4 * pattern_throw_value[i][j][k] * (2*max_occupancy) * (2*max_occupancy);
-                                    if (pattern_throw_to[i][j][k] != j) {
+                                for (int k = 0; k < max_occupancy && throw_value[i][j][k] > 0; ++k) {
+                                    scoretemp += 4 * throw_value[i][j][k] * (2*max_occupancy) * (2*max_occupancy);
+                                    if (throw_to[i][j][k] != j) {
                                         scoretemp += 2 * (2*max_occupancy);
-                                        if (person_number[pattern_throw_to[i][j][k]] != (m+1))
+                                        if (person_number[throw_to[i][j][k]] != (m+1))
                                             scoretemp += 1;
                                     }
                                 }
@@ -1156,16 +1156,16 @@ public class SiteswapGenerator extends Generator {
     // This method assumes the throws are comparable, i.e., that pos1 is
     // congruent to pos2 mod rhythm_period
     protected int compareRotations(int pos1, int pos2) {
-        for (int i = 0; i < l; ) {
-            int res = compareLoops((pos1 + i) % l, (pos2 + i) % l);
+        for (int i = 0; i < l_target; ) {
+            int res = compareLoops((pos1 + i) % l_target, (pos2 + i) % l_target);
             if (res > 0)
                 return 1;
             else if (res < 0)
                 return -1;
 
             ++i;
-            for (; i < l; ++i) {
-                if (compareStates(pattern_state[pos1], pattern_state[(pos1 + i) % l]) == 0)
+            for (; i < l_target; ++i) {
+                if (compareStates(state[pos1], state[(pos1 + i) % l_target]) == 0)
                     break;
             }
         }
@@ -1174,7 +1174,7 @@ public class SiteswapGenerator extends Generator {
 
     // Compares two generated loops.
     protected int compareLoops(int pos1, int pos2) {
-        int[][] startstate = pattern_state[pos1];
+        int[][] state_start = state[pos1];
         int result = 0;
         int i = 0;
 
@@ -1189,8 +1189,8 @@ public class SiteswapGenerator extends Generator {
                 result = compareThrows(pos1, pos2);
 
             if (i % rhythm_period == 0) {
-                int cs1 = compareStates(pattern_state[pos1 + 1], startstate);
-                int cs2 = compareStates(pattern_state[pos2 + 1], startstate);
+                int cs1 = compareStates(state[pos1 + 1], state_start);
+                int cs2 = compareStates(state[pos2 + 1], state_start);
 
                 if (cs1 == 0) {
                     if (cs2 == 0)
@@ -1214,14 +1214,14 @@ public class SiteswapGenerator extends Generator {
     // This method assumes the throws are comparable, i.e., that pos1 is congruent
     // to pos2 mod rhythm_period.
     protected int compareThrows(int pos1, int pos2) {
-        int[][] value1 = pattern_throw_value[pos1];
-        int[][] to1 = pattern_throw_to[pos1];
-        int[][] value2 = pattern_throw_value[pos2];
-        int[][] to2 = pattern_throw_to[pos2];
-        int[][] rhythm = pattern_rhythm[pos1];  // same as pos2 since throws comparable
+        int[][] value1 = throw_value[pos1];
+        int[][] to1 = throw_to[pos1];
+        int[][] value2 = throw_value[pos2];
+        int[][] to2 = throw_to[pos2];
+        int[][] rhy = rhythm[pos1];  // same as pos2 since throws comparable
 
         for (int i = 0; i < hands; ++i) {
-            for (int j = 0; j < rhythm[i][0]; ++j) {
+            for (int j = 0; j < rhy[i][0]; ++j) {
                 if (value1[i][j] > value2[i][j])
                     return 1;
                 else if (value1[i][j] < value2[i][j])
@@ -1273,15 +1273,15 @@ public class SiteswapGenerator extends Generator {
     }
 
     // Returns number as single character
-    protected char convertNumber(int value) {
+    protected static char convertNumber(int value) {
         return Character.toLowerCase(Character.forDigit(value, 36));
     }
 
     // Prints the throws for a given beat
-    protected int outputBeat(char[] out, int outpos, int[][] throw_value, int[][] throw_to, int[][] rhythm) {
+    protected int outputBeat(int pos, char[] out, int outpos) {
         boolean no_throw = true;
-        for (int i = 0; i < rhythm.length; ++i)
-            if (rhythm[i][0] != 0) {
+        for (int i = 0; i < rhythm[pos].length; ++i)
+            if (rhythm[pos][i][0] != 0) {
                 no_throw = false;
                 break;
             }
@@ -1304,7 +1304,7 @@ public class SiteswapGenerator extends Generator {
             // check rhythm to see how many hands are throwing
             int num_hands_throwing = 0;
             for (int j = lo_hand; j < hi_hand; ++j)
-                if (rhythm[j][0] != 0)
+                if (rhythm[pos][j][0] != 0)
                     ++num_hands_throwing;
 
             if (num_hands_throwing > 0) {
@@ -1316,31 +1316,31 @@ public class SiteswapGenerator extends Generator {
                 }
 
                 for (int j = lo_hand; j < hi_hand; ++j) {
-                    if (rhythm[j][0] == 0)  // this hand supposed to throw?
+                    if (rhythm[pos][j][0] == 0)  // this hand supposed to throw?
                         continue;
 
-                    boolean multiplex = false;
+                    boolean is_multiplex = false;
 
-                    if (max_occupancy > 1 && throw_value[j][1] > 0) {
+                    if (max_occupancy > 1 && throw_value[pos][j][1] > 0) {
                         out[outpos++] = '[';  // multiplexing?
-                        multiplex = true;
+                        is_multiplex = true;
                     }
 
                     // loop over the throws coming out of this hand
 
                     boolean got_throw = false;
 
-                    for (int k = 0; k < max_occupancy && throw_value[j][k] > 0; ++k) {
+                    for (int k = 0; k < max_occupancy && throw_value[pos][j][k] > 0; ++k) {
                         got_throw = true;
-                        out[outpos++] = convertNumber(throw_value[j][k]);  // print throw value
+                        out[outpos++] = convertNumber(throw_value[pos][j][k]);  // print throw value
 
                         if (hands > 1) {  // potential ambiguity about destination?
-                            int target_juggler = person_number[throw_to[j][k]];
+                            int target_juggler = person_number[throw_to[pos][j][k]];
 
                             // print destination hand, if needed
                             if (pattern_printx) {
                                 // find hand # of destination person
-                                int q = throw_to[j][k] - 1;
+                                int q = throw_to[pos][j][k] - 1;
                                 int dest_hand = 0;
                                 while (q >= 0 && person_number[q] == target_juggler) {
                                     --q;
@@ -1366,15 +1366,15 @@ public class SiteswapGenerator extends Generator {
                         }
 
                         // another multiplexed throw?
-                        if (multiplex && jugglers > 1 &&
-                                k != (max_occupancy - 1) && throw_value[j][k + 1] > 0)
+                        if (is_multiplex && jugglers > 1 &&
+                                k != (max_occupancy - 1) && throw_value[pos][j][k + 1] > 0)
                             out[outpos++] = '/';
                     }
 
                     if (!got_throw)
                         out[outpos++] = '0';
 
-                    if (multiplex)
+                    if (is_multiplex)
                         out[outpos++] = ']';
 
                     if (j < (hi_hand - 1) && parens)  // put comma between hands
@@ -1395,8 +1395,10 @@ public class SiteswapGenerator extends Generator {
 
     protected void outputPattern(int outputpos) throws JuggleExceptionInternal {
         boolean is_excited = false;
-        StringBuffer outputline = new StringBuffer(hands*(2*ground_state_length+l)*CHARS_PER_THROW + 10);
-        StringBuffer outputline2 = new StringBuffer(hands*(2*ground_state_length+l)*CHARS_PER_THROW + 10);
+        StringBuffer outputline = new StringBuffer(hands
+                * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
+        StringBuffer outputline2 = new StringBuffer(hands
+                * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
 
         if (groundflag != 1) {
             if (sequenceflag) {
@@ -1407,7 +1409,7 @@ public class SiteswapGenerator extends Generator {
                 outputline.append(starting_seq, 0, starting_seq_length);
                 outputline.append("  ");
             } else {
-                is_excited = (compareStates(ground_state, pattern_state[0]) != 0);
+                is_excited = (compareStates(ground_state, state[0]) != 0);
 
                 if (is_excited)
                     outputline.append("* ");
@@ -1499,16 +1501,16 @@ public class SiteswapGenerator extends Generator {
                 for (int k = 0; k < ht; ++k) {
                     // use p_s[1] as scratch
                     if ((k + start_beats) < ground_state_length)
-                        pattern_state[1][j][k] = ground_state[j][k + start_beats];
+                        state[1][j][k] = ground_state[j][k + start_beats];
                     else
-                        pattern_state[1][j][k] = 0;
+                        state[1][j][k] = 0;
 
-                    if (pattern_state[1][j][k] > pattern_state[0][j][k]) {
+                    if (state[1][j][k] > state[0][j][k]) {
                         start_beats += rhythm_period;
                         continue findstarting1;
                     }
 
-                    pattern_state[1][j][k] = pattern_state[0][j][k] - pattern_state[1][j][k];
+                    state[1][j][k] = state[0][j][k] - state[1][j][k];
                 }
             }
 
@@ -1518,8 +1520,8 @@ public class SiteswapGenerator extends Generator {
         for (int i = 0; i < start_beats; ++i) {
             for (int j = 0; j < hands; ++j) {
                 for (int k = 0; k < max_occupancy; ++k) {
-                    pattern_throw_value[i][j][k] = 0;
-                    pattern_throw_to[i][j][k] = j;
+                    throw_value[i][j][k] = 0;
+                    throw_to[i][j][k] = j;
                 }
 
                 if (i >= ground_state_length || ground_state[j][i] == 0)
@@ -1528,11 +1530,11 @@ public class SiteswapGenerator extends Generator {
                 findstarting2:
                 for (int k = 0; k < ht; ++k) {
                     for (int m = 0; m < hands; ++m) {
-                        if (pattern_state[1][m][k] > 0) {
-                            --pattern_state[1][m][k];
+                        if (state[1][m][k] > 0) {
+                            --state[1][m][k];
 
-                            pattern_throw_value[i][j][0] = k + start_beats - i;
-                            pattern_throw_to[i][j][0] = m;
+                            throw_value[i][j][0] = k + start_beats - i;
+                            throw_to[i][j][0] = m;
                             break findstarting2;
                         }
                     }
@@ -1544,10 +1546,8 @@ public class SiteswapGenerator extends Generator {
         starting_seq = new char[hands * start_beats * CHARS_PER_THROW];
         starting_seq_length = 0;
 
-        for (int i = 0; i < start_beats; ++i) {
-            starting_seq_length = outputBeat(starting_seq, starting_seq_length, pattern_throw_value[i],
-                            pattern_throw_to[i], pattern_rhythm[i]);
-        }
+        for (int i = 0; i < start_beats; ++i)
+            starting_seq_length = outputBeat(i, starting_seq, starting_seq_length);
 
         // Construct an ending sequence. Unlike the starting sequence above,
         // this time work forward to ground state.
@@ -1558,18 +1558,18 @@ public class SiteswapGenerator extends Generator {
         do {
             for (int j = 0; j < hands; ++j) {
                 for (int k = 0; k < ground_state_length; ++k) {
-                    // use pattern_state[1] as scratch
+                    // use state[1] as scratch
                     if ((k + end_beats) < ht)
-                        pattern_state[1][j][k] = pattern_state[0][j][k+end_beats];
+                        state[1][j][k] = state[0][j][k+end_beats];
                     else
-                        pattern_state[1][j][k] = 0;
+                        state[1][j][k] = 0;
 
-                    if (pattern_state[1][j][k] > ground_state[j][k]) {
+                    if (state[1][j][k] > ground_state[j][k]) {
                         end_beats += rhythm_period;
                         continue findending1;
                     }
 
-                    pattern_state[1][j][k] = ground_state[j][k] - pattern_state[1][j][k];
+                    state[1][j][k] = ground_state[j][k] - state[1][j][k];
                 }
             }
 
@@ -1579,22 +1579,22 @@ public class SiteswapGenerator extends Generator {
         for (int i = 0; i < end_beats; ++i) {
             for (int j = 0; j < hands; ++j) {
                 for (int k = 0; k < max_occupancy; ++k) {
-                    pattern_throw_value[i][j][k] = 0;
-                    pattern_throw_to[i][j][k] = j;
+                    throw_value[i][j][k] = 0;
+                    throw_to[i][j][k] = j;
                 }
 
                 if (i >= ht)
                     continue;
 
-                for (int q = 0; q < pattern_state[0][j][i]; ++q) {
+                for (int q = 0; q < state[0][j][i]; ++q) {
                     findending2:
                     for (int k = 0; k < ground_state_length; ++k) {
                         for (int m = 0; m < hands; ++m) {
-                            if (pattern_state[1][m][k] > 0) {
-                                --pattern_state[1][m][k];
+                            if (state[1][m][k] > 0) {
+                                --state[1][m][k];
 
-                                pattern_throw_value[i][j][q] = k + end_beats - i;
-                                pattern_throw_to[i][j][q] = m;
+                                throw_value[i][j][q] = k + end_beats - i;
+                                throw_to[i][j][q] = m;
                                 break findending2;
                             }
                         }
@@ -1606,10 +1606,8 @@ public class SiteswapGenerator extends Generator {
         ending_seq = new char[hands * end_beats * CHARS_PER_THROW];
         ending_seq_length = 0;
 
-        for (int j = 0; j < end_beats; ++j) {
-            ending_seq_length = outputBeat(ending_seq, ending_seq_length, pattern_throw_value[j],
-                            pattern_throw_to[j], pattern_rhythm[j]);
-        }
+        for (int i = 0; i < end_beats; ++i)
+            ending_seq_length = outputBeat(i, ending_seq, ending_seq_length);
     }
 
     // Finds the ground state for our rhythm. It does so by putting the balls
@@ -1648,17 +1646,17 @@ public class SiteswapGenerator extends Generator {
     }
 
     // Outputs the state to the command line (useful for debugging).
-    protected void printState(int[][] state) {
+    protected void printState(int[][] st) {
         int last_index = 0;
         for (int i = 0; i < ground_state_length; ++i) {
             for (int j = 0; j < hands; ++j) {
-                if (state[j][i] != 0)
+                if (st[j][i] != 0)
                     last_index = i;
             }
         }
         for (int i = 0; i <= last_index; ++i)
             for (int j = 0; j < hands; ++j)
-                System.out.println("  s[" + j + "][" + i + "] = " + state[j][i]);
+                System.out.println("  s[" + j + "][" + i + "] = " + st[j][i]);
     }
 
 
