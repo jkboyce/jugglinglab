@@ -110,7 +110,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-        { "Simple", "Visual editor", "Selection editor", "JML editor", null,
+        { "Simple", "Visual Editor", "Selection Editor", "JML Editor", null,
           "Restart", "Animation Preferences..." };
     protected static final String[] viewCommands = new String[]
         { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
