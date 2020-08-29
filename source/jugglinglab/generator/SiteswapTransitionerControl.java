@@ -33,18 +33,20 @@ class SiteswapTransitionerControl extends JPanel {
         JLabel lab1 = new JLabel(guistrings.getString("from_pattern"));
         p1.add(lab1);
         gb.setConstraints(lab1, JLFunc.constraints(GridBagConstraints.LINE_END,0,0,
-                                                 new Insets(0,0,0,3)));
+                                                new Insets(0,0,10,3)));
         tf1 = new JTextField(15);
         p1.add(tf1);
-        gb.setConstraints(tf1, JLFunc.constraints(GridBagConstraints.LINE_START,1,0));
+        gb.setConstraints(tf1, JLFunc.constraints(GridBagConstraints.LINE_START,1,0,
+                                                new Insets(0,0,10,0)));
 
         JLabel lab2 = new JLabel(guistrings.getString("to_pattern"));
         p1.add(lab2);
         gb.setConstraints(lab2, JLFunc.constraints(GridBagConstraints.LINE_END,0,1,
-                                                 new Insets(0,0,0,3)));
+                                                new Insets(0,0,10,3)));
         tf2 = new JTextField(15);
         p1.add(tf2);
-        gb.setConstraints(tf2, JLFunc.constraints(GridBagConstraints.LINE_START,1,1));
+        gb.setConstraints(tf2, JLFunc.constraints(GridBagConstraints.LINE_START,1,1,
+                                                new Insets(0,0,10,0)));
 
         JButton but1 = new JButton("\u2195");
         but1.addActionListener(new ActionListener() {
@@ -64,11 +66,11 @@ class SiteswapTransitionerControl extends JPanel {
         JLabel lab3 = new JLabel(guistrings.getString("multiplexing_in_transitions"));
         p2.add(lab3);
         gb.setConstraints(lab3, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
-                                                  new Insets(5,0,0,0)));
+                                                new Insets(5,0,0,0)));
         cb1 = new JCheckBox(guistrings.getString("enable"), null);
         p2.add(cb1);
         gb.setConstraints(cb1, JLFunc.constraints(GridBagConstraints.LINE_START,0,1,
-                                                 new Insets(0,10,0,0)));
+                                                new Insets(0,10,0,0)));
 
         JPanel p3 = new JPanel();
         p3.setLayout(gb);
@@ -78,30 +80,30 @@ class SiteswapTransitionerControl extends JPanel {
         lab4 = new JLabel(guistrings.getString("simultaneous_throws"));
         p3.add(lab4);
         gb.setConstraints(lab4, JLFunc.constraints(GridBagConstraints.LINE_END,0,0,
-                                                  new Insets(0,0,0,3)));
+                                                new Insets(0,0,0,3)));
 
         p2.add(p3);
         gb.setConstraints(p3, JLFunc.constraints(GridBagConstraints.LINE_START,0,2,
-                                               new Insets(0,15,0,0)));
+                                                new Insets(0,15,0,0)));
 
         cb2 = new JCheckBox(guistrings.getString("no_simultaneous_catches"), null);
         p2.add(cb2);
         gb.setConstraints(cb2, JLFunc.constraints(GridBagConstraints.LINE_START,0,3,
-                                                 new Insets(0,10,0,0)));
+                                                new Insets(0,10,0,0)));
 
         cb3 = new JCheckBox(guistrings.getString("no_clustered_throws"), null);
         p2.add(cb3);
         gb.setConstraints(cb3, JLFunc.constraints(GridBagConstraints.LINE_START,0,4,
-                                                 new Insets(0,10,0,0)));
+                                                new Insets(0,10,0,0)));
 
         JPanel p4 = new JPanel();  // left justify top and multiplexing parts
         p4.setLayout(gb);
         p4.add(p1);
         gb.setConstraints(p1, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
-                                               new Insets(30,border,5,border)));
+                                                new Insets(30,border,5,border)));
         p4.add(p2);
         gb.setConstraints(p2, JLFunc.constraints(GridBagConstraints.LINE_START,0,1,
-                                               new Insets(20,border,5,border)));
+                                                new Insets(20,border,5,border)));
 
         add(p4);  // the whole panel
         gb.setConstraints(p4, JLFunc.constraints(GridBagConstraints.CENTER,0,0));
