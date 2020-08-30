@@ -4,6 +4,7 @@
 
 package jugglinglab.notation;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.awt.event.*;
 
@@ -241,12 +242,15 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
+    // Determines which throws are "master" throws. Because of symmetries defined
+    // for the pattern, some throws are shifted or reflected copies of others.
+    // For each such chain of related throws, appoint one as the master.
     protected void findMasterThrows() throws JuggleExceptionInternal {
         // start by making every throw a master throw
-        for (int i = 0; i < indexes; i++) {
-            for (int j = 0; j < numjugglers; j++) {
-                for (int h = 0; h < 2; h++) {
-                    for (int slot = 0; slot < max_occupancy; slot++) {
+        for (int i = 0; i < indexes; ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < max_occupancy; ++slot) {
                         MHNThrow mhnt = th[j][h][i][slot];
                         if (mhnt != null) {
                             mhnt.master = mhnt;
@@ -261,25 +265,25 @@ public abstract class MHNPattern extends Pattern {
         while (changed) {
             changed = false;
 
-            for (int s = 0; s < getNumberOfSymmetries(); s++) {
+            for (int s = 0; s < getNumberOfSymmetries(); ++s) {
                 MHNSymmetry sym = getSymmetry(s);
                 Permutation jperm = sym.getJugglerPerm();
                 int delay = sym.getDelay();
 
-                for (int i = 0; i < indexes; i++) {
+                for (int i = 0; i < indexes; ++i) {
                     int imagei = i + delay;
                     if (imagei >= indexes)
                         continue;
 
-                    for (int j = 0; j < numjugglers; j++) {
-                        for (int h = 0; h < 2; h++) {
-                            for (int slot = 0; slot < max_occupancy; slot++) {
+                    for (int j = 0; j < numjugglers; ++j) {
+                        for (int h = 0; h < 2; ++h) {
+                            for (int slot = 0; slot < max_occupancy; ++slot) {
                                 MHNThrow mhnt = th[j][h][i][slot];
                                 if (mhnt == null)
                                     continue;
 
-                                int imagej = jperm.getMapping(j+1);
-                                int imageh = (imagej > 0 ? h : 1-h);
+                                int imagej = jperm.getMapping(j + 1);
+                                int imageh = (imagej > 0 ? h : 1 - h);
                                 imagej = Math.abs(imagej) - 1;
 
                                 MHNThrow imaget = th[imagej][imageh][imagei][slot];
@@ -314,10 +318,10 @@ public abstract class MHNPattern extends Pattern {
         }
 
         if (Constants.DEBUG_PARSING) {
-            for (int i = 0; i < indexes; i++) {
-                for (int j = 0; j < numjugglers; j++) {
-                    for (int h = 0; h < 2; h++) {
-                        for (int slot = 0; slot < max_occupancy; slot++) {
+            for (int i = 0; i < indexes; ++i) {
+                for (int j = 0; j < numjugglers; ++j) {
+                    for (int h = 0; h < 2; ++h) {
+                        for (int slot = 0; slot < max_occupancy; ++slot) {
                             MHNThrow mhnt = th[j][h][i][slot];
                             if (mhnt != null && mhnt.master == mhnt)
                                 System.out.println("master throw at j="+j+",h="+h+",i="+i+",slot="+slot);
@@ -328,61 +332,77 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
+    // Figures out which throws are filling other throws, and assigns path
+    // numbers to all throws.
+    //
+    // This process is complicated by the fact that we allow multiplexing.
     protected void assignPaths() throws JuggleExceptionUser, JuggleExceptionInternal {
-        // first figure out how the throws are filling other throws;
-        // this is complicated by the fact that we allow multiplexing
-        for (int i = 0; i < indexes; i++) {
-            for (int j = 0; j < numjugglers; j++) {
-                for (int h = 0; h < 2; h++) {
-                    for (int slot = 0; slot < max_occupancy; slot++) {
-
+        for (int i = 0; i < indexes; ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < max_occupancy; ++slot) {
                         MHNThrow sst = th[j][h][i][slot];
                         if (sst == null || sst.master != sst)  // loop over master throws
                             continue;
+
+                        // Figure out which slot number we're filling with this
+                        // master throw. We need to find a value of `targetslot`
+                        // that is empty for the master throw's target, as well as
+                        // the targets of its images.
 
                         int targetslot = 0;
                         while (targetslot < max_occupancy) {  // find value of targetslot that works
                             boolean itworks = true;
 
                             // loop over all throws that have sst as master
-                            for (int i2 = 0; i2 < indexes; i2++) {
-                                for (int j2 = 0; j2 < numjugglers; j2++) {
-                                    for (int h2 = 0; h2 < 2; h2++) {
-                                        for (int slot2 = 0; slot2 < max_occupancy; slot2++) {
+                            for (int i2 = 0; i2 < indexes; ++i2) {
+                                for (int j2 = 0; j2 < numjugglers; ++j2) {
+                                    for (int h2 = 0; h2 < 2; ++h2) {
+                                        for (int slot2 = 0; slot2 < max_occupancy; ++slot2) {
                                             MHNThrow sst2 = th[j2][h2][i2][slot2];
-                                            if (sst2 == null || sst2.master != sst)
+                                            if (sst2 == null || sst2.master != sst || sst2.targetindex >= indexes)
                                                 continue;
-                                            if (sst2.targetindex >= indexes)
-                                                continue;
+
                                             MHNThrow target = th[sst2.targetjuggler-1][sst2.targethand][sst2.targetindex][targetslot];
                                             if (target == null)
                                                 itworks = false;
                                             else
-                                                itworks &= (target.source == null); // target also unfilled?
+                                                itworks &= (target.source == null);  // target also unfilled?
                                         }
                                     }
                                 }
                             }
                             if (itworks)
                                 break;
-                            targetslot++;
-                        }
-                        if (targetslot == max_occupancy) {
-                            if (Constants.DEBUG_PARSING)
-                                System.out.println("Error: targetslot == max_occupancy");
-                            throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern"));
+                            ++targetslot;
                         }
 
-                        // loop again over all throws that have sst as master
-                        for (int i2 = 0; i2 < indexes; i2++) {
-                            for (int j2 = 0; j2 < numjugglers; j2++) {
-                                for (int h2 = 0; h2 < 2; h2++) {
-                                    for (int slot2 = 0; slot2 < max_occupancy; slot2++) {
+                        if (targetslot == max_occupancy) {
+                            if (Constants.DEBUG_PARSING)
+                                System.out.println("Error: Too many objects landing on beat "
+                                        + (sst.targetindex + 1) + " for juggler "
+                                        + sst.targetjuggler + ", "
+                                        + (sst.targethand == 0 ? "right hand" : "left hand"));
+
+                            String template = errorstrings.getString("Error_badpattern_landings");
+                            String hand = (sst.targethand == 0 ? errorstrings.getString("Error_right_hand")
+                                        : errorstrings.getString("Error_left_hand"));
+                            Object[] arguments = { new Integer(sst.targetindex + 1),
+                                        new Integer(sst.targetjuggler), hand };
+                            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                        }
+
+                        // loop again over all throws that have sst as master,
+                        // wiring up sources and targets using the value of `targetslot`
+
+                        for (int i2 = 0; i2 < indexes; ++i2) {
+                            for (int j2 = 0; j2 < numjugglers; ++j2) {
+                                for (int h2 = 0; h2 < 2; ++h2) {
+                                    for (int slot2 = 0; slot2 < max_occupancy; ++slot2) {
                                         MHNThrow sst2 = th[j2][h2][i2][slot2];
-                                        if (sst2 == null || sst2.master != sst)
+                                        if (sst2 == null || sst2.master != sst || sst2.targetindex >= indexes)
                                             continue;
-                                        if (sst2.targetindex >= indexes)
-                                            continue;
+
                                         MHNThrow target2 = th[sst2.targetjuggler-1][sst2.targethand][sst2.targetindex][targetslot];
                                         if (target2 == null)
                                             throw new JuggleExceptionInternal("Got null target in assignPaths()");
@@ -402,87 +422,88 @@ public abstract class MHNPattern extends Pattern {
 
         // assign path numbers to all of the throws
         int currentpath = 1;
-        for (int i = 0; i < indexes; i++) {
-            for (int j = 0; j < numjugglers; j++) {
-                for (int h = 0; h < 2; h++) {
-                    for (int slot = 0; slot < max_occupancy; slot++) {
-                        MHNThrow sst = th[j][h][i][slot];
-                        if (sst != null) {
-                            MHNThrow filler = sst.source;
-                            if (filler == null) {
-                                if (currentpath > numpaths) {
-
-                                    if (Constants.DEBUG_PARSING) {
-                                        System.out.println("j="+j+", h="+h+", index="+i+", slot="+slot+"\n");
-                                        System.out.println("---------------------------");
-                                        for (int tempi = 0; tempi <= i; tempi++) {
-                                            for (int temph = 0; temph < 2; temph++) {
-                                                for (int tempslot = 0; tempslot < max_occupancy; tempslot++) {
-                                                    MHNThrow tempsst = th[0][temph][tempi][tempslot];
-                                                    System.out.println("index="+tempi+", hand="+temph+", slot="+tempslot+":");
-                                                    if (tempsst == null)
-                                                        System.out.println("   null entry");
-                                                    else
-                                                        System.out.println("   targetindex="+tempsst.targetindex+", targethand="+
-                                                                           tempsst.targethand+", targetslot="+tempsst.targetslot+
-                                                                           ", pathnum="+tempsst.pathnum);
-                                                }
-                                            }
-                                        }
-                                        System.out.println("---------------------------");
-                                    }
-
-                                    throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern"));
-                                }
-                                sst.pathnum = currentpath++;
-                            } else
-                                sst.pathnum = filler.pathnum;
-                        }
-                    }
-                }
-            }
-        }
-        if (currentpath <= numpaths)
-            throw new JuggleExceptionInternal("Problem assigning path numbers 2");
-    }
-
-    // set the MHNThrow.source field
-    protected void findThrowSources() throws JuggleExceptionInternal {
-        for (int i = indexes-1; i >= 0; i--) {
-            for (int j = 0; j < numjugglers; j++) {
-                for (int h = 0; h < 2; h++) {
-                    for (int slot = 0; slot < max_occupancy; slot++) {
-
+        for (int i = 0; i < indexes; ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < max_occupancy; ++slot) {
                         MHNThrow sst = th[j][h][i][slot];
                         if (sst == null)
                             continue;
 
-                        if (sst.source == null) {
-                            if ((i + getPeriod()) < indexes) {
-                                MHNThrow sst2 = th[j][h][i + getPeriod()][slot].source;
-                                if (sst2 == null)
-                                    throw new JuggleExceptionInternal("Could not get throw source 1");
-
-                                MHNThrow sst3 = new MHNThrow();
-                                sst3.juggler = sst2.juggler;
-                                sst3.hand = sst2.hand;
-                                sst3.index = sst2.index - getPeriod();
-                                sst3.slot = sst2.slot;
-                                sst3.targetjuggler = j;
-                                sst3.targethand = h;
-                                sst3.targetindex = i;
-                                sst3.targetslot = slot;
-                                sst3.handsindex = -1;   // undefined
-                                sst3.pathnum = sst.pathnum;
-                                sst3.mod = sst2.mod;
-                                sst3.master = sst2.master;
-                                sst3.source = null;
-                                sst3.target = sst;
-
-                                sst.source = sst3;
-                            } else
-                                throw new JuggleExceptionInternal("Could not get throw source 2");
+                        if (sst.source != null) {
+                            sst.pathnum = sst.source.pathnum;
+                            continue;
                         }
+
+                        if (currentpath > numpaths) {
+                            if (Constants.DEBUG_PARSING) {
+                                System.out.println("j="+j+", h="+h+", index="+i+", slot="+slot+"\n");
+                                System.out.println("---------------------------");
+                                for (int tempi = 0; tempi <= i; ++tempi) {
+                                    for (int temph = 0; temph < 2; ++temph) {
+                                        for (int tempslot = 0; tempslot < max_occupancy; ++tempslot) {
+                                            MHNThrow tempsst = th[0][temph][tempi][tempslot];
+                                            System.out.println("index="+tempi+", hand="+temph+", slot="+tempslot+":");
+                                            if (tempsst == null)
+                                                System.out.println("   null entry");
+                                            else
+                                                System.out.println("   targetindex="+tempsst.targetindex+", targethand="+
+                                                                   tempsst.targethand+", targetslot="+tempsst.targetslot+
+                                                                   ", pathnum="+tempsst.pathnum);
+                                        }
+                                    }
+                                }
+                                System.out.println("---------------------------");
+                            }
+
+                            throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern"));
+                        }
+
+                        sst.pathnum = currentpath;
+                        ++currentpath;
+                    }
+                }
+            }
+        }
+
+        if (currentpath <= numpaths)
+            throw new JuggleExceptionInternal("Problem assigning path numbers 2");
+    }
+
+    // Sets the `source` field for all throws that don't already have it set.
+    protected void findThrowSources() throws JuggleExceptionInternal {
+        for (int i = indexes - 1; i >= 0; --i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < max_occupancy; ++slot) {
+                        MHNThrow sst = th[j][h][i][slot];
+                        if (sst == null || sst.source != null)
+                            continue;
+
+                        if ((i + getPeriod()) >= indexes)
+                            throw new JuggleExceptionInternal("Could not get throw source 2");
+
+                        MHNThrow sst2 = th[j][h][i + getPeriod()][slot].source;
+                        if (sst2 == null)
+                            throw new JuggleExceptionInternal("Could not get throw source 1");
+
+                        MHNThrow sst3 = new MHNThrow();
+                        sst3.juggler = sst2.juggler;
+                        sst3.hand = sst2.hand;
+                        sst3.index = sst2.index - getPeriod();
+                        sst3.slot = sst2.slot;
+                        sst3.targetjuggler = j;
+                        sst3.targethand = h;
+                        sst3.targetindex = i;
+                        sst3.targetslot = slot;
+                        sst3.handsindex = -1;   // undefined
+                        sst3.pathnum = sst.pathnum;
+                        sst3.mod = sst2.mod;
+                        sst3.master = sst2.master;
+                        sst3.source = null;
+                        sst3.target = sst;
+
+                        sst.source = sst3;
                     }
                 }
             }
@@ -521,24 +542,26 @@ public abstract class MHNPattern extends Pattern {
         return false;
     }
 
-    // set the MHNThrow.catching and MHNThrow.catchnum fields
+    // Sets the MHNThrow.catching and MHNThrow.catchnum fields
     protected void setCatchOrder() throws JuggleExceptionInternal {
         MHNThrow[][][][] th = getThrows();
 
-        // figure out the correct catch order for master throws only...
-        for (int k = 0; k < getIndexes(); k++) {
-            for (int j = 0; j < getNumberOfJugglers(); j++) {
-                for (int h = 0; h < 2; h++) {
+        // figure out the correct catch order for master throws...
+        for (int k = 0; k < getIndexes(); ++k) {
+            for (int j = 0; j < getNumberOfJugglers(); ++j) {
+                for (int h = 0; h < 2; ++h) {
                     int slotcatches = 0;
 
-                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                    for (int slot = 0; slot < getMaxOccupancy(); ++slot) {
                         MHNThrow sst = th[j][h][k][slot];
                         if (sst == null)
                             break;
 
                         sst.catching = (sst.source.mod.charAt(0) != 'H');
-                        if (sst.catching)
-                            sst.catchnum = slotcatches++;
+                        if (sst.catching) {
+                            sst.catchnum = slotcatches;
+                            ++slotcatches;
+                        }
                     }
 
                     // Arrange the order of the catches, if more than one
@@ -546,33 +569,32 @@ public abstract class MHNPattern extends Pattern {
                     if (slotcatches < 2)
                         continue;
 
-                    for (int slot1 = 0; slot1 < getMaxOccupancy(); slot1++) {
+                    for (int slot1 = 0; slot1 < getMaxOccupancy(); ++slot1) {
                         MHNThrow sst1 = th[j][h][k][slot1];
-                        if (sst1 == null)
-                            break;
-                        if (sst1.master != sst1)    // only master throws
+                        if (sst1 == null || sst1.master != sst1)  // only master throws
                             break;
 
-                        if (sst1.catching) {
-                            for (int slot2 = (slot1+1); slot2 < getMaxOccupancy(); slot2++) {
-                                MHNThrow sst2 = th[j][h][k][slot2];
-                                if (sst2 == null)
-                                    break;
-                                if (sst2.master != sst2)
-                                    break;
-                                if (sst2.catching) {
-                                    boolean switchcatches = false;
-                                    if (sst1.catchnum < sst2.catchnum)
-                                        switchcatches = isCatchOrderIncorrect(sst1, sst2);
-                                    else
-                                        switchcatches = isCatchOrderIncorrect(sst2, sst1);
+                        if (!sst1.catching)
+                            continue;
 
-                                    if (switchcatches) {
-                                        int temp = sst1.catchnum;
-                                        sst1.catchnum = sst2.catchnum;
-                                        sst2.catchnum = temp;
-                                    }
-                                }
+                        for (int slot2 = (slot1 + 1); slot2 < getMaxOccupancy(); ++slot2) {
+                            MHNThrow sst2 = th[j][h][k][slot2];
+                            if (sst2 == null || sst2.master != sst2)
+                                break;
+
+                            if (!sst2.catching)
+                                continue;
+
+                            boolean switchcatches = false;
+                            if (sst1.catchnum < sst2.catchnum)
+                                switchcatches = isCatchOrderIncorrect(sst1, sst2);
+                            else
+                                switchcatches = isCatchOrderIncorrect(sst2, sst1);
+
+                            if (switchcatches) {
+                                int temp = sst1.catchnum;
+                                sst1.catchnum = sst2.catchnum;
+                                sst2.catchnum = temp;
                             }
                         }
                     }
@@ -581,14 +603,12 @@ public abstract class MHNPattern extends Pattern {
         }
 
         // ...and then copy that over to the non-master throws
-        for (int k = 0; k < getIndexes(); k++) {
-            for (int j = 0; j < getNumberOfJugglers(); j++) {
-                for (int h = 0; h < 2; h++) {
-                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+        for (int k = 0; k < getIndexes(); ++k) {
+            for (int j = 0; j < getNumberOfJugglers(); ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < getMaxOccupancy(); ++slot) {
                         MHNThrow sst = th[j][h][k][slot];
-                        if (sst == null)
-                            break;
-                        if (sst.master == sst)      // skip master throws
+                        if (sst == null || sst.master == sst)  // skip master throws
                             break;
 
                         sst.catchnum = sst.master.catchnum;
