@@ -20,6 +20,7 @@ import jugglinglab.optimizer.*;
 
 public class SiteswapPattern extends MHNPattern {
     protected boolean oddperiod = false;
+    protected boolean has_hands_specifier = false;
 
     @Override
     public String getNotationName() {
@@ -92,6 +93,10 @@ public class SiteswapPattern extends MHNPattern {
         return this;
     }
 
+    public boolean hasHandsSpecifier() {
+        return has_hands_specifier;
+    }
+
     // only works after parseSiteswapNotation() is called:
     protected int getNorepPeriod() {
         return (oddperiod ? getPeriod() / 2 : getPeriod());
@@ -156,12 +161,12 @@ public class SiteswapPattern extends MHNPattern {
         protected ArrayList<MHNSymmetry> symmetry;
         */
 
-        this.numjugglers = tree.jugglers;
-        this.max_occupancy = 0;  // calculated in doFirstPass()
-        this.max_throw = 0;
+        numjugglers = tree.jugglers;
+        max_occupancy = 0;  // calculated in doFirstPass()
+        max_throw = 0;
 
-        this.right_on_even = new boolean[this.numjugglers];
-        for (int i = 0; i < this.numjugglers; i++)
+        right_on_even = new boolean[this.numjugglers];
+        for (int i = 0; i < numjugglers; i++)
             right_on_even[i] = true;
 
         if (Constants.DEBUG_PARSING)
@@ -174,18 +179,18 @@ public class SiteswapPattern extends MHNPattern {
             tree.switchrepeat = true;
             tree.beats *= 2;
             tree.throw_sum *= 2;
-            this.oddperiod = true;
+            oddperiod = true;
 
             if (Constants.DEBUG_PARSING)
                 System.out.println("Vanilla async detected; applying switchdelay symmetry");
         }
 
-        this.period = tree.beats;
+        period = tree.beats;
         if (tree.throw_sum % tree.beats != 0)
             throw new JuggleExceptionUser(errorstrings.getString("Error_siteswap_bad_average"));
-        this.numpaths = tree.throw_sum / tree.beats;
-        this.indexes = this.max_throw + this.period + 1;
-        this.th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
+        numpaths = tree.throw_sum / tree.beats;
+        indexes = max_throw + period + 1;
+        th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
 
         if (Constants.DEBUG_PARSING) {
             System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
@@ -484,6 +489,7 @@ public class SiteswapPattern extends MHNPattern {
                 sti.throw_sum = 0;
                 if (sti.beatnum > 0)
                     sti.vanilla_async = false;
+                has_hands_specifier = true;
                 break;
         }
 

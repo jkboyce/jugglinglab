@@ -59,6 +59,7 @@ public class GeneratorTarget {
                     try {
                         (new SiteswapPattern()).fromString(anim);
                     } catch (JuggleException je) {
+                        System.out.println("Error: pattern \"" + anim + "\" did not validate");
                         throw new JuggleExceptionInternal("Error: pattern \"" + anim + "\" did not validate");
                     }
                     System.out.println("pattern \"" + anim + "\" validated");

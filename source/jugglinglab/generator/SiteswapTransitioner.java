@@ -735,7 +735,16 @@ public class SiteswapTransitioner extends Transitioner {
                 sb.append('>');
         }
 
-        target.writePattern(sb.toString(), "siteswap", sb.toString().trim());
+        try {
+            target.writePattern(sb.toString(), "siteswap", sb.toString().trim());
+        } catch (JuggleExceptionInternal jei) {
+            if (Constants.VALIDATE_GENERATED_PATTERNS) {
+                System.out.println("#################");
+                printThrowSet();
+                System.out.println("#################");
+            }
+            throw jei;
+        }
     }
 
     // Creates the string form of the assigned throws at this position in the
@@ -793,6 +802,8 @@ public class SiteswapTransitioner extends Transitioner {
 
             switch (hands_throwing) {
                 case 0:
+                    if (pos == 0 && siteswap_prev.hasHandsSpecifier())
+                        sb.append('R');
                     sb.append('0');
                     if (print_double_beat)
                         sb.append('0');
@@ -804,13 +815,17 @@ public class SiteswapTransitioner extends Transitioner {
                         if (!async_hand_right[j][pos]) {
                             sb.append('R');
                             async_hand_right_next = false;
-                        }
+                        } else if (pos == 0 && siteswap_prev.hasHandsSpecifier())
+                            sb.append('R');
+
                         needs_slash = outputMultiThrow(pos, j, 0, sb);
                     } else {
                         if (async_hand_right[j][pos]) {
                             sb.append('L');
                             async_hand_right_next = true;
-                        }
+                        } else if (pos == 0 && siteswap_prev.hasHandsSpecifier())
+                            sb.append('R');
+
                         needs_slash = outputMultiThrow(pos, j, 1, sb);
                     }
                     if (needs_slash)
@@ -819,6 +834,9 @@ public class SiteswapTransitioner extends Transitioner {
                         sb.append('0');
                     break;
                 case 2:
+                    if (pos == 0 && siteswap_prev.hasHandsSpecifier())
+                        sb.append('R');
+
                     sb.append('(');
                     outputMultiThrow(pos, j, 1, sb);
                     sb.append(',');
@@ -997,6 +1015,28 @@ public class SiteswapTransitioner extends Transitioner {
         }
 
         return 0;
+    }
+
+    // Prints the throw matrix to standard output (useful for debugging)
+    protected void printThrowSet() {
+        StringBuffer sb = new StringBuffer();
+
+        for (int pos = 0; pos < l_target; ++pos) {
+            for (int j = 0; j < jugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int s = 0; s < max_occupancy; ++s) {
+                        MHNThrow mhnt = th[j][h][pos][s];
+                        if (mhnt == null)
+                            continue;
+
+                        for (int t = 0; t < pos; ++t)
+                            sb.append(".  ");
+                        sb.append(mhnt.toString() + '\n');
+                    }
+                }
+            }
+        }
+        System.out.println(sb.toString());
     }
 
     //--------------------------------------------------------------------------
