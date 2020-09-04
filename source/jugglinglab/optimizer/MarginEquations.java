@@ -8,7 +8,6 @@ import java.util.*;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
-import jugglinglab.path.TossPath;
 import jugglinglab.util.*;
 
 
