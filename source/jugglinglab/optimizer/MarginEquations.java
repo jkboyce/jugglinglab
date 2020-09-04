@@ -1,6 +1,6 @@
 // MarginEquations.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.optimizer;
 
@@ -8,6 +8,7 @@ import java.util.*;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;
+import jugglinglab.path.TossPath;
 import jugglinglab.util.*;
 
 
@@ -77,6 +78,8 @@ public class MarginEquations {
 
         if (pat.getNumberOfJugglers() > 1)
             throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_passing"));
+        if (pat.isBouncePattern())
+            throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_bouncing"));
 
         // step 1:  Lay out the pattern.  This generates two things we need, the pattern event
         // list and the pattern pathlink list.
@@ -101,7 +104,7 @@ public class MarginEquations {
                     int type = ev.getTransition(i).getType();
                     if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
                                     type == JMLTransition.TRANS_SOFTCATCH) {
-                        this.varsNum++;
+                        ++varsNum;
                         variableEvents.add(ev);
                         Coordinate coord = ev.getLocalCoordinate();
                         if (Math.abs(coord.x) > maxValue)
@@ -124,7 +127,7 @@ public class MarginEquations {
             ev = ev.getNext();
         }
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("   number of variables = " + this.varsNum);
+            System.out.println("   number of variables = " + varsNum);
             System.out.println("   maxValue = " + maxValue);
             System.out.println("   g = " + g);
         }
@@ -132,34 +135,34 @@ public class MarginEquations {
         // step 3:  Set up the arrays containing the current values of our variables, their
         // minimum and maximum allowed values, and corresponding JMLEvents
 
-        this.varsEvents = new JMLEvent[this.varsNum];
-        this.varsValues = new double[this.varsNum];
-        this.varsMin = new double[this.varsNum];
-        this.varsMax = new double[this.varsNum];
+        varsEvents = new JMLEvent[varsNum];
+        varsValues = new double[varsNum];
+        varsMin = new double[varsNum];
+        varsMax = new double[varsNum];
 
-        for (int i = 0; i < this.varsNum; i++) {
+        for (int i = 0; i < varsNum; i++) {
             ev = variableEvents.get(i);
             Coordinate coord = ev.getLocalCoordinate();
             int type = ev.getTransition(0).getType();
 
-            this.varsEvents[i] = ev;
-            this.varsValues[i] = coord.x;
+            varsEvents[i] = ev;
+            varsValues[i] = coord.x;
             // optimization won't move events to the other side of the body
-            if (this.varsValues[i] > 0.0) {
-                this.varsMin[i] = 0.1 * maxValue;
-                this.varsMax[i] = maxValue;
+            if (varsValues[i] > 0.0) {
+                varsMin[i] = 0.1 * maxValue;
+                varsMax[i] = maxValue;
 
                 if (type == JMLTransition.TRANS_THROW)
-                    this.varsMax[i] *= 0.9;
+                    varsMax[i] *= 0.9;
             } else {
-                this.varsMin[i] = -maxValue;
-                this.varsMax[i] = -0.1 * maxValue;
+                varsMin[i] = -maxValue;
+                varsMax[i] = -0.1 * maxValue;
 
                 if (type == JMLTransition.TRANS_THROW)
-                    this.varsMin[i] *= 0.9;
+                    varsMin[i] *= 0.9;
             }
             if (Constants.DEBUG_OPTIMIZE)
-                System.out.println("   variable " + i + " min = " + this.varsMin[i] + ", max = " + this.varsMax[i]);
+                System.out.println("   variable " + i + " min = " + varsMin[i] + ", max = " + varsMax[i]);
         }
 
         // step 4:  Find the maximum radius of props in the pattern, used in the margin
@@ -288,7 +291,7 @@ public class MarginEquations {
                         //
                         // margin = sum_i {coef_i * x_i} + coef_varsNum
 
-                        double[] coefs = new double[this.varsNum + 1];
+                        double[] coefs = new double[varsNum + 1];
 
                         // Calculate the angular margin of error (in radians) with the relations:
                         //
@@ -366,21 +369,21 @@ public class MarginEquations {
                             coefs[c1_varnum] += coef_c1;
                             coefs[t2_varnum] += coef_t2;
                             coefs[c2_varnum] += coef_c2;
-                            coefs[this.varsNum] = coef_0;
+                            coefs[varsNum] = coef_0;
 
                             // define coefficients so distance (ignoring prop dimension) is nonnegative
                             double dist = 0.0;
-                            for (int k = 0; k < this.varsNum; k++)
-                                dist += coefs[k] * this.varsValues[k];
+                            for (int k = 0; k < varsNum; k++)
+                                dist += coefs[k] * varsValues[k];
                             if (dist < 0.0) {
-                                for (int k = 0; k < this.varsNum; k++) {
+                                for (int k = 0; k < varsNum; k++) {
                                     if (coefs[k] != 0.0)
                                         coefs[k] = -coefs[k];
                                 }
                             }
 
                             eqns.add(coefs);
-                            this.marginsNum++;
+                            ++marginsNum;
 
                             if (Constants.DEBUG_OPTIMIZE)
                                 System.out.println("   mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
@@ -402,21 +405,21 @@ public class MarginEquations {
         // can appear multiple times.
 
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("total margin equations = " + this.marginsNum);
-            for (int i = 0; i < this.marginsNum; i++) {
+            System.out.println("total margin equations = " + marginsNum);
+            for (int i = 0; i < marginsNum; i++) {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
                 double[] temp = eqns.get(i);
-                for (int j = 0; j <= this.varsNum; j++) {
+                for (int j = 0; j <= varsNum; j++) {
                     sb.append(JLFunc.toStringTruncated(temp[j], 4));
-                    if (j == (this.varsNum - 1))
+                    if (j == (varsNum - 1))
                         sb.append(" : ");
-                    else if (j != this.varsNum)
+                    else if (j != varsNum)
                         sb.append(", ");
                 }
-                double dtemp = temp[this.varsNum];
-                for (int j = 0; j < this.varsNum; j++)
-                    dtemp += temp[j] * this.varsValues[j];
+                double dtemp = temp[varsNum];
+                for (int j = 0; j < varsNum; j++)
+                    dtemp += temp[j] * varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());
@@ -426,14 +429,14 @@ public class MarginEquations {
 
         int orig_row = 1;
 
-        for (int i = 1; i < this.marginsNum; i++) {
+        for (int i = 1; i < marginsNum; i++) {
             boolean dupoverall = false;
             double[] rowi = eqns.get(i);
 
             for (int j = 0; !dupoverall && j < i; j++) {
                 double[] rowj = eqns.get(j);
                 boolean duprow = true;
-                for (int k = 0; duprow && k <= this.varsNum; k++) {
+                for (int k = 0; duprow && k <= varsNum; k++) {
                     if (rowi[k] < (rowj[k] - epsilon) || rowi[k] > (rowj[k] + epsilon))
                         duprow = false;
                 }
@@ -444,60 +447,60 @@ public class MarginEquations {
                 if (Constants.DEBUG_OPTIMIZE)
                     System.out.println("   removed duplicate equation " + orig_row);
                 eqns.remove(i);
-                i--;
-                this.marginsNum--;
+                --i;
+                --marginsNum;
             }
             if (Constants.DEBUG_OPTIMIZE)
-                orig_row++;
+                ++orig_row;
         }
 
         // step 8.  Move the equations into an array, and sort it based on margins at the
         // current values of the variables.
 
-        this.marginsEqs = new LinearEquation[this.marginsNum];
-        for (int i = 0; i < this.marginsNum; i++) {
-            this.marginsEqs[i] = new LinearEquation(this.varsNum);
-            this.marginsEqs[i].setCoefficients(eqns.get(i));
+        marginsEqs = new LinearEquation[marginsNum];
+        for (int i = 0; i < marginsNum; i++) {
+            marginsEqs[i] = new LinearEquation(varsNum);
+            marginsEqs[i].setCoefficients(eqns.get(i));
         }
 
         if (Constants.DEBUG_OPTIMIZE) {
-            System.out.println("total margin equations = " + this.marginsNum);
-            for (int i = 0; i < this.marginsNum; i++) {
+            System.out.println("total margin equations = " + marginsNum);
+            for (int i = 0; i < marginsNum; i++) {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
-                for (int j = 0; j <= this.varsNum; j++) {
-                    sb.append(JLFunc.toStringTruncated(this.marginsEqs[i].coef(j), 4));
-                    if (j == (this.varsNum - 1))
+                for (int j = 0; j <= varsNum; j++) {
+                    sb.append(JLFunc.toStringTruncated(marginsEqs[i].coef(j), 4));
+                    if (j == (varsNum - 1))
                         sb.append(" : ");
-                    else if (j != this.varsNum)
+                    else if (j != varsNum)
                         sb.append(", ");
                 }
-                double dtemp = this.marginsEqs[i].constant();
-                for (int j = 0; j < this.varsNum; j++)
-                    dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
+                double dtemp = marginsEqs[i].constant();
+                for (int j = 0; j < varsNum; j++)
+                    dtemp += marginsEqs[i].coef(j) * varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());
             }
         }
 
-        this.sort();
+        sort();
 
         if (Constants.DEBUG_OPTIMIZE) {
             System.out.println("sorted:");
-            for (int i = 0; i < this.marginsNum; i++) {
+            for (int i = 0; i < marginsNum; i++) {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
-                for (int j = 0; j <= this.varsNum; j++) {
-                    sb.append(JLFunc.toStringTruncated(this.marginsEqs[i].coef(j), 4));
-                    if (j == (this.varsNum - 1))
+                for (int j = 0; j <= varsNum; j++) {
+                    sb.append(JLFunc.toStringTruncated(marginsEqs[i].coef(j), 4));
+                    if (j == (varsNum - 1))
                         sb.append(" : ");
-                    else if (j != this.varsNum)
+                    else if (j != varsNum)
                         sb.append(", ");
                 }
-                double dtemp = this.marginsEqs[i].constant();
-                for (int j = 0; j < this.varsNum; j++)
-                    dtemp += this.marginsEqs[i].coef(j) * this.varsValues[j];
+                double dtemp = marginsEqs[i].constant();
+                for (int j = 0; j < varsNum; j++)
+                    dtemp += marginsEqs[i].coef(j) * varsValues[j];
                 sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());

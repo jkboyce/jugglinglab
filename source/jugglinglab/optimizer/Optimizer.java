@@ -71,13 +71,13 @@ public class Optimizer {
 
 
     protected Optimizer(JMLPattern p) throws JuggleExceptionInternal, JuggleExceptionUser {
-        this.pat = p;
-        this.me = new MarginEquations(p);
+        pat = p;
+        me = new MarginEquations(p);
 
         if (me.marginsNum == 0)
             return;
 
-        this.pinned = new boolean[me.varsNum];
+        pinned = new boolean[me.varsNum];
     }
 
 
