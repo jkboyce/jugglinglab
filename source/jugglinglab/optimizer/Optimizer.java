@@ -53,11 +53,17 @@ public class Optimizer {
         }
 
         Optimizer opt = new Optimizer(pat);
-        boolean success = opt.doOptimizationMILP();
-        if (success)
-            opt.updatePattern();
-        else
-            throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_failed"));
+
+        if (opt.me.marginsNum > 0) {
+            boolean success = opt.doOptimizationMILP();
+            if (success)
+                opt.updatePattern();
+            else
+                throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_failed"));
+        } else if (Constants.DEBUG_OPTIMIZE) {
+            // do nothing if no margin equations
+            System.out.println("---- No margin equations, bailing");
+        }
 
         return pat;
     }
