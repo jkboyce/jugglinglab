@@ -339,6 +339,8 @@ public class SiteswapGenerator extends Generator {
                         String re = makeStandardRegex(args[i]);
                         if (re.indexOf("^") < 0)
                             re = ".*" + re + ".*";
+                        if (Constants.DEBUG_GENERATOR)
+                            System.out.println("adding exclusion " + re);
                         exclude.add(Pattern.compile(re));
                     } catch (PatternSyntaxException pse) {
                         throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
@@ -668,7 +670,8 @@ public class SiteswapGenerator extends Generator {
             for ( ; j < hands; ++j) {
                 if (state[0][j][i] < rhythm[0][j][i]) {
                     ++state[0][j][i];
-                    num += findPatterns(balls_placed + 1, i, j);  // next ball
+                    if (i < l_target || state[0][j][i] <= state[0][j][i - l_target])
+                        num += findPatterns(balls_placed + 1, i, j);  // next ball
                     --state[0][j][i];
                 }
             }
@@ -926,10 +929,10 @@ public class SiteswapGenerator extends Generator {
     // a custom filter (if in CUSTOM mode).
     protected boolean areThrowsValid(int pos, int outputpos) {
         // check #1: test against exclusions
-        for (int i = 0; i < exclude.size(); ++i) {
-            Pattern regex = exclude.get(i);
-            /*System.out.println("test for string " + (new String(output, 0, outputpos)) + " = " +
-                               regex.matcher(new String(output, 0, outputpos)).matches());*/
+        for (Pattern regex : exclude) {
+            if (Constants.DEBUG_GENERATOR)
+                System.out.println("test exclusions for string " + (new String(output, 0, outputpos)) + " = " +
+                               regex.matcher(new String(output, 0, outputpos)).matches());
             if (regex.matcher(new String(output, 0, outputpos)).matches())
                 return false;
         }
@@ -1001,8 +1004,7 @@ public class SiteswapGenerator extends Generator {
     // Tests if a completed pattern is valid.
     protected boolean isPatternValid(int outputpos) {
         // check #1: verify against inclusions
-        for (int i = 0; i < include.size(); ++i) {
-            Pattern regex = include.get(i);
+        for (Pattern regex : include) {
             if (!regex.matcher(new String(output, 0, outputpos)).matches()) {
                 if (Constants.DEBUG_GENERATOR)
                     System.out.println("   pattern invalid: missing inclusion");
