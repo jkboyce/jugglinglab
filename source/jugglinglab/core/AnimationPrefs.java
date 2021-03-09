@@ -36,18 +36,23 @@ public class AnimationPrefs {
     public static final int     view_def = View.VIEW_NONE;
 
     static {
-        String osname = System.getProperty("os.name").toLowerCase();
         // audio clip playback seems to block on Linux
-        bounceSound_def = !osname.startsWith("linux");
-    }
+        bounceSound_def = !jugglinglab.JugglingLab.isLinux;
 
-    static {
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] devices = env.getScreenDevices();
-        if (devices.length > 0)
-            fps_def = devices[0].getDisplayMode().getRefreshRate();
-        else
-            fps_def = 60.0;
+        // set default `fps` to screen refresh rate, if possible
+        double fps_screen = 0.0;
+
+        try {
+            GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] devices = env.getScreenDevices();
+            if (devices.length > 0)
+                fps_screen = (double)devices[0].getDisplayMode().getRefreshRate();
+                // getRefreshRate() returns 0 when refresh is unknown
+        } catch (Exception e) {
+            // HeadlessException when running headless (from CLI)
+        }
+
+        fps_def = (fps_screen < 20.0 ? 60.0 : fps_screen);
     }
 
     public int      width = width_def;
