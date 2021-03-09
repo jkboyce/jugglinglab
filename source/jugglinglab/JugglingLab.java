@@ -34,6 +34,7 @@ public class JugglingLab {
     // Platform info
     public static boolean isMacOS;
     public static boolean isWindows;
+    public static boolean isLinux;
 
     // Base directory for file operations
     public static Path base_dir;
@@ -45,6 +46,7 @@ public class JugglingLab {
         String osname = System.getProperty("os.name").toLowerCase();
         isMacOS = osname.startsWith("mac os x");
         isWindows = osname.startsWith("windows");
+        isLinux = osname.startsWith("linux");
 
         // Decide on a base directory for file operations. First look for
         // working directory set by an enclosing script, which indicates Juggling
