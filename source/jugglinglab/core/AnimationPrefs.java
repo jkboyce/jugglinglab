@@ -4,6 +4,7 @@
 
 package jugglinglab.core;
 
+import java.awt.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -23,7 +24,7 @@ public class AnimationPrefs {
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;
-    public static final double  fps_def = 60.0;
+    public static final double  fps_def;
     public static final double  slowdown_def = 2.0;
     public static final int     border_def = 0;
     public static final int     showGround_def = GROUND_AUTO;
@@ -38,6 +39,15 @@ public class AnimationPrefs {
         String osname = System.getProperty("os.name").toLowerCase();
         // audio clip playback seems to block on Linux
         bounceSound_def = !osname.startsWith("linux");
+    }
+
+    static {
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] devices = env.getScreenDevices();
+        if (devices.length > 0)
+            fps_def = devices[0].getDisplayMode().getRefreshRate();
+        else
+            fps_def = 60.0;
     }
 
     public int      width = width_def;
