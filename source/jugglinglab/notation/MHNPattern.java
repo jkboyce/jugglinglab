@@ -34,6 +34,10 @@ public abstract class MHNPattern extends Pattern {
     protected static double propdiam_default = 10.0;
     protected static double bouncefrac_default = 0.9;
     protected static String prop_default = "ball";
+    //Mahit begin
+    protected static boolean hold_default = false;
+    protected static boolean dwellmax_default = true;
+    //Mahit end
 
     // original config string:
     protected String config;
@@ -48,6 +52,13 @@ public abstract class MHNPattern extends Pattern {
     protected String prop = prop_default;
     protected String[] color;
     protected String title;
+    //Mahit begin
+    protected String hss;  
+    protected boolean hold = hold_default; 
+    protected boolean dwellmax = dwellmax_default;
+    protected String handspec;
+    protected double[] dwellarray;
+    //Mahit end
 
     // internal variables:
     protected int numjugglers;
@@ -172,6 +183,33 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
+//Mahit begin
+        if ((temp = pl.removeParameter("hss")) != null) {
+            hss = temp;
+        }
+
+        if (hss != null) {
+            if ((temp = pl.removeParameter("hold")) != null) {
+                try {
+                    hold = Boolean.parseBoolean(temp);
+                } catch (IllegalFormatException ife) {
+                    throw new JuggleExceptionUser("Please enter true/false for hold");
+                }
+            } 
+
+            if ((temp = pl.removeParameter("dwellmax")) != null) {
+                try {
+                    dwellmax = Boolean.parseBoolean(temp);
+                } catch (IllegalFormatException ife) {
+                    throw new JuggleExceptionUser("Please enter true/false for dwellmax");
+                }
+            }
+
+            if ((temp = pl.removeParameter("handspec")) != null) {
+                handspec = temp;
+            }
+        }
+//Mahit end
         if ((temp = pl.removeParameter("title")) != null) {
             this.title = temp.trim();
         }
@@ -709,6 +747,12 @@ public abstract class MHNPattern extends Pattern {
         if (bps <= 0.0)       // signal that we should calculate bps
             bps = calcBps();
 
+//Mahit begin
+//        if (hss != null) {
+//        	bps *= result.getNumberOfJugglers();
+//        }
+//Mahit end
+        
         int balls = getNumberOfPaths();
         int props = (color == null) ? 1 : Math.min(balls, color.length);
         for (int i = 0; i < props; i++) {
@@ -1060,6 +1104,12 @@ public abstract class MHNPattern extends Pattern {
                             lastcatchtime = ((double)k - 0.5*dwell) / bps;
                         else
                             lastcatchtime = ((double)k - dwell) / bps;
+
+//Mahit begin
+                        if (hss != null && dwellmax) {
+                        	lastcatchtime = ((double)k - dwellarray[k]) / bps;
+                        }
+//Mahit end                        
                         ev.setT(lastcatchtime);
 
                         // set the event juggler and hand
