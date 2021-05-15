@@ -339,6 +339,8 @@ public class SiteswapGenerator extends Generator {
                         String re = makeStandardRegex(args[i]);
                         if (re.indexOf("^") < 0)
                             re = ".*" + re + ".*";
+                        if (Constants.DEBUG_GENERATOR)
+                            System.out.println("adding exclusion " + re);
                         exclude.add(Pattern.compile(re));
                     } catch (PatternSyntaxException pse) {
                         throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
@@ -573,6 +575,9 @@ public class SiteswapGenerator extends Generator {
     // It does this by generating all possible starting states recursively,
     // then calling findCycles() to find the loops for each one.
     protected int findPatterns(int balls_placed, int min_value, int min_to) throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (Thread.interrupted())
+            throw new JuggleExceptionInterrupted();
+
         // check if we're done making the state
         if (balls_placed == n || groundflag == 1) {
             if (groundflag == 1) {  // find only ground state patterns?
@@ -668,7 +673,8 @@ public class SiteswapGenerator extends Generator {
             for ( ; j < hands; ++j) {
                 if (state[0][j][i] < rhythm[0][j][i]) {
                     ++state[0][j][i];
-                    num += findPatterns(balls_placed + 1, i, j);  // next ball
+                    if (i < l_target || state[0][j][i] <= state[0][j][i - l_target])
+                        num += findPatterns(balls_placed + 1, i, j);  // next ball
                     --state[0][j][i];
                 }
             }
@@ -926,10 +932,10 @@ public class SiteswapGenerator extends Generator {
     // a custom filter (if in CUSTOM mode).
     protected boolean areThrowsValid(int pos, int outputpos) {
         // check #1: test against exclusions
-        for (int i = 0; i < exclude.size(); ++i) {
-            Pattern regex = exclude.get(i);
-            /*System.out.println("test for string " + (new String(output, 0, outputpos)) + " = " +
-                               regex.matcher(new String(output, 0, outputpos)).matches());*/
+        for (Pattern regex : exclude) {
+            if (Constants.DEBUG_GENERATOR)
+                System.out.println("test exclusions for string " + (new String(output, 0, outputpos)) + " = " +
+                               regex.matcher(new String(output, 0, outputpos)).matches());
             if (regex.matcher(new String(output, 0, outputpos)).matches())
                 return false;
         }
@@ -1001,8 +1007,7 @@ public class SiteswapGenerator extends Generator {
     // Tests if a completed pattern is valid.
     protected boolean isPatternValid(int outputpos) {
         // check #1: verify against inclusions
-        for (int i = 0; i < include.size(); ++i) {
-            Pattern regex = include.get(i);
+        for (Pattern regex : include) {
             if (!regex.matcher(new String(output, 0, outputpos)).matches()) {
                 if (Constants.DEBUG_GENERATOR)
                     System.out.println("   pattern invalid: missing inclusion");
@@ -1288,8 +1293,12 @@ public class SiteswapGenerator extends Generator {
         if (no_throw)  // no throw on this beat
             return outpos;
 
-        if (jugglers > 1)
+        boolean x_space = (outpos > 0);  // for printing 'x'-valued throws
+
+        if (jugglers > 1) {
             out[outpos++] = '<';
+            x_space = false;
+        }
 
         for (int i = 1; i <= jugglers; ++i) {
             // first find the hand numbers corresponding to the person
@@ -1312,6 +1321,7 @@ public class SiteswapGenerator extends Generator {
 
                 if (num_hands_throwing > 1) {
                     out[outpos++] = '(';
+                    x_space = false;
                     parens = true;
                 }
 
@@ -1323,6 +1333,7 @@ public class SiteswapGenerator extends Generator {
 
                     if (max_occupancy > 1 && throw_value[pos][j][1] > 0) {
                         out[outpos++] = '[';  // multiplexing?
+                        x_space = false;
                         is_multiplex = true;
                     }
 
@@ -1332,7 +1343,12 @@ public class SiteswapGenerator extends Generator {
 
                     for (int k = 0; k < max_occupancy && throw_value[pos][j][k] > 0; ++k) {
                         got_throw = true;
+
+                        if (throw_value[pos][j][k] == 33 && x_space)
+                            out[outpos++] = ' ';
+
                         out[outpos++] = convertNumber(throw_value[pos][j][k]);  // print throw value
+                        x_space = true;
 
                         if (hands > 1) {  // potential ambiguity about destination?
                             int target_juggler = person_number[throw_to[pos][j][k]];
@@ -1367,24 +1383,36 @@ public class SiteswapGenerator extends Generator {
 
                         // another multiplexed throw?
                         if (is_multiplex && jugglers > 1 &&
-                                k != (max_occupancy - 1) && throw_value[pos][j][k + 1] > 0)
+                                k != (max_occupancy - 1) && throw_value[pos][j][k + 1] > 0) {
                             out[outpos++] = '/';
+                            x_space = false;
+                        }
                     }
 
-                    if (!got_throw)
+                    if (!got_throw) {
                         out[outpos++] = '0';
+                        x_space = true;
+                    }
 
-                    if (is_multiplex)
+                    if (is_multiplex) {
                         out[outpos++] = ']';
+                        x_space = false;
+                    }
 
-                    if (j < (hi_hand - 1) && parens)  // put comma between hands
+                    if (j < (hi_hand - 1) && parens) {  // put comma between hands
                         out[outpos++] = ',';
+                        x_space = false;
+                    }
                 }
-                if (parens)
+                if (parens) {
                     out[outpos++] = ')';
+                    x_space = false;
+                }
             }
-            if (i < jugglers)           // another person throwing next?
+            if (i < jugglers) {           // another person throwing next?
                 out[outpos++] = '|';
+                x_space = false;
+            }
         }
 
         if (jugglers > 1)

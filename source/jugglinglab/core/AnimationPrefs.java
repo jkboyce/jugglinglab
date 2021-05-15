@@ -4,6 +4,7 @@
 
 package jugglinglab.core;
 
+import java.awt.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -23,7 +24,7 @@ public class AnimationPrefs {
 
     public static final int     width_def = 400;
     public static final int     height_def = 450;
-    public static final double  fps_def = 60.0;
+    public static final double  fps_def;
     public static final double  slowdown_def = 2.0;
     public static final int     border_def = 0;
     public static final int     showGround_def = GROUND_AUTO;
@@ -35,9 +36,23 @@ public class AnimationPrefs {
     public static final int     view_def = View.VIEW_NONE;
 
     static {
-        String osname = System.getProperty("os.name").toLowerCase();
         // audio clip playback seems to block on Linux
-        bounceSound_def = !osname.startsWith("linux");
+        bounceSound_def = !jugglinglab.JugglingLab.isLinux;
+
+        // set default `fps` to screen refresh rate, if possible
+        double fps_screen = 0.0;
+
+        try {
+            GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] devices = env.getScreenDevices();
+            if (devices.length > 0)
+                fps_screen = (double)devices[0].getDisplayMode().getRefreshRate();
+                // getRefreshRate() returns 0 when refresh is unknown
+        } catch (Exception e) {
+            // HeadlessException when running headless (from CLI)
+        }
+
+        fps_def = (fps_screen < 20.0 ? 60.0 : fps_screen);
     }
 
     public int      width = width_def;
