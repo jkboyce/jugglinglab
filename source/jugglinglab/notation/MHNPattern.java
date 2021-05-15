@@ -213,9 +213,13 @@ public abstract class MHNPattern extends Pattern {
         if ((temp = pl.removeParameter("title")) != null) {
             this.title = temp.trim();
         }
-
+//Mahit begin
+        if (hss != null) {
+        	this.title = "oss: " + pattern + " ; hss: " + hss;
+        }
         return this;
     }
+//Mahit end
 
     @Override
     public String toString() {
@@ -1016,7 +1020,18 @@ public abstract class MHNPattern extends Pattern {
                         throwtime = ((double)k - 0.25*dwell) / bps;
                     else
                         throwtime = (double)k / bps;
+
+//Mahit begin
+                    if (hss != null) {
+//                    	if (onethrown)
+//                    		throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
+//                    	else
+                    		throwtime = (double)k / bps;
+                    }
+//Mahit end                        
+                    
                     ev.setT(throwtime);
+
 
                     // set the event juggler and hand
                     ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
@@ -1106,8 +1121,18 @@ public abstract class MHNPattern extends Pattern {
                             lastcatchtime = ((double)k - dwell) / bps;
 
 //Mahit begin
-                        if (hss != null && dwellmax) {
-                        	lastcatchtime = ((double)k - dwellarray[k]) / bps;
+                        int newk = 0;
+                        if (hss != null) {
+                        	//if getPeriod() > size of dwellarray due to repeats
+                        	//to account for hand/body positions, then reuse
+                        	//dwellarray timings from prior array elements
+                        	if (k >= dwellarray.length) {
+                        		newk = k % dwellarray.length;
+                        	} else {
+                        		newk = k;
+                        	}
+
+                        	lastcatchtime = ((double)k - dwellarray[newk]) / bps;
                         }
 //Mahit end                        
                         ev.setT(lastcatchtime);
@@ -1171,6 +1196,21 @@ public abstract class MHNPattern extends Pattern {
                                 else
                                     catchtime = ((double)k - dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
                                                  splitcatchfactor) / bps;
+//Mahit begin
+                                int newk;
+                                if (hss != null) {
+                                	//if getPeriod() > size of dwellarray due to repeats
+                                	//to account for hand/body positions, then reuse
+                                	//dwellarray timings from prior array elements
+                                	if (k >= dwellarray.length) {
+                                		newk = k % dwellarray.length;
+                                	} else {
+                                		newk = k;
+                                	}
+                                	catchtime = ((double)k - dwellarray[newk] + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
+                                            splitcatchfactor) / bps;
+                                }
+//Mahit end                        
                                 ev.setT(catchtime);
 
                                 if (sst.catchnum == (num_catches - 1))
@@ -1244,11 +1284,22 @@ public abstract class MHNPattern extends Pattern {
                                     nextcatchtime = ((double)tempk - 0.5*dwell) / bps;
                                 else
                                     nextcatchtime = ((double)tempk - dwell) / bps;
+//Mahit begin
+                                if (hss != null) {
+//                                	nextcatchtime = ((double)tempk - dwellarray[tempk]) / bps;
+                                }
+//Mahit end                        
                             } else {
                                 if (next_onecaught)
                                     nextcatchtime = ((double)tempk - 0.5*dwell - 0.5*splitcatchfactor) / bps;
                                 else
                                     nextcatchtime = ((double)tempk - dwell - 0.5*splitcatchfactor) / bps;
+//Mahit begin
+                                if (hss != null) {
+//                                	nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*splitcatchfactor)  / bps;
+                                }
+//Mahit end                        
+
                             }
                             break;
                         }
