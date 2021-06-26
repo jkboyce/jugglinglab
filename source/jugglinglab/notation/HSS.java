@@ -5,6 +5,11 @@ import java.util.*;
 
 import jugglinglab.util.*;
 
+class ossPatBnc {
+	ArrayList<ArrayList<Character>> objPat;
+	ArrayList<ArrayList<String>> bnc;
+}
+
 class hssParms {
 	ArrayList<Character> pat;
 	int hands;
@@ -37,10 +42,15 @@ public class HSS {
     		  
 	    ArrayList<ArrayList<Character>> ossPat = new ArrayList<ArrayList<Character>>();
 	    ArrayList<Character> hssPat = new ArrayList<Character>();
+	    ArrayList<ArrayList<String>> bounc = new ArrayList<ArrayList<String>>();
 	    hssParms hssinfo;
 	    patParms patinfo;
+	    ossPatBnc ossinfo;
 	    
-	    ossPat = OssSyntax(p);
+	    ossinfo = OssSyntax(p);
+	    ossPat = ossinfo.objPat;
+	    bounc = ossinfo.bnc;
+	    
 	    
 	    hssinfo = HssSyntax(h);
 	    
@@ -69,7 +79,7 @@ public class HSS {
 	    }
 	    
 	    //recalculate ossPer, hssPer inside convNotation itself; even numJug??
-	    patinfo = convNotation(ossPat, hssPat, ossPer, hssPer, hssOrb, handmap, numJug, hld, dwlmax, dwl);		
+	    patinfo = convNotation(ossPat, hssPat, ossPer, hssPer, hssOrb, handmap, numJug, hld, dwlmax, dwl, bounc);		
     	modinf.convertedPattern = patinfo.newPat;
 //	    convPat = patinfo.newPat;
 	    if (modinf.convertedPattern == null) {
@@ -83,17 +93,22 @@ public class HSS {
     // ensure object pattern is a vanilla pattern (multiplex allowed)
     // also perform average test
     // convert input pattern string to ArrayList identifying throws made on each beat
-    public static ArrayList<ArrayList<Character>> OssSyntax(String ss) throws 
+    public static ossPatBnc OssSyntax(String ss) throws 
                              JuggleExceptionUser, JuggleExceptionInternal{
 //    	boolean pass = true;
 	    boolean muxThrow = false;
 	    boolean muxThrowFound = false;
 	    boolean minOneThrow = false;
+	    boolean b1 = false;
+	    boolean b2 = false;
+	    boolean b3 = false;
 	    int throwSum = 0;
 	    int numBeats = 0;
 	    int subBeats = 0;
 	    int numObj = 0;
 	    ArrayList<ArrayList<Character>> oPat = new ArrayList<ArrayList<Character>>();
+	    ArrayList<ArrayList<String>> bncinfo = new ArrayList<ArrayList<String>>();
+	    
         for (int i = 0; i < ss.length(); i++) {
     	    char c = ss.charAt(i);
     	    if (muxThrow) {
@@ -101,46 +116,126 @@ public class HSS {
     			    minOneThrow = true;
     			    muxThrowFound = true;
                     oPat.get(numBeats-1).add(subBeats, c);
+                    bncinfo.get(numBeats-1).add(subBeats,"null");
     			    subBeats++;
    				    throwSum += Character.getNumericValue(c);
+   				    b1 = true;
+   				    b2 = false;
+   				    b3 = false;
     			    continue;
     		    } else if (c == ']') {
     			    if (muxThrowFound) {
     				    muxThrow = false;
     				    muxThrowFound = false;
     				    subBeats = 0;
+    				    b1 = false;
+    				    b2 = false;
+    				    b3 = false;
     				    continue;
     			    } else {
 //    				    pass = false;
 //    				    break;
-    				    throw new JuggleExceptionUser("Syntax error in object pattern");
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
     			    }
     		    } else if (c == '\s') {
+				    b1 = false;
+				    b2 = false;
+				    b3 = false;
     			    continue;
+    		    } else if (c == 'B') {
+    		    	if (b1) {
+    		    		bncinfo.get(numBeats-1).set(subBeats-1,"B");
+    		    		b1 = false;
+    		    		b2 = true;
+    		    		continue;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
+    		    } else if (c == 'F' || c == 'L') {
+    		    	if (b2) {
+    		    		bncinfo.get(numBeats-1).set(subBeats-1,"B" + Character.toString(c));
+    		    		b2 = false;
+    		    		continue;
+    		    	} else if (b3) {
+    		    		bncinfo.get(numBeats-1).set(subBeats-1,"BH" + Character.toString(c));
+    		    		b3 = false;
+    		    		continue;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
+    		    } else if (c == 'H') {
+    		    	if (b2) {
+    		    		bncinfo.get(numBeats-1).set(subBeats-1,"BH");
+    		    		b2 = false;
+    		    		b3 = true;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
     		    } else {
 //    			    pass = false;
 //    		    	break;
-    			    throw new JuggleExceptionUser("Syntax error in object pattern");
+    			    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
     		    }
     	    } else {
     		    if (Character.toString(c).matches("[0-9,a-z]")) {
     			    minOneThrow = true;
                     oPat.add(numBeats, new ArrayList<Character>());
                     oPat.get(numBeats).add(subBeats, c);
+                    bncinfo.add(numBeats, new ArrayList<String>());
+                    bncinfo.get(numBeats).add(subBeats, "null");
     			    numBeats++;
    				    throwSum += Character.getNumericValue(c);
+   				    b1 = true;
+   				    b2 = false;
+   				    b3 = false;
     			    continue;
     		    } else if (c == '[') {
     			    muxThrow = true;
                     oPat.add(numBeats, new ArrayList<Character>());
+                    bncinfo.add(numBeats, new ArrayList<String>());
     			    numBeats++;
+				    b1 = false;
+				    b2 = false;
+				    b3 = false;
     			    continue;
     		    } else if (c == '\s') {
+				    b1 = false;
+				    b2 = false;
+				    b3 = false;
     			    continue;
+    		    } else if (c == 'B') {
+    		    	if (b1) {
+    		    		bncinfo.get(numBeats-1).set(subBeats,"B");
+    		    		b1 = false;
+    		    		b2 = true;
+    		    		continue;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
+    		    } else if (c == 'F' || c == 'L') {
+    		    	if (b2) {
+    		    		bncinfo.get(numBeats-1).set(subBeats,"B" + Character.toString(c));
+    		    		b2 = false;
+    		    		continue;
+    		    	} else if (b3) {
+    		    		bncinfo.get(numBeats-1).set(subBeats,"BH" + Character.toString(c));
+    		    		b3 = false;
+    		    		continue;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
+    		    } else if (c == 'H') {
+    		    	if (b2) {
+    		    		bncinfo.get(numBeats-1).set(subBeats,"BH");
+    		    		b2 = false;
+    		    		b3 = true;
+    		    	} else {
+    				    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
+    		    	}
     		    } else {
 //    			    pass = false;
-//    			    break;
-    			    throw new JuggleExceptionUser("Syntax error in object pattern");
+//    		    	break;
+    			    throw new JuggleExceptionUser("Syntax error in object pattern at position " + (i+1));
     		    }
     	    } // if-else muxThrow
         } //for
@@ -160,7 +255,20 @@ public class HSS {
 //	    if (!pass) {
 //		    throw new JuggleExceptionUser("Invalid syntax or average for object pattern");
 //	    }
-        return oPat;  
+        for (int i = 0; i < bncinfo.size(); i++) {
+        	for (int j = 0; j < bncinfo.get(i).size(); j++) {
+        		if (bncinfo.get(i).get(j) == "null") {
+        			bncinfo.get(i).set(j, "\s");
+        		} else {
+        			bncinfo.get(i).set(j, bncinfo.get(i).get(j) + "\s");
+        		}
+        	}
+        }
+        ossPatBnc ossinf = new ossPatBnc();
+        ossinf.objPat = oPat;
+	    ossinf.bnc = bncinfo;
+
+        return ossinf;  
       } //OssSyntax
 
     // ensure hand pattern is a vanilla pattern (multiplex NOT allowed)
@@ -187,7 +295,7 @@ public class HSS {
 		      } else {
 //			      pass = false;
 //			      break;
-			      throw new JuggleExceptionUser("Syntax error in hand pattern");
+			      throw new JuggleExceptionUser("Syntax error in hand pattern at position " + (i+1));
 		      }
           }	
 //          if (pass) {
@@ -289,9 +397,9 @@ public class HSS {
 
     	  int[][] hm = new int[nh][2];
     	  //assigningLefthand, assigningRighthand, jugglerActive
-    	  boolean al = false;
-    	  boolean ar = false;
-    	  boolean ja = false;
+    	  boolean al = false; //assignLeft
+    	  boolean ar = false; //assignRight
+    	  boolean ja = false; //jugglerActive
     	  boolean pass = false;
     	  boolean hp = false; //handPresent
     	  boolean ns = false; //numberformationStarted
@@ -301,10 +409,10 @@ public class HSS {
     	  
     	  for (int i = 0; i < hs.length(); i++) {
     		  char c = hs.charAt(i);
-    		  if (!ja) {
+    		  if (!ja) { //if not in the middle of processing a () pair
     			  if (c == '(') {
-    				  ja = true;
-    				  al = true;
+    				  ja = true; //juggler assignment is active
+    				  al = true; //at opening "(" assign left hand
     				  ns = true;
     				  bhn = null;
     				  pass = false;
@@ -314,7 +422,7 @@ public class HSS {
     			  } else if (c == '\s') {
     				  continue;
     			  } else {
-    				  throw new JuggleExceptionUser("error in handspec syntax");
+    				  throw new JuggleExceptionUser("error in handspec syntax at position " + (i+1));
     			  }
     		  } else {
     			  if (al) {
@@ -327,7 +435,7 @@ public class HSS {
         				      }
         				      continue;
     					  } else {
-    						  throw new JuggleExceptionUser("error in handspec syntax"); 
+    						  throw new JuggleExceptionUser("error in handspec syntax at position " + (i+1)); 
     					  }
         			  } else if (c == '\s') {
         				  if ((bhn != null) && (bhn.length() >= 1)) {
@@ -337,25 +445,29 @@ public class HSS {
         					  continue;
         				  }
         			  } else if (c == ',') {
-        				  al = false;
-        				  ar = true;
+        				  al = false; // at "," left hand assignment complete
+        				  ar = true; 
         				  ns = true;
  
         				  if (bhn != null) {
         					  if ((Integer.parseInt(bhn) >= 1) &&(Integer.parseInt(bhn) <= nh)) {
-        						  hm[Integer.parseInt(bhn)-1][0] = jn;
-            					  hm[Integer.parseInt(bhn)-1][1] = 0;
-            					  hp = true;
+        						  if (hm[Integer.parseInt(bhn)-1][0] == 0) {//if juggler not already assigned to this hand
+            						  hm[Integer.parseInt(bhn)-1][0] = jn;
+                					  hm[Integer.parseInt(bhn)-1][1] = 0;
+                					  hp = true;
+        						  } else {
+               						  throw new JuggleExceptionUser("hand " + Integer.parseInt(bhn) + " assigned more than once"); 
+        						  }
         					  } else {
-        						  throw new JuggleExceptionUser("hand number out of range in handspec"); 
+        						  throw new JuggleExceptionUser("hand number " + Integer.parseInt(bhn) + " is out of range in handspec"); 
         					  }
         				  } else {
         					  hp = false;
         				  }
-        				  bhn = null;
+        				  bhn = null; //reset bhn string
         				  continue;
         			  } else {
-        				  throw new JuggleExceptionUser("error in handspec syntax");
+        				  throw new JuggleExceptionUser("error in handspec syntax at position " + (i+1));
         			  }
     			  } else if (ar) {
         			  if (Character.toString(c).matches("[0-9]")) {
@@ -367,7 +479,7 @@ public class HSS {
         				      }
         				      continue;
     					  } else {
-    						  throw new JuggleExceptionUser("error in handspec syntax"); 
+    						  throw new JuggleExceptionUser("error in handspec syntax at position " + (i+1)); 
     					  }
         			  } else if (c == '\s') {
         				  if ((bhn != null) && (bhn.length() >= 1)) {
@@ -378,23 +490,23 @@ public class HSS {
         				  }
         			  } else if (c == ')') {
         				  ar = false;
-        				  ja = false;
+        				  ja = false; //juggler assignment is inactive after ")"
 
         				  if (bhn != null) {
         					  if ((Integer.parseInt(bhn) >= 1) &&(Integer.parseInt(bhn) <= nh)) {
         						  hm[Integer.parseInt(bhn)-1][0] = jn;
             					  hm[Integer.parseInt(bhn)-1][1] = 1;
         					  } else {
-        						  throw new JuggleExceptionUser("hand number out of range in handspec"); 
+        						  throw new JuggleExceptionUser("hand number " + Integer.parseInt(bhn) + " is out of range in handspec"); 
         					  }
-        				  } else if (!hp) {
+        				  } else if (!hp) { //if left hand was also not present
         					  throw new JuggleExceptionUser("specify at least one hand for each juggler");
         				  }
-        				  bhn = null;
+        				  bhn = null; //reset bhn string
         				  pass = true;
         				  continue;
         			  } else {
-        				  throw new JuggleExceptionUser("error in handspec syntax");
+        				  throw new JuggleExceptionUser("error in handspec syntax at position " + (i+1));
         			  }
    				  
     			  }
@@ -402,17 +514,17 @@ public class HSS {
     		  }
     		  
     	  }
-    	  if (jn > nh) {
-    		  throw new JuggleExceptionUser("error in handspec, too many jugglers");
+    	  if (jn > nh) { //will this ever happen?
+    		  throw new JuggleExceptionUser("error in handspec, too many jugglers. Max " + nh + " jugglers possible");
     	  }
     	  if (pass) {
-    		  for (int i = 0; i < nh; i++) {
+    		  for (int i = 0; i < nh; i++) {//what is this for?
 				  if (hm[i][0] != 0) {
 					  mf = true;
 					  break;
 				  }
     			  if (!mf) {
-    				  throw new JuggleExceptionUser("hands missing in handspec");
+    				  throw new JuggleExceptionUser("hand " + (i+1) + " missing in handspec");
     			  }
     		  }
     	  } else {
@@ -428,6 +540,9 @@ public class HSS {
       }
 
       // in the absence of user defined handspec, build a default handmap
+      // assume numHnd/2 jugglers if numHnd even, else (numHnd+1)/2 jugglers
+      // assign hand 1 to J1 right hand, hand 2 to J2 right hand and so on
+      // once all right hands assigned, come back to J1 and start assigning left hand
       public static int[][] defhandspec(int nh) throws 
                                   JuggleExceptionUser, JuggleExceptionInternal{
 
@@ -457,7 +572,8 @@ public class HSS {
       //empty beats so that odd synchronous throws are also allowed
       public static patParms convNotation(ArrayList<ArrayList<Character>> os, 
     		                       ArrayList<Character> hs, int op, int hp, 
-    		                       int ho, int[][] hm, int nj, boolean h, boolean dm, double dd) throws 
+    		                       int ho, int[][] hm, int nj, boolean h, boolean dm, double dd,
+    		                       ArrayList<ArrayList<String>> bn) throws 
                                       JuggleExceptionUser, JuggleExceptionInternal{
 	      int pp, ch, t, cj; //pattern period, current hand, throw, current juggler
     	  String cp = null;  //converted pattern
@@ -484,7 +600,14 @@ public class HSS {
 //	    		  }
 	    	  }
 	      }
-	      
+
+	      //extend bounce size to pp
+	      if (pp > op) {
+	    	  for (int i = op; i < pp; i++) {
+	    		  bn.add(i,bn.get(i-op));
+	    	  }
+	      }
+
 	      //extend hss size to pp
 	      if (pp > hp) {
 	    	  for (int i = hp; i < pp; i++) {
@@ -623,11 +746,11 @@ public class HSS {
 	    		  } else if (t%2 != 0 && ji[i][1] == ji[(i+t)%pp][1]) {
 	    			  iph.get(i).set(j,"x"); //put x for odd throws to same hand
 	    		  }
-	    		  if (ji[i][0] != ji[(i+t)%pp][0]) {
+	    		  if (ji[i][0] != ji[(i+t)%pp][0]) { //if target juggler is different from one throwing
 	    			  if (iph.get(i).get(j) != "x") {
-	    				  iph.get(i).set(j,"p"+ji[(i+t)%pp][0]+"\s");
+	    				  iph.get(i).set(j,"p"+ji[(i+t)%pp][0]);
 	    			  } else {
-	    				  iph.get(i).set(j,"xp"+ji[(i+t)%pp][0]+"\s");
+	    				  iph.get(i).set(j,"xp"+ji[(i+t)%pp][0]);
 	    			  }
 	    		  } else if (h) {
 	    			  if (t == Character.getNumericValue(hs.get(i))) {
@@ -642,6 +765,15 @@ public class HSS {
 
 	      }
 	      
+          for (int i = 0; i < pp; i++) {
+	       	  for (int j = 0; j < bn.get(i).size(); j++) {
+	        	  if (iph.get(i).get(j) == null) {
+		       		  iph.get(i).set(j, bn.get(i).get(j));
+	        	  } else {
+		       		  iph.get(i).set(j, iph.get(i).get(j) + bn.get(i).get(j));
+	        	  }
+	          }
+	      }
 	      
 	      //construct the pattern string
 	      for (int i = 0; i < pp; i++) {
