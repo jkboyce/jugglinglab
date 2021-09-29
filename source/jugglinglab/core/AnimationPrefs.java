@@ -37,7 +37,10 @@ public class AnimationPrefs {
 
     static {
         // audio clip playback seems to block on Linux
-        bounceSound_def = !jugglinglab.JugglingLab.isLinux;
+        if (jugglinglab.JugglingLab.isLinux)
+            bounceSound_def = false;
+        else
+            bounceSound_def = false;
 
         // set default `fps` to screen refresh rate, if possible
         double fps_screen = 0.0;
