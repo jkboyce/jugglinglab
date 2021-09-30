@@ -1,0 +1,1745 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+
+<title>Multiplex etc.</title>
+
+<line display="Multiplex plus etc."/>
+
+<line display=""/>
+
+<line display="[54]2022" notation="jml">
+<pattern>
+<title>[54]2022</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,220,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<setup jugglers="1" paths="3" props="1,2,3"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.6666"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,3)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="20.7407" y="0" z="0" t="0.1866" hand="1:right">
+</event>
+<event x="-42.75" y="0" z="0" t="0.2666" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-43.3333" y="0" z="0" t="0.4533" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="33.2592" y="0" z="0" t="0.5333" hand="1:right">
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-44.4166" y="0" z="0" t="0.8" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9866" hand="1:left">
+<catch path="1"/>
+<holding path="3"/>
+</event>
+<event x="41.0833" y="0" z="0" t="1.0666" hand="1:right">
+<holding path="2"/>
+</event>
+<event x="41.6666" y="0" z="0" t="1.2533" hand="1:right">
+<holding path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="([6x4],4)(0,0)(2,2)*" notation="jml">
+<pattern>
+<title>([6x4],4)(0,0)(2,2)*</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,220,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<setup jugglers="1" paths="3" props="1,2,3"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.6424"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3)(2)"/>
+<event x="22.3133" y="0" z="0.2931" t="0.0528" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-17.5" y="0" z="0" t="0.0528" hand="1:left">
+<throw path="2" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="17.7777" y="0" z="0" t="0.1541" hand="1:right">
+</event>
+<event x="-23.3333" y="0" z="0" t="0.1541" hand="1:left">
+</event>
+<event x="32.2222" y="0" z="0" t="0.4403" hand="1:right">
+</event>
+<event x="-34.1666" y="0" z="0" t="0.4403" hand="1:left">
+</event>
+<event x="22.1179" y="0" z="-0.5862" t="0.7002" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-22.4094" y="0" z="-0" t="0.7002" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="21.2788" y="0" z="-0" t="0.8807" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-21.444" y="0" z="-0.2929" t="0.8807" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-21.8181" y="0" z="0" t="1.0349" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="22.4254" y="0" z="-0.8795" t="1.0349" hand="1:right">
+<catch path="2"/>
+<holding path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]120" notation="jml">
+<pattern>
+<title>[54]120</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,220,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<setup jugglers="1" paths="3" props="1,2,3"/>
+<symmetry type="delay" pperm="(1,2,3)" delay="1.0666"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="0.18" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="0" z="0" t="0.36" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-28.471" y="0" z="0" t="0.4533" hand="1:left">
+</event>
+<event x="34.8148" y="0" z="0" t="0.5333" hand="1:right">
+<holding path="3"/>
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+<holding path="3"/>
+</event>
+<event x="-39.2148" y="0" z="0" t="0.8" hand="1:left">
+</event>
+<event x="-45" y="0" z="0" t="0.9866" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]124" notation="jml">
+<pattern>
+<title>[54]124</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,2,3)(4)" delay="1.1009"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="0.1857" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="0" z="0" t="0.3715" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4678" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="34.8148" y="0" z="0" t="0.5504" hand="1:right">
+<holding path="3"/>
+</event>
+<event x="40" y="0" z="0" t="0.7431" hand="1:right">
+<catch path="2"/>
+<holding path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="0.8256" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="1.0183" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]1424" notation="jml">
+<pattern>
+<title>[54]1424</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="2.7972"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,4)(3)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="0.1888" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="0" z="0" t="0.3776" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4755" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.5594" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7552" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-43.25" y="0" z="0" t="0.8391" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="1.0349" hand="1:left">
+<catch path="1"/>
+<holding path="4"/>
+</event>
+<event x="10" y="0" z="0" t="1.1188" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="1.3146" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]14444424" notation="jml">
+<pattern>
+<title>[54]14444424</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="5.1612"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,4)(3)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="0.1935" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="30" y="0" z="0" t="0.387" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4874" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.5734" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7741" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.8602" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="1.0609" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="10" y="0" z="0" t="1.1469" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="1.3476" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="1.4336" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="1.6344" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="1.7204" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="1.9211" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-40" y="0" z="0" t="2.0071" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="2.2078" hand="1:left">
+<catch path="1"/>
+<holding path="4"/>
+</event>
+<event x="10" y="0" z="0" t="2.2939" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="2.4946" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]50(4^4)24" notation="jml">
+<pattern>
+<title>24[54]50(4^4)</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,3,2)(4)" delay="5.0349"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,3)(4)"/>
+<event x="40" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="40" y="0" z="0" t="0.1958" hand="1:right">
+<catch path="3"/>
+<holding path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2797" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4755" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="14" y="0" z="0" t="0.5594" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="20.7407" y="0" z="0" t="0.7552" hand="1:right">
+</event>
+<event x="-18" y="0" z="0" t="0.8391" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="1.0349" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="33.2592" y="0" z="0" t="1.1188" hand="1:right">
+</event>
+<event x="40" y="0" z="0" t="1.3146" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="1.3986" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="1.5944" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="10" y="0" z="0" t="1.6783" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.8741" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="1.958" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="2.1538" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="2.2377" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="2.4335" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]5024" notation="jml">
+<pattern>
+<title>[54]5024</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="2.6666"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,4)(3)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="20.7407" y="0" z="0" t="0.1866" hand="1:right">
+</event>
+<event x="-18" y="0" z="0" t="0.2666" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4533" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="33.2592" y="0" z="0" t="0.5333" hand="1:right">
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-43.25" y="0" z="0" t="0.8" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9866" hand="1:left">
+<catch path="1"/>
+<holding path="4"/>
+</event>
+<event x="10" y="0" z="0" t="1.0666" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.2533" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]520" notation="jml">
+<pattern>
+<title>[54]520</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,2,4,3)" delay="1.0344"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.181" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2586" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0.4396" hand="1:left">
+</event>
+<event x="41.75" y="0" z="0" t="0.5172" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="40" y="0" z="0" t="0.6982" hand="1:right">
+<catch path="2"/>
+<holding path="4"/>
+</event>
+<event x="-38" y="0" z="0" t="0.7758" hand="1:left">
+</event>
+<event x="-45" y="0" z="0" t="0.9568" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]21" notation="jml">
+<pattern>
+<title>[54]21</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,2)(3,4)" delay="1.6"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,2,4)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1866" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-35.0943" y="0" z="0" t="0.2666" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="20" y="0" z="0" t="0.4466" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="-30" y="0" z="0" t="0.6266" hand="1:left">
+<catch path="4"/>
+<holding path="3"/>
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+
+<line display="[42]24" notation="jml">
+<pattern>
+<title>[42]24</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="1.7647"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3)(2,4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<holding path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.2058" hand="1:right">
+<holding path="2"/>
+</event>
+<event x="-40" y="0" z="0" t="0.2941" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4999" hand="1:left">
+<catch path="4"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5882" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7941" hand="1:right">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="(4,[42])(2,4)*" notation="jml">
+<pattern>
+<title>(4,[42])(2,4)*</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="2.3529"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3)(2,4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<holding path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.2058" hand="1:right">
+<holding path="2"/>
+</event>
+<event x="-40" y="0" z="0" t="0.2058" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.5882" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.5882" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="0.7941" hand="1:left">
+<catch path="3"/>
+<holding path="4"/>
+</event>
+<event x="40" y="0" z="0" t="0.7941" hand="1:right">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+
+<line display="(2x,[4x4])(0,4)(2,2x)*" notation="jml">
+<pattern>
+<title>(2x,[4x4])(0,4)(2,2x)*</title>
+<prop type="ball" mod="color={255,0,0}"/>
+<prop type="ball" mod="color={0,230,0}"/>
+<prop type="ball" mod="color={0,0,240,}"/>
+<setup jugglers="1" paths="3" props="1,2,3"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.8588"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/>
+<event x="13.1953" y="0" z="0.2904" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="0.1667" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-28.8888" y="0" z="0" t="0.1667" hand="1:left">
+</event>
+<event x="30.915" y="0" z="0.5809" t="0.4764" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-36.1111" y="0" z="0" t="0.4764" hand="1:left">
+</event>
+<event x="21.4088" y="-0" z="0.2904" t="0.636" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-40" y="0" z="0" t="0.6432" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="25" y="0" z="0" t="0.9529" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-30.25" y="0" z="0" t="0.9529" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="-25" y="0" z="0" t="1.1197" hand="1:left">
+<catch path="2"/>
+<holding path="1"/>
+</event>
+<event x="40" y="0" z="0" t="1.1197" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="Bobs([44x],2x)(4,2)(2x,[4x4])(2,4)" notation="jml">
+<pattern>
+<title>([44x],2x)(4,2)(2x,[4x4])(2,4)</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,4,2,3)" delay="2.3529"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.2058" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-25" y="0" z="0" t="0.2058" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="40" y="0" z="0" t="0.5882" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.5882" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7941" hand="1:right">
+<catch path="3"/>
+<holding path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="0.7941" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="1.1764" hand="1:right">
+<throw path="3" type="toss"/>
+<throw path="4" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="1.1764" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="1.3823" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-40" y="0" z="0" t="1.3823" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="10" y="0" z="0" t="1.7647" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="1.7647" hand="1:left">
+<holding path="1"/>
+</event>
+<event x="40" y="0" z="0" t="1.9705" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="1.9705" hand="1:left">
+<catch path="3"/>
+<holding path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="(2x,2)(0,[6x6])*" notation="jml">
+<pattern>
+<title>(2x,2)(0,[6x6])*</title>
+<prop type="ball" mod="color={255,0,0}"/>
+<prop type="ball" mod="color={0,230,0}"/>
+<prop type="ball" mod="color={0,0,240,}"/>
+<prop type="ball" mod="color={250,230,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,2)(3,4)" delay="1.5811"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,2,3)"/>
+<event x="32" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-25" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="25" y="0" z="0" t="0.1383" hand="1:right">
+<catch path="2"/>
+<holding path="1"/>
+</event>
+<event x="-30.1851" y="0" z="0" t="0.1383" hand="1:left">
+</event>
+<event x="15" y="0" z="0" t="0.3952" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-39.8148" y="0" z="0" t="0.3952" hand="1:left">
+</event>
+<event x="-45" y="0" z="0" t="0.5336" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="45" y="0" z="0" t="0.5336" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="(6,[44x])(0,2x)*" notation="jml">
+<pattern>
+<title>(6,[44x])(0,2x)*</title>
+<prop type="ball" mod="color={255,0,0}"/>
+<prop type="ball" mod="color={0,230,0}"/>
+<prop type="ball" mod="color={0,0,240,}"/>
+<prop type="ball" mod="color={250,230,0}"/>
+<setup jugglers="1" paths="4" props="1,2,3,4"/>
+<symmetry type="delay" pperm="(1,4)(2,3)" delay="1.9113"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,4,3)"/>
+<event x="12.796" y="0" z="-0.466" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-5" y="0" z="0" t="0" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="35.6091" y="0" z="-0.5869" t="0.1624" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-12.7" y="0" z="0" t="0.1672" hand="1:left">
+</event>
+<event x="25" y="0" z="0" t="0.4778" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="-27" y="0" z="0" t="0.4778" hand="1:left">
+</event>
+<event x="31.206" y="0" z="-0.5861" t="0.5925" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-32.0339" y="0" z="-0.466" t="0.5972" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.6928" hand="1:left">
+<catch path="4"/>
+<holding path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="Split Pairs ([44x],2)(2,[4x4])" notation="jml">
+<pattern>
+<title>([44x],2)(2,[4x4])</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,3,5)(2)(4)" delay="1.1764"/>
+<event x="40" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.2058" hand="1:right">
+<catch path="4"/>
+<holding path="1"/>
+</event>
+<event x="-40" y="0" z="0" t="0.2058" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="10" y="0" z="0" t="0.5882" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="4" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.5882" hand="1:left">
+<holding path="5"/>
+</event>
+<event x="40" y="0" z="0" t="0.7941" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.7941" hand="1:left">
+<catch path="2"/>
+<holding path="5"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+
+<line display="[54][22]2" notation="jml">
+<pattern>
+<title>[54][22]2</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,2,5,3,4)" delay="1.6"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,2,4,5)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1866" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="-29.7575" y="0" z="0" t="0.2666" hand="1:left">
+<holding path="3"/>
+<holding path="4"/>
+</event>
+<event x="-24.2424" y="0" z="0" t="0.4533" hand="1:left">
+<holding path="3"/>
+<holding path="4"/>
+</event>
+<event x="41.75" y="0" z="0" t="0.5333" hand="1:right">
+<holding path="5"/>
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+<holding path="5"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]24" notation="jml">
+<pattern>
+<title>[54]24</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,2,4,3,5)" delay="1.6513"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,2,5,4)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1926" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="0.2752" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4678" hand="1:left">
+<catch path="5"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5504" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7431" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]524" notation="jml">
+<pattern>
+<title>[54]524</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,2,4,3)(5)" delay="1.0666"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1866" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2666" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4533" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="41.75" y="0" z="0" t="0.5333" hand="1:right">
+<holding path="4"/>
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+<holding path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.8" hand="1:left">
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9866" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]24[42]4" notation="jml">
+<pattern>
+<title>[54]24[42]4</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)(5)" delay="2.8248"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,5)(3,4)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.1977" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-40" y="0" z="0" t="0.2824" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4802" hand="1:left">
+<catch path="5"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5649" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7627" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="0.8474" hand="1:left">
+<throw path="3" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-45" y="0" z="0" t="1.0451" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="1.1299" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="1.3276" hand="1:right">
+<catch path="4"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]5524[42]4" notation="jml">
+<pattern>
+<title>[54]5524[42]4</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2,3,5)(4)" delay="3.7837"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4)(2,5,3)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.1891" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2702" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4594" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="18" y="0" z="0" t="0.5405" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7297" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-43.25" y="0" z="0" t="0.8108" hand="1:left">
+<holding path="5"/>
+</event>
+<event x="-45" y="0" z="0" t="1" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="1.081" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.2702" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="1.3513" hand="1:left">
+<throw path="1" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-45" y="0" z="0" t="1.5405" hand="1:left">
+<catch path="4"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="1.6216" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="1.8108" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]5524" notation="jml">
+<pattern>
+<title>[54]5524</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)(5)" delay="2.6178"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2,5)(3)(4)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1832" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2617" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.445" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="18" y="0" z="0" t="0.5235" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7068" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-43.25" y="0" z="0" t="0.7853" hand="1:left">
+<holding path="5"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9685" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="1.0471" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.2303" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]5551" notation="jml">
+<pattern>
+<title>[54]5551</title>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={250,0,0}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)(5)" delay="2.5252"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)(4)(5)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1767" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2525" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4292" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="18" y="0" z="0" t="0.505" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.6818" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-18" y="0" z="0" t="0.7575" hand="1:left">
+<throw path="5" type="toss"/>
+</event>
+<event x="20" y="0" z="0" t="0.928" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-37.5" y="0" z="0" t="1.0479" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="-37.5" y="0" z="0" t="1.1489" hand="1:left">
+<catch path="2"/>
+<holding path="1"/>
+</event>
+<event x="45" y="0" z="0" t="1.1868" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]1" notation="jml">
+<pattern>
+<title>[54]1</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,4,2,3,5)" delay="0.5493"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="0.1854" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="35" y="0" z="0" t="0.1867" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="35" y="0" z="0" t="0.4257" hand="1:right">
+<catch path="3"/>
+<holding path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4669" hand="1:left">
+<catch path="5"/>
+</event>
+</pattern>
+</line>
+
+<line display="[54]51 Alanz" notation="jml">
+<pattern>
+<title>[54]51 Alanz</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,3,4,5,2)" delay="1.6292"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,5,3,2,4)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.19" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2715" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-37.5" y="0" z="0" t="0.4208" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="20" y="0" z="0" t="0.4547" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="-37.5" y="0" z="0" t="0.6475" hand="1:left">
+<catch path="4"/>
+<holding path="5"/>
+</event>
+<event x="40" y="0" z="0" t="0.7331" hand="1:right">
+<catch path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="25[62]" notation="jml">
+<pattern>
+<title>25[62]</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2,5,3)(4)" delay="1.2018"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4)(2,3,5)"/>
+<event x="32.5" y="0" z="0" t="0" hand="1:right">
+<holding path="2"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4004" hand="1:left">
+<holding path="3"/>
+<catch path="4"/>
+</event>
+<event x="10" y="0" z="0" t="0.4004" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+</pattern>
+</line>
+
+<line display="(6x,[22])(2,[62])*" notation="jml">
+<pattern>
+<title>(6x,[22])(2,[62])*</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2,3,4)(5)" delay="1.8258"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,5)(2,4,3)"/>
+<event x="21.0139" y="0" z="-0.4571" t="0" hand="1:right">
+<holding path="1"/>
+<holding path="2"/>
+</event>
+<event x="-18.6001" y="0" z="0" t="0" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="20.7575" y="0" z="0" t="0.1597" hand="1:right">
+<holding path="1"/>
+<holding path="2"/>
+</event>
+<event x="-45" y="0" z="0" t="0.1597" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="5" y="0" z="0" t="0.4563" hand="1:right">
+<throw path="1" type="toss"/>
+<holding path="2"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4563" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="0.6161" hand="1:left">
+<catch path="5"/>
+<holding path="4"/>
+</event>
+<event x="11.9999" y="0" z="0" t="0.6161" hand="1:right">
+<holding path="2"/>
+</event>
+</pattern>
+</line>
+
+<line display="([54]24^2)([54]51^2)" notation="jml">
+<pattern>
+<title>([54]24^2)([54]51^2)</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,5,2,4)(3)" delay="3.2"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1866" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-43.25" y="0" z="0" t="0.2666" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4533" hand="1:left">
+<catch path="5"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5333" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.72" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-14" y="0" z="0" t="0.8" hand="1:left">
+<throw path="3" type="toss"/>
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9866" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="40" y="0" z="0" t="1.0666" hand="1:right">
+<holding path="2"/>
+</event>
+<event x="40" y="0" z="0" t="1.2533" hand="1:right">
+<catch path="4"/>
+<holding path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="1.3333" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="1.52" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="14" y="0" z="0" t="1.6" hand="1:right">
+<throw path="4" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.7866" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18" y="0" z="0" t="1.8666" hand="1:left">
+<throw path="5" type="toss"/>
+</event>
+<event x="20" y="0" z="0" t="2.0466" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-35" y="0" z="0" t="2.1733" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="-35" y="0" z="0" t="2.28" hand="1:left">
+<catch path="3"/>
+<holding path="1"/>
+</event>
+<event x="40" y="0" z="0" t="2.32" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-14" y="0" z="0" t="2.4" hand="1:left">
+<throw path="1" type="toss"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="2.5866" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="18" y="0" z="0" t="2.6666" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-20" y="0" z="0" t="2.8466" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="37.5" y="0" z="0" t="2.8613" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="37.5" y="0" z="0" t="3.08" hand="1:right">
+<catch path="4"/>
+<holding path="5"/>
+</event>
+<event x="-40" y="0" z="0" t="3.12" hand="1:left">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="([54]24^3)[54](5^5)24" notation="jml">
+<pattern>
+<title>([54]24^3)[54](5^5)24</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,5)(2)(3,4)" delay="9.0171"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,5,4)(2)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.1856" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-41.75" y="0" z="0" t="0.2652" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4508" hand="1:left">
+<catch path="5"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5304" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.716" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-14" y="0" z="0" t="0.7956" hand="1:left">
+<throw path="3" type="toss"/>
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9812" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="40" y="0" z="0" t="1.0608" hand="1:right">
+<holding path="2"/>
+</event>
+<event x="40" y="0" z="0" t="1.2464" hand="1:right">
+<catch path="4"/>
+<holding path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="1.326" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="1.5117" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="14" y="0" z="0" t="1.5912" hand="1:right">
+<throw path="4" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.7769" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="1.8564" hand="1:left">
+<holding path="5"/>
+</event>
+<event x="-40" y="0" z="0" t="2.0421" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="2.1216" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="2.3073" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-14" y="0" z="0" t="2.3868" hand="1:left">
+<throw path="1" type="toss"/>
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="2.5725" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="18" y="0" z="0" t="2.6521" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="2.8377" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18" y="0" z="0" t="2.9173" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="3.1029" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="18" y="0" z="0" t="3.1825" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="3.3681" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-18" y="0" z="0" t="3.4477" hand="1:left">
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="3.6333" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="18" y="0" z="0" t="3.7129" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="3.8985" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="3.9781" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="-45" y="0" z="0" t="4.1638" hand="1:left">
+<catch path="3"/>
+<holding path="2"/>
+</event>
+<event x="10" y="0" z="0" t="4.2433" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="4.429" hand="1:right">
+<catch path="5"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+
+<line display="[54](5^6)24([24]4^2)" notation="jml">
+<pattern>
+<title>[54](5^6)24([24]4^2)</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1,2)(3,4)(5)" delay="6.8839"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,2,3)(5)"/>
+<event x="14" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.1853" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.2647" hand="1:left">
+<throw path="3" type="toss"/>
+</event>
+<event x="-40" y="0" z="0" t="0.4501" hand="1:left">
+<catch path="5"/>
+</event>
+<event x="18" y="0" z="0" t="0.5295" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7148" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-18" y="0" z="0" t="0.7942" hand="1:left">
+<throw path="5" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="0.9796" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="18" y="0" z="0" t="1.059" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.2443" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18" y="0" z="0" t="1.3238" hand="1:left">
+<throw path="1" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="1.5091" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="18" y="0" z="0" t="1.5885" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="1.7739" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="-45" y="0" z="0" t="1.8533" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="-45" y="0" z="0" t="2.0386" hand="1:left">
+<catch path="2"/>
+<holding path="4"/>
+</event>
+<event x="10" y="0" z="0" t="2.1181" hand="1:right">
+<throw path="5" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="2.3034" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="2.3828" hand="1:left">
+<throw path="4" type="toss"/>
+<holding path="2"/>
+</event>
+<event x="-45" y="0" z="0" t="2.5682" hand="1:left">
+<catch path="3"/>
+<holding path="2"/>
+</event>
+<event x="10" y="0" z="0" t="2.6476" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="2.8329" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="-10" y="0" z="0" t="2.9124" hand="1:left">
+<throw path="2" type="toss"/>
+<holding path="3"/>
+</event>
+<event x="-40" y="0" z="0" t="3.0977" hand="1:left">
+<catch path="4"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="3.1771" hand="1:right">
+<throw path="5" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="3.3625" hand="1:right">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="(4[42]^2)2([32][23]^2)[42][24][42]4([25]5^2)5552" notation="jml">
+<pattern>
+<title>(4[42]^2)2([32][23]^2)[42][24][42]4([25]5^2)5552</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<setup jugglers="1" paths="5" props="1,2,3,4,5"/>
+<symmetry type="delay" pperm="(1)(2,5,4)(3)" delay="11.8222"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3)(2,4,5)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="0.197" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2814" hand="1:left">
+<throw path="2" type="toss"/>
+<holding path="3"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4785" hand="1:left">
+<catch path="5"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.5629" hand="1:right">
+<throw path="4" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="0.7599" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-10" y="0" z="0" t="0.8444" hand="1:left">
+<throw path="3" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-40" y="0" z="0" t="1.0414" hand="1:left">
+<catch path="2"/>
+<holding path="5"/>
+</event>
+<event x="40" y="0" z="0" t="1.1259" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="40" y="0" z="0" t="1.3229" hand="1:right">
+<catch path="4"/>
+<holding path="1"/>
+</event>
+<event x="-12" y="0" z="0" t="1.4074" hand="1:left">
+<throw path="2" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-40" y="0" z="0" t="1.6044" hand="1:left">
+<catch path="3"/>
+<holding path="5"/>
+</event>
+<event x="12" y="0" z="0" t="1.6888" hand="1:right">
+<throw path="1" type="toss"/>
+<holding path="4"/>
+</event>
+<event x="30" y="0" z="0" t="1.8859" hand="1:right">
+<catch path="2"/>
+<holding path="4"/>
+</event>
+<event x="-12" y="0" z="0" t="1.9703" hand="1:left">
+<throw path="3" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-30" y="0" z="0" t="2.1674" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="12" y="0" z="0" t="2.2518" hand="1:right">
+<throw path="4" type="toss"/>
+<holding path="2"/>
+</event>
+<event x="30" y="0" z="0" t="2.4488" hand="1:right">
+<catch path="3"/>
+<holding path="2"/>
+</event>
+<event x="-10" y="0" z="0" t="2.5333" hand="1:left">
+<throw path="1" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-30" y="0" z="0" t="2.7303" hand="1:left">
+<catch path="4"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="2.8148" hand="1:right">
+<throw path="2" type="toss"/>
+<holding path="3"/>
+</event>
+<event x="10" y="0" z="0" t="3.0118" hand="1:right">
+<holding path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="3.0962" hand="1:left">
+<throw path="4" type="toss"/>
+<holding path="5"/>
+</event>
+<event x="-40" y="0" z="0" t="3.2933" hand="1:left">
+<catch path="1"/>
+<holding path="5"/>
+</event>
+<event x="10" y="0" z="0" t="3.3777" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="3.5748" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-18" y="0" z="0" t="3.6592" hand="1:left">
+<throw path="5" type="toss"/>
+<holding path="1"/>
+</event>
+<event x="-40" y="0" z="0" t="3.8562" hand="1:left">
+<catch path="4"/>
+<holding path="1"/>
+</event>
+<event x="18" y="0" z="0" t="3.9407" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="40" y="0" z="0" t="4.1377" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-18" y="0" z="0" t="4.2222" hand="1:left">
+<throw path="1" type="toss"/>
+<holding path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="4.4192" hand="1:left">
+<holding path="4"/>
+</event>
+<event x="18" y="0" z="0" t="4.5037" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="4.7007" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="-18" y="0" z="0" t="4.7851" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="4.9822" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="18" y="0" z="0" t="5.0666" hand="1:right">
+<throw path="5" type="toss"/>
+</event>
+<event x="45" y="0" z="0" t="5.2637" hand="1:right">
+<catch path="1"/>
+</event>
+<event x="-18" y="0" z="0" t="5.3481" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-45" y="0" z="0" t="5.5451" hand="1:left">
+<catch path="3"/>
+</event>
+<event x="45" y="0" z="0" t="5.6296" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="45" y="0" z="0" t="5.8266" hand="1:right">
+<catch path="4"/>
+<holding path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+
+<line display="7 balls ([6x2],6)*" notation="jml">
+<pattern>
+<title>([6x2],6)*</title>
+<prop type="ball" mod="color={250,0,0}"/>
+<prop type="ball" mod="color={0,225,0}"/>
+<prop type="ball" mod="color={0,0,240}"/>
+<prop type="ball" mod="color={255,225,0}"/>
+<prop type="ball" mod="color={150,0,150}"/>
+<prop type="ball" mod="color={255,125,0}"/>
+<prop type="ball" mod="color={200,100,0}"/>
+<setup jugglers="1" paths="7" props="1,2,3,4,5,6,7"/>
+<symmetry type="delay" pperm="(1,5,2,6,3,7,4)" delay="0.9411"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,3,5,7,2,4,6)"/>
+<event x="5" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-25" y="0" z="0" t="0" hand="1:left">
+<throw path="2" type="toss"/>
+<holding path="3"/>
+</event>
+<event x="45" y="0" z="0" t="0.1176" hand="1:right">
+<catch path="4"/>
+</event>
+<event x="-18" y="0" z="0" t="0.1647" hand="1:left">
+<holding path="3"/>
+</event>
+<event x="45" y="0" z="0" t="0.2117" hand="1:right">
+<catch path="5"/>
+<holding path="4"/>
+</event>
+</pattern>
+</line>
+
+</patternlist>
+</jml>
+
