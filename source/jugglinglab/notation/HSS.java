@@ -248,9 +248,9 @@ public class HSS {
         for (int i = 0; i < bncinfo.size(); i++) {
         	for (int j = 0; j < bncinfo.get(i).size(); j++) {
         		if (bncinfo.get(i).get(j) == "null") {
-        			bncinfo.get(i).set(j, "\s");
+        			bncinfo.get(i).set(j, " ");
         		} else {
-        			bncinfo.get(i).set(j, bncinfo.get(i).get(j) + "\s");
+        			bncinfo.get(i).set(j, bncinfo.get(i).get(j) + " ");
         		}
         	}
         }
@@ -821,7 +821,7 @@ public class HSS {
 	    				  currJug++;
 	    			  }
 	    		  } //if-else left-right hand
-	    	  } //while cj < nj
+	    	  } //while currJug < nj
 	      } //for all beats
 	      
 	      patinf.newPat = modPat;
