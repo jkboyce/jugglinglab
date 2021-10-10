@@ -14,7 +14,7 @@ Please feel free to clone the repository and play around with it. Even better, c
 
 ## Contributors
 
-Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing with the release of Java 1.2. As applet support gradually died out, Juggling Lab morphed into the desktop application it is today.
+Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing with the release of Java 1.2. Eventually Juggling Lab morphed into the desktop application it is today.
 
 Over that long span of time the project has seen contributions from many people, including:
 
