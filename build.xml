@@ -27,7 +27,7 @@
 
     <target name="compile" depends="init">
         <javac debug="${debug}" srcdir="${src}/." destdir="${build}/."
-            target="1.8" source="1.8" deprecation="${deprecation}"
+            target="11" source="11" deprecation="${deprecation}"
             includeAntRuntime="false" includes="**"
             excludes="gifwriter/*,resources/*,jugglinglab/notation/*.jj">
             <classpath refid="master-classpath" />

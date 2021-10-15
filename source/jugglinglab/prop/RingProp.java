@@ -63,9 +63,9 @@ public class RingProp extends Prop {
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
                                             range, colornames[colornum_def], colornames[colornum]);
         result[1] = new ParameterDescriptor("outside", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(outside_diam_def), new Double(outside_diam));
+                                            null, Double.valueOf(outside_diam_def), Double.valueOf(outside_diam));
         result[2] = new ParameterDescriptor("inside", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(inside_diam_def), new Double(inside_diam));
+                                            null, Double.valueOf(inside_diam_def), Double.valueOf(inside_diam));
 
         return result;
     }

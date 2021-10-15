@@ -182,7 +182,7 @@ public class JMLView extends View implements DocumentListener {
                 setDirty(true);
             } catch (SAXParseException spe) {
                 String template = errorstrings.getString("Error_parsing");
-                Object[] arguments = { new Integer(spe.getLineNumber()) };
+                Object[] arguments = { Integer.valueOf(spe.getLineNumber()) };
                 lab.setText(MessageFormat.format(template, arguments));
                 setDirty(true);
             } catch (SAXException se) {

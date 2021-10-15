@@ -109,7 +109,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
                 filemenu.add(fileitem);
@@ -280,7 +280,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_IO")+": "+ioe.getMessage());
             } catch (SAXParseException spe) {
                 String template = errorstrings.getString("Error_parsing");
-                Object[] arguments = { new Integer(spe.getLineNumber()) };
+                Object[] arguments = { Integer.valueOf(spe.getLineNumber()) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             } catch (SAXException se) {
                 throw new JuggleExceptionUser(se.getMessage());

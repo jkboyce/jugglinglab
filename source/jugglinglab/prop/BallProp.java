@@ -62,9 +62,9 @@ public class BallProp extends Prop {
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
                                             range, colornames[colornum_def], colornames[colornum]);
         result[1] = new ParameterDescriptor("diam", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(diam_def), new Double(diam));
+                                            null, Double.valueOf(diam_def), Double.valueOf(diam));
         result[2] = new ParameterDescriptor("highlight", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, new Boolean(highlight_def), new Boolean(highlight));
+                                            null, Boolean.valueOf(highlight_def), Boolean.valueOf(highlight));
 
         return result;
     }

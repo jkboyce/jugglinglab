@@ -335,12 +335,12 @@ public class JMLPattern {
             }
             if (hasJMLTransitionForLeft == false) {
                 String template = errorstrings.getString("Error_no_left_events");
-                Object[] arguments = { new Integer(i+1) };
+                Object[] arguments = { Integer.valueOf(i+1) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
             if (hasJMLTransitionForRight == false) {
                 String template = errorstrings.getString("Error_no_right_events");
-                Object[] arguments = { new Integer(i+1) };
+                Object[] arguments = { Integer.valueOf(i+1) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
             needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0];   // set up for later
@@ -359,7 +359,7 @@ public class JMLPattern {
             }
             if (hasPathJMLTransition == false) {
                 String template = errorstrings.getString("Error_no_path_events");
-                Object[] arguments = { new Integer(i+1) };
+                Object[] arguments = { Integer.valueOf(i+1) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
             needPathEvent[i] = true;            // set up for later
@@ -713,17 +713,17 @@ public class JMLPattern {
                         case JMLTransition.TRANS_HOLDING:
                             if (lasttr.getType() == JMLTransition.TRANS_THROW) {
                                 String template = errorstrings.getString("Error_successive_throws");
-                                Object[] arguments = { new Integer(i+1) };
+                                Object[] arguments = { Integer.valueOf(i+1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                             }
                             if (lastev.getJuggler() != ev.getJuggler()) {
                                 String template = errorstrings.getString("Error_juggler_changed");
-                                Object[] arguments = { new Integer(i+1) };
+                                Object[] arguments = { Integer.valueOf(i+1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                             }
                             if (lastev.getHand() != ev.getHand()) {
                                 String template = errorstrings.getString("Error_hand_changed");
-                                Object[] arguments = { new Integer(i+1) };
+                                Object[] arguments = { Integer.valueOf(i+1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                             }
                             pl.setInHand(ev.getJuggler(), ev.getHand());
@@ -731,7 +731,7 @@ public class JMLPattern {
                         case JMLTransition.TRANS_CATCH:
                             if (lasttr.getType() != JMLTransition.TRANS_THROW) {
                                 String template = errorstrings.getString("Error_successive_catches");
-                                Object[] arguments = { new Integer(i+1) };
+                                Object[] arguments = { Integer.valueOf(i+1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                             }
                             pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
@@ -739,7 +739,7 @@ public class JMLPattern {
                         case JMLTransition.TRANS_SOFTCATCH:
                             if (lasttr.getType() != JMLTransition.TRANS_THROW) {
                                 String template = errorstrings.getString("Error_successive_catches");
-                                Object[] arguments = { new Integer(i+1) };
+                                Object[] arguments = { Integer.valueOf(i+1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                             }
                             pl.setThrow(lasttr.getThrowType(), lasttr.getMod());

@@ -96,7 +96,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
@@ -132,7 +132,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);
@@ -144,7 +144,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);

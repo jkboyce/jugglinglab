@@ -255,7 +255,7 @@ public abstract class MHNNotationControl extends NotationControl {
     @Override
     public void resetControl() {
         tf1.setText("3");                                               // pattern
-        tf2.setText(new Double(MHNPattern.dwell_default).toString());   // dwell beats
+        tf2.setText(Double.valueOf(MHNPattern.dwell_default).toString());   // dwell beats
         tf3.setText("");                                                // beats per second
         tf4.setText("");
         cb1.setSelectedIndex(0);
@@ -273,7 +273,7 @@ public abstract class MHNNotationControl extends NotationControl {
         sb.append(tf1.getText());
         sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
-            if (!tf2.getText().equals(new Double(MHNPattern.dwell_default).toString())) {
+            if (!tf2.getText().equals(Double.valueOf(MHNPattern.dwell_default).toString())) {
                 sb.append(";dwell=");
                 sb.append(tf2.getText());
             }
