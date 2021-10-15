@@ -5,6 +5,8 @@
 package jugglinglab.core;
 
 import java.awt.*;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -139,10 +141,22 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         { "about", "online" };
 
     protected JMenu createHelpMenu() {
-        // When we move to Java 9+ we can use Desktop.setAboutHandler() here to
-        // do the about box in a more platform-realistic way. For now it's just
-        // a regular menu item.
         boolean include_about = true;
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
+                @Override
+                public void handleAbout(AboutEvent e) {
+                    try {
+                        doMenuCommand(HELP_ABOUT);
+                    } catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+                }
+            });
+
+            include_about = false;  // don't need to include in menu
+        }
 
         JMenu helpmenu = new JMenu(guistrings.getString("Help"));
 
