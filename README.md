@@ -14,7 +14,7 @@ Please feel free to clone the repository and play around with it. Even better, c
 
 ## Contributors
 
-Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing with the release of Java 1.2. As applet support gradually died out, Juggling Lab morphed into the desktop application it is today.
+Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing with the release of Java 1.2. Eventually Juggling Lab morphed into the desktop application it is today.
 
 Over that long span of time the project has seen contributions from many people, including:
 
@@ -35,6 +35,8 @@ Over that long span of time the project has seen contributions from many people,
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
 - Romain Richard and Frédéric Rayar – [Android version](https://code.google.com/archive/p/jugglinglab/) ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
+- P. R. Vaidyanathan – Hand Siteswap feature input
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
+- Mahit Warhadpande – Hand Siteswap feature design and implementation
 - Alan Weathers – Alanz pattern files, bug reports
