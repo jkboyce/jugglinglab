@@ -1570,7 +1570,7 @@ top:
                         double d = p.getDuration();
                         double dmin = p.getMinDuration();
 
-                        if (d < dmin)
+                        if (d < dmin && d > 0.0)
                             scale_factor = Math.max(scale_factor, dmin / d);
                     }
                 }

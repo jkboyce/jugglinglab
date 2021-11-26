@@ -327,7 +327,7 @@ public class BouncePath extends Path {
             dupper *= 2.0;
         }
 
-        while (dupper - dlower > 0.001) {
+        while (dupper - dlower > 0.0001) {
             double davg = 0.5 * (dlower + dupper);
             if (isFeasibleDuration(davg))
                 dupper = davg;
