@@ -45,6 +45,11 @@ public abstract class Path {
     public double getStartTime()        { return start_time; }
     public double getEndTime()          { return end_time; }
     public double getDuration()         { return (end_time-start_time); }
+
+    // minimum duration is nonzero for certain throw types, e.g., a double
+    // bounce throw
+    public double getMinDuration()      { return 0.0; }
+
     public void translateTime(double deltat) {
         start_time += deltat;
         end_time += deltat;

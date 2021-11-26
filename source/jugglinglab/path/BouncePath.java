@@ -1,6 +1,6 @@
 // BouncePath.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.path;
 
@@ -129,95 +129,17 @@ public class BouncePath extends Path {
             az[i] = -0.5 * g;
     }
 
-    // The next function does all the real work of figuring out the ball's
-    // path.  It solves a cubic equation to find the time when the ball hits
-    // the ground
     @Override
     public void calcPath() throws JuggleExceptionInternal {
         if (start_coord == null || end_coord == null)
             return;
 
-        double  t2 = getDuration();
-        // First do the x and y coordinates -- these are simple.
-        cx = start_coord.x;
-        bx = (end_coord.x - start_coord.x) / t2;
-        cy = start_coord.y;
-        by = (end_coord.y - start_coord.y) / t2;
-
-        cz[0] = start_coord.z;
-
-        double[] root = new double[4];
-        boolean[] liftcatch = new boolean[4];
-        int numroots;
-
-        for (this.numbounces = bounces; numbounces > 0; numbounces--) {
-            numroots = 0;
-            double f1 = bouncefracsqrt;
-            for (int i = 1; i < numbounces; i++)
-                f1 *= bouncefracsqrt;
-            double k = ((bouncefracsqrt == 1.0) ? 2.0*(double)numbounces :
-                        1.0 + f1 + 2.0*bouncefracsqrt*(1.0-f1/bouncefracsqrt)/(1.0-bouncefracsqrt));
-            double u = 2.0 * this.g * (start_coord.z - bounceplane);
-            double l = 2.0 * this.g * (end_coord.z - bounceplane);
-            double f2 = f1 * f1;
-            double c = u - l / f2;
-            double kk = k * k;
-            double gt = this.g * t2;
-            double v0;
-
-            // We are solving the following equation for v0 (the throw velocity), where
-            // the constants are as defined above:
-            //
-            // gt = v0 + k*sqrt(v0^2+u) +- f1*sqrt(v0^2+c)
-            //
-            // The plus sign on the last term corresponds to a lift catch, and v0 > 0
-            // corresponds to a lift (upward) throw.  When this equation is converted to a
-            // polynomial in the usual way, the result is quartic:
-            //
-            // c4*v0^4 + c3*v0^3 + c2*v0^2 + c1*v0 + c0 = 0
-            //
-            // When there is only one bounce, c4=0 always and we reduce to a cubic.
-
-            double[] coef = new double[5];
-            coef[4] = 1.0 + kk*kk + f2*f2 - 2.0*kk - 2.0*f2 - 2.0*kk*f2;
-            coef[3] = -4.0*gt + 4.0*f2*gt + 4.0*kk*gt;
-            coef[2] = 6.0*gt*gt + 2.0*kk*kk*u + 2.0*f2*f2*c - 2.0*f2*c - 2.0*f2*gt*gt -
-                2.0*kk*gt*gt - 2.0*kk*u - 2.0*kk*f2*c - 2.0*kk*f2*u;
-            coef[1] = -4.0*gt*gt*gt + 4.0*f2*gt*c + 4.0*kk*gt*u;
-            coef[0] = gt*gt*gt*gt + kk*kk*u*u + f2*f2*c*c - 2.0*gt*gt*f2*c -
-                2.0*kk*gt*gt*u - 2.0*kk*f2*u*c;
-
-            double[] realroot = new double[4];
-            int numrealroots = 0;
-
-            if (numbounces > 1) {
-                // More than one bounce, need to solve the quartic case
-                for (int i = 0; i < 4; i++)
-                    coef[i] /= coef[4];
-                numrealroots = findRealRootsPolynomial(coef, 4, realroot);
-                // numrealroots = findRealRootsQuartic(coef[0], coef[1], coef[2], coef[3], realroot);
-            } else {
-                // A single bounce, which reduces to a cubic polynomial (coef[4]=0)
-                for (int i = 0; i < 3; i++)
-                    coef[i] /= coef[3];
-                numrealroots = findRealRootsPolynomial(coef, 3, realroot);
-                // numrealroots = findRealRootsCubic(coef[0], coef[1], coef[2], realroot);
-            }
-
-            // Check whether the roots found are physical; due to the way the
-            // equation was converted into a polynomial, nonphysical extra solutions
-            // with (v0^2+c)<0 are generated.  Check for these.
-            for (int i = 0; i < numrealroots; i++) {
-                v0 = realroot[i];
-                if ((v0*v0 + c) >= 0.0) {
-                    root[numroots] = v0;
-                    liftcatch[numroots] = ((gt - v0 - k*Math.sqrt(v0*v0+u)) > 0.0);
-                    numroots++;
-                }
-            }
-
+        for (int n = bounces; n > 0; n--) {
+            double[] root = new double[4];
+            boolean[] liftcatch = new boolean[4];
+            int numroots = solveBounceEquation(n, getDuration(), root, liftcatch);
             /*
-            System.out.println(numroots + " roots found with "+numbounces+" bounces");
+            System.out.println(numroots + " roots found with " + n + " bounces");
             for (int i = 0; i < numroots; i++)
                 System.out.println("   v0["+i+"] = "+root[i]+" -- "+(liftcatch[i]?"lift catch":"forced catch"));
             */
@@ -225,15 +147,15 @@ public class BouncePath extends Path {
             if (numroots == 0)
                 continue;   // no solution -> go to the next fewer number of bounces
 
-            // Select which root to use.  First try to get the forced and hyper values as
-            // desired.  If no solution, try to get forced, then try to get hyper as desired.
+            // Select which root to use. First try to get the forced and hyper values as
+            // desired. If no solution, try to get forced, then try to get hyper as desired.
 
             boolean choseroot = false;
-            v0 = root[0];   // default
+            double v0 = root[0];   // default
             for (int i = 0; i < numroots; i++) {
-                if ((forced && (root[i]>0.0)) || (!forced && (root[i]<0.0)))
+                if (forced ^ (root[i] < 0.0))
                     continue;
-                if ((hyper && !(liftcatch[i]^forced)) || (!hyper && (liftcatch[i]^forced)))
+                if (hyper ^ liftcatch[i] ^ forced)
                     continue;
                 v0 = root[i];
                 choseroot = true;
@@ -241,7 +163,7 @@ public class BouncePath extends Path {
             }
             if (!choseroot) {
                 for (int i = 0; i < numroots; i++) {
-                    if ((forced && (root[i]>0.0)) || (!forced && (root[i]<0.0)))
+                    if (forced ^ (root[i] < 0.0))
                         continue;
                     v0 = root[i];
                     choseroot = true;
@@ -250,8 +172,7 @@ public class BouncePath extends Path {
             }
             if (!choseroot) {
                 for (int i = 0; i < numroots; i++) {
-                    if ((hyper && !(liftcatch[i]^(root[i]<0.0))) ||
-                                    (!hyper && (liftcatch[i]^(root[i]<0.0))))
+                    if (hyper ^ liftcatch[i] ^ (root[i] < 0.0))
                         continue;
                     v0 = root[i];
                     choseroot = true;
@@ -259,32 +180,162 @@ public class BouncePath extends Path {
                 }
             }
 
-            /*
-            double lhs = gt - v0 - k*Math.sqrt(v0*v0+u);
-            double rhs = f1 * Math.sqrt(v0*v0+c);
-            System.out.println("Using root v0 = "+v0+" -- lhs = "+lhs+", rhs = "+rhs);
-            */
+            this.numbounces = n;
 
-            // finally, set the remaining path variables based on our solution of v0
+            // Set the remaining path variables based on our solution for
+            // `numbounces` and `v0`
             bz[0] = v0;
+            cz[0] = start_coord.z;
             if (az[0] < 0.0)
                 endtime[0] = (-v0 - Math.sqrt(v0*v0 - 4.0*az[0]*(cz[0]-bounceplane))) / (2.0*az[0]);
             else
                 endtime[0] = (-v0 + Math.sqrt(v0*v0 - 4.0*az[0]*(cz[0]-bounceplane))) / (2.0*az[0]);
             double vrebound = (-v0 - 2.0*az[0]*endtime[0])*bouncefracsqrt;
 
-            for (int i = 1; i <= numbounces; i++) {
+            for (int i = 1; i <= n; i++) {
                 bz[i] = vrebound - 2.0*az[i]*endtime[i-1];
                 cz[i] = bounceplane - az[i]*endtime[i-1]*endtime[i-1] - bz[i]*endtime[i-1];
                 endtime[i] = endtime[i-1] - vrebound / az[i];
                 vrebound = bouncefracsqrt * vrebound;
             }
-            endtime[numbounces] = getDuration();    // fix this assignment from the above loop
+            endtime[n] = getDuration();    // fix this assignment from the above loop
+
+            // Finally do the x and y coordinates -- these are simple
+            cx = start_coord.x;
+            bx = (end_coord.x - start_coord.x) / getDuration();
+            cy = start_coord.y;
+            by = (end_coord.y - start_coord.y) / getDuration();
 
             return;
         }
 
-        throw new JuggleExceptionInternal("No root found in bouncePath");
+        throw new JuggleExceptionInternal("No root found in BouncePath");
+    }
+
+    // The next method does the real work of figuring out the object's path.
+    // It solves a polynomial equation to determine the values of `v0` (upward-
+    // directed velocity) that achieve the given number of bounces and total
+    // duration.
+    //
+    // Inputs:
+    //     n -- number of bounces
+    //     duration -- time from throw to catch
+    // Outputs:
+    //     numroots -- function return value, number of valid solutions found
+    //     root[] -- solution(s) for v0
+    //     liftcatch[] -- whether the solution corresponds to a "lift" catch
+    protected int solveBounceEquation(int n, double duration, double[] root, boolean[] liftcatch) {
+        double f1 = bouncefracsqrt;
+        for (int i = 1; i < n; i++)
+            f1 *= bouncefracsqrt;
+        double k = ((bouncefracsqrt == 1.0) ? 2.0*(double)n :
+                    1.0 + f1 + 2.0*bouncefracsqrt*(1.0-f1/bouncefracsqrt)/(1.0-bouncefracsqrt));
+        double u = 2.0 * this.g * (start_coord.z - bounceplane);
+        double l = 2.0 * this.g * (end_coord.z - bounceplane);
+        double f2 = f1 * f1;
+        double c = u - l / f2;
+        double kk = k * k;
+        double gt = this.g * duration;
+
+        // We are solving the following equation for v0 (the throw velocity), where
+        // the constants are as defined above:
+        //
+        // gt = v0 + k*sqrt(v0^2+u) +- f1*sqrt(v0^2+c)
+        //
+        // The plus sign on the last term corresponds to a lift catch, and v0 > 0
+        // corresponds to a lift (upward) throw. When this equation is converted to a
+        // polynomial in the usual way, the result is quartic:
+        //
+        // c4*v0^4 + c3*v0^3 + c2*v0^2 + c1*v0 + c0 = 0
+        //
+        // When there is only one bounce, c4=0 always and we reduce to a cubic.
+
+        double[] coef = new double[5];
+        coef[4] = 1.0 + kk*kk + f2*f2 - 2.0*kk - 2.0*f2 - 2.0*kk*f2;
+        coef[3] = -4.0*gt + 4.0*f2*gt + 4.0*kk*gt;
+        coef[2] = 6.0*gt*gt + 2.0*kk*kk*u + 2.0*f2*f2*c - 2.0*f2*c - 2.0*f2*gt*gt -
+            2.0*kk*gt*gt - 2.0*kk*u - 2.0*kk*f2*c - 2.0*kk*f2*u;
+        coef[1] = -4.0*gt*gt*gt + 4.0*f2*gt*c + 4.0*kk*gt*u;
+        coef[0] = gt*gt*gt*gt + kk*kk*u*u + f2*f2*c*c - 2.0*gt*gt*f2*c -
+            2.0*kk*gt*gt*u - 2.0*kk*f2*u*c;
+
+        double[] realroot = new double[4];
+        int numrealroots = 0;
+
+        if (n > 1) {
+            // More than one bounce, need to solve the quartic case
+            for (int i = 0; i < 4; i++)
+                coef[i] /= coef[4];
+            numrealroots = findRealRootsPolynomial(coef, 4, realroot);
+            // numrealroots = findRealRootsQuartic(coef[0], coef[1], coef[2], coef[3], realroot);
+        } else {
+            // A single bounce, which reduces to a cubic polynomial (coef[4]=0)
+            for (int i = 0; i < 3; i++)
+                coef[i] /= coef[3];
+            numrealroots = findRealRootsPolynomial(coef, 3, realroot);
+            // numrealroots = findRealRootsCubic(coef[0], coef[1], coef[2], realroot);
+        }
+
+        // Check whether the roots found are physical; due to the way the
+        // equation was converted into a polynomial, nonphysical extra solutions
+        // with (v0^2+c) < 0 are generated. Filter these out.
+        int numroots = 0;
+
+        for (int i = 0; i < numrealroots; i++) {
+            double v0 = realroot[i];
+            if (v0 * v0 + c >= 0.0) {
+                root[numroots] = v0;
+                liftcatch[numroots] = ((gt - v0 - k * Math.sqrt(v0 * v0 + u)) > 0.0);
+                numroots++;
+                /*
+                double lhs = gt - v0 - k*Math.sqrt(v0*v0+u);
+                double rhs = f1 * Math.sqrt(v0*v0+c);
+                System.out.println("Root v0 = "+v0+" -- lhs = "+lhs+", rhs = "+rhs);
+                */
+            }
+        }
+
+        return numroots;
+    }
+
+    protected boolean isFeasibleDuration(double duration) {
+        double[] root = new double[4];
+        boolean[] liftcatch = new boolean[4];
+        int numroots = solveBounceEquation(bounces, duration, root, liftcatch);
+
+        for (int i = 0; i < numroots; i++) {
+            if (forced ^ (root[i] < 0.0))
+                continue;
+            if (hyper ^ liftcatch[i] ^ forced)
+                continue;
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public double getMinDuration() {
+        // single hyperforce bounce is the only one with zero minimum duration
+        if (bounces == 1 && hyper && forced)
+            return 0.0;
+
+        double dlower = 0.0;
+        double dupper = 1.0;
+        while (!isFeasibleDuration(dupper)) {
+            dlower = dupper;
+            dupper *= 2.0;
+        }
+
+        while (dupper - dlower > 0.001) {
+            double davg = 0.5 * (dlower + dupper);
+            if (isFeasibleDuration(davg))
+                dupper = davg;
+            else
+                dlower = davg;
+        }
+
+        return dupper;
     }
 
     @Override
