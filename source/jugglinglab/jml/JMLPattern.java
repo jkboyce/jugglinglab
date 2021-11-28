@@ -1266,6 +1266,30 @@ public class JMLPattern {
         return false;
     }
 
+    // Multiply all times in the pattern by a common factor `scale`.
+    public void scaleTime(double scale) {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            if (ev.isMaster())
+                ev.setT(ev.getT() * scale);
+            ev = ev.getNext();
+        }
+        JMLPosition pos = getPositionList();
+        while (pos != null) {
+            pos.setT(pos.getT() * scale);
+            pos = pos.getNext();
+        }
+
+        for (int i = 0; i < getNumberOfSymmetries(); i++) {
+            JMLSymmetry sym = getSymmetry(i);
+            double delay = sym.getDelay();
+            if (delay > 0.0)
+                sym.setDelay(delay * scale);
+        }
+
+        setNeedsLayout(true);
+    }
+
     public boolean isValid()    { return valid; }
     public boolean isLaidout()  { return laidout; }
 

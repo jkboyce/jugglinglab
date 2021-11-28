@@ -11,6 +11,7 @@ import java.awt.event.*;
 import jugglinglab.core.*;
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
+import jugglinglab.path.Path;
 
 
 // "Multi-Hand Notation" (name due to Ed Carstens) is a very general notation that
@@ -44,7 +45,7 @@ public abstract class MHNPattern extends Pattern {
 
     // input parameters:
     protected String pattern;
-    protected double bps = bps_default;
+    protected double bps_set = bps_default;
     protected double dwell = dwell_default;
     protected double gravity = gravity_default;
     protected double propdiam = propdiam_default;
@@ -71,6 +72,7 @@ public abstract class MHNPattern extends Pattern {
     protected int max_throw;
     protected int indexes;
     protected ArrayList<MHNSymmetry> symmetry;
+    protected double bps;
 
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
@@ -102,7 +104,8 @@ public abstract class MHNPattern extends Pattern {
         String temp = null;
         if ((temp = pl.removeParameter("bps")) != null) {
             try {
-                bps = Double.parseDouble(temp);
+                bps_set = Double.parseDouble(temp);
+                bps = bps_set;
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_bps_value"));
             }
@@ -748,7 +751,7 @@ public abstract class MHNPattern extends Pattern {
         result.setNumberOfJugglers(getNumberOfJugglers());
         result.setNumberOfPaths(getNumberOfPaths());
 
-        if (bps <= 0.0)       // signal that we should calculate bps
+        if (bps_set <= 0.0)       // signal that we should calculate bps
             bps = calcBps();
 
 //hss begin
@@ -1548,6 +1551,37 @@ top:
                         ev.addTransition(new JMLTransition(JMLTransition.TRANS_HOLDING, (k+1), null, null));
                 }
                 ev = ev.getNext();
+            }
+        }
+
+        // Step 9 -- Confirm that each throw in the JMLPattern has enough time to satisfy
+        // its minimum duration requirement. If not then rescale time (bps) to make
+        // everything feasible.
+        //
+        // This should only be done if the user has not manually set `bps`.
+        if (bps_set <= 0.0) {
+            double scale_factor = 1.0;
+
+            result.layoutPattern();
+            for (int path = 1; path <= result.getNumberOfPaths(); path++) {
+                for (PathLink pl : result.getPathlinks().get(path - 1)) {
+                    Path p = pl.getPath();
+                    if (p != null) {
+                        double d = p.getDuration();
+                        double dmin = p.getMinDuration();
+
+                        if (d < dmin && d > 0.0)
+                            scale_factor = Math.max(scale_factor, dmin / d);
+                    }
+                }
+            }
+            if (scale_factor > 1.0) {
+                scale_factor *= 1.01;  // so things aren't just barely feasible
+                bps /= scale_factor;
+                result.scaleTime(scale_factor);
+
+                if (Constants.DEBUG_LAYOUT)
+                    System.out.println("Rescaled time; scale factor = " + scale_factor);
             }
         }
 

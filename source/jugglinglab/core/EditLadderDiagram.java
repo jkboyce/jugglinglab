@@ -890,28 +890,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             return;
         }
         if (scale > 0.0) {
-            JMLEvent ev = pat.getEventList();
-            while (ev != null) {
-                if (ev.isMaster())
-                    ev.setT(ev.getT() * scale);
-                ev = ev.getNext();
-            }
-            JMLPosition pos = pat.getPositionList();
-            while (pos != null) {
-                pos.setT(pos.getT() * scale);
-                pos = pos.getNext();
-            }
-
-            for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
-                JMLSymmetry sym = pat.getSymmetry(i);
-                double delay = sym.getDelay();
-                if (delay > 0.0) {
-                    sym.setDelay(delay * scale);
-                    if ((delay * scale) < animator.getTime()) {
-                        animator.setTime(0.0);
-                    }
-                }
-            }
+            pat.scaleTime(scale);
+            animator.setTime(0.0);
             layoutPattern();
             createView();
         }

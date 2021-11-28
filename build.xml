@@ -13,7 +13,7 @@
     <property name="javafx_ant_jar.mac" value="${java.home}/../lib/ant-javafx.jar" />
     <property name="javafx_ant_jar.win" value="${java.home}/../lib/ant-javafx.jar" />
     <property name="packaging_resources" value="${src}/resources" />
-    <property name="jlab_version" value="1.4.1" />
+    <property name="jlab_version" value="1.5" />
 
     <target name="init">
         <mkdir dir="${build}" />
