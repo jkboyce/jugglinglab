@@ -7,11 +7,12 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.*;
 
 import jugglinglab.jml.*;
-import jugglinglab.optimizer.Optimizer;
 import jugglinglab.util.*;
 import jugglinglab.view.*;
 
@@ -19,12 +20,27 @@ import jugglinglab.view.*;
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static protected Class<?> optimizer;
 
     protected View view;
     protected JMenu filemenu;
     protected JMenu viewmenu;
     protected boolean exit_on_close = false;
 
+    static {
+        try {
+            optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
+
+            Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
+            Boolean canOptimize = (Boolean)optimizerAvailable.invoke(null);
+            if (!canOptimize.booleanValue())
+                optimizer = null;
+        } catch (Exception e) {
+            optimizer = null;
+            if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                System.out.println("Exception loading optimizer: " + e.toString());
+        }
+    }
 
     public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
@@ -102,7 +118,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 fileitem.addActionListener(this);
                 filemenu.add(fileitem);
 
-                if (fileCommands[i].equals("optimize") && !Optimizer.optimizerAvailable())
+                if (fileCommands[i].equals("optimize") && optimizer == null)
                     fileitem.setEnabled(false);
             }
         }
@@ -252,19 +268,29 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPTIMIZE:
-                try {
+                if (optimizer != null && view != null) {
                     if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
                         System.out.println("------------------------------------------------------");
                         System.out.println("optimizing in PatternWindow.doMenuCommand()");
                     }
 
-                    if (view != null) {
-                        JMLPattern pat = Optimizer.optimize((JMLPattern)view.getPattern());
-                        AnimationPrefs jc = view.getAnimationPrefs();
-                        view.restartView(pat, jc);
+                    try {
+                        Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
+                        JMLPattern pat = view.getPattern();
+                        JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
+                        view.restartView(new_pat, null);
+                    } catch (JuggleExceptionUser jeu) {
+                        new ErrorDialog(this, jeu.getMessage());
+                    } catch (NoSuchMethodException nsme) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("nsme: " + nsme.toString());
+                    } catch (IllegalAccessException iae) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("iae: " + iae.toString());
+                    } catch (InvocationTargetException ite) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("ite: " + ite.toString());
                     }
-                } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(this, jeu.getMessage());
                 }
                 break;
 

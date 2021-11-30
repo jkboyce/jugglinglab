@@ -11,7 +11,6 @@ import jugglinglab.core.Constants;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
-import jugglinglab.optimizer.*;
 
 
 // This class represents a pattern in the generalized form of siteswap notation
