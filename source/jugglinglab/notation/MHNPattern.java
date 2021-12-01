@@ -186,7 +186,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-//hss begin
+        //hss begin
         if ((temp = pl.removeParameter("hss")) != null) {
             hss = temp;
         }
@@ -212,17 +212,17 @@ public abstract class MHNPattern extends Pattern {
                 handspec = temp;
             }
         }
-//hss end
+        //hss end
         if ((temp = pl.removeParameter("title")) != null) {
             this.title = temp.trim();
         }
-//hss begin
+        //hss begin
         if (hss != null) {
         	this.title = "oss: " + pattern + " ; hss: " + hss;
         }
+        //hss end
         return this;
     }
-//hss end
 
     @Override
     public String toString() {
@@ -236,7 +236,7 @@ public abstract class MHNPattern extends Pattern {
         // write the parameters out in a standard order
         List<String> keys = Arrays.asList("pattern", "bps", "dwell", "hands", "body",
                                 "gravity", "propdiam", "bouncefrac", "prop", "colors",
-                                "title");
+                                "hss", "hold", "dwellmax", "handspec", "title");
 
         for (String key : keys) {
             String value = pl.getParameter(key);
@@ -754,14 +754,14 @@ public abstract class MHNPattern extends Pattern {
         if (bps_set <= 0.0)       // signal that we should calculate bps
             bps = calcBps();
 
-//hss begin
-//  code to modify bps according to number of jugglers
-//  and potentially the specific pattern being juggled
-//  can be inserted here for example:
-//        if (hss != null) {
-//        	bps *= result.getNumberOfJugglers();
-//        }
-//hss end
+        //hss begin
+        //  code to modify bps according to number of jugglers
+        //  and potentially the specific pattern being juggled
+        //  can be inserted here for example:
+        //        if (hss != null) {
+        //        	bps *= result.getNumberOfJugglers();
+        //        }
+        //hss end
         
         int balls = getNumberOfPaths();
         int props = (color == null) ? 1 : Math.min(balls, color.length);
@@ -1027,14 +1027,14 @@ public abstract class MHNPattern extends Pattern {
                     else
                         throwtime = (double)k / bps;
 
-//hss begin
+                    //hss begin
                     if (hss != null) {
-//                    	if (onethrown)
-//                    		throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
-//                    	else
-                    		throwtime = (double)k / bps;
+                        //if (onethrown)
+                        //    throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
+                        //else
+                    	throwtime = (double)k / bps;
                     }
-//hss end                        
+                    //hss end
                     
                     ev.setT(throwtime);
 
@@ -1126,12 +1126,12 @@ public abstract class MHNPattern extends Pattern {
                         else
                             lastcatchtime = ((double)k - dwell) / bps;
 
-//hss begin
+                        //hss begin
                         int newk = 0;
                         if (hss != null) {
-                        	//if getPeriod() > size of dwellarray due to repeats
-                        	//to account for hand/body positions, then reuse
-                        	//dwellarray timings from prior array elements
+                        	// if getPeriod() > size of dwellarray due to repeats
+                        	// to account for hand/body positions, then reuse
+                        	// dwellarray timings from prior array elements
                         	if (k >= dwellarray.length) {
                         		newk = k % dwellarray.length;
                         	} else {
@@ -1140,7 +1140,7 @@ public abstract class MHNPattern extends Pattern {
 
                         	lastcatchtime = ((double)k - dwellarray[newk]) / bps;
                         }
-//hss end                        
+                        //hss end
                         ev.setT(lastcatchtime);
 
                         // set the event juggler and hand
@@ -1202,12 +1202,12 @@ public abstract class MHNPattern extends Pattern {
                                 else
                                     catchtime = ((double)k - dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
                                                  splitcatchfactor) / bps;
-//hss begin
+                                //hss begin
                                 int newk;
                                 if (hss != null) {
-                                	//if getPeriod() > size of dwellarray due to repeats
-                                	//to account for hand/body positions, then reuse
-                                	//dwellarray timings from prior array elements
+                                	// if getPeriod() > size of dwellarray due to repeats
+                                	// to account for hand/body positions, then reuse
+                                	// dwellarray timings from prior array elements
                                 	if (k >= dwellarray.length) {
                                 		newk = k % dwellarray.length;
                                 	} else {
@@ -1216,7 +1216,7 @@ public abstract class MHNPattern extends Pattern {
                                 	catchtime = ((double)k - dwellarray[newk] + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
                                             splitcatchfactor) / bps;
                                 }
-//hss end                        
+                                //hss end
                                 ev.setT(catchtime);
 
                                 if (sst.catchnum == (num_catches - 1))
@@ -1290,23 +1290,24 @@ public abstract class MHNPattern extends Pattern {
                                     nextcatchtime = ((double)tempk - 0.5*dwell) / bps;
                                 else
                                     nextcatchtime = ((double)tempk - dwell) / bps;
-//hss begin
-// why do things work without modifying nextcatchtime logic?
+
+                                //hss begin
+                                // why do things work without modifying nextcatchtime logic?
                                 if (hss != null) {
-//                                	nextcatchtime = ((double)tempk - dwellarray[tempk]) / bps;
+                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]) / bps;
                                 }
-//hss end                        
+                                //hss end
                             } else {
                                 if (next_onecaught)
                                     nextcatchtime = ((double)tempk - 0.5*dwell - 0.5*splitcatchfactor) / bps;
                                 else
                                     nextcatchtime = ((double)tempk - dwell - 0.5*splitcatchfactor) / bps;
-//hss begin
-                                if (hss != null) {
-//                                	nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*splitcatchfactor)  / bps;
-                                }
-//hss end                        
 
+                                //hss begin
+                                if (hss != null) {
+                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*splitcatchfactor)  / bps;
+                                }
+                                //hss end
                             }
                             break;
                         }
