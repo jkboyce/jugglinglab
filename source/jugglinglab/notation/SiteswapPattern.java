@@ -47,10 +47,10 @@ public class SiteswapPattern extends MHNPattern {
         
 //hss Begin
         if (hss != null) {
-          modParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
-          pattern = modinfo.convertedPattern;
-//          title = pattern;
-          dwellarray = modinfo.dwellBeatsArray;
+            ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
+            pattern = modinfo.convertedPattern;
+            //title = pattern;
+            dwellarray = modinfo.dwellBeatsArray;
         }
 //hss End
 

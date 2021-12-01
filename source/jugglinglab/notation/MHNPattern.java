@@ -196,7 +196,7 @@ public abstract class MHNPattern extends Pattern {
                 try {
                     hold = Boolean.parseBoolean(temp);
                 } catch (IllegalFormatException ife) {
-                    throw new JuggleExceptionUser("Please enter true/false for hold");
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_hss_hold_value_error"));
                 }
             } 
 
@@ -204,7 +204,7 @@ public abstract class MHNPattern extends Pattern {
                 try {
                     dwellmax = Boolean.parseBoolean(temp);
                 } catch (IllegalFormatException ife) {
-                    throw new JuggleExceptionUser("Please enter true/false for dwellmax");
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_hss_dwellmax_value_error"));
                 }
             }
 
