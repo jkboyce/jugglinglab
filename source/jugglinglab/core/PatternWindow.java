@@ -27,6 +27,10 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected JMenu viewmenu;
     protected boolean exit_on_close = false;
 
+    protected String base_notation = null;
+    protected String base_config = null;
+    protected boolean base_edited = false;
+
     static {
         try {
             optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
@@ -90,6 +94,59 @@ public class PatternWindow extends JFrame implements ActionListener {
         });
     }
 
+    // Each PatternWindow retains the config string and notation for the
+    // pattern it contains.
+    //
+    // The config strings are always assumed to be in canonical order, i.e.,
+    // what is produced by Pattern.toString().
+    public void setBasePattern(String notation, String config) {
+        base_notation = notation;
+        base_config = config;
+        base_edited = false;
+    }
+
+    // Test whether the JMLPattern being animated is identical to the
+    // given base pattern.
+    public boolean isUneditedBasePattern(String notation, String config) {
+        if (base_edited)
+            return false;
+
+        return (config.equals(base_config) &&
+                notation.equalsIgnoreCase(base_notation));
+    }
+
+    // Static method to check if a given pattern is already being animated, and
+    // is unedited. If so then bring that animation to the front.
+    //
+    // Returns true if animation found, false if not.
+    public static boolean bringToFront(String notation, String config) {
+        for (Frame fr : Frame.getFrames()) {
+            if (fr instanceof PatternWindow) {
+                final PatternWindow pw = (PatternWindow)fr;
+
+                if (!pw.isVisible()) {
+                    //System.out.println("found a matching hidden PatternWindow");
+                    continue;
+                }
+
+                if (pw.isUneditedBasePattern(notation, config)) {
+                    //System.out.println("found a matching PatternWindow");
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            pw.toFront();
+                        }
+                    });
+                    return true;
+                }
+            }
+        }
+        //System.out.println("no matching PatternWindow");
+
+        return false;
+    }
+
+    // Used when a single animation is created from the command line
     public void setExitOnClose(boolean value) {
         this.exit_on_close = value;
     }

@@ -8,7 +8,7 @@ import java.io.PrintStream;
 import javax.swing.SwingUtilities;
 
 import jugglinglab.core.Constants;
-import jugglinglab.core.PatternList;
+import jugglinglab.core.PatternListPanel;
 import jugglinglab.core.PatternListWindow;
 import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
@@ -18,7 +18,7 @@ import jugglinglab.util.*;
 // It can send output to a PatternList, PrintStream, or StringBuffer
 
 public class GeneratorTarget {
-    PatternList ltarget;
+    PatternListPanel ltarget;
     PrintStream ptarget;
     StringBuffer btarget;
     String prefix;
@@ -28,7 +28,7 @@ public class GeneratorTarget {
         this.ltarget = target.getPatternList();
     }
 
-    public GeneratorTarget(PatternList target) {
+    public GeneratorTarget(PatternListPanel target) {
         this.ltarget = target;
     }
 

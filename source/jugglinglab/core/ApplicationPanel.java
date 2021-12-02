@@ -29,7 +29,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     protected JFrame parent;
     protected JTabbedPane jtp;
     protected View animtarget;
-    protected PatternList patlist;
+    protected PatternListPanel patlist;
     protected boolean patlisttab = false;
 
     protected int currentnum = -1;
@@ -47,7 +47,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         this(parent, null, null, false);
     }
 
-    public ApplicationPanel(JFrame p, View v, PatternList pl, boolean patlisttab) {
+    public ApplicationPanel(JFrame p, View v, PatternListPanel pl, boolean patlisttab) {
         parent = p;
 
         // fields below are currently unused; they supported the applet version
@@ -95,9 +95,9 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                 break;
         }
 
-        PatternList pl = patlist;
+        PatternListPanel pl = patlist;
         if (pl == null && patlisttab)
-            pl = new PatternList(animtarget);
+            pl = new PatternListPanel(animtarget);
 
         Transitioner trans = Transitioner.newTransitioner(Pattern.builtinNotations[num - 1]);
         if (trans != null)
@@ -162,11 +162,20 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     Pattern p = fcontrol.newPattern().fromParameters(pl);
                     AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
                     pl.errorIfParametersLeft();
+
+                    String notation_name = p.getNotationName();
+                    String canonical_config = p.toString();
+
+                    if (PatternWindow.bringToFront(notation_name, canonical_config))
+                        return;
+
                     JMLPattern pat = p.asJMLPattern();
                     if (animtarget != null)
                         animtarget.restartView(pat, jc);
-                    else
+                    else {
                         jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
+                        jaw2.setBasePattern(notation_name, canonical_config);
+                    }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)
                         jaw2.dispose();
@@ -184,7 +193,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         jtp.addTab(guistrings.getString("Pattern_entry"), np1);
     }
 
-    protected void addTransitionerControl(Transitioner trans, PatternList pl) {
+    protected void addTransitionerControl(Transitioner trans, PatternListPanel pl) {
         JPanel p1 = new JPanel();
         p1.setLayout(new BorderLayout());
         p1.add(trans.getTransitionerControl(), BorderLayout.PAGE_START);
@@ -263,7 +272,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         jtp.addTab(guistrings.getString("Transitions"), p1);
     }
 
-    protected void addGeneratorControl(Generator gen, PatternList pl) {
+    protected void addGeneratorControl(Generator gen, PatternListPanel pl) {
         JPanel p1 = new JPanel();
         p1.setLayout(new BorderLayout());
         p1.add(gen.getGeneratorControl(), BorderLayout.PAGE_START);
