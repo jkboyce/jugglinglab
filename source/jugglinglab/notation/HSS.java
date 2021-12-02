@@ -10,6 +10,9 @@ import java.util.*;
 import jugglinglab.util.*;
 
 
+// This class adds Hand Siteswap (HSS) functionality to Juggling Lab's
+// siteswap notation component.
+
 class OssPatBnc {
     ArrayList<ArrayList<Character>> objPat;
     ArrayList<ArrayList<String>> bnc;
@@ -36,6 +39,11 @@ public class HSS {
 
     protected static double hss_dwell_default = 0.3;
 
+    // This function is the external interface for the HSS processor. It takes
+    // object and hand siteswaps and produces (among other things) a converted
+    // pattern for the Siteswap component to animate.
+    //
+    // See SiteswapPattern.fromParameters().
     public static ModParms processHSS(String p, String h, boolean hld, boolean dwlmax,
                                       String hndspc, double dwl) throws JuggleExceptionUser {
         int ossPer, hssPer, hssOrb, numHnd, numJug;
@@ -50,11 +58,11 @@ public class HSS {
         PatParms patinfo;
         OssPatBnc ossinfo;
 
-        ossinfo = OssSyntax(p);
+        ossinfo = ossSyntax(p);
         ossPat = ossinfo.objPat;
         bounc = ossinfo.bnc;
 
-        hssinfo = HssSyntax(h);
+        hssinfo = hssSyntax(h);
 
         hssPat = hssinfo.pat;
         numHnd = hssinfo.hands;
@@ -65,7 +73,7 @@ public class HSS {
 
         hssOrb = hssPermTest(hssPat, hssPer);
 
-        int[][] handmap = (hndspc != null) ? parsehandspec(hndspc, numHnd) : defhandspec(numHnd);
+        int[][] handmap = (hndspc != null) ? parseHandspec(hndspc, numHnd) : defHandspec(numHnd);
 
         numJug = 1;
         for (int i = 0; i < numHnd; i++) {
@@ -87,7 +95,7 @@ public class HSS {
     // ensure object pattern is a vanilla pattern (multiplex allowed)
     // also perform average test
     // convert input pattern string to ArrayList identifying throws made on each beat
-    public static OssPatBnc OssSyntax(String ss) throws JuggleExceptionUser {
+    private static OssPatBnc ossSyntax(String ss) throws JuggleExceptionUser {
         boolean muxThrow = false;
         boolean muxThrowFound = false;
         boolean minOneThrow = false;
@@ -284,7 +292,7 @@ public class HSS {
     // also perform average test
     // convert input pattern string to ArrayList identifying throws made on each beat
     // also return number of hands, used later to build handmap
-    public static HssParms HssSyntax(String ss) throws JuggleExceptionUser {
+    private static HssParms hssSyntax(String ss) throws JuggleExceptionUser {
         int throwSum = 0;
         int numBeats = 0;
         int nHnds = 0;
@@ -318,7 +326,7 @@ public class HSS {
     }
 
     // permutation test for object pattern
-    public static void ossPermTest(ArrayList<ArrayList<Character>> os, int op) throws JuggleExceptionUser {
+    private static void ossPermTest(ArrayList<ArrayList<Character>> os, int op) throws JuggleExceptionUser {
         ArrayList<ArrayList<Integer>> mods = new ArrayList<ArrayList<Integer>>();
         int modulo;
         int[] cmp = new int[op];
@@ -340,7 +348,7 @@ public class HSS {
 
     // permutation test for hand pattern
     // return overall hand orbit period which is lcm of individual hand orbit periods
-    public static int hssPermTest(ArrayList<Character> hs, int hp) throws JuggleExceptionUser {
+    private static int hssPermTest(ArrayList<Character> hs, int hp) throws JuggleExceptionUser {
         int modulo, ho;
         int[] mods = new int[hp];
         int[] cmp = new int[hp];
@@ -379,7 +387,7 @@ public class HSS {
 
     // read and validate user defined handspec
     // if valid, convert to handmap assigning juggler number and that juggler's left or right hand to each hand
-    public static int[][] parsehandspec(String hspec, int nh) throws JuggleExceptionUser {
+    private static int[][] parseHandspec(String hspec, int nh) throws JuggleExceptionUser {
         int[][] hmap = new int[nh][2]; //handmap: map hand number to juggler number (first index) and left/right hand (second index)
         boolean assignLH = false; //assignLeftHand
         boolean assignRH = false; //assignRightHand
@@ -549,7 +557,7 @@ public class HSS {
     // assume numHnd/2 jugglers if numHnd even, else (numHnd+1)/2 jugglers
     // assign hand 1 to J1 right hand, hand 2 to J2 right hand and so on
     // once all right hands assigned, come back to J1 and start assigning left hand
-    public static int[][] defhandspec(int nh) {
+    private static int[][] defHandspec(int nh) {
         int[][] hmap = new int[nh][2];
         int nJugs; //numberofJugglers
 
@@ -574,7 +582,7 @@ public class HSS {
 
     //convert oss hss format to Juggling Lab synchronous passing notation with suppressed
     //empty beats so that odd synchronous throws are also allowed
-    public static PatParms convNotation(ArrayList<ArrayList<Character>> os,
+    private static PatParms convNotation(ArrayList<ArrayList<Character>> os,
                                         ArrayList<Character> hs, int ho, int[][] hm, int nj,
                                         boolean hldOpt, boolean dwlMaxOpt, double defDwl,
                                         ArrayList<ArrayList<String>> bncStr) throws JuggleExceptionUser {
