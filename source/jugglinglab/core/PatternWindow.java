@@ -115,6 +115,11 @@ public class PatternWindow extends JFrame implements ActionListener {
                 notation.equalsIgnoreCase(base_notation));
     }
 
+    // For containing views to notify that the pattern has been edited.
+    public void notifyEdited() {
+        base_edited = true;
+    }
+
     // Static method to check if a given pattern is already being animated, and
     // is unedited. If so then bring that animation to the front.
     //

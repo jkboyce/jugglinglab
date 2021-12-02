@@ -58,6 +58,7 @@ public class JMLView extends View implements DocumentListener {
             public void actionPerformed(ActionEvent ae) {
                 try {
                     JMLView.this.compilePattern();
+                    notifyEdited();
                 } catch (Exception e) {
                     ErrorDialog.handleFatalException(e);
                 }

@@ -187,14 +187,14 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                 delta_y = 0;
                                 repaint();
                             }
-                                popup_y = me.getY();
+                            popup_y = me.getY();
                             popupitem = active_eventitem;
                             if (popupitem == null) {
                                 popupitem = getSelectedLadderEvent(me.getX(), me.getY());
                                 if (popupitem == null)
                                     popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
                             }
-                                adjustPopup(popupitem);
+                            adjustPopup(popupitem);
                             popup.show(EditLadderDiagram.this, me.getX(), me.getY());
                             break;
                         case STATE_POPUP:
@@ -304,6 +304,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         double tmax = pat.getLoopEndTime();
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
             (double)(height - 2*border_top);
+
         for (int j = 0; j < item.event.getNumberOfTransitions(); j++) {
             JMLTransition tr = item.event.getTransition(j);
             switch (tr.getType()) {
@@ -815,6 +816,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             if (animator != null)
                 animator.setPaused(anim_paused);
         }
+
+        notifyEdited();
     }
 
     protected void changeTitle() {
@@ -1486,6 +1489,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         this.animator = anim;
     }
 
+    // Called from AnimationEditPanel when the user finishes moving a selected
+    // event.
     public void activeEventMoved() {
         if (active_eventitem == null || animator == null)
             return;
@@ -1499,6 +1504,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         // reactivate the moved event with AnimationEditPanel
         active_eventitem = getSelectedLadderEvent(x, y);
         animator.activateEvent(active_eventitem.event);
+        notifyEdited();
     }
 
     protected void layoutPattern() {
@@ -1516,6 +1522,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
+        }
+    }
+
+    // Notify the enclosing window that a pattern edit has occurred.
+    protected void notifyEdited() {
+        if (parent != null && parent instanceof PatternWindow) {
+            ((PatternWindow)parent).notifyEdited();
         }
     }
 

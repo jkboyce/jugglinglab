@@ -43,6 +43,13 @@ public abstract class View extends JPanel {
 
     public void setParent(JFrame p) { this.parent = p; }
 
+    // Notify the enclosing window that a pattern edit has occurred.
+    protected void notifyEdited() {
+        if (parent != null && parent instanceof PatternWindow) {
+            ((PatternWindow)parent).notifyEdited();
+        }
+    }
+
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
