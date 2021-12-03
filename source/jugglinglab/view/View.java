@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.view;
 
@@ -31,13 +31,13 @@ public abstract class View extends JPanel {
     public static final int VIEW_NONE = 0;
     public static final int VIEW_SIMPLE = 1;
     public static final int VIEW_EDIT = 2;
-    public static final int VIEW_SELECTION = 3;
-    public static final int VIEW_JML = 4;
+    public static final int VIEW_PATTERN = 3;
+    public static final int VIEW_SELECTION = 4;
 
     // used for `view` parameter setting in AnimationPrefs, these must be in the
     // same order as VIEW_ constants above
     public static final String[] viewNames = new String[]
-        { "simple", "edit", "selection", "jml" };
+        { "simple", "visual_edit", "pattern_edit", "selection_edit" };
 
     protected JFrame parent;
 

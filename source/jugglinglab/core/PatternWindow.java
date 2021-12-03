@@ -105,6 +105,14 @@ public class PatternWindow extends JFrame implements ActionListener {
         base_edited = false;
     }
 
+    public String getBasePatternNotation() {
+        return base_notation;
+    }
+
+    public String getBasePatternConfig() {
+        return base_config;
+    }
+
     // Test whether the JMLPattern being animated is identical to the
     // given base pattern.
     public boolean isUneditedBasePattern(String notation, String config) {
@@ -188,10 +196,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-        { "Simple", "Visual Editor", "Selection Editor", "JML Editor", null,
-          "Restart", "Animation Preferences..." };
+        { "Simple", "Visual Editor", "Pattern Editor", "Selection Editor",
+          null, "Restart", "Animation Preferences..." };
     protected static final String[] viewCommands = new String[]
-        { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
+        { "simple", "visual_edit", "pattern_edit", "selection_edit",
+          null, "restart", "prefs" };
     protected static final char[] viewShortcuts =
         { '1', '2', '3', '4', ' ', ' ', 'P' };
 
@@ -255,17 +264,17 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (getViewMode() != View.VIEW_SIMPLE)
                     setViewMode(View.VIEW_SIMPLE);
             }
-            else if (command.equals("edit")) {
+            else if (command.equals("visual_edit")) {
                 if (getViewMode() != View.VIEW_EDIT)
                     setViewMode(View.VIEW_EDIT);
             }
-            else if (command.equals("selection")) {
+            else if (command.equals("pattern_edit")) {
+                if (getViewMode() != View.VIEW_PATTERN)
+                    setViewMode(View.VIEW_PATTERN);
+            }
+            else if (command.equals("selection_edit")) {
                 if (getViewMode() != View.VIEW_SELECTION)
                     setViewMode(View.VIEW_SELECTION);
-            }
-            else if (command.equals("jml")) {
-                if (getViewMode() != View.VIEW_JML)
-                    setViewMode(View.VIEW_JML);
             }
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
@@ -431,11 +440,11 @@ public class PatternWindow extends JFrame implements ActionListener {
             case View.VIEW_EDIT:
                 newview = new EditView(animsize);
                 break;
+            case View.VIEW_PATTERN:
+                newview = new PatternView(animsize);
+                break;
             case View.VIEW_SELECTION:
                 newview = new SelectionView(animsize);
-                break;
-            case View.VIEW_JML:
-                newview = new JMLView(animsize);
                 break;
         }
         if (newview == null)
@@ -463,10 +472,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             return View.VIEW_SIMPLE;
         if (view instanceof EditView)
             return View.VIEW_EDIT;
+        if (view instanceof PatternView)
+            return View.VIEW_PATTERN;
         if (view instanceof SelectionView)
             return View.VIEW_SELECTION;
-        if (view instanceof JMLView)
-            return View.VIEW_JML;
         return View.VIEW_NONE;
     }
 

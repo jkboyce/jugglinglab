@@ -1,6 +1,6 @@
-// JMLView.java
+// PatternView.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.view;
 
@@ -18,7 +18,7 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
-public class JMLView extends View implements DocumentListener {
+public class PatternView extends View implements DocumentListener {
     protected AnimationPanel ja;
     protected JSplitPane jsp;
     protected JTextArea ta;
@@ -30,7 +30,7 @@ public class JMLView extends View implements DocumentListener {
     protected boolean isdirty = false;
 
 
-    public JMLView(Dimension dim) {
+    public PatternView(Dimension dim) {
         setLayout(new BorderLayout());
 
         this.ja = new AnimationPanel();
@@ -57,7 +57,7 @@ public class JMLView extends View implements DocumentListener {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    JMLView.this.compilePattern();
+                    PatternView.this.compilePattern();
                     notifyEdited();
                 } catch (Exception e) {
                     ErrorDialog.handleFatalException(e);
@@ -71,7 +71,7 @@ public class JMLView extends View implements DocumentListener {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    JMLView.this.revertPattern();
+                    PatternView.this.revertPattern();
                 } catch (Exception e) {
                     ErrorDialog.handleFatalException(e);
                 }
