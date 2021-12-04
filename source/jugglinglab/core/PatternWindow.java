@@ -31,7 +31,16 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected String base_config = null;
     protected boolean base_edited = false;
 
+    // used for tiling the animation windows on the screen as they're created
+    static protected final int NUM_TILES = 8;
+    static protected final Point TILE_SHIFT = new Point(195, 0);  // relative to screen center
+    static protected final Point TILE_OFFSET = new Point(25, 25);
+    static protected Point[] tile_locations = null;
+    static protected int next_tile_num;
+
     static {
+        // load the optimizer using the reflection API so we can omit it by
+        // leaving those source files out of the compile.
         try {
             optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
 
@@ -82,7 +91,8 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         pack();
         view.restartView(pat, jc);
-        setLocationRelativeTo(null);    // center frame on screen
+        //setLocationRelativeTo(null);    // center frame on screen
+        setLocation(getNextScreenLocation());
         setVisible(true);
 
         addWindowListener(new WindowAdapter() {
@@ -92,6 +102,30 @@ public class PatternWindow extends JFrame implements ActionListener {
                     System.exit(0);
             }
         });
+    }
+
+    // Return the location (screen pixels) of where the next animation window to
+    // be created should go. This allows us to create a tiling effect.
+    protected Point getNextScreenLocation() {
+        if (tile_locations == null) {
+            tile_locations = new Point[NUM_TILES];
+            Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+            Point middle_tile_loc = new Point(center.x + TILE_SHIFT.x - getSize().width / 2,
+                                              center.y + TILE_SHIFT.y - getSize().height / 2);
+
+            for (int i = 0; i < NUM_TILES; ++i) {
+                int loc_x = middle_tile_loc.x + (i - NUM_TILES / 2) * TILE_OFFSET.x;
+                int loc_y = middle_tile_loc.y + (i - NUM_TILES / 2) * TILE_OFFSET.y;
+                tile_locations[i] = new Point(loc_x, loc_y);
+            }
+
+            next_tile_num = 0;
+        }
+
+        Point loc = tile_locations[next_tile_num];
+        if (++next_tile_num == NUM_TILES)
+            next_tile_num = 0;
+        return loc;
     }
 
     // Each PatternWindow retains the config string and notation for the
