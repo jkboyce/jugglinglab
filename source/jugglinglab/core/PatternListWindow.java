@@ -21,7 +21,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     String title = null;
-    PatternList pl = null;
+    PatternListPanel pl = null;
     protected JMenuItem[] fileitems = null;
 
 
@@ -65,7 +65,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
     protected void makeWindow() {
-        pl = new PatternList(null);
+        pl = new PatternListPanel(null);
 
         pl.setDoubleBuffered(true);
         setBackground(Color.white);
@@ -82,7 +82,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    public PatternList getPatternList() { return pl; }
+    public PatternListPanel getPatternList() { return pl; }
 
     protected String[] fileItems = new String[]     { "Close", null, "Save JML As...", "Save Text As..." };
     protected String[] fileCommands = new String[]  { "close", null, "saveas", "savetext" };

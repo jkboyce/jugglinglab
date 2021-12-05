@@ -82,6 +82,8 @@ public class SelectionView extends View {
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
+                    if (num != center)
+                        setBasePatternEdited(true);
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
@@ -222,13 +224,13 @@ public class SelectionView extends View {
     }
 
     @Override
-    public JMLPattern getPattern()              { return ja[center].getPattern(); }
+    public JMLPattern getPattern() { return ja[center].getPattern(); }
 
     @Override
-    public AnimationPrefs getAnimationPrefs()   { return ja[center].getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() { return ja[center].getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused()                  { return ja[center].getPaused(); }
+    public boolean getPaused() { return ja[center].getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {

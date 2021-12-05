@@ -1,29 +1,59 @@
 // PatternWindow.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.*;
 
-import jugglinglab.jml.*;
-import jugglinglab.optimizer.Optimizer;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
+// This class is the window that contains juggling animations. The animation
+// itself is rendered by the View object.
+
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static protected Class<?> optimizer;
 
     protected View view;
     protected JMenu filemenu;
     protected JMenu viewmenu;
     protected boolean exit_on_close = false;
+
+    // used for tiling the animation windows on the screen as they're created
+    static protected final int NUM_TILES = 8;
+    static protected final Point TILE_SHIFT = new Point(195, 0);  // relative to screen center
+    static protected final Point TILE_OFFSET = new Point(25, 25);
+    static protected Point[] tile_locations = null;
+    static protected int next_tile_num;
+
+    static {
+        // load the optimizer using the reflection API so we can omit it by
+        // leaving those source files out of the compile.
+        try {
+            optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
+
+            Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
+            Boolean canOptimize = (Boolean)optimizerAvailable.invoke(null);
+            if (!canOptimize.booleanValue())
+                optimizer = null;
+        } catch (Exception e) {
+            optimizer = null;
+            if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                System.out.println("Exception loading optimizer: " + e.toString());
+        }
+    }
 
 
     public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws
@@ -31,9 +61,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         super(name);
 
         JMenuBar mb = new JMenuBar();
-        this.filemenu = createFileMenu();
+        filemenu = createFileMenu();
         mb.add(filemenu);
-        this.viewmenu = createViewMenu();
+        viewmenu = createViewMenu();
         mb.add(viewmenu);
         setJMenuBar(mb);
 
@@ -62,7 +92,8 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         pack();
         view.restartView(pat, jc);
-        setLocationRelativeTo(null);    // center frame on screen
+        //setLocationRelativeTo(null);    // center frame on screen
+        setLocation(getNextScreenLocation());
         setVisible(true);
 
         addWindowListener(new WindowAdapter() {
@@ -74,6 +105,86 @@ public class PatternWindow extends JFrame implements ActionListener {
         });
     }
 
+    // Create a new PatternWindow with the same JMLPattern and base pattern,
+    // and the default View.
+    protected PatternWindow(PatternWindow pw) throws JuggleExceptionUser, JuggleExceptionInternal {
+        this(pw.getTitle(),
+             new JMLPattern(pw.view.getPattern()),
+             new AnimationPrefs(pw.view.getAnimationPrefs()));
+
+        String bp_notation = pw.view.getBasePatternNotation();
+        String bp_config = pw.view.getBasePatternConfig();
+        if (bp_notation != null && bp_config != null) {
+            setBasePattern(bp_notation, bp_config);
+
+            if (pw.view.getBasePatternEdited())
+                notifyEdited();
+        }
+    }
+
+    // Return the location (screen pixels) of where the next animation window to
+    // be created should go. This allows us to create a tiling effect.
+    protected Point getNextScreenLocation() {
+        if (tile_locations == null) {
+            tile_locations = new Point[NUM_TILES];
+            Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+            Point middle_tile_loc = new Point(center.x + TILE_SHIFT.x - getSize().width / 2,
+                                              center.y + TILE_SHIFT.y - getSize().height / 2);
+
+            for (int i = 0; i < NUM_TILES; ++i) {
+                int loc_x = middle_tile_loc.x + (i - NUM_TILES / 2) * TILE_OFFSET.x;
+                int loc_y = middle_tile_loc.y + (i - NUM_TILES / 2) * TILE_OFFSET.y;
+                tile_locations[i] = new Point(loc_x, loc_y);
+            }
+
+            next_tile_num = 0;
+        }
+
+        Point loc = tile_locations[next_tile_num];
+        if (++next_tile_num == NUM_TILES)
+            next_tile_num = 0;
+        return loc;
+    }
+
+    // The View retains the notation and config string for the pattern it contains.
+    public void setBasePattern(String notation, String config) throws JuggleExceptionUser {
+        if (view != null)
+            view.setBasePattern(notation, config);
+    }
+
+    // Allow containing elements to notify that the pattern has been edited.
+    public void notifyEdited() {
+        if (view != null)
+            view.setBasePatternEdited(true);
+    }
+
+    // Static method to check if a given pattern is already being animated, and
+    // if so then bring that window to the front.
+    //
+    // Returns true if animation found, false if not.
+    public static boolean bringToFront(int hash) {
+        for (Frame fr : Frame.getFrames()) {
+            if (fr instanceof PatternWindow) {
+                final PatternWindow pw = (PatternWindow)fr;
+
+                if (!pw.isVisible())
+                    continue;
+
+                if (pw.hashCode() == hash) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            pw.toFront();
+                        }
+                    });
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Used when a single animation is created from the command line
     public void setExitOnClose(boolean value) {
         this.exit_on_close = value;
     }
@@ -102,7 +213,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 fileitem.addActionListener(this);
                 filemenu.add(fileitem);
 
-                if (fileCommands[i].equals("optimize") && !Optimizer.optimizerAvailable())
+                if (fileCommands[i].equals("optimize") && optimizer == null)
                     fileitem.setEnabled(false);
             }
         }
@@ -110,10 +221,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-        { "Simple", "Visual Editor", "Selection Editor", "JML Editor", null,
-          "Restart", "Animation Preferences..." };
+        { "Simple", "Visual Editor", "Pattern Editor", "Selection Editor",
+          null, "Restart", "Animation Preferences..." };
     protected static final String[] viewCommands = new String[]
-        { "simple", "edit", "selection", "jml", null, "restart", "prefs" };
+        { "simple", "visual_edit", "pattern_edit", "selection_edit",
+          null, "restart", "prefs" };
     protected static final char[] viewShortcuts =
         { '1', '2', '3', '4', ' ', ' ', 'P' };
 
@@ -177,17 +289,17 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (getViewMode() != View.VIEW_SIMPLE)
                     setViewMode(View.VIEW_SIMPLE);
             }
-            else if (command.equals("edit")) {
+            else if (command.equals("visual_edit")) {
                 if (getViewMode() != View.VIEW_EDIT)
                     setViewMode(View.VIEW_EDIT);
             }
-            else if (command.equals("selection")) {
+            else if (command.equals("pattern_edit")) {
+                if (getViewMode() != View.VIEW_PATTERN)
+                    setViewMode(View.VIEW_PATTERN);
+            }
+            else if (command.equals("selection_edit")) {
                 if (getViewMode() != View.VIEW_SELECTION)
                     setViewMode(View.VIEW_SELECTION);
-            }
-            else if (command.equals("jml")) {
-                if (getViewMode() != View.VIEW_JML)
-                    setViewMode(View.VIEW_JML);
             }
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
@@ -243,28 +355,38 @@ public class PatternWindow extends JFrame implements ActionListener {
 
             case FILE_DUPLICATE:
                 try {
-                    new PatternWindow(getTitle(),
-                                      (JMLPattern)view.getPattern().clone(),
-                                      new AnimationPrefs(view.getAnimationPrefs()));
+                    new PatternWindow(this);
                 } catch (JuggleExceptionUser jeu) {
+                    // This shouldn't ever happen
                     new ErrorDialog(this, jeu.getMessage());
                 }
                 break;
 
             case FILE_OPTIMIZE:
-                try {
+                if (optimizer != null && view != null) {
                     if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
                         System.out.println("------------------------------------------------------");
                         System.out.println("optimizing in PatternWindow.doMenuCommand()");
                     }
 
-                    if (view != null) {
-                        JMLPattern pat = Optimizer.optimize((JMLPattern)view.getPattern());
-                        AnimationPrefs jc = view.getAnimationPrefs();
-                        view.restartView(pat, jc);
+                    try {
+                        Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
+                        JMLPattern pat = view.getPattern();
+                        JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
+                        view.restartView(new_pat, null);
+                        notifyEdited();
+                    } catch (JuggleExceptionUser jeu) {
+                        new ErrorDialog(this, jeu.getMessage());
+                    } catch (NoSuchMethodException nsme) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("nsme: " + nsme.toString());
+                    } catch (IllegalAccessException iae) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("iae: " + iae.toString());
+                    } catch (InvocationTargetException ite) {
+                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                            System.out.println("ite: " + ite.toString());
                     }
-                } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(this, jeu.getMessage());
                 }
                 break;
 
@@ -319,12 +441,18 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         // items to carry over from old view to the new:
         JMLPattern pat = null;
+        String bp_notation = null;
+        String bp_config = null;
+        boolean bp_edited = false;
         AnimationPrefs jc = null;
         Dimension animsize = null;
         boolean paused = false;
 
         if (view != null) {
             pat = view.getPattern();
+            bp_notation = view.getBasePatternNotation();
+            bp_config = view.getBasePatternConfig();
+            bp_edited = view.getBasePatternEdited();
             jc = view.getAnimationPrefs();
             animsize = view.getAnimationPanelSize();
             paused = view.getPaused();
@@ -343,11 +471,11 @@ public class PatternWindow extends JFrame implements ActionListener {
             case View.VIEW_EDIT:
                 newview = new EditView(animsize);
                 break;
+            case View.VIEW_PATTERN:
+                newview = new PatternView(animsize);
+                break;
             case View.VIEW_SELECTION:
                 newview = new SelectionView(animsize);
-                break;
-            case View.VIEW_JML:
-                newview = new JMLView(animsize);
                 break;
         }
         if (newview == null)
@@ -362,6 +490,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = newview;
             pack();
+            if (bp_notation != null) {
+                view.setBasePattern(bp_notation, bp_config);
+                view.setBasePatternEdited(bp_edited);
+            }
             view.restartView(pat, jc);
         } else
             // pack() and restartView() happen in constructor
@@ -375,19 +507,30 @@ public class PatternWindow extends JFrame implements ActionListener {
             return View.VIEW_SIMPLE;
         if (view instanceof EditView)
             return View.VIEW_EDIT;
+        if (view instanceof PatternView)
+            return View.VIEW_PATTERN;
         if (view instanceof SelectionView)
             return View.VIEW_SELECTION;
-        if (view instanceof JMLView)
-            return View.VIEW_JML;
         return View.VIEW_NONE;
     }
 
+    // java.awt.Window method overrides
+
     @Override
-    public synchronized void dispose() {
+    public void dispose() {
         super.dispose();
         if (view != null) {
             view.disposeView();
             view = null;
         }
+    }
+
+    // java.lang.Object method overrides
+
+    // Used for testing whether a given JMLPattern is already being animated.
+    // See bringToFront().
+    @Override
+    public int hashCode() {
+        return (view == null) ? 0 : view.hashCode();
     }
 }

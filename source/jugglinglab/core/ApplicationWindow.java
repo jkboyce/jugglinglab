@@ -280,7 +280,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                     {
                         JMLNode root = parser.getTree();
                         pw = new PatternListWindow(root);
-                        PatternList pl = pw.getPatternList();
+                        PatternListPanel pl = pw.getPatternList();
                         break;
                     }
                     default:

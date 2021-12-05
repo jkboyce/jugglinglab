@@ -45,13 +45,13 @@ public class SimpleView extends View {
     }
 
     @Override
-    public JMLPattern getPattern()              { return ja.getPattern(); }
+    public JMLPattern getPattern() { return ja.getPattern(); }
 
     @Override
-    public AnimationPrefs getAnimationPrefs()   { return ja.getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() { return ja.getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused()                  { return ja.getPaused(); }
+    public boolean getPaused() { return ja.getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
@@ -60,7 +60,7 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void disposeView()                   { ja.disposeAnimation(); }
+    public void disposeView() { ja.disposeAnimation(); }
 
     @Override
     public void writeGIF() {

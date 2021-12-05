@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.view;
 
@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.JMLPattern;
+import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 
 
@@ -31,17 +32,37 @@ public abstract class View extends JPanel {
     public static final int VIEW_NONE = 0;
     public static final int VIEW_SIMPLE = 1;
     public static final int VIEW_EDIT = 2;
-    public static final int VIEW_SELECTION = 3;
-    public static final int VIEW_JML = 4;
+    public static final int VIEW_PATTERN = 3;
+    public static final int VIEW_SELECTION = 4;
 
     // used for `view` parameter setting in AnimationPrefs, these must be in the
     // same order as VIEW_ constants above
     public static final String[] viewNames = new String[]
-        { "simple", "edit", "selection", "jml" };
+        { "simple", "visual_edit", "pattern_edit", "selection_edit" };
 
     protected JFrame parent;
 
-    public void setParent(JFrame p) { this.parent = p; }
+    public void setParent(JFrame p) { parent = p; }
+
+    // Each View retains the config string and notation for the pattern it
+    // contains, as well as a boolean flag indicating whether the JML has been
+    // edited away from the base pattern.
+    //
+    // The config strings are always assumed to be in canonical order, i.e.,
+    // what is produced by Pattern.toString().
+    protected String base_pattern_notation;
+    protected String base_pattern_config;
+    protected boolean base_pattern_edited;
+
+    public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
+        base_pattern_notation = Pattern.getNotationName(bpn);
+        base_pattern_config = bpc;
+        base_pattern_edited = false;
+    }
+    public void setBasePatternEdited(boolean bpe) { base_pattern_edited = bpe; }
+    public String getBasePatternNotation() { return base_pattern_notation; }
+    public String getBasePatternConfig() { return base_pattern_config; }
+    public boolean getBasePatternEdited() { return base_pattern_edited; }
 
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
@@ -132,4 +153,11 @@ public abstract class View extends JPanel {
         }
     }
 
+    // java.lang.Object method overrides
+
+    @Override
+    public int hashCode() {
+        JMLPattern pat = getPattern();
+        return (pat == null) ? 0 : pat.hashCode();
+    }
 }

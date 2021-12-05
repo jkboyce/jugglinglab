@@ -11,7 +11,6 @@ import jugglinglab.core.Constants;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
-import jugglinglab.optimizer.*;
 
 
 // This class represents a pattern in the generalized form of siteswap notation
@@ -46,14 +45,14 @@ public class SiteswapPattern extends MHNPattern {
 
         super.fromParameters(pl);
         
-//hss Begin
+        //hss Begin
         if (hss != null) {
-          modParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
-          pattern = modinfo.convertedPattern;
-//          title = pattern;
-          dwellarray = modinfo.dwellBeatsArray;
+            ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
+            pattern = modinfo.convertedPattern;
+            //title = pattern;
+            dwellarray = modinfo.dwellBeatsArray;
         }
-//hss End
+        //hss End
 
         // pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();

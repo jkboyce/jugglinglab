@@ -1,4 +1,4 @@
-// PatternList.java
+// PatternListPanel.java
 //
 // Copyright 2020 by Jack Boyce (jboyce@gmail.com)
 
@@ -19,7 +19,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.*;
 
 
-public class PatternList extends JPanel {
+public class PatternListPanel extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -32,12 +32,12 @@ public class PatternList extends JPanel {
     DefaultListModel<PatternRecord> model;
 
 
-    public PatternList() {
+    public PatternListPanel() {
         makePanel();
         setOpaque(false);
     }
 
-    public PatternList(View target) {
+    public PatternListPanel(View target) {
         makePanel();
         setOpaque(false);
         setTargetView(target);
@@ -75,39 +75,45 @@ public class PatternList extends JPanel {
             public void valueChanged(ListSelectionEvent lse) {
                 PatternWindow jaw2 = null;
                 try {
-                    //if (lse.getValueIsAdjusting()) {
-                        PatternRecord rec = model.get(list.getSelectedIndex());
+                    PatternRecord rec = model.get(list.getSelectedIndex());
 
-                        JMLPattern pat = null;
+                    if (rec.notation == null)
+                        return;
 
-                        if (rec.notation != null && rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
-                            pat = new JMLPattern(rec.pattern, PatternList.this.loadingversion);
-                        } else if (rec.notation != null && rec.anim != null) {
-                            Pattern p = Pattern.newPattern(rec.notation);
-                            pat = p.fromString(rec.anim).asJMLPattern();
-                        } else
-                            return;
+                    JMLPattern pat = null;
+                    Pattern p = null;
 
-                        if (pat != null) {
-                            pat.setTitle(rec.display);
+                    if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null) {
+                        pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
+                    } else if (rec.anim != null) {
+                        p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+                        pat = p.asJMLPattern();
+                    } else
+                        return;
 
-                            AnimationPrefs ap = new AnimationPrefs();
-                            if (rec.animprefs != null) {
-                                ParameterList pl = new ParameterList(rec.animprefs);
-                                ap.fromParameters(pl);
-                                pl.errorIfParametersLeft();
-                            }
+                    pat.setTitle(rec.display);
 
-                            if (animtarget != null)
-                                animtarget.restartView(pat, ap);
-                            else
-                                jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-                        }
-                    //}
+                    if (PatternWindow.bringToFront(pat.hashCode()))
+                        return;
+
+                    AnimationPrefs ap = new AnimationPrefs();
+                    if (rec.animprefs != null) {
+                        ParameterList pl = new ParameterList(rec.animprefs);
+                        ap.fromParameters(pl);
+                        pl.errorIfParametersLeft();
+                    }
+
+                    if (animtarget != null)
+                        animtarget.restartView(pat, ap);
+                    else {
+                        jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
+                        if (rec.notation != null && p != null)
+                            jaw2.setBasePattern(rec.notation, p.toString());
+                    }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)
                         jaw2.dispose();
-                    new ErrorDialog(PatternList.this, je.getMessage());
+                    new ErrorDialog(PatternListPanel.this, je.getMessage());
                 } catch (Exception e) {
                     if (jaw2 != null)
                         jaw2.dispose();

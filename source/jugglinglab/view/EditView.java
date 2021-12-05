@@ -90,13 +90,13 @@ public class EditView extends View {
     }
 
     @Override
-    public JMLPattern getPattern()              { return jae.getPattern(); }
+    public JMLPattern getPattern() { return jae.getPattern(); }
 
     @Override
-    public AnimationPrefs getAnimationPrefs()   { return jae.getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() { return jae.getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused()                  { return jae.getPaused(); }
+    public boolean getPaused() { return jae.getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
@@ -105,7 +105,7 @@ public class EditView extends View {
     }
 
     @Override
-    public void disposeView()                   { jae.disposeAnimation(); }
+    public void disposeView() { jae.disposeAnimation(); }
 
     @Override
     public void writeGIF() {
