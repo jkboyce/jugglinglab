@@ -80,29 +80,23 @@ public class PatternListPanel extends JPanel {
                     if (rec.notation == null)
                         return;
 
-                    Pattern p = null;
                     JMLPattern pat = null;
                     String canonical_config = null;
 
                     if (rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
                         pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
                         pat.setTitle(rec.display);
-                        canonical_config = pat.toString();
+                        // canonical_config = pat.toString();
                     } else if (rec.anim != null) {
-                        p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+                        Pattern p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+                        pat = p.asJMLPattern();
+                        pat.setTitle(rec.display);
                         canonical_config = p.toString();
                     } else
                         return;
 
-                    if (PatternWindow.bringToFront(rec.notation, canonical_config))
+                    if (PatternWindow.bringToFront(pat.hashCode()))
                         return;
-
-                    // Pattern animation doesn't already exist, so make one
-
-                    if (pat == null) {
-                        pat = p.asJMLPattern();
-                        pat.setTitle(rec.display);
-                    }
 
                     AnimationPrefs ap = new AnimationPrefs();
                     if (rec.animprefs != null) {
@@ -115,7 +109,8 @@ public class PatternListPanel extends JPanel {
                         animtarget.restartView(pat, ap);
                     else {
                         jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-                        jaw2.setBasePattern(rec.notation, canonical_config);
+                        if (canonical_config != null)
+                            jaw2.setBasePattern(rec.notation, canonical_config);
                     }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)

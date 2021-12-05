@@ -1446,6 +1446,10 @@ public class JMLPattern {
         return sw.toString();
     }
 
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     @Override
     public Object clone() {
         try {

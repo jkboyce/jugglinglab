@@ -27,12 +27,6 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected JMenu viewmenu;
     protected boolean exit_on_close = false;
 
-    /*
-    protected String base_notation = null;
-    protected String base_config = null;
-    protected boolean base_edited = false;
-    */
-
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
     static protected final Point TILE_SHIFT = new Point(195, 0);  // relative to screen center
@@ -130,46 +124,40 @@ public class PatternWindow extends JFrame implements ActionListener {
         return loc;
     }
 
-    // Each PatternWindow retains the config string and notation for the
-    // pattern it contains.
+    // Each View retains the config string and notation for the pattern it contains.
     //
-    // The config strings are always assumed to be in canonical order, i.e.,
-    // what is produced by Pattern.toString().
+    // The config strings are assumed to be in canonical order, i.e., what is
+    // produced by Pattern.toString().
     public void setBasePattern(String notation, String config) throws JuggleExceptionUser {
         if (view != null)
             view.setBasePattern(notation, config);
     }
 
-    // Test whether the JMLPattern being animated is identical to the
-    // given base pattern.
-    public boolean isUneditedBasePattern(String notation, String config) {
-        if (view == null || view.getBasePatternEdited())
-            return false;
-
-        return (config.equals(view.getBasePatternConfig()) &&
-                notation.equalsIgnoreCase(view.getBasePatternNotation()));
-    }
-
     // For containing elements to notify that the pattern has been edited.
     public void notifyEdited() {
-        view.setBasePatternEdited(true);
+        if (view != null)
+            view.setBasePatternEdited(true);
+    }
+
+    // Used for testing whether a given JMLPattern is already being animated.
+    // See bringToFront().
+    public int hashCode() {
+        return (view == null) ? 0 : view.hashCode();
     }
 
     // Static method to check if a given pattern is already being animated, and
-    // is unedited. If so then bring that animation to the front.
+    // if so then bring that animation to the front.
     //
     // Returns true if animation found, false if not.
-    public static boolean bringToFront(String notation, String config) {
+    public static boolean bringToFront(int hash) {
         for (Frame fr : Frame.getFrames()) {
             if (fr instanceof PatternWindow) {
                 final PatternWindow pw = (PatternWindow)fr;
 
-                if (!pw.isVisible()) {
-                    //System.out.println("found a matching hidden PatternWindow");
+                if (!pw.isVisible())
                     continue;
-                }
 
-                if (pw.isUneditedBasePattern(notation, config)) {
+                if (pw.hashCode() == hash) {
                     //System.out.println("found a matching PatternWindow");
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -377,7 +365,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                         JMLPattern pat = view.getPattern();
                         JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
                         view.restartView(new_pat, null);
-                        view.setBasePatternEdited(true);
+                        notifyEdited();
                     } catch (JuggleExceptionUser jeu) {
                         new ErrorDialog(this, jeu.getMessage());
                     } catch (NoSuchMethodException nsme) {

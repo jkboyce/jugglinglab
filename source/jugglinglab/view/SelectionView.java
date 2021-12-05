@@ -224,13 +224,13 @@ public class SelectionView extends View {
     }
 
     @Override
-    public JMLPattern getPattern()              { return ja[center].getPattern(); }
+    public JMLPattern getPattern() { return ja[center].getPattern(); }
 
     @Override
-    public AnimationPrefs getAnimationPrefs()   { return ja[center].getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() { return ja[center].getAnimationPrefs(); }
 
     @Override
-    public boolean getPaused()                  { return ja[center].getPaused(); }
+    public boolean getPaused() { return ja[center].getPaused(); }
 
     @Override
     public void setPaused(boolean pause) {
