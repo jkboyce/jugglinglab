@@ -163,17 +163,17 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
                     pl.errorIfParametersLeft();
 
-                    String notation_name = p.getNotationName();
-                    String canonical_config = p.toString();
+                    JMLPattern pat = p.asJMLPattern();
 
-                    if (PatternWindow.bringToFront(notation_name, canonical_config))
+                    if (PatternWindow.bringToFront(pat.hashCode()))
                         return;
 
-                    JMLPattern pat = p.asJMLPattern();
                     if (animtarget != null)
                         animtarget.restartView(pat, jc);
                     else {
                         jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
+                        String notation_name = p.getNotationName();
+                        String canonical_config = p.toString();
                         jaw2.setBasePattern(notation_name, canonical_config);
                     }
                 } catch (JuggleExceptionUser je) {

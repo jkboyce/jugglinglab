@@ -50,6 +50,11 @@ public abstract class View extends JPanel {
         }
     }
 
+    public int hashCode() {
+        JMLPattern pat = getPattern();
+        return (pat == null) ? 0 : pat.hashCode();
+    }
+
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
