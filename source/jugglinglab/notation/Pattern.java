@@ -37,6 +37,15 @@ public abstract class Pattern {
         throw new JuggleExceptionUser("Notation type '"+notation+"' not recognized");
     }
 
+    public static String getNotationName(String notation) throws JuggleExceptionUser {
+        for (String s : builtinNotations) {
+            if (s.equalsIgnoreCase(notation))
+                return s;
+        }
+
+        throw new JuggleExceptionUser("Notation type '"+notation+"' not recognized");
+    }
+
     // return the notation name
     public abstract String getNotationName();
 

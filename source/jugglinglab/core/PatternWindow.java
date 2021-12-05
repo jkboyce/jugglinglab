@@ -1,6 +1,6 @@
 // PatternWindow.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -27,9 +27,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected JMenu viewmenu;
     protected boolean exit_on_close = false;
 
+    /*
     protected String base_notation = null;
     protected String base_config = null;
     protected boolean base_edited = false;
+    */
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
@@ -60,9 +62,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         super(name);
 
         JMenuBar mb = new JMenuBar();
-        this.filemenu = createFileMenu();
+        filemenu = createFileMenu();
         mb.add(filemenu);
-        this.viewmenu = createViewMenu();
+        viewmenu = createViewMenu();
         mb.add(viewmenu);
         setJMenuBar(mb);
 
@@ -133,33 +135,24 @@ public class PatternWindow extends JFrame implements ActionListener {
     //
     // The config strings are always assumed to be in canonical order, i.e.,
     // what is produced by Pattern.toString().
-    public void setBasePattern(String notation, String config) {
-        base_notation = notation;
-        base_config = config;
-        base_edited = false;
-    }
-
-    public String getBasePatternNotation() {
-        return base_notation;
-    }
-
-    public String getBasePatternConfig() {
-        return base_config;
+    public void setBasePattern(String notation, String config) throws JuggleExceptionUser {
+        if (view != null)
+            view.setBasePattern(notation, config);
     }
 
     // Test whether the JMLPattern being animated is identical to the
     // given base pattern.
     public boolean isUneditedBasePattern(String notation, String config) {
-        if (base_edited)
+        if (view == null || view.getBasePatternEdited())
             return false;
 
-        return (config.equals(base_config) &&
-                notation.equalsIgnoreCase(base_notation));
+        return (config.equals(view.getBasePatternConfig()) &&
+                notation.equalsIgnoreCase(view.getBasePatternNotation()));
     }
 
-    // For containing views to notify that the pattern has been edited.
+    // For containing elements to notify that the pattern has been edited.
     public void notifyEdited() {
-        base_edited = true;
+        view.setBasePatternEdited(true);
     }
 
     // Static method to check if a given pattern is already being animated, and
@@ -384,6 +377,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                         JMLPattern pat = view.getPattern();
                         JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
                         view.restartView(new_pat, null);
+                        view.setBasePatternEdited(true);
                     } catch (JuggleExceptionUser jeu) {
                         new ErrorDialog(this, jeu.getMessage());
                     } catch (NoSuchMethodException nsme) {
@@ -450,12 +444,18 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         // items to carry over from old view to the new:
         JMLPattern pat = null;
+        String bp_notation = null;
+        String bp_config = null;
+        boolean bp_edited = false;
         AnimationPrefs jc = null;
         Dimension animsize = null;
         boolean paused = false;
 
         if (view != null) {
             pat = view.getPattern();
+            bp_notation = view.getBasePatternNotation();
+            bp_config = view.getBasePatternConfig();
+            bp_edited = view.getBasePatternEdited();
             jc = view.getAnimationPrefs();
             animsize = view.getAnimationPanelSize();
             paused = view.getPaused();
@@ -493,6 +493,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = newview;
             pack();
+            view.setBasePattern(bp_notation, bp_config);
+            view.setBasePatternEdited(bp_edited);
             view.restartView(pat, jc);
         } else
             // pack() and restartView() happen in constructor

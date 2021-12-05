@@ -21,93 +21,181 @@ import jugglinglab.util.*;
 public class PatternView extends View implements DocumentListener {
     protected AnimationPanel ja;
     protected JSplitPane jsp;
+    protected JRadioButton rb_bp;
+    protected JLabel bp_edited;
+    protected JRadioButton rb_jml;
     protected JTextArea ta;
     protected JButton compile;
     protected JButton revert;
-    //  protected JLabel dirty;
+    //  protected JLabel edited;
     protected JLabel lab;
-
-    protected boolean isdirty = false;
+    protected boolean isedited = false;
 
 
     public PatternView(Dimension dim) {
+        makePanel(dim);
+        updatePanel();
+    }
+
+    protected void makePanel(Dimension dim) {
         setLayout(new BorderLayout());
 
-        this.ja = new AnimationPanel();
+        ja = new AnimationPanel();
         ja.setAnimationPanelPreferredSize(dim);
 
-        this.ta = new JTextArea();
+        JPanel controls = new JPanel();
+        GridBagLayout gb = new GridBagLayout();
+        controls.setLayout(gb);
+
+        JLabel lab_view = new JLabel("Select view:");
+        gb.setConstraints(lab_view, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
+                          new Insets(15, 0, 10, 0)));
+        controls.add(lab_view);
+
+        ButtonGroup bg = new ButtonGroup();
+        JPanel bppanel = new JPanel();
+        bppanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        rb_bp = new JRadioButton("Base Pattern");
+        bg.add(rb_bp);
+        bppanel.add(rb_bp);
+        java.net.URL url = PatternView.class.getResource("/alert.png");
+        if (url != null) {
+            ImageIcon edited_icon = new ImageIcon(url);
+            if (edited_icon != null) {
+                ImageIcon edited_icon_scaled = new ImageIcon(edited_icon.getImage().getScaledInstance(22, 22,  java.awt.Image.SCALE_SMOOTH));
+                bp_edited = new JLabel(edited_icon_scaled);
+                bp_edited.setToolTipText("Note: Applied JML edits will be lost if base pattern is changed");
+                bppanel.add(Box.createHorizontalStrut(10));
+                bppanel.add(bp_edited);
+            }
+        }
+        controls.add(bppanel);
+        gb.setConstraints(bppanel, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1));
+
+        rb_jml = new JRadioButton("JML");
+        bg.add(rb_jml);
+        controls.add(rb_jml);
+        gb.setConstraints(rb_jml, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2));
+
+        ta = new JTextArea();
         ta.getDocument().addDocumentListener(this);
 
         JScrollPane jscroll = new JScrollPane(ta);
         jscroll.setPreferredSize(new Dimension(400, 1));
-        if (true /*PlatformSpecific.getPlatformSpecific().isMacOS()*/) {
-            jscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        }
+        jscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        controls.add(jscroll);
 
-        jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, jscroll);
-        this.add(jsp, BorderLayout.CENTER);
+        GridBagConstraints gbc = JLFunc.constraints(GridBagConstraints.LINE_START, 0, 3,
+                                                    new Insets(15, 0, 0, 0));
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = gbc.weighty = 1.0;
+        gb.setConstraints(jscroll, gbc);
+
+        jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls);
+        add(jsp, BorderLayout.CENTER);
 
         JPanel lower = new JPanel();
         lower.setLayout(new FlowLayout(FlowLayout.LEADING));
+        compile = new JButton(guistrings.getString("PatternView_compile_button"));
+        lower.add(compile);
+        revert = new JButton(guistrings.getString("PatternView_revert_button"));
+        lower.add(revert);
+        lab = new JLabel("");
+        lower.add(lab);
+        add(lower, BorderLayout.PAGE_END);
 
-        this.compile = new JButton(guistrings.getString("JMLView_compile_button"));
+        // add actions to the various buttons
+
+        rb_bp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    reloadTextArea();
+                } catch (IOException ioe) {
+                    lab.setText(ioe.getMessage());
+                }
+            }
+        });
+
+        rb_jml.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    reloadTextArea();
+                } catch (IOException ioe) {
+                    lab.setText(ioe.getMessage());
+                }
+            }
+        });
+
         compile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    PatternView.this.compilePattern();
-                    notifyEdited();
+                    compilePattern();
                 } catch (Exception e) {
                     ErrorDialog.handleFatalException(e);
                 }
             }
         });
-        lower.add(compile);
 
-        this.revert = new JButton(guistrings.getString("JMLView_revert_button"));
         revert.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    PatternView.this.revertPattern();
+                    revertPattern();
                 } catch (Exception e) {
                     ErrorDialog.handleFatalException(e);
                 }
             }
         });
-        lower.add(revert);
+    }
 
-        /*      java.net.URL url = this.getClass().getResource("/images/ball.gif");
-        if (url != null) {
-            ImageIcon aboutPicture = new ImageIcon(url);
-            if (aboutPicture != null)
-                this.dirty = new JLabel(aboutPicture);
+    // This is called whenever the base pattern or JML pattern changes.
+    protected void updatePanel() {
+        if (getBasePatternNotation() == null || getBasePatternConfig() == null ||
+                getBasePatternNotation().equalsIgnoreCase("JML")) {
+            // no non-JML base pattern has been set
+            rb_jml.setSelected(true);
+            rb_bp.setEnabled(false);
+            if (bp_edited != null)
+                bp_edited.setVisible(false);
+        } else {
+            rb_bp.setEnabled(true);
+            if (bp_edited != null)
+                bp_edited.setVisible(getBasePatternEdited());
         }
-        lower.add(dirty);*/
+    }
 
-        this.lab = new JLabel("");
-        lower.add(lab);
+    @Override
+    public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
+        super.setBasePattern(bpn, bpc);
+        if (!bpn.equalsIgnoreCase("JML"))
+            rb_bp.setText("Base Pattern (" + bpn + ")");
+        updatePanel();
+    }
 
-        add(lower, BorderLayout.PAGE_END);
+    @Override
+    public void setBasePatternEdited(boolean bpe) {
+        super.setBasePatternEdited(bpe);
+        updatePanel();
     }
 
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) {
         try {
             ja.restartJuggle(p, c);
-            updateTextArea();
-            lab.setText("");
-            setDirty(false);
-            if (p != null)
+            if (p != null) {
+                reloadTextArea();
                 parent.setTitle(p.getTitle());
+            }
         } catch (JuggleException je) {
             lab.setText(je.getMessage());
-            setDirty(true);
+            setEdited(true);
         } catch (IOException ioe) {
             lab.setText(ioe.getMessage());
-            setDirty(true);
+            setEdited(true);
         }
     }
 
@@ -167,74 +255,81 @@ public class PatternView extends View implements DocumentListener {
     }
 
     protected void compilePattern() {
-        if (isdirty) {
-            try {
-                JMLPattern newpat = new JMLPattern(new StringReader(ta.getText()));
-                ja.restartJuggle(newpat, null);
-                lab.setText("");
-                parent.setTitle(newpat.getTitle());
-                updateTextArea();
-                setDirty(false);
-            } catch (JuggleExceptionUser jeu) {
-                lab.setText(jeu.getMessage());
-                setDirty(true);
-            } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-                setDirty(true);
-            } catch (SAXParseException spe) {
-                String template = errorstrings.getString("Error_parsing");
-                Object[] arguments = { new Integer(spe.getLineNumber()) };
-                lab.setText(MessageFormat.format(template, arguments));
-                setDirty(true);
-            } catch (SAXException se) {
-                lab.setText(se.getMessage());
-                setDirty(true);
-            } catch (IOException ioe) {
-                ErrorDialog.handleFatalException(ioe);
-                setDirty(true);
-            }
+        if (!isedited)
+            return;
+
+        try {
+            JMLPattern newpat = new JMLPattern(new StringReader(ta.getText()));
+            ja.restartJuggle(newpat, null);
+            parent.setTitle(newpat.getTitle());
+            reloadTextArea();
+            setBasePatternEdited(true);
+        } catch (JuggleExceptionUser jeu) {
+            lab.setText(jeu.getMessage());
+            setEdited(true);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
+            setEdited(true);
+        } catch (SAXParseException spe) {
+            String template = errorstrings.getString("Error_parsing");
+            Object[] arguments = { new Integer(spe.getLineNumber()) };
+            lab.setText(MessageFormat.format(template, arguments));
+            setEdited(true);
+        } catch (SAXException se) {
+            lab.setText(se.getMessage());
+            setEdited(true);
+        } catch (IOException ioe) {
+            ErrorDialog.handleFatalException(ioe);
+            setEdited(true);
         }
     }
 
     protected void revertPattern() {
-        if (isdirty) {
+        if (isedited) {
             try {
-                updateTextArea();
-                lab.setText("");
-                setDirty(false);
+                reloadTextArea();
             } catch (IOException ioe) {
                 lab.setText(ioe.getMessage());
             }
         }
     }
 
-    protected void updateTextArea() throws IOException {
-        StringWriter sw = new StringWriter();
-        ja.getPattern().writeJML(sw, true);
-        sw.close();
-        ta.setText(sw.toString());
-        ta.setCaretPosition(0);
+    protected void reloadTextArea() throws IOException {
+        if (rb_bp.isSelected()) {
+            ta.setText("pattern goes here");
+            ta.setCaretPosition(0);
+            lab.setText("");
+            setEdited(false);
+        } else if (rb_jml.isSelected()) {
+            StringWriter sw = new StringWriter();
+            ja.getPattern().writeJML(sw, true);
+            sw.close();
+            ta.setText(sw.toString());
+            ta.setCaretPosition(0);
+            lab.setText("");
+            setEdited(false);
+        }
     }
 
-    protected void setDirty(boolean dirty) {
-        this.isdirty = dirty;
-        //      this.dirty.setVisible(dirty);
-        compile.setEnabled(dirty);
-        revert.setEnabled(dirty);
+    protected void setEdited(boolean edited) {
+        this.isedited = edited;
+        //      this.edited.setVisible(edited);
+        compile.setEnabled(edited);
+        revert.setEnabled(edited);
     }
 
     // DocumentListener methods
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        setDirty(true);
+        setEdited(true);
     }
     @Override
     public void removeUpdate(DocumentEvent e) {
-        setDirty(true);
+        setEdited(true);
     }
     @Override
     public void changedUpdate(DocumentEvent e) {
-        setDirty(true);
+        setEdited(true);
     }
 }

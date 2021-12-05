@@ -83,7 +83,7 @@ public class SelectionView extends View {
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
                     if (num != center)
-                        notifyEdited();
+                        setBasePatternEdited(true);
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
