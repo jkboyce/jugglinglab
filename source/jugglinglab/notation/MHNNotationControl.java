@@ -271,7 +271,8 @@ public abstract class MHNNotationControl extends NotationControl {
 
         sb.append("pattern=");
         sb.append(tf1.getText());
-        sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
+        if (cb3.getSelectedIndex() != 0)
+            sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
             if (!tf2.getText().equals(new Double(MHNPattern.dwell_default).toString())) {
                 sb.append(";dwell=");
@@ -294,11 +295,12 @@ public abstract class MHNNotationControl extends NotationControl {
             sb.append(";");
             sb.append(tf6.getText());
         }
-        String title = tf1.getText();                   // title is pattern,
         int index = cb1.getSelectedIndex();
-        if (index > 0)
-            title = title + " " + cb1.getItemAt(index); // plus hands name if any
-        sb.append(";title=" + title);
+        if (index > 0) {
+            // if hands are not default, apply a title
+            String title = tf1.getText() + " " + cb1.getItemAt(index);
+            sb.append(";title=" + title);
+        }
 
         return new ParameterList(sb.toString());
     }

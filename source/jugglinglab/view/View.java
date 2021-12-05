@@ -64,11 +64,6 @@ public abstract class View extends JPanel {
     public String getBasePatternConfig() { return base_pattern_config; }
     public boolean getBasePatternEdited() { return base_pattern_edited; }
 
-    public int hashCode() {
-        JMLPattern pat = getPattern();
-        return (pat == null) ? 0 : pat.hashCode();
-    }
-
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
@@ -158,4 +153,11 @@ public abstract class View extends JPanel {
         }
     }
 
+    // java.lang.Object method overrides
+
+    @Override
+    public int hashCode() {
+        JMLPattern pat = getPattern();
+        return (pat == null) ? 0 : pat.hashCode();
+    }
 }

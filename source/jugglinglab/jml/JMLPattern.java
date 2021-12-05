@@ -1,6 +1,6 @@
 // JMLPattern.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.jml;
 
@@ -87,12 +87,22 @@ public class JMLPattern {
         valid = true;
     }
 
-    public JMLPattern(Reader read) throws JuggleExceptionUser, SAXException, IOException {
+    public JMLPattern(Reader read) throws JuggleExceptionUser, JuggleExceptionInternal {
         this();
-        JMLParser parser = new JMLParser();
-        parser.parse(read);
-        readJML(parser.getTree());
-        valid = true;
+        try {
+            JMLParser parser = new JMLParser();
+            parser.parse(read);
+            readJML(parser.getTree());
+            valid = true;
+        } catch (SAXException se) {
+            throw new JuggleExceptionUser(se.getMessage());
+        } catch (IOException ioe) {
+            throw new JuggleExceptionInternal(ioe.getMessage());
+        }
+    }
+
+    public JMLPattern(JMLPattern pat) throws JuggleExceptionUser, JuggleExceptionInternal {
+        this(new StringReader(pat.toString()));
     }
 
     // ------------------------------------------------------------------------
@@ -1401,7 +1411,7 @@ public class JMLPattern {
             write.println(JMLDefs.jmlprefix[i]);
         write.println("<jml version=\"" + version + "\">");
         write.println("<pattern>");
-        if (write_title)
+        if (write_title && title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
         for (int i = 0; i < props.size(); i++)
             props.get(i).writeJML(write);
@@ -1435,6 +1445,8 @@ public class JMLPattern {
         write.flush();
     }
 
+    // java.lang.Object method overrides
+
     @Override
     public String toString() {
         StringWriter sw = new StringWriter();
@@ -1446,16 +1458,8 @@ public class JMLPattern {
         return sw.toString();
     }
 
+    @Override
     public int hashCode() {
         return toString().hashCode();
-    }
-
-    @Override
-    public Object clone() {
-        try {
-            return new JMLPattern(new StringReader(toString()));
-        } catch (Exception e) {
-        }
-        return null;
     }
 }

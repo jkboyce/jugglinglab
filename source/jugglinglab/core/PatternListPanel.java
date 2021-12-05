@@ -81,19 +81,17 @@ public class PatternListPanel extends JPanel {
                         return;
 
                     JMLPattern pat = null;
-                    String canonical_config = null;
+                    Pattern p = null;
 
-                    if (rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
+                    if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null) {
                         pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
-                        pat.setTitle(rec.display);
-                        // canonical_config = pat.toString();
                     } else if (rec.anim != null) {
-                        Pattern p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+                        p = Pattern.newPattern(rec.notation).fromString(rec.anim);
                         pat = p.asJMLPattern();
-                        pat.setTitle(rec.display);
-                        canonical_config = p.toString();
                     } else
                         return;
+
+                    pat.setTitle(rec.display);
 
                     if (PatternWindow.bringToFront(pat.hashCode()))
                         return;
@@ -109,8 +107,8 @@ public class PatternListPanel extends JPanel {
                         animtarget.restartView(pat, ap);
                     else {
                         jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-                        if (canonical_config != null)
-                            jaw2.setBasePattern(rec.notation, canonical_config);
+                        if (rec.notation != null && p != null)
+                            jaw2.setBasePattern(rec.notation, p.toString());
                     }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)

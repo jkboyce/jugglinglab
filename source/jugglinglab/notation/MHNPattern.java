@@ -1586,8 +1586,7 @@ top:
             }
         }
 
-        if (title != null)
-            result.setTitle(title);
+        result.setTitle((title == null) ? pattern : title);
 
         if (Constants.DEBUG_LAYOUT) {
             System.out.println("Pattern in JML format:\n");

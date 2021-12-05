@@ -1,6 +1,6 @@
 // Mutator.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.view;
 
@@ -81,16 +81,17 @@ public class Mutator {
             cdf[i] = freq_sum;
         }
 
-        if (freq_sum == 0.0)
-            return (JMLPattern)pat.clone();
-
-        this.rate = (slider_rate == null ? 1.0 : slider_rates[slider_rate.getValue()]);
-
-        JMLPattern mutant = null;
-        int tries = 0;
         try {
+            if (freq_sum == 0.0)
+                return new JMLPattern(pat);
+
+            this.rate = (slider_rate == null ? 1.0 : slider_rates[slider_rate.getValue()]);
+
+            JMLPattern mutant = null;
+            int tries = 0;
+
             do {
-                JMLPattern clone = (JMLPattern)pat.clone();
+                JMLPattern clone = new JMLPattern(pat);
                 double r = freq_sum * Math.random();
                 tries++;
 
@@ -105,13 +106,12 @@ public class Mutator {
                 else
                     mutant = mutateRemoveEvent(clone);
             } while (mutant == null && tries < 5);
+
+            return (mutant == null) ? new JMLPattern(pat) : mutant;
         } catch (JuggleExceptionUser jeu) {
             // this shouldn't be able to happen, so treat it as an internal error
             throw new JuggleExceptionInternal("Mutator: User error: " + jeu.getMessage());
         }
-        if (mutant == null)
-            return (JMLPattern)pat.clone();
-        return mutant;
     }
 
     public JPanel getControlPanel() { return this.controls; }

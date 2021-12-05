@@ -173,8 +173,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     else {
                         jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
                         String notation_name = p.getNotationName();
-                        String canonical_config = p.toString();
-                        jaw2.setBasePattern(notation_name, canonical_config);
+                        String config = p.toString();
+                        jaw2.setBasePattern(notation_name, config);
                     }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)

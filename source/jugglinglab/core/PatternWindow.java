@@ -9,13 +9,17 @@ import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.*;
 
-import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.*;
 
+
+// This class is the window that contains juggling animations. The animation
+// itself is rendered by the View object.
 
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -50,6 +54,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 System.out.println("Exception loading optimizer: " + e.toString());
         }
     }
+
 
     public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
@@ -100,6 +105,23 @@ public class PatternWindow extends JFrame implements ActionListener {
         });
     }
 
+    // Create a new PatternWindow with the same JMLPattern and base pattern,
+    // and the default View.
+    protected PatternWindow(PatternWindow pw) throws JuggleExceptionUser, JuggleExceptionInternal {
+        this(pw.getTitle(),
+             new JMLPattern(pw.view.getPattern()),
+             new AnimationPrefs(pw.view.getAnimationPrefs()));
+
+        String bp_notation = pw.view.getBasePatternNotation();
+        String bp_config = pw.view.getBasePatternConfig();
+        if (bp_notation != null && bp_config != null) {
+            setBasePattern(bp_notation, bp_config);
+
+            if (pw.view.getBasePatternEdited())
+                notifyEdited();
+        }
+    }
+
     // Return the location (screen pixels) of where the next animation window to
     // be created should go. This allows us to create a tiling effect.
     protected Point getNextScreenLocation() {
@@ -124,29 +146,20 @@ public class PatternWindow extends JFrame implements ActionListener {
         return loc;
     }
 
-    // Each View retains the config string and notation for the pattern it contains.
-    //
-    // The config strings are assumed to be in canonical order, i.e., what is
-    // produced by Pattern.toString().
+    // The View retains the notation and config string for the pattern it contains.
     public void setBasePattern(String notation, String config) throws JuggleExceptionUser {
         if (view != null)
             view.setBasePattern(notation, config);
     }
 
-    // For containing elements to notify that the pattern has been edited.
+    // Allow containing elements to notify that the pattern has been edited.
     public void notifyEdited() {
         if (view != null)
             view.setBasePatternEdited(true);
     }
 
-    // Used for testing whether a given JMLPattern is already being animated.
-    // See bringToFront().
-    public int hashCode() {
-        return (view == null) ? 0 : view.hashCode();
-    }
-
     // Static method to check if a given pattern is already being animated, and
-    // if so then bring that animation to the front.
+    // if so then bring that window to the front.
     //
     // Returns true if animation found, false if not.
     public static boolean bringToFront(int hash) {
@@ -158,7 +171,6 @@ public class PatternWindow extends JFrame implements ActionListener {
                     continue;
 
                 if (pw.hashCode() == hash) {
-                    //System.out.println("found a matching PatternWindow");
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -169,8 +181,6 @@ public class PatternWindow extends JFrame implements ActionListener {
                 }
             }
         }
-        //System.out.println("no matching PatternWindow");
-
         return false;
     }
 
@@ -345,10 +355,9 @@ public class PatternWindow extends JFrame implements ActionListener {
 
             case FILE_DUPLICATE:
                 try {
-                    new PatternWindow(getTitle(),
-                                      (JMLPattern)view.getPattern().clone(),
-                                      new AnimationPrefs(view.getAnimationPrefs()));
+                    new PatternWindow(this);
                 } catch (JuggleExceptionUser jeu) {
+                    // This shouldn't ever happen
                     new ErrorDialog(this, jeu.getMessage());
                 }
                 break;
@@ -481,8 +490,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = newview;
             pack();
-            view.setBasePattern(bp_notation, bp_config);
-            view.setBasePatternEdited(bp_edited);
+            if (bp_notation != null) {
+                view.setBasePattern(bp_notation, bp_config);
+                view.setBasePatternEdited(bp_edited);
+            }
             view.restartView(pat, jc);
         } else
             // pack() and restartView() happen in constructor
@@ -503,12 +514,23 @@ public class PatternWindow extends JFrame implements ActionListener {
         return View.VIEW_NONE;
     }
 
+    // java.awt.Window method overrides
+
     @Override
-    public synchronized void dispose() {
+    public void dispose() {
         super.dispose();
         if (view != null) {
             view.disposeView();
             view = null;
         }
+    }
+
+    // java.lang.Object method overrides
+
+    // Used for testing whether a given JMLPattern is already being animated.
+    // See bringToFront().
+    @Override
+    public int hashCode() {
+        return (view == null) ? 0 : view.hashCode();
     }
 }
