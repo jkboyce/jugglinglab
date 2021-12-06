@@ -51,20 +51,20 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     protected ParameterDescriptor[] dialog_pd;
 
 
-    public EditLadderDiagram(JMLPattern pat, JFrame parent) {
+    public EditLadderDiagram(JMLPattern pat, JFrame par) {
         super(pat);
-        this.parent = parent;
+        parent = par;
 
         active_eventitem = null;
         setupPopup();
 
         final JMLPattern fpat = pat;
-        this.gui_state = STATE_INACTIVE;
+        gui_state = STATE_INACTIVE;
 
         if (pat.getNumberOfJugglers() > 1)
             return;
 
-        this.addMouseListener(new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(final MouseEvent me) {
                 if (animator != null && animator.writingGIF)
@@ -247,7 +247,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             }
         });
 
-        this.addMouseMotionListener(new MouseMotionAdapter() {
+        addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
                 if (animator != null && animator.writingGIF)
@@ -1512,6 +1512,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             // use synchronized here to avoid data consistency problems with animation
             // thread in AnimationPanel's run() method
             synchronized (pat) {
+                pat.setNeedsLayout(true);
                 pat.layoutPattern();
             }
             if (animator != null) {

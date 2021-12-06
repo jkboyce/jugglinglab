@@ -291,15 +291,7 @@ public class PatternView extends View implements DocumentListener {
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
             setTextEdited(true);
-        } /* catch (SAXParseException spe) {
-            String template = errorstrings.getString("Error_parsing");
-            Object[] arguments = { new Integer(spe.getLineNumber()) };
-            lab.setText(MessageFormat.format(template, arguments));
-            setTextEdited(true);
-        } catch (SAXException se) {
-            lab.setText(se.getMessage());
-            setTextEdited(true);
-        } */ catch (IOException ioe) {
+        } catch (IOException ioe) {
             ErrorDialog.handleFatalException(ioe);
             setTextEdited(true);
         }

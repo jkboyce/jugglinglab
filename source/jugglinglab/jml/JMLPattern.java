@@ -260,6 +260,9 @@ public class JMLPattern {
     // ------------------------------------------------------------------------
 
     public void layoutPattern() throws JuggleExceptionInternal, JuggleExceptionUser {
+        if (laidout)
+            return;
+
         if (!valid)
             throw new JuggleExceptionInternal("Cannot do layout of invalid pattern");
 
