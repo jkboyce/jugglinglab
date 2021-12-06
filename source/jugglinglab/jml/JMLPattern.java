@@ -1303,8 +1303,8 @@ public class JMLPattern {
         setNeedsLayout(true);
     }
 
-    public boolean isValid()    { return valid; }
-    public boolean isLaidout()  { return laidout; }
+    public boolean isValid() { return valid; }
+    public boolean isLaidout() { return laidout; }
 
     protected void printEventList() {
         JMLEvent current = eventlist;
@@ -1323,6 +1323,8 @@ public class JMLPattern {
             current = current.getNext();
         }
     }
+
+    public int getHashCode() { return toString().hashCode(); }
 
     // ------------------------------------------------------------------------
     //   Use the JMLNode tree to build our internal pattern representation
@@ -1459,10 +1461,5 @@ public class JMLPattern {
         }
 
         return sw.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
     }
 }

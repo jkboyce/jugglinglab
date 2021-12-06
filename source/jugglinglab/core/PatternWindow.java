@@ -158,6 +158,15 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.setBasePatternEdited(true);
     }
 
+    // Used for testing whether a given JMLPattern is already being animated.
+    // See bringToFront().
+    //
+    // DO NOT override java.lang.Object.hashCode() -- for some reason the
+    // system calls it a lot, and menu shortcut keys stop working. Weird.
+    protected int getHashCode() {
+        return (view == null) ? 0 : view.getHashCode();
+    }
+
     // Static method to check if a given pattern is already being animated, and
     // if so then bring that window to the front.
     //
@@ -170,7 +179,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (!pw.isVisible())
                     continue;
 
-                if (pw.hashCode() == hash) {
+                if (pw.getHashCode() == hash) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -523,14 +532,5 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = null;
         }
-    }
-
-    // java.lang.Object method overrides
-
-    // Used for testing whether a given JMLPattern is already being animated.
-    // See bringToFront().
-    @Override
-    public int hashCode() {
-        return (view == null) ? 0 : view.hashCode();
     }
 }

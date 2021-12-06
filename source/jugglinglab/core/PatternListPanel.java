@@ -93,7 +93,7 @@ public class PatternListPanel extends JPanel {
 
                     pat.setTitle(rec.display);
 
-                    if (PatternWindow.bringToFront(pat.hashCode()))
+                    if (PatternWindow.bringToFront(pat.getHashCode()))
                         return;
 
                     AnimationPrefs ap = new AnimationPrefs();

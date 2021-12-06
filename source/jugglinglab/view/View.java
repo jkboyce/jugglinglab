@@ -79,6 +79,11 @@ public abstract class View extends JPanel {
 
     public abstract JMLPattern getPattern();
 
+    public int getHashCode() {
+        JMLPattern pat = getPattern();
+        return (pat == null) ? 0 : pat.getHashCode();
+    }
+
     public abstract AnimationPrefs getAnimationPrefs();
 
     public abstract boolean getPaused();
@@ -151,13 +156,5 @@ public abstract class View extends JPanel {
             if (cleanup != null)
                 SwingUtilities.invokeLater(cleanup);
         }
-    }
-
-    // java.lang.Object method overrides
-
-    @Override
-    public int hashCode() {
-        JMLPattern pat = getPattern();
-        return (pat == null) ? 0 : pat.hashCode();
     }
 }
