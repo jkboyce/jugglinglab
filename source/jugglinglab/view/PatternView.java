@@ -35,7 +35,7 @@ public class PatternView extends View implements DocumentListener {
 
     public PatternView(Dimension dim) {
         makePanel(dim);
-        updateRadioButtons();
+        updateButtons();
     }
 
     protected void makePanel(Dimension dim) {
@@ -79,14 +79,11 @@ public class PatternView extends View implements DocumentListener {
         gb.setConstraints(rb_jml, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2));
 
         ta = new JTextArea();
-        ta.getDocument().addDocumentListener(this);
-
         JScrollPane jscroll = new JScrollPane(ta);
         jscroll.setPreferredSize(new Dimension(400, 1));
         jscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         controls.add(jscroll);
-
         GridBagConstraints gbc = JLFunc.constraints(GridBagConstraints.LINE_START, 0, 3,
                                                     new Insets(15, 0, 0, 0));
         gbc.fill = GridBagConstraints.BOTH;
@@ -106,13 +103,16 @@ public class PatternView extends View implements DocumentListener {
         lower.add(lab);
         add(lower, BorderLayout.PAGE_END);
 
-        // add actions to the various buttons
+        // add actions to the various items
+
+        ta.getDocument().addDocumentListener(this);
 
         rb_bp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
                     reloadTextArea();
+                    updateButtons();
                 } catch (IOException ioe) {
                     lab.setText(ioe.getMessage());
                 }
@@ -124,6 +124,7 @@ public class PatternView extends View implements DocumentListener {
             public void actionPerformed(ActionEvent ae) {
                 try {
                     reloadTextArea();
+                    updateButtons();
                 } catch (IOException ioe) {
                     lab.setText(ioe.getMessage());
                 }
@@ -153,10 +154,20 @@ public class PatternView extends View implements DocumentListener {
         });
     }
 
-    // Update the radio button status when the base pattern or JML pattern changes.
-    protected void updateRadioButtons() {
+    // Update the button configs when a radio button is pressed, the base
+    // pattern or JML pattern changes, or we start/stop writing an animated GIF.
+    protected void updateButtons() {
+        if (ja != null && ja.writingGIF) {
+            // writing a GIF
+            rb_bp.setEnabled(false);
+            rb_jml.setEnabled(false);
+            compile.setEnabled(false);
+            revert.setEnabled(false);
+            return;
+        }
+
         if (getBasePatternNotation() == null || getBasePatternConfig() == null) {
-            // no base pattern has been set
+            // no base pattern set
             rb_jml.setSelected(true);
             rb_bp.setEnabled(false);
             if (bp_edited_icon != null)
@@ -166,7 +177,81 @@ public class PatternView extends View implements DocumentListener {
             if (bp_edited_icon != null)
                 bp_edited_icon.setVisible(getBasePatternEdited());
         }
+
+        if (rb_bp.isSelected()) {
+            compile.setEnabled(getBasePatternEdited() | text_edited);
+            revert.setEnabled(text_edited);
+        } else if (rb_jml.isSelected()) {
+            compile.setEnabled(text_edited);
+            revert.setEnabled(text_edited);
+        }
     }
+
+    // (Re)load the text in the JTextArea from the pattern, overwriting
+    // anything that was there.
+    protected void reloadTextArea() throws IOException {
+        if (rb_bp.isSelected()) {
+            ta.setText(getBasePatternConfig().replace(";", ";\n"));
+        } else if (rb_jml.isSelected()) {
+            StringWriter sw = new StringWriter();
+            ja.getPattern().writeJML(sw, true);
+            sw.close();
+            ta.setText(sw.toString());
+        }
+        ta.setCaretPosition(0);
+        lab.setText("");
+        setTextEdited(false);
+    }
+
+    protected void setTextEdited(boolean edited) {
+        if (text_edited != edited) {
+            text_edited = edited;
+            updateButtons();
+        }
+    }
+
+    protected void compilePattern() {
+        try {
+            JMLPattern newpat = null;
+
+            if (rb_bp.isSelected()) {
+                String config = ta.getText().replace("\n", "").trim();
+                Pattern p = Pattern.newPattern(getBasePatternNotation())
+                                   .fromString(config);
+                newpat = p.asJMLPattern();
+                setBasePattern(getBasePatternNotation(), config);
+                setBasePatternEdited(false);
+            } else if (rb_jml.isSelected()) {
+                newpat = new JMLPattern(new StringReader(ta.getText()));
+                setBasePatternEdited(true);
+            }
+
+            if (newpat != null) {
+                ja.restartJuggle(newpat, null);
+                parent.setTitle(newpat.getTitle());
+                reloadTextArea();
+            }
+        } catch (JuggleExceptionUser jeu) {
+            lab.setText(jeu.getMessage());
+            setTextEdited(true);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
+            setTextEdited(true);
+        } catch (IOException ioe) {
+            ErrorDialog.handleFatalException(ioe);
+            setTextEdited(true);
+        }
+    }
+
+    protected void revertPattern() {
+        try {
+            reloadTextArea();
+        } catch (IOException ioe) {
+            lab.setText(ioe.getMessage());
+        }
+    }
+
+    // View methods
 
     @Override
     public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
@@ -176,7 +261,6 @@ public class PatternView extends View implements DocumentListener {
             Object[] arg = { getBasePatternNotation() };
             rb_bp.setText(MessageFormat.format(template, arg));
             rb_bp.setSelected(true);
-            updateRadioButtons();
             reloadTextArea();
         } catch (IOException ioe) {
             throw new JuggleExceptionUser(ioe.getMessage());
@@ -186,7 +270,7 @@ public class PatternView extends View implements DocumentListener {
     @Override
     public void setBasePatternEdited(boolean bpe) {
         super.setBasePatternEdited(bpe);
-        updateRadioButtons();
+        updateButtons();
     }
 
     @Override
@@ -247,6 +331,7 @@ public class PatternView extends View implements DocumentListener {
     @Override
     public void writeGIF() {
         ja.writingGIF = true;
+        updateButtons();
         boolean origpause = getPaused();
         setPaused(true);
 
@@ -255,80 +340,14 @@ public class PatternView extends View implements DocumentListener {
             public void run() {
                 setPaused(origpause);
                 ja.writingGIF = false;
+                updateButtons();
             }
         };
 
         new View.GIFWriter(ja, cleanup);
     }
 
-    protected void compilePattern() {
-        if (!text_edited)
-            return;
-
-        try {
-            JMLPattern newpat = null;
-
-            if (rb_bp.isSelected()) {
-                String config = ta.getText().replace('\n', ';');
-                Pattern p = Pattern.newPattern(getBasePatternNotation())
-                                   .fromString(config);
-                newpat = p.asJMLPattern();
-                setBasePattern(getBasePatternNotation(), config);
-                setBasePatternEdited(false);
-            } else if (rb_jml.isSelected()) {
-                newpat = new JMLPattern(new StringReader(ta.getText()));
-                setBasePatternEdited(true);
-            }
-
-            if (newpat != null) {
-                ja.restartJuggle(newpat, null);
-                parent.setTitle(newpat.getTitle());
-                reloadTextArea();
-            }
-        } catch (JuggleExceptionUser jeu) {
-            lab.setText(jeu.getMessage());
-            setTextEdited(true);
-        } catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleFatalException(jei);
-            setTextEdited(true);
-        } catch (IOException ioe) {
-            ErrorDialog.handleFatalException(ioe);
-            setTextEdited(true);
-        }
-    }
-
-    protected void revertPattern() {
-        if (text_edited) {
-            try {
-                reloadTextArea();
-            } catch (IOException ioe) {
-                lab.setText(ioe.getMessage());
-            }
-        }
-    }
-
-    protected void reloadTextArea() throws IOException {
-        if (rb_bp.isSelected()) {
-            ta.setText(getBasePatternConfig().replace(';', '\n'));
-            setTextEdited(getBasePatternEdited());
-        } else if (rb_jml.isSelected()) {
-            StringWriter sw = new StringWriter();
-            ja.getPattern().writeJML(sw, true);
-            sw.close();
-            ta.setText(sw.toString());
-            setTextEdited(false);
-        }
-        ta.setCaretPosition(0);
-        lab.setText("");
-    }
-
-    protected void setTextEdited(boolean edited) {
-        text_edited = edited;
-        compile.setEnabled(text_edited);
-        revert.setEnabled(text_edited);
-    }
-
-    // javax.swing.event.DocumentListener method overrides
+    // javax.swing.event.DocumentListener methods
 
     @Override
     public void insertUpdate(DocumentEvent e) { setTextEdited(true); }
