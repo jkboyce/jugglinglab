@@ -372,40 +372,41 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPTIMIZE:
-                if (optimizer != null && view != null) {
-                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
-                        System.out.println("------------------------------------------------------");
-                        System.out.println("optimizing in PatternWindow.doMenuCommand()");
-                    }
+                if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
+                    System.out.println("------------------------------------------------------");
+                    System.out.println("optimizing in PatternWindow.doMenuCommand()");
+                }
 
-                    try {
-                        Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
-                        JMLPattern pat = view.getPattern();
-                        JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
-                        view.restartView(new_pat, null);
-                        notifyEdited();
-                    } catch (JuggleExceptionUser jeu) {
-                        new ErrorDialog(this, jeu.getMessage());
-                    } catch (InvocationTargetException ite) {
-                        // exceptions thrown by Optimizer.optimize() land here
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("ite: " + ite.getMessage());
-                        Throwable ex = ite.getCause();
-                        if (ex instanceof JuggleExceptionUser)
-                            new ErrorDialog(this, ex.getMessage());
-                        else if (ex instanceof JuggleExceptionInternal)
-                            throw new JuggleExceptionInternal(ex.getMessage());
-                        else
-                            throw new JuggleExceptionInternal("optimizer unknown ite: " + ex.getMessage());
-                    } catch (NoSuchMethodException nsme) {
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("nsme: " + nsme.getMessage());
-                        throw new JuggleExceptionInternal("optimizer nsme: " + nsme.getMessage());
-                    } catch (IllegalAccessException iae) {
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("iae: " + iae.getMessage());
-                        throw new JuggleExceptionInternal("optimizer iae: " + iae.getMessage());
-                    }
+                if (optimizer == null || view == null)
+                    break;
+
+                try {
+                    Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
+                    JMLPattern pat = view.getPattern();
+                    JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
+                    view.restartView(new_pat, null);
+                    notifyEdited();
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
+                } catch (InvocationTargetException ite) {
+                    // exceptions thrown by Optimizer.optimize() land here
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("ite: " + ite.getMessage());
+                    Throwable ex = ite.getCause();
+                    if (ex instanceof JuggleExceptionUser)
+                        new ErrorDialog(this, ex.getMessage());
+                    else if (ex instanceof JuggleExceptionInternal)
+                        throw (JuggleExceptionInternal)ex;
+                    else
+                        throw new JuggleExceptionInternal("optimizer unknown ite: " + ex.getMessage());
+                } catch (NoSuchMethodException nsme) {
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("nsme: " + nsme.getMessage());
+                    throw new JuggleExceptionInternal("optimizer nsme: " + nsme.getMessage());
+                } catch (IllegalAccessException iae) {
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("iae: " + iae.getMessage());
+                    throw new JuggleExceptionInternal("optimizer iae: " + iae.getMessage());
                 }
                 break;
 
