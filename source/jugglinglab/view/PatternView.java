@@ -6,11 +6,10 @@ package jugglinglab.view;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.StringReader;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
-import org.xml.sax.*;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.JMLPattern;
@@ -110,46 +109,28 @@ public class PatternView extends View implements DocumentListener {
         rb_bp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    reloadTextArea();
-                    updateButtons();
-                } catch (IOException ioe) {
-                    lab.setText(ioe.getMessage());
-                }
+                reloadTextArea();
             }
         });
 
         rb_jml.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    reloadTextArea();
-                    updateButtons();
-                } catch (IOException ioe) {
-                    lab.setText(ioe.getMessage());
-                }
+                reloadTextArea();
             }
         });
 
         compile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    compilePattern();
-                } catch (Exception e) {
-                    ErrorDialog.handleFatalException(e);
-                }
+                compilePattern();
             }
         });
 
         revert.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    revertPattern();
-                } catch (Exception e) {
-                    ErrorDialog.handleFatalException(e);
-                }
+                revertPattern();
             }
         });
     }
@@ -168,10 +149,10 @@ public class PatternView extends View implements DocumentListener {
 
         if (getBasePatternNotation() == null || getBasePatternConfig() == null) {
             // no base pattern set
-            rb_jml.setSelected(true);
             rb_bp.setEnabled(false);
             if (bp_edited_icon != null)
                 bp_edited_icon.setVisible(false);
+            rb_jml.setSelected(true);
         } else {
             rb_bp.setEnabled(true);
             if (bp_edited_icon != null)
@@ -179,7 +160,7 @@ public class PatternView extends View implements DocumentListener {
         }
 
         if (rb_bp.isSelected()) {
-            compile.setEnabled(getBasePatternEdited() | text_edited);
+            compile.setEnabled(getBasePatternEdited() || text_edited);
             revert.setEnabled(text_edited);
         } else if (rb_jml.isSelected()) {
             compile.setEnabled(text_edited);
@@ -189,18 +170,18 @@ public class PatternView extends View implements DocumentListener {
 
     // (Re)load the text in the JTextArea from the pattern, overwriting
     // anything that was there.
-    protected void reloadTextArea() throws IOException {
-        if (rb_bp.isSelected()) {
+    protected void reloadTextArea() {
+        if (rb_bp.isSelected())
             ta.setText(getBasePatternConfig().replace(";", ";\n"));
-        } else if (rb_jml.isSelected()) {
-            StringWriter sw = new StringWriter();
-            ja.getPattern().writeJML(sw, true);
-            sw.close();
-            ta.setText(sw.toString());
-        }
+        else if (rb_jml.isSelected())
+            ta.setText(getPattern().toString());
+
         ta.setCaretPosition(0);
         lab.setText("");
         setTextEdited(false);
+
+        // The above always triggers an updateButtons() call, since text_edited
+        // is cycled from true (from the setText() calls) to false.
     }
 
     protected void setTextEdited(boolean edited) {
@@ -219,10 +200,12 @@ public class PatternView extends View implements DocumentListener {
                 Pattern p = Pattern.newPattern(getBasePatternNotation())
                                    .fromString(config);
                 newpat = p.asJMLPattern();
+                newpat.layoutPattern();
                 setBasePattern(getBasePatternNotation(), config);
                 setBasePatternEdited(false);
             } else if (rb_jml.isSelected()) {
                 newpat = new JMLPattern(new StringReader(ta.getText()));
+                newpat.layoutPattern();  // do immediately to surface any errors
                 setBasePatternEdited(true);
             }
 
@@ -237,34 +220,23 @@ public class PatternView extends View implements DocumentListener {
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
             setTextEdited(true);
-        } catch (IOException ioe) {
-            ErrorDialog.handleFatalException(ioe);
-            setTextEdited(true);
         }
     }
 
     protected void revertPattern() {
-        try {
-            reloadTextArea();
-        } catch (IOException ioe) {
-            lab.setText(ioe.getMessage());
-        }
+        reloadTextArea();
     }
 
     // View methods
 
     @Override
     public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
-        try {
-            super.setBasePattern(bpn, bpc);
-            String template = guistrings.getString("PatternView_rb1");
-            Object[] arg = { getBasePatternNotation() };
-            rb_bp.setText(MessageFormat.format(template, arg));
-            rb_bp.setSelected(true);
-            reloadTextArea();
-        } catch (IOException ioe) {
-            throw new JuggleExceptionUser(ioe.getMessage());
-        }
+        super.setBasePattern(bpn, bpc);
+        String template = guistrings.getString("PatternView_rb1");
+        Object[] arg = { getBasePatternNotation() };
+        rb_bp.setText(MessageFormat.format(template, arg));
+        rb_bp.setSelected(true);
+        reloadTextArea();
     }
 
     @Override
@@ -283,9 +255,6 @@ public class PatternView extends View implements DocumentListener {
             }
         } catch (JuggleException je) {
             lab.setText(je.getMessage());
-            setTextEdited(true);
-        } catch (IOException ioe) {
-            lab.setText(ioe.getMessage());
             setTextEdited(true);
         }
     }
