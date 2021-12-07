@@ -180,8 +180,8 @@ public class PatternView extends View implements DocumentListener {
         lab.setText("");
         setTextEdited(false);
 
-        // The above always triggers an updateButtons() call, since text_edited
-        // is cycled from true (from the setText() calls) to false.
+        // Note the above always triggers an updateButtons() call, since
+        // text_edited is cycled from true (from the setText() calls) to false.
     }
 
     protected void setTextEdited(boolean edited) {
@@ -193,26 +193,16 @@ public class PatternView extends View implements DocumentListener {
 
     protected void compilePattern() {
         try {
-            JMLPattern newpat = null;
-
             if (rb_bp.isSelected()) {
                 String config = ta.getText().replace("\n", "").trim();
                 Pattern p = Pattern.newPattern(getBasePatternNotation())
                                    .fromString(config);
-                newpat = p.asJMLPattern();
-                newpat.layoutPattern();
+                restartView(p.asJMLPattern(), null);
                 setBasePattern(getBasePatternNotation(), config);
                 setBasePatternEdited(false);
             } else if (rb_jml.isSelected()) {
-                newpat = new JMLPattern(new StringReader(ta.getText()));
-                newpat.layoutPattern();  // do immediately to surface any errors
+                restartView(new JMLPattern(new StringReader(ta.getText())), null);
                 setBasePatternEdited(true);
-            }
-
-            if (newpat != null) {
-                ja.restartJuggle(newpat, null);
-                parent.setTitle(newpat.getTitle());
-                reloadTextArea();
             }
         } catch (JuggleExceptionUser jeu) {
             lab.setText(jeu.getMessage());
@@ -246,26 +236,18 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
-    public void restartView(JMLPattern p, AnimationPrefs c) {
-        try {
-            ja.restartJuggle(p, c);
-            if (p != null) {
-                reloadTextArea();
-                parent.setTitle(p.getTitle());
-            }
-        } catch (JuggleException je) {
-            lab.setText(je.getMessage());
-            setTextEdited(true);
+    public void restartView(JMLPattern p, AnimationPrefs c) throws
+                    JuggleExceptionUser, JuggleExceptionInternal {
+        ja.restartJuggle(p, c);
+        if (p != null) {
+            reloadTextArea();
+            parent.setTitle(p.getTitle());
         }
     }
 
     @Override
-    public void restartView() {
-        try {
-            ja.restartJuggle();
-        } catch (JuggleException je) {
-            lab.setText(je.getMessage());
-        }
+    public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
+        ja.restartJuggle();
     }
 
     @Override
