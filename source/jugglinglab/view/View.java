@@ -44,12 +44,9 @@ public abstract class View extends JPanel {
 
     public void setParent(JFrame p) { parent = p; }
 
-    // Each View retains the config string and notation for the pattern it
+    // Each View retains the notation and config string for the pattern it
     // contains, as well as a boolean flag indicating whether the JML has been
     // edited away from the base pattern.
-    //
-    // The config strings are always assumed to be in canonical order, i.e.,
-    // what is produced by Pattern.toString().
     protected String base_pattern_notation;
     protected String base_pattern_config;
     protected boolean base_pattern_edited;

@@ -390,9 +390,9 @@ public class PatternWindow extends JFrame implements ActionListener {
                     new ErrorDialog(this, jeu.getMessage());
                 } catch (InvocationTargetException ite) {
                     // exceptions thrown by Optimizer.optimize() land here
-                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                        System.out.println("ite: " + ite.getMessage());
                     Throwable ex = ite.getCause();
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("ite: " + ex.getMessage());
                     if (ex instanceof JuggleExceptionUser)
                         new ErrorDialog(this, ex.getMessage());
                     else if (ex instanceof JuggleExceptionInternal)
