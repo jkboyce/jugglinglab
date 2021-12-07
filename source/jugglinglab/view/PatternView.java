@@ -108,30 +108,22 @@ public class PatternView extends View implements DocumentListener {
 
         rb_bp.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                reloadTextArea();
-            }
+            public void actionPerformed(ActionEvent ae) { reloadTextArea(); }
         });
 
         rb_jml.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                reloadTextArea();
-            }
+            public void actionPerformed(ActionEvent ae) { reloadTextArea(); }
         });
 
         compile.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                compilePattern();
-            }
+            public void actionPerformed(ActionEvent ae) { compilePattern(); }
         });
 
         revert.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                revertPattern();
-            }
+            public void actionPerformed(ActionEvent ae) { revertPattern(); }
         });
     }
 

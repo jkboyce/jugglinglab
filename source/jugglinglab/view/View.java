@@ -6,6 +6,7 @@ package jugglinglab.view;
 
 import java.awt.Dimension;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -107,51 +108,55 @@ public abstract class View extends JPanel {
 
         @Override
         public void run() {
+            File file = null;
+
             try {
-                File file = null;
-                try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(parent);
+                int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(parent);
+                if (option != JFileChooser.APPROVE_OPTION)
+                    return;
 
-                    if (option == JFileChooser.APPROVE_OPTION) {
-                        file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
-                        if (file != null) {
-                            FileOutputStream out = new FileOutputStream(file);
+                file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                if (file == null)
+                    return;
 
-                            ProgressMonitor pm = new ProgressMonitor(parent,
-                                    guistrings.getString("Saving_animated_GIF"), "", 0, 1);
-                            pm.setMillisToPopup(1000);
+                FileOutputStream out = new FileOutputStream(file);
 
-                            Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
-                                @Override
-                                public void update(int step, int steps_total) {
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            pm.setMaximum(steps_total);
-                                            pm.setProgress(step);
-                                        }
-                                    });
-                                }
+                ProgressMonitor pm = new ProgressMonitor(parent,
+                        guistrings.getString("Saving_animated_GIF"), "", 0, 1);
+                pm.setMillisToPopup(1000);
 
-                                @Override
-                                public boolean isCanceled() {
-                                    return (pm.isCanceled() || GIFWriter.this.interrupted());
-                                }
-                            };
-                            ap.getAnimator().writeGIF(out, wgm);
-                        }
+                Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
+                    @Override
+                    public void update(int step, int steps_total) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                pm.setMaximum(steps_total);
+                                pm.setProgress(step);
+                            }
+                        });
                     }
-                } catch (IOException ioe) {
-                    throw new JuggleExceptionUser("Problem writing to file: " + file.toString());
-                }
-            } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(parent, jeu.getMessage());
+
+                    @Override
+                    public boolean isCanceled() {
+                        return (pm.isCanceled() || GIFWriter.this.interrupted());
+                    }
+                };
+
+                ap.getAnimator().writeGIF(out, wgm);
+            } catch (IOException ioe) {
+                if (file != null) {
+                    String template = errorstrings.getString("Error_writing_file");
+                    Object[] arg = { file.toString() };
+                    new ErrorDialog(parent, MessageFormat.format(template, arg));
+                } else
+                    ErrorDialog.handleFatalException(ioe);
             } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleFatalException(jei);
+            } finally {
+                if (cleanup != null)
+                    SwingUtilities.invokeLater(cleanup);
             }
-
-            if (cleanup != null)
-                SwingUtilities.invokeLater(cleanup);
         }
     }
 }
