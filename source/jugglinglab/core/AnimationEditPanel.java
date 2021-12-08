@@ -22,6 +22,7 @@ public class AnimationEditPanel extends AnimationPanel {
     protected boolean dragging_left = false;
     protected int xstart, ystart, xdelta, ydelta;
 
+
     public AnimationEditPanel() {
         super();
     }
@@ -30,7 +31,7 @@ public class AnimationEditPanel extends AnimationPanel {
     protected void initHandlers() {
         final JMLPattern fpat = anim.pat;
 
-        this.addMouseListener(new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             long lastpress = 0L;
             long lastenter = 1L;
 
@@ -146,7 +147,7 @@ public class AnimationEditPanel extends AnimationPanel {
             }
         });
 
-        this.addMouseMotionListener(new MouseMotionAdapter() {
+        addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
                 if (!engineAnimating)
@@ -195,7 +196,7 @@ public class AnimationEditPanel extends AnimationPanel {
             }
         });
 
-        this.addComponentListener(new ComponentAdapter() {
+        addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 if (!engineAnimating)
@@ -254,8 +255,8 @@ public class AnimationEditPanel extends AnimationPanel {
             createEventView();
     }
 
-    public void setLadderDiagram(LadderDiagram ladder) {
-        this.ladder = ladder;
+    public void setLadderDiagram(LadderDiagram lad) {
+        ladder = lad;
     }
 
     // set position of tracker bar in ladder diagram as we animate
@@ -281,21 +282,21 @@ public class AnimationEditPanel extends AnimationPanel {
     protected void createEventView() {
         if (event_active) {
             // translate by one pixel and see how far it was in juggler space
-        {
-            Coordinate c = event.getGlobalCoordinate();
-            Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
-            Coordinate dc = Coordinate.sub(c, c2);
-            double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
-            int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
+            {
+                Coordinate c = event.getGlobalCoordinate();
+                Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
+                Coordinate dc = Coordinate.sub(c, c2);
+                double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
+                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
 
-            int[] center = anim.ren1.getXY(c);
-            xlow1 = center[0] - boxhw;
-            ylow1 = center[1] - boxhw;
-            xhigh1 = center[0] + boxhw;
-            yhigh1 = center[1] + boxhw;
-        }
+                int[] center = anim.ren1.getXY(c);
+                xlow1 = center[0] - boxhw;
+                ylow1 = center[1] - boxhw;
+                xhigh1 = center[0] + boxhw;
+                yhigh1 = center[1] + boxhw;
+            }
 
-            if (this.jc.stereo) {
+            if (jc.stereo) {
                 Coordinate c = event.getGlobalCoordinate();
                 Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
                 Coordinate dc = Coordinate.sub(c, c2);
@@ -317,7 +318,7 @@ public class AnimationEditPanel extends AnimationPanel {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, this.cameradrag);
+                anim.drawFrame(getTime(), g, cameradrag);
                 drawEvent(g);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
@@ -332,9 +333,9 @@ public class AnimationEditPanel extends AnimationPanel {
         if (!event_active)
             return;
 
-        Dimension d = this.getSize();
+        Dimension d = getSize();
         Graphics g2 = g;
-        if (this.jc.stereo)
+        if (jc.stereo)
             g2 = g.create(0,0,d.width/2,d.height);
 
         if (g2 instanceof Graphics2D) {
@@ -347,7 +348,7 @@ public class AnimationEditPanel extends AnimationPanel {
         g2.drawLine(xhigh1+xdelta, yhigh1+ydelta, xlow1+xdelta, yhigh1+ydelta);
         g2.drawLine(xlow1+xdelta, yhigh1+ydelta, xlow1+xdelta, ylow1+ydelta);
 
-        if (this.jc.stereo) {
+        if (jc.stereo) {
             g2 = g.create(d.width/2,0,d.width/2,d.height);
             if (g2 instanceof Graphics2D) {
                 Graphics2D g22 = (Graphics2D)g2;

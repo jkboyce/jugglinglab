@@ -1,6 +1,6 @@
 // AnimationPanel.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
@@ -26,34 +26,34 @@ public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
     static final double snapangle = Math.toRadians(8.0);
 
-    protected Animator          anim;
-    protected AnimationPrefs    jc;
+    protected Animator anim;
+    protected AnimationPrefs jc;
 
-    protected Thread            engine;
-    protected boolean           engineRunning = false;
-    protected boolean           enginePaused = false;
-    protected boolean           engineAnimating = false;
-    protected double            sim_time;
-    public boolean              writingGIF = false;
-    public String               message;
+    protected Thread engine;
+    protected boolean engineRunning = false;
+    protected boolean enginePaused = false;
+    protected boolean engineAnimating = false;
+    protected double sim_time;
+    public boolean writingGIF = false;
+    public String message;
 
-    protected Clip              catchclip;
-    protected Clip              bounceclip;
+    protected Clip catchclip;
+    protected Clip bounceclip;
 
-    protected boolean           waspaused = false;      // for pause on mouse away
-    protected boolean           outside = true;
-    protected boolean           outside_valid = false;
+    protected boolean waspaused = false;  // for pause on mouse away
+    protected boolean outside = true;
+    protected boolean  outside_valid = false;
 
-    protected boolean           cameradrag = false;
-    protected int               startx, starty, lastx, lasty;
-    protected double[]          dragcamangle;
+    protected boolean cameradrag = false;
+    protected int startx, starty, lastx, lasty;
+    protected double[] dragcamangle;
 
-    protected Dimension         prefsize;
+    protected Dimension prefsize;
 
 
     public AnimationPanel() {
-        this.anim = new Animator();
-        this.jc = new AnimationPrefs();
+        anim = new Animator();
+        jc = new AnimationPrefs();
         setOpaque(true);
         loadAudioClips();
         initHandlers();
@@ -81,26 +81,26 @@ public class AnimationPanel extends JPanel implements Runnable {
             URL catchurl = AnimationPanel.class.getResource("/catch.au");
             AudioInputStream catchAudioIn = AudioSystem.getAudioInputStream(catchurl);
             DataLine.Info info = new DataLine.Info(Clip.class, catchAudioIn.getFormat());
-            this.catchclip = (Clip)AudioSystem.getLine(info);
-            this.catchclip.open(catchAudioIn);
+            catchclip = (Clip)AudioSystem.getLine(info);
+            catchclip.open(catchAudioIn);
         } catch (Exception e) {
             // System.out.println("Error loading catch.au: " + e.getMessage());
-            this.catchclip = null;
+            catchclip = null;
         }
         try {
             URL bounceurl = AnimationPanel.class.getResource("/bounce.au");
             AudioInputStream bounceAudioIn = AudioSystem.getAudioInputStream(bounceurl);
             DataLine.Info info = new DataLine.Info(Clip.class, bounceAudioIn.getFormat());
-            this.bounceclip = (Clip)AudioSystem.getLine(info);
-            this.bounceclip.open(bounceAudioIn);
+            bounceclip = (Clip)AudioSystem.getLine(info);
+            bounceclip.open(bounceAudioIn);
         } catch (Exception e) {
             // System.out.println("Error loading bounce.au: " + e.getMessage());
-            this.bounceclip = null;
+            bounceclip = null;
         }
     }
 
     protected void initHandlers() {
-        this.addMouseListener(new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             long lastpress = 0L;
             long lastenter = 1L;
 
@@ -166,7 +166,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             }
         });
 
-        this.addMouseMotionListener(new MouseMotionAdapter() {
+        addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent me) {
                 if (!engineAnimating)
@@ -208,7 +208,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             }
         });
 
-        this.addComponentListener(new ComponentAdapter() {
+        addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 if (!engineAnimating)
@@ -258,16 +258,21 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     public void restartJuggle(JMLPattern pat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
+        // Do pattern layout first so if there's an error we don't disrupt the
+        // current animation
+        if (pat != null)
+            pat.layoutPattern();
+
         // stop the current animation thread, if one is running
         killAnimationThread();
 
         if (newjc != null)
-            this.jc = newjc;
+            jc = newjc;
 
-        anim.setDimension(this.getSize());
+        anim.setDimension(getSize());
         anim.restartAnimator(pat, newjc);
 
-        this.setBackground(anim.getBackground());
+        setBackground(anim.getBackground());
 
         engine = new Thread(this);
         engine.start();
@@ -425,7 +430,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, this.cameradrag);
+                anim.drawFrame(getTime(), g, cameradrag);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 System.out.println(jei.getMessage());
@@ -439,7 +444,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         FontMetrics fm = g.getFontMetrics();
         int message_width = fm.stringWidth(message);
 
-        Dimension dim = this.getSize();
+        Dimension dim = getSize();
         int x = (dim.width > message_width) ? (dim.width - message_width)/2 : 0;
         int y = (dim.height + fm.getHeight()) / 2;
 

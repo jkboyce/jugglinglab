@@ -29,28 +29,29 @@ import jugglinglab.util.*;
 
 
 public class Animator {
-    protected JMLPattern        pat;
-    protected AnimationPrefs    jc;
-    protected Renderer          ren1, ren2;
-    protected Coordinate        overallmax, overallmin;
+    protected JMLPattern pat;
+    protected AnimationPrefs jc;
+    protected Renderer ren1, ren2;
+    protected Coordinate overallmax, overallmin;
 
-    protected int               num_frames;
-    protected double            sim_interval_secs;
-    protected long              real_interval_millis;
-    protected int[]             animpropnum;
-    protected Permutation       invpathperm;
+    protected int num_frames;
+    protected double sim_interval_secs;
+    protected long real_interval_millis;
+    protected int[] animpropnum;
+    protected Permutation invpathperm;
 
     // camera angles for viewing
-    protected double[]          camangle;       // in radians
-    protected double[]          camangle1;      // for stereo display
-    protected double[]          camangle2;
+    protected double[] camangle;  // in radians
+    protected double[] camangle1;  // for stereo display
+    protected double[] camangle2;
 
-    protected Dimension         dim;
+    protected Dimension dim;
+
 
     public Animator() {
-        this.camangle = new double[2];
-        this.camangle1 = new double[2];
-        this.camangle2 = new double[2];
+        camangle = new double[2];
+        camangle1 = new double[2];
+        camangle2 = new double[2];
         jc = new AnimationPrefs();
     }
 
@@ -58,41 +59,38 @@ public class Animator {
     // preferences, or both. Passing in null indicates no update for that item.
     public void restartAnimator(JMLPattern newpat, AnimationPrefs newjc)
                     throws JuggleExceptionUser, JuggleExceptionInternal {
-        // try to lay out new pattern first so if there's an error we
-        // won't disrupt the current animation
-        if (newpat != null && !newpat.isLaidout())
+        if (newpat != null) {
             newpat.layoutPattern();
-
-        if (newpat != null)
-            this.pat = newpat;
+            pat = newpat;
+        }
         if (newjc != null)
-            this.jc = newjc;
+            jc = newjc;
 
-        if (this.pat == null)
+        if (pat == null)
             return;
 
-        boolean sg = (this.jc.showGround == AnimationPrefs.GROUND_ON
-                || (this.jc.showGround == AnimationPrefs.GROUND_AUTO && this.pat.isBouncePattern()));
+        boolean sg = (jc.showGround == AnimationPrefs.GROUND_ON
+                || (jc.showGround == AnimationPrefs.GROUND_AUTO && pat.isBouncePattern()));
 
-        this.ren1 = new Renderer2D();
-        this.ren1.setPattern(this.pat);
-        this.ren1.setGround(sg);
-        if (this.jc.stereo) {
-            this.ren2 = new Renderer2D();
-            this.ren2.setPattern(this.pat);
-            this.ren2.setGround(sg);
+        ren1 = new Renderer2D();
+        ren1.setPattern(pat);
+        ren1.setGround(sg);
+        if (jc.stereo) {
+            ren2 = new Renderer2D();
+            ren2.setPattern(pat);
+            ren2.setGround(sg);
         } else
-            this.ren2 = null;
+            ren2 = null;
 
         initAnimator();
 
         double[] ca = new double[2];
-        if (this.jc.camangle != null) {
-            ca[0] = Math.toRadians(this.jc.camangle[0]);
-            double theta = Math.min(179.9999, Math.max(0.0001, this.jc.camangle[1]));
+        if (jc.camangle != null) {
+            ca[0] = Math.toRadians(jc.camangle[0]);
+            double theta = Math.min(179.9999, Math.max(0.0001, jc.camangle[1]));
             ca[1] = Math.toRadians(theta);
         } else {
-            if (this.pat.getNumberOfJugglers() == 1) {
+            if (pat.getNumberOfJugglers() == 1) {
                 ca[0] = Math.toRadians(0.0);
                 ca[1] = Math.toRadians(90.0);
             } else {
@@ -103,21 +101,21 @@ public class Animator {
         setCameraAngle(ca);
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT)
-            System.out.println(this.pat);
+            System.out.println(pat);
     }
 
-    public Dimension getDimension() { return new Dimension(this.dim); }
+    public Dimension getDimension() { return new Dimension(dim); }
 
     public void setDimension(Dimension d) {
-        this.dim = new Dimension(d);
+        dim = new Dimension(d);
         if (ren1 != null)
             syncRenderersToSize();
     }
 
     public double[] getCameraAngle() {
         double[] result = new double[2];
-        result[0] = this.camangle[0];
-        result[1] = this.camangle[1];
+        result[0] = camangle[0];
+        result[1] = camangle[1];
         return result;
     }
 
@@ -127,32 +125,32 @@ public class Animator {
         while (ca[0] >= 2.0 * Math.PI)
             ca[0] -= 2.0 * Math.PI;
 
-        this.camangle[0] = ca[0];
-        this.camangle[1] = ca[1];
+        camangle[0] = ca[0];
+        camangle[1] = ca[1];
 
         if (jc.stereo) {
-            this.camangle1[0] = ca[0] - 0.05;
-            this.camangle1[1] = ca[1];
-            ren1.setCameraAngle(this.camangle1);
-            this.camangle2[0] = ca[0] + 0.05;
-            this.camangle2[1] = ca[1];
-            ren2.setCameraAngle(this.camangle2);
+            camangle1[0] = ca[0] - 0.05;
+            camangle1[1] = ca[1];
+            ren1.setCameraAngle(camangle1);
+            camangle2[0] = ca[0] + 0.05;
+            camangle2[1] = ca[1];
+            ren2.setCameraAngle(camangle2);
         } else {
-            this.camangle1[0] = ca[0];
-            this.camangle1[1] = ca[1];
-            ren1.setCameraAngle(this.camangle1);
+            camangle1[0] = ca[0];
+            camangle1[1] = ca[1];
+            ren1.setCameraAngle(camangle1);
         }
     }
 
     public void drawFrame(double sim_time, Graphics g, boolean draw_axes)
                         throws JuggleExceptionInternal {
-        if (this.jc.stereo) {
-            this.ren1.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers,
-                                g.create(0, 0, this.dim.width/2, this.dim.height));
-            this.ren2.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers,
-                                g.create(this.dim.width/2, 0, this.dim.width/2, this.dim.height));
+        if (jc.stereo) {
+            ren1.drawFrame(sim_time, animpropnum, jc.hideJugglers,
+                                g.create(0, 0, dim.width/2, dim.height));
+            ren2.drawFrame(sim_time, animpropnum, jc.hideJugglers,
+                                g.create(dim.width/2, 0, dim.width/2, dim.height));
         } else {
-            this.ren1.drawFrame(sim_time, this.animpropnum, this.jc.hideJugglers, g);
+            ren1.drawFrame(sim_time, animpropnum, jc.hideJugglers, g);
         }
 
         if (draw_axes) {
@@ -190,7 +188,7 @@ public class Animator {
             g.drawString("z", zx-2, zy-4);
         }
 
-        if (this.jc.stereo && draw_axes) {
+        if (jc.stereo && draw_axes) {
             double[] ca = ren2.getCameraAngle();
             double theta = ca[0];
             double phi = ca[1];
@@ -198,7 +196,7 @@ public class Animator {
             double xya = 30.0;
             double xyb = xya * Math.cos(phi);
             double zlen = xya * Math.sin(phi);
-            int cx = 38 + this.dim.width/2;
+            int cx = 38 + dim.width/2;
             int cy = 45;
             int xx = cx + (int)(0.5 - xya * Math.cos(theta));
             int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
@@ -224,13 +222,13 @@ public class Animator {
     // to maintain continuity. After pat.getPeriod() times through this the props
     // will return to their original assignments.
     public void advanceProps() {
-        int paths = this.pat.getNumberOfPaths();
+        int paths = pat.getNumberOfPaths();
         int[] temppropnum = new int[paths];
 
         for (int i = 0; i < paths; i++)
-            temppropnum[this.invpathperm.getMapping(i + 1) - 1] = this.animpropnum[i];
+            temppropnum[invpathperm.getMapping(i + 1) - 1] = animpropnum[i];
         for (int i = 0; i < paths; i++)
-            this.animpropnum[i] = temppropnum[i];
+            animpropnum[i] = temppropnum[i];
     }
 
     // Rescales the animator so that the pattern and key parts of the juggler
@@ -241,15 +239,15 @@ public class Animator {
 
         // figure out timing constants; this in effect adjusts fps to get an integer
         // number of frames in one repetition of the pattern
-        this.num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *
+        num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *
                                 jc.slowdown * jc.fps);
-        this.sim_interval_secs = (pat.getLoopEndTime() - pat.getLoopStartTime()) / num_frames;
-        this.real_interval_millis = (long)(1000.0 * sim_interval_secs * jc.slowdown);
+        sim_interval_secs = (pat.getLoopEndTime() - pat.getLoopStartTime()) / num_frames;
+        real_interval_millis = (long)(1000.0 * sim_interval_secs * jc.slowdown);
 
-        this.animpropnum = new int[pat.getNumberOfPaths()];
+        animpropnum = new int[pat.getNumberOfPaths()];
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            this.animpropnum[i] = pat.getPropAssignment(i + 1);
-        this.invpathperm = pat.getPathPermutation().getInverse();
+            animpropnum[i] = pat.getPropAssignment(i + 1);
+        invpathperm = pat.getPathPermutation().getInverse();
     }
 
     // Find the overall bounding box of the juggler and pattern, in real-space
@@ -292,11 +290,11 @@ public class Animator {
         handmin = Coordinate.add(handmin, ren1.getHandWindowMin());
 
         // make sure jugglers' bodies are visible
-        this.overallmax = Coordinate.max(handmax, ren1.getJugglerWindowMax());
-        this.overallmax = Coordinate.max(overallmax, patternmax);
+        overallmax = Coordinate.max(handmax, ren1.getJugglerWindowMax());
+        overallmax = Coordinate.max(overallmax, patternmax);
 
-        this.overallmin = Coordinate.min(handmin, ren1.getJugglerWindowMin());
-        this.overallmin = Coordinate.min(overallmin, patternmin);
+        overallmin = Coordinate.min(handmin, ren1.getJugglerWindowMin());
+        overallmin = Coordinate.min(overallmin, patternmin);
 
         // we want to ensure everything stays visible as we rotate the camera
         // viewpoint.  the following is simple and seems to work ok.
@@ -311,10 +309,9 @@ public class Animator {
         }
 
         // make the x-coordinate origin at the center of the view
-        double maxabsx = Math.max(Math.abs(this.overallmin.x),
-                                  Math.abs(this.overallmax.x));
-        this.overallmin.x = -maxabsx;
-        this.overallmax.x = maxabsx;
+        double maxabsx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
+        overallmin.x = -maxabsx;
+        overallmax.x = maxabsx;
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = "+handmax);
@@ -323,23 +320,23 @@ public class Animator {
             System.out.println("Prop min = "+propmin);
             System.out.println("Pattern max = "+patternmax);
             System.out.println("Pattern min = "+patternmin);
-            System.out.println("Overall max = "+this.overallmax);
-            System.out.println("Overall min = "+this.overallmin);
+            System.out.println("Overall max = "+overallmax);
+            System.out.println("Overall min = "+overallmin);
 
-            this.overallmax = new Coordinate(100.0,0.0,500.0);
-            this.overallmin = new Coordinate(-100.0,0.0,-100.0);
+            overallmax = new Coordinate(100.0,0.0,500.0);
+            overallmin = new Coordinate(-100.0,0.0,-100.0);
         }
     }
 
     private void syncRenderersToSize() {
-        Dimension d = new Dimension(this.dim);
+        Dimension d = new Dimension(dim);
 
-        if (this.jc.stereo) {
+        if (jc.stereo) {
             d.width /= 2;
-            this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
-            this.ren2.initDisplay(d, jc.border, this.overallmax, this.overallmin);
+            ren1.initDisplay(d, jc.border, overallmax, overallmin);
+            ren2.initDisplay(d, jc.border, overallmax, overallmin);
         } else
-            this.ren1.initDisplay(d, jc.border, this.overallmax, this.overallmin);
+            ren1.initDisplay(d, jc.border, overallmax, overallmin);
     }
 
     public int[] getAnimPropNum()               { return animpropnum; }
@@ -359,7 +356,7 @@ public class Animator {
         iw.setOutput(ios);
         iw.prepareWriteSequence(null);
 
-        BufferedImage image = new BufferedImage(this.dim.width, this.dim.height,
+        BufferedImage image = new BufferedImage(dim.width, dim.height,
                                                 BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         // antialiased rendering creates too many distinct color values for
@@ -369,13 +366,13 @@ public class Animator {
 
         // reset prop assignments so we'll generate an identical GIF every time
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            this.animpropnum[i] = pat.getPropAssignment(i + 1);
+            animpropnum[i] = pat.getPropAssignment(i + 1);
 
-        int totalframes = pat.getPeriod() * this.num_frames;
+        int totalframes = pat.getPeriod() * num_frames;
         int framecount = 0;
 
         // delay time is embedded in GIF header in terms of hundredths of a second
-        String delayTime = String.valueOf((int)(0.5 + this.real_interval_millis / 10));
+        String delayTime = String.valueOf((int)(0.5 + real_interval_millis / 10));
 
         ImageWriteParam iwp = iw.getDefaultWriteParam();
         IIOMetadata metadata = null;
@@ -383,8 +380,8 @@ public class Animator {
         for (int i = 0; i < pat.getPeriod(); i++)  {
             double time = pat.getLoopStartTime();
 
-            for (int j = 0; j < this.num_frames; j++) {
-                this.drawFrame(time, g, false);
+            for (int j = 0; j < num_frames; j++) {
+                drawFrame(time, g, false);
 
                 // after the second frame all subsequent frames have identical metadata
                 if (framecount < 2) {
@@ -396,7 +393,7 @@ public class Animator {
                 IIOImage ii = new IIOImage(image, null, metadata);
                 iw.writeToSequence(ii, (ImageWriteParam) null);
 
-                time += this.sim_interval_secs;
+                time += sim_interval_secs;
                 framecount++;
 
                 if (wgm != null) {
@@ -409,7 +406,7 @@ public class Animator {
                 }
             }
 
-            this.advanceProps();
+            advanceProps();
         }
 
         g.dispose();
@@ -483,8 +480,8 @@ public class Animator {
         // Create the object that will actually do the writing
         GIFAnimWriter gaw = new GIFAnimWriter();
 
-        int appWidth = this.dim.width;
-        int appHeight = this.dim.height;
+        int appWidth = dim.width;
+        int appHeight = dim.height;
 
         BufferedImage image = new BufferedImage(appWidth, appHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
@@ -495,9 +492,9 @@ public class Animator {
 
         // reset prop assignments so we'll generate an identical GIF every time
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
-            this.animpropnum[i] = pat.getPropAssignment(i + 1);
+            animpropnum[i] = pat.getPropAssignment(i + 1);
 
-        int totalframes = pat.getPeriod() * this.num_frames * 2;
+        int totalframes = pat.getPeriod() * num_frames * 2;
         int framecount = 0;
 
         // loop through the individual frames twice, first to build the
@@ -509,11 +506,11 @@ public class Animator {
             for (int i = 0; i < pat.getPeriod(); i++)  {
                 double time = pat.getLoopStartTime();
 
-                for (int j = 0; j < this.num_frames; j++) {
+                for (int j = 0; j < num_frames; j++) {
                     if (pass == 1)
                         gaw.writeDelay((int)(0.5 + real_interval_millis / 10), os);
 
-                    this.drawFrame(time, g, false);
+                    drawFrame(time, g, false);
 
                     if (pass == 0)
                         gaw.doColorMap(image);
@@ -529,10 +526,10 @@ public class Animator {
                         }
                     }
 
-                    time += this.sim_interval_secs;
+                    time += sim_interval_secs;
                 }
 
-                this.advanceProps();
+                advanceProps();
             }
         }
 

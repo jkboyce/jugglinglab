@@ -13,6 +13,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.xml.sax.*;
 
 import jugglinglab.jml.*;
@@ -31,14 +32,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+
     public ApplicationWindow(String title) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
         super(title);
         createMenus();
-
-        // this does nothing (for now):
-        PlatformSpecific.getPlatformSpecific().registerParent(this);
-        PlatformSpecific.getPlatformSpecific().setupPlatform();
 
         ApplicationPanel ap = new ApplicationPanel(this);
         ap.setDoubleBuffered(true);
@@ -203,24 +201,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPEN:
-                javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
-                    public boolean accept(File f) {
-                        StringTokenizer st = new StringTokenizer(f.getName(), ".");
-                        String ext = "";
-                        while (st.hasMoreTokens())
-                            ext = st.nextToken();
-                        return (ext.equals("jml") || f.isDirectory());
-                    }
-
-                    public String getDescription() {
-                        return "JML Files";
-                    }
-                };
-
                 try {
-                    if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) ==
-                                    JFileChooser.APPROVE_OPTION) {
-                        File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+                    if (JLFunc.jfc().showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                        File f = JLFunc.jfc().getSelectedFile();
                         if (f != null)
                             showJMLWindow(f);
                     }

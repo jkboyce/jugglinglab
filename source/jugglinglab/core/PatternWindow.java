@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
@@ -158,6 +159,15 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.setBasePatternEdited(true);
     }
 
+    // Used for testing whether a given JMLPattern is already being animated.
+    // See bringToFront().
+    //
+    // DO NOT override java.lang.Object.hashCode() -- for some reason the
+    // system calls it a lot, and menu shortcut keys stop working. Weird.
+    protected int getHashCode() {
+        return (view == null) ? 0 : view.getHashCode();
+    }
+
     // Static method to check if a given pattern is already being animated, and
     // if so then bring that window to the front.
     //
@@ -170,7 +180,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (!pw.isVisible())
                     continue;
 
-                if (pw.hashCode() == hash) {
+                if (pw.getHashCode() == hash) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -327,24 +337,35 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_SAVE:
-                if (view != null && view.getPattern().isValid()) {
-                    try {
-                        int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
-                        if (option == JFileChooser.APPROVE_OPTION) {
-                            File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
-                            if (f != null) {
-                                FileWriter fw = new FileWriter(f);
-                                view.getPattern().writeJML(fw, true);
-                                fw.close();
-                            }
-                        }
-                    } catch (FileNotFoundException fnfe) {
-                        throw new JuggleExceptionInternal("FileNotFound: "+fnfe.getMessage());
-                    } catch (IOException ioe) {
-                        throw new JuggleExceptionInternal("IOException: "+ioe.getMessage());
-                    }
-                } else {
+                if (view == null || !view.getPattern().isValid()) {
                     new ErrorDialog(this, "Could not save: pattern is not valid");
+                    break;
+                }
+
+                // create default filename
+                String t = view.getPattern().getTitle();
+                if (t == null || t.length() == 0)
+                    t = "pattern";
+                JLFunc.jfc().setSelectedFile(new File(t + ".jml"));
+                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+
+                if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                    break;
+
+                File f = JLFunc.jfc().getSelectedFile();
+                if (f == null)
+                    break;
+                if (!f.getAbsolutePath().endsWith(".jml"))
+                    f = new File(f.getAbsolutePath() + ".jml");
+
+                try {
+                    FileWriter fw = new FileWriter(f);
+                    view.getPattern().writeJML(fw, true);
+                    fw.close();
+                } catch (FileNotFoundException fnfe) {
+                    throw new JuggleExceptionInternal("FileNotFound: "+fnfe.getMessage());
+                } catch (IOException ioe) {
+                    throw new JuggleExceptionInternal("IOException: "+ioe.getMessage());
                 }
                 break;
 
@@ -363,30 +384,41 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPTIMIZE:
-                if (optimizer != null && view != null) {
-                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
-                        System.out.println("------------------------------------------------------");
-                        System.out.println("optimizing in PatternWindow.doMenuCommand()");
-                    }
+                if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
+                    System.out.println("------------------------------------------------------");
+                    System.out.println("optimizing in PatternWindow.doMenuCommand()");
+                }
 
-                    try {
-                        Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
-                        JMLPattern pat = view.getPattern();
-                        JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
-                        view.restartView(new_pat, null);
-                        notifyEdited();
-                    } catch (JuggleExceptionUser jeu) {
-                        new ErrorDialog(this, jeu.getMessage());
-                    } catch (NoSuchMethodException nsme) {
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("nsme: " + nsme.toString());
-                    } catch (IllegalAccessException iae) {
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("iae: " + iae.toString());
-                    } catch (InvocationTargetException ite) {
-                        if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                            System.out.println("ite: " + ite.toString());
-                    }
+                if (optimizer == null || view == null)
+                    break;
+
+                try {
+                    Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
+                    JMLPattern pat = view.getPattern();
+                    JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
+                    view.restartView(new_pat, null);
+                    notifyEdited();
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
+                } catch (InvocationTargetException ite) {
+                    // exceptions thrown by Optimizer.optimize() land here
+                    Throwable ex = ite.getCause();
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("ite: " + ex.getMessage());
+                    if (ex instanceof JuggleExceptionUser)
+                        new ErrorDialog(this, ex.getMessage());
+                    else if (ex instanceof JuggleExceptionInternal)
+                        throw (JuggleExceptionInternal)ex;
+                    else
+                        throw new JuggleExceptionInternal("optimizer unknown ite: " + ex.getMessage());
+                } catch (NoSuchMethodException nsme) {
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("nsme: " + nsme.getMessage());
+                    throw new JuggleExceptionInternal("optimizer nsme: " + nsme.getMessage());
+                } catch (IllegalAccessException iae) {
+                    if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                        System.out.println("iae: " + iae.getMessage());
+                    throw new JuggleExceptionInternal("optimizer iae: " + iae.getMessage());
                 }
                 break;
 
@@ -523,14 +555,5 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = null;
         }
-    }
-
-    // java.lang.Object method overrides
-
-    // Used for testing whether a given JMLPattern is already being animated.
-    // See bringToFront().
-    @Override
-    public int hashCode() {
-        return (view == null) ? 0 : view.hashCode();
     }
 }

@@ -165,7 +165,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
                     JMLPattern pat = p.asJMLPattern();
 
-                    if (PatternWindow.bringToFront(pat.hashCode()))
+                    if (PatternWindow.bringToFront(pat.getHashCode()))
                         return;
 
                     if (animtarget != null)

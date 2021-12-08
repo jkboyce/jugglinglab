@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
@@ -145,15 +146,26 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVE:
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
-                    if (option == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                            pl.writeJML(fw);
-                            fw.close();
-                        }
-                    }
+                    // create default filename
+                    String t = title;
+                    if (t == null || t.length() == 0)
+                        t = "pattern";
+                    JLFunc.jfc().setSelectedFile(new File(t + ".jml"));
+                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+
+                    if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                        break;
+
+                    File f = JLFunc.jfc().getSelectedFile();
+                    if (f == null)
+                        break;
+                    if (!f.getAbsolutePath().endsWith(".jml"))
+                        f = new File(f.getAbsolutePath() + ".jml");
+
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    FileWriter fw = new FileWriter(f);
+                    pl.writeJML(fw);
+                    fw.close();
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionInternal("File not found on save: " + fnfe.getMessage());
                 } catch (IOException ioe) {
@@ -165,15 +177,26 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVETEXT:
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
-                    if (option == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
-                            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
-                            pl.writeText(fw);
-                            fw.close();
-                        }
-                    }
+                    // create default filename
+                    String t = title;
+                    if (t == null || t.length() == 0)
+                        t = "pattern";
+                    JLFunc.jfc().setSelectedFile(new File(t + ".txt"));
+                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
+
+                    if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                        break;
+
+                    File f = JLFunc.jfc().getSelectedFile();
+                    if (f == null)
+                        break;
+                    if (!f.getAbsolutePath().endsWith(".txt"))
+                        f = new File(f.getAbsolutePath() + ".txt");
+
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    FileWriter fw = new FileWriter(f);
+                    pl.writeText(fw);
+                    fw.close();
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionInternal("File not found on save: " + fnfe.getMessage());
                 } catch (IOException ioe) {
