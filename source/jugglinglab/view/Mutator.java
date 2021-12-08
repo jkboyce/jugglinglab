@@ -478,9 +478,9 @@ public class Mutator {
         slider_rate.setPaintTicks(true);
         slider_rate.setSnapToTicks(true);
         Hashtable<Integer,JComponent> labels = new Hashtable<Integer,JComponent>();
-        labels.put(new Integer(0), new JLabel(guistrings.getString("Mutation_rate_low")));
-        labels.put(new Integer(3), new JLabel(guistrings.getString("Mutation_rate_medium")));
-        labels.put(new Integer(6), new JLabel(guistrings.getString("Mutation_rate_high")));
+        labels.put(Integer.valueOf(0), new JLabel(guistrings.getString("Mutation_rate_low")));
+        labels.put(Integer.valueOf(3), new JLabel(guistrings.getString("Mutation_rate_medium")));
+        labels.put(Integer.valueOf(6), new JLabel(guistrings.getString("Mutation_rate_high")));
         slider_rate.setLabelTable(labels);
         slider_rate.setPaintLabels(true);
         controls.add(slider_rate);

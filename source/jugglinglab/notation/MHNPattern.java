@@ -432,8 +432,8 @@ public abstract class MHNPattern extends Pattern {
                             String template = errorstrings.getString("Error_badpattern_landings");
                             String hand = (sst.targethand == 0 ? errorstrings.getString("Error_right_hand")
                                         : errorstrings.getString("Error_left_hand"));
-                            Object[] arguments = { new Integer(sst.targetindex + 1),
-                                        new Integer(sst.targetjuggler), hand };
+                            Object[] arguments = { Integer.valueOf(sst.targetindex + 1),
+                                        Integer.valueOf(sst.targetjuggler), hand };
                             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                         }
 

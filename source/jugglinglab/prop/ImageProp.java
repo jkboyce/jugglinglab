@@ -113,7 +113,7 @@ public class ImageProp extends Prop {
         result[0] = new ParameterDescriptor("image", ParameterDescriptor.TYPE_ICON,
                                             null, image_url_default, url);
         result[1] = new ParameterDescriptor("width", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(width_default), new Double(width));
+                                            null, Double.valueOf(width_default), Double.valueOf(width));
 
         return result;
     }

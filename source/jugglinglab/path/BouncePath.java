@@ -38,17 +38,17 @@ public class BouncePath extends Path {
         ParameterDescriptor[] result = new ParameterDescriptor[6];
 
         result[0] = new ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT,
-                                            null, new Integer(bounces_def), new Integer(bounces));
+                                            null, Integer.valueOf(bounces_def), Integer.valueOf(bounces));
         result[1] = new ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, new Boolean(forced_def), new Boolean(forced));
+                                            null, Boolean.valueOf(forced_def), Boolean.valueOf(forced));
         result[2] = new ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, new Boolean(hyper_def), new Boolean(hyper));
+                                            null, Boolean.valueOf(hyper_def), Boolean.valueOf(hyper));
         result[3] = new ParameterDescriptor("bounceplane", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(bounceplane_def), new Double(bounceplane));
+                                            null, Double.valueOf(bounceplane_def), Double.valueOf(bounceplane));
         result[4] = new ParameterDescriptor("bouncefrac", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(bouncefrac_def), new Double(bouncefrac));
+                                            null, Double.valueOf(bouncefrac_def), Double.valueOf(bouncefrac));
         result[5] = new ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT,
-                                            null, new Double(g_def), new Double(g));
+                                            null, Double.valueOf(g_def), Double.valueOf(g));
 
         return result;
     }

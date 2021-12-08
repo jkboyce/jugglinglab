@@ -137,7 +137,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (Character.isWhitespace(c)) {
@@ -153,7 +153,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (c == 'F' || c == 'L') {
@@ -167,7 +167,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (c == 'H') {
@@ -177,12 +177,12 @@ public class HSS {
                         b3 = true;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else {
                     String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                    Object[] arguments = { new Integer(i + 1) };
+                    Object[] arguments = { Integer.valueOf(i + 1) };
                     throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else {
@@ -220,7 +220,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (c == 'F' || c == 'L') {
@@ -234,7 +234,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (c == 'H') {
@@ -244,12 +244,12 @@ public class HSS {
                         b3 = true;
                     } else {
                         String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else {
                     String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-                    Object[] arguments = { new Integer(i + 1) };
+                    Object[] arguments = { Integer.valueOf(i + 1) };
                     throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } // if-else muxThrow
@@ -308,7 +308,7 @@ public class HSS {
                 continue;
             } else {
                 String template = errorstrings.getString("Error_hss_hand_syntax_error_at_pos");
-                Object[] arguments = { new Integer(i + 1) };
+                Object[] arguments = { Integer.valueOf(i + 1) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
@@ -415,7 +415,7 @@ public class HSS {
                     continue;
                 } else {
                     String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-                    Object[] arguments = { new Integer(i + 1) };
+                    Object[] arguments = { Integer.valueOf(i + 1) };
                     throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             } else {
@@ -430,7 +430,7 @@ public class HSS {
                             continue;
                         } else {
                             String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-                            Object[] arguments = { new Integer(i + 1) };
+                            Object[] arguments = { Integer.valueOf(i + 1) };
                             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                         }
                     } else if (Character.isWhitespace(c)) {
@@ -468,7 +468,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 } else if (assignRH) {
@@ -482,7 +482,7 @@ public class HSS {
                             continue;
                         } else {
                             String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-                            Object[] arguments = { new Integer(i + 1) };
+                            Object[] arguments = { Integer.valueOf(i + 1) };
                             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                         }
                     } else if (Character.isWhitespace(c)) {
@@ -513,7 +513,7 @@ public class HSS {
                         continue;
                     } else {
                         String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
 
@@ -524,7 +524,7 @@ public class HSS {
         }
         if (jugNum > nh) {  //will this ever happen?
             String template = errorstrings.getString("Error_hss_handspec_too_many_jugglers");
-            Object[] arguments = { new Integer(nh) };
+            Object[] arguments = { Integer.valueOf(nh) };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
         if (pass) {
@@ -535,7 +535,7 @@ public class HSS {
                 }
                 if (!matchFnd) {
                     String template = errorstrings.getString("Error_hss_handspec_hand_missing");
-                    Object[] arguments = { new Integer(i + 1) };
+                    Object[] arguments = { Integer.valueOf(i + 1) };
                     throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                 }
             }
@@ -546,7 +546,7 @@ public class HSS {
         for (int i = 0; i < nh; i++) {
             if (hmap[i][0] == 0) {
                 String template = errorstrings.getString("Error_hss_juggler_not_assigned_to_hand");
-                Object[] arguments = { new Integer(i + 1) };
+                Object[] arguments = { Integer.valueOf(i + 1) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         }
@@ -632,7 +632,7 @@ public class HSS {
                 for (int j = 0; j < os.get(i).size(); j++) {
                     if (os.get(i).get(j) != '0') {
                         String template = errorstrings.getString("Error_hss_no_hand_to_throw_at_beat");
-                        Object[] arguments = { new Integer(i + 1) };
+                        Object[] arguments = { Integer.valueOf(i + 1) };
                         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                     }
                 }

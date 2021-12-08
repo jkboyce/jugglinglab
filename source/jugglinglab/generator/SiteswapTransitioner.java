@@ -125,7 +125,7 @@ public class SiteswapTransitioner extends Transitioner {
                 target.setStatus(guistrings.getString("Generator_patterns_1"));
             else {
                 String template = guistrings.getString("Generator_patterns_ne1");
-                Object[] arguments = { new Integer(num) };
+                Object[] arguments = { Integer.valueOf(num) };
                 target.setStatus(MessageFormat.format(template, arguments));
             }
 
@@ -366,7 +366,7 @@ public class SiteswapTransitioner extends Transitioner {
                 loop_counter = 0;
                 if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
                     String template = guistrings.getString("Generator_timeout");
-                    Object[] arguments = { new Integer((int)max_time) };
+                    Object[] arguments = { Integer.valueOf((int)max_time) };
                     throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
                 }
             }
@@ -463,7 +463,7 @@ public class SiteswapTransitioner extends Transitioner {
 
                     if (max_num > 0 && num >= max_num) {
                         String template = guistrings.getString("Generator_spacelimit");
-                        Object[] arguments = { new Integer(max_num) };
+                        Object[] arguments = { Integer.valueOf(max_num) };
                         throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
                     }
                 }

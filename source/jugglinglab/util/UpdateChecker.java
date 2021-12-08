@@ -93,7 +93,7 @@ public class UpdateChecker extends Thread {
         String[] components2 = v2.split("\\.");
         int length = Math.min(components1.length, components2.length);
         for (int i = 0; i < length; i++) {
-            int result = new Integer(components1[i]).compareTo(Integer.parseInt(components2[i]));
+            int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
             if (result != 0)
                 return result;
         }

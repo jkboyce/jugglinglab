@@ -1402,7 +1402,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 boolean val = jcb.isSelected();
                 boolean def_val = ((Boolean)(dialog_pd[i].default_value)).booleanValue();
                 if (val != def_val)
-                    term = (new Boolean(val)).toString();
+                    term = (Boolean.valueOf(val)).toString();
             }
             else if (dialog_pd[i].type == ParameterDescriptor.TYPE_FLOAT) {
                 JTextField tf = (JTextField)control;

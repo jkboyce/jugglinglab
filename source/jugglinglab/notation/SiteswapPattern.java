@@ -145,13 +145,13 @@ public class SiteswapPattern extends MHNPattern {
             } else {
                 String template = errorstrings.getString("Error_pattern_syntax");
                 String problem = ParseException.add_escapes(pe.currentToken.next.image);
-                Object[] arguments = { problem, new Integer(pe.currentToken.next.beginColumn) };
+                Object[] arguments = { problem, Integer.valueOf(pe.currentToken.next.beginColumn) };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
         } catch (TokenMgrError tme) {
             String template = errorstrings.getString("Error_pattern_syntax");
             String problem = TokenMgrError.addEscapes(String.valueOf(tme.curChar));
-            Object[] arguments = { problem, new Integer(tme.errorColumn - 1) };
+            Object[] arguments = { problem, Integer.valueOf(tme.errorColumn - 1) };
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
 
