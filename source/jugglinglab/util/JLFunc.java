@@ -1,13 +1,18 @@
 // JLFunc.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.util;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.*;
+
+import jugglinglab.JugglingLab;
 
 
 // Some useful functions
@@ -175,6 +180,8 @@ public class JLFunc {
         return result.substring(0, endpos);
     }
 
+    // Helpers for GridBayLayout
+
     public static GridBagConstraints constraints(int location, int gridx, int gridy) {
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -192,5 +199,32 @@ public class JLFunc {
         GridBagConstraints gbc = constraints(location, gridx, gridy);
         gbc.insets = ins;
         return gbc;
+    }
+
+    // Helpers for file open/save dialogs
+
+    protected static JFileChooser jfc = null;
+
+    protected static JFileChooser jfc() {
+        if (jfc == null) {
+            if (JugglingLab.base_dir != null)
+                jfc = new JFileChooser(JugglingLab.base_dir.toFile());
+            else
+                jfc = new JFileChooser();
+        }
+        return jfc;
+    }
+
+    public static int showOpenDialog(Component c, javax.swing.filechooser.FileFilter ff) {
+        jfc().setFileFilter(ff);  // ff == null => no filter
+        return jfc().showOpenDialog(c);
+    }
+
+    public static int showSaveDialog(Component c) {
+        return jfc().showSaveDialog(c);
+    }
+
+    public static File getSelectedFile() {
+        return jfc().getSelectedFile();
     }
 }

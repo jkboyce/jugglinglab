@@ -29,14 +29,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+
     public ApplicationWindow(String title) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
         super(title);
         createMenus();
-
-        // this does nothing (for now):
-        PlatformSpecific.getPlatformSpecific().registerParent(this);
-        PlatformSpecific.getPlatformSpecific().setupPlatform();
 
         ApplicationPanel ap = new ApplicationPanel(this);
         ap.setDoubleBuffered(true);
@@ -204,9 +201,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 };
 
                 try {
-                    if (PlatformSpecific.getPlatformSpecific().showOpenDialog(this, filter) ==
-                                    JFileChooser.APPROVE_OPTION) {
-                        File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                    if (JLFunc.showOpenDialog(this, filter) == JFileChooser.APPROVE_OPTION) {
+                        File f = JLFunc.getSelectedFile();
                         if (f != null)
                             showJMLWindow(f);
                     }

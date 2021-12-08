@@ -1365,11 +1365,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                     return "Image Files";
                                 }
                             };
-                            PlatformSpecific ps = PlatformSpecific.getPlatformSpecific();
-                            int result = ps.showOpenDialog(EditLadderDiagram.this, filter);
+
+                            int result = JLFunc.showOpenDialog(EditLadderDiagram.this, filter);
                             if (result == JFileChooser.APPROVE_OPTION) {
                                 try {
-                                    URL source = ps.getSelectedFile().toURI().toURL();
+                                    URL source = JLFunc.getSelectedFile().toURI().toURL();
                                     // We have to load the image to get the correct dimensions
                                     ImageIcon icon = new ImageIcon(source, source.toString());
                                     // Rebuild the paramter descriptions

@@ -338,9 +338,9 @@ public class PatternWindow extends JFrame implements ActionListener {
             case FILE_SAVE:
                 if (view != null && view.getPattern().isValid()) {
                     try {
-                        int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
+                        int option = JLFunc.showSaveDialog(this);
                         if (option == JFileChooser.APPROVE_OPTION) {
-                            File f = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                            File f = JLFunc.getSelectedFile();
                             if (f != null) {
                                 FileWriter fw = new FileWriter(f);
                                 view.getPattern().writeJML(fw, true);

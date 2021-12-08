@@ -111,11 +111,11 @@ public abstract class View extends JPanel {
             File file = null;
 
             try {
-                int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(parent);
+                int option = JLFunc.showSaveDialog(parent);
                 if (option != JFileChooser.APPROVE_OPTION)
                     return;
 
-                file = PlatformSpecific.getPlatformSpecific().getSelectedFile();
+                file = JLFunc.getSelectedFile();
                 if (file == null)
                     return;
 

@@ -145,11 +145,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVE:
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
+                    int option = JLFunc.showSaveDialog(this);
                     if (option == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
+                        if (JLFunc.getSelectedFile() != null) {
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
+                            FileWriter fw = new FileWriter(JLFunc.getSelectedFile());
                             pl.writeJML(fw);
                             fw.close();
                         }
@@ -165,11 +165,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVETEXT:
                 try {
-                    int option = PlatformSpecific.getPlatformSpecific().showSaveDialog(this);
+                    int option = JLFunc.showSaveDialog(this);
                     if (option == JFileChooser.APPROVE_OPTION) {
-                        if (PlatformSpecific.getPlatformSpecific().getSelectedFile() != null) {
+                        if (JLFunc.getSelectedFile() != null) {
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            FileWriter fw = new FileWriter(PlatformSpecific.getPlatformSpecific().getSelectedFile());
+                            FileWriter fw = new FileWriter(JLFunc.getSelectedFile());
                             pl.writeText(fw);
                             fw.close();
                         }
