@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
@@ -336,24 +337,35 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_SAVE:
-                if (view != null && view.getPattern().isValid()) {
-                    try {
-                        int option = JLFunc.showSaveDialog(this);
-                        if (option == JFileChooser.APPROVE_OPTION) {
-                            File f = JLFunc.getSelectedFile();
-                            if (f != null) {
-                                FileWriter fw = new FileWriter(f);
-                                view.getPattern().writeJML(fw, true);
-                                fw.close();
-                            }
-                        }
-                    } catch (FileNotFoundException fnfe) {
-                        throw new JuggleExceptionInternal("FileNotFound: "+fnfe.getMessage());
-                    } catch (IOException ioe) {
-                        throw new JuggleExceptionInternal("IOException: "+ioe.getMessage());
-                    }
-                } else {
+                if (view == null || !view.getPattern().isValid()) {
                     new ErrorDialog(this, "Could not save: pattern is not valid");
+                    break;
+                }
+
+                // create default filename
+                String t = view.getPattern().getTitle();
+                if (t == null || t.length() == 0)
+                    t = "pattern";
+                JLFunc.jfc().setSelectedFile(new File(t + ".jml"));
+                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+
+                if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                    break;
+
+                File f = JLFunc.jfc().getSelectedFile();
+                if (f == null)
+                    break;
+                if (!f.getAbsolutePath().endsWith(".jml"))
+                    f = new File(f.getAbsolutePath() + ".jml");
+
+                try {
+                    FileWriter fw = new FileWriter(f);
+                    view.getPattern().writeJML(fw, true);
+                    fw.close();
+                } catch (FileNotFoundException fnfe) {
+                    throw new JuggleExceptionInternal("FileNotFound: "+fnfe.getMessage());
+                } catch (IOException ioe) {
+                    throw new JuggleExceptionInternal("IOException: "+ioe.getMessage());
                 }
                 break;
 

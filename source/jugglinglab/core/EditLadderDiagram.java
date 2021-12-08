@@ -14,7 +14,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
@@ -1351,41 +1351,28 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     label.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
-                            FileFilter filter = new FileFilter() {
-                                public boolean accept(File f) {
-                                    StringTokenizer st = new StringTokenizer(f.getName(), ".");
-                                    String ext = "";
-                                    while (st.hasMoreTokens())
-                                        ext = st.nextToken();
-                                    return (ext.equals("jpg") || ext.equals("gif") ||
-                                            ext.equals("png") || f.isDirectory());
-                                }
+                            JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Image file", "jpg", "jpeg", "gif", "png"));
+                            int result = JLFunc.jfc().showOpenDialog(EditLadderDiagram.this);
+                            if (result != JFileChooser.APPROVE_OPTION)
+                                return;
 
-                                public String getDescription() {
-                                    return "Image Files";
-                                }
-                            };
-
-                            int result = JLFunc.showOpenDialog(EditLadderDiagram.this, filter);
-                            if (result == JFileChooser.APPROVE_OPTION) {
-                                try {
-                                    URL source = JLFunc.getSelectedFile().toURI().toURL();
-                                    // We have to load the image to get the correct dimensions
-                                    ImageIcon icon = new ImageIcon(source, source.toString());
-                                    // Rebuild the paramter descriptions
-                                    fpds[0].value = source;
-                                    //fpds[1].value = new Integer(icon.getIconWidth());
-                                    //fpds[2].value = new Integer(icon.getIconHeight());
-                                    //fpds[1].default_value = fpds[1].value;
-                                    //fpds[2].default_value = fpds[2].value;
-                                    // Remake the parameter panal with new default values.
-                                    makeParametersPanel(fjp, fpds);
-                                    ((JDialog)(fjp.getTopLevelAncestor())).pack();
-                                } catch (MalformedURLException ex) {
-                                    // This should never happen
-                                    ErrorDialog.handleFatalException(new JuggleExceptionUser(
-                                        errorstrings.getString("Error_malformed_URL.")));
-                                }
+                            try {
+                                URL source = JLFunc.jfc().getSelectedFile().toURI().toURL();
+                                // We have to load the image to get the correct dimensions
+                                ImageIcon icon = new ImageIcon(source, source.toString());
+                                // Rebuild the paramter descriptions
+                                fpds[0].value = source;
+                                //fpds[1].value = new Integer(icon.getIconWidth());
+                                //fpds[2].value = new Integer(icon.getIconHeight());
+                                //fpds[1].default_value = fpds[1].value;
+                                //fpds[2].default_value = fpds[2].value;
+                                // Remake the parameter panal with new default values.
+                                makeParametersPanel(fjp, fpds);
+                                ((JDialog)(fjp.getTopLevelAncestor())).pack();
+                            } catch (MalformedURLException ex) {
+                                // This should never happen
+                                ErrorDialog.handleFatalException(new JuggleExceptionUser(
+                                    errorstrings.getString("Error_malformed_URL.")));
                             }
                         }
                     });

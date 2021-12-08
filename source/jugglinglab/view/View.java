@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -111,13 +112,21 @@ public abstract class View extends JPanel {
             File file = null;
 
             try {
-                int option = JLFunc.showSaveDialog(parent);
-                if (option != JFileChooser.APPROVE_OPTION)
+                // create default filename
+                String t = ap.getPattern().getTitle();
+                if (t == null || t.length() == 0)
+                    t = "pattern";
+                JLFunc.jfc().setSelectedFile(new File(t + ".gif"));
+                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
+
+                if (JLFunc.jfc().showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
                     return;
 
-                file = JLFunc.getSelectedFile();
+                file = JLFunc.jfc().getSelectedFile();
                 if (file == null)
                     return;
+                if (!file.getAbsolutePath().endsWith(".gif"))
+                    file = new File(file.getAbsolutePath() + ".gif");
 
                 FileOutputStream out = new FileOutputStream(file);
 

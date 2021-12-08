@@ -201,11 +201,11 @@ public class JLFunc {
         return gbc;
     }
 
-    // Helpers for file open/save dialogs
+    // Helper for file open/save dialogs
 
     protected static JFileChooser jfc = null;
 
-    protected static JFileChooser jfc() {
+    public static JFileChooser jfc() {
         if (jfc == null) {
             if (JugglingLab.base_dir != null)
                 jfc = new JFileChooser(JugglingLab.base_dir.toFile());
@@ -213,18 +213,5 @@ public class JLFunc {
                 jfc = new JFileChooser();
         }
         return jfc;
-    }
-
-    public static int showOpenDialog(Component c, javax.swing.filechooser.FileFilter ff) {
-        jfc().setFileFilter(ff);  // ff == null => no filter
-        return jfc().showOpenDialog(c);
-    }
-
-    public static int showSaveDialog(Component c) {
-        return jfc().showSaveDialog(c);
-    }
-
-    public static File getSelectedFile() {
-        return jfc().getSelectedFile();
     }
 }
