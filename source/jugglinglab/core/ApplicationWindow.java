@@ -324,14 +324,34 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                                                        new Insets(15,15,15,15)));
 
         JLabel abouttext3 = new JLabel(guistrings.getString("GPL_message"));
-        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        abouttext3.setFont(new Font("SansSerif", Font.PLAIN, 12));
         textPanel.add(abouttext3);
         gb.setConstraints(abouttext3, JLFunc.constraints(GridBagConstraints.LINE_START,0,3,
+                                                       new Insets(0,15,15,15)));
+
+        String javaversion = System.getProperty("java.version");
+        String javavmname = System.getProperty("java.vm.name");
+        String javavmversion = System.getProperty("java.vm.version");
+
+        int gridrow = 4;
+        if (javaversion != null) {
+            JLabel java1 = new JLabel("Java version " + javaversion);
+            java1.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            textPanel.add(java1);
+            gb.setConstraints(java1, JLFunc.constraints(GridBagConstraints.LINE_START,0,gridrow++,
                                                        new Insets(0,15,0,15)));
+        }
+        if (javavmname != null && javavmversion != null) {
+            JLabel java2 = new JLabel(javavmname + " (" + javavmversion +")");
+            java2.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            textPanel.add(java2);
+            gb.setConstraints(java2, JLFunc.constraints(GridBagConstraints.LINE_START,0,gridrow++,
+                                                       new Insets(0,15,0,15)));
+        }
 
         JButton okbutton = new JButton(guistrings.getString("OK"));
         textPanel.add(okbutton);
-        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END,0,4,
+        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END,0,gridrow++,
                                                      new Insets(15,15,15,15)));
         okbutton.addActionListener(new ActionListener() {
             @Override
