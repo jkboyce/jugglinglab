@@ -1,10 +1,12 @@
 // ApplicationWindow.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
 
 package jugglinglab.core;
 
 import java.awt.*;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.OpenFilesEvent;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -29,6 +31,26 @@ import jugglinglab.util.*;
 public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+    static {
+        // register a handler for when the OS wants us to open a file type that
+        // is associated with Juggling Lab (e.g., the user opens a .jml file)
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
+                @Override
+                public void openFiles(OpenFilesEvent ofe) {
+                    try {
+                        for (File file : ofe.getFiles())
+                            openJMLFile(file);
+                    } catch (JuggleExceptionUser jeu) {
+                        new ErrorDialog(null, jeu.getMessage());
+                    } catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+                }
+            });
+        }
+    }
 
 
     public ApplicationWindow(String title) throws JuggleExceptionUser,
@@ -191,7 +213,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                     if (JLFunc.jfc().showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                         File f = JLFunc.jfc().getSelectedFile();
                         if (f != null)
-                            showJMLWindow(f);
+                            openJMLFile(f);
                     }
                 } catch (JuggleExceptionUser je) {
                     new ErrorDialog(this, je.getMessage());
@@ -228,7 +250,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     }
 
-    protected static void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected static void openJMLFile(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
         JFrame frame = null;
         PatternListWindow pw = null;
 
