@@ -25,6 +25,7 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.generator.SiteswapGenerator;
 import jugglinglab.generator.SiteswapTransitioner;
 import jugglinglab.generator.GeneratorTarget;
+import jugglinglab.notation.Pattern;
 import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
 
@@ -117,13 +118,22 @@ public class JugglingLab {
         return null;
     }
 
+    protected static class PatternRecord {
+        JMLPattern jml;
+        Pattern pat;
+        String base_notation;
+        String base_config;
+    }
+
     // Look at beginning of jlargs to see if there's a pattern, and if so then
     // parse it and return it. Otherwise print an error message and return null.
-    private static JMLPattern parse_pattern() {
+    private static PatternRecord parse_pattern() {
         if (jlargs.size() == 0) {
             System.out.println("Error: expected pattern input, none found");
             return null;
         }
+
+        PatternRecord result = new PatternRecord();
 
         // first case is a JML-formatted pattern in a file
         if (jlargs.get(0).equalsIgnoreCase("-jml")) {
@@ -144,7 +154,8 @@ public class JugglingLab {
 
                 switch (parser.getFileType()) {
                     case JMLParser.JML_PATTERN:
-                        return new JMLPattern(parser.getTree());
+                        result.jml = new JMLPattern(parser.getTree());
+                        return result;
                     case JMLParser.JML_LIST:
                         System.out.println("Error: JML file cannot be a pattern list");
                         return null;
@@ -166,8 +177,11 @@ public class JugglingLab {
 
         // otherwise assume pattern is in siteswap notation
         try {
-            return (new SiteswapPattern()).fromString(jlargs.remove(0))
-                                          .asJMLPattern();
+            result.base_notation = "Siteswap";
+            result.base_config = jlargs.remove(0);
+            result.pat = (new SiteswapPattern()).fromString(result.base_config);
+            result.jml = result.pat.asJMLPattern();
+            return result;
         } catch (JuggleExceptionUser jeu) {
             System.out.println("Error: " + jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
@@ -300,8 +314,8 @@ public class JugglingLab {
         }
 
         // all remaining modes require a pattern as input
-        JMLPattern pat = JugglingLab.parse_pattern();
-        if (pat == null)
+        PatternRecord pr = JugglingLab.parse_pattern();
+        if (pr == null)
             return;
 
         if (jlargs.size() > 0) {
@@ -314,7 +328,7 @@ public class JugglingLab {
 
         if (firstarg.equals("anim")) {
             // open pattern in a window
-            final JMLPattern fpat = pat;
+            final JMLPattern fpat = pr.jml;
             final AnimationPrefs fjc = jc;
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -322,7 +336,10 @@ public class JugglingLab {
                 public void run() {
                     try {
                         PatternWindow pw = new PatternWindow(fpat.getTitle(), fpat, fjc);
-                        pw.setExitOnClose(true);
+                        if (pr.base_notation != null && pr.base_config != null)
+                            pw.setBasePattern(pr.base_notation, pr.pat.toString());
+
+                        PatternWindow.setExitOnLastClose(true);
                     } catch (JuggleExceptionUser jeu) {
                         System.out.println("Error: " + jeu.getMessage());
                     } catch (JuggleExceptionInternal jei) {
@@ -350,7 +367,7 @@ public class JugglingLab {
                     jc.fps = 33.3;      // default frames per sec for GIFs
                 }
                 anim.setDimension(new Dimension(jc.width, jc.height));
-                anim.restartAnimator(pat, jc);
+                anim.restartAnimator(pr.jml, jc);
                 anim.writeGIF(new FileOutputStream(outpath.toFile()), null);
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error: " + jeu.getMessage());
@@ -365,11 +382,11 @@ public class JugglingLab {
         if (firstarg.equals("tojml")) {
             // output pattern to JML
             if (outpath == null)
-                System.out.print(pat.toString());
+                System.out.print(pr.jml.toString());
             else {
                 try {
                     FileWriter fw = new FileWriter(outpath.toFile());
-                    pat.writeJML(fw, true);
+                    pr.jml.writeJML(fw, true);
                     fw.close();
                 } catch (IOException ioe) {
                     System.out.println("Error: problem writing JML to path " + outpath.toString());
