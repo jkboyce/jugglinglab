@@ -26,11 +26,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
     static protected Class<?> optimizer;
+    static protected boolean exit_on_last_close = false;
 
     protected View view;
     protected JMenu filemenu;
     protected JMenu viewmenu;
-    protected boolean exit_on_close = false;
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
@@ -100,7 +100,15 @@ public class PatternWindow extends JFrame implements ActionListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (exit_on_close)
+                if (!PatternWindow.exit_on_last_close)
+                    return;
+
+                int window_count = 0;
+                for (Frame fr : Frame.getFrames()) {
+                    if (fr instanceof PatternWindow && fr.isVisible())
+                        window_count++;
+                }
+                if (window_count == 1)
                     System.exit(0);
             }
         });
@@ -195,8 +203,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     // Used when a single animation is created from the command line
-    public void setExitOnClose(boolean value) {
-        this.exit_on_close = value;
+    public static void setExitOnLastClose(boolean value) {
+        exit_on_last_close = value;
     }
 
     protected static final String[] fileItems = new String[]
