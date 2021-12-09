@@ -5,8 +5,6 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.awt.desktop.AboutEvent;
-import java.awt.desktop.AboutHandler;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -139,22 +137,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         { "about", "online" };
 
     protected JMenu createHelpMenu() {
-        boolean include_about = true;
-
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AboutEvent e) {
-                    try {
-                        doMenuCommand(HELP_ABOUT);
-                    } catch (JuggleExceptionInternal jei) {
-                        ErrorDialog.handleFatalException(jei);
-                    }
-                }
-            });
-
-            include_about = false;  // don't need to include in menu
-        }
+        // if desktop is supported then we alreay installed an about handler
+        // in JugglingLab.java
+        boolean include_about = !Desktop.isDesktopSupported();
 
         JMenu helpmenu = new JMenu(guistrings.getString("Help"));
 
@@ -294,7 +279,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         }
     }
 
-    protected static void showAboutBox() {
+    public static void showAboutBox() {
         final JFrame aboutBox = new JFrame(guistrings.getString("About_Juggling_Lab"));
         aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 

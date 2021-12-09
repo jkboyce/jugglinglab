@@ -4,6 +4,9 @@
 
 package jugglinglab;
 
+import java.awt.Desktop;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
 import java.awt.Dimension;
 import java.io.*;
 import java.nio.file.Path;
@@ -179,9 +182,18 @@ public class JugglingLab {
     // ------------------------------------------------------------------------
 
     public static void main(String[] args) {
-        // do some os-specific setup
+        // Make menus more Mac-like on macOS
         if (isMacOS)
             System.setProperty("apple.laf.useScreenMenuBar", "true");
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
+                @Override
+                public void handleAbout(AboutEvent e) {
+                    ApplicationWindow.showAboutBox();
+                }
+            });
+        }
 
         // Figure out what mode to run in based on command line arguments. We
         // want no command line arguments to run the full application, so that
