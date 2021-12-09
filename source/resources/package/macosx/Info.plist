@@ -20,19 +20,56 @@
 	<string>Juggling Lab</string>
 
 	<key>CFBundleVersion</key>
-	<string>1.5</string>
+	<string>1.5.1</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5</string>
+	<string>1.5.1</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
-	<key>CFBundleAllowMixedLocalizations</key>
-	<true/>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>LSApplicationCategoryType</key>
-	<string>Unknown</string>
+	<string>public.app-category.utilities</string>
 	<key>NSHighResolutionCapable</key>
 	<string>true</string>
+
+	<!-- Export JML document type -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.jugglinglab.jml</string>
+			<key>UTTypeDescription</key>
+			<string>Juggling Markup Language (JML)</string>
+			<key>UTTypeIconFile</key>
+			<string>JML_document</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>jml</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+
+	<!-- Declare our app as owner of JML document type -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.jugglinglab.jml</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+		</dict>
+	</array>
 </dict>
 </plist>
