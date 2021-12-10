@@ -40,10 +40,17 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 @Override
                 public void openFiles(OpenFilesEvent ofe) {
                     try {
-                        for (File file : ofe.getFiles())
-                            openJMLFile(file);
-                    } catch (JuggleExceptionUser jeu) {
-                        new ErrorDialog(null, jeu.getMessage());
+                        for (File file : ofe.getFiles()) {
+                            try {
+                                openJMLFile(file);
+                            } catch (JuggleExceptionUser jeu) {
+                                String template = errorstrings.getString("Error_reading_file");
+                                Object[] arguments = { file.getName() };
+                                String msg = MessageFormat.format(template, arguments) +
+                                             ":\n" + jeu.getMessage();
+                                new ErrorDialog(null, msg);
+                            }
+                        }
                     } catch (JuggleExceptionInternal jei) {
                         ErrorDialog.handleFatalException(jei);
                     }
@@ -208,15 +215,21 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPEN:
-                try {
-                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
-                    if (JLFunc.jfc().showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                        File f = JLFunc.jfc().getSelectedFile();
-                        if (f != null)
-                            openJMLFile(f);
+                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+                if (JLFunc.jfc().showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+                    break;
+
+                File file = JLFunc.jfc().getSelectedFile();
+                if (file != null) {
+                    try {
+                        openJMLFile(file);
+                    } catch (JuggleExceptionUser jeu) {
+                        String template = errorstrings.getString("Error_reading_file");
+                        Object[] arguments = { file.getName() };
+                        String msg = MessageFormat.format(template, arguments) +
+                                     ":\n" + jeu.getMessage();
+                        new ErrorDialog(this, msg);
                     }
-                } catch (JuggleExceptionUser je) {
-                    new ErrorDialog(this, je.getMessage());
                 }
                 break;
 
