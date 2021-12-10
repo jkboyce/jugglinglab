@@ -7,7 +7,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Juggling Lab.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>JugglingLab</string>
+	<string>Juggling Lab</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>

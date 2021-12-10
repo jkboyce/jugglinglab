@@ -190,6 +190,18 @@ public class JugglingLab {
         return null;
     }
 
+    // Call this only if we aren't running headless
+    protected static void registerAboutBox() {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
+                @Override
+                public void handleAbout(AboutEvent e) {
+                    ApplicationWindow.showAboutBox();
+                }
+            });
+        }
+    }
+
 
     // ------------------------------------------------------------------------
     // main entry point for Juggling Lab
@@ -199,15 +211,6 @@ public class JugglingLab {
         // Make menus more Mac-like on macOS
         if (isMacOS)
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AboutEvent e) {
-                    ApplicationWindow.showAboutBox();
-                }
-            });
-        }
 
         // Figure out what mode to run in based on command line arguments. We
         // want no command line arguments to run the full application, so that
@@ -223,6 +226,7 @@ public class JugglingLab {
         }
 
         if (run_application) {
+            registerAboutBox();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -327,6 +331,8 @@ public class JugglingLab {
         }
 
         if (firstarg.equals("anim")) {
+            registerAboutBox();
+
             // open pattern in a window
             final JMLPattern fpat = pr.jml;
             final AnimationPrefs fjc = jc;

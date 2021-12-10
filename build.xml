@@ -10,7 +10,7 @@
     <property name="lib" value="bin/ortools-lib" />
     <property name="debug" value="off" />
     <property name="deprecation" value="on" />
-    <property name="jlab_version" value="1.5" />
+    <property name="jlab_version" value="1.5.1" />
 
     <target name="init">
         <mkdir dir="${build}" />
