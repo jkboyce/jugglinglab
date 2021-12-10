@@ -40,7 +40,7 @@ jpackage --type app-image \
    --resource-dir "../source/resources/package/macos/" \
    --java-options -Xss2048k \
    --java-options -DJL_run_as_bundle=true \
-   --java-options "-Xdock:name=JugglingLab" \
+   --java-options -Xdock:name=JugglingLab \
    --verbose
 
 rm -r target

@@ -7,7 +7,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Juggling Lab.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>Juggling Lab</string>
+	<string>JugglingLab</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -42,7 +42,7 @@
 			<key>UTTypeDescription</key>
 			<string>Juggling Markup Language (JML)</string>
 			<key>UTTypeIconFile</key>
-			<string>JML_document</string>
+			<string>JML_document.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.xml</string>
@@ -65,6 +65,8 @@
 			<array>
 				<string>org.jugglinglab.jml</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>JML_document.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
