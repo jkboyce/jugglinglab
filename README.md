@@ -1,6 +1,6 @@
 # Juggling Lab juggling animator
 
-Juggling Lab is an open-source application for creating and animating juggling patterns. Its main goals are to help people learn juggling patterns, and to assist in inventing new ones.
+Juggling Lab is an open-source application for creating and animating juggling patterns. Its main goals are to help people learn juggling patterns, and to assist with inventing new ones.
 
 The [project site](https://jugglinglab.org) has more information and download links.
 
@@ -8,7 +8,7 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is written in Java 8 and uses standard Swing components so it runs anywhere Java 8 SE is available. The ``build.xml`` file defines Ant build targets for a variety of uses: A runnable JAR file, or standalone app bundles for Windows and macOS.
+Juggling Lab is written in Java and uses standard Swing components, so it runs on any platform supported by Java 11 or later. The ``build.xml`` file defines Ant build targets to compile and run the code.
 
 Please feel free to clone the repository and play around with it. Even better, contribute a bug fix or a new feature!
 
