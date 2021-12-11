@@ -61,7 +61,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
         pack();
         setResizable(false);
-        setLocation(100, 50);
+        setLocation(100, 80);
         setVisible(true);
 
         // launch a background thread to check for updates online

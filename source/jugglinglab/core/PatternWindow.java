@@ -34,7 +34,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
-    static protected final Point TILE_SHIFT = new Point(195, 0);  // relative to screen center
+    static protected final Point TILE_START = new Point(470, 80);
     static protected final Point TILE_OFFSET = new Point(25, 25);
     static protected Point[] tile_locations = null;
     static protected int next_tile_num;
@@ -57,9 +57,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
 
-    public PatternWindow(String name, JMLPattern pat, AnimationPrefs jc) throws
+    public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
-        super(name);
+        super(title);
 
         JMenuBar mb = new JMenuBar();
         filemenu = createFileMenu();
@@ -136,13 +136,10 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected Point getNextScreenLocation() {
         if (tile_locations == null) {
             tile_locations = new Point[NUM_TILES];
-            Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-            Point middle_tile_loc = new Point(center.x + TILE_SHIFT.x - getSize().width / 2,
-                                              center.y + TILE_SHIFT.y - getSize().height / 2);
 
             for (int i = 0; i < NUM_TILES; ++i) {
-                int loc_x = middle_tile_loc.x + (i - NUM_TILES / 2) * TILE_OFFSET.x;
-                int loc_y = middle_tile_loc.y + (i - NUM_TILES / 2) * TILE_OFFSET.y;
+                int loc_x = TILE_START.x + i * TILE_OFFSET.x;
+                int loc_y = TILE_START.y + i * TILE_OFFSET.y;
                 tile_locations[i] = new Point(loc_x, loc_y);
             }
 
