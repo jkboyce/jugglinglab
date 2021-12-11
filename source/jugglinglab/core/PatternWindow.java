@@ -34,7 +34,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
-    static protected final Point TILE_START = new Point(470, 80);
+    static protected final Point TILE_START = new Point(520, 80);
     static protected final Point TILE_OFFSET = new Point(25, 25);
     static protected Point[] tile_locations = null;
     static protected int next_tile_num;
