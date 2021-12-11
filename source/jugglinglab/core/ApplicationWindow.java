@@ -1,6 +1,6 @@
 // ApplicationWindow.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -33,30 +33,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     static {
-        // register a handler for when the OS wants us to open a file type that
-        // is associated with Juggling Lab (e.g., the user opens a .jml file)
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
-                @Override
-                public void openFiles(OpenFilesEvent ofe) {
-                    try {
-                        for (File file : ofe.getFiles()) {
-                            try {
-                                openJMLFile(file);
-                            } catch (JuggleExceptionUser jeu) {
-                                String template = errorstrings.getString("Error_reading_file");
-                                Object[] arguments = { file.getName() };
-                                String msg = MessageFormat.format(template, arguments) +
-                                             ":\n" + jeu.getMessage();
-                                new ErrorDialog(null, msg);
-                            }
-                        }
-                    } catch (JuggleExceptionInternal jei) {
-                        ErrorDialog.handleFatalException(jei);
-                    }
-                }
-            });
-        }
+        registerOpenFilesHandler();
     }
 
 
@@ -95,6 +72,37 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
         // launch a background thread to check for updates online
         new UpdateChecker();
+    }
+
+    // Try to register a handler for when the OS wants us to open a file type
+    // associated with Juggling Lab (i.e., a .jml file)
+    static protected void registerOpenFilesHandler() {
+        if (!Desktop.isDesktopSupported())
+            return;
+
+        if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
+            return;
+
+        Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
+            @Override
+            public void openFiles(OpenFilesEvent ofe) {
+                try {
+                    for (File file : ofe.getFiles()) {
+                        try {
+                            openJMLFile(file);
+                        } catch (JuggleExceptionUser jeu) {
+                            String template = errorstrings.getString("Error_reading_file");
+                            Object[] arguments = { file.getName() };
+                            String msg = MessageFormat.format(template, arguments) +
+                                         ":\n" + jeu.getMessage();
+                            new ErrorDialog(null, msg);
+                        }
+                    }
+                } catch (JuggleExceptionInternal jei) {
+                    ErrorDialog.handleFatalException(jei);
+                }
+            }
+        });
     }
 
     protected void createMenus() {
@@ -166,9 +174,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         { "about", "online" };
 
     protected JMenu createHelpMenu() {
-        // if desktop is supported then we alreay installed an about handler
+        // skip the about menu item if About handler was already installed
         // in JugglingLab.java
-        boolean include_about = !Desktop.isDesktopSupported();
+        boolean include_about = !Desktop.isDesktopSupported() ||
+                !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
 
         JMenu helpmenu = new JMenu(guistrings.getString("Help"));
 

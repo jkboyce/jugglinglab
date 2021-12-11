@@ -1,6 +1,6 @@
 // JugglingLab.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab;
 
@@ -191,15 +191,19 @@ public class JugglingLab {
     }
 
     // Call this only if we aren't running headless
-    protected static void registerAboutBox() {
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AboutEvent e) {
-                    ApplicationWindow.showAboutBox();
-                }
-            });
-        }
+    protected static void registerAboutHandler() {
+        if (!Desktop.isDesktopSupported())
+            return;
+
+        if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT))
+            return;
+        
+        Desktop.getDesktop().setAboutHandler(new AboutHandler() {
+            @Override
+            public void handleAbout(AboutEvent e) {
+                ApplicationWindow.showAboutBox();
+            }
+        });
     }
 
 
@@ -226,7 +230,7 @@ public class JugglingLab {
         }
 
         if (run_application) {
-            registerAboutBox();
+            registerAboutHandler();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -331,7 +335,7 @@ public class JugglingLab {
         }
 
         if (firstarg.equals("anim")) {
-            registerAboutBox();
+            registerAboutHandler();
 
             // open pattern in a window
             final JMLPattern fpat = pr.jml;
