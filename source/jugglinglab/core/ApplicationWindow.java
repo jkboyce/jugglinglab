@@ -272,7 +272,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     }
 
-    protected static void openJMLFile(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public static void openJMLFile(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
         JFrame frame = null;
         PatternListWindow pw = null;
 
