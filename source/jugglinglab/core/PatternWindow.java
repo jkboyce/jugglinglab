@@ -25,12 +25,7 @@ import jugglinglab.view.*;
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static protected Class<?> optimizer;
     static protected boolean exit_on_last_close = false;
-
-    protected View view;
-    protected JMenu filemenu;
-    protected JMenu viewmenu;
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
@@ -39,27 +34,19 @@ public class PatternWindow extends JFrame implements ActionListener {
     static protected Point[] tile_locations = null;
     static protected int next_tile_num;
 
-    static {
-        // load the optimizer using the reflection API so we can omit it by
-        // leaving those source files out of the compile.
-        try {
-            optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
+    static protected Class<?> optimizer;
+    static protected boolean optimizer_loaded = false;
 
-            Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
-            Boolean canOptimize = (Boolean)optimizerAvailable.invoke(null);
-            if (!canOptimize.booleanValue())
-                optimizer = null;
-        } catch (Exception e) {
-            optimizer = null;
-            if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
-                System.out.println("Exception loading optimizer: " + e.toString());
-        }
-    }
+    protected View view;
+    protected JMenu filemenu;
+    protected JMenu viewmenu;
 
 
     public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
+
+        loadOptimizer();  // Do this before creating menus
 
         JMenuBar mb = new JMenuBar();
         filemenu = createFileMenu();
@@ -129,6 +116,27 @@ public class PatternWindow extends JFrame implements ActionListener {
             if (pw.view.getBasePatternEdited())
                 notifyEdited();
         }
+    }
+
+    // Load the pattern optimizer. Do this using the reflection API so we can
+    // omit the feature by leaving those source files out of the compile.
+    static protected void loadOptimizer() {
+        if (optimizer_loaded)
+            return;
+
+        try {
+            optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
+
+            Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
+            Boolean canOptimize = (Boolean)optimizerAvailable.invoke(null);
+            if (!canOptimize.booleanValue())
+                optimizer = null;
+        } catch (Exception e) {
+            optimizer = null;
+            if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+                System.out.println("Exception loading optimizer: " + e.toString());
+        }
+        optimizer_loaded = true;
     }
 
     // Return the location (screen pixels) of where the next animation window to
@@ -225,7 +233,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
@@ -262,7 +270,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);
@@ -274,7 +282,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                 if (viewShortcuts[i] != ' ')
                     viewitem.setAccelerator(KeyStroke.getKeyStroke(viewShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 
                 viewitem.setActionCommand(viewCommands[i]);
                 viewitem.addActionListener(this);

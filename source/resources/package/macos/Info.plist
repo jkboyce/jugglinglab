@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>Juggling Lab</string>
+	<key>CFBundleIconFile</key>
+	<string>Juggling Lab.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>JugglingLab</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>jlab</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.12</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2002-2021 Jack Boyce and the Juggling Lab contributors</string>
+	<key>CFBundleName</key>
+	<string>Juggling Lab</string>
+
+	<key>CFBundleVersion</key>
+	<string>1.5.1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.5.1</string>
+
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>NSHighResolutionCapable</key>
+	<string>true</string>
+
+	<!-- Export JML document type -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.jugglinglab.jml</string>
+			<key>UTTypeDescription</key>
+			<string>Juggling Markup Language (JML)</string>
+			<key>UTTypeIconFile</key>
+			<string>JML_document.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>jml</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+
+	<!-- Declare our app as owner of JML document type -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.jugglinglab.jml</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>JML_document.icns</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+		</dict>
+	</array>
+</dict>
+</plist>

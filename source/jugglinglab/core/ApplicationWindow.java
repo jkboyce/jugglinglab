@@ -1,10 +1,12 @@
 // ApplicationWindow.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
 import java.awt.*;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.OpenFilesEvent;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -66,8 +68,50 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         setLocation(locx, 50);
         setVisible(true);
 
+        // There are two ways we can handle requests from the OS to open files:
+        // with a OpenFilesHandler (macOS) and with our own OpenFilesServer
+        // (Windows)
+
+        if (!registerOpenFilesHandler()) {
+            new OpenFilesServer();
+        }
+
         // launch a background thread to check for updates online
         new UpdateChecker();
+    }
+
+    // Try to register a handler for when the OS wants us to open a file type
+    // associated with Juggling Lab (i.e., a .jml file)
+    //
+    // Returns true if successfully installed, false otherwise
+    static protected boolean registerOpenFilesHandler() {
+        if (!Desktop.isDesktopSupported())
+            return false;
+
+        if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
+            return false;
+
+        Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
+            @Override
+            public void openFiles(OpenFilesEvent ofe) {
+                try {
+                    for (File file : ofe.getFiles()) {
+                        try {
+                            openJMLFile(file);
+                        } catch (JuggleExceptionUser jeu) {
+                            String template = errorstrings.getString("Error_reading_file");
+                            Object[] arguments = { file.getName() };
+                            String msg = MessageFormat.format(template, arguments) +
+                                         ":\n" + jeu.getMessage();
+                            new ErrorDialog(null, msg);
+                        }
+                    }
+                } catch (JuggleExceptionInternal jei) {
+                    ErrorDialog.handleFatalException(jei);
+                }
+            }
+        });
+        return true;
     }
 
     protected void createMenus() {
@@ -109,7 +153,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
                 if (fileShortcuts[i] != ' ')
                     fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 fileitem.setActionCommand(fileCommands[i]);
                 fileitem.addActionListener(this);
                 filemenu.add(fileitem);
@@ -139,10 +183,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         { "about", "online" };
 
     protected JMenu createHelpMenu() {
-        // When we move to Java 9+ we can use Desktop.setAboutHandler() here to
-        // do the about box in a more platform-realistic way. For now it's just
-        // a regular menu item.
-        boolean include_about = true;
+        // skip the about menu item if About handler was already installed
+        // in JugglingLab.java
+        boolean include_about = !Desktop.isDesktopSupported() ||
+                !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
 
         JMenu helpmenu = new JMenu(guistrings.getString("Help"));
 
@@ -189,15 +233,21 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPEN:
-                try {
-                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
-                    if (JLFunc.jfc().showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                        File f = JLFunc.jfc().getSelectedFile();
-                        if (f != null)
-                            showJMLWindow(f);
+                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+                if (JLFunc.jfc().showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+                    break;
+
+                File file = JLFunc.jfc().getSelectedFile();
+                if (file != null) {
+                    try {
+                        openJMLFile(file);
+                    } catch (JuggleExceptionUser jeu) {
+                        String template = errorstrings.getString("Error_reading_file");
+                        Object[] arguments = { file.getName() };
+                        String msg = MessageFormat.format(template, arguments) +
+                                     ":\n" + jeu.getMessage();
+                        new ErrorDialog(this, msg);
                     }
-                } catch (JuggleExceptionUser je) {
-                    new ErrorDialog(this, je.getMessage());
                 }
                 break;
 
@@ -231,7 +281,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     }
 
-    protected static void showJMLWindow(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public static void openJMLFile(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {
         JFrame frame = null;
         PatternListWindow pw = null;
 
@@ -283,7 +333,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         }
     }
 
-    protected static void showAboutBox() {
+    public static void showAboutBox() {
         final JFrame aboutBox = new JFrame(guistrings.getString("About_Juggling_Lab"));
         aboutBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 

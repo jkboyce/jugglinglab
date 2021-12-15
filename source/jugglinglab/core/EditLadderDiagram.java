@@ -844,9 +844,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         jd.getContentPane().add(okbutton);
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,1,
                                                      new Insets(10,10,10,10)));
-        jd.getRootPane().setDefaultButton(okbutton);// OK button is default
+        jd.getRootPane().setDefaultButton(okbutton);  // OK button is default
         jd.pack();
         jd.setResizable(false);
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);
         parent.setTitle(pat.getTitle());
     }
@@ -871,6 +872,20 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         okbutton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                double scale;
+                try {
+                    scale = Double.valueOf(tf.getText()).doubleValue() / 100.0;
+                } catch (NumberFormatException nfe) {
+                    new ErrorDialog(EditLadderDiagram.this,
+                                    "Number format error in rescale percentage");
+                    return;
+                }
+                if (scale > 0.0) {
+                    pat.scaleTime(scale);
+                    animator.setTime(0.0);
+                    layoutPattern();
+                    createView();
+                }
                 jd.dispose();
             }
         });
@@ -881,23 +896,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         jd.getContentPane().add(okbutton);
         gb.setConstraints(okbutton, make_constraints(GridBagConstraints.LINE_END,0,1,
                                                      new Insets(10,10,10,10)));
-        jd.getRootPane().setDefaultButton(okbutton);// OK button is default
+        jd.getRootPane().setDefaultButton(okbutton);  // OK button is default
         jd.pack();
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);
-
-        double scale;
-        try {
-            scale = Double.valueOf(tf.getText()).doubleValue() / 100.0;
-        } catch (NumberFormatException e) {
-            new ErrorDialog(this, "Number format error in rescale percentage");
-            return;
-        }
-        if (scale > 0.0) {
-            pat.scaleTime(scale);
-            animator.setTime(0.0);
-            layoutPattern();
-            createView();
-        }
     }
 
     protected JMLEvent addEventToHand(int hand) {
@@ -1133,7 +1135,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         jd.pack();
         jd.setResizable(false);
-        jd.setVisible(true);    // blocks until dispose() above
+        jd.setLocationRelativeTo(this);
+        jd.setVisible(true);  // blocks until dispose() above
         dialog_controls = null;
     }
 
@@ -1245,7 +1248,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         jd.pack();
         jd.setResizable(false);
-        jd.setVisible(true);    // blocks until dispose() above
+        jd.setLocationRelativeTo(this);
+        jd.setVisible(true);  // blocks until dispose() above
         dialog_controls = null;
     }
 

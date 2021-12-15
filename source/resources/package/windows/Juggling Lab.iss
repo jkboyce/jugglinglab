@@ -2,10 +2,12 @@
 ;I.e. current directory will contain folder Juggling Lab with application files
 
 #define MyAppName "Juggling Lab"
-#define MyAppVersion "1.5"
+#define MyOutputFileName "JugglingLab"
+#define MyAppVersion "1.5.1"
 #define MyAppYear "2021"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
+#define MyAppDocIconsName "JML_document.ico"
 #define MyWizardImageFileName "Juggling Lab-setup-icon.bmp"
 
 [Setup]
@@ -16,6 +18,7 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher=Jack Boyce
 ;AppComments={#MyAppName}
 AppCopyright=Copyright (C) {#MyAppYear}
+ChangesAssociations=yes
 ;First option installs per-user, second system-wide
 ;DefaultDirName={localappdata}\{#MyAppName}
 DefaultDirName={pf}\{#MyAppName}
@@ -28,9 +31,9 @@ DisableFinishedPage=Yes
 DisableWelcomePage=No
 ;Optional License
 LicenseFile=
-;Java 8 requires Windows 7 SP1 or above
-MinVersion=0,6.1.7601
-OutputBaseFilename={#MyAppName}-{#MyAppVersion}
+;Java 17 requires Windows 8 or above
+MinVersion=6.2
+OutputBaseFilename={#MyOutputFileName}-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 ;First line is for per-user installation, second is system-wide:
@@ -59,6 +62,13 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}";  IconFi
 Filename: "{app}\{#MyAppExeName}"; Parameters: "-Xappcds:generatecache"; Check: returnFalse()
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Juggling Lab}"; Flags: nowait postinstall skipifsilent; Check: returnTrue()
 Filename: "{app}\{#MyAppExeName}"; Parameters: "-install -svcName ""Juggling Lab"" -svcDesc ""Juggling Lab"" -mainExe ""{#MyAppExeName}""  "; Check: returnFalse()
+
+[Registry]
+Root: HKCR; Subkey: ".jml\OpenWithProgIDs"; ValueType: string; ValueName: "JugglingLab.jml"; ValueData: ""; Flags: uninsdeletevalue 
+Root: HKCR; Subkey: "JugglingLab.jml"; ValueType: string; ValueName: ""; ValueData: "Juggling Lab JML File"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "JugglingLab.jml\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppDocIconsName}"
+Root: HKCR; Subkey: "JugglingLab.jml\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" open ""%1"""
+Root: HKCR; Subkey: "Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".jml"; ValueData: ""
 
 [UninstallRun]
 Filename: "{app}\{#MyAppExeName} "; Parameters: "-uninstall -svcName Juggling Lab -stopOnUninstall"; Check: returnFalse()

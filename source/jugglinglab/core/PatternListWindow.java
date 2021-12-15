@@ -133,7 +133,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 fileitems[i] = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
                 if (fileShortcuts[i] != ' ')
                     fileitems[i].setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                                                                       Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                                                                       Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
                 fileitems[i].setActionCommand(fileCommands[i]);
                 fileitems[i].addActionListener(this);
                 filemenu.add(fileitems[i]);

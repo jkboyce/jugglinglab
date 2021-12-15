@@ -40,7 +40,7 @@ public abstract class View extends JPanel {
     // used for `view` parameter setting in AnimationPrefs, these must be in the
     // same order as VIEW_ constants above
     public static final String[] viewNames = new String[]
-        { "simple", "visual_edit", "pattern_edit", "selection_edit" };
+        { "simple", "visual_editor", "pattern_editor", "selection_editor" };
 
     protected JFrame parent;
 
