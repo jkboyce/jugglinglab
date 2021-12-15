@@ -59,9 +59,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         Locale loc = JLLocale.getLocale();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
+        Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+        int locx = Math.max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2);
         pack();
         setResizable(false);
-        setLocation(100, 80);
+        setLocation(locx, 50);
         setVisible(true);
 
         // launch a background thread to check for updates online

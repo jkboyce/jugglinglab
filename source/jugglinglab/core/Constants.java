@@ -21,4 +21,6 @@ public class Constants {
 
     public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
     public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.SplineCurve.rmsaccel;
+
+    public static final int RESERVED_WIDTH_PIXELS = 1200;
 }

@@ -21,6 +21,13 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    // used for tiling the windows on the screen as they're created
+    static protected final int NUM_TILES = 8;
+    static protected final Point TILE_START = new Point(0, 620);
+    static protected final Point TILE_OFFSET = new Point(25, 25);
+    static protected Point[] tile_locations = null;
+    static protected int next_tile_num;
+
     String title = null;
     PatternListPanel pl = null;
     protected JMenuItem[] fileitems = null;
@@ -79,8 +86,33 @@ public class PatternListWindow extends JFrame implements ActionListener {
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         // list contents are always left-to-right -- DISABLE FOR NOW
         // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-        setLocation(150, 200);
+
+        setLocation(getNextScreenLocation());
         setVisible(true);
+    }
+
+    // Return the location (screen pixels) of where the next animation window to
+    // be created should go. This allows us to create a tiling effect.
+    protected Point getNextScreenLocation() {
+        if (tile_locations == null) {
+            tile_locations = new Point[NUM_TILES];
+
+            Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+            int locx = Math.max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2);
+
+            for (int i = 0; i < NUM_TILES; ++i) {
+                int loc_x = locx + TILE_START.x + i * TILE_OFFSET.x;
+                int loc_y = TILE_START.y + i * TILE_OFFSET.y;
+                tile_locations[i] = new Point(loc_x, loc_y);
+            }
+
+            next_tile_num = 0;
+        }
+
+        Point loc = tile_locations[next_tile_num];
+        if (++next_tile_num == NUM_TILES)
+            next_tile_num = 0;
+        return loc;
     }
 
     public PatternListPanel getPatternList() { return pl; }
