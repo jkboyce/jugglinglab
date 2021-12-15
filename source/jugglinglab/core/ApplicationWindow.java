@@ -286,7 +286,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                     {
                         JMLNode root = parser.getTree();
                         JMLPattern pat = new JMLPattern(root);
-                        frame = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
+                        if (!PatternWindow.bringToFront(pat.getHashCode()))
+                            frame = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
                         break;
                     }
                     case JMLParser.JML_LIST:
