@@ -32,10 +32,6 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static {
-        registerOpenFilesHandler();
-    }
-
 
     public ApplicationWindow(String title) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
@@ -70,18 +66,28 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         setLocation(100, 80);
         setVisible(true);
 
+        // There are two ways we can handle requests from the OS to open files:
+        // with a OpenFilesHandler (macOS) and with our own OpenFilesServer
+        // (Windows)
+
+        if (!registerOpenFilesHandler()) {
+            new OpenFilesServer();
+        }
+
         // launch a background thread to check for updates online
         new UpdateChecker();
     }
 
     // Try to register a handler for when the OS wants us to open a file type
     // associated with Juggling Lab (i.e., a .jml file)
-    static protected void registerOpenFilesHandler() {
+    //
+    // Returns true if successfully installed, false otherwise
+    static protected boolean registerOpenFilesHandler() {
         if (!Desktop.isDesktopSupported())
-            return;
+            return false;
 
         if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
-            return;
+            return false;
 
         Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
             @Override
@@ -103,6 +109,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 }
             }
         });
+        return true;
     }
 
     protected void createMenus() {

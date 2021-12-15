@@ -43,9 +43,6 @@ public class JugglingLab {
     // Whether we're running from the command line
     public static boolean isCLI;
 
-    // Whether the ApplicationWindow is currently visible
-    public static boolean isAppOpen = false;
-
     // Base directory for file operations
     public static Path base_dir;
 
@@ -113,7 +110,6 @@ public class JugglingLab {
                     try {
                         registerAboutHandler();
                         new ApplicationWindow("Juggling Lab");
-                        isAppOpen = true;
                     } catch (JuggleExceptionUser jeu) {
                         new ErrorDialog(null, jeu.getMessage());
                     } catch (JuggleExceptionInternal jei) {
@@ -270,18 +266,30 @@ public class JugglingLab {
             return;
         }
 
-        final File file = new File(jlargs.remove(0));
+        String filepath = jlargs.remove(0);
+        if (filepath.startsWith("\""))
+            filepath = filepath.substring(1, filepath.length() - 1);
+        final File file = new File(filepath);
+
+        boolean noOpenFilesHandler = (!Desktop.isDesktopSupported() ||
+            !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE));
+
+        if (noOpenFilesHandler) {
+            if (OpenFilesServer.tryOpenFile(file)) {
+                System.setProperty("java.awt.headless", "true");
+                if (Constants.DEBUG_OPEN_SERVER)
+                    System.out.println("Open file command handed off; quitting");
+                return;
+            }
+        }
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    if (!isAppOpen) {
-                        registerAboutHandler();
-                        new ApplicationWindow("Juggling Lab");
-                    }
+                    registerAboutHandler();
+                    new ApplicationWindow("Juggling Lab");
                     ApplicationWindow.openJMLFile(file);
-                    isAppOpen = true;                       
                 } catch (JuggleExceptionUser jeu) {
                     String template = errorstrings.getString("Error_reading_file");
                     Object[] arguments = { file.getName() };
