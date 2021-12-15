@@ -847,6 +847,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
         jd.pack();
         jd.setResizable(false);
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);
         parent.setTitle(pat.getTitle());
     }
@@ -883,6 +884,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                                      new Insets(10,10,10,10)));
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
         jd.pack();
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);
 
         double scale;
@@ -1133,6 +1135,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         jd.pack();
         jd.setResizable(false);
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);    // blocks until dispose() above
         dialog_controls = null;
     }
@@ -1245,6 +1248,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         jd.pack();
         jd.setResizable(false);
+        jd.setLocationRelativeTo(this);
         jd.setVisible(true);    // blocks until dispose() above
         dialog_controls = null;
     }
