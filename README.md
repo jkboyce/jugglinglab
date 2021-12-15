@@ -39,4 +39,4 @@ Over that long span of time the project has seen contributions from many people,
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
 - Mahit Warhadpande – Hand Siteswap feature design and implementation
-- Alan Weathers – Alanz pattern files, bug reports
+- Alan Weathers – Alanz pattern files, bug reports, many application improvement ideas
