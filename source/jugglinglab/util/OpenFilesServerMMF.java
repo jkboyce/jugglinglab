@@ -39,7 +39,7 @@ public class OpenFilesServerMMF extends Thread {
         start();
     }
 
-    // Server thread loops forever, listening for connections on our port
+    // Server thread loops forever, listening for messages
     @Override
     public void run() {
         if (Constants.DEBUG_OPEN_SERVER)
@@ -110,8 +110,6 @@ public class OpenFilesServerMMF extends Thread {
     }
 
     public static boolean tryOpenFile(File f) {
-        // System.out.println(ipc_filename);
-
         File fipc = new File(ipc_filename);
 
         if (!fipc.exists()) {
