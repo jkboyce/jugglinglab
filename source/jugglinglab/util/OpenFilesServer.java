@@ -17,11 +17,12 @@ import jugglinglab.core.Constants;
 // another Juggling Lab instance that may be already running.
 
 public class OpenFilesServer {
-    public static final int memorymappedfile = 1;    // implemented types
+    // implemented types
+    public static final int memorymappedfile = 1;
     public static final int sockets = 2;
 
     private static OpenFilesServerMMF ofs_mmf;
-    private static OpenFilesServerMMF ofs_sockets;
+    private static OpenFilesServerSockets ofs_sockets;
 
 
     public OpenFilesServer() {
@@ -30,7 +31,7 @@ public class OpenFilesServer {
                 ofs_mmf = new OpenFilesServerMMF();
                 break;
             case sockets:
-                ofs_sockets = new OpenFilesServerMMF();
+                ofs_sockets = new OpenFilesServerSockets();
                 break;
         }
     }
@@ -43,7 +44,7 @@ public class OpenFilesServer {
             case memorymappedfile:
                 return OpenFilesServerMMF.tryOpenFile(f);
             case sockets:
-                return OpenFilesServerMMF.tryOpenFile(f);
+                return OpenFilesServerSockets.tryOpenFile(f);
         }
         return false;
     }
