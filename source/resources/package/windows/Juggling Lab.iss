@@ -17,7 +17,7 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher=Jack Boyce
 ;AppComments={#MyAppName}
-AppCopyright=Copyright (C) {#MyAppYear}
+AppCopyright=Copyright (C) 2002-{#MyAppYear} Jack Boyce and the Juggling Lab contributors
 ChangesAssociations=yes
 ;First option installs per-user, second system-wide
 ;DefaultDirName={localappdata}\{#MyAppName}
