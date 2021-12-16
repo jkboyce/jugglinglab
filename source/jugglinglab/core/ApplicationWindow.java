@@ -72,9 +72,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         // with a OpenFilesHandler (macOS) and with our own OpenFilesServer
         // (Windows)
 
-        if (!registerOpenFilesHandler()) {
+        if (!registerOpenFilesHandler())
             new OpenFilesServer();
-        }
 
         // launch a background thread to check for updates online
         new UpdateChecker();
@@ -252,6 +251,17 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_EXIT:
+                boolean noOpenFilesHandler = (!Desktop.isDesktopSupported() ||
+                    !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE));
+
+                if (noOpenFilesHandler) {
+                    if (Constants.DEBUG_OPEN_SERVER)
+                        System.out.println("interrupting server");
+                    OpenFilesServer.cleanup();
+                    try {
+                        Thread.sleep(100);
+                    } catch (Exception e) {}
+                }
                 System.exit(0);
                 break;
 
