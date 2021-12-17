@@ -28,10 +28,12 @@ public class OpenFilesServer {
     public OpenFilesServer() {
         switch (Constants.OPEN_FILES_METHOD) {
             case memorymappedfile:
-                ofs_mmf = new OpenFilesServerMMF();
+                if (ofs_mmf == null)
+                    ofs_mmf = new OpenFilesServerMMF();
                 break;
             case sockets:
-                ofs_sockets = new OpenFilesServerSockets();
+                if (ofs_sockets == null)
+                    ofs_sockets = new OpenFilesServerSockets();
                 break;
         }
     }
