@@ -28,18 +28,26 @@ public class Optimizer {
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
     static final protected double epsilon = 0.0000001;
     static final protected double infinity = java.lang.Double.POSITIVE_INFINITY;
-    static protected boolean optimizer_loaded = false;
 
-    static {
+    static protected boolean optimizer_loaded = false;
+    static protected boolean optimizer_available = false;
+
+
+    public static boolean optimizerAvailable() {
+        loadOptimizer();
+        return optimizer_available;
+    }
+
+    private static void loadOptimizer() {
+        if (optimizer_loaded)
+            return;
+
         // Load the Google OR-Tools library, if available
         try {
             System.loadLibrary("jniortools");
-            optimizer_loaded = true;
+            optimizer_available = true;
         } catch (java.lang.UnsatisfiedLinkError e) {}
-    }
-
-    public static boolean optimizerAvailable() {
-        return optimizer_loaded;
+        optimizer_loaded = true;
     }
 
     // Optimizes a pattern, if possible.
