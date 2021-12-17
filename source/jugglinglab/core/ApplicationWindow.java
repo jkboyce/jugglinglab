@@ -93,6 +93,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         Desktop.getDesktop().setOpenFileHandler(new OpenFilesHandler() {
             @Override
             public void openFiles(OpenFilesEvent ofe) {
+                if (Desktop.isDesktopSupported()
+                        && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+                    Desktop.getDesktop().requestForeground(true);
+
                 try {
                     for (File file : ofe.getFiles()) {
                         try {

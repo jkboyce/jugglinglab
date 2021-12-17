@@ -4,6 +4,7 @@
 
 package jugglinglab.util;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.CharBuffer;
@@ -79,6 +80,10 @@ public class OpenFilesServerMMF extends Thread {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            if (Desktop.isDesktopSupported()
+                                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+                                Desktop.getDesktop().requestForeground(true);
+
                             try {
                                 ApplicationWindow.openJMLFile(file);
                             } catch (JuggleExceptionUser jeu) {

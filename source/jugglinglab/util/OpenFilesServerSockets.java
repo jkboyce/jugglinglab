@@ -4,8 +4,10 @@
 
 package jugglinglab.util;
 
+import java.awt.Desktop;
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
@@ -209,6 +211,10 @@ class Connection extends Thread {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            if (Desktop.isDesktopSupported()
+                                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+                                Desktop.getDesktop().requestForeground(true);
+
                             try {
                                 ApplicationWindow.openJMLFile(file);
                             } catch (JuggleExceptionUser jeu) {
