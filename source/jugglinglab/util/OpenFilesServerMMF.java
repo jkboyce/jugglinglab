@@ -39,6 +39,9 @@ public class OpenFilesServerMMF extends Thread {
 
 
     public OpenFilesServerMMF() {
+        if (server_thread != null)
+            return;
+
         server_thread = this;
         start();
     }

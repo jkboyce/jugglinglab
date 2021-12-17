@@ -30,6 +30,9 @@ public class OpenFilesServerSockets extends Thread {
 
 
     public OpenFilesServerSockets() {
+        if (server_thread != null)
+            return;
+
         try {
             listen_socket = new ServerSocket(OPEN_FILES_PORT);
         } catch (IOException e) {
