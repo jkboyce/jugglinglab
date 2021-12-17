@@ -23,6 +23,7 @@ public class OpenFilesServerSockets extends Thread {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    static Thread server_thread;
     static protected final int OPEN_FILES_PORT = 8686;
 
     protected ServerSocket listen_socket;
@@ -150,8 +151,9 @@ public class OpenFilesServerSockets extends Thread {
         }
     }
 
-    public void cleanup() {
-        interrupt();
+    public static void cleanup() {
+        if (server_thread != null)
+            server_thread.interrupt();
     }
 }
 

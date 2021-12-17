@@ -28,6 +28,7 @@ public class OpenFilesServerMMF extends Thread {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    static Thread server_thread;
     static String ipc_filename;
     static final int BUFFER_LENGTH = 1024;
 
@@ -38,6 +39,7 @@ public class OpenFilesServerMMF extends Thread {
 
 
     public OpenFilesServerMMF() {
+        server_thread = this;
         start();
     }
 
@@ -191,13 +193,18 @@ public class OpenFilesServerMMF extends Thread {
         return false;
     }
 
+    public static void cleanup() {
+        if (server_thread != null)
+            server_thread.interrupt();
+    }
+
     // convenience methods to handle messaging through our memory mapped file
 
-    static private void clearBuffer(CharBuffer cb) {
+    private static void clearBuffer(CharBuffer cb) {
         cb.put(0, '\0');
     }
 
-    static private String readMessage(CharBuffer cb) {
+    private static String readMessage(CharBuffer cb) {
         StringBuffer msg_sb = new StringBuffer(BUFFER_LENGTH);
         for (int i = 0; i < BUFFER_LENGTH; ++i) {
             char c = cb.get(i);
@@ -208,13 +215,13 @@ public class OpenFilesServerMMF extends Thread {
         return msg_sb.toString();
     }
 
-    static private void writeMessage(CharBuffer cb, String str) {
+    private static void writeMessage(CharBuffer cb, String str) {
         for (int i = 1; i < str.length(); ++i)
             cb.put(i, str.charAt(i));
         cb.put(0, str.charAt(0));
     }
 
-    static private boolean waitUntilMessage(CharBuffer cb, int timeout) throws InterruptedException {
+    private static boolean waitUntilMessage(CharBuffer cb, int timeout) throws InterruptedException {
         int tries = timeout / 10;
 
         for (int i = 0; i < tries; ++i) {
@@ -223,9 +230,5 @@ public class OpenFilesServerMMF extends Thread {
             Thread.sleep(10);
         }
         return false;
-    }
-
-    public void cleanup() {
-        interrupt();
     }
 }

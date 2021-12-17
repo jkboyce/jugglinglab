@@ -54,8 +54,8 @@ public class OpenFilesServer {
     // Do any needed cleanup when things are closing down
     public static void cleanup() {
         if (ofs_mmf != null)
-            ofs_mmf.cleanup();
+            OpenFilesServerMMF.cleanup();
         if (ofs_sockets != null)
-            ofs_sockets.cleanup();
+            OpenFilesServerSockets.cleanup();
     }
 }
