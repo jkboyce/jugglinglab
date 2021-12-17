@@ -18,6 +18,7 @@
 #    - Juggling Lab.app in the bin directory will be overwritten
 #    - JugglingLab.jar needs to be built prior to running this, using Ant
 #    - Need to be using JDK 16 or later for jpackage to work
+#    - Need to have Xcode installed for codesign to work
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html
@@ -54,7 +55,7 @@ cp "../source/resources/package/macos/Juggling Lab.cfg" \
 
 # Remove the Oracle signature on the application, which causes Gatekeeper to
 # refuse to launch the app since it isn't notarized. With no signature the user
-# gets the "Developer cannot be verified" warning but they can launch it.
+# gets the "Developer cannot be verified" warning but they can launch.
 codesign --remove-signature "Juggling Lab.app"
 
 # Step 3: Create the target dmg
