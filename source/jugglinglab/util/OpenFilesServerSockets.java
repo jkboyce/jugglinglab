@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import javax.swing.SwingUtilities;
 
 import jugglinglab.core.ApplicationWindow;
 import jugglinglab.core.Constants;
@@ -60,7 +61,12 @@ public class OpenFilesServerSockets extends Thread {
                 }
             }
         } catch (IOException e) {
-            ErrorDialog.handleFatalException(e);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ErrorDialog.handleFatalException(e);
+                }
+            });
         }
     }
 
@@ -167,7 +173,13 @@ class Connection extends Thread {
             try {
                 client.close();
             } catch (IOException ioe2) {}
-            ErrorDialog.handleFatalException(ioe);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ErrorDialog.handleFatalException(ioe);
+                }
+            });
             return;
         }
         start();
@@ -194,17 +206,22 @@ class Connection extends Thread {
 
                     out.println("opening " + filepath);
 
-                    try {
-                        ApplicationWindow.openJMLFile(file);
-                    } catch (JuggleExceptionUser jeu) {
-                        String template = errorstrings.getString("Error_reading_file");
-                        Object[] arguments = { file.getName() };
-                        String msg = MessageFormat.format(template, arguments) +
-                                     ":\n" + jeu.getMessage();
-                        new ErrorDialog(null, msg);
-                    } catch (JuggleExceptionInternal jei) {
-                        ErrorDialog.handleFatalException(jei);
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ApplicationWindow.openJMLFile(file);
+                            } catch (JuggleExceptionUser jeu) {
+                                String template = errorstrings.getString("Error_reading_file");
+                                Object[] arguments = { file.getName() };
+                                String msg = MessageFormat.format(template, arguments) +
+                                             ":\n" + jeu.getMessage();
+                                new ErrorDialog(null, msg);
+                            } catch (JuggleExceptionInternal jei) {
+                                ErrorDialog.handleFatalException(jei);
+                            }
+                        }
+                    });
                 } else if (line.startsWith("identify")) {
                     out.println("Juggling Lab version " + Constants.version);
                 } else if (line.startsWith("done")) {

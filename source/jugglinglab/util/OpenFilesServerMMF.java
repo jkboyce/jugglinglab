@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import javax.swing.SwingUtilities;
 
 import jugglinglab.core.ApplicationWindow;
 import jugglinglab.core.Constants;
@@ -72,19 +73,25 @@ public class OpenFilesServerMMF extends Thread {
                 if (line.startsWith("open ")) {
                     String filepath = line.substring(5, line.length());
                     File file = new File(filepath);
+
                     writeMessage(buf_fromserver, "opening " + filepath + '\0');
 
-                    try {
-                        ApplicationWindow.openJMLFile(file);
-                    } catch (JuggleExceptionUser jeu) {
-                        String template = errorstrings.getString("Error_reading_file");
-                        Object[] arguments = { file.getName() };
-                        String msg = MessageFormat.format(template, arguments) +
-                                     ":\n" + jeu.getMessage();
-                        new ErrorDialog(null, msg);
-                    } catch (JuggleExceptionInternal jei) {
-                        ErrorDialog.handleFatalException(jei);
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ApplicationWindow.openJMLFile(file);
+                            } catch (JuggleExceptionUser jeu) {
+                                String template = errorstrings.getString("Error_reading_file");
+                                Object[] arguments = { file.getName() };
+                                String msg = MessageFormat.format(template, arguments) +
+                                             ":\n" + jeu.getMessage();
+                                new ErrorDialog(null, msg);
+                            } catch (JuggleExceptionInternal jei) {
+                                ErrorDialog.handleFatalException(jei);
+                            }
+                        }
+                    });
                 } else if (line.startsWith("identify")) {
                     writeMessage(buf_fromserver, "Juggling Lab version " + Constants.version + '\0');
                 } else if (line.startsWith("done")) {
@@ -93,7 +100,12 @@ public class OpenFilesServerMMF extends Thread {
                     writeMessage(buf_fromserver, line + '\0');
             }
         } catch (IOException ioe) {
-            ErrorDialog.handleFatalException(ioe);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ErrorDialog.handleFatalException(ioe);
+                }
+            });
         } catch (InterruptedException ie) {
             if (Constants.DEBUG_OPEN_SERVER)
                 System.out.println("thread interrupted, deleting temp file");
