@@ -80,23 +80,17 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         pack();
         view.restartView(pat, jc);
-        //setLocationRelativeTo(null);    // center frame on screen
         setLocation(getNextScreenLocation());
         setVisible(true);
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (!PatternWindow.exit_on_last_close)
-                    return;
-
-                int window_count = 0;
-                for (Frame fr : Frame.getFrames()) {
-                    if (fr instanceof PatternWindow && fr.isVisible())
-                        window_count++;
+                try {
+                    doMenuCommand(FILE_CLOSE);
+                } catch (JuggleExceptionInternal jei) {
+                    ErrorDialog.handleFatalException(jei);
                 }
-                if (window_count == 1)
-                    System.exit(0);
             }
         });
     }
@@ -350,6 +344,16 @@ public class PatternWindow extends JFrame implements ActionListener {
 
             case FILE_CLOSE:
                 dispose();
+                if (!PatternWindow.exit_on_last_close)
+                    break;
+
+                int window_count = 0;
+                for (Frame fr : Frame.getFrames()) {
+                    if (fr instanceof PatternWindow && fr.isVisible())
+                        ++window_count;
+                }
+                if (window_count == 0)
+                    System.exit(0);
                 break;
 
             case FILE_SAVE:
