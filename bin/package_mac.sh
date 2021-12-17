@@ -52,6 +52,11 @@ cp "../source/resources/package/macos/JML_document.icns" \
 cp "../source/resources/package/macos/Juggling Lab.cfg" \
    "Juggling Lab.app/Contents/app/"
 
+# Remove the Oracle signature on the application, which causes Gatekeeper to
+# refuse to launch the app since it isn't notarized. With no signature the user
+# gets the "Developer cannot be verified" warning but they can launch it.
+codesign --remove-signature "Juggling Lab.app"
+
 # Step 3: Create the target dmg
 
 jpackage --type dmg \
