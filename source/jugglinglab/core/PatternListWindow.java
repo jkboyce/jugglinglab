@@ -30,7 +30,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     protected String title;
     protected PatternListPanel pl;
-    protected JMenuItem[] fileitems;
+    protected JMenu windowmenu;
 
 
     public PatternListWindow(String title) {
@@ -40,6 +40,13 @@ public class PatternListWindow extends JFrame implements ActionListener {
         pl.setTitle(title);
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
+            }
+        });
     }
 
     public PatternListWindow(String title, Thread th) {
@@ -70,6 +77,13 @@ public class PatternListWindow extends JFrame implements ActionListener {
         setTitle(title);
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
+            }
+        });
     }
 
     protected void makeWindow() {
@@ -117,15 +131,18 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     public PatternListPanel getPatternList() { return pl; }
 
-    protected String[] fileItems = new String[]     { "Close", null, "Save JML As...", "Save Text As..." };
-    protected String[] fileCommands = new String[]  { "close", null, "saveas", "savetext" };
-    protected char[] fileShortcuts =            { 'W', ' ', 'S', 'T' };
+    protected static final String[] fileItems = new String[]
+        { "Close", null, "Save JML As...", "Save Text As..." };
+    protected static final String[] fileCommands = new String[]
+        { "close", null, "saveas", "savetext" };
+    protected static final char[] fileShortcuts =
+        { 'W', ' ', 'S', 'T' };
 
     protected void createMenuBar() {
         JMenuBar mb = new JMenuBar();
 
         JMenu filemenu = new JMenu(guistrings.getString("File"));
-        this.fileitems = new JMenuItem[fileItems.length];
+        JMenuItem[] fileitems = new JMenuItem[fileItems.length];
         for (int i = 0; i < fileItems.length; i++) {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
@@ -141,7 +158,14 @@ public class PatternListWindow extends JFrame implements ActionListener {
         }
         mb.add(filemenu);
 
+        windowmenu = new JMenu(guistrings.getString("Window"));
+        mb.add(windowmenu);
+
         setJMenuBar(mb);
+    }
+
+    public JMenu getWindowMenu() {
+        return windowmenu;
     }
 
     public static final int FILE_NONE = 0;
@@ -242,5 +266,18 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pattern) {
         pl.addPattern(display, animprefs, notation, anim, pattern);
+    }
+
+    // java.awt.Window method overrides
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
+            }
+        });
     }
 }

@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
@@ -38,8 +39,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     static protected boolean optimizer_loaded = false;
 
     protected View view;
-    protected JMenu filemenu;
-    protected JMenu viewmenu;
+    protected JMenu windowmenu;
 
 
     public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
@@ -49,10 +49,12 @@ public class PatternWindow extends JFrame implements ActionListener {
         loadOptimizer();  // Do this before creating menus
 
         JMenuBar mb = new JMenuBar();
-        filemenu = createFileMenu();
-        mb.add(filemenu);
-        viewmenu = createViewMenu();
+        mb.add(createFileMenu());
+        JMenu viewmenu = createViewMenu();
         mb.add(viewmenu);
+        windowmenu = new JMenu(guistrings.getString("Window"));
+        mb.add(windowmenu);
+        mb.add(createHelpMenu());
         setJMenuBar(mb);
 
         if (jc != null && jc.view != View.VIEW_NONE) {
@@ -91,6 +93,13 @@ public class PatternWindow extends JFrame implements ActionListener {
                 } catch (JuggleExceptionInternal jei) {
                     ErrorDialog.handleFatalException(jei);
                 }
+            }
+        });
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
             }
         });
     }
@@ -286,6 +295,36 @@ public class PatternWindow extends JFrame implements ActionListener {
         return viewmenu;
     }
 
+    public JMenu getWindowMenu() {
+        return windowmenu;
+    }
+
+    protected static final String[] helpItems = new String[]
+        { "About Juggling Lab", "Juggling Lab Online Help" };
+    protected static final String[] helpCommands = new String[]
+        { "about", "online" };
+
+    protected JMenu createHelpMenu() {
+        // skip the about menu item if About handler was already installed
+        // in JugglingLab.java
+        boolean include_about = !Desktop.isDesktopSupported() ||
+                !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
+
+        JMenu helpmenu = new JMenu(guistrings.getString("Help"));
+
+        for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
+            if (helpItems[i] == null)
+                helpmenu.addSeparator();
+            else {
+                JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
+                helpitem.setActionCommand(helpCommands[i]);
+                helpitem.addActionListener(this);
+                helpmenu.add(helpitem);
+            }
+        }
+        return helpmenu;
+    }
+
     @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
@@ -320,7 +359,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             else if (command.equals("selection_edit")) {
                 if (getViewMode() != View.VIEW_SELECTION)
                     setViewMode(View.VIEW_SELECTION);
-            }
+            } else if (command.equals("about"))
+                doMenuCommand(HELP_ABOUT);
+            else if (command.equals("online"))
+                doMenuCommand(HELP_ONLINE);
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
         } catch (Exception e) {
@@ -336,6 +378,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int FILE_OPTIMIZE = 5;
     protected static final int VIEW_RESTART = 6;
     protected static final int VIEW_ANIMPREFS = 7;
+    protected static final int HELP_ABOUT = 8;
+    protected static final int HELP_ONLINE = 9;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
@@ -483,6 +527,29 @@ public class PatternWindow extends JFrame implements ActionListener {
                     }
                 }
                 break;
+
+            case HELP_ABOUT:
+                ApplicationWindow.showAboutBox();
+                break;
+
+            case HELP_ONLINE:
+                boolean browse_supported = (Desktop.isDesktopSupported() &&
+                                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+                boolean browse_problem = false;
+
+                if (browse_supported) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(Constants.help_URL));
+                    } catch (Exception e) {
+                        browse_problem = true;
+                    }
+                }
+
+                if (!browse_supported || browse_problem) {
+                    new LabelDialog(this, "Help", "Find online help at " +
+                                    Constants.help_URL);
+                }
+                break;
         }
 
     }
@@ -575,5 +642,11 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
+            }
+        });
     }
 }

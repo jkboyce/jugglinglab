@@ -31,6 +31,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+    protected JMenu windowmenu;
+
 
     public ApplicationWindow(String title) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
@@ -76,6 +78,13 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
         // launch a background thread to check for updates online
         new UpdateChecker();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationWindow.updateWindowMenus();
+            }
+        });
     }
 
     // Try to register a handler for when the OS wants us to open a file type
@@ -118,7 +127,6 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     protected void createMenus() {
         JMenuBar mb = new JMenuBar();
-
         mb.add(createFileMenu());
 
         if (Pattern.builtinNotations.length > 1) {
@@ -128,10 +136,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
             notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true);
         }
 
-        JMenu helpmenu = createHelpMenu();
-        if (helpmenu != null)
-            mb.add(helpmenu);
+        windowmenu = new JMenu(guistrings.getString("Window"));
+        mb.add(windowmenu);
 
+        mb.add(createHelpMenu());
         setJMenuBar(mb);
     }
 
@@ -190,6 +198,118 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         }
 
         return notationmenu;
+    }
+
+    public JMenu getWindowMenu() {
+        return windowmenu;
+    }
+
+    // Updates the "Window" menu attached to most of our JFrames.
+    //
+    // Should call this whenever a window is added or removed.
+    public static void updateWindowMenus() {
+        ArrayList<ApplicationWindow> apps = new ArrayList<ApplicationWindow>();
+        ArrayList<PatternListWindow> pls = new ArrayList<PatternListWindow>();
+        ArrayList<PatternWindow> anims = new ArrayList<PatternWindow>();
+        ArrayList<JMenu> menus = new ArrayList<JMenu>();
+
+        for (Frame fr : Frame.getFrames()) {
+            if (!fr.isVisible())
+                continue;
+
+            if (fr instanceof ApplicationWindow) {
+                apps.add((ApplicationWindow)fr);
+                menus.add(((ApplicationWindow)fr).getWindowMenu());
+            } else if (fr instanceof PatternListWindow) {
+                pls.add((PatternListWindow)fr);
+                menus.add(((PatternListWindow)fr).getWindowMenu());
+            } else if (fr instanceof PatternWindow) {
+                anims.add((PatternWindow)fr);
+                menus.add(((PatternWindow)fr).getWindowMenu());
+            }
+        }
+
+        ActionListener al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                String command = ae.getActionCommand();
+
+                if (command.equals("front")) {
+                    boolean foregroundSupported = Desktop.isDesktopSupported() &&
+                                    Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND);
+
+                    if (foregroundSupported) {
+                        Desktop.getDesktop().requestForeground(true);
+                        return;
+                    } else {
+                        for (Frame fr : apps)
+                            fr.toFront();
+                        for (Frame fr : pls)
+                            fr.toFront();
+                        for (Frame fr : anims)
+                            fr.toFront();
+                        return;
+                    }
+                } else {
+                    int windownum = Integer.parseInt(command);
+
+                    if (windownum < apps.size()) {
+                        apps.get(windownum).toFront();
+                        return;
+                    }
+                    windownum -= apps.size();
+                    if (windownum < pls.size()) {
+                        pls.get(windownum).toFront();
+                        return;
+                    }
+                    windownum -= pls.size();
+                    if (windownum < anims.size()) {
+                        anims.get(windownum).toFront();
+                        return;
+                    }
+
+                    ErrorDialog.handleFatalException(
+                            new JuggleExceptionInternal("Window number out of range: " + command));
+                }
+            }
+        };
+
+        for (JMenu wm : menus) {
+            wm.removeAll();
+
+            JMenuItem alltofront = new JMenuItem(guistrings.getString("Bring_All_To_Front"));
+            alltofront.setActionCommand("front");
+            alltofront.addActionListener(al);
+            wm.add(alltofront);
+
+            wm.addSeparator();
+
+            int windownum = 0;
+            for (ApplicationWindow aw : apps) {
+                JMenuItem awitem = new JMenuItem(aw.getTitle());
+                awitem.setActionCommand(String.valueOf(windownum++));
+                awitem.addActionListener(al);
+                wm.add(awitem);
+            }
+            if (apps.size() > 0)
+                wm.addSeparator();
+
+            for (PatternListWindow pl : pls) {
+                JMenuItem plitem = new JMenuItem(pl.getTitle());
+                plitem.setActionCommand(String.valueOf(windownum++));
+                plitem.addActionListener(al);
+                wm.add(plitem);
+            }
+            if (pls.size() > 0)
+                wm.addSeparator();
+
+            for (PatternWindow anim : anims) {
+                JMenuItem animitem = new JMenuItem(anim.getTitle());
+                animitem.setActionCommand(String.valueOf(windownum++));
+                animitem.addActionListener(al);
+                wm.add(animitem);
+            }
+        }
     }
 
     protected static final String[] helpItems = new String[]
