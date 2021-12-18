@@ -257,6 +257,9 @@ public class JMLPattern {
 
     // ------------------------------------------------------------------------
     //   Lay out the spatial paths in the pattern
+    //
+    //   Note that this can change the pattern's toString() representation,
+    //   and therefore its hash code.
     // ------------------------------------------------------------------------
 
     public void layoutPattern() throws JuggleExceptionInternal, JuggleExceptionUser {

@@ -1,6 +1,6 @@
 // PatternListPanel.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -9,14 +9,14 @@ import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.event.*;
 
 import jugglinglab.jml.*;
-import jugglinglab.notation.*;
+import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
-import jugglinglab.view.*;
+import jugglinglab.view.View;
 
 
 public class PatternListPanel extends JPanel {
@@ -26,10 +26,11 @@ public class PatternListPanel extends JPanel {
     static final Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
     static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
 
-    View animtarget;
-    String title;
-    JList<PatternRecord> list;
-    DefaultListModel<PatternRecord> model;
+    protected View animtarget;
+    protected String title;
+    protected JList<PatternRecord> list;
+    protected DefaultListModel<PatternRecord> model;
+    protected String loadingversion;
 
 
     public PatternListPanel() {
@@ -92,6 +93,7 @@ public class PatternListPanel extends JPanel {
                         return;
 
                     pat.setTitle(rec.display);
+                    pat.layoutPattern();
 
                     if (PatternWindow.bringToFront(pat.getHashCode()))
                         return;
@@ -157,8 +159,6 @@ public class PatternListPanel extends JPanel {
     public String getTitle() {
         return title;
     }
-
-    String loadingversion = null;
 
     public void readJML(JMLNode root) throws JuggleExceptionUser {
         if (!root.getNodeType().equalsIgnoreCase("jml"))

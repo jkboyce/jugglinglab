@@ -1,19 +1,19 @@
 // PatternListWindow.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import jugglinglab.jml.*;
-import jugglinglab.notation.*;
+import jugglinglab.jml.JMLNode;
 import jugglinglab.util.*;
 
 
@@ -25,25 +25,25 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static protected final int NUM_TILES = 8;
     static protected final Point TILE_START = new Point(0, 620);
     static protected final Point TILE_OFFSET = new Point(25, 25);
-    static protected Point[] tile_locations = null;
+    static protected Point[] tile_locations;
     static protected int next_tile_num;
 
-    String title = null;
-    PatternListPanel pl = null;
-    protected JMenuItem[] fileitems = null;
+    protected String title;
+    protected PatternListPanel pl;
+    protected JMenuItem[] fileitems;
 
 
-    public PatternListWindow(String ti) {
-        super(ti);
-        title = ti;
+    public PatternListWindow(String title) {
+        super(title);
+        this.title = title;
         makeWindow();
-        pl.setTitle(ti);
+        pl.setTitle(title);
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
-    public PatternListWindow(String ti, Thread th) {
-        this(ti);
+    public PatternListWindow(String title, Thread th) {
+        this(title);
         final Thread generator = th;
 
         addWindowListener(new WindowAdapter() {

@@ -309,6 +309,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                     {
                         JMLNode root = parser.getTree();
                         JMLPattern pat = new JMLPattern(root);
+                        pat.layoutPattern();
                         if (!PatternWindow.bringToFront(pat.getHashCode()))
                             frame = new PatternWindow(pat.getTitle(), pat, new AnimationPrefs());
                         break;

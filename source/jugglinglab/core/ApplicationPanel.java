@@ -164,6 +164,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     pl.errorIfParametersLeft();
 
                     JMLPattern pat = p.asJMLPattern();
+                    pat.layoutPattern();
 
                     if (PatternWindow.bringToFront(pat.getHashCode()))
                         return;
