@@ -5,8 +5,7 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.awt.desktop.OpenFilesHandler;
-import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -144,12 +143,25 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         { 'O', ' ', 'Q' };
 
     protected JMenu createFileMenu() {
-        // When we move to Java 9+ we can use Desktop.setQuitHandler() here.
-        boolean include_quit = true;
+        boolean quit_handler = Desktop.isDesktopSupported() &&
+                Desktop.getDesktop().isSupported(Desktop.Action.APP_QUIT_HANDLER);
+
+        if (quit_handler) {
+            Desktop.getDesktop().setQuitHandler(new QuitHandler() {
+                @Override
+                public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
+                    try {
+                        doMenuCommand(FILE_EXIT);
+                    } catch (JuggleExceptionInternal jei) {
+                        response.performQuit();
+                    }
+                }
+            });
+        }
 
         JMenu filemenu = new JMenu(guistrings.getString("File"));
 
-        for (int i = 0; i < (include_quit ? fileItems.length : fileItems.length - 2); i++) {
+        for (int i = 0; i < (quit_handler ? fileItems.length - 2 : fileItems.length); i++) {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
