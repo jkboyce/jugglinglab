@@ -214,11 +214,11 @@ public abstract class MHNPattern extends Pattern {
         }
         //hss end
         if ((temp = pl.removeParameter("title")) != null) {
-            this.title = temp.trim();
+            title = temp.trim();
         }
         //hss begin
-        if (hss != null) {
-        	this.title = "oss: " + pattern + " ; hss: " + hss;
+        if (hss != null && title == null) {
+        	title = "oss: " + pattern + " ; hss: " + hss;
         }
         //hss end
         return this;
@@ -227,10 +227,10 @@ public abstract class MHNPattern extends Pattern {
     @Override
     public String toString() {
         // print out configuration parameters in a standard order
-        if (this.config == null)
+        if (config == null)
             return null;
 
-        ParameterList pl = new ParameterList(this.config);
+        ParameterList pl = new ParameterList(config);
         String result = "";
 
         // write the parameters out in a standard order

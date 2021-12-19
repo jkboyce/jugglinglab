@@ -1,6 +1,6 @@
 // HSS.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com) and others
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation;
 
