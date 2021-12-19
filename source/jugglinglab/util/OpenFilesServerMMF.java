@@ -128,6 +128,7 @@ public class OpenFilesServerMMF extends Thread {
                 if (Constants.DEBUG_OPEN_SERVER)
                     System.out.println(e);
             }
+            server_thread = null;
         }
     }
 

@@ -82,6 +82,8 @@ public class OpenFilesServerSockets extends Thread {
             try {
                 listen_socket.close();
             } catch (IOException ioe) {}
+            listen_socket = null;
+            server_thread = null;
         }
     }
 
