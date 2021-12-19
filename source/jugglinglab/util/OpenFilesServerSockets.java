@@ -8,6 +8,7 @@ import java.awt.Desktop;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
@@ -25,6 +26,7 @@ public class OpenFilesServerSockets extends Thread {
 
     static Thread server_thread;
     static protected final int OPEN_FILES_PORT = 8686;
+    static protected final int POLLING_TIMEOUT_MS = 30;
 
     protected ServerSocket listen_socket;
 
@@ -35,6 +37,7 @@ public class OpenFilesServerSockets extends Thread {
 
         try {
             listen_socket = new ServerSocket(OPEN_FILES_PORT);
+            listen_socket.setSoTimeout(POLLING_TIMEOUT_MS);
         } catch (IOException e) {
             if (Constants.DEBUG_OPEN_SERVER)
                 System.out.println("Server already running on machine; thread is not starting");
@@ -52,20 +55,21 @@ public class OpenFilesServerSockets extends Thread {
             System.out.println("Server: listening on port " + OPEN_FILES_PORT);
 
         try {
-            while (true) {
-                Socket client_socket = listen_socket.accept();
+            while (!interrupted()) {
+                try {
+                    Socket client_socket = listen_socket.accept();
 
-                if (Constants.DEBUG_OPEN_SERVER) {
-                    System.out.println("Server got a connection from " +
-                            client_socket.getInetAddress() + ":" +
-                            client_socket.getPort());
-                }
+                    if (Constants.DEBUG_OPEN_SERVER) {
+                        System.out.println("Server got a connection from " +
+                                client_socket.getInetAddress() + ":" +
+                                client_socket.getPort());
+                    }
 
-                if (client_socket.getInetAddress().toString().contains("127.0.0.1"))
-                    new Connection(client_socket);
-                else if (Constants.DEBUG_OPEN_SERVER) {
-                    System.out.println("Ignoring connection request; not from 127.0.0.1");
-                }
+                    if (client_socket.getInetAddress().toString().contains("127.0.0.1"))
+                        new Connection(client_socket);
+                    else if (Constants.DEBUG_OPEN_SERVER)
+                        System.out.println("Ignoring connection request; not from 127.0.0.1");
+                } catch (SocketTimeoutException ste) {}
             }
         } catch (IOException e) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -74,12 +78,13 @@ public class OpenFilesServerSockets extends Thread {
                     ErrorDialog.handleFatalException(e);
                 }
             });
+        } finally {
+            try {
+                listen_socket.close();
+            } catch (IOException ioe) {}
         }
     }
 
-    // Try to signal another instance of Juggling Lab on this machine to open
-    // the file. If the open command is successfully handed off, return true.
-    // Otherwise return false.
     static public boolean tryOpenFile(File f) {
         Socket s = null;
         BufferedReader sin = null;
@@ -161,7 +166,6 @@ public class OpenFilesServerSockets extends Thread {
     }
 }
 
-// Server thread that handles all communication with a client.
 
 class Connection extends Thread {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
