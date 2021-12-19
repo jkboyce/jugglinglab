@@ -88,6 +88,18 @@ public class PatternListPanel extends JPanel {
                         pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
                     } else if (rec.anim != null) {
                         p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+
+                        // check if we want to add rec.display as the pattern's title
+                        // so it won't be lost when the pattern is recompiled in Pattern View
+                        ParameterList pl = new ParameterList(p.toString());
+                        String pattern = pl.getParameter("pattern");
+                        String title = pl.getParameter("title");
+                        if (title == null && pattern != null && rec.display != null &&
+                                    !pattern.equals(rec.display.trim())) {
+                            pl.addParameter("title", rec.display.trim());
+                            p = Pattern.newPattern(rec.notation).fromParameters(pl);
+                        }
+            
                         pat = p.asJMLPattern();
                     } else
                         return;
