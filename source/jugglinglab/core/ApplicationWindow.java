@@ -291,8 +291,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 awitem.addActionListener(al);
                 wm.add(awitem);
             }
-            if (apps.size() > 0)
-                wm.addSeparator();
+            //if (apps.size() > 0)
+            //    wm.addSeparator();
 
             for (PatternListWindow pl : pls) {
                 JMenuItem plitem = new JMenuItem(pl.getTitle());
@@ -300,8 +300,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 plitem.addActionListener(al);
                 wm.add(plitem);
             }
-            if (pls.size() > 0)
-                wm.addSeparator();
+            //if (pls.size() > 0)
+            //    wm.addSeparator();
 
             for (PatternWindow anim : anims) {
                 JMenuItem animitem = new JMenuItem(anim.getTitle());
