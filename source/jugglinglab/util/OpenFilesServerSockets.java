@@ -41,6 +41,7 @@ public class OpenFilesServerSockets extends Thread {
             // ErrorDialog.handleFatalException(e);
             return;
         }
+        server_thread = this;
         start();
     }
 
