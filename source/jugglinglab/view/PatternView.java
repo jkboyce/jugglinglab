@@ -203,6 +203,7 @@ public class PatternView extends View implements DocumentListener {
             ErrorDialog.handleFatalException(jei);
             setTextEdited(true);
         }
+        ApplicationWindow.updateWindowMenus();
     }
 
     protected void revertPattern() {
