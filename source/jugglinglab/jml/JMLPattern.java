@@ -122,6 +122,7 @@ public class JMLPattern {
 
     public void setTitle(String t) {
         title = (t == null ? null : t.trim());
+        base_pattern_edited = true;
     }
 
     public void setNumberOfJugglers(int n) {
@@ -302,7 +303,6 @@ public class JMLPattern {
             basepat.layoutPattern();
 
             base_pattern_edited = (getHashCode() != basepat.getHashCode());
-            //System.out.println(base_pattern_edited);
         } catch (JuggleException je) {
             base_pattern_edited = false;
         }
