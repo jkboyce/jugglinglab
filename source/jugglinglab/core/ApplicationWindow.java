@@ -463,8 +463,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
             } catch (IOException ioe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_IO")+": "+ioe.getMessage());
             } catch (SAXParseException spe) {
-                String template = errorstrings.getString("Error_parsing");
-                Object[] arguments = { Integer.valueOf(spe.getLineNumber()) };
+                String template = errorstrings.getString("Error_JML_parsing");
+                Object[] arguments = { Integer.valueOf(spe.getLineNumber()),
+                                       spe.getMessage().length() > 0 ? (":\n" + spe.getMessage()) : "" };
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             } catch (SAXException se) {
                 throw new JuggleExceptionUser(se.getMessage());

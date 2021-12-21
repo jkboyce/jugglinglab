@@ -1,6 +1,6 @@
 // EditLadderDiagram.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -816,8 +816,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             if (animator != null)
                 animator.setPaused(anim_paused);
         }
-
-        notifyEdited();
     }
 
     protected void changeTitle() {
@@ -1496,7 +1494,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         // reactivate the moved event with AnimationEditPanel
         active_eventitem = getSelectedLadderEvent(x, y);
         animator.activateEvent(active_eventitem.event);
-        notifyEdited();
     }
 
     protected void layoutPattern() {
@@ -1504,7 +1501,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             // use synchronized here to avoid data consistency problems with animation
             // thread in AnimationPanel's run() method
             synchronized (pat) {
-                pat.setNeedsLayout(true);
+                pat.setNeedsLayout();
                 pat.layoutPattern();
             }
             if (animator != null) {
@@ -1518,12 +1515,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         }
     }
 
-    // Notify the enclosing window that a pattern edit has occurred.
-    protected void notifyEdited() {
-        if (parent != null && parent instanceof PatternWindow) {
-            ((PatternWindow)parent).notifyEdited();
-        }
-    }
+    // javax.swing.JComponent methods
 
     @Override
     protected void paintComponent(Graphics gr) {

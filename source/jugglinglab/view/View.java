@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -44,24 +44,8 @@ public abstract class View extends JPanel {
 
     protected JFrame parent;
 
+
     public void setParent(JFrame p) { parent = p; }
-
-    // Each View retains the notation and config string for the pattern it
-    // contains, as well as a boolean flag indicating whether the JML has been
-    // edited away from the base pattern.
-    protected String base_pattern_notation;
-    protected String base_pattern_config;
-    protected boolean base_pattern_edited;
-
-    public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
-        base_pattern_notation = Pattern.getNotationName(bpn);
-        base_pattern_config = bpc;
-        base_pattern_edited = false;
-    }
-    public void setBasePatternEdited(boolean bpe) { base_pattern_edited = bpe; }
-    public String getBasePatternNotation() { return base_pattern_notation; }
-    public String getBasePatternConfig() { return base_pattern_config; }
-    public boolean getBasePatternEdited() { return base_pattern_edited; }
 
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws

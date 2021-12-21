@@ -1,6 +1,6 @@
 // PatternWindow.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -104,21 +104,11 @@ public class PatternWindow extends JFrame implements ActionListener {
         });
     }
 
-    // Create a new PatternWindow with the same JMLPattern and base pattern,
-    // and the default View.
+    // Create a new PatternWindow with the same JMLPattern and the default View.
     protected PatternWindow(PatternWindow pw) throws JuggleExceptionUser, JuggleExceptionInternal {
         this(pw.getTitle(),
              new JMLPattern(pw.view.getPattern()),
              new AnimationPrefs(pw.view.getAnimationPrefs()));
-
-        String bp_notation = pw.view.getBasePatternNotation();
-        String bp_config = pw.view.getBasePatternConfig();
-        if (bp_notation != null && bp_config != null) {
-            setBasePattern(bp_notation, bp_config);
-
-            if (pw.view.getBasePatternEdited())
-                notifyEdited();
-        }
     }
 
     // Load the pattern optimizer. Do this using the reflection API so we can
@@ -164,18 +154,6 @@ public class PatternWindow extends JFrame implements ActionListener {
         if (++next_tile_num == NUM_TILES)
             next_tile_num = 0;
         return loc;
-    }
-
-    // The View retains the notation and config string for the pattern it contains.
-    public void setBasePattern(String notation, String config) throws JuggleExceptionUser {
-        if (view != null)
-            view.setBasePattern(notation, config);
-    }
-
-    // Allow containing elements to notify that the pattern has been edited.
-    public void notifyEdited() {
-        if (view != null)
-            view.setBasePatternEdited(true);
     }
 
     // Used for testing whether a given JMLPattern is already being animated.
@@ -461,7 +439,6 @@ public class PatternWindow extends JFrame implements ActionListener {
                     JMLPattern pat = view.getPattern();
                     JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
                     view.restartView(new_pat, null);
-                    notifyEdited();
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(this, jeu.getMessage());
                 } catch (InvocationTargetException ite) {
@@ -560,18 +537,12 @@ public class PatternWindow extends JFrame implements ActionListener {
 
         // items to carry over from old view to the new:
         JMLPattern pat = null;
-        String bp_notation = null;
-        String bp_config = null;
-        boolean bp_edited = false;
         AnimationPrefs jc = null;
         Dimension animsize = null;
         boolean paused = false;
 
         if (view != null) {
             pat = view.getPattern();
-            bp_notation = view.getBasePatternNotation();
-            bp_config = view.getBasePatternConfig();
-            bp_edited = view.getBasePatternEdited();
             jc = view.getAnimationPrefs();
             animsize = view.getAnimationPanelSize();
             paused = view.getPaused();
@@ -609,10 +580,6 @@ public class PatternWindow extends JFrame implements ActionListener {
             view.disposeView();
             view = newview;
             pack();
-            if (bp_notation != null) {
-                view.setBasePattern(bp_notation, bp_config);
-                view.setBasePatternEdited(bp_edited);
-            }
             view.restartView(pat, jc);
         } else
             // pack() and restartView() happen in constructor

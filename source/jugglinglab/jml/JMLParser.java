@@ -1,6 +1,6 @@
 // JMLParser.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -13,6 +13,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
+import jugglinglab.core.Constants;
 import jugglinglab.util.*;
 
 
@@ -20,10 +21,8 @@ public class JMLParser extends DefaultHandler {
     protected boolean patternStarted;
     protected boolean patternFinished;
 
-    protected JMLNode rootNode;         // tree of JML tags
+    protected JMLNode rootNode;  // tree of JML tags
     protected JMLNode currentNode;
-
-    protected static final boolean saxdebug = false;    // print messages during parsing?
 
     public static final int JML_INVALID = 0;
     public static final int JML_PATTERN = 1;
@@ -38,6 +37,8 @@ public class JMLParser extends DefaultHandler {
 
     public void parse(Reader read) throws SAXException, IOException {
         try {
+            if (Constants.DEBUG_JML_PARSING)
+                System.out.println("Starting JMLParser.parse()...");
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setValidating(true);
             SAXParser parser = factory.newSAXParser();
@@ -54,7 +55,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public InputSource resolveEntity(String publicId, String systemId) {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.print("Resolve entity:");
             if (publicId != null)
                 System.out.print(" publicId=\"" + publicId + '"');
@@ -62,7 +63,7 @@ public class JMLParser extends DefaultHandler {
         }
 
         if (systemId.equalsIgnoreCase("file://jml.dtd")) {
-            if (saxdebug) {
+            if (Constants.DEBUG_JML_PARSING) {
                 System.out.println("--------- jml.dtd -----------");
                 System.out.println(JMLDefs.jmldtd);
                 System.out.println("-----------------------------");
@@ -76,7 +77,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void notationDecl(String name, String publicId, String systemId) {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.print("Notation declaration: " + name);
             if (publicId != null)
                 System.out.print(" publicId=\"" + publicId + '"');
@@ -91,7 +92,7 @@ public class JMLParser extends DefaultHandler {
                                    String publicId,
                                    String systemId,
                                    String notationName) {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.print("Unparsed Entity Declaration: " + name);
             if (publicId != null)
                 System.out.print(" publicId=\"" + publicId + '"');
@@ -106,13 +107,13 @@ public class JMLParser extends DefaultHandler {
     @Override
     public void setDocumentLocator(Locator locator) {
         super.setDocumentLocator(locator);
-        if (saxdebug)
+        if (Constants.DEBUG_JML_PARSING)
             System.out.println("Document locator supplied.");
     }
 
     @Override
     public void startDocument() throws SAXException {
-        if (saxdebug)
+        if (Constants.DEBUG_JML_PARSING)
             System.out.println("Start document");
         try {
             startJMLPattern();
@@ -123,7 +124,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void endDocument() throws SAXException {
-        if (saxdebug)
+        if (Constants.DEBUG_JML_PARSING)
             System.out.println("End document");
         try {
             endJMLPattern();
@@ -134,7 +135,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.println("Start element: " + qName);
             for (int i = 0; i < atts.getLength(); i++) {
                 System.out.println("  Attribute: " +
@@ -154,7 +155,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
-        if (saxdebug)
+        if (Constants.DEBUG_JML_PARSING)
             System.out.println("End element: " + qName);
         try {
             endJMLElement(qName);
@@ -165,7 +166,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.print("Characters: ");
             display(ch, start, length);
         }
@@ -178,7 +179,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void ignorableWhitespace(char ch[], int start, int length) {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             System.out.print("Ignorable Whitespace: ");
             display(ch, start, length);
         }
@@ -186,7 +187,7 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void processingInstruction(String target, String data) {
-        if (saxdebug)
+        if (Constants.DEBUG_JML_PARSING)
             System.out.println("Processing instruction: " + target + ' ' + data);
     }
 
@@ -194,31 +195,37 @@ public class JMLParser extends DefaultHandler {
 
     @Override
     public void warning(SAXParseException exception) throws SAXException {
-        //      throw new SAXException("Warning: " +
-        //                  exception.getMessage() + " (" +
-        //                  exception.getSystemId() + ':' +
-        //                  exception.getLineNumber() + ',' +
-        //                  exception.getColumnNumber() + ')');
+        if (Constants.DEBUG_JML_PARSING) {
+            System.out.println("SAX parsing warning: " +
+                          exception.getMessage() + " (" +
+                          exception.getSystemId() + ':' +
+                          exception.getLineNumber() + ',' +
+                          exception.getColumnNumber() + ')');
+        }
         throw exception;
     }
 
     @Override
     public void error(SAXParseException exception) throws SAXException {
-        //      throw new SAXException("Recoverable Error: " +
-        //                  exception.getMessage() + " (" +
-        //                  exception.getSystemId() + ':' +
-        //                  exception.getLineNumber() + ',' +
-        //                  exception.getColumnNumber() + ')');
+        if (Constants.DEBUG_JML_PARSING) {
+            System.out.println("SAX parsing error: " +
+                          exception.getMessage() + " (" +
+                          exception.getSystemId() + ':' +
+                          exception.getLineNumber() + ',' +
+                          exception.getColumnNumber() + ')');
+        }
         throw exception;
     }
 
     @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        //      throw new SAXException("Fatal Error: " +
-        //                  exception.getMessage() + " (" +
-        //                  exception.getSystemId() + ':' +
-        //                  exception.getLineNumber() + ',' +
-        //                  exception.getColumnNumber() + ')');
+        if (Constants.DEBUG_JML_PARSING) {
+            System.out.println("SAX parsing fatal error: " +
+                          exception.getMessage() + " (" +
+                          exception.getSystemId() + ':' +
+                          exception.getLineNumber() + ',' +
+                          exception.getColumnNumber() + ')');
+        }
         throw exception;
     }
 
@@ -229,7 +236,7 @@ public class JMLParser extends DefaultHandler {
         * Display text, escaping some characters.
      */
     private static void display(char ch[], int start, int length) {
-        if (saxdebug) {
+        if (Constants.DEBUG_JML_PARSING) {
             for (int i = start; i < start + length; i++) {
                 switch (ch[i]) {
                     case '\n':

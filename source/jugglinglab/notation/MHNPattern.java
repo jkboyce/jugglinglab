@@ -258,26 +258,26 @@ public abstract class MHNPattern extends Pattern {
         // build out the internal pattern representation in steps
         //
         // this will find and raise any errors in the pattern
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
             System.out.println("-----------------------------------------------------");
             System.out.println("Building internal MHNPattern representation...\n");
             System.out.println("findMasterThrows()");
         }
         findMasterThrows();
 
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("assignPaths()");
         assignPaths();
 
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("findThrowSources()");
         findThrowSources();
 
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("setCatchOrder()");
         setCatchOrder();
 
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
             String s = getInternalRepresentation();
             if (s != null) {
                 System.out.println("\nInternal MHNPattern representation:\n");
@@ -362,7 +362,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
             for (int i = 0; i < indexes; ++i) {
                 for (int j = 0; j < numjugglers; ++j) {
                     for (int h = 0; h < 2; ++h) {
@@ -423,7 +423,7 @@ public abstract class MHNPattern extends Pattern {
                         }
 
                         if (targetslot == max_occupancy) {
-                            if (Constants.DEBUG_PARSING)
+                            if (Constants.DEBUG_SITESWAP_PARSING)
                                 System.out.println("Error: Too many objects landing on beat "
                                         + (sst.targetindex + 1) + " for juggler "
                                         + sst.targetjuggler + ", "
@@ -481,7 +481,7 @@ public abstract class MHNPattern extends Pattern {
                         }
 
                         if (currentpath > numpaths) {
-                            if (Constants.DEBUG_PARSING) {
+                            if (Constants.DEBUG_SITESWAP_PARSING) {
                                 System.out.println("j="+j+", h="+h+", index="+i+", slot="+slot+"\n");
                                 System.out.println("---------------------------");
                                 for (int tempi = 0; tempi <= i; ++tempi) {

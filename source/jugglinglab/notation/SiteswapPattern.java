@@ -40,7 +40,7 @@ public class SiteswapPattern extends MHNPattern {
     @Override
     public SiteswapPattern fromParameters(ParameterList pl) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("Starting siteswap parser...");
 
         super.fromParameters(pl);
@@ -83,7 +83,7 @@ public class SiteswapPattern extends MHNPattern {
                 // pattern = "(" + pattern + ")^" + repeats;
                 // pattern = JLFunc.expandRepeats(pattern);
 
-                if (Constants.DEBUG_PARSING) {
+                if (Constants.DEBUG_SITESWAP_PARSING) {
                     System.out.println("-----------------------------------------------------");
                     System.out.println("Repeating pattern to match hand/body period, restarting\n");
                 }
@@ -93,7 +93,7 @@ public class SiteswapPattern extends MHNPattern {
 
         super.buildRepresentation();
 
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
             System.out.println("Siteswap parser finished");
             System.out.println("-----------------------------------------------------");
         }
@@ -121,16 +121,16 @@ public class SiteswapPattern extends MHNPattern {
         SiteswapTreeItem tree = null;
 
         try {
-            if (Constants.DEBUG_PARSING) {
+            if (Constants.DEBUG_SITESWAP_PARSING) {
                 System.out.println("Parsing pattern \"" + pattern + "\"");
             }
             tree = SiteswapParser.parsePattern(pattern);
-            if (Constants.DEBUG_PARSING) {
+            if (Constants.DEBUG_SITESWAP_PARSING) {
                 System.out.println("Parse tree:\n");
                 System.out.println(tree.toString());
             }
         } catch (ParseException pe) {
-            if (Constants.DEBUG_PARSING) {
+            if (Constants.DEBUG_SITESWAP_PARSING) {
                 System.out.println("---------------");
                 System.out.println("Parse error:");
                 System.out.println(pe.getMessage());
@@ -177,7 +177,7 @@ public class SiteswapPattern extends MHNPattern {
         for (int i = 0; i < numjugglers; i++)
             right_on_even[i] = true;
 
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("Starting first pass...");
 
         tree.beatnum = 0;
@@ -189,7 +189,7 @@ public class SiteswapPattern extends MHNPattern {
             tree.throw_sum *= 2;
             oddperiod = true;
 
-            if (Constants.DEBUG_PARSING)
+            if (Constants.DEBUG_SITESWAP_PARSING)
                 System.out.println("Vanilla async detected; applying switchdelay symmetry");
         }
 
@@ -200,7 +200,7 @@ public class SiteswapPattern extends MHNPattern {
         indexes = max_throw + period + 1;
         th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
 
-        if (Constants.DEBUG_PARSING) {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
             System.out.println("period = "+period+", numpaths = "+numpaths+", max_throw = "+
                             max_throw+", max_occupancy = "+max_occupancy);
             System.out.println("Starting second pass...");
@@ -221,7 +221,7 @@ public class SiteswapPattern extends MHNPattern {
         if (bodies != null && bodies.getNumberOfJugglers() < this.getNumberOfJugglers())
             throw new JuggleExceptionUser(errorstrings.getString("Error_jugglers_body"));
 
-        if (Constants.DEBUG_PARSING)
+        if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("Done with initial parse.");
     }
 

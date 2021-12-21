@@ -100,7 +100,7 @@ public class PatternListPanel extends JPanel {
                             p = Pattern.newPattern(rec.notation).fromParameters(pl);
                         }
             
-                        pat = p.asJMLPattern();
+                        pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
                     } else
                         return;
 
@@ -119,11 +119,8 @@ public class PatternListPanel extends JPanel {
 
                     if (animtarget != null)
                         animtarget.restartView(pat, ap);
-                    else {
+                    else
                         jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-                        if (rec.notation != null && p != null)
-                            jaw2.setBasePattern(rec.notation, p.toString());
-                    }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)
                         jaw2.dispose();

@@ -1,6 +1,6 @@
 // SelectionView.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -82,8 +82,6 @@ public class SelectionView extends View {
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
-                    if (num != center)
-                        setBasePatternEdited(true);
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {

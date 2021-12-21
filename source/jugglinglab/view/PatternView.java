@@ -1,6 +1,6 @@
 // PatternView.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -139,20 +139,29 @@ public class PatternView extends View implements DocumentListener {
             return;
         }
 
-        if (getBasePatternNotation() == null || getBasePatternConfig() == null) {
+        JMLPattern pat = getPattern();
+
+        if (pat == null) {
+            rb_bp.setEnabled(false);
+            if (bp_edited_icon != null)
+                bp_edited_icon.setVisible(false);
+            rb_jml.setEnabled(false);
+        } else if (pat.getBasePatternNotation() == null || pat.getBasePatternConfig() == null) {
             // no base pattern set
             rb_bp.setEnabled(false);
             if (bp_edited_icon != null)
                 bp_edited_icon.setVisible(false);
+            rb_jml.setEnabled(true);
             rb_jml.setSelected(true);
         } else {
             rb_bp.setEnabled(true);
             if (bp_edited_icon != null)
-                bp_edited_icon.setVisible(getBasePatternEdited());
+                bp_edited_icon.setVisible(pat.getBasePatternEdited());
+            rb_jml.setEnabled(true);
         }
 
         if (rb_bp.isSelected()) {
-            compile.setEnabled(getBasePatternEdited() || text_edited);
+            compile.setEnabled(pat != null && (pat.getBasePatternEdited() || text_edited));
             revert.setEnabled(text_edited);
         } else if (rb_jml.isSelected()) {
             compile.setEnabled(text_edited);
@@ -164,7 +173,7 @@ public class PatternView extends View implements DocumentListener {
     // anything that was there.
     protected void reloadTextArea() {
         if (rb_bp.isSelected())
-            ta.setText(getBasePatternConfig().replace(";", ";\n"));
+            ta.setText(getPattern().getBasePatternConfig().replace(";", ";\n"));
         else if (rb_jml.isSelected())
             ta.setText(getPattern().toString());
 
@@ -186,15 +195,12 @@ public class PatternView extends View implements DocumentListener {
     protected void compilePattern() {
         try {
             if (rb_bp.isSelected()) {
+                String notation = getPattern().getBasePatternNotation();
                 String config = ta.getText().replace("\n", "").trim();
-                Pattern p = Pattern.newPattern(getBasePatternNotation())
-                                   .fromString(config);
-                restartView(p.asJMLPattern(), null);
-                setBasePattern(getBasePatternNotation(), config);
-                setBasePatternEdited(false);
+                JMLPattern newpat = JMLPattern.fromBasePattern(notation, config);
+                restartView(newpat, null);
             } else if (rb_jml.isSelected()) {
                 restartView(new JMLPattern(new StringReader(ta.getText())), null);
-                setBasePatternEdited(true);
             }
         } catch (JuggleExceptionUser jeu) {
             lab.setText(jeu.getMessage());
@@ -213,26 +219,24 @@ public class PatternView extends View implements DocumentListener {
     // View methods
 
     @Override
-    public void setBasePattern(String bpn, String bpc) throws JuggleExceptionUser {
-        super.setBasePattern(bpn, bpc);
-        String template = guistrings.getString("PatternView_rb1");
-        Object[] arg = { getBasePatternNotation() };
-        rb_bp.setText(MessageFormat.format(template, arg));
-        rb_bp.setSelected(true);
-        reloadTextArea();
-    }
-
-    @Override
-    public void setBasePatternEdited(boolean bpe) {
-        super.setBasePatternEdited(bpe);
-        updateButtons();
-    }
-
-    @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                     JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
+
         if (p != null) {
+            String notation = p.getBasePatternNotation();
+            String template = guistrings.getString("PatternView_rb1");
+            Object[] arg = { notation == null ? "none set" : notation };
+            rb_bp.setText(MessageFormat.format(template, arg));
+
+            if (!(rb_bp.isSelected() || rb_jml.isSelected())) {
+                if (notation == null)
+                    rb_jml.setSelected(true);
+                else
+                    rb_bp.setSelected(true);
+            }
+
+            updateButtons();
             reloadTextArea();
             parent.setTitle(p.getTitle());
         }

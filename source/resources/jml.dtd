@@ -7,6 +7,10 @@
 
 <!ELEMENT title (#PCDATA)>
 
+<!ELEMENT basepattern (#PCDATA)>
+<!ATTLIST basepattern
+          notation CDATA   #REQUIRED>
+
 <!ELEMENT prop EMPTY>
 <!ATTLIST prop
           type     CDATA   "ball"

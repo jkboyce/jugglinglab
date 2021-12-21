@@ -1,6 +1,6 @@
 // JMLPattern.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -11,9 +11,10 @@ import org.xml.sax.*;
 
 import jugglinglab.core.*;
 import jugglinglab.curve.*;
+import jugglinglab.notation.Pattern;
 import jugglinglab.path.*;
-import jugglinglab.prop.*;
-import jugglinglab.renderer.*;
+import jugglinglab.prop.Prop;
+import jugglinglab.renderer.Juggler;
 import jugglinglab.util.*;
 
 
@@ -46,15 +47,18 @@ public class JMLPattern {
     protected ArrayList<PropDef> props;
     protected int[] propassignment;
 
+    // for retaining the base pattern this pattern was created from
+    protected String base_pattern_notation;
+    protected String base_pattern_config;
+    protected boolean base_pattern_edited;
+
     // whether pattern has a velocity-defining transition
-    protected boolean[] hasVDPathJMLTransition;     // for a given path
-    protected boolean[][] hasVDHandJMLTransition;   // for a given juggler/hand
+    protected boolean[] hasVDPathJMLTransition;  // for a given path
+    protected boolean[][] hasVDHandJMLTransition;  // for a given juggler/hand
 
     protected ArrayList<JMLSymmetry> symmetries;
     protected JMLEvent eventlist;
     protected JMLPosition positionlist;
-    protected boolean laidout;
-    protected boolean valid;
 
     // list of PathLink objects for each path
     protected ArrayList<ArrayList<PathLink>> pathlinks;
@@ -64,6 +68,9 @@ public class JMLPattern {
 
     protected Curve[] jugglercurve;  // coordinates for each juggler
     protected Curve[] jugglerangle;  // angles for each juggler
+
+    protected boolean laidout;
+    protected boolean valid;
 
 
     public JMLPattern() {
@@ -77,6 +84,7 @@ public class JMLPattern {
         this();
         readJML(root);
         valid = true;
+        checkIfBasePatternEdited();
     }
 
     // Used to specify the jml version number, when pattern is part of a patternlist
@@ -85,6 +93,7 @@ public class JMLPattern {
         loadingversion = jmlvers;
         readJML(root);
         valid = true;
+        checkIfBasePatternEdited();
     }
 
     public JMLPattern(Reader read) throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -94,6 +103,7 @@ public class JMLPattern {
             parser.parse(read);
             readJML(parser.getTree());
             valid = true;
+            checkIfBasePatternEdited();
         } catch (SAXException se) {
             throw new JuggleExceptionUser(se.getMessage());
         } catch (IOException ioe) {
@@ -103,6 +113,7 @@ public class JMLPattern {
 
     public JMLPattern(JMLPattern pat) throws JuggleExceptionUser, JuggleExceptionInternal {
         this(new StringReader(pat.toString()));
+        checkIfBasePatternEdited();
     }
 
     // ------------------------------------------------------------------------
@@ -115,17 +126,17 @@ public class JMLPattern {
 
     public void setNumberOfJugglers(int n) {
         numjugglers = n;
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
 
     public void setNumberOfPaths(int n) {
         numpaths = n;
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
 
     public void addProp(PropDef pd) {
         props.add(pd);
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
     public void removeProp(int propnum) {
         props.remove(propnum - 1);
@@ -133,24 +144,24 @@ public class JMLPattern {
             if (getPropAssignment(i) > propnum)
                 setPropAssignment(i, getPropAssignment(i) - 1);
         }
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
     public void setPropAssignment(int pathnum, int propnum) {
         propassignment[pathnum - 1] = propnum;
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
     public void setPropAssignments(int[] pa) {
         propassignment = pa;
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
 
     public void addSymmetry(JMLSymmetry sym) {
         symmetries.add(sym);
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
 
     public void addEvent(JMLEvent ev) {
-        setNeedsLayout(true);
+        setNeedsLayout();
         if (eventlist == null || eventlist.getT() > ev.getT()) {
             ev.setPrevious(null);
             ev.setNext(eventlist);
@@ -179,7 +190,7 @@ public class JMLPattern {
     }
 
     public void removeEvent(JMLEvent ev) {
-        setNeedsLayout(true);
+        setNeedsLayout();
         if (eventlist == ev) {
             eventlist = ev.getNext();
             if (eventlist != null)
@@ -195,8 +206,9 @@ public class JMLPattern {
             prev.setNext(next);
     }
 
-    public void setNeedsLayout(boolean needslayout) {
-        laidout = !needslayout;
+    public void setNeedsLayout() {
+        laidout = false;
+        base_pattern_edited = true;
     }
 
     public JMLEvent getEventList()  { return eventlist; }
@@ -206,7 +218,7 @@ public class JMLPattern {
     public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
         if (pos.getT() < getLoopStartTime() || pos.getT() > getLoopEndTime())
             return;  // throw new JuggleExceptionUser("<position> time out of range");
-        setNeedsLayout(true);
+        setNeedsLayout();
 
         if (positionlist == null || positionlist.getT() > pos.getT()) {
             pos.setPrevious(null);
@@ -237,7 +249,7 @@ public class JMLPattern {
     }
 
     public void removePosition(JMLPosition pos) {
-        setNeedsLayout(true);
+        setNeedsLayout();
         if (positionlist == pos) {
             positionlist = pos.getNext();
             if (positionlist != null)
@@ -254,6 +266,60 @@ public class JMLPattern {
     }
 
     public JMLPosition getPositionList()  { return positionlist; }
+
+    // ------------------------------------------------------------------------
+    //   Methods related to the base pattern (if set)
+    // ------------------------------------------------------------------------
+
+    public String getBasePatternNotation() {
+        return base_pattern_notation;
+    }
+    public String getBasePatternConfig() {
+        return base_pattern_config;
+    }
+    public boolean getBasePatternEdited() {
+        return base_pattern_edited;
+    }
+
+    // When we construct a new JMLPattern from string or xml input, we don't
+    // know if it's been edited from its base pattern. Here we determine this
+    // and set the initial value of base_pattern_edited accordingly.
+    private void checkIfBasePatternEdited() {
+        if (base_pattern_notation == null || base_pattern_config == null) {
+            base_pattern_edited = false;
+            return;
+        }
+
+        try {
+            JMLPattern basepat = JMLPattern.fromBasePattern(base_pattern_notation,
+                                                            base_pattern_config);
+
+            // have to lay out both because:
+            // (a) layout can change the toString() representation (and hash code)
+            // (b) doing layout later will set `base_pattern_edited` to true, and
+            //     overwrite what we determine here
+            layoutPattern();
+            basepat.layoutPattern();
+
+            base_pattern_edited = (getHashCode() != basepat.getHashCode());
+            //System.out.println(base_pattern_edited);
+        } catch (JuggleException je) {
+            base_pattern_edited = false;
+        }
+    }
+
+    public static JMLPattern fromBasePattern(String notation, String config)
+                throws JuggleExceptionUser, JuggleExceptionInternal {
+        JMLPattern pat = Pattern.newPattern(notation).fromString(config).asJMLPattern();
+        pat.layoutPattern();
+
+        pat.base_pattern_notation = Pattern.getNotationName(notation);
+        pat.base_pattern_config = config;
+        pat.base_pattern_edited = false;
+
+        return pat;
+    }
+
 
     // ------------------------------------------------------------------------
     //   Lay out the spatial paths in the pattern
@@ -1303,7 +1369,7 @@ public class JMLPattern {
                 sym.setDelay(delay * scale);
         }
 
-        setNeedsLayout(true);
+        setNeedsLayout();
     }
 
     public boolean isValid() { return valid; }
@@ -1347,6 +1413,9 @@ public class JMLPattern {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {
             setTitle(current.getNodeValue());
+        } else if (type.equalsIgnoreCase("basepattern")) {
+            base_pattern_notation = current.getAttributes().getAttribute("notation");
+            base_pattern_config = current.getNodeValue().trim();
         } else if (type.equalsIgnoreCase("prop")) {
             PropDef pd = new PropDef();
             pd.readJML(current, loadingversion);
@@ -1421,6 +1490,11 @@ public class JMLPattern {
         write.println("<pattern>");
         if (write_title && title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
+        if (base_pattern_notation != null && base_pattern_config != null) {
+            write.println("<basepattern notation=\"" + base_pattern_notation + "\">");
+            write.println(JMLNode.xmlescape(base_pattern_config));
+            write.println("</basepattern>");
+        }
         for (int i = 0; i < props.size(); i++)
             props.get(i).writeJML(write);
 

@@ -1,6 +1,6 @@
 // Mutator.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -15,6 +15,7 @@ import javax.swing.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
+
 
 /* ----------------------------------------------------------------------------
 This class is used by SelectionView to create random variations of a pattern.
@@ -125,7 +126,7 @@ public class Mutator {
         Coordinate pos = ev.getLocalCoordinate();
         pos = pickNewPosition(ev.getHand(), rate * mutationPositionCm, pos);
         ev.setLocalCoordinate(pos);
-        pat.setNeedsLayout(true);
+        pat.setNeedsLayout();
         return pat;
     }
 
@@ -170,7 +171,7 @@ public class Mutator {
             t = tmax - (tmax - tnow) * Math.sqrt(2 * (1 - r));
 
         ev.setT(t);
-        pat.setNeedsLayout(true);
+        pat.setNeedsLayout();
         return pat;
     }
 
@@ -207,7 +208,7 @@ public class Mutator {
                 sym.setDelay(delay * scale);
         }
 
-        pat.setNeedsLayout(true);
+        pat.setNeedsLayout();
         return pat;
     }
 
@@ -296,7 +297,7 @@ public class Mutator {
         }
 
         pat.addEvent(ev);
-        pat.setNeedsLayout(true);
+        pat.setNeedsLayout();
         return pat;
     }
 
@@ -346,7 +347,7 @@ public class Mutator {
                 if (holding_only) {
                     if (count == 0) {
                         pat.removeEvent(ev);
-                        pat.setNeedsLayout(true);
+                        pat.setNeedsLayout();
                         return pat;
                     }
                     count--;

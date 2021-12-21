@@ -1,6 +1,6 @@
 // ApplicationPanel.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -163,7 +163,9 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
                     pl.errorIfParametersLeft();
 
-                    JMLPattern pat = p.asJMLPattern();
+                    String notation = p.getNotationName();
+                    String config = p.toString();
+                    JMLPattern pat = JMLPattern.fromBasePattern(notation, config);
                     pat.layoutPattern();
 
                     if (PatternWindow.bringToFront(pat.getHashCode()))
@@ -171,12 +173,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
                     if (animtarget != null)
                         animtarget.restartView(pat, jc);
-                    else {
+                    else
                         jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
-                        String notation_name = p.getNotationName();
-                        String config = p.toString();
-                        jaw2.setBasePattern(notation_name, config);
-                    }
                 } catch (JuggleExceptionUser je) {
                     if (jaw2 != null)
                         jaw2.dispose();
