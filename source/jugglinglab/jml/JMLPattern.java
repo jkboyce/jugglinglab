@@ -40,7 +40,7 @@ public class JMLPattern {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected String version = JMLDefs.default_JML_on_save;  // JML version number
+    protected String version = JMLDefs.CURRENT_JML_VERSION;
     protected String title;
     protected int numjugglers;
     protected int numpaths;
@@ -69,6 +69,7 @@ public class JMLPattern {
     protected Curve[] jugglercurve;  // coordinates for each juggler
     protected Curve[] jugglerangle;  // angles for each juggler
 
+    protected String loadingversion;  // for readJML
     protected boolean laidout;
     protected boolean valid;
 
@@ -1396,9 +1397,8 @@ public class JMLPattern {
     public int getHashCode() { return toString().hashCode(); }
 
     // ------------------------------------------------------------------------
-    //   Use the JMLNode tree to build our internal pattern representation
+    //   Reader/writer methods
     // ------------------------------------------------------------------------
-    String loadingversion = null;
 
     protected void readJML(JMLNode current) throws JuggleExceptionUser {
         // process current node, then treat subnodes recursively
@@ -1407,8 +1407,11 @@ public class JMLPattern {
 
         if (type.equalsIgnoreCase("jml")) {
             loadingversion = current.getAttributes().getAttribute("version");
+
             if (loadingversion == null)
-                loadingversion = JMLDefs.default_JML_on_load;
+                loadingversion = JMLDefs.CURRENT_JML_VERSION;
+            else if (JLFunc.compareVersions(loadingversion, JMLDefs.CURRENT_JML_VERSION) > 0)
+                throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
         } else if (type.equalsIgnoreCase("pattern")) {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {

@@ -1,6 +1,6 @@
 // JLFunc.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -213,5 +213,20 @@ public class JLFunc {
                 jfc = new JFileChooser();
         }
         return jfc;
+    }
+
+    // Compare two version numbers
+    //
+    // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
+    public static int compareVersions(String v1, String v2) {
+        String[] components1 = v1.split("\\.");
+        String[] components2 = v2.split("\\.");
+        int length = Math.min(components1.length, components2.length);
+        for (int i = 0; i < length; i++) {
+            int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
+            if (result != 0)
+                return result;
+        }
+        return Integer.compare(components1.length, components2.length);
     }
 }

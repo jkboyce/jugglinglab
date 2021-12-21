@@ -6,14 +6,12 @@ package jugglinglab.jml;
 
 
 public class JMLDefs {
-    public static final String default_JML_on_save = "2";
-
-    public static final String default_JML_on_load = "1.0";
+    public static final String CURRENT_JML_VERSION = "2";
 
     public static final String jmldtd =
         "<!ELEMENT jml (pattern|patternlist)>\n" +
         "<!ATTLIST jml\n" +
-        "          version  CDATA   \"1.0\">\n" +
+        "          version  CDATA   \"" + CURRENT_JML_VERSION + "\">\n" +
         "\n" +
         "<!ELEMENT pattern (title?,basepattern?,prop*,setup,symmetry+,(event|position)*)>\n" +
         "\n" +

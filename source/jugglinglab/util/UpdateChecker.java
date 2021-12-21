@@ -1,6 +1,6 @@
 // UpdateChecker.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import jugglinglab.core.Constants;
+import jugglinglab.util.JLFunc;
 
 
 // Background thread that checks online for an updated version of the application.
@@ -71,7 +72,7 @@ public class UpdateChecker extends Thread {
         String running_version = Constants.version;
 
         if (current_version == null || current_version.length() == 0 ||
-                    compareVersions(current_version, running_version) <= 0)
+                    JLFunc.compareVersions(current_version, running_version) <= 0)
             return;
 
         try {
@@ -85,19 +86,6 @@ public class UpdateChecker extends Thread {
             });
         } catch (InterruptedException e) {
         }
-    }
-
-    // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
-    protected static int compareVersions(String v1, String v2) {
-        String[] components1 = v1.split("\\.");
-        String[] components2 = v2.split("\\.");
-        int length = Math.min(components1.length, components2.length);
-        for (int i = 0; i < length; i++) {
-            int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
-            if (result != 0)
-                return result;
-        }
-        return Integer.compare(components1.length, components2.length);
     }
 
     protected static void showUpdateBox(String version) {
@@ -114,7 +102,7 @@ public class UpdateChecker extends Thread {
         JLabel text1 = new JLabel(MessageFormat.format(template1, arguments1));
         text1.setFont(new Font("SansSerif", Font.PLAIN, 14));
         updatePanel.add(text1);
-        gb.setConstraints(text1, make_constraints(GridBagConstraints.LINE_START,0,1,
+        gb.setConstraints(text1, JLFunc.constraints(GridBagConstraints.LINE_START,0,1,
                                                        new Insets(20,25,0,25)));
 
         String template2 = guistrings.getString("New_version_text2");
@@ -122,13 +110,13 @@ public class UpdateChecker extends Thread {
         JLabel text2 = new JLabel(MessageFormat.format(template2, arguments2));
         text2.setFont(new Font("SansSerif", Font.PLAIN, 14));
         updatePanel.add(text2);
-        gb.setConstraints(text2, make_constraints(GridBagConstraints.LINE_START,0,2,
+        gb.setConstraints(text2, JLFunc.constraints(GridBagConstraints.LINE_START,0,2,
                                                        new Insets(0,25,0,25)));
 
         JLabel text3 = new JLabel(guistrings.getString("New_version_text3"));
         text3.setFont(new Font("SansSerif", Font.PLAIN, 14));
         updatePanel.add(text3);
-        gb.setConstraints(text3, make_constraints(GridBagConstraints.LINE_START,0,3,
+        gb.setConstraints(text3, JLFunc.constraints(GridBagConstraints.LINE_START,0,3,
                                                        new Insets(20,25,5,25)));
 
         JPanel butp = new JPanel();
@@ -171,7 +159,7 @@ public class UpdateChecker extends Thread {
         butp.add(yesbutton);
 
         updatePanel.add(butp);
-        gb.setConstraints(butp, make_constraints(GridBagConstraints.LINE_END,0,4,
+        gb.setConstraints(butp, JLFunc.constraints(GridBagConstraints.LINE_END,0,4,
                                                  new Insets(10,10,10,10)));
 
         updatePanel.setOpaque(true);
@@ -185,18 +173,5 @@ public class UpdateChecker extends Thread {
         updateBox.setResizable(false);
         updateBox.setLocationRelativeTo(null);    // center frame on screen
         updateBox.setVisible(true);
-    }
-
-    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.anchor = location;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.gridheight = gbc.gridwidth = 1;
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.insets = ins;
-        gbc.weightx = gbc.weighty = 0.0;
-        return gbc;
     }
 }

@@ -230,7 +230,7 @@ public class PatternListPanel extends JPanel {
             write.println(JMLDefs.jmlprefix[i]);
         String vers = this.loadingversion;
         if (vers == null)
-            vers = JMLDefs.default_JML_on_save;
+            vers = JMLDefs.CURRENT_JML_VERSION;
         write.println("<jml version=\""+vers+"\">");
         write.println("<patternlist>");
         write.println("<title>" + JMLNode.xmlescape(this.title) + "</title>");
