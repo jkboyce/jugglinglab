@@ -868,6 +868,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         gb.setConstraints(lab, JLFunc.constraints(GridBagConstraints.LINE_END,0,0,
                                                 new Insets(0,0,0,0)));
         final JTextField tf = new JTextField(7);
+        tf.setText("100");
         p1.add(tf);
         gb.setConstraints(tf, JLFunc.constraints(GridBagConstraints.LINE_START,1,0,
                                                new Insets(0,5,0,0)));
