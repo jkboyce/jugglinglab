@@ -7,6 +7,7 @@ package jugglinglab.view;
 import java.awt.Dimension;
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
@@ -40,12 +41,58 @@ public abstract class View extends JPanel {
     // used for `view` parameter setting in AnimationPrefs, these must be in the
     // same order as VIEW_ constants above
     public static final String[] viewNames = new String[]
-        { "simple", "visual_editor", "pattern_editor", "selection_editor" };
+        {
+            "simple",
+            "visual_editor",
+            "pattern_editor",
+            "selection_editor",
+        };
 
-    protected JFrame parent;
+    protected PatternWindow parent;
+    protected ArrayList<JMLPattern> undo;
+    protected int undo_index;
 
 
-    public void setParent(JFrame p) { parent = p; }
+    public void setParent(PatternWindow p) { parent = p; }
+
+    public void restartViewUndoable(JMLPattern p, AnimationPrefs c) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
+        restartView(p, c);
+        undo_index++;
+        undo.add(undo_index, p);
+        while (undo_index + 1 < undo.size())
+            undo.remove(undo_index + 1);
+        parent.updateUndoMenu();
+    }
+
+    public void undoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (undo_index > 0) {
+            undo_index--;
+            JMLPattern p = undo.get(undo_index);
+            restartView(p, null);
+            if (undo_index == 0)
+                parent.updateUndoMenu();  // no more undos left
+        }
+    }
+
+    public void redoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (undo_index < undo.size() - 1) {
+            undo_index++;
+            JMLPattern p = undo.get(undo_index);
+            restartView(p, null);
+            if (undo_index == undo.size() - 1)
+                parent.updateUndoMenu();  // no more redos left
+        }
+    }
+
+    public void setUndoList(ArrayList<JMLPattern> u, int u_index) {
+        undo = u;
+        undo_index = u_index;
+    }
+
+    public int getUndoIndex() {
+        return undo_index;
+    }
 
     // null argument means no update for that item:
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws

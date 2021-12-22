@@ -10,6 +10,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
@@ -39,7 +40,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     static protected boolean optimizer_loaded = false;
 
     protected View view;
+    protected JMenu viewmenu;
     protected JMenu windowmenu;
+    protected ArrayList<JMLPattern> undo = new ArrayList<JMLPattern>();
 
 
     public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
@@ -81,7 +84,8 @@ public class PatternWindow extends JFrame implements ActionListener {
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         pack();
-        view.restartView(pat, jc);
+        view.setUndoList(undo, -1);
+        view.restartViewUndoable(pat, jc);
         setLocation(getNextScreenLocation());
         setVisible(true);
 
@@ -197,11 +201,35 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] fileItems = new String[]
-        { "Close", null, "Save JML As...", "Save Animated GIF As...", null, "Duplicate", "Optimize" };
+        {
+            "Close",
+            null,
+            "Save JML As...",
+            "Save Animated GIF As...",
+            null,
+            "Duplicate",
+            "Optimize",
+        };
     protected static final String[] fileCommands = new String[]
-        { "close", null, "saveas", "savegifanim", null, "duplicate", "optimize" };
+        {
+            "close",
+            null,
+            "saveas",
+            "savegifanim",
+            null,
+            "duplicate",
+            "optimize",
+        };
     protected static final char[] fileShortcuts =
-        { 'W', ' ', 'S', ' ', ' ', 'D', 'J' };
+        {
+            'W',
+            ' ',
+            'S',
+            ' ',
+            ' ',
+            'D',
+            'J'
+        };
 
     protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
@@ -228,16 +256,44 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] viewItems = new String[]
-        { "Simple", "Visual Editor", "Pattern Editor", "Selection Editor",
-          null, "Restart", "Animation Preferences..." };
+        {
+            "Simple",
+            "Visual Editor",
+            "Pattern Editor",
+            "Selection Editor",
+            null,
+            "Restart",
+            "Animation Preferences...",
+            "Undo",
+            "Redo",
+        };
     protected static final String[] viewCommands = new String[]
-        { "simple", "visual_edit", "pattern_edit", "selection_edit",
-          null, "restart", "prefs" };
+        {
+            "simple",
+            "visual_edit",
+            "pattern_edit",
+            "selection_edit",
+            null,
+            "restart",
+            "prefs",
+            "undo",
+            "redo",
+        };
     protected static final char[] viewShortcuts =
-        { '1', '2', '3', '4', ' ', ' ', 'P' };
+        {
+            '1',
+            '2',
+            '3',
+            '4',
+            ' ',
+            ' ',
+            'P',
+            'Z',
+            'Y',
+        };
 
     protected JMenu createViewMenu() {
-        JMenu viewmenu = new JMenu(guistrings.getString("View"));
+        viewmenu = new JMenu(guistrings.getString("View"));
         ButtonGroup buttonGroup = new ButtonGroup();
         boolean addingviews = true;
 
@@ -273,14 +329,40 @@ public class PatternWindow extends JFrame implements ActionListener {
         return viewmenu;
     }
 
+    public void updateUndoMenu() {
+        if (view == null || viewmenu == null)
+            return;
+
+        int undo_index = view.getUndoIndex();
+        boolean undo_enabled = (undo_index > 0);
+        boolean redo_enabled = (undo_index < undo.size() - 1);
+
+        for (int i = 0; i < viewmenu.getItemCount(); ++i) {
+            JMenuItem jmi = viewmenu.getItem(i);
+            if (jmi == null || jmi.getActionCommand() == null)
+                continue;
+
+            if (jmi.getActionCommand().equals("undo"))
+                jmi.setEnabled(undo_enabled);
+            else if (jmi.getActionCommand().equals("redo"))
+                jmi.setEnabled(redo_enabled);
+        }
+    }
+
     public JMenu getWindowMenu() {
         return windowmenu;
     }
 
     protected static final String[] helpItems = new String[]
-        { "About Juggling Lab", "Juggling Lab Online Help" };
+        {
+            "About Juggling Lab",
+            "Juggling Lab Online Help",
+        };
     protected static final String[] helpCommands = new String[]
-        { "about", "online" };
+        {
+            "about",
+            "online",
+        };
 
     protected JMenu createHelpMenu() {
         // skip the about menu item if About handler was already installed
@@ -322,6 +404,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(VIEW_RESTART);
             else if (command.equals("prefs"))
                 doMenuCommand(VIEW_ANIMPREFS);
+            else if (command.equals("undo"))
+                doMenuCommand(VIEW_UNDO);
+            else if (command.equals("redo"))
+                doMenuCommand(VIEW_REDO);
             else if (command.equals("simple")) {
                 if (getViewMode() != View.VIEW_SIMPLE)
                     setViewMode(View.VIEW_SIMPLE);
@@ -356,8 +442,10 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int FILE_OPTIMIZE = 5;
     protected static final int VIEW_RESTART = 6;
     protected static final int VIEW_ANIMPREFS = 7;
-    protected static final int HELP_ABOUT = 8;
-    protected static final int HELP_ONLINE = 9;
+    protected static final int VIEW_UNDO = 8;
+    protected static final int VIEW_REDO = 9;
+    protected static final int HELP_ABOUT = 10;
+    protected static final int HELP_ONLINE = 11;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
@@ -499,9 +587,25 @@ public class PatternWindow extends JFrame implements ActionListener {
                     try {
                         if (view != null)
                             view.restartView(null, newjc);
-                    } catch (JuggleExceptionUser je) {
-                        new ErrorDialog(this, je.getMessage());
+                    } catch (JuggleExceptionUser jeu) {
+                        new ErrorDialog(this, jeu.getMessage());
                     }
+                }
+                break;
+
+            case VIEW_UNDO:
+                try {
+                    view.undoEdit();
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
+                }
+                break;
+
+            case VIEW_REDO:
+                try {
+                    view.redoEdit();
+                } catch (JuggleExceptionUser jeu) {
+                    new ErrorDialog(this, jeu.getMessage());
                 }
                 break;
 
@@ -540,12 +644,14 @@ public class PatternWindow extends JFrame implements ActionListener {
         AnimationPrefs jc = null;
         Dimension animsize = null;
         boolean paused = false;
+        int undo_index = 0;
 
         if (view != null) {
             pat = view.getPattern();
             jc = view.getAnimationPrefs();
             animsize = view.getAnimationPanelSize();
             paused = view.getPaused();
+            undo_index = view.getUndoIndex();
         } else {
             // use default size
             AnimationPrefs tempjc = new AnimationPrefs();
@@ -581,8 +687,9 @@ public class PatternWindow extends JFrame implements ActionListener {
             view = newview;
             pack();
             view.restartView(pat, jc);
+            view.setUndoList(undo, undo_index);
         } else
-            // pack() and restartView() happen in constructor
+            // pack(), restartView(), and setUndoList() happen in constructor
             view = newview;
     }
 
