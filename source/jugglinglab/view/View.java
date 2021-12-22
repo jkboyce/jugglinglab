@@ -70,8 +70,9 @@ public abstract class View extends JPanel {
             undo_index--;
             JMLPattern p = undo.get(undo_index);
             restartView(p, null);
-            if (undo_index == 0)
-                parent.updateUndoMenu();  // no more undos left
+            parent.setTitle(p.getTitle());
+            if (undo_index == 0 || undo_index == undo.size() - 2)
+                parent.updateUndoMenu();
         }
     }
 
@@ -80,8 +81,9 @@ public abstract class View extends JPanel {
             undo_index++;
             JMLPattern p = undo.get(undo_index);
             restartView(p, null);
-            if (undo_index == undo.size() - 1)
-                parent.updateUndoMenu();  // no more redos left
+            parent.setTitle(p.getTitle());
+            if (undo_index == 1 || undo_index == undo.size() - 1)
+                parent.updateUndoMenu();
         }
     }
 

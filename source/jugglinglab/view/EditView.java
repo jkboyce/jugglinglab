@@ -54,6 +54,8 @@ public class EditView extends View {
                                         JuggleExceptionInternal {
         jae.restartJuggle(p, c);
         if (p != null) {
+            parent.setTitle(p.getTitle());
+
             LadderDiagram new_ladder;
             /* if (pat.getNumberOfJugglers() > 1) {
                 new_ladder = new PassLadderDiagram(pat, parent);
