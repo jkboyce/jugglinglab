@@ -84,8 +84,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         pack();
+        view.restartView(pat, jc);
         view.setUndoList(undo, -1);
-        view.restartViewUndoable(pat, jc);
+        view.addToUndoList(pat);
         setLocation(getNextScreenLocation());
         setVisible(true);
 
@@ -527,6 +528,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                     JMLPattern pat = view.getPattern();
                     JMLPattern new_pat = (JMLPattern)optimize.invoke(null, pat);
                     view.restartView(new_pat, null);
+                    view.addToUndoList(new_pat);
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(this, jeu.getMessage());
                 } catch (InvocationTargetException ite) {

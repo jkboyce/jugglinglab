@@ -1,6 +1,6 @@
 // AnimationEditPanel.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -312,23 +312,6 @@ public class AnimationEditPanel extends AnimationPanel {
         }
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        if (message != null)
-            drawString(message, g);
-        else if (engineRunning && !writingGIF) {
-            try {
-                anim.drawFrame(getTime(), g, cameradrag);
-                drawEvent(g);
-            } catch (JuggleExceptionInternal jei) {
-                killAnimationThread();
-                System.out.println(jei.getMessage());
-                System.exit(0);
-                // ErrorDialog.handleException(jei);
-            }
-        }
-    }
-
     protected void drawEvent(Graphics g) throws JuggleExceptionInternal {
         if (!event_active)
             return;
@@ -359,6 +342,25 @@ public class AnimationEditPanel extends AnimationPanel {
             g2.drawLine(xhigh2+xdelta, ylow2+ydelta, xhigh2+xdelta, yhigh2+ydelta);
             g2.drawLine(xhigh2+xdelta, yhigh2+ydelta, xlow2+xdelta, yhigh2+ydelta);
             g2.drawLine(xlow2+xdelta, yhigh2+ydelta, xlow2+xdelta, ylow2+ydelta);
+        }
+    }
+
+    // javax.swing.JComponent methods
+
+    @Override
+    public void paintComponent(Graphics g) {
+        if (message != null)
+            drawString(message, g);
+        else if (engineRunning && !writingGIF) {
+            try {
+                anim.drawFrame(getTime(), g, cameradrag);
+                drawEvent(g);
+            } catch (JuggleExceptionInternal jei) {
+                killAnimationThread();
+                System.out.println(jei.getMessage());
+                System.exit(0);
+                // ErrorDialog.handleException(jei);
+            }
         }
     }
 }

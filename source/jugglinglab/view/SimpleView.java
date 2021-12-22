@@ -27,6 +27,8 @@ public class SimpleView extends View {
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
+        if (p != null)
+            parent.setTitle(p.getTitle());
     }
 
     @Override

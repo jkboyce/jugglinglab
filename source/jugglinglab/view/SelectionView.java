@@ -82,6 +82,8 @@ public class SelectionView extends View {
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
+                    if (num != center)
+                        addToUndoList(ja[center].getPattern());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
@@ -196,6 +198,9 @@ public class SelectionView extends View {
                 ja[i].restartJuggle(newp, newjc);
             }
         }
+
+        if (p != null)
+            parent.setTitle(p.getTitle());
     }
 
     @Override

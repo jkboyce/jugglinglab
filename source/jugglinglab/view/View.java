@@ -55,38 +55,64 @@ public abstract class View extends JPanel {
 
     public void setParent(PatternWindow p) { parent = p; }
 
-    public void restartViewUndoable(JMLPattern p, AnimationPrefs c) throws
-                            JuggleExceptionUser, JuggleExceptionInternal {
-        restartView(p, c);
-        undo_index++;
-        undo.add(undo_index, p);
-        while (undo_index + 1 < undo.size())
-            undo.remove(undo_index + 1);
-        parent.updateUndoMenu();
+    // Methods to handle undo/redo functionality. The enclosing PatternWindow
+    // owns the undo list, so it's preserved when we switch views.
+
+    // Add a pattern to the undo list
+    public void addToUndoList(JMLPattern p) {
+        try {
+            JMLPattern pcopy = new JMLPattern(p);
+
+            undo_index++;
+            undo.add(undo_index, pcopy);  // add copy so it won't change
+            while (undo_index + 1 < undo.size())
+                undo.remove(undo_index + 1);
+            parent.updateUndoMenu();
+        } catch (JuggleExceptionUser jeu) {
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
+        }
     }
 
+    // Undo to the previous save state
     public void undoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
         if (undo_index > 0) {
             undo_index--;
-            JMLPattern p = undo.get(undo_index);
-            restartView(p, null);
-            parent.setTitle(p.getTitle());
+            JMLPattern pcopy = null;
+
+            try {
+                pcopy = new JMLPattern(undo.get(undo_index));
+            } catch (JuggleExceptionUser jeu) {
+                // error when duplicating a JMLPattern isn't a user error
+                throw new JuggleExceptionInternal(jeu.getMessage());
+            }
+            restartView(pcopy, null);
+
             if (undo_index == 0 || undo_index == undo.size() - 2)
                 parent.updateUndoMenu();
         }
     }
 
+    // Redo to the next save state
     public void redoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
         if (undo_index < undo.size() - 1) {
             undo_index++;
-            JMLPattern p = undo.get(undo_index);
-            restartView(p, null);
-            parent.setTitle(p.getTitle());
+            JMLPattern pcopy = null;
+
+            try {
+                pcopy = new JMLPattern(undo.get(undo_index));
+            } catch (JuggleExceptionUser jeu) {
+                throw new JuggleExceptionInternal(jeu.getMessage());
+            }
+            restartView(pcopy, null);
+
             if (undo_index == 1 || undo_index == undo.size() - 1)
                 parent.updateUndoMenu();
         }
     }
 
+    // For the PatternWindow to pass into a newly-initialized view
     public void setUndoList(ArrayList<JMLPattern> u, int u_index) {
         undo = u;
         undo_index = u_index;

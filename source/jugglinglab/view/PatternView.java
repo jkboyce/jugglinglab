@@ -198,9 +198,12 @@ public class PatternView extends View implements DocumentListener {
                 String notation = getPattern().getBasePatternNotation();
                 String config = ta.getText().replace("\n", "").trim();
                 JMLPattern newpat = JMLPattern.fromBasePattern(notation, config);
-                restartViewUndoable(newpat, null);
+                restartView(newpat, null);
+                addToUndoList(newpat);
             } else if (rb_jml.isSelected()) {
-                restartViewUndoable(new JMLPattern(new StringReader(ta.getText())), null);
+                JMLPattern newpat = new JMLPattern(new StringReader(ta.getText()));
+                restartView(newpat, null);
+                addToUndoList(newpat);
             }
         } catch (JuggleExceptionUser jeu) {
             lab.setText(jeu.getMessage());

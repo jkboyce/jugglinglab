@@ -1,6 +1,6 @@
 // EditView.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -53,15 +53,14 @@ public class EditView extends View {
     public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser,
                                         JuggleExceptionInternal {
         jae.restartJuggle(p, c);
-        if (p != null) {
-            parent.setTitle(p.getTitle());
 
+        if (p != null) {
             LadderDiagram new_ladder;
             /* if (pat.getNumberOfJugglers() > 1) {
                 new_ladder = new PassLadderDiagram(pat, parent);
                 ((PassLadderDiagram)new_ladder).setAnimationPanel(jae);
             } else {*/
-                new_ladder = new EditLadderDiagram(p, parent);
+                new_ladder = new EditLadderDiagram(p, parent, this);
                 ((EditLadderDiagram)new_ladder).setAnimationPanel(jae);
             // }
 
@@ -72,6 +71,8 @@ public class EditView extends View {
             this.ladder.removeAll();
             this.ladder.add(new_ladder, BorderLayout.CENTER);
             this.ladder.validate();
+
+            parent.setTitle(p.getTitle());
         }
     }
 

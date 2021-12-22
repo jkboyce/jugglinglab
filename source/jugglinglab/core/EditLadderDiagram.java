@@ -20,6 +20,7 @@ import jugglinglab.util.*;
 import jugglinglab.jml.*;
 import jugglinglab.path.*;
 import jugglinglab.prop.*;
+import jugglinglab.view.View;
 
 
 public class EditLadderDiagram extends LadderDiagram implements ActionListener {
@@ -31,6 +32,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     protected AnimationEditPanel animator;
     protected JFrame parent;
+    protected View parentview;
 
     static final private int STATE_INACTIVE = 0;
     static final private int STATE_EVENT_SELECTED = 1;
@@ -51,9 +53,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     protected ParameterDescriptor[] dialog_pd;
 
 
-    public EditLadderDiagram(JMLPattern pat, JFrame par) {
+    public EditLadderDiagram(JMLPattern pat, JFrame pframe, View pview) {
         super(pat);
-        parent = par;
+        parent = pframe;
+        parentview = pview;
 
         active_eventitem = null;
         setupPopup();
@@ -833,6 +836,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 String newtitle = tf.getText();
                 pat.setTitle(newtitle);
                 jd.dispose();
+
+                parentview.addToUndoList(pat);
             }
         });
 
@@ -1490,6 +1495,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 pat.setNeedsLayout();
                 pat.layoutPattern();
             }
+
+            parentview.addToUndoList(pat);
+
             if (animator != null) {
                 animator.anim.initAnimator();
                 animator.repaint();
