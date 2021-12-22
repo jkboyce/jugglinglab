@@ -76,39 +76,36 @@ public abstract class View extends JPanel {
     }
 
     // Undo to the previous save state
-    public void undoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void undoEdit() throws JuggleExceptionInternal {
         if (undo_index > 0) {
-            undo_index--;
-            JMLPattern pcopy = null;
-
             try {
-                pcopy = new JMLPattern(undo.get(undo_index));
+                undo_index--;
+                JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
+                restartView(pcopy, null);
+
+                if (undo_index == 0 || undo_index == undo.size() - 2)
+                    parent.updateUndoMenu();
             } catch (JuggleExceptionUser jeu) {
-                // error when duplicating a JMLPattern isn't a user error
+                // errors here aren't user errors since pattern was successfully
+                // animated before
                 throw new JuggleExceptionInternal(jeu.getMessage());
             }
-            restartView(pcopy, null);
-
-            if (undo_index == 0 || undo_index == undo.size() - 2)
-                parent.updateUndoMenu();
         }
     }
 
     // Redo to the next save state
-    public void redoEdit() throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void redoEdit() throws JuggleExceptionInternal {
         if (undo_index < undo.size() - 1) {
-            undo_index++;
-            JMLPattern pcopy = null;
-
             try {
-                pcopy = new JMLPattern(undo.get(undo_index));
+                undo_index++;
+                JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
+                restartView(pcopy, null);
+
+                if (undo_index == 1 || undo_index == undo.size() - 1)
+                    parent.updateUndoMenu();
             } catch (JuggleExceptionUser jeu) {
                 throw new JuggleExceptionInternal(jeu.getMessage());
             }
-            restartView(pcopy, null);
-
-            if (undo_index == 1 || undo_index == undo.size() - 1)
-                parent.updateUndoMenu();
         }
     }
 

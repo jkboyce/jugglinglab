@@ -599,19 +599,13 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case VIEW_UNDO:
-                try {
-                    view.undoEdit();
-                } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(this, jeu.getMessage());
-                }
+                view.undoEdit();
+                ApplicationWindow.updateWindowMenus();
                 break;
 
             case VIEW_REDO:
-                try {
-                    view.redoEdit();
-                } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(this, jeu.getMessage());
-                }
+                view.redoEdit();
+                ApplicationWindow.updateWindowMenus();
                 break;
 
             case HELP_ABOUT:
