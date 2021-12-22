@@ -371,7 +371,10 @@ public class PatternWindow extends JFrame implements ActionListener {
         boolean include_about = !Desktop.isDesktopSupported() ||
                 !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
 
-        JMenu helpmenu = new JMenu(guistrings.getString("Help"));
+        String menuname = guistrings.getString("Help");
+        if (jugglinglab.JugglingLab.isMacOS)
+            menuname += ' ';
+        JMenu helpmenu = new JMenu(menuname);
 
         for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
             if (helpItems[i] == null)
