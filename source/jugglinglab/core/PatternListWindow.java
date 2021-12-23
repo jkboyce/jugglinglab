@@ -129,7 +129,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         return loc;
     }
 
-    public PatternListPanel getPatternList() { return pl; }
+    public PatternListPanel getPatternList() {
+        return pl;
+    }
 
     protected static final String[] fileItems = new String[]
         {

@@ -9,8 +9,10 @@ import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.*;
 
 import jugglinglab.jml.*;
@@ -19,18 +21,22 @@ import jugglinglab.util.*;
 import jugglinglab.view.View;
 
 
-public class PatternListPanel extends JPanel {
+public class PatternListPanel extends JPanel implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     static final Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
     static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
+    static final Font font_pattern_popup = new Font("Monospaced", Font.ITALIC, 14);
 
     protected View animtarget;
     protected String title;
     protected JList<PatternRecord> list;
     protected DefaultListModel<PatternRecord> model;
     protected String loadingversion;
+
+    protected boolean willLaunchAnimation;
+    protected ArrayList<PatternWindow> popupPatterns;
 
 
     public PatternListPanel() {
@@ -74,69 +80,194 @@ public class PatternListPanel extends JPanel {
         list.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
-                PatternWindow jaw2 = null;
-                try {
-                    PatternRecord rec = model.get(list.getSelectedIndex());
-
-                    if (rec.notation == null)
-                        return;
-
-                    JMLPattern pat = null;
-                    Pattern p = null;
-
-                    if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null) {
-                        pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
-                    } else if (rec.anim != null) {
-                        p = Pattern.newPattern(rec.notation).fromString(rec.anim);
-
-                        // check if we want to add rec.display as the pattern's title
-                        // so it won't be lost when the pattern is recompiled in Pattern View
-                        ParameterList pl = new ParameterList(p.toString());
-                        String pattern = pl.getParameter("pattern");
-                        String title = pl.getParameter("title");
-                        if (title == null && pattern != null && rec.display != null &&
-                                    !pattern.equals(rec.display.trim())) {
-                            pl.addParameter("title", rec.display.trim());
-                            p = Pattern.newPattern(rec.notation).fromParameters(pl);
-                        }
-            
-                        pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
-                    } else
-                        return;
-
-                    pat.setTitle(rec.display);
-                    pat.layoutPattern();
-
-                    if (PatternWindow.bringToFront(pat.getHashCode()))
-                        return;
-
-                    AnimationPrefs ap = new AnimationPrefs();
-                    if (rec.animprefs != null) {
-                        ParameterList pl = new ParameterList(rec.animprefs);
-                        ap.fromParameters(pl);
-                        pl.errorIfParametersLeft();
-                    }
-
-                    if (animtarget != null)
-                        animtarget.restartView(pat, ap);
-                    else
-                        jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-                } catch (JuggleExceptionUser je) {
-                    if (jaw2 != null)
-                        jaw2.dispose();
-                    new ErrorDialog(PatternListPanel.this, je.getMessage());
-                } catch (Exception e) {
-                    if (jaw2 != null)
-                        jaw2.dispose();
-                    ErrorDialog.handleFatalException(e);
-                }
+                //System.out.println("list value changed");
+                willLaunchAnimation = true;
             }
         });
 
         JScrollPane pane = new JScrollPane(list);
 
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent me) {
+                //System.out.println("mouse pressed");
+                if (me.isPopupTrigger()) {
+                    //System.out.println("got a popup trigger");
+
+                    int row = list.locationToIndex(me.getPoint());
+                    //System.out.println("selected row = " + row);
+                    list.setSelectedIndex(row);
+                    //System.out.println("list selected row = " + list.getSelectedIndex());
+
+                    willLaunchAnimation = false;
+                    makePopupMenu().show(PatternListPanel.this, me.getX(), me.getY());
+                }
+            }
+
+            @Override
+            public void mouseReleased(final MouseEvent me) {
+                //System.out.println("mouse released");
+                if (willLaunchAnimation) {
+                    launchAnimation();
+                    willLaunchAnimation = false;
+                }
+            }
+        });
+
         setLayout(new BorderLayout());
         add(pane, BorderLayout.CENTER);
+    }
+
+    protected static final String[] popupItems = new String[]
+        {
+            "Insert Text...",
+            null,
+            "Insert Pattern",
+            null,
+            "Change Title...",
+            "Change Display Text...",
+            null,
+            "Remove Line",
+        };
+    protected static final String[] popupCommands = new String[]
+        {
+            "inserttext",
+            null,
+            "insertpattern",
+            null,
+            "title",
+            "displaytext",
+            null,
+            "remove",
+        };
+
+    protected JPopupMenu makePopupMenu() {
+        JPopupMenu popup = new JPopupMenu();
+        int row = list.getSelectedIndex();
+
+        popupPatterns = new ArrayList<PatternWindow>();
+        for (Frame fr : Frame.getFrames()) {
+            if (fr.isVisible() && fr instanceof PatternWindow)
+                popupPatterns.add((PatternWindow)fr);
+        }
+
+        for (int i = 0; i < popupItems.length; ++i) {
+            String name = popupItems[i];
+
+            if (name == null) {
+                popup.addSeparator();
+                continue;
+            }
+
+            JMenuItem item = new JMenuItem(name /*guistrings.getString(name.replace(' ', '_'))*/);
+            item.setActionCommand(popupCommands[i]);
+            item.addActionListener(this);
+
+            if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
+                item.setEnabled(false);
+            else if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
+                item.setEnabled(false);
+
+            popup.add(item);
+
+            if (popupCommands[i].equals("insertpattern")) {
+                int patnum = 0;
+                for (PatternWindow pw : popupPatterns) {
+                    JMenuItem pitem = new JMenuItem("   " + pw.getTitle());
+                    pitem.setActionCommand("pat" + patnum);
+                    pitem.addActionListener(this);
+                    pitem.setFont(font_pattern_popup);
+                    popup.add(pitem);
+                    ++patnum;
+                }
+            }
+        }
+
+        popup.setBorder(new BevelBorder(BevelBorder.RAISED));
+
+        /*
+        popup.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {}
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                //System.out.println("popup becoming invisible");
+            }
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                //System.out.println("popup becoming visible");
+                //willLaunchAnimation = false;
+            }
+        });*/
+
+        return popup;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        String command = ae.getActionCommand();
+        System.out.println(command);
+    }
+
+    // Try to launch an animation window for the currently-selected item in the
+    // list. If there is no pattern associated with the line, do nothing.
+    protected void launchAnimation() {
+        PatternWindow jaw2 = null;
+        try {
+            PatternRecord rec = model.get(list.getSelectedIndex());
+
+            if (rec.notation == null)
+                return;
+
+            JMLPattern pat = null;
+            Pattern p = null;
+
+            if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null) {
+                pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
+            } else if (rec.anim != null) {
+                p = Pattern.newPattern(rec.notation).fromString(rec.anim);
+
+                // check if we want to add rec.display as the pattern's title
+                // so it won't be lost when the pattern is recompiled in Pattern View
+                ParameterList pl = new ParameterList(p.toString());
+                String pattern = pl.getParameter("pattern");
+                String title = pl.getParameter("title");
+                if (title == null && pattern != null && rec.display != null &&
+                            !pattern.equals(rec.display.trim())) {
+                    pl.addParameter("title", rec.display.trim());
+                    p = Pattern.newPattern(rec.notation).fromParameters(pl);
+                }
+
+                pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
+            } else
+                return;
+
+            pat.setTitle(rec.display);
+            pat.layoutPattern();
+
+            if (PatternWindow.bringToFront(pat.getHashCode()))
+                return;
+
+            AnimationPrefs ap = new AnimationPrefs();
+            if (rec.animprefs != null) {
+                ParameterList pl = new ParameterList(rec.animprefs);
+                ap.fromParameters(pl);
+                pl.errorIfParametersLeft();
+            }
+
+            if (animtarget != null)
+                animtarget.restartView(pat, ap);
+            else
+                jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
+        } catch (JuggleExceptionUser je) {
+            if (jaw2 != null)
+                jaw2.dispose();
+            new ErrorDialog(PatternListPanel.this, je.getMessage());
+        } catch (Exception e) {
+            if (jaw2 != null)
+                jaw2.dispose();
+            ErrorDialog.handleFatalException(e);
+        }
     }
 
     public void setTargetView(View target) {
@@ -175,7 +306,9 @@ public class PatternListPanel extends JPanel {
 
         loadingversion = root.getAttributes().getAttribute("version");
         if (loadingversion == null)
-            loadingversion = "1.0";
+            loadingversion = JMLDefs.CURRENT_JML_VERSION;
+        else if (JLFunc.compareVersions(loadingversion, JMLDefs.CURRENT_JML_VERSION) > 0)
+            throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
 
         JMLNode listnode = root.getChildNode(0);
         if (!listnode.getNodeType().equalsIgnoreCase("patternlist"))

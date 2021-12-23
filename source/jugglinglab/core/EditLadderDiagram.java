@@ -526,12 +526,21 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
 
-    private static String popupItems[] = {
-        "Change title...", "Change overall timing...", "Add event to L hand",
-        "Add event to R hand", null, "Remove event", null,
-        "Define prop...", "Make last in event", "Define throw...",
-        "Change to catch", "Change to softcatch"
-    };
+    private static final String popupItems[] =
+        {
+            "Change title...",
+            "Change overall timing...",
+            "Add event to L hand",
+            "Add event to R hand",
+            null,
+            "Remove event",
+            null,
+            "Define prop...",
+            "Make last in event",
+            "Define throw...",
+            "Change to catch",
+            "Change to softcatch",
+        };
 
     protected void setupPopup() {
         popup = new JPopupMenu();
