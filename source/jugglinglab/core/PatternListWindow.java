@@ -132,11 +132,26 @@ public class PatternListWindow extends JFrame implements ActionListener {
     public PatternListPanel getPatternList() { return pl; }
 
     protected static final String[] fileItems = new String[]
-        { "Close", null, "Save JML As...", "Save Text As..." };
+        {
+            "Save JML As...",
+            "Save Text As...",
+            null,
+            "Close",
+        };
     protected static final String[] fileCommands = new String[]
-        { "close", null, "saveas", "savetext" };
+        {
+            "saveas",
+            "savetext",
+            null,
+            "close",
+        };
     protected static final char[] fileShortcuts =
-        { 'W', ' ', 'S', 'T' };
+        {
+            'S',
+            'T',
+            ' ',
+            'W',
+        };
 
     protected void createMenuBar() {
         JMenuBar mb = new JMenuBar();

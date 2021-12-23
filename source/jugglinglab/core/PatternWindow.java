@@ -203,33 +203,33 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     protected static final String[] fileItems = new String[]
         {
-            "Close",
-            null,
             "Save JML As...",
             "Save Animated GIF As...",
             null,
             "Duplicate",
             "Optimize",
+            null,
+            "Close",
         };
     protected static final String[] fileCommands = new String[]
         {
-            "close",
-            null,
             "saveas",
             "savegifanim",
             null,
             "duplicate",
             "optimize",
+            null,
+            "close",
         };
     protected static final char[] fileShortcuts =
         {
-            'W',
-            ' ',
             'S',
             ' ',
             ' ',
             'D',
-            'J'
+            'J',
+            ' ',
+            'W',
         };
 
     protected JMenu createFileMenu() {

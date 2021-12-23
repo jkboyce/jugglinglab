@@ -144,11 +144,23 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] fileItems = new String[]
-        { "Open JML...", null, "Quit" };
+        {
+            "Open JML...",
+            null,
+            "Quit",
+        };
     protected static final String[] fileCommands = new String[]
-        { "open", null, "exit" };
+        {
+            "open",
+            null,
+            "exit",
+        };
     protected static final char[] fileShortcuts =
-        { 'O', ' ', 'Q' };
+        {
+            'O',
+            ' ',
+            'Q',
+        };
 
     protected JMenu createFileMenu() {
         boolean quit_handler = Desktop.isDesktopSupported() &&
@@ -313,9 +325,15 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final String[] helpItems = new String[]
-        { "About Juggling Lab", "Juggling Lab Online Help" };
+        {
+            "About Juggling Lab",
+            "Juggling Lab Online Help",
+        };
     protected static final String[] helpCommands = new String[]
-        { "about", "online" };
+        {
+            "about",
+            "online",
+        };
 
     protected JMenu createHelpMenu() {
         // skip the about menu item if About handler was already installed
