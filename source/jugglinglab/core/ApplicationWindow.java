@@ -145,18 +145,21 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     protected static final String[] fileItems = new String[]
         {
+            "New Pattern List",
             "Open JML...",
             null,
             "Quit",
         };
     protected static final String[] fileCommands = new String[]
         {
+            "newpl",
             "open",
             null,
             "exit",
         };
     protected static final char[] fileShortcuts =
         {
+            'N',
             'O',
             ' ',
             'Q',
@@ -361,7 +364,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         String command = ae.getActionCommand();
 
         try {
-            if (command.equals("open"))
+            if (command.equals("newpl"))
+                doMenuCommand(FILE_NEWPL);
+            else if (command.equals("open"))
                 doMenuCommand(FILE_OPEN);
             else if (command.equals("exit"))
                 doMenuCommand(FILE_EXIT);
@@ -375,14 +380,19 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final int FILE_NONE = 0;
-    protected static final int FILE_OPEN = 1;
-    protected static final int FILE_EXIT = 2;
-    protected static final int HELP_ABOUT = 3;
-    protected static final int HELP_ONLINE = 4;
+    protected static final int FILE_NEWPL = 1;
+    protected static final int FILE_OPEN = 2;
+    protected static final int FILE_EXIT = 3;
+    protected static final int HELP_ABOUT = 4;
+    protected static final int HELP_ONLINE = 5;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
+                break;
+
+            case FILE_NEWPL:
+                new PatternListWindow("Pattern list");
                 break;
 
             case FILE_OPEN:
