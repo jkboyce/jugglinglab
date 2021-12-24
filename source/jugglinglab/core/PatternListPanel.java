@@ -21,7 +21,7 @@ import jugglinglab.util.*;
 import jugglinglab.view.View;
 
 
-public class PatternListPanel extends JPanel implements ActionListener {
+public class PatternListPanel extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -122,149 +122,6 @@ public class PatternListPanel extends JPanel implements ActionListener {
         add(pane, BorderLayout.CENTER);
     }
 
-    protected static final String[] popupItems = new String[]
-        {
-            "PLPOPUP Insert text...",
-            null,
-            "PLPOPUP Insert pattern",
-            null,
-            "PLPOPUP Change title...",
-            "PLPOPUP Change display text...",
-            null,
-            "PLPOPUP Remove line",
-        };
-    protected static final String[] popupCommands = new String[]
-        {
-            "inserttext",
-            null,
-            "insertpattern",
-            null,
-            "title",
-            "displaytext",
-            null,
-            "remove",
-        };
-
-    protected JPopupMenu makePopupMenu() {
-        JPopupMenu popup = new JPopupMenu();
-        int row = list.getSelectedIndex();
-
-        popupPatterns = new ArrayList<PatternWindow>();
-        for (Frame fr : Frame.getFrames()) {
-            if (fr.isVisible() && fr instanceof PatternWindow)
-                popupPatterns.add((PatternWindow)fr);
-        }
-
-        for (int i = 0; i < popupItems.length; ++i) {
-            String name = popupItems[i];
-
-            if (name == null) {
-                popup.addSeparator();
-                continue;
-            }
-
-            JMenuItem item = new JMenuItem(guistrings.getString(name.replace(' ', '_')));
-            item.setActionCommand(popupCommands[i]);
-            item.addActionListener(this);
-
-            if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
-                item.setEnabled(false);
-            if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
-                item.setEnabled(false);
-
-            popup.add(item);
-
-            if (popupCommands[i].equals("insertpattern")) {
-                int patnum = 0;
-                for (PatternWindow pw : popupPatterns) {
-                    JMenuItem pitem = new JMenuItem("   " + pw.getTitle());
-                    pitem.setActionCommand("pat" + patnum);
-                    pitem.addActionListener(this);
-                    pitem.setFont(font_pattern_popup);
-                    popup.add(pitem);
-                    ++patnum;
-                }
-            }
-        }
-
-        popup.setBorder(new BevelBorder(BevelBorder.RAISED));
-
-        /*
-        popup.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-        });
-        */
-        return popup;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent ae) {
-        String command = ae.getActionCommand();
-        int row = list.getSelectedIndex();
-
-        if (command.equals("inserttext")) {
-            insertText(row);
-        } else if (command.equals("insertpattern")) {
-            // do nothing
-        } else if (command.equals("title")) {
-            changeTitle();
-        } else if (command.equals("displaytext")) {
-            changeDisplayText(row);
-        } else if (command.equals("remove")) {
-            model.remove(row);
-        } else {
-            // adding a pattern
-            int patnum = Integer.parseInt(command.substring(3, command.length()));
-
-            PatternWindow pw = popupPatterns.get(patnum);
-            JMLPattern pat = pw.getPattern();
-            PatternRecord rec = null;
-
-            String display = pw.getTitle();
-            String animprefs = pw.getAnimationPrefs().toString();
-            if (animprefs.length() == 0)
-                animprefs = null;
-
-            if (pat.isBasePatternEdited()) {
-                // add as JML pattern
-                String notation = "jml";
-                String anim = null;
-                JMLNode pattern = null;
-
-                try {
-                    JMLParser parser = new JMLParser();
-                    parser.parse(new StringReader(pat.toString()));
-                    pattern = parser.getTree().findNode("pattern");
-                } catch (Exception e) {
-                    // any error here cannot be user error since pattern is
-                    // already animating in another window
-                    ErrorDialog.handleFatalException(e);
-                }
-
-                rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-            } else {
-                // add as base pattern
-                String notation = pat.getBasePatternNotation();
-                String anim = pat.getBasePatternConfig();
-                JMLNode pattern = null;
-
-                rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-            }
-
-            if (row < 0)
-                model.addElement(rec);  // adds at end
-            else
-                model.add(row, rec);
-        }
-    }
-
     // Try to launch an animation window for the currently-selected item in the
     // list. If there is no pattern associated with the line, do nothing.
     protected void launchAnimation() {
@@ -328,6 +185,118 @@ public class PatternListPanel extends JPanel implements ActionListener {
         }
     }
 
+    //-------------------------------------------------------------------------
+    // Popup menu and associated handler methods
+    //-------------------------------------------------------------------------
+
+    protected static final String[] popupItems = new String[]
+        {
+            "PLPOPUP Insert text...",
+            null,
+            "PLPOPUP Insert pattern",
+            null,
+            "PLPOPUP Change title...",
+            "PLPOPUP Change display text...",
+            null,
+            "PLPOPUP Remove line",
+        };
+    protected static final String[] popupCommands = new String[]
+        {
+            "inserttext",
+            null,
+            "insertpattern",
+            null,
+            "title",
+            "displaytext",
+            null,
+            "remove",
+        };
+
+    protected JPopupMenu makePopupMenu() {
+        JPopupMenu popup = new JPopupMenu();
+        int row = list.getSelectedIndex();
+
+        popupPatterns = new ArrayList<PatternWindow>();
+        for (Frame fr : Frame.getFrames()) {
+            if (fr.isVisible() && fr instanceof PatternWindow)
+                popupPatterns.add((PatternWindow)fr);
+        }
+
+        ActionListener al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                String command = ae.getActionCommand();
+                int row = list.getSelectedIndex();
+
+                if (command.equals("inserttext")) {
+                    insertText(row);
+                } else if (command.equals("insertpattern")) {
+                    // do nothing
+                } else if (command.equals("title")) {
+                    changeTitle();
+                } else if (command.equals("displaytext")) {
+                    changeDisplayText(row);
+                } else if (command.equals("remove")) {
+                    model.remove(row);
+                } else {
+                    // adding a pattern
+                    int patnum = Integer.parseInt(command.substring(3, command.length()));
+                    PatternWindow pw = popupPatterns.get(patnum);
+                    addPattern(row, pw);
+                }
+            }
+        };
+
+        for (int i = 0; i < popupItems.length; ++i) {
+            String name = popupItems[i];
+
+            if (name == null) {
+                popup.addSeparator();
+                continue;
+            }
+
+            JMenuItem item = new JMenuItem(guistrings.getString(name.replace(' ', '_')));
+            item.setActionCommand(popupCommands[i]);
+            item.addActionListener(al);
+
+            if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
+                item.setEnabled(false);
+            if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
+                item.setEnabled(false);
+
+            popup.add(item);
+
+            if (popupCommands[i].equals("insertpattern")) {
+                int patnum = 0;
+                for (PatternWindow pw : popupPatterns) {
+                    JMenuItem pitem = new JMenuItem("   " + pw.getTitle());
+                    pitem.setActionCommand("pat" + patnum);
+                    pitem.addActionListener(al);
+                    pitem.setFont(font_pattern_popup);
+                    popup.add(pitem);
+                    ++patnum;
+                }
+            }
+        }
+
+        popup.setBorder(new BevelBorder(BevelBorder.RAISED));
+
+        /*
+        popup.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+        });
+        */
+        return popup;
+    }
+
+    // Open a dialog to allow the user to insert a line of text
     protected void insertText(int row) {
         makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "");
 
@@ -349,6 +318,7 @@ public class PatternListPanel extends JPanel implements ActionListener {
         dialog.setVisible(true);
     }
 
+    // Open a dialog to allow the user to change the pattern list's title
     protected void changeTitle() {
         makeDialog(guistrings.getString("PLDIALOG_Change_title"), getTitle());
 
@@ -368,6 +338,7 @@ public class PatternListPanel extends JPanel implements ActionListener {
         dialog.setVisible(true);
     }
 
+    // Open a dialog to allow the user to change the display text of a line
     protected void changeDisplayText(int row) {
         PatternRecord rec = model.get(row);
         makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display);
@@ -383,6 +354,48 @@ public class PatternListPanel extends JPanel implements ActionListener {
         });
 
         dialog.setVisible(true);
+    }
+
+    // Insert the pattern in the given PatternWindow into the given row
+    protected void addPattern(int row, PatternWindow pw) {
+        JMLPattern pat = pw.getPattern();
+        PatternRecord rec = null;
+
+        String display = pw.getTitle();
+        String animprefs = pw.getAnimationPrefs().toString();
+        if (animprefs.length() == 0)
+            animprefs = null;
+
+        if (pat.isBasePatternEdited()) {
+            // add as JML pattern
+            String notation = "jml";
+            String anim = null;
+            JMLNode pattern = null;
+
+            try {
+                JMLParser parser = new JMLParser();
+                parser.parse(new StringReader(pat.toString()));
+                pattern = parser.getTree().findNode("pattern");
+            } catch (Exception e) {
+                // any error here cannot be user error since pattern is
+                // already animating in another window
+                ErrorDialog.handleFatalException(e);
+            }
+
+            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        } else {
+            // add as base pattern
+            String notation = pat.getBasePatternNotation();
+            String anim = pat.getBasePatternConfig();
+            JMLNode pattern = null;
+
+            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        }
+
+        if (row < 0)
+            model.addElement(rec);  // adds at end
+        else
+            model.add(row, rec);
     }
 
     // Helper to make popup dialog boxes
@@ -409,7 +422,7 @@ public class PatternListPanel extends JPanel implements ActionListener {
         return dialog;
     }
 
-    // ------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 
     public void setTargetView(View target) {
         animtarget = target;
