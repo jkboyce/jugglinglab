@@ -90,7 +90,6 @@ public class PatternListPanel extends JPanel implements ActionListener {
         list.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
-                //System.out.println("list value changed");
                 willLaunchAnimation = true;
             }
         });
@@ -100,17 +99,12 @@ public class PatternListPanel extends JPanel implements ActionListener {
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(final MouseEvent me) {
-                //System.out.println("mouse pressed");
                 if (me.isPopupTrigger()) {
-                    //System.out.println("got a popup trigger");
-
                     int row = list.locationToIndex(me.getPoint());
-                    //System.out.println("selected row = " + row);
                     list.setSelectedIndex(row);
-                    //System.out.println("list selected row = " + list.getSelectedIndex());
 
                     willLaunchAnimation = false;
-                    makePopupMenu().show(PatternListPanel.this, me.getX(), me.getY());
+                    makePopupMenu().show(list, me.getX(), me.getY());
                 }
             }
 
