@@ -44,6 +44,8 @@ public class PatternListPanel extends JPanel {
     protected JTextField tf;
     protected JButton okbutton;
 
+    protected static final boolean BLANK_AT_END = true;
+
 
     protected PatternListPanel() {
         makePanel();
@@ -65,6 +67,7 @@ public class PatternListPanel extends JPanel {
         list = new JList<PatternRecord>(model);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new PatternCellRenderer());
+        clearList();
 
         list.setDragEnabled(true);
 
@@ -76,6 +79,9 @@ public class PatternListPanel extends JPanel {
 
             @Override
             public Transferable createTransferable(JComponent c) {
+                if (list.getSelectedIndex() < 0)
+                    return null;
+
                 PatternRecord rec = model.get(list.getSelectedIndex());
                 String s;
                 if (rec.anim == null || rec.anim.equals(""))
@@ -105,6 +111,12 @@ public class PatternListPanel extends JPanel {
 
                     willLaunchAnimation = false;
                     makePopupMenu().show(list, me.getX(), me.getY());
+                    return;
+                }
+
+                if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1) {
+                    list.clearSelection();
+                    willLaunchAnimation = false;
                 }
             }
 
@@ -261,6 +273,9 @@ public class PatternListPanel extends JPanel {
 
             if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
                 item.setEnabled(false);
+            if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) &&
+                        BLANK_AT_END && row == model.size() - 1)
+                item.setEnabled(false);
             if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
                 item.setEnabled(false);
 
@@ -293,6 +308,7 @@ public class PatternListPanel extends JPanel {
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
         });
         */
+
         return popup;
     }
 
@@ -316,6 +332,11 @@ public class PatternListPanel extends JPanel {
         });
 
         dialog.setVisible(true);
+
+        if (row < 0)
+            list.setSelectedIndex(model.size() - 1);
+        else
+            list.setSelectedIndex(row);
     }
 
     // Open a dialog to allow the user to change the pattern list's title
@@ -334,6 +355,8 @@ public class PatternListPanel extends JPanel {
         });
 
         dialog.setVisible(true);
+
+        list.clearSelection();
     }
 
     // Open a dialog to allow the user to change the display text of a line
@@ -390,10 +413,13 @@ public class PatternListPanel extends JPanel {
             rec = new PatternRecord(display, animprefs, notation, anim, pattern);
         }
 
-        if (row < 0)
+        if (row < 0) {
             model.addElement(rec);  // adds at end
-        else
+            list.setSelectedIndex(model.size() - 1);
+        } else {
             model.add(row, rec);
+            list.setSelectedIndex(row);
+        }
     }
 
     // Helper to make popup dialog boxes
@@ -437,14 +463,24 @@ public class PatternListPanel extends JPanel {
 
         PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, pat);
 
-        model.addElement(rec);
+        if (BLANK_AT_END)
+            model.add(model.size() - 1, rec);
+        else
+            model.addElement(rec);
     }
 
     public void clearList() {
         model.clear();
+
+        if (BLANK_AT_END) {
+            PatternRecord rec = new PatternRecord(" ", null, null, null, null);
+            model.addElement(rec);
+        }
     }
 
     public void setTitle(String t) {
+        // by convention we don't allow title to be zero-length string "", but
+        // use null instead
         title = ((t == null || t.length() == 0) ? null : t.trim());
     }
 
@@ -520,7 +556,7 @@ public class PatternListPanel extends JPanel {
         if (title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
 
-        for (int i = 0; i < model.size(); i++) {
+        for (int i = 0; i < (BLANK_AT_END ? model.size() - 1 : model.size()); ++i) {
             PatternRecord rec = model.get(i);
             String line = "<line display=\"" + JMLNode.xmlescape(rec.display) + "\"";
 
@@ -531,20 +567,19 @@ public class PatternListPanel extends JPanel {
             line += ">";
             write.println(line);
 
-            if ((rec.notation != null) && rec.notation.equalsIgnoreCase("JML") && rec.pattern != null) {
+            if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
                 rec.pattern.writeNode(write, 0);
-            } else if (rec.anim != null) {
+            else if (rec.anim != null)
                 write.println(JMLNode.xmlescape(rec.anim));
-            }
 
             write.println("</line>");
         }
+
         write.println("</patternlist>");
         write.println("</jml>");
         for (int i = 0; i < JMLDefs.jmlsuffix.length; i++)
             write.println(JMLDefs.jmlsuffix[i]);
         write.flush();
-        //write.close();
     }
 
     public void writeText(Writer wr) throws IOException {
@@ -555,7 +590,6 @@ public class PatternListPanel extends JPanel {
             write.println(rec.display);
         }
         write.flush();
-        //write.close();
     }
 
 
