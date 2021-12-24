@@ -328,10 +328,8 @@ public class PatternListPanel extends JPanel {
                 setTitle(tf.getText());
                 dialog.dispose();
 
-                if (parent != null) {
+                if (parent != null)
                     parent.setTitle(getTitle());
-                    ApplicationWindow.updateWindowMenus();
-                }
             }
         });
 

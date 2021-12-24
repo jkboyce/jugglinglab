@@ -280,6 +280,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
             title = guistrings.getString("PLWINDOW_Default_window_title");
 
         super.setTitle(title);
+        ApplicationWindow.updateWindowMenus();
     }
 
     // java.awt.Window methods

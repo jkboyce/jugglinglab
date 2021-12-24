@@ -862,7 +862,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         jd.setLocationRelativeTo(this);
         jd.setVisible(true);
         parent.setTitle(pat.getTitle());
-        ApplicationWindow.updateWindowMenus();
     }
 
     protected void changeTiming() {

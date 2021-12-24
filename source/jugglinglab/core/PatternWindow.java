@@ -605,12 +605,10 @@ public class PatternWindow extends JFrame implements ActionListener {
 
             case VIEW_UNDO:
                 view.undoEdit();
-                ApplicationWindow.updateWindowMenus();
                 break;
 
             case VIEW_REDO:
                 view.redoEdit();
-                ApplicationWindow.updateWindowMenus();
                 break;
 
             case HELP_ABOUT:
@@ -719,6 +717,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             title = guistrings.getString("PWINDOW_Default_window_title");
 
         super.setTitle(title);
+        ApplicationWindow.updateWindowMenus();
     }
 
     // java.awt.Window methods
