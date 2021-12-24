@@ -156,12 +156,12 @@ public class PatternView extends View implements DocumentListener {
         } else {
             rb_bp.setEnabled(true);
             if (bp_edited_icon != null)
-                bp_edited_icon.setVisible(pat.getBasePatternEdited());
+                bp_edited_icon.setVisible(pat.isBasePatternEdited());
             rb_jml.setEnabled(true);
         }
 
         if (rb_bp.isSelected()) {
-            compile.setEnabled(pat != null && (pat.getBasePatternEdited() || text_edited));
+            compile.setEnabled(pat != null && (pat.isBasePatternEdited() || text_edited));
             revert.setEnabled(text_edited);
         } else if (rb_jml.isSelected()) {
             compile.setEnabled(text_edited);

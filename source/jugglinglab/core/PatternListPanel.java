@@ -29,24 +29,34 @@ public class PatternListPanel extends JPanel implements ActionListener {
     static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
     static final Font font_pattern_popup = new Font("Monospaced", Font.ITALIC, 14);
 
+    protected JFrame parent;
     protected View animtarget;
+    protected String version = JMLDefs.CURRENT_JML_VERSION;
     protected String title;
     protected JList<PatternRecord> list;
     protected DefaultListModel<PatternRecord> model;
-    protected String loadingversion;
+    protected String loadingversion = JMLDefs.CURRENT_JML_VERSION;
 
+    // for mouse/popup menu handling
     protected boolean willLaunchAnimation;
     protected ArrayList<PatternWindow> popupPatterns;
+    protected JDialog dialog;
+    protected JTextField tf;
+    protected JButton okbutton;
 
 
-    public PatternListPanel() {
+    protected PatternListPanel() {
         makePanel();
         setOpaque(false);
     }
 
+    public PatternListPanel(JFrame parent) {
+        this();
+        this.parent = parent;
+    }
+
     public PatternListPanel(View target) {
-        makePanel();
-        setOpaque(false);
+        this();
         setTargetView(target);
     }
 
@@ -120,14 +130,14 @@ public class PatternListPanel extends JPanel implements ActionListener {
 
     protected static final String[] popupItems = new String[]
         {
-            "Insert Text...",
+            "PLPOPUP Insert text...",
             null,
-            "Insert Pattern",
+            "PLPOPUP Insert pattern",
             null,
-            "Change Title...",
-            "Change Display Text...",
+            "PLPOPUP Change title...",
+            "PLPOPUP Change display text...",
             null,
-            "Remove Line",
+            "PLPOPUP Remove line",
         };
     protected static final String[] popupCommands = new String[]
         {
@@ -159,13 +169,13 @@ public class PatternListPanel extends JPanel implements ActionListener {
                 continue;
             }
 
-            JMenuItem item = new JMenuItem(name /*guistrings.getString(name.replace(' ', '_'))*/);
+            JMenuItem item = new JMenuItem(guistrings.getString(name.replace(' ', '_')));
             item.setActionCommand(popupCommands[i]);
             item.addActionListener(this);
 
             if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
                 item.setEnabled(false);
-            else if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
+            if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
                 item.setEnabled(false);
 
             popup.add(item);
@@ -189,24 +199,76 @@ public class PatternListPanel extends JPanel implements ActionListener {
         popup.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                //System.out.println("popup becoming invisible");
-            }
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                //System.out.println("popup becoming visible");
-                //willLaunchAnimation = false;
-            }
-        });*/
 
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+        });
+        */
         return popup;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
-        System.out.println(command);
+        int row = list.getSelectedIndex();
+
+        if (command.equals("inserttext")) {
+            insertText(row);
+        } else if (command.equals("insertpattern")) {
+            // do nothing
+        } else if (command.equals("title")) {
+            changeTitle();
+        } else if (command.equals("displaytext")) {
+            changeDisplayText(row);
+        } else if (command.equals("remove")) {
+            model.remove(row);
+        } else {
+            // adding a pattern
+            int patnum = Integer.parseInt(command.substring(3, command.length()));
+
+            PatternWindow pw = popupPatterns.get(patnum);
+            JMLPattern pat = pw.getPattern();
+            PatternRecord rec = null;
+
+            String display = pw.getTitle();
+            String animprefs = pw.getAnimationPrefs().toString();
+            if (animprefs.length() == 0)
+                animprefs = null;
+
+            if (pat.isBasePatternEdited()) {
+                // add as JML pattern
+                String notation = "jml";
+                String anim = null;
+                JMLNode pattern = null;
+
+                try {
+                    JMLParser parser = new JMLParser();
+                    parser.parse(new StringReader(pat.toString()));
+                    pattern = parser.getTree().findNode("pattern");
+                } catch (Exception e) {
+                    // any error here cannot be user error since pattern is
+                    // already animating in another window
+                    ErrorDialog.handleFatalException(e);
+                }
+
+                rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+            } else {
+                // add as base pattern
+                String notation = pat.getBasePatternNotation();
+                String anim = pat.getBasePatternConfig();
+                JMLNode pattern = null;
+
+                rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+            }
+
+            if (row < 0)
+                model.addElement(rec);  // adds at end
+            else
+                model.add(row, rec);
+        }
     }
 
     // Try to launch an animation window for the currently-selected item in the
@@ -227,6 +289,7 @@ public class PatternListPanel extends JPanel implements ActionListener {
             } else if (rec.anim != null) {
                 p = Pattern.newPattern(rec.notation).fromString(rec.anim);
 
+                /*
                 // check if we want to add rec.display as the pattern's title
                 // so it won't be lost when the pattern is recompiled in Pattern View
                 ParameterList pl = new ParameterList(p.toString());
@@ -237,12 +300,13 @@ public class PatternListPanel extends JPanel implements ActionListener {
                     pl.addParameter("title", rec.display.trim());
                     p = Pattern.newPattern(rec.notation).fromParameters(pl);
                 }
+                */
 
                 pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
             } else
                 return;
 
-            pat.setTitle(rec.display);
+            //pat.setTitle(rec.display);
             pat.layoutPattern();
 
             if (PatternWindow.bringToFront(pat.getHashCode()))
@@ -270,6 +334,89 @@ public class PatternListPanel extends JPanel implements ActionListener {
         }
     }
 
+    protected void insertText(int row) {
+        makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "");
+
+        okbutton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newline = tf.getText();
+                dialog.dispose();
+
+                PatternRecord rec = new PatternRecord(newline, null, null, null, null);
+
+                if (row < 0)
+                    model.addElement(rec);  // adds at end
+                else
+                    model.add(row, rec);
+            }
+        });
+
+        dialog.setVisible(true);
+    }
+
+    protected void changeTitle() {
+        makeDialog(guistrings.getString("PLDIALOG_Change_title"), getTitle());
+
+        okbutton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setTitle(tf.getText());
+                dialog.dispose();
+
+                if (parent != null) {
+                    parent.setTitle(getTitle());
+                    ApplicationWindow.updateWindowMenus();
+                }
+            }
+        });
+
+        dialog.setVisible(true);
+    }
+
+    protected void changeDisplayText(int row) {
+        PatternRecord rec = model.get(row);
+        makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display);
+
+        okbutton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rec.display = tf.getText();
+                dialog.dispose();
+
+                model.set(row, rec);
+            }
+        });
+
+        dialog.setVisible(true);
+    }
+
+    // Helper to make popup dialog boxes
+    protected JDialog makeDialog(String title, String default_text) {
+        dialog = new JDialog(parent, title, true);
+        GridBagLayout gb = new GridBagLayout();
+        dialog.getContentPane().setLayout(gb);
+
+        tf = new JTextField(20);
+        tf.setText(default_text);
+
+        okbutton = new JButton(guistrings.getString("OK"));
+
+        dialog.getContentPane().add(tf);
+        gb.setConstraints(tf, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
+                                               new Insets(10,10,0,10)));
+        dialog.getContentPane().add(okbutton);
+        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END,0,1,
+                                                     new Insets(10,10,10,10)));
+        dialog.getRootPane().setDefaultButton(okbutton);  // OK button is default
+        dialog.pack();
+        dialog.setResizable(false);
+        dialog.setLocationRelativeTo(this);
+        return dialog;
+    }
+
+    // ------------------------------------------------------------------------
+
     public void setTargetView(View target) {
         animtarget = target;
     }
@@ -293,7 +440,7 @@ public class PatternListPanel extends JPanel implements ActionListener {
     }
 
     public void setTitle(String t) {
-        title = t;
+        title = ((t == null || t.length() == 0) ? null : t.trim());
     }
 
     public String getTitle() {
@@ -304,11 +451,12 @@ public class PatternListPanel extends JPanel implements ActionListener {
         if (!root.getNodeType().equalsIgnoreCase("jml"))
             throw new JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"));
 
-        loadingversion = root.getAttributes().getAttribute("version");
-        if (loadingversion == null)
-            loadingversion = JMLDefs.CURRENT_JML_VERSION;
-        else if (JLFunc.compareVersions(loadingversion, JMLDefs.CURRENT_JML_VERSION) > 0)
-            throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
+        String version = root.getAttributes().getAttribute("version");
+        if (version != null) {
+            if (JLFunc.compareVersions(version, JMLDefs.CURRENT_JML_VERSION) > 0)
+                throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
+            loadingversion = version;
+        }
 
         JMLNode listnode = root.getChildNode(0);
         if (!listnode.getNodeType().equalsIgnoreCase("patternlist"))
@@ -361,12 +509,11 @@ public class PatternListPanel extends JPanel implements ActionListener {
         PrintWriter write = new PrintWriter(wr);
         for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
             write.println(JMLDefs.jmlprefix[i]);
-        String vers = this.loadingversion;
-        if (vers == null)
-            vers = JMLDefs.CURRENT_JML_VERSION;
-        write.println("<jml version=\""+vers+"\">");
+
+        write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
         write.println("<patternlist>");
-        write.println("<title>" + JMLNode.xmlescape(this.title) + "</title>");
+        if (title != null)
+            write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
 
         for (int i = 0; i < model.size(); i++) {
             PatternRecord rec = model.get(i);

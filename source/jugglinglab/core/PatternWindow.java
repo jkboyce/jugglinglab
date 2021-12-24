@@ -161,6 +161,14 @@ public class PatternWindow extends JFrame implements ActionListener {
         return loc;
     }
 
+    public JMLPattern getPattern() {
+        return (view == null) ? null : view.getPattern();
+    }
+
+    public AnimationPrefs getAnimationPrefs() {
+        return (view == null) ? null : view.getAnimationPrefs();
+    }
+
     // Used for testing whether a given JMLPattern is already being animated.
     // See bringToFront().
     //
@@ -477,10 +485,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 }
 
                 // create default filename
-                String t = view.getPattern().getTitle();
-                if (t == null || t.length() == 0)
-                    t = "pattern";
-                JLFunc.jfc().setSelectedFile(new File(t + ".jml"));
+                JLFunc.jfc().setSelectedFile(new File(getTitle() + ".jml"));
                 JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
                 if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -706,7 +711,17 @@ public class PatternWindow extends JFrame implements ActionListener {
         return View.VIEW_NONE;
     }
 
-    // java.awt.Window method overrides
+    // java.awt.Frame methods
+
+    @Override
+    public void setTitle(String title) {
+        if (title == null || title.length() == 0)
+            title = guistrings.getString("PWINDOW_Default_window_title");
+
+        super.setTitle(title);
+    }
+
+    // java.awt.Window methods
 
     @Override
     public void dispose() {

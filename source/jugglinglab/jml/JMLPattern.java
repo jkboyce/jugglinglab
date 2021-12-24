@@ -69,7 +69,7 @@ public class JMLPattern {
     protected Curve[] jugglercurve;  // coordinates for each juggler
     protected Curve[] jugglerangle;  // angles for each juggler
 
-    protected String loadingversion;  // for readJML
+    protected String loadingversion = JMLDefs.CURRENT_JML_VERSION;
     protected boolean laidout;
     protected boolean valid;
 
@@ -122,7 +122,7 @@ public class JMLPattern {
     // ------------------------------------------------------------------------
 
     public void setTitle(String t) {
-        title = (t == null ? null : t.trim());
+        title = ((t == null || t.length() == 0) ? null : t.trim());
         base_pattern_edited = true;
     }
 
@@ -279,7 +279,7 @@ public class JMLPattern {
     public String getBasePatternConfig() {
         return base_pattern_config;
     }
-    public boolean getBasePatternEdited() {
+    public boolean isBasePatternEdited() {
         return base_pattern_edited;
     }
 
@@ -1406,12 +1406,12 @@ public class JMLPattern {
         String type = current.getNodeType();
 
         if (type.equalsIgnoreCase("jml")) {
-            loadingversion = current.getAttributes().getAttribute("version");
-
-            if (loadingversion == null)
-                loadingversion = JMLDefs.CURRENT_JML_VERSION;
-            else if (JLFunc.compareVersions(loadingversion, JMLDefs.CURRENT_JML_VERSION) > 0)
-                throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
+            String version = current.getAttributes().getAttribute("version");
+            if (version != null) {
+                if (JLFunc.compareVersions(version, JMLDefs.CURRENT_JML_VERSION) > 0)
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
+                loadingversion = version;
+            }
         } else if (type.equalsIgnoreCase("pattern")) {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {
@@ -1489,12 +1489,12 @@ public class JMLPattern {
 
         for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
             write.println(JMLDefs.jmlprefix[i]);
-        write.println("<jml version=\"" + version + "\">");
+        write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
         write.println("<pattern>");
         if (write_title && title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
         if (base_pattern_notation != null && base_pattern_config != null) {
-            write.println("<basepattern notation=\"" + base_pattern_notation + "\">");
+            write.println("<basepattern notation=\"" + JMLNode.xmlescape(base_pattern_notation) + "\">");
             write.println(JMLNode.xmlescape(base_pattern_config));
             write.println("</basepattern>");
         }

@@ -28,14 +28,12 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static protected Point[] tile_locations;
     static protected int next_tile_num;
 
-    protected String title;
     protected PatternListPanel pl;
     protected JMenu windowmenu;
 
 
     public PatternListWindow(String title) {
         super(title);
-        this.title = title;
         makeWindow();
         pl.setTitle(title);
 
@@ -69,12 +67,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         super();
         makeWindow();
         pl.readJML(root);
-        if (pl.getTitle() != null)
-            title = pl.getTitle();
-        else
-            title = guistrings.getString("Patterns");
-
-        setTitle(title);
+        setTitle(pl.getTitle());
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -87,7 +80,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
     protected void makeWindow() {
-        pl = new PatternListPanel(null);
+        pl = new PatternListPanel(this);
 
         pl.setDoubleBuffered(true);
         setBackground(Color.white);
@@ -220,10 +213,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
             case FILE_SAVE:
                 try {
                     // create default filename
-                    String t = title;
-                    if (t == null || t.length() == 0)
-                        t = "pattern";
-                    JLFunc.jfc().setSelectedFile(new File(t + ".jml"));
+                    JLFunc.jfc().setSelectedFile(new File(getTitle() + ".jml"));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
                     if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -251,10 +241,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
             case FILE_SAVETEXT:
                 try {
                     // create default filename
-                    String t = title;
-                    if (t == null || t.length() == 0)
-                        t = "pattern";
-                    JLFunc.jfc().setSelectedFile(new File(t + ".txt"));
+                    JLFunc.jfc().setSelectedFile(new File(getTitle() + ".txt"));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
 
                     if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -285,7 +272,17 @@ public class PatternListWindow extends JFrame implements ActionListener {
         pl.addPattern(display, animprefs, notation, anim, pattern);
     }
 
-    // java.awt.Window method overrides
+    // java.awt.Frame methods
+
+    @Override
+    public void setTitle(String title) {
+        if (title == null || title.length() == 0)
+            title = guistrings.getString("PLWINDOW_Default_window_title");
+
+        super.setTitle(title);
+    }
+
+    // java.awt.Window methods
 
     @Override
     public void dispose() {

@@ -125,6 +125,21 @@ public class JMLNode {
 
     public boolean hasChildNodes() { return (childNodes.size() != 0); }
 
+    // Recursively traverse the node tree to find the first instance of a given
+    // node type
+    public JMLNode findNode(String type) {
+        if (getNodeType().equals(type))
+            return this;
+
+        for (int i = 0; i < getNumberOfChildren(); ++i) {
+            JMLNode match = getChildNode(i).findNode(type);
+            if (match != null)
+                return match;
+        }
+
+        return null;
+    }
+
     public void writeNode(PrintWriter write, int indentlevel) throws IOException {
         int i;
         StringBuffer result = new StringBuffer();
