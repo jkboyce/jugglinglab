@@ -257,7 +257,7 @@ public class PatternListPanel extends JPanel {
                     return true;
                 }
             } catch (Exception e) {
-                ErrorDialog.handleFatalException(new JuggleExceptionInternal(e));
+                ErrorDialog.handleFatalException(e);
             }
 
             return false;
