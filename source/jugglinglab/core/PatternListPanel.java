@@ -208,9 +208,9 @@ public class PatternListPanel extends JPanel {
                 return false;
 
             if (draggingOut)
-                info.setDropAction(MOVE);
+                info.setDropAction(MOVE);  // within same list
             else
-                info.setDropAction(COPY);
+                info.setDropAction(COPY);  // between lists
 
             if (info.isDataFlavorSupported(patternFlavor))
                 return true;
@@ -228,7 +228,7 @@ public class PatternListPanel extends JPanel {
             JList.DropLocation dl = (JList.DropLocation)info.getDropLocation();
             int index = dl.getIndex();
             if (index < 0)
-                index = model.size() - 1;
+                index = (BLANK_AT_END ? model.size() - 1 : model.size());
 
             // Get the record that is being dropped
             Transferable t = info.getTransferable();
@@ -256,7 +256,9 @@ public class PatternListPanel extends JPanel {
                     list.setSelectedIndex(index);
                     return true;
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                ErrorDialog.handleFatalException(new JuggleExceptionInternal(e));
+            }
 
             return false;
         }
@@ -277,7 +279,6 @@ public class PatternListPanel extends JPanel {
 
     class PatternTransferable implements Transferable {
         public PatternRecord rec;
-
 
         public PatternTransferable(PatternRecord pr) {
             rec = pr;
