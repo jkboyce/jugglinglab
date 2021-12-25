@@ -93,13 +93,6 @@ public class PatternListPanel extends JPanel {
             }
         });
 
-        list.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent lse) {
-                willLaunchAnimation = true;
-            }
-        });
-
         JScrollPane pane = new JScrollPane(list);
 
         list.addMouseListener(new MouseAdapter() {
@@ -117,7 +110,12 @@ public class PatternListPanel extends JPanel {
                 if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1) {
                     list.clearSelection();
                     willLaunchAnimation = false;
+                    return;
                 }
+
+                // otherwise it's a normal (left) mouse click on a regular
+                // list item --> allow animation to launch on mouse release
+                willLaunchAnimation = true;
             }
 
             @Override
@@ -296,19 +294,6 @@ public class PatternListPanel extends JPanel {
 
         popup.setBorder(new BevelBorder(BevelBorder.RAISED));
 
-        /*
-        popup.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-        });
-        */
-
         return popup;
     }
 
@@ -324,19 +309,17 @@ public class PatternListPanel extends JPanel {
 
                 PatternRecord rec = new PatternRecord(newline, null, null, null, null);
 
-                if (row < 0)
+                if (row < 0) {
                     model.addElement(rec);  // adds at end
-                else
+                    list.setSelectedIndex(model.size() - 1);
+                } else {
                     model.add(row, rec);
+                    list.setSelectedIndex(row);
+                }
             }
         });
 
         dialog.setVisible(true);
-
-        if (row < 0)
-            list.setSelectedIndex(model.size() - 1);
-        else
-            list.setSelectedIndex(row);
     }
 
     // Open a dialog to allow the user to change the pattern list's title
@@ -355,7 +338,6 @@ public class PatternListPanel extends JPanel {
         });
 
         dialog.setVisible(true);
-
         list.clearSelection();
     }
 
