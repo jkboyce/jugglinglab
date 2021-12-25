@@ -29,6 +29,9 @@ public class PatternListPanel extends JPanel {
     static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
     static final Font font_pattern_popup = new Font("Monospaced", Font.ITALIC, 14);
 
+    static final DataFlavor patternFlavor = new DataFlavor(PatternRecord.class,
+                                                 "Juggling Lab pattern record");
+
     protected JFrame parent;
     protected View animtarget;
     protected String version = JMLDefs.CURRENT_JML_VERSION;
@@ -44,6 +47,11 @@ public class PatternListPanel extends JPanel {
     protected JTextField tf;
     protected JButton okbutton;
 
+    // for drag and drop operations
+    protected boolean draggingOut;
+
+    // whether to include a blank line at the end of every pattern list,
+    // so that items can be inserted at the end
     protected static final boolean BLANK_AT_END = true;
 
 
@@ -70,28 +78,7 @@ public class PatternListPanel extends JPanel {
         clearList();
 
         list.setDragEnabled(true);
-
-        list.setTransferHandler(new TransferHandler() {
-            @Override
-            public int getSourceActions(JComponent c) {
-                return COPY;
-            }
-
-            @Override
-            public Transferable createTransferable(JComponent c) {
-                if (list.getSelectedIndex() < 0)
-                    return null;
-
-                PatternRecord rec = model.get(list.getSelectedIndex());
-                String s;
-                if (rec.anim == null || rec.anim.equals(""))
-                    s = rec.display;
-                else
-                    s = rec.anim;
-                //System.out.println("copying data '" + s + "'");
-                return new StringSelection(s);
-            }
-        });
+        list.setTransferHandler(new PatternTransferHandler());
 
         JScrollPane pane = new JScrollPane(list);
 
@@ -120,7 +107,6 @@ public class PatternListPanel extends JPanel {
 
             @Override
             public void mouseReleased(final MouseEvent me) {
-                //System.out.println("mouse released");
                 if (willLaunchAnimation) {
                     launchAnimation();
                     willLaunchAnimation = false;
@@ -192,6 +178,139 @@ public class PatternListPanel extends JPanel {
             if (jaw2 != null)
                 jaw2.dispose();
             ErrorDialog.handleFatalException(e);
+        }
+    }
+
+    //-------------------------------------------------------------------------
+    // Classes to support drag and drop operations
+    //-------------------------------------------------------------------------
+
+    class PatternTransferHandler extends TransferHandler {
+        @Override
+        public int getSourceActions(JComponent c) {
+            return TransferHandler.COPY_OR_MOVE;
+        }
+
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            if (list.getSelectedIndex() < 0)
+                return null;
+
+            draggingOut = true;
+            PatternRecord rec = model.get(list.getSelectedIndex());
+            return new PatternTransferable(rec);
+        }
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+            // support only drop (not clipboard paste)
+            if (!info.isDrop())
+                return false;
+
+            if (draggingOut)
+                info.setDropAction(MOVE);
+            else
+                info.setDropAction(COPY);
+
+            if (info.isDataFlavorSupported(patternFlavor))
+                return true;
+            if (info.isDataFlavorSupported(DataFlavor.stringFlavor))
+                return true;
+
+            return false;
+        }
+
+        @Override
+        public boolean importData(TransferHandler.TransferSupport info) {
+            if (!info.isDrop())
+                return false;
+
+            JList.DropLocation dl = (JList.DropLocation)info.getDropLocation();
+            int index = dl.getIndex();
+            if (index < 0)
+                index = model.size() - 1;
+
+            // Get the record that is being dropped
+            Transferable t = info.getTransferable();
+
+            try {
+                if (t.isDataFlavorSupported(patternFlavor)) {
+                    PatternRecord rec = (PatternRecord)t.getTransferData(patternFlavor);
+                    model.add(index, new PatternRecord(rec));
+                    list.setSelectedIndex(index);
+                    return true;
+                }
+
+                if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    String s = (String)t.getTransferData(DataFlavor.stringFlavor);
+
+                    // allow for multi-line strings
+                    while (s.endsWith("\n"))
+                        s = s.substring(0, s.length() - 1);
+                    String[] lines = s.split("\n");
+
+                    for (int i = lines.length - 1; i >= 0; --i) {
+                        PatternRecord rec = new PatternRecord(lines[i], null, null, null, null);
+                        model.add(index, rec);
+                    }
+                    list.setSelectedIndex(index);
+                    return true;
+                }
+            } catch (Exception e) {}
+
+            return false;
+        }
+
+        @Override
+        protected void exportDone(JComponent c, Transferable data, int action) {
+            if (action == TransferHandler.MOVE) {
+                if (!(data instanceof PatternTransferable))
+                    return;
+
+                if (!model.removeElement(((PatternTransferable)data).rec))
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("PLP: exportDone()"));
+            }
+
+            draggingOut = false;
+        }
+    }
+
+    class PatternTransferable implements Transferable {
+        public PatternRecord rec;
+
+
+        public PatternTransferable(PatternRecord pr) {
+            rec = pr;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) {
+            if (flavor.equals(patternFlavor))
+                return rec;
+
+            if (flavor.equals(DataFlavor.stringFlavor)) {
+                String s;
+                if (rec.anim == null || rec.anim.equals(""))
+                    s = rec.display;
+                else
+                    s = rec.anim;
+                return s;
+            }
+
+            return null;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[] {
+                patternFlavor,
+                DataFlavor.stringFlavor,
+            };
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(patternFlavor) || flavor.equals(DataFlavor.stringFlavor);
         }
     }
 
@@ -588,6 +707,14 @@ public class PatternListPanel extends JPanel {
             notation = not;
             anim = ani;
             pattern = pat;
+        }
+
+        public PatternRecord(PatternRecord pr) {
+            display = pr.display;
+            animprefs = pr.animprefs;
+            notation = pr.notation;
+            anim = pr.anim;
+            pattern = pr.pattern;
         }
     }
 
