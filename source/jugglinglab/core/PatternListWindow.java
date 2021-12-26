@@ -128,6 +128,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     protected static final String[] fileItems = new String[]
         {
+            "New Pattern",
+            "New Pattern List",
+            "Open JML...",
             "Save JML As...",
             "Save Text As...",
             null,
@@ -135,6 +138,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         };
     protected static final String[] fileCommands = new String[]
         {
+            "newpat",
+            "newpl",
+            "open",
             "saveas",
             "savetext",
             null,
@@ -142,6 +148,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         };
     protected static final char[] fileShortcuts =
         {
+            'N',
+            'L',
+            'O',
             'S',
             'T',
             ' ',
@@ -178,32 +187,51 @@ public class PatternListWindow extends JFrame implements ActionListener {
         return windowmenu;
     }
 
-    public static final int FILE_NONE = 0;
-    public static final int FILE_CLOSE = 1;
-    public static final int FILE_SAVE = 2;
-    public static final int FILE_SAVETEXT = 3;
-
-    // Implements ActionListener to wait for MenuItem events
     @Override
     public void actionPerformed(ActionEvent ae) {
         String command = ae.getActionCommand();
 
         try {
-            if (command.equals("close"))
-                doFileMenuCommand(FILE_CLOSE);
+            if (command.equals("newpat"))
+                doMenuCommand(FILE_NEWPAT);
+            else if (command.equals("newpl"))
+                doMenuCommand(FILE_NEWPL);
+            else if (command.equals("open"))
+                doMenuCommand(FILE_OPEN);
+            else if (command.equals("close"))
+                doMenuCommand(FILE_CLOSE);
             else if (command.equals("saveas"))
-                doFileMenuCommand(FILE_SAVE);
+                doMenuCommand(FILE_SAVE);
             else if (command.equals("savetext"))
-                doFileMenuCommand(FILE_SAVETEXT);
+                doMenuCommand(FILE_SAVETEXT);
         } catch (Exception e) {
             ErrorDialog.handleFatalException(e);
         }
     }
 
-    public void doFileMenuCommand(int action) throws JuggleExceptionInternal {
-        switch (action) {
+    protected static final int FILE_NONE = 0;
+    protected static final int FILE_NEWPAT = 1;
+    protected static final int FILE_NEWPL = 2;
+    protected static final int FILE_OPEN = 3;
+    protected static final int FILE_CLOSE = 4;
+    protected static final int FILE_SAVE = 5;
+    protected static final int FILE_SAVETEXT = 6;
 
+    protected void doMenuCommand(int action) throws JuggleExceptionInternal {
+        switch (action) {
             case FILE_NONE:
+                break;
+
+            case FILE_NEWPAT:
+                ApplicationWindow.newPattern();
+                break;
+
+            case FILE_NEWPL:
+                new PatternListWindow("Pattern list");
+                break;
+
+            case FILE_OPEN:
+                ApplicationWindow.openJMLFile();
                 break;
 
             case FILE_CLOSE:

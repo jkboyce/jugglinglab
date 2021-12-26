@@ -145,6 +145,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     protected static final String[] fileItems = new String[]
         {
+            "New Pattern",
             "New Pattern List",
             "Open JML...",
             null,
@@ -152,6 +153,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         };
     protected static final String[] fileCommands = new String[]
         {
+            "newpat",
             "newpl",
             "open",
             null,
@@ -160,6 +162,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     protected static final char[] fileShortcuts =
         {
             'N',
+            'L',
             'O',
             ' ',
             'Q',
@@ -364,7 +367,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         String command = ae.getActionCommand();
 
         try {
-            if (command.equals("newpl"))
+            if (command.equals("newpat"))
+                doMenuCommand(FILE_NEWPAT);
+            else if (command.equals("newpl"))
                 doMenuCommand(FILE_NEWPL);
             else if (command.equals("open"))
                 doMenuCommand(FILE_OPEN);
@@ -380,15 +385,20 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     protected static final int FILE_NONE = 0;
-    protected static final int FILE_NEWPL = 1;
-    protected static final int FILE_OPEN = 2;
-    protected static final int FILE_EXIT = 3;
-    protected static final int HELP_ABOUT = 4;
-    protected static final int HELP_ONLINE = 5;
+    protected static final int FILE_NEWPAT = 1;
+    protected static final int FILE_NEWPL = 2;
+    protected static final int FILE_OPEN = 3;
+    protected static final int FILE_EXIT = 4;
+    protected static final int HELP_ABOUT = 5;
+    protected static final int HELP_ONLINE = 6;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
+                break;
+
+            case FILE_NEWPAT:
+                ApplicationWindow.newPattern();
                 break;
 
             case FILE_NEWPL:
@@ -396,22 +406,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_OPEN:
-                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
-                if (JLFunc.jfc().showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
-                    break;
-
-                File file = JLFunc.jfc().getSelectedFile();
-                if (file != null) {
-                    try {
-                        openJMLFile(file);
-                    } catch (JuggleExceptionUser jeu) {
-                        String template = errorstrings.getString("Error_reading_file");
-                        Object[] arguments = { file.getName() };
-                        String msg = MessageFormat.format(template, arguments) +
-                                     ":\n" + jeu.getMessage();
-                        new ErrorDialog(this, msg);
-                    }
-                }
+                ApplicationWindow.openJMLFile();
                 break;
 
             case FILE_EXIT:
@@ -453,6 +448,38 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
         }
 
+    }
+
+    // Implementation of the File menu "New Pattern" command
+    public static void newPattern() throws JuggleExceptionInternal {
+        try {
+            JMLPattern pat = JMLPattern.fromBasePattern("Siteswap", "pattern=3");
+            ParameterList pl = new ParameterList("view=pattern_editor");
+            AnimationPrefs ap = new AnimationPrefs().fromParameters(pl);
+            new PatternWindow("3", pat, ap);
+        } catch (JuggleExceptionUser jeu) {
+            throw new JuggleExceptionInternal(jeu.getMessage());
+        }
+    }
+
+    // Open a JML file with a file chooser
+    public static void openJMLFile() throws JuggleExceptionInternal {
+        JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+        if (JLFunc.jfc().showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+            return;
+
+        File file = JLFunc.jfc().getSelectedFile();
+        if (file != null) {
+            try {
+                openJMLFile(file);
+            } catch (JuggleExceptionUser jeu) {
+                String template = errorstrings.getString("Error_reading_file");
+                Object[] arguments = { file.getName() };
+                String msg = MessageFormat.format(template, arguments) +
+                             ":\n" + jeu.getMessage();
+                new ErrorDialog(null, msg);
+            }
+        }
     }
 
     public static void openJMLFile(File jmlf) throws JuggleExceptionUser, JuggleExceptionInternal {

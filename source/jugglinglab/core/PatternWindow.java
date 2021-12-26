@@ -63,6 +63,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         if (jc != null && jc.view != View.VIEW_NONE) {
             setViewMode(jc.view);
             viewmenu.getItem(jc.view - 1).setSelected(true);
+            jc.view = View.VIEW_NONE;
         } else {
             // no view type specified, use defaults
             if (pat.getNumberOfJugglers() > 1) {
@@ -211,6 +212,9 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     protected static final String[] fileItems = new String[]
         {
+            "New Pattern",
+            "New Pattern List",
+            "Open JML...",
             "Save JML As...",
             "Save Animated GIF As...",
             null,
@@ -221,6 +225,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         };
     protected static final String[] fileCommands = new String[]
         {
+            "newpat",
+            "newpl",
+            "open",
             "saveas",
             "savegifanim",
             null,
@@ -231,8 +238,11 @@ public class PatternWindow extends JFrame implements ActionListener {
         };
     protected static final char[] fileShortcuts =
         {
+            'N',
+            'L',
+            'O',
             'S',
-            ' ',
+            'G',
             ' ',
             'D',
             'J',
@@ -402,7 +412,13 @@ public class PatternWindow extends JFrame implements ActionListener {
         String command = ae.getActionCommand();
 
         try {
-            if (command.equals("close"))
+            if (command.equals("newpat"))
+                doMenuCommand(FILE_NEWPAT);
+            else if (command.equals("newpl"))
+                doMenuCommand(FILE_NEWPL);
+            else if (command.equals("open"))
+                doMenuCommand(FILE_OPEN);
+            else if (command.equals("close"))
                 doMenuCommand(FILE_CLOSE);
             else if (command.equals("saveas"))
                 doMenuCommand(FILE_SAVE);
@@ -447,21 +463,36 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     protected static final int FILE_NONE = 0;
-    protected static final int FILE_CLOSE = 1;
-    protected static final int FILE_SAVE = 2;
-    protected static final int FILE_GIFSAVE = 3;
-    protected static final int FILE_DUPLICATE = 4;
-    protected static final int FILE_OPTIMIZE = 5;
-    protected static final int VIEW_RESTART = 6;
-    protected static final int VIEW_ANIMPREFS = 7;
-    protected static final int VIEW_UNDO = 8;
-    protected static final int VIEW_REDO = 9;
-    protected static final int HELP_ABOUT = 10;
-    protected static final int HELP_ONLINE = 11;
+    protected static final int FILE_NEWPAT = 1;
+    protected static final int FILE_NEWPL = 2;
+    protected static final int FILE_OPEN = 3;
+    protected static final int FILE_CLOSE = 4;
+    protected static final int FILE_SAVE = 5;
+    protected static final int FILE_GIFSAVE = 6;
+    protected static final int FILE_DUPLICATE = 7;
+    protected static final int FILE_OPTIMIZE = 8;
+    protected static final int VIEW_RESTART = 9;
+    protected static final int VIEW_ANIMPREFS = 10;
+    protected static final int VIEW_UNDO = 11;
+    protected static final int VIEW_REDO = 12;
+    protected static final int HELP_ABOUT = 13;
+    protected static final int HELP_ONLINE = 14;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
+                break;
+
+            case FILE_NEWPAT:
+                ApplicationWindow.newPattern();
+                break;
+
+            case FILE_NEWPL:
+                new PatternListWindow("Pattern list");
+                break;
+
+            case FILE_OPEN:
+                ApplicationWindow.openJMLFile();
                 break;
 
             case FILE_CLOSE:
@@ -634,7 +665,6 @@ public class PatternWindow extends JFrame implements ActionListener {
                 }
                 break;
         }
-
     }
 
     protected void setViewMode(int mode) throws JuggleExceptionUser,
