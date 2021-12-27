@@ -550,6 +550,7 @@ public class PatternListPanel extends JPanel {
         return dialog;
     }
 
+    // Be sure to call this at the very end of any mouse-related interaction
     protected void checkSelection() {
         if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1)
             list.clearSelection();
@@ -562,7 +563,6 @@ public class PatternListPanel extends JPanel {
     }
 
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pat) {
-        // display = display.trim();
         if (notation != null)
             notation = notation.trim();
         if (animprefs != null)
@@ -581,10 +581,8 @@ public class PatternListPanel extends JPanel {
     public void clearList() {
         model.clear();
 
-        if (BLANK_AT_END) {
-            PatternRecord rec = new PatternRecord(" ", null, null, null, null);
-            model.addElement(rec);
-        }
+        if (BLANK_AT_END)
+            model.addElement(new PatternRecord(" ", null, null, null, null));
     }
 
     public void setTitle(String t) {
