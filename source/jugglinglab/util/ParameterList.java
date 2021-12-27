@@ -27,14 +27,24 @@ public class ParameterList {
         this.readParameters(source);
     }
 
-    public void addParameter(String name, String value) {
+    // Returns true if parameter already existed, false if it was new
+    public boolean addParameter(String name, String value) {
         if (size == 0) {
             names = new ArrayList<String>();
             values = new ArrayList<String>();
         }
+
+        for (int i = size - 1; i >= 0; i--) {
+            if (name.equalsIgnoreCase(getParameterName(i))) {
+                values.set(i, value);
+                return true;
+            }
+        }
+
         names.add(name);
         values.add(value);
         size++;
+        return false;
     }
 
     public String getParameter(String name) {
@@ -80,7 +90,7 @@ public class ParameterList {
             if (index > 0) {
                 String name = str.substring(0, index).trim();
                 String value = str.substring(index + 1).trim();
-                if (name.length() != 0 && value.length() != 0)
+                if (name.length() != 0)
                     addParameter(name, value);
             }
         }

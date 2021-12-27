@@ -50,7 +50,8 @@ public class JMLPattern {
     // for retaining the base pattern this pattern was created from
     protected String base_pattern_notation;
     protected String base_pattern_config;
-    protected boolean base_pattern_edited;
+    protected int base_pattern_hashcode;
+    protected boolean base_pattern_hashcode_valid;
 
     // whether pattern has a velocity-defining transition
     protected boolean[] hasVDPathJMLTransition;  // for a given path
@@ -85,7 +86,6 @@ public class JMLPattern {
         this();
         readJML(root);
         valid = true;
-        checkIfBasePatternEdited();
     }
 
     // Used to specify the jml version number, when pattern is part of a patternlist
@@ -94,7 +94,6 @@ public class JMLPattern {
         loadingversion = jmlvers;
         readJML(root);
         valid = true;
-        checkIfBasePatternEdited();
     }
 
     public JMLPattern(Reader read) throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -104,7 +103,6 @@ public class JMLPattern {
             parser.parse(read);
             readJML(parser.getTree());
             valid = true;
-            checkIfBasePatternEdited();
         } catch (SAXException se) {
             throw new JuggleExceptionUser(se.getMessage());
         } catch (IOException ioe) {
@@ -114,7 +112,6 @@ public class JMLPattern {
 
     public JMLPattern(JMLPattern pat) throws JuggleExceptionUser, JuggleExceptionInternal {
         this(new StringReader(pat.toString()));
-        checkIfBasePatternEdited();
     }
 
     // ------------------------------------------------------------------------
@@ -123,7 +120,23 @@ public class JMLPattern {
 
     public void setTitle(String t) {
         title = ((t == null || t.length() == 0) ? null : t.trim());
-        base_pattern_edited = true;
+
+        // Check if there is a base pattern defined, and if so set the new title
+        // in the base pattern as well
+        if (base_pattern_notation == null || base_pattern_config == null)
+            return;
+
+        ParameterList pl = new ParameterList(base_pattern_config);
+
+        // Is the title equal to the default title? If so then remove the
+        // title parameter
+        if (pl.getParameter("pattern").equals(title))
+            pl.removeParameter("title");
+        else
+            pl.addParameter("title", title == null ? "" : title);
+
+        base_pattern_config = pl.toString();
+        base_pattern_hashcode_valid = false;  // recalculate hash code
     }
 
     public void setNumberOfJugglers(int n) {
@@ -210,7 +223,6 @@ public class JMLPattern {
 
     public void setNeedsLayout() {
         laidout = false;
-        base_pattern_edited = true;
     }
 
     public JMLEvent getEventList()  { return eventlist; }
@@ -276,37 +288,30 @@ public class JMLPattern {
     public String getBasePatternNotation() {
         return base_pattern_notation;
     }
+
     public String getBasePatternConfig() {
         return base_pattern_config;
     }
+
     public boolean isBasePatternEdited() {
-        return base_pattern_edited;
-    }
+        if (base_pattern_notation == null || base_pattern_config == null)
+            return false;
 
-    // When we construct a new JMLPattern from string or xml input, we don't
-    // know if it's been edited from its base pattern. Here we determine this
-    // and set the initial value of base_pattern_edited accordingly.
-    private void checkIfBasePatternEdited() {
-        if (base_pattern_notation == null || base_pattern_config == null) {
-            base_pattern_edited = false;
-            return;
+        if (!base_pattern_hashcode_valid) {
+            try {
+                JMLPattern basepat = JMLPattern.fromBasePattern(base_pattern_notation,
+                                                                base_pattern_config);
+                basepat.layoutPattern();
+                base_pattern_hashcode = basepat.getHashCode();
+                base_pattern_hashcode_valid = true;
+            } catch (JuggleException je) {
+                base_pattern_hashcode = 0;
+                base_pattern_hashcode_valid = false;
+                return false;
+            }
         }
 
-        try {
-            JMLPattern basepat = JMLPattern.fromBasePattern(base_pattern_notation,
-                                                            base_pattern_config);
-
-            // have to lay out both because:
-            // (a) layout can change the toString() representation (and hash code)
-            // (b) doing layout later will set `base_pattern_edited` to true, and
-            //     overwrite what we determine here
-            layoutPattern();
-            basepat.layoutPattern();
-
-            base_pattern_edited = (getHashCode() != basepat.getHashCode());
-        } catch (JuggleException je) {
-            base_pattern_edited = false;
-        }
+        return (getHashCode() != base_pattern_hashcode);
     }
 
     public static JMLPattern fromBasePattern(String notation, String config)
@@ -316,8 +321,6 @@ public class JMLPattern {
 
         pat.base_pattern_notation = Pattern.getNotationName(notation);
         pat.base_pattern_config = config;
-        pat.base_pattern_edited = false;
-
         return pat;
     }
 
@@ -1481,6 +1484,11 @@ public class JMLPattern {
 
         for (int i = 0; i < current.getNumberOfChildren(); i++)
             readJML(current.getChildNode(i));
+
+        // Set title in base pattern, if any. Do this after reading the <basepattern>
+        // tag so that we don't overwrite these changes.
+        if (current.getNodeType().equalsIgnoreCase("jml"))
+            setTitle(title);
     }
 
 
