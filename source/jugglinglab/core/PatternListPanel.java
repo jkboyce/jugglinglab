@@ -41,7 +41,7 @@ public class PatternListPanel extends JPanel {
     protected String loadingversion = JMLDefs.CURRENT_JML_VERSION;
 
     // for mouse/popup menu handling
-    protected boolean willLaunchAnimation;
+    protected boolean didPopup;
     protected ArrayList<PatternWindow> popupPatterns;
     protected JDialog dialog;
     protected JTextField tf;
@@ -89,15 +89,13 @@ public class PatternListPanel extends JPanel {
                 if (row >= 0)
                     list.setSelectedIndex(row);
 
+                didPopup = false;
+
                 if (me.isPopupTrigger()) {
                     // On macOS the popup triggers here
                     makePopupMenu().show(list, me.getX(), me.getY());
-                    willLaunchAnimation = false;
-                    return;
+                    didPopup = true;
                 }
-
-                // allow animation to launch on mouse release
-                willLaunchAnimation = true;
             }
 
             @Override
@@ -105,15 +103,13 @@ public class PatternListPanel extends JPanel {
                 if (me.isPopupTrigger()) {
                     // On Windows the popup triggers here
                     makePopupMenu().show(list, me.getX(), me.getY());
-                    willLaunchAnimation = false;
+                    didPopup = true;
                 }
 
-                if (willLaunchAnimation) {
+                if (!didPopup) {
                     launchAnimation();
                     checkSelection();
                 }
-
-                willLaunchAnimation = false;
             }
         });
 
