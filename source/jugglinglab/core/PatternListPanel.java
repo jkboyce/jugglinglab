@@ -180,7 +180,8 @@ public class PatternListPanel extends JPanel {
 
         @Override
         public Transferable createTransferable(JComponent c) {
-            if (list.getSelectedIndex() < 0)
+            int row = list.getSelectedIndex();
+            if (row < 0 || (BLANK_AT_END && row == model.size() - 1))
                 return null;
 
             draggingOut = true;
