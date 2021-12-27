@@ -85,32 +85,35 @@ public class PatternListPanel extends JPanel {
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(final MouseEvent me) {
-                if (me.isPopupTrigger()) {
-                    int row = list.locationToIndex(me.getPoint());
+                int row = list.locationToIndex(me.getPoint());
+                if (row >= 0)
                     list.setSelectedIndex(row);
 
-                    willLaunchAnimation = false;
+                if (me.isPopupTrigger()) {
+                    // On macOS the popup triggers here
                     makePopupMenu().show(list, me.getX(), me.getY());
-                    return;
-                }
-
-                if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1) {
-                    list.clearSelection();
                     willLaunchAnimation = false;
                     return;
                 }
 
-                // otherwise it's a normal (left) mouse click on a regular
-                // list item --> allow animation to launch on mouse release
+                // allow animation to launch on mouse release
                 willLaunchAnimation = true;
             }
 
             @Override
             public void mouseReleased(final MouseEvent me) {
-                if (willLaunchAnimation) {
-                    launchAnimation();
+                if (me.isPopupTrigger()) {
+                    // On Windows the popup triggers here
+                    makePopupMenu().show(list, me.getX(), me.getY());
                     willLaunchAnimation = false;
                 }
+
+                if (willLaunchAnimation) {
+                    launchAnimation();
+                    checkSelection();
+                }
+
+                willLaunchAnimation = false;
             }
         });
 
@@ -123,8 +126,11 @@ public class PatternListPanel extends JPanel {
     protected void launchAnimation() {
         PatternWindow jaw2 = null;
         try {
-            PatternRecord rec = model.get(list.getSelectedIndex());
+            int row = list.getSelectedIndex();
+            if (row < 0 || (BLANK_AT_END && row == model.size() - 1))
+                return;
 
+            PatternRecord rec = model.get(row);
             if (rec.notation == null)
                 return;
 
@@ -135,25 +141,10 @@ public class PatternListPanel extends JPanel {
                 pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
             } else if (rec.anim != null) {
                 p = Pattern.newPattern(rec.notation).fromString(rec.anim);
-
-                /*
-                // check if we want to add rec.display as the pattern's title
-                // so it won't be lost when the pattern is recompiled in Pattern View
-                ParameterList pl = new ParameterList(p.toString());
-                String pattern = pl.getParameter("pattern");
-                String title = pl.getParameter("title");
-                if (title == null && pattern != null && rec.display != null &&
-                            !pattern.equals(rec.display.trim())) {
-                    pl.addParameter("title", rec.display.trim());
-                    p = Pattern.newPattern(rec.notation).fromParameters(pl);
-                }
-                */
-
                 pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
             } else
                 return;
 
-            //pat.setTitle(rec.display);
             pat.layoutPattern();
 
             if (PatternWindow.bringToFront(pat.getHashCode()))
@@ -414,7 +405,61 @@ public class PatternListPanel extends JPanel {
 
         popup.setBorder(new BevelBorder(BevelBorder.RAISED));
 
+        popup.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) { checkSelection(); }
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+        });
+
         return popup;
+    }
+
+    // Insert the pattern in the given PatternWindow into the given row
+    protected void addPattern(int row, PatternWindow pw) {
+        JMLPattern pat = pw.getPattern();
+        PatternRecord rec = null;
+
+        String display = pw.getTitle();
+        String animprefs = pw.getAnimationPrefs().toString();
+        if (animprefs.length() == 0)
+            animprefs = null;
+
+        if (pat.isBasePatternEdited()) {
+            // add as JML pattern
+            String notation = "jml";
+            String anim = null;
+            JMLNode pattern = null;
+
+            try {
+                JMLParser parser = new JMLParser();
+                parser.parse(new StringReader(pat.toString()));
+                pattern = parser.getTree().findNode("pattern");
+            } catch (Exception e) {
+                // any error here cannot be user error since pattern is
+                // already animating in another window
+                ErrorDialog.handleFatalException(e);
+            }
+
+            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        } else {
+            // add as base pattern
+            String notation = pat.getBasePatternNotation();
+            String anim = pat.getBasePatternConfig();
+            JMLNode pattern = null;
+
+            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        }
+
+        if (row < 0) {
+            model.addElement(rec);  // adds at end
+            list.setSelectedIndex(model.size() - 1);
+        } else {
+            model.add(row, rec);
+            list.setSelectedIndex(row);
+        }
     }
 
     // Open a dialog to allow the user to insert a line of text
@@ -479,51 +524,6 @@ public class PatternListPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    // Insert the pattern in the given PatternWindow into the given row
-    protected void addPattern(int row, PatternWindow pw) {
-        JMLPattern pat = pw.getPattern();
-        PatternRecord rec = null;
-
-        String display = pw.getTitle();
-        String animprefs = pw.getAnimationPrefs().toString();
-        if (animprefs.length() == 0)
-            animprefs = null;
-
-        if (pat.isBasePatternEdited()) {
-            // add as JML pattern
-            String notation = "jml";
-            String anim = null;
-            JMLNode pattern = null;
-
-            try {
-                JMLParser parser = new JMLParser();
-                parser.parse(new StringReader(pat.toString()));
-                pattern = parser.getTree().findNode("pattern");
-            } catch (Exception e) {
-                // any error here cannot be user error since pattern is
-                // already animating in another window
-                ErrorDialog.handleFatalException(e);
-            }
-
-            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-        } else {
-            // add as base pattern
-            String notation = pat.getBasePatternNotation();
-            String anim = pat.getBasePatternConfig();
-            JMLNode pattern = null;
-
-            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-        }
-
-        if (row < 0) {
-            model.addElement(rec);  // adds at end
-            list.setSelectedIndex(model.size() - 1);
-        } else {
-            model.add(row, rec);
-            list.setSelectedIndex(row);
-        }
-    }
-
     // Helper to make popup dialog boxes
     protected JDialog makeDialog(String title, String default_text) {
         dialog = new JDialog(parent, title, true);
@@ -545,7 +545,18 @@ public class PatternListPanel extends JPanel {
         dialog.pack();
         dialog.setResizable(false);
         dialog.setLocationRelativeTo(this);
+
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) { checkSelection(); }
+        });
+
         return dialog;
+    }
+
+    protected void checkSelection() {
+        if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1)
+            list.clearSelection();
     }
 
     //-------------------------------------------------------------------------
