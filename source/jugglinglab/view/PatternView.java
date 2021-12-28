@@ -102,7 +102,7 @@ public class PatternView extends View implements DocumentListener {
         lower.add(compile);
         revert = new JButton(guistrings.getString("PatternView_revert_button"));
         gb2.setConstraints(revert, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 0,
-                                                      new Insets(8, 5, 8, 8)));
+                                                      new Insets(8, 5, 8, 12)));
         lower.add(revert);
         lab = new JLabel(" ");
         GridBagConstraints gbc2 = JLFunc.constraints(GridBagConstraints.LINE_START, 2, 0);
