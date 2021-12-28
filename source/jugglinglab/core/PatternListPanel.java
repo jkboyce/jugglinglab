@@ -555,6 +555,11 @@ public class PatternListPanel extends JPanel {
     protected void checkSelection() {
         if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1)
             list.clearSelection();
+
+        popupPatterns = null;
+        dialog = null;
+        tf = null;
+        okbutton = null;
     }
 
     //-------------------------------------------------------------------------
