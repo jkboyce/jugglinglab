@@ -20,23 +20,23 @@ import jugglinglab.renderer.Juggler;
 import jugglinglab.util.*;
 
 
-/*
-    This is one of the core classes, representing a juggling pattern in generalized
-    form. It is used in three steps:
+/*------------------------------------------------------------------------------
+This is one of the core classes, representing a juggling pattern in generalized
+form. It is used in three steps:
 
-    1) Define a pattern, in one of three ways:
+1) Define a pattern, in one of four ways:
 
-       A)  Manually, by calling methods in this class.
-       B)  Parsing from pre-existing JML stream (file, user input, etc.).
-           (JML = Juggling Markup Language, an XML document type)
-       C)  Output from a Notation class, which converts from other notations.
+   a) Manually, by calling methods in this class.
+   b) Parsing from pre-existing JML stream (file, user input, etc.).
+      (JML = Juggling Markup Language, an XML document type)
+   c) Output from a Notation instance's asJMLPattern() method.
+   d) The fromBasePattern() method in this class.
 
-    2) Call layoutPattern() to calculate flight paths for all the props and
-       hands.
+2) Call layoutPattern() to calculate flight paths for all the props and hands.
 
-    3) Call various methods to get information about the pattern, e.g., prop/hand
-       coordinates at points in time.
-*/
+3) Call various methods to get information about the pattern, e.g., prop/hand
+   coordinates at points in time.
+------------------------------------------------------------------------------*/
 
 public class JMLPattern {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -121,6 +121,9 @@ public class JMLPattern {
     //-------------------------------------------------------------------------
 
     public void setTitle(String t) {
+        if (t != null)
+            t = t.replaceAll(";", "");  // semicolons not allowed in titles
+
         title = ((t == null || t.length() == 0) ? null : t.trim());
 
         // Check if there is a base pattern defined, and if so set the new title
