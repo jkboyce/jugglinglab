@@ -3,3 +3,4 @@ admin/
 build/
 packages/
 *.jml
+source/resources/package/windows/*.properties

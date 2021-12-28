@@ -1,6 +1,6 @@
 // MHNPattern.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation;
 
@@ -226,26 +226,45 @@ public abstract class MHNPattern extends Pattern {
 
     @Override
     public String toString() {
-        // print out configuration parameters in a standard order
+        // write out configuration parameters in a standard order
         if (config == null)
             return null;
 
-        ParameterList pl = new ParameterList(config);
         String result = "";
 
-        // write the parameters out in a standard order
-        List<String> keys = Arrays.asList("pattern", "bps", "dwell", "hands", "body",
-                                "gravity", "propdiam", "bouncefrac", "prop", "colors",
-                                "hss", "hold", "dwellmax", "handspec", "title");
+        try {
+            ParameterList pl = new ParameterList(config);
 
-        for (String key : keys) {
-            String value = pl.getParameter(key);
-            if (value != null)
-                result += key + "=" + value + ";";
+            List<String> keys = Arrays.asList(
+                "pattern", 
+                "bps", 
+                "dwell", 
+                "hands", 
+                "body",         
+                "gravity", 
+                "propdiam", 
+                "bouncefrac", 
+                "prop", 
+                "colors",        
+                "hss", 
+                "hold", 
+                "dwellmax", 
+                "handspec", 
+                "title"
+            );
+
+            for (String key : keys) {
+                String value = pl.getParameter(key);
+                if (value != null)
+                    result += key + "=" + value + ";";
+            }
+
+            if (result.length() > 0)
+                result = result.substring(0, result.length() - 1);
+        } catch (JuggleExceptionUser jeu) {
+            // can't be a user error since config has already been successfully read
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
         }
-
-        if (result.length() > 0)
-            result = result.substring(0, result.length() - 1);
 
         return result;
     }

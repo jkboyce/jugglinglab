@@ -131,17 +131,23 @@ public class JMLPattern {
         if (base_pattern_notation == null || base_pattern_config == null)
             return;
 
-        ParameterList pl = new ParameterList(base_pattern_config);
+        try {
+            ParameterList pl = new ParameterList(base_pattern_config);
 
-        // Is the title equal to the default title? If so then remove the
-        // title parameter
-        if (pl.getParameter("pattern").equals(title))
-            pl.removeParameter("title");
-        else
-            pl.addParameter("title", title == null ? "" : title);
+            // Is the title equal to the default title? If so then remove the
+            // title parameter
+            if (pl.getParameter("pattern").equals(title))
+                pl.removeParameter("title");
+            else
+                pl.addParameter("title", title == null ? "" : title);
 
-        base_pattern_config = pl.toString();
-        base_pattern_hashcode_valid = false;  // recalculate hash code
+            base_pattern_config = pl.toString();
+            base_pattern_hashcode_valid = false;  // recalculate hash code
+        } catch (JuggleExceptionUser jeu) {
+            // can't be a user error since base pattern has already successfully
+            // compiled
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
+        }
     }
 
     public void setNumberOfJugglers(int n) {

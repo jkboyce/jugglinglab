@@ -1,6 +1,6 @@
 // MHNNotationControl.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation;
 
@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import jugglinglab.prop.Prop;
+import jugglinglab.util.JuggleExceptionUser;
 import jugglinglab.util.ParameterList;
 
 
@@ -266,7 +267,7 @@ public abstract class MHNNotationControl extends NotationControl {
     }
 
     @Override
-    public ParameterList getParameterList() {
+    public ParameterList getParameterList() throws JuggleExceptionUser {
         StringBuffer sb = new StringBuffer(256);
 
         sb.append("pattern=");

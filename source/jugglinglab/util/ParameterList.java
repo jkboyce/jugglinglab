@@ -1,6 +1,6 @@
 // ParameterList.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -22,7 +22,7 @@ public class ParameterList {
         size = 0;
     }
 
-    public ParameterList(String source) {
+    public ParameterList(String source) throws JuggleExceptionUser {
         this();
         this.readParameters(source);
     }
@@ -77,11 +77,11 @@ public class ParameterList {
         return size;
     }
 
-    public void readParameters(String source) {
+    public void readParameters(String source) throws JuggleExceptionUser {
         if (source == null)
             return;
 
-        source = source.replace("\n","").replace("\r","");
+        source = source.replaceAll("\n","").replaceAll("\r","");
         StringTokenizer st1 = new StringTokenizer(source, ";");
 
         while (st1.hasMoreTokens()) {
@@ -92,6 +92,13 @@ public class ParameterList {
                 String value = str.substring(index + 1).trim();
                 if (name.length() != 0)
                     addParameter(name, value);
+            } else {
+                str = str.trim();
+                if (str.length() > 0) {
+                    String template = errorstrings.getString("Error_param_has_no_value");
+                    Object[] arg = { str };
+                    throw new JuggleExceptionUser(MessageFormat.format(template, arg));
+                }
             }
         }
     }
