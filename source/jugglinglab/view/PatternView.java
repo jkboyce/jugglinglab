@@ -11,7 +11,8 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import jugglinglab.core.*;
+import jugglinglab.core.AnimationPanel;
+import jugglinglab.core.AnimationPrefs;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
@@ -93,13 +94,23 @@ public class PatternView extends View implements DocumentListener {
         add(jsp, BorderLayout.CENTER);
 
         JPanel lower = new JPanel();
-        lower.setLayout(new FlowLayout(FlowLayout.LEADING));
+        GridBagLayout gb2 = new GridBagLayout();
+        lower.setLayout(gb2);
         compile = new JButton(guistrings.getString("PatternView_compile_button"));
+        gb2.setConstraints(compile, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
+                                                       new Insets(0, 10, 0, 0)));
         lower.add(compile);
         revert = new JButton(guistrings.getString("PatternView_revert_button"));
+        gb2.setConstraints(revert, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 0,
+                                                      new Insets(0, 3, 0, 8)));
         lower.add(revert);
-        lab = new JLabel("");
+        lab = new JLabel(" ");
+        GridBagConstraints gbc2 = JLFunc.constraints(GridBagConstraints.LINE_START, 2, 0);
+        gbc2.fill = GridBagConstraints.HORIZONTAL;
+        gbc2.weightx = 1.0;
+        gb2.setConstraints(lab, gbc2);
         lower.add(lab);
+
         add(lower, BorderLayout.PAGE_END);
 
         // add actions to the various items
@@ -178,7 +189,7 @@ public class PatternView extends View implements DocumentListener {
             ta.setText(getPattern().toString());
 
         ta.setCaretPosition(0);
-        lab.setText("");
+        lab.setText(" ");
         setTextEdited(false);
 
         // Note the above always triggers an updateButtons() call, since
