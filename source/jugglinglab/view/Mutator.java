@@ -216,8 +216,7 @@ public class Mutator {
     // with a tweaked position
     protected JMLPattern mutateAddEvent(JMLPattern pat) throws
                     JuggleExceptionUser, JuggleExceptionInternal {
-        if (!pat.isLaidout())
-            pat.layoutPattern();
+        pat.layoutPattern();
 
         JMLEvent ev = null;
         double tmin, tmax, t;
@@ -364,8 +363,7 @@ public class Mutator {
     // return a random master event from the pattern
     protected JMLEvent pickMasterEvent(JMLPattern pat) throws JuggleExceptionUser,
                     JuggleExceptionInternal {
-        if (!pat.isLaidout())
-            pat.layoutPattern();
+        pat.layoutPattern();
 
         JMLEvent eventlist = pat.getEventList();
         int master_count = 0;
