@@ -56,7 +56,7 @@
 
 <line display="Burke&apos;s Barrage" notation="jml">
 <pattern>
-<title>Burkes Barrage</title>
+<title>Burke&apos;s Barrage</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="3" props="1,1,1"/>
 <symmetry type="delay" pperm="(1)(2)(3)" delay="1.3714"/>
@@ -84,7 +84,7 @@
 
 <line display="Clawing" notation="jml">
 <pattern>
-<title>42T3</title>
+<title>Clawing</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="3" props="1,1,1"/>
 <symmetry type="delay" pperm="(1)(2)(3)" delay="1.1428"/>
@@ -217,7 +217,7 @@
 
 <line display="Rubenstein&apos;s Revenge" notation="jml">
 <pattern>
-<title>Rubensteins Revenge</title>
+<title>Rubenstein&apos;s Revenge</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="3" props="1,1,1"/>
 <symmetry type="delay" pperm="(1)(2)(3)" delay="2.0689"/>
@@ -393,10 +393,12 @@
 </line>
 
 <line display="4 Ball Box Bounced" notation="siteswap">
-pattern=(8B,2x)(4,2x)(2x,8B)(2x,4);hands=(40)(20).(7.5)(20).(20)(20).(7.5)(40).(7.5)(20).(40)(20).(7.5)(40).(20)(20).
+pattern=(8B,2x)(4,2x)(2x,8B)(2x,4);
+hands=(40)(20).(7.5)(20).(20)(20).(7.5)(40).(7.5)(20).(40)(20).(7.5)(40).(20)(20).;
+title=4 Ball Box Bounced
 </line>
 <line display="744 Bounced" notation="siteswap">
-pattern=7B44
+pattern=7B44;title=4 Ball Box Bounced
 </line>
 
 <line display="441 Mills Mess" notation="jml">

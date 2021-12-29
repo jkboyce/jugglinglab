@@ -5,31 +5,41 @@
 <title>Demo bounce patterns</title>
 
 <line display="3 ball hyperlift (1.2 bps)" notation="siteswap">
-pattern=3BHL;bps=1.2;hands=(15)(20,15)c(25)(20,-15).
+pattern=3BHL;bps=1.2;hands=(15)(20,15)c(25)(20,-15).;
+title=3 ball hyperlift (1.2 bps)
 </line>
 <line display="3 ball lift (1.6 bps)" notation="siteswap">
-pattern=3BL;bps=1.6;hands=(20)(23,15)c(25)(23,-15).
+pattern=3BL;bps=1.6;hands=(20)(23,15)c(25)(23,-15).;
+title=3 ball lift (1.6 bps)
 </line>
 <line display="3 ball force (1.8 bps)" notation="siteswap">
-pattern=3BF;bps=1.8;;hands=(25)(20).
+pattern=3BF;bps=1.8;;hands=(25)(20).;
+title=3 ball force (1.8 bps)
 </line>
 <line display="3 ball hyperforce (3.5 bps)" notation="siteswap">
-pattern=3BHF;bps=3.5;hands=(25)(10).
+pattern=3BHF;bps=3.5;hands=(25)(10).;
+title=3 ball hyperforce (3.5 bps)
 </line>
 
 <line display=""/>
 
 <line display="7 ball hyperlift (3.5 bps)" notation="siteswap">
-pattern=7BHL;bps=3.5
+pattern=7BHL;bps=3.5;
+title=7 ball hyperlift (3.5 bps)
 </line>
 <line display="5 ball force double-bounce" notation="siteswap">
-pattern=5BBF;bps=2
+pattern=5BBF;bps=2;
+title=5 ball force double-bounce
 </line>
 <line display="5 ball shower 9BBBHL1" notation="siteswap">
-pattern=9BBBHL1;bps=2.1
+pattern=9BBBHL1;bps=2.1;
+title=5 ball shower 9BBBHL1
 </line>
 <line display="Moving shower" notation="siteswap">
-pattern=19BBBHL;bps=2.1;hands=(20)(20,15)c(20)(20,-15).;body=(0,75,0)..(72,23,71)..(144,-61,44)..(216,-61,-44)..(288,23,-71)..
+pattern=19BBBHL;bps=2.1;
+hands=(20)(20,15)c(20)(20,-15).;
+body=(0,75,0)..(72,23,71)..(144,-61,44)..(216,-61,-44)..(288,23,-71)..;
+title=Moving shower
 </line>
 
 <line display="Bounced yo-yo" notation="jml">

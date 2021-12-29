@@ -445,7 +445,10 @@ pattern=5;dwell=1.0;bps=4.98;hands=(10)(32.5).
 </line>
 
 <line display="Chops" notation="siteswap">
-pattern=(4x,2)(2,4x);dwell=1.0;bps=5.591;hands=(-25,-15)(25,30).(17.5,45)(10,45).(17.5,45)(10,45).(-25,-15)(25,30).
+pattern=(4x,2)(2,4x);
+dwell=1.0;bps=5.591;
+hands=(-25,-15)(25,30).(17.5,45)(10,45).(17.5,45)(10,45).(-25,-15)(25,30).;
+title=Chops
 </line>
 
 <line display="Eating an apple" notation="jml">
@@ -506,22 +509,29 @@ pattern=(4x,2)(2,4x);dwell=1.0;bps=5.591;hands=(-25,-15)(25,30).(17.5,45)(10,45)
 </line>
 
 <line display="Wide Cascade" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.611;hands=(45,20)(52.5,45).
+pattern=3;dwell=1.0;bps=4.611;hands=(45,20)(52.5,45).;
+title=Wide Cascade
 </line>
 <line display="Juggler&apos;s Tennis" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(10)(35,15).(10)(20).(35,15)(20).
+pattern=3;dwell=1.0;bps=3.572;hands=(10)(35,15).(10)(20).(35,15)(20).;
+title=Juggler&apos;s Tennis
 </line>
 <line display="Over the Head" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(7.5,95)(30,95).
+pattern=3;dwell=1.0;bps=3.572;hands=(7.5,95)(30,95).;
+title=Over the Head
 </line>
 <line display="Reverse Cascade" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(32.5)(10).
+pattern=3;dwell=1.0;bps=3.572;hands=(32.5)(10).;
+title=Reverse Cascade
 </line>
 <line display="Wide Reverse Cascade" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(30)(-20).
+pattern=3;dwell=1.0;bps=3.572;hands=(30)(-20).;
+title=Wide Reverse Cascade
 </line>
 <line display="Reachover" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.124;hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25).(10)(-32.5,25).(20,-10)(32.5,-15).(0,10)(32.5).(10)(32.5).
+pattern=3;dwell=1.0;bps=4.124;
+hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25).(10)(-32.5,25).(20,-10)(32.5,-15).(0,10)(32.5).(10)(32.5).;
+title=Reachover
 </line>
 
 <line display="Reachover (alternate)" notation="jml">
@@ -553,13 +563,17 @@ pattern=3;dwell=1.0;bps=4.124;hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25).
 </line>
 
 <line display="Reachunder" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.124;hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25,20).(10,-15)(-40,-15).(10,20)(32.5,15).(0)(32.5).(10)(32.5).
+pattern=3;dwell=1.0;bps=4.124;
+hands=(10)(32.5).(10)(32.5).(10)(32.5).(32.5)(25,20).(10,-15)(-40,-15).(10,20)(32.5,15).(0)(32.5).(10)(32.5).;
+title=Reachunder
 </line>
 <line display="Reachunder (alternate)" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.124;hands=(7.5,20)(32.5,15).(32.5)(25,20).(10)(-32.5,-25).
+pattern=3;dwell=1.0;bps=4.124;hands=(7.5,20)(32.5,15).(32.5)(25,20).(10)(-32.5,-25).;
+title=Reachunder (alternate)
 </line>
 <line display="Crossed Arm Reverse" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(-30)(-10).
+pattern=3;dwell=1.0;bps=3.572;hands=(-30)(-10).;
+title=Crossed Arm Reverse
 </line>
 <line display=""/>
 <line display="3-ball Tricks"/>
@@ -786,7 +800,9 @@ pattern=3;dwell=1.0;bps=3.572;hands=(-30)(-10).
 </line>
 
 <line display="1Up-2Up E" notation="siteswap">
-pattern=(4,4)(4,0);dwell=1.0;bps=5.176;hands=(10)(32.5).(10)(10).(-32.5)(10).(10)(10).
+pattern=(4,4)(4,0);dwell=1.0;bps=5.176;
+hands=(10)(32.5).(10)(10).(-32.5)(10).(10)(10).;
+title=1Up-2Up E
 </line>
 
 <line display="1Up-2Up F" notation="jml">
@@ -1037,7 +1053,9 @@ pattern=(4,4)(4,0);dwell=1.0;bps=5.176;hands=(10)(32.5).(10)(10).(-32.5)(10).(10
 </line>
 
 <line display="Arches" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.43;hands=(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).
+pattern=3;dwell=1.0;bps=4.43;
+hands=(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).;
+title=Arches
 </line>
 
 <line display="2-in-1-Hand Tennis" notation="jml">
@@ -1072,65 +1090,82 @@ pattern=3;dwell=1.0;bps=4.43;hands=(50,50)(37.5,25).(25)(50,50).(37.5,25)(25).(5
 </line>
 
 <line display="Statue of Liberty A" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.611;hands=(30,20)(7.5).(22.5,95)(25,100).
+pattern=3;dwell=1.0;bps=4.611;hands=(30,20)(7.5).(22.5,95)(25,100).;
+title=Statue of Liberty A
 </line>
 <line display="Statue of Liberty B" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.269;hands=(30)(7.5,20).(22.5,95)(25,85).
+pattern=3;dwell=1.0;bps=4.269;hands=(30)(7.5,20).(22.5,95)(25,85).;
+title=Statue of Liberty B
 </line>
 <line display="Shuffle (The Slam)" notation="siteswap">
-pattern=(2x,4x);dwell=1.0;bps=5.591;hands=(30,50)(0,-25).(35)(25).
+pattern=(2x,4x);dwell=1.0;bps=5.591;hands=(30,50)(0,-25).(35)(25).;
+title=Shuffle (The Slam)
 </line>
 <line display="See Saw Shuffle (Luke&apos;s Shuffle)" notation="siteswap">
-pattern=(2x,4)(4,2x);dwell=1.0;bps=5.001;hands=(35,50)(25,-15).(15)(25).(15)(25).(35,50)(25,-15).
+pattern=(2x,4)(4,2x);dwell=1.0;bps=5.001;hands=(35,50)(25,-15).(15)(25).(15)(25).(35,50)(25,-15).;
+title=See Saw Shuffle (Luke&apos;s Shuffle)
 </line>
 <line display="441 Shuffle" notation="siteswap">
-pattern=441;dwell=1.0;bps=6.125;hands=(12.5,-10)(37.5,20).(15)(12,5,-10).(22.5,50)(15).
+pattern=441;dwell=1.0;bps=6.125;hands=(12.5,-10)(37.5,20).(15)(12,5,-10).(22.5,50)(15).;
+title=441 Shuffle
 </line>
 <line display="Both Side Slam" notation="siteswap">
-pattern=(2x,4x)(4x,2)(4x,2x)(2,4x);dwell=1.0;bps=6.125;hands=(30,50)(25).(25)(15).(10)(25).(15)(15).(25)(15).(30,50)(25).(15)(15).(10)(25).
+pattern=(2x,4x)(4x,2)(4x,2x)(2,4x);dwell=1.0;bps=6.125;
+hands=(30,50)(25).(25)(15).(10)(25).(15)(15).(25)(15).(30,50)(25).(15)(15).(10)(25).;
+title=Both Side Slam
 </line>
 <line display="Robot (Machine,Factory)" notation="siteswap">
-pattern=242334;dwell=1.0;bps=5.001;hands=(25,-15)(25,-15).(25)(0).(25,65)(25,65).(0)(15).(-25,65)(12.5,20).(15)(25).
+pattern=242334;dwell=1.0;bps=5.001;
+hands=(25,-15)(25,-15).(25)(0).(25,65)(25,65).(0)(15).(-25,65)(12.5,20).(15)(25).;
+title=Robot (Machine,Factory)
 </line>
 <line display="Exchange (Pendulum,Drop)" notation="siteswap">
-pattern=2334;dwell=1.0;bps=5.371;hands=(25,55)(0,60).(0)(25).(-25,60)(0,55).(0)(25).
+pattern=2334;dwell=1.0;bps=5.371;hands=(25,55)(0,60).(0)(25).(-25,60)(0,55).(0)(25).;
+title=Exchange (Pendulum,Drop)
 </line>
 <line display="Carry" notation="siteswap">
-pattern=3;dwell=1.0;bps=5.051;hands=
-(-17.5,60)(17.5,60).(-17.5)(17.5).
+pattern=3;dwell=1.0;bps=5.051;hands=(-17.5,60)(17.5,60).(-17.5)(17.5).;
+title=Carry
 </line>
 
 <line display="Follow" notation="siteswap">
-pattern=423;dwell=1.0;bps=6.125;hands=(-25,20)(0,20).(25,50)(-25,50).(0,10)(25,-15).
+pattern=423;dwell=1.0;bps=6.125;hands=(-25,20)(0,20).(25,50)(-25,50).(0,10)(25,-15).;
+title=Follow
 </line>
 <line display=""/>
 <line display="4-ball Tricks"/>
 <line display=""/>
 <line display="4-Reverse Synchronous Fountain" notation="siteswap">
-pattern=(4,4);dwell=1.0;bps=4.331;hands=(32.5)(10).
+pattern=(4,4);dwell=1.0;bps=4.331;hands=(32.5)(10).;
+title=4-Reverse Synchronous Fountain
 </line>
 <line display="4-Reverse Fountain" notation="siteswap">
-pattern=4;dwell=1.0;bps=4.331;hands=(32.5)(10).
+pattern=4;dwell=1.0;bps=4.331;hands=(32.5)(10).;
+title=4-Reverse Fountain
 </line>
 <line display="4-Columns Switch" notation="siteswap">
-pattern=(4x,4x)(4,4);dwell=1.0;bps=4.331;hands=(30,10)(10).(30)(10).(10)(30).(10)(30,10).
+pattern=(4x,4x)(4,4);dwell=1.0;bps=4.331;hands=(30,10)(10).(30)(10).(10)(30).(10)(30,10).;
+title=4-Columns Switch
 </line>
 <line display="4-ball Cross A" notation="siteswap">
-pattern=(4x,4x);dwell=1.0;bps=4.331;hands=(17.5,15)(32.5).(17.5)(32.5,15).
+pattern=(4x,4x);dwell=1.0;bps=4.331;hands=(17.5,15)(32.5).(17.5)(32.5,15).;
+title=4-ball Cross A
 </line>
 <line display="4-ball Cross B" notation="siteswap">
-pattern=(4x,4x);dwell=1.0;bps=4.331;hands=(17.5,15)(32.5,15).(17.5)(32.5).(17.5)(32.5).(17.5,15)(32.5,15).
+pattern=(4x,4x);dwell=1.0;bps=4.331;hands=(17.5,15)(32.5,15).(17.5)(32.5).(17.5)(32.5).(17.5,15)(32.5,15).;
+title=4-ball Cross B
 </line>
 <line display="444447333" notation="siteswap">
 pattern=444447333;dwell=1.0;bps=4.964;hands=(10)(32.5).
 </line>
 <line display="4-ball Tennis" notation="siteswap">
-pattern=44453;dwell=1.0;bps=4.98;hands=(10)(0).(10)(37.5,15).(10)(22.5).(37.5,15)(22.5).(10)(22.5).
+pattern=44453;dwell=1.0;bps=4.98;hands=(10)(0).(10)(37.5,15).(10)(22.5).(37.5,15)(22.5).(10)(22.5).;
+title=4-ball Tennis
 </line>
 
 <line display="4-ball Burke&apos;s Barrage" notation="jml">
 <pattern>
-<title>4-ball Burkes Barrage</title>
+<title>4-ball Burke&apos;s Barrage</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="4" props="1,1,1,1"/>
 <symmetry type="delay" pperm="(1,4)(2,3)" delay="0.9332"/>
@@ -1161,7 +1196,7 @@ pattern=44453;dwell=1.0;bps=4.98;hands=(10)(0).(10)(37.5,15).(10)(22.5).(37.5,15
 
 <line display="Dancey&apos;s Devilment" notation="jml">
 <pattern>
-<title>Danceys Devilment</title>
+<title>Dancey&apos;s Devilment</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="4" props="1,1,1,1"/>
 <symmetry type="delay" pperm="(1)(2)(3)(4)" delay="1.5554"/>
@@ -1210,10 +1245,12 @@ pattern=44453;dwell=1.0;bps=4.98;hands=(10)(0).(10)(37.5,15).(10)(22.5).(37.5,15
 <line display="5-ball Tricks"/>
 <line display=""/>
 <line display="5-Reverse Cascade" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(32.5)(10).
+pattern=5;dwell=1.0;bps=4.98;hands=(32.5)(10).;
+title=5-Reverse Cascade
 </line>
 <line display="3-Cascade -&gt; 5-Cascade" notation="siteswap">
-pattern=[32][32][32][32][32][32][52][52][52]555555522;dwell=1.0;bps=4.98;hands=(10)(32.5).
+pattern=[32][32][32][32][32][32][52][52][52]555555522;dwell=1.0;bps=4.98;hands=(10)(32.5).;
+title=3-Cascade -&gt; 5-Cascade
 </line>
 <line display="555555744" notation="siteswap">
 pattern=555555744;dwell=1.0;bps=4.964;hands=(10)(32.5).
@@ -1221,7 +1258,7 @@ pattern=555555744;dwell=1.0;bps=4.964;hands=(10)(32.5).
 
 <line display="5-ball Burke&apos;s Barrage" notation="jml">
 <pattern>
-<title>5-ball Burkes Barrage</title>
+<title>5-ball Burke&apos;s Barrage</title>
 <prop type="ball"/>
 <setup jugglers="1" paths="5" props="1,1,1,1,1"/>
 <symmetry type="delay" pperm="(1,4,2)(3)(5)" delay="0.7644"/>
@@ -1254,7 +1291,7 @@ pattern=555555744;dwell=1.0;bps=4.964;hands=(10)(32.5).
 <line display="Shower"/>
 <line display=""/>
 <line display="3-Shower Japanese OTEDAMA" notation="siteswap">
-pattern=51
+pattern=51;title=3-Shower Japanese OTEDAMA
 </line>
 
 <line display="3-Half Shower A" notation="jml">
@@ -1282,139 +1319,186 @@ pattern=51
 </line>
 
 <line display="3-Half Shower B" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(37.5,40)(20).(20)(37.5,40).
+pattern=3;dwell=1.0;bps=3.572;hands=(37.5,40)(20).(20)(37.5,40).;
+title=3-Half Shower B
 </line>
 <line display="4-Shower" notation="siteswap">
-pattern=71;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).
+pattern=71;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).;
+title=4-Shower
 </line>
 <line display="4-Half Shower" notation="siteswap">
-pattern=53;dwell=1.0;bps=4.98;hands=(25)(12.5).(12.5)(25).
+pattern=53;dwell=1.0;bps=4.98;hands=(25)(12.5).(12.5)(25).;
+title=4-Half Shower
 </line>
 <line display="5-Half Shower A" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(37.5,40)(20).(20)(37.5,40).
+pattern=5;dwell=1.0;bps=4.98;hands=(37.5,40)(20).(20)(37.5,40).;
+title=5-Half Shower A
 </line>
 <line display="5-Half Shower B" notation="siteswap">
-pattern=73;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).
+pattern=73;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).;
+title=5-Half Shower B
 </line>
 <line display="5-Half Shower C" notation="siteswap">
-pattern=(4x,6x);dwell=1.0;bps=5.556;hands=(12.5)(25).(25)(12.5).
+pattern=(4x,6x);dwell=1.0;bps=5.556;hands=(12.5)(25).(25)(12.5).;
+title=5-Half Shower C
 </line>
 <line display="6-Half Shower" notation="siteswap">
-pattern=75;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).
+pattern=75;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).;
+title=6-Half Shower
 </line>
 <line display="3-Synchronous Shower" notation="siteswap">
-pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(12.5)(25).(25)(12.5).
+pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(12.5)(25).(25)(12.5).;
+title=3-Synchronous Shower
 </line>
 <line display="4-Synchronous Shower" notation="siteswap">
-pattern=(2x,6x);dwell=1.0;bps=5.556;hands=(12.5)(25).(25)(12.5).
+pattern=(2x,6x);dwell=1.0;bps=5.556;hands=(12.5)(25).(25)(12.5).;
+title=4-Synchronous Shower
 </line>
 <line display="3-High-Low Shower A" notation="siteswap">
-pattern=7131;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).
+pattern=7131;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).;
+title=3-High-Low Shower A
 </line>
 <line display="3-High-Low Shower B" notation="siteswap">
-pattern=(2x,6x)(2x,2x);dwell=1.0;bps=6.416;hands=(15)(30,15).(30,15)(15).(15)(15,15).(15,15)(15).
+pattern=(2x,6x)(2x,2x);dwell=1.0;bps=6.416;hands=(15)(30,15).(30,15)(15).(15)(15,15).(15,15)(15).;
+title=3-High-Low Shower B
 </line>
 <line display="3-High-Low Shower C" notation="siteswap">
-pattern=315171;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).
+pattern=315171;dwell=1.0;bps=6.08;hands=(25)(12.5).(12.5)(25).;
+title=3-High-Low Shower C
 </line>
 <line display="4-High-Low Shower" notation="siteswap">
-pattern=9151;dwell=1.0;bps=7.012;hands=(25)(12.5).(12.5)(25).
+pattern=9151;dwell=1.0;bps=7.012;hands=(25)(12.5).(12.5)(25).;
+title=4-High-Low Shower
 </line>
 <line display="Under-the-Hand Shower" notation="siteswap">
-pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(-7.5,20)(7.5,20).(-25)(12.5).
+pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(-7.5,20)(7.5,20).(-25)(12.5).;
+title=Under-the-Hand Shower
 </line>
 <line display="Under-the-Hand Shower (alternate)" notation="siteswap">
-pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(0,20)(12.5,20).(25)(7.5).(0,20)(12.5,20).(-25)(7.5).
+pattern=(2x,4x);dwell=1.0;bps=4.331;hands=(0,20)(12.5,20).(25)(7.5).(0,20)(12.5,20).(-25)(7.5).;
+title=Under-the-Hand Shower (alternate)
 </line>
 <line display="4-Half Shower Like Trick" notation="siteswap">
-pattern=35;dwell=1.0;bps=4.98;hands=(37.5,40)(20).(20)(37.5,40).
+pattern=35;dwell=1.0;bps=4.98;hands=(37.5,40)(20).(20)(37.5,40).;
+title=4-Half Shower Like Trick
 </line>
 <line display="High Half Shower" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.611;hands=(-17.5,35)(17.5,35).(-32.5)(32.5).
+pattern=3;dwell=1.0;bps=4.611;hands=(-17.5,35)(17.5,35).(-32.5)(32.5).;
+title=High Half Shower
 </line>
 <line display="Multi-Shower" notation="siteswap">
-pattern=[97]121;dwell=1.0;bps=7.012;hands=(25)(12.5).(12.5)(25).
+pattern=[97]121;dwell=1.0;bps=7.012;hands=(25)(12.5).(12.5)(25).;
+title=Multi-Shower
 </line>
 <line display="False Shower (Windmill)" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(-25,-10)(25).(25,10)(-25,20).
+pattern=3;dwell=1.0;bps=3.572;hands=(-25,-10)(25).(25,10)(-25,20).;
+title=False Shower (Windmill)
 </line>
 <line display=""/>
 <line display="Mills Mess"/>
 <line display=""/>
 <line display="2 out of the Mills Mess" notation="siteswap">
-pattern=330;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=330;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=2 out of the Mills Mess
 </line>
 <line display="Standard Mills Mess" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Standard Mills Mess
 </line>
 <line display="Mills Mess 423" notation="siteswap">
-pattern=423;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=423;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 423
 </line>
 <line display="Mills Mess 414" notation="siteswap">
-pattern=414;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=414;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 414
 </line>
 <line display="Mills Mess 315" notation="siteswap">
-pattern=315;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=315;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 315
 </line>
 <line display="Mills Mess Box" notation="siteswap">
-pattern=612;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=612;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess Box
 </line>
 <line display="4-ball Mills Mess" notation="siteswap">
-pattern=4;dwell=1.0;bps=5.371;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=4;dwell=1.0;bps=5.371;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=4-ball Mills Mess
 </line>
 <line display="Mills Mess 534" notation="siteswap">
-pattern=534;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=534;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 534
 </line>
 <line display="Mills Mess 552" notation="siteswap">
-pattern=552;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=552;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 552
 </line>
 <line display="Mills Mess 642" notation="siteswap">
-pattern=642;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=642;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 642
 </line>
 <line display="5-ball Mills Mess" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=5;dwell=1.0;bps=4.98;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=5-ball Mills Mess
 </line>
 <line display="6-ball Mills Mess" notation="siteswap">
-pattern=6;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=6;dwell=1.0;bps=5.556;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=6-ball Mills Mess
 </line>
 <line display="Mills Mess 864" notation="siteswap">
-pattern=864;dwell=1.0;bps=6.562;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=864;dwell=1.0;bps=6.562;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Mills Mess 864
 </line>
 <line display="Multi-Mills Mess" notation="siteswap">
-pattern=[34]23;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).
+pattern=[34]23;dwell=1.0;bps=4.331;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;
+title=Multi-Mills Mess
 </line>
 <line display="No Through Mills Mess" notation="siteswap">
-pattern=3;dwell=1.0;bps=5.648;hands=(-30,5)(-5,10).(30,10)(-5,5).(-15,-20)(15,-15).
+pattern=3;dwell=1.0;bps=5.648;hands=(-30,5)(-5,10).(30,10)(-5,5).(-15,-20)(15,-15).;
+title=No Through Mills Mess
 </line>
 <line display="Half Mess" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.43;hands=(30)(0,10).(-30,-15)(0,-15).(-30,10)(30).(-15)(0).
+pattern=3;dwell=1.0;bps=4.43;hands=(30)(0,10).(-30,-15)(0,-15).(-30,10)(30).(-15)(0).;
+title=Half Mess
 </line>
 <line display="Reverse Mills Mess" notation="siteswap">
-pattern=3;dwell=1.0;bps=4.43;hands=(-2.5)(-30).(0)(-30).(2.5)(30).
+pattern=3;dwell=1.0;bps=4.43;hands=(-2.5)(-30).(0)(-30).(2.5)(30).;
+title=Reverse Mills Mess
 </line>
 <line display="Mills 44133" notation="siteswap">
-pattern=44133;dwell=1.0;bps=5.371;hands=(-30,25)(0,10).(30)(25).(-7.5)(17.5,-10).(25,10)(-5).(-25,-15)(5,-10).
+pattern=44133;dwell=1.0;bps=5.371;hands=(-30,25)(0,10).(30)(25).(-7.5)(17.5,-10).(25,10)(-5).(-25,-15)(5,-10).;
+title=Mills 44133
 </line>
 <line display="2-Mills Simultaneous" notation="siteswap">
-pattern=(4x,4x)(0,0);dwell=1.5;bps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+pattern=(4x,4x)(0,0);dwell=1.5;bps=7.342;
+hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).;
+title=2-Mills Simultaneous
 </line>
 <line display="3-Mills Simultaneous" notation="siteswap">
-pattern=(4x,4x)(0,4x)(4x,4x)(4x,0);dwell=1.5;bps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+pattern=(4x,4x)(0,4x)(4x,4x)(4x,0);dwell=1.5;bps=7.342;
+hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).;
+title=3-Mills Simultaneous
 </line>
 <line display="4-Mills Simultaneous" notation="siteswap">
-pattern=(4x,4x);dwell=1.5;bps=7.342;hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).
+pattern=(4x,4x);dwell=1.5;bps=7.342;
+hands=(-25,10)(-10).(-25,-5)(-10,-15).(30,40)(15,50).(30,40)(15,50).(-25,-5)(-10,-15).(-25,10)(-10).(30,40)(15,50).(30,40)(15,50).;
+title=4-Mills Simultaneous
 </line>
 <line display=""/>
 <line display="Box"/>
 <line display=""/>
 <line display="2 Balls out of the Box" notation="siteswap">
-pattern=(2x,4)(0,2x);dwell=1.0;bps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).
+pattern=(2x,4)(0,2x);dwell=1.0;bps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).;
+title=2 Balls out of the Box
 </line>
 <line display="Box (See Saw)" notation="siteswap">
-pattern=(2x,4)(4,2x);dwell=1.0;bps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).
+pattern=(2x,4)(4,2x);dwell=1.0;bps=5.591;hands=(5)(25).(25)(25).(25)(25).(5)(25).;
+title=Box (See Saw)
 </line>
 <line display="Double Box" notation="siteswap">
-pattern=(2x,4x)(2x,4)(4x,2x)(4,2x);dwell=1.0;bps=5.839;hands=(17.5)(35).(0)(0).(0)(0).(35)(35).(0)(0).(17.5)(35).(35)(35).(0)(0).
+pattern=(2x,4x)(2x,4)(4x,2x)(4,2x);dwell=1.0;bps=5.839;
+hands=(17.5)(35).(0)(0).(0)(0).(35)(35).(0)(0).(17.5)(35).(35)(35).(0)(0).;
+title=Double Box
 </line>
 
 <line display="Advanced Box" notation="jml">
@@ -1460,64 +1544,90 @@ pattern=(2x,4x)(2x,4)(4x,2x)(4,2x);dwell=1.0;bps=5.839;hands=(17.5)(35).(0)(0).(
 </line>
 
 <line display="4-ball Box A" notation="siteswap">
-pattern=633;dwell=1.0;bps=5.556;hands=(25)(17.5).(0)(25).(0)(17.5).
+pattern=633;dwell=1.0;bps=5.556;hands=(25)(17.5).(0)(25).(0)(17.5).;
+title=4-ball Box A
 </line>
 <line display="4-ball Box B" notation="siteswap">
-pattern=(8,2x)(4,2x)(2x,8)(2x,4);dwell=1.0;bps=6.562;hands=(25)(25).(7.5)(25).(25)(25).(7.5)(25).(7.5)(25).(25)(25).(7.5)(25).(25)(25).
+pattern=(8,2x)(4,2x)(2x,8)(2x,4);dwell=1.0;bps=6.562;
+hands=(25)(25).(7.5)(25).(25)(25).(7.5)(25).(7.5)(25).(25)(25).(7.5)(25).(25)(25).;
+title=4-ball Box B
 </line>
 <line display="4-ball Box C" notation="siteswap">
-pattern=(6,2x)(6,2x)(2x,6)(2x,6);dwell=1.0;bps=5.556;hands=(10)(32.5).
+pattern=(6,2x)(6,2x)(2x,6)(2x,6);dwell=1.0;bps=5.556;hands=(10)(32.5).;
+title=4-ball Box C
 </line>
 <line display="5-ball Box" notation="siteswap">
-pattern=(6,4x)(4x,6);dwell=1.0;bps=5.556;hands=(10)(32.5).
+pattern=(6,4x)(4x,6);dwell=1.0;bps=5.556;hands=(10)(32.5).;
+title=5-ball Box
 </line>
 <line display=""/>
 <line display="Columns"/>
 <line display=""/>
 <line display="Boston Mess A" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,15).
+pattern=3;dwell=1.0;bps=3.572;
+hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,15).;
+title=Boston Mess A
 </line>
 <line display="Boston Mess B" notation="siteswap">
-pattern=3;dwell=1.0;bps=3.572;hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,-10).(25,15)(0,15).(25,-10)(-25,-10).(0,15)(-25,15).(-25,-10)(0,-10).(-25,15)(25,15).(0,-10)(25,15).
+pattern=3;dwell=1.0;bps=3.572;
+hands=(25,-10)(0,-10).(25,15)(-25,15).(0,-10)(-25,-10).(-25,15)(0,15).(-25,-10)(25,-10).(0,15)(25,-10).(25,15)(0,15).(25,-10)(-25,-10).(0,15)(-25,15).(-25,-10)(0,-10).(-25,15)(25,15).(0,-10)(25,15).;
+title=Boston Mess B
 </line>
 <line display="4-Columns (Pistons)" notation="siteswap">
-pattern=4;dwell=1.0;bps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).
+pattern=4;dwell=1.0;bps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).;
+title=4-Columns (Pistons)
 </line>
 <line display="4-Synchronous Columns (Asymmetry)" notation="siteswap">
-pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).
+pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(10).(10)(30).(10)(30).(30)(10).;
+title=4-Synchronous Columns (Asymmetry)
 </line>
 <line display="4-Synchronous Columns (Symmetry)" notation="siteswap">
-pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(10).(30)(10).(10)(30).(10)(30).
+pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(10).(30)(10).(10)(30).(10)(30).;
+title=4-Synchronous Columns (Symmetry)
 </line>
 <line display="4-Synchronous Columns (Splits)" notation="siteswap">
-pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(-10).(-10)(30).(-10)(30).(30)(-10).
+pattern=(4,4);dwell=1.0;bps=4.331;hands=(30)(-10).(-10)(30).(-10)(30).(30)(-10).;
+title=4-Synchronous Columns (Splits)
 </line>
 <line display="5-Columns" notation="siteswap">
-pattern=(6,6)(6,6)(0,6);dwell=1.0;bps=5.556;hands=(30)(15).(30)(15).(15)(15).(15)(0).(15)(30).(0)(30).
+pattern=(6,6)(6,6)(0,6);dwell=1.0;bps=5.556;hands=(30)(15).(30)(15).(15)(15).(15)(0).(15)(30).(0)(30).;
+title=5-Columns
 </line>
 <line display="5-Mills Mess Columns A" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(-30)(0).(-15)(15).(0)(30).(15)(30).(30)(15).(30)(0).(15)(-15).(0)(-30).(-15)(-30).(-30)(-15).
+pattern=5;dwell=1.0;bps=4.98;
+hands=(-30)(0).(-15)(15).(0)(30).(15)(30).(30)(15).(30)(0).(15)(-15).(0)(-30).(-15)(-30).(-30)(-15).;
+title=5-Mills Mess Columns A
 </line>
 <line display="5-Mills Mess Columns B" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(30)(15).(15)(30).(15)(0).(30)(-30).(0)(-15).(-30)(-15).(-15)(-30).(-15)(0).(-30)(30).(0)(15).
+pattern=5;dwell=1.0;bps=4.98;
+hands=(30)(15).(15)(30).(15)(0).(30)(-30).(0)(-15).(-30)(-15).(-15)(-30).(-15)(0).(-30)(30).(0)(15).;
+title=5-Mills Mess Columns B
 </line>
 <line display="5-Mills Mess Columns C" notation="siteswap">
-pattern=5;dwell=1.0;bps=4.98;hands=(30,15)(0,15).(-15)(15).(0,15)(-30,15).(15)(-30).(-30,15)(15,15).(-30)(0).(15,15)(-15,15).(0)(30).(-15,15)(30,15).(30)(-15).
+pattern=5;dwell=1.0;bps=4.98;
+hands=(30,15)(0,15).(-15)(15).(0,15)(-30,15).(15)(-30).(-30,15)(15,15).(-30)(0).(15,15)(-15,15).(0)(30).(-15,15)(30,15).(30)(-15).;
+title=5-Mills Mess Columns C
 </line>
 <line display="6-Columns" notation="siteswap">
-pattern=(6,6);dwell=1.0;bps=5.556;hands=(37.5)(22.5).(37.5)(22.5).(22.5)(7.5).(22.5)(7.5).(7.5)(37.5).(7.5)(37.5).
+pattern=(6,6);dwell=1.0;bps=5.556;
+hands=(37.5)(22.5).(37.5)(22.5).(22.5)(7.5).(22.5)(7.5).(7.5)(37.5).(7.5)(37.5).;
+title=6-Columns
 </line>
 <line display="Multi-Columns" notation="siteswap">
-pattern=([46],[46])(0,6)(2,2);dwell=1.0;bps=5.556;hands=(32.5)(32.5).(32.5)(0).(32.5)(32.5).(0)(32.5).(32.5)(32.5).(32.5)(32.5).
+pattern=([46],[46])(0,6)(2,2);dwell=1.0;bps=5.556;
+hands=(32.5)(32.5).(32.5)(0).(32.5)(32.5).(0)(32.5).(32.5)(32.5).(32.5)(32.5).;
+title=Multi-Columns
 </line>
 <line display=""/>
 <line display="One Hand Tricks"/>
 <line display=""/>
 <line display="2-ball Columns in One Hand" notation="siteswap">
-pattern=40;dwell=1.0;bps=4.331;hands=(0)(25).(32.5)(32.5).(25)(0).(32.5)(32.5).
+pattern=40;dwell=1.0;bps=4.331;hands=(0)(25).(32.5)(32.5).(25)(0).(32.5)(32.5).;
+title=2-ball Columns in One Hand
 </line>
 <line display="3 balls in One Hand" notation="siteswap">
-pattern=60;dwell=1.0;bps=5.556
+pattern=60;dwell=1.0;bps=5.556;
+title=3 balls in One Hand
 </line>
 
 <line display="3-Multiplex in One Hand" notation="jml">
@@ -1555,10 +1665,12 @@ pattern=60;dwell=1.0;bps=5.556
 pattern=8040;dwell=1.0;bps=6.562
 </line>
 <line display="3-ball Columns in One Hand" notation="siteswap">
-pattern=60;dwell=1.0;bps=5.556;hands=(-5)(15).(32.5)(32.5).(15)(35).(32.5)(32.5).(35)(-5).(32.5)(32.5).
+pattern=60;dwell=1.0;bps=5.556;hands=(-5)(15).(32.5)(32.5).(15)(35).(32.5)(32.5).(35)(-5).(32.5)(32.5).;
+title=3-ball Columns in One Hand
 </line>
 <line display="Cascade in One Hand" notation="siteswap">
-pattern=60;dwell=1.0;bps=5.556;hands=(5)(45).(32.5)(32.5).(25)(-15).(32.5)(32.5).
+pattern=60;dwell=1.0;bps=5.556;hands=(5)(45).(32.5)(32.5).(25)(-15).(32.5)(32.5).;
+title=Cascade in One Hand
 </line>
 <line display=""/>
 <line display="Multiplex"/>
@@ -1567,7 +1679,8 @@ pattern=60;dwell=1.0;bps=5.556;hands=(5)(45).(32.5)(32.5).(25)(-15).(32.5)(32.5)
 pattern=[34]1;dwell=1.0;bps=4.331;hands=(10)(32.5).
 </line>
 <line display="4[43]1 (441+1)" notation="siteswap">
-pattern=4[43]1;dwell=1.0;bps=4.331;hands=(10)(32.5).
+pattern=4[43]1;dwell=1.0;bps=4.331;hands=(10)(32.5).;
+title=4[43]1 (441+1)
 </line>
 
 <line display="Martin" notation="jml">
