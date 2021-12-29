@@ -570,11 +570,11 @@ public class PatternListPanel extends JPanel {
 
     public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pat) {
         if (notation != null)
-            notation = notation.trim();
+            notation = notation.strip();
         if (animprefs != null)
-            animprefs = animprefs.trim();
+            animprefs = animprefs.strip();
         if (anim != null)
-            anim = anim.trim();
+            anim = anim.strip();
 
         PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, pat);
 
@@ -594,7 +594,7 @@ public class PatternListPanel extends JPanel {
     public void setTitle(String t) {
         // by convention we don't allow title to be zero-length string "", but
         // use null instead
-        title = ((t == null || t.length() == 0) ? null : t.trim());
+        title = ((t == null || t.length() == 0) ? null : t.strip());
     }
 
     public String getTitle() {
@@ -621,7 +621,7 @@ public class PatternListPanel extends JPanel {
         for (int i = 0; i < listnode.getNumberOfChildren(); i++) {
             JMLNode child = listnode.getChildNode(i);
             if (child.getNodeType().equalsIgnoreCase("title")) {
-                title = child.getNodeValue().trim();
+                title = child.getNodeValue().strip();
             } else if (child.getNodeType().equalsIgnoreCase("line")) {
                 linenumber++;
                 JMLAttributes attr = child.getAttributes();
@@ -649,7 +649,7 @@ public class PatternListPanel extends JPanel {
                             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                         }
                     } else {
-                        anim = child.getNodeValue().trim();
+                        anim = child.getNodeValue().strip();
                     }
                 }
 
@@ -669,24 +669,49 @@ public class PatternListPanel extends JPanel {
         if (title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
 
+        boolean empty = (model.size() == (BLANK_AT_END ? 1 : 0));
+        if (!empty)
+            write.println();
+
+        boolean previousLineWasAnimation = false;
+
         for (int i = 0; i < (BLANK_AT_END ? model.size() - 1 : model.size()); ++i) {
             PatternRecord rec = model.get(i);
-            String line = "<line display=\"" + JMLNode.xmlescape(rec.display) + "\"";
+            String line = "<line display=\"" + JMLNode.xmlescape(rec.display.stripTrailing()) + "\"";
+            boolean hasAnimation = false;
 
-            if (rec.notation != null)
+            if (rec.notation != null) {
                 line += " notation=\"" + JMLNode.xmlescape(rec.notation.toLowerCase()) + "\"";
-            if (rec.animprefs != null)
+                hasAnimation = true;
+            }
+            if (rec.animprefs != null) {
                 line += " animprefs=\"" + JMLNode.xmlescape(rec.animprefs) + "\"";
-            line += ">";
-            write.println(line);
+                hasAnimation = true;
+            }
 
-            if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
-                rec.pattern.writeNode(write, 0);
-            else if (rec.anim != null)
-                write.println(JMLNode.xmlescape(rec.anim));
+            if (hasAnimation) {
+                line += ">";
+                write.println();
+                write.println(line);
 
-            write.println("</line>");
+                if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
+                    rec.pattern.writeNode(write, 0);
+                else if (rec.anim != null)
+                    write.println(JMLNode.xmlescape(rec.anim));
+
+                write.println("</line>");
+            } else {
+                line += "/>";
+                if (previousLineWasAnimation)
+                    write.println();
+                write.println(line);
+            }
+
+            previousLineWasAnimation = hasAnimation;
         }
+
+        if (!empty)
+            write.println();
 
         write.println("</patternlist>");
         write.println("</jml>");
