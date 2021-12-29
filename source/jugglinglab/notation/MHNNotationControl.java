@@ -296,13 +296,24 @@ public abstract class MHNNotationControl extends NotationControl {
             sb.append(";");
             sb.append(tf6.getText());
         }
-        int index = cb1.getSelectedIndex();
-        if (index > 0) {
-            // if hands are not default, apply a title
-            String title = tf1.getText() + " " + cb1.getItemAt(index);
-            sb.append(";title=" + title);
+
+        ParameterList pl = new ParameterList(sb.toString());
+
+        // check if we want to add a non-default title
+        if (pl.getParameter("title") == null) {
+            String hss = pl.getParameter("hss");
+            int hands_index = cb1.getSelectedIndex();
+
+            if (hss != null) {
+                String title = "oss: " + pl.getParameter("pattern") + "  hss: " + hss;
+                pl.addParameter("title", title);
+            } else if (hands_index > 0) {
+                // if hands are not default, apply a title
+                String title = pl.getParameter("pattern") + " " + cb1.getItemAt(hands_index);
+                pl.addParameter("title", title);
+            }
         }
 
-        return new ParameterList(sb.toString());
+        return pl;
     }
 }

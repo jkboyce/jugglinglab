@@ -27,11 +27,11 @@ public class SiteswapPattern extends MHNPattern {
     }
 
     @Override
-    public SiteswapPattern fromString(String config) throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (config.indexOf((int)'=') == -1)         // just the pattern
-            config = "pattern=" + config;
+    public SiteswapPattern fromString(String conf) throws JuggleExceptionUser, JuggleExceptionInternal {
+        if (conf.indexOf((int)'=') == -1)  // just the pattern
+            conf = "pattern=" + conf;
 
-        ParameterList pl = new ParameterList(config);
+        ParameterList pl = new ParameterList(conf);
         fromParameters(pl);
         pl.errorIfParametersLeft();
         return this;
@@ -49,7 +49,6 @@ public class SiteswapPattern extends MHNPattern {
         if (hss != null) {
             ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
             pattern = modinfo.convertedPattern;
-            //title = pattern;
             dwellarray = modinfo.dwellBeatsArray;
         }
         //hss End

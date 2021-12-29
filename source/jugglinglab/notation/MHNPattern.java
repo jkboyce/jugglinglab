@@ -77,17 +77,17 @@ public abstract class MHNPattern extends Pattern {
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
 
-    public int getNumberOfJugglers()         { return numjugglers; }
-    public int getNumberOfPaths()            { return numpaths; }
-    public int getPeriod()                   { return period; }
-    public int getIndexes()                  { return indexes; }
-    public int getMaxOccupancy()             { return max_occupancy; }
-    public int getMaxThrow()                 { return max_throw; }
-    public MHNThrow[][][][] getThrows()      { return th; }
-    public int getNumberOfSymmetries()       { return symmetry.size(); }
-    public String getPropName()              { return prop; }
-    public void addSymmetry(MHNSymmetry ss)  { symmetry.add(ss); }
-    public MHNSymmetry getSymmetry(int i)    { return symmetry.get(i); }
+    public int getNumberOfJugglers() { return numjugglers; }
+    public int getNumberOfPaths() { return numpaths; }
+    public int getPeriod() { return period; }
+    public int getIndexes() { return indexes; }
+    public int getMaxOccupancy() { return max_occupancy; }
+    public int getMaxThrow() { return max_throw; }
+    public MHNThrow[][][][] getThrows() { return th; }
+    public int getNumberOfSymmetries() { return symmetry.size(); }
+    public String getPropName() { return prop; }
+    public void addSymmetry(MHNSymmetry ss) { symmetry.add(ss); }
+    public MHNSymmetry getSymmetry(int i) { return symmetry.get(i); }
 
 
     // pull out the MHN-related parameters from the given list, leaving any
@@ -95,9 +95,9 @@ public abstract class MHNPattern extends Pattern {
     @Override
     public MHNPattern fromParameters(ParameterList pl) throws
                                     JuggleExceptionUser, JuggleExceptionInternal {
-        this.config = pl.toString();                // save for toString()
+        config = pl.toString();
 
-        pattern = pl.removeParameter("pattern");    // only required parameter
+        pattern = pl.removeParameter("pattern");  // only required parameter
         if (pattern == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_no_pattern"));
 
@@ -186,7 +186,6 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        //hss begin
         if ((temp = pl.removeParameter("hss")) != null) {
             hss = temp;
         }
@@ -212,15 +211,11 @@ public abstract class MHNPattern extends Pattern {
                 handspec = temp;
             }
         }
-        //hss end
+
         if ((temp = pl.removeParameter("title")) != null) {
             title = temp.trim();
         }
-        //hss begin
-        if (hss != null && title == null) {
-        	title = "oss: " + pattern + " ; hss: " + hss;
-        }
-        //hss end
+
         return this;
     }
 
