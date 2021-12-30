@@ -164,7 +164,7 @@ public class JugglingLab {
         if (jlargs.size() > 0) {
             System.setProperty("java.awt.headless", "true");
             String arglist = String.join(", ", jlargs);
-            System.out.println("Error unrecognized input: " + arglist);
+            System.out.println("Error: Unrecognized input: " + arglist);
             return;
         }
 
@@ -211,8 +211,8 @@ public class JugglingLab {
     // Open the JML file whose path is given as a command-line argument
     private static void doOpen() {
         if (jlargs.size() != 1) {
-            String output = "Error: Expected 1 argument after 'open', got " +
-                            jlargs.size();
+            String output = "Error: Expected 1 argument after 'open', got " + jlargs.size();
+
             if (isCLI) {
                 System.setProperty("java.awt.headless", "true");
                 System.out.println(output);
