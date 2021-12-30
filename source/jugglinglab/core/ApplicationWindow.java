@@ -414,11 +414,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
                 if (noOpenFilesHandler) {
                     if (Constants.DEBUG_OPEN_SERVER)
-                        System.out.println("interrupting server");
+                        System.out.println("cleaning up server");
                     OpenFilesServer.cleanup();
-                    try {
-                        Thread.sleep(100);
-                    } catch (Exception e) {}
                 }
                 System.exit(0);
                 break;

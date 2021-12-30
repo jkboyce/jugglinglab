@@ -69,7 +69,8 @@ public class OpenFilesServerSockets extends Thread {
                         new Connection(client_socket);
                     else if (Constants.DEBUG_OPEN_SERVER)
                         System.out.println("Ignoring connection request; not from 127.0.0.1");
-                } catch (SocketTimeoutException ste) {}
+                } catch (SocketTimeoutException ste) {
+                }
             }
         } catch (IOException e) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -83,7 +84,6 @@ public class OpenFilesServerSockets extends Thread {
                 listen_socket.close();
             } catch (IOException ioe) {}
             listen_socket = null;
-            server_thread = null;
         }
     }
 
@@ -163,8 +163,14 @@ public class OpenFilesServerSockets extends Thread {
     }
 
     public static void cleanup() {
-        if (server_thread != null)
-            server_thread.interrupt();
+        if (server_thread != null) {
+            try {
+                server_thread.interrupt();
+                server_thread.join(100);
+            } catch (InterruptedException ie) {
+            }
+            server_thread = null;
+        }
     }
 }
 

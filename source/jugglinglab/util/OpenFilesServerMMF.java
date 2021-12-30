@@ -72,6 +72,7 @@ public class OpenFilesServerMMF extends Thread {
                     System.out.println("Server waiting for message");
                 while (!waitUntilMessage(buf_toserver, 1000))
                     ;
+
                 line = readMessage(buf_toserver);
                 if (Constants.DEBUG_OPEN_SERVER)
                     System.out.println("Got a message: " + line);
@@ -128,7 +129,6 @@ public class OpenFilesServerMMF extends Thread {
                 if (Constants.DEBUG_OPEN_SERVER)
                     System.out.println(e);
             }
-            server_thread = null;
         }
     }
 
@@ -198,8 +198,14 @@ public class OpenFilesServerMMF extends Thread {
     }
 
     public static void cleanup() {
-        if (server_thread != null)
-            server_thread.interrupt();
+        if (server_thread != null) {
+            try {
+                server_thread.interrupt();
+                server_thread.join(100);
+            } catch (InterruptedException ie) {
+            }
+            server_thread = null;
+        }
     }
 
     // convenience methods to handle messaging through our memory mapped file
@@ -226,12 +232,12 @@ public class OpenFilesServerMMF extends Thread {
     }
 
     private static boolean waitUntilMessage(CharBuffer cb, int timeout) throws InterruptedException {
-        int tries = timeout / 10;
+        int tries = timeout / 20;
 
         for (int i = 0; i < tries; ++i) {
             if (cb.get(0) != '\0')
                 return true;
-            Thread.sleep(10);
+            Thread.sleep(20);
         }
         return false;
     }
