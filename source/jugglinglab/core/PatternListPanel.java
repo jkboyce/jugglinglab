@@ -134,12 +134,11 @@ public class PatternListPanel extends JPanel {
             JMLPattern pat = null;
             Pattern p = null;
 
-            if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null) {
+            if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
                 pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
-            } else if (rec.anim != null) {
-                p = Pattern.newPattern(rec.notation).fromString(rec.anim);
-                pat = JMLPattern.fromBasePattern(rec.notation, p.toString());
-            } else
+            else if (rec.anim != null)
+                pat = JMLPattern.fromBasePattern(rec.notation, rec.anim);
+            else
                 return;
 
             pat.layoutPattern();

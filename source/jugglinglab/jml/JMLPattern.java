@@ -232,7 +232,9 @@ public class JMLPattern {
             prev.setNext(next);
     }
 
-    public JMLEvent getEventList()  { return eventlist; }
+    public JMLEvent getEventList() {
+        return eventlist;
+    }
 
     // used for debugging
     protected void printEventList() {
@@ -253,7 +255,9 @@ public class JMLPattern {
         }
     }
 
-	public ArrayList<ArrayList<PathLink>> getPathlinks() { return pathlinks; }
+	public ArrayList<ArrayList<PathLink>> getPathlinks() {
+        return pathlinks;
+    }
 
     public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
         if (pos.getT() < getLoopStartTime() || pos.getT() > getLoopEndTime())
@@ -331,11 +335,17 @@ public class JMLPattern {
         setNeedsLayout();
     }
 
-    public void setNeedsLayout() { laidout = false; }
+    public void setNeedsLayout() {
+        laidout = false;
+    }
 
-    public boolean isValid() { return valid; }
+    public boolean isValid() {
+        return valid;
+    }
 
-    public int getHashCode() { return toString().hashCode(); }
+    public int getHashCode() {
+        return toString().hashCode();
+    }
 
     //-------------------------------------------------------------------------
     // Methods related to the base pattern (if set)
@@ -370,13 +380,17 @@ public class JMLPattern {
         return (getHashCode() != base_pattern_hashcode);
     }
 
+    // Here `config` can be regular (like `pattern=3`) or not (like `3`)
     public static JMLPattern fromBasePattern(String notation, String config)
                 throws JuggleExceptionUser, JuggleExceptionInternal {
-        JMLPattern pat = Pattern.newPattern(notation).fromString(config).asJMLPattern();
-        pat.layoutPattern();
+        Pattern p = Pattern.newPattern(notation).fromString(config);
 
-        pat.base_pattern_notation = Pattern.getNotationName(notation);
-        pat.base_pattern_config = config;
+        JMLPattern pat = p.asJMLPattern();
+
+        // regularize the notation name and config string
+        pat.base_pattern_notation = p.getNotationName();
+        pat.base_pattern_config = p.toString();
+
         return pat;
     }
 
@@ -1081,19 +1095,46 @@ public class JMLPattern {
     // Methods used by animator to get prop and body locations at specified times.
     //-------------------------------------------------------------------------
 
-    public String getTitle() { return title; }
-    public int getNumberOfJugglers() { return numjugglers; }
-    public int getNumberOfPaths() { return numpaths; }
+    public String getTitle() {
+        return title;
+    }
 
-    public int getNumberOfProps() { return props.size(); }
-    public Prop getProp(int propnum) { return getPropDef(propnum).getProp(); }
-    public PropDef getPropDef(int propnum) { return props.get(propnum - 1); }
-    public int getPropAssignment(int path) { return propassignment[path - 1]; }
+    public int getNumberOfJugglers() {
+        return numjugglers;
+    }
 
-    public int getNumberOfSymmetries() { return symmetries.size(); }
-    public JMLSymmetry getSymmetry(int index) { return symmetries.get(index); }
+    public int getNumberOfPaths() {
+        return numpaths;
+    }
 
-    public double getLoopStartTime() { return 0.0; }
+    public int getNumberOfProps() {
+        return props.size();
+    }
+
+    public Prop getProp(int propnum) {
+        return getPropDef(propnum).getProp();
+    }
+
+    public PropDef getPropDef(int propnum) {
+        return props.get(propnum - 1);
+    }
+
+    public int getPropAssignment(int path) {
+        return propassignment[path - 1];
+    }
+
+    public int getNumberOfSymmetries() {
+        return symmetries.size();
+    }
+
+    public JMLSymmetry getSymmetry(int index) {
+        return symmetries.get(index);
+    }
+
+    public double getLoopStartTime() {
+        return 0.0;
+    }
+
     public double getLoopEndTime() {
         for (int i = 0; i < getNumberOfSymmetries(); i++)
             if (getSymmetry(i).getType() == JMLSymmetry.TYPE_DELAY)
