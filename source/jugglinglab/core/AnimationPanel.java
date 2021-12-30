@@ -1,6 +1,6 @@
 // AnimationPanel.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -61,19 +61,6 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     public void setAnimationPanelPreferredSize(Dimension d) {
         prefsize = d;
-    }
-
-    // override methods in java.awt.Component
-    @Override
-    public Dimension getPreferredSize() {
-        if (prefsize != null)
-            return new Dimension(prefsize);
-        return getMinimumSize();
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-        return new Dimension(10, 10);
     }
 
     protected void loadAudioClips() {
@@ -209,6 +196,8 @@ public class AnimationPanel extends JPanel implements Runnable {
         });
 
         addComponentListener(new ComponentAdapter() {
+            boolean hasResized = false;
+
             @Override
             public void componentResized(ComponentEvent e) {
                 if (!engineAnimating)
@@ -217,6 +206,13 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 anim.setDimension(AnimationPanel.this.getSize());
                 repaint();
+
+                if (hasResized) {
+                    Dimension dim = AnimationPanel.this.getSize();
+                    jc.width = dim.width;
+                    jc.height = dim.height;
+                }
+                hasResized = true;
             }
         });
     }
@@ -410,7 +406,9 @@ public class AnimationPanel extends JPanel implements Runnable {
         }
     }
 
-    public boolean getPaused()              { return enginePaused; }
+    public boolean getPaused() {
+        return enginePaused;
+    }
 
     public synchronized void setPaused(boolean wanttopause) {
         if (enginePaused == true && wanttopause == false)
@@ -418,11 +416,53 @@ public class AnimationPanel extends JPanel implements Runnable {
         enginePaused = wanttopause;
     }
 
-    public double getTime()                 { return sim_time; };
-    public void setTime(double time)        { sim_time = time; }
+    public double getTime() {
+        return sim_time;
+    }
 
-    public double[] getCameraAngle()        { return anim.getCameraAngle(); }
-    public void setCameraAngle(double[] ca) { anim.setCameraAngle(ca); }
+    public void setTime(double time) {
+        sim_time = time;
+    }
+
+    public double[] getCameraAngle() {
+        return anim.getCameraAngle();
+    }
+
+    public void setCameraAngle(double[] ca) {
+        anim.setCameraAngle(ca);
+    }
+
+    protected void drawString(String message, Graphics g) {
+        FontMetrics fm = g.getFontMetrics();
+        int message_width = fm.stringWidth(message);
+
+        Dimension dim = getSize();
+        int x = (dim.width > message_width) ? (dim.width - message_width)/2 : 0;
+        int y = (dim.height + fm.getHeight()) / 2;
+
+        g.setColor(Color.white);
+        g.fillRect(0, 0, dim.width, dim.height);
+        g.setColor(Color.black);
+        g.drawString(message, x, y);
+    }
+
+    public JMLPattern getPattern() {
+        return anim.pat;
+    }
+
+    public Animator getAnimator() {
+        return anim;
+    }
+
+    public AnimationPrefs getAnimationPrefs() {
+        return jc;
+    }
+
+    public void disposeAnimation() {
+        killAnimationThread();
+    }
+
+    // javax.swing.JComponent methods
 
     @Override
     public void paintComponent(Graphics g) {
@@ -440,22 +480,17 @@ public class AnimationPanel extends JPanel implements Runnable {
         }
     }
 
-    protected void drawString(String message, Graphics g) {
-        FontMetrics fm = g.getFontMetrics();
-        int message_width = fm.stringWidth(message);
+    // java.awt.Component methods
 
-        Dimension dim = getSize();
-        int x = (dim.width > message_width) ? (dim.width - message_width)/2 : 0;
-        int y = (dim.height + fm.getHeight()) / 2;
-
-        g.setColor(Color.white);
-        g.fillRect(0, 0, dim.width, dim.height);
-        g.setColor(Color.black);
-        g.drawString(message, x, y);
+    @Override
+    public Dimension getPreferredSize() {
+        if (prefsize != null)
+            return new Dimension(prefsize);
+        return getMinimumSize();
     }
 
-    public JMLPattern getPattern()              { return anim.pat; }
-    public Animator getAnimator()               { return anim; }
-    public AnimationPrefs getAnimationPrefs()   { return jc; }
-    public void disposeAnimation()              { killAnimationThread(); }
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(10, 10);
+    }
 }

@@ -607,12 +607,9 @@ public class PatternWindow extends JFrame implements ActionListener {
                 AnimationPrefsDialog japd = new AnimationPrefsDialog(this);
                 AnimationPrefs jc = null;
 
-                if (view != null) {
+                if (view != null)
                     jc = view.getAnimationPrefs();
-                    Dimension dim = view.getAnimationPanelSize();
-                    jc.width = dim.width;
-                    jc.height = dim.height;
-                } else
+                else
                     jc = new AnimationPrefs();
 
                 AnimationPrefs newjc = japd.getPrefs(jc);
@@ -674,21 +671,18 @@ public class PatternWindow extends JFrame implements ActionListener {
         // items to carry over from old view to the new:
         JMLPattern pat = null;
         AnimationPrefs jc = null;
-        Dimension animsize = null;
         boolean paused = false;
         int undo_index = 0;
 
         if (view != null) {
             pat = view.getPattern();
             jc = view.getAnimationPrefs();
-            animsize = view.getAnimationPanelSize();
             paused = view.getPaused();
             undo_index = view.getUndoIndex();
-        } else {
-            // use default size
-            AnimationPrefs tempjc = new AnimationPrefs();
-            animsize = new Dimension(tempjc.width, tempjc.height);
-        }
+        } else
+            jc = new AnimationPrefs();
+
+        Dimension animsize = new Dimension(jc.width, jc.height);
 
         switch (mode) {
             case View.VIEW_NONE:
@@ -720,9 +714,11 @@ public class PatternWindow extends JFrame implements ActionListener {
             pack();
             view.restartView(pat, jc);
             view.setUndoList(undo, undo_index);
-        } else
-            // pack(), restartView(), and setUndoList() happen in constructor
+        } else {
+            // Calling from the constructor; pack(), restartView(), and
+            // setUndoList() happen there
             view = newview;
+        }
     }
 
     protected int getViewMode() {

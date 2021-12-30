@@ -197,6 +197,8 @@ public class AnimationEditPanel extends AnimationPanel {
         });
 
         addComponentListener(new ComponentAdapter() {
+            boolean hasResized = false;
+
             @Override
             public void componentResized(ComponentEvent e) {
                 if (!engineAnimating)
@@ -207,6 +209,13 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (event_active)
                     createEventView();
                 repaint();
+
+                if (hasResized) {
+                    Dimension dim = AnimationEditPanel.this.getSize();
+                    jc.width = dim.width;
+                    jc.height = dim.height;
+                }
+                hasResized = true;
             }
         });
     }
