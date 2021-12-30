@@ -32,26 +32,26 @@ import jugglinglab.util.*;
 
 public class JugglingLab {
     // Localized strings for UI
-    public static ResourceBundle guistrings;
-    public static ResourceBundle errorstrings;
+    public static final ResourceBundle guistrings;
+    public static final ResourceBundle errorstrings;
 
     // Platform info
-    public static boolean isMacOS;
-    public static boolean isWindows;
-    public static boolean isLinux;
+    public static final boolean isMacOS;
+    public static final boolean isWindows;
+    public static final boolean isLinux;
 
     // Whether we're running from the command line
-    public static boolean isCLI;
+    public static final boolean isCLI;
 
     // Base directory for file operations
-    public static Path base_dir;
+    public static final Path base_dir;
 
     // Command line arguments as an ArrayList that we trim as portions are parsed
     private static ArrayList<String> jlargs;
 
     static {
-        JugglingLab.guistrings = JLLocale.getBundle("GUIStrings");
-        JugglingLab.errorstrings = JLLocale.getBundle("ErrorStrings");
+        guistrings = JLLocale.getBundle("GUIStrings");
+        errorstrings = JLLocale.getBundle("ErrorStrings");
 
         String osname = System.getProperty("os.name").toLowerCase();
         isMacOS = osname.startsWith("mac os x");
@@ -98,7 +98,7 @@ public class JugglingLab {
         String firstarg = null;
 
         if (args.length > 0) {
-            JugglingLab.jlargs = new ArrayList<String>(Arrays.asList(args));
+            jlargs = new ArrayList<String>(Arrays.asList(args));
             firstarg = jlargs.remove(0).toLowerCase();
             run_application = firstarg.equals("start");
         }
@@ -397,7 +397,7 @@ public class JugglingLab {
 
             String inpath_string = jlargs.remove(0);
             Path inpath = Paths.get(inpath_string);
-            if (!inpath.isAbsolute() && JugglingLab.base_dir != null)
+            if (!inpath.isAbsolute() && base_dir != null)
                 inpath = Paths.get(base_dir.toString(), inpath_string);
 
             try {
