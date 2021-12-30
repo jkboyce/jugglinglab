@@ -81,9 +81,9 @@ public class JugglingLab {
     }
 
 
-    // ------------------------------------------------------------------------
-    // main entry point for Juggling Lab
-    // ------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    // Main entry point for Juggling Lab
+    //-------------------------------------------------------------------------
 
     public static void main(String[] args) {
         // Make menus more Mac-like on macOS
@@ -92,7 +92,7 @@ public class JugglingLab {
 
         // Figure out what mode to run in based on command line arguments. We
         // want no command line arguments to run the full application, so that
-        // it launches correctly when the user double-clicks on the jar.
+        // it launches when the user double-clicks on the jar.
 
         boolean run_application = true;
         String firstarg = null;
@@ -120,7 +120,20 @@ public class JugglingLab {
             return;
         }
 
-        List<String> modes = Arrays.asList("open", "gen", "trans", "anim", "togif", "tojml");
+        // Double-clicking a .jml file on Windows brings us here
+        if (firstarg.equals("open")) {
+            doOpen();
+            return;
+        }
+
+        //
+        // The remaining modes are only accessible from the command line
+        //
+
+        if (!isCLI)
+            return;
+
+        List<String> modes = Arrays.asList("gen", "trans", "anim", "togif", "tojml");
         boolean show_help = !modes.contains(firstarg);
 
         if (show_help) {
@@ -128,20 +141,8 @@ public class JugglingLab {
             return;
         }
 
-        if (firstarg.equals("open")) {
-            doOpen();
-            return;
-        }
-        
-        // Try to parse an output path and/or animation preferences
-        String outpath_string = parse_outpath();
-        Path outpath = null;
-        if (outpath_string != null) {
-            outpath = Paths.get(outpath_string);
-
-            if (!outpath.isAbsolute() && base_dir != null)
-                outpath = Paths.get(base_dir.toString(), outpath_string);
-        }
+        // Try to parse an optional output path and/or animation preferences
+        Path outpath = parse_outpath();
         AnimationPrefs jc = parse_animprefs();
 
         if (firstarg.equals("gen")) {
@@ -154,12 +155,12 @@ public class JugglingLab {
             return;
         }
 
-        // all remaining modes require a pattern as input
-        JMLPattern pat = JugglingLab.parse_pattern();
+        // All remaining modes require a pattern as input
+        JMLPattern pat = parse_pattern();
         if (pat == null)
             return;
 
-        // any remaining arguments that parsing didn't consume?
+        // Any remaining arguments that parsing didn't consume?
         if (jlargs.size() > 0) {
             System.setProperty("java.awt.headless", "true");
             String arglist = String.join(", ", jlargs);
@@ -172,7 +173,7 @@ public class JugglingLab {
             return;
         }
 
-        // all remaining modes are headless (no GUI)
+        // All remaining modes are headless (no GUI)
         System.setProperty("java.awt.headless", "true");
 
         if (firstarg.equals("togif")) {
@@ -186,9 +187,9 @@ public class JugglingLab {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // helper functions
-    // ------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    // Helper functions
+    //-------------------------------------------------------------------------
 
     // If possible, install an About handler for getting info about the application.
     // Call this only if we aren't running headless
@@ -207,46 +208,6 @@ public class JugglingLab {
         });
     }
 
-    // Show the help message
-    private static void doHelp(String firstarg) {
-        if (isCLI) {
-            // Print a help message
-            System.setProperty("java.awt.headless", "true");
-            String template = guistrings.getString("Version");
-            Object[] arg1 = { Constants.version };
-            String output = "Juggling Lab " +
-                            MessageFormat.format(template, arg1).toLowerCase() + "\n";
-            template = guistrings.getString("Copyright_message");
-            Object[] arg2 = { Constants.year };
-            output += MessageFormat.format(template, arg2) + "\n";
-            output += guistrings.getString("GPL_message") + "\n\n";
-            output += guistrings.getString("CLI_help1");
-            String examples = guistrings.getString("CLI_help2");
-            if (isWindows) {
-                // replace single quotes with double quotes in Windows examples
-                examples = examples.replaceAll("\'", "\"");
-            }
-            output += examples;
-            System.out.println(output);
-        }
-
-        if (firstarg != null && !firstarg.equals("help")) {
-            final String output = "Unrecognized option: " + firstarg;
-
-            if (isCLI) {
-                System.out.println("\n" + output);
-            } else {
-                // shouldn't ever happen, but just in case
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ErrorDialog(null, output);
-                    }
-                });                    
-            }
-        }
-    }
-
     // Open the JML file whose path is given as a command-line argument
     private static void doOpen() {
         if (jlargs.size() != 1) {
@@ -256,12 +217,13 @@ public class JugglingLab {
                 System.setProperty("java.awt.headless", "true");
                 System.out.println(output);
             } else {
+                // shouldn't ever happen
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         new ErrorDialog(null, output);
                     }
-                });                    
+                });
             }
             return;
         }
@@ -269,8 +231,11 @@ public class JugglingLab {
         String filepath = jlargs.remove(0);
         if (filepath.startsWith("\""))
             filepath = filepath.substring(1, filepath.length() - 1);
+
         final File file = new File(filepath);
 
+        // First try to hand off the open request to another instance of
+        // Juggling Lab that may be running
         boolean noOpenFilesHandler = (!Desktop.isDesktopSupported() ||
             !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE));
 
@@ -283,6 +248,7 @@ public class JugglingLab {
             }
         }
 
+        // If that doesn't work, launch the app and open the file
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -303,18 +269,49 @@ public class JugglingLab {
         });
     }
 
+    // Show the help message
+    private static void doHelp(String firstarg) {
+        System.setProperty("java.awt.headless", "true");
+        String template = guistrings.getString("Version");
+        Object[] arg1 = { Constants.version };
+        String output = "Juggling Lab " +
+                        MessageFormat.format(template, arg1).toLowerCase() + "\n";
+        template = guistrings.getString("Copyright_message");
+        Object[] arg2 = { Constants.year };
+        output += MessageFormat.format(template, arg2) + "\n";
+        output += guistrings.getString("GPL_message") + "\n\n";
+        output += guistrings.getString("CLI_help1");
+        String examples = guistrings.getString("CLI_help2");
+        if (isWindows) {
+            // replace single quotes with double quotes in Windows examples
+            examples = examples.replaceAll("\'", "\"");
+        }
+        output += examples;
+        System.out.println(output);
+
+        if (firstarg != null && !firstarg.equals("help"))
+            System.out.println("\nUnrecognized option: " + firstarg);
+    }
+
     // Look in jlargs to see if there's an output path specified, and if so
     // then record it and trim out of jlargs. Otherwise return null.
-    private static String parse_outpath() {
+    private static Path parse_outpath() {
         for (int i = 0; i < jlargs.size(); i++) {
             if (jlargs.get(i).equalsIgnoreCase("-out")) {
                 jlargs.remove(i);
+
                 if (i == jlargs.size()) {
-                    System.out.println("Warning: no output path specified after -out flag; ignoring");
+                    System.out.println("Warning: No output path specified after -out flag; ignoring");
                     return null;
                 }
 
-                return jlargs.remove(i);
+                String outpath_string = jlargs.remove(i);
+                Path outpath = Paths.get(outpath_string);
+
+                if (!outpath.isAbsolute() && base_dir != null)
+                    outpath = Paths.get(base_dir.toString(), outpath_string);
+
+                return outpath;
             }
         }
         return null;
@@ -326,8 +323,9 @@ public class JugglingLab {
         for (int i = 0; i < jlargs.size(); i++) {
             if (jlargs.get(i).equalsIgnoreCase("-prefs")) {
                 jlargs.remove(i);
+
                 if (i == jlargs.size()) {
-                    System.out.println("Warning: nothing specified after -prefs flag; ignoring");
+                    System.out.println("Warning: Nothing specified after -prefs flag; ignoring");
                     return null;
                 }
 
@@ -356,10 +354,11 @@ public class JugglingLab {
                 ps = new PrintStream(outpath.toFile());
             SiteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
         } catch (FileNotFoundException fnfe) {
-            System.out.println("Error: problem writing to file path " + outpath.toString());
+            System.out.println("Error: Problem writing to file path " + outpath.toString());
         }
+
         if (jc != null)
-            System.out.println("Note: animator prefs not used in generator mode; ignored");
+            System.out.println("Note: Animator prefs not used in generator mode; ignored");
     }
 
     // Run the siteswap transitioner
@@ -373,25 +372,26 @@ public class JugglingLab {
                 ps = new PrintStream(outpath.toFile());
             SiteswapTransitioner.runTransitionerCLI(transargs, new GeneratorTarget(ps));
         } catch (FileNotFoundException fnfe) {
-            System.out.println("Error: problem writing to file path " + outpath.toString());
+            System.out.println("Error: Problem writing to file path " + outpath.toString());
         }
+
         if (jc != null)
-            System.out.println("Note: animator prefs not used in transitions mode; ignored");
+            System.out.println("Note: Animator prefs not used in transitions mode; ignored");
     }
 
     // Look at beginning of jlargs to see if there's a pattern, and if so then
     // parse it and return it. Otherwise print an error message and return null.
     private static JMLPattern parse_pattern() {
         if (jlargs.size() == 0) {
-            System.out.println("Error: expected pattern input, none found");
+            System.out.println("Error: Expected pattern input, none found");
             return null;
         }
 
-        // first case is a JML-formatted pattern in a file
+        // First case is a JML-formatted pattern in a file
         if (jlargs.get(0).equalsIgnoreCase("-jml")) {
             jlargs.remove(0);
             if (jlargs.size() == 0) {
-                System.out.println("Error: no input path specified after -jml flag");
+                System.out.println("Error: No input path specified after -jml flag");
                 return null;
             }
 
@@ -409,27 +409,25 @@ public class JugglingLab {
                         return new JMLPattern(parser.getTree());
                     case JMLParser.JML_LIST:
                         System.out.println("Error: JML file cannot be a pattern list");
-                        return null;
+                        break;
                     default:
-                        System.out.println("Error: file is not valid JML");
-                        return null;
+                        System.out.println("Error: File is not valid JML");
+                        break;
                 }
             } catch (JuggleExceptionUser jeu) {
                 System.out.println("Error parsing JML: " + jeu.getMessage());
-                return null;
             } catch (SAXException se) {
-                System.out.println("Error: formatting error in JML file");
-                return null;
+                System.out.println("Error: Formatting error in JML file");
             } catch (IOException ioe) {
-                System.out.println("Error: problem reading JML file from path " + inpath.toString());
-                return null;
+                System.out.println("Error: Problem reading JML file from path " + inpath.toString());
             }
+            return null;
         }
 
-        // otherwise assume pattern is in siteswap notation
+        // Otherwise assume pattern is in siteswap notation
         try {
             String config = jlargs.remove(0);
-            return JMLPattern.fromBasePattern("Siteswap", config);
+            return JMLPattern.fromBasePattern("siteswap", config);
         } catch (JuggleExceptionUser jeu) {
             System.out.println("Error: " + jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
@@ -462,7 +460,7 @@ public class JugglingLab {
     // Output an animated GIF of the pattern
     private static void doTogif(JMLPattern pat, Path outpath, AnimationPrefs jc) {
         if (outpath == null) {
-            System.out.println("Error: no output path specified for animated GIF");
+            System.out.println("Error: No output path specified for animated GIF");
             return;
         }
 
@@ -470,7 +468,7 @@ public class JugglingLab {
             Animator anim = new Animator();
             if (jc == null) {
                 jc = anim.getAnimationPrefs();
-                jc.fps = 33.3;      // default frames per sec for GIFs
+                jc.fps = 33.3;  // default frames per sec for GIFs
             }
             anim.setDimension(new Dimension(jc.width, jc.height));
             anim.restartAnimator(pat, jc);
@@ -480,7 +478,7 @@ public class JugglingLab {
         } catch (JuggleExceptionInternal jei) {
             System.out.println("Internal Error: " + jei.getMessage());
         } catch (IOException ioe) {
-            System.out.println("Error: problem writing GIF to path " + outpath.toString());
+            System.out.println("Error: Problem writing GIF to path " + outpath.toString());
         }
     }
 
@@ -494,10 +492,11 @@ public class JugglingLab {
                 pat.writeJML(fw, true);
                 fw.close();
             } catch (IOException ioe) {
-                System.out.println("Error: problem writing JML to path " + outpath.toString());
+                System.out.println("Error: Problem writing JML to path " + outpath.toString());
             }
         }
+
         if (jc != null)
-            System.out.println("Note: animator prefs not used in jml output mode; ignored");
+            System.out.println("Note: Animator prefs not used in jml output mode; ignored");
     }
 }
