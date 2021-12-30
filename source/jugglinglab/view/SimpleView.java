@@ -1,6 +1,6 @@
 // SimpleView.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -22,6 +22,8 @@ public class SimpleView extends View {
         setLayout(new BorderLayout());
         add(ja, BorderLayout.CENTER);
     }
+
+    // View methods
 
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
@@ -47,13 +49,19 @@ public class SimpleView extends View {
     }
 
     @Override
-    public JMLPattern getPattern() { return ja.getPattern(); }
+    public JMLPattern getPattern() {
+        return ja.getPattern();
+    }
 
     @Override
-    public AnimationPrefs getAnimationPrefs() { return ja.getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() {
+        return ja.getAnimationPrefs();
+    }
 
     @Override
-    public boolean getPaused() { return ja.getPaused(); }
+    public boolean getPaused() {
+        return ja.getPaused();
+    }
 
     @Override
     public void setPaused(boolean pause) {
@@ -62,7 +70,9 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void disposeView() { ja.disposeAnimation(); }
+    public void disposeView() {
+        ja.disposeAnimation();
+    }
 
     @Override
     public void writeGIF() {

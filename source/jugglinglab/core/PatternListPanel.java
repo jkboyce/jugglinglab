@@ -120,7 +120,8 @@ public class PatternListPanel extends JPanel {
     // Try to launch an animation window for the currently-selected item in the
     // list. If there is no pattern associated with the line, do nothing.
     protected void launchAnimation() {
-        PatternWindow jaw2 = null;
+        PatternWindow pw = null;
+
         try {
             int row = list.getSelectedIndex();
             if (row < 0 || (BLANK_AT_END && row == model.size() - 1))
@@ -156,15 +157,15 @@ public class PatternListPanel extends JPanel {
             if (animtarget != null)
                 animtarget.restartView(pat, ap);
             else
-                jaw2 = new PatternWindow(pat.getTitle(), pat, ap);
-        } catch (JuggleExceptionUser je) {
-            if (jaw2 != null)
-                jaw2.dispose();
-            new ErrorDialog(PatternListPanel.this, je.getMessage());
-        } catch (Exception e) {
-            if (jaw2 != null)
-                jaw2.dispose();
-            ErrorDialog.handleFatalException(e);
+                pw = new PatternWindow(pat.getTitle(), pat, ap);
+        } catch (JuggleExceptionUser jeu) {
+            if (pw != null)
+                pw.dispose();
+            new ErrorDialog(PatternListPanel.this, jeu.getMessage());
+        } catch (JuggleExceptionInternal jei) {
+            if (pw != null)
+                pw.dispose();
+            ErrorDialog.handleFatalException(jei);
         }
     }
 
@@ -185,7 +186,7 @@ public class PatternListPanel extends JPanel {
                 return null;
 
             draggingOut = true;
-            PatternRecord rec = model.get(list.getSelectedIndex());
+            PatternRecord rec = model.get(row);
             return new PatternTransferable(rec);
         }
 
@@ -233,9 +234,7 @@ public class PatternListPanel extends JPanel {
                     String s = (String)t.getTransferData(DataFlavor.stringFlavor);
 
                     // allow for multi-line strings
-                    while (s.endsWith("\n"))
-                        s = s.substring(0, s.length() - 1);
-                    String[] lines = s.split("\n");
+                    String[] lines = s.stripTrailing().split("\n");
 
                     for (int i = lines.length - 1; i >= 0; --i) {
                         PatternRecord rec = new PatternRecord(lines[i], null, null, null, null);
@@ -451,8 +450,13 @@ public class PatternListPanel extends JPanel {
         }
 
         if (row < 0) {
-            model.addElement(rec);  // adds at end
-            list.setSelectedIndex(model.size() - 1);
+            if (BLANK_AT_END) {
+                model.add(model.size() - 1, rec);
+                list.setSelectedIndex(model.size() - 2);
+            } else {
+                model.addElement(rec);  // adds at end
+                list.setSelectedIndex(model.size() - 1);
+            }
         } else {
             model.add(row, rec);
             list.setSelectedIndex(row);
@@ -723,7 +727,7 @@ public class PatternListPanel extends JPanel {
     public void writeText(Writer wr) throws IOException {
         PrintWriter write = new PrintWriter(wr);
 
-        for (int i = 0; i < model.size(); i++) {
+        for (int i = 0; i < (BLANK_AT_END ? model.size() - 1 : model.size()); i++) {
             PatternRecord rec = model.get(i);
             write.println(rec.display);
         }

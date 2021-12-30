@@ -72,7 +72,6 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         // There are two ways we can handle requests from the OS to open files:
         // with a OpenFilesHandler (macOS) and with our own OpenFilesServer
         // (Windows)
-
         if (!registerOpenFilesHandler())
             new OpenFilesServer();
 
@@ -224,7 +223,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     // Updates the "Window" menu attached to most of our JFrames.
     //
-    // Should call this whenever a window is added or removed.
+    // Should call this whenever a window is added, removed, or retitled.
     public static void updateWindowMenus() {
         ArrayList<ApplicationWindow> apps = new ArrayList<ApplicationWindow>();
         ArrayList<PatternListWindow> pls = new ArrayList<PatternListWindow>();

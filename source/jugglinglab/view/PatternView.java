@@ -119,22 +119,30 @@ public class PatternView extends View implements DocumentListener {
 
         rb_bp.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) { reloadTextArea(); }
+            public void actionPerformed(ActionEvent ae) {
+                reloadTextArea();
+            }
         });
 
         rb_jml.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) { reloadTextArea(); }
+            public void actionPerformed(ActionEvent ae) {
+                reloadTextArea();
+            }
         });
 
         compile.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) { compilePattern(); }
+            public void actionPerformed(ActionEvent ae) {
+                compilePattern();
+            }
         });
 
         revert.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) { revertPattern(); }
+            public void actionPerformed(ActionEvent ae) {
+                revertPattern();
+            }
         });
     }
 
@@ -272,13 +280,19 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
-    public JMLPattern getPattern() { return ja.getPattern(); }
+    public JMLPattern getPattern() {
+        return ja.getPattern();
+    }
 
     @Override
-    public AnimationPrefs getAnimationPrefs() { return ja.getAnimationPrefs(); }
+    public AnimationPrefs getAnimationPrefs() {
+        return ja.getAnimationPrefs();
+    }
 
     @Override
-    public boolean getPaused() { return ja.getPaused(); }
+    public boolean getPaused() {
+        return ja.getPaused();
+    }
 
     @Override
     public void setPaused(boolean pause) {
@@ -287,7 +301,9 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
-    public void disposeView() { ja.disposeAnimation(); }
+    public void disposeView() {
+        ja.disposeAnimation();
+    }
 
     @Override
     public void writeGIF() {
@@ -311,11 +327,17 @@ public class PatternView extends View implements DocumentListener {
     // javax.swing.event.DocumentListener methods
 
     @Override
-    public void insertUpdate(DocumentEvent e) { setTextEdited(true); }
+    public void insertUpdate(DocumentEvent e) {
+        setTextEdited(true);
+    }
 
     @Override
-    public void removeUpdate(DocumentEvent e) { setTextEdited(true); }
+    public void removeUpdate(DocumentEvent e) {
+        setTextEdited(true);
+    }
 
     @Override
-    public void changedUpdate(DocumentEvent e) { setTextEdited(true); }
+    public void changedUpdate(DocumentEvent e) {
+        setTextEdited(true);
+    }
 }

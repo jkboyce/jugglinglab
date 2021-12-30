@@ -53,10 +53,28 @@ public abstract class View extends JPanel {
     protected int undo_index;
 
 
-    public void setParent(PatternWindow p) { parent = p; }
+    public void setParent(PatternWindow p) {
+        parent = p;
+    }
 
-    // Methods to handle undo/redo functionality. The enclosing PatternWindow
-    // owns the undo list, so it's preserved when we switch views.
+    public int getHashCode() {
+        JMLPattern pat = getPattern();
+        return (pat == null) ? 0 : pat.getHashCode();
+    }
+
+    //-------------------------------------------------------------------------
+    // Methods to handle undo/redo functionality.
+    //
+    // The enclosing PatternWindow owns the undo list, so it's preserved when
+    // we switch views. All of the methods are here however in case we want to
+    // embed the View in something other than a PatternWindow in the future.
+    //-------------------------------------------------------------------------
+
+    // For the PatternWindow to pass into a newly-initialized view
+    public void setUndoList(ArrayList<JMLPattern> u, int u_index) {
+        undo = u;
+        undo_index = u_index;
+    }
 
     // Add a pattern to the undo list
     public void addToUndoList(JMLPattern p) {
@@ -67,7 +85,9 @@ public abstract class View extends JPanel {
             undo.add(undo_index, pcopy);  // add copy so it won't change
             while (undo_index + 1 < undo.size())
                 undo.remove(undo_index + 1);
-            parent.updateUndoMenu();
+
+            if (parent != null)
+                parent.updateUndoMenu();
         } catch (JuggleExceptionUser jeu) {
             ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
         } catch (JuggleExceptionInternal jei) {
@@ -83,8 +103,10 @@ public abstract class View extends JPanel {
                 JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
                 restartView(pcopy, null);
 
-                if (undo_index == 0 || undo_index == undo.size() - 2)
-                    parent.updateUndoMenu();
+                if (undo_index == 0 || undo_index == undo.size() - 2) {
+                    if (parent != null)
+                        parent.updateUndoMenu();
+                }
             } catch (JuggleExceptionUser jeu) {
                 // errors here aren't user errors since pattern was successfully
                 // animated before
@@ -101,25 +123,26 @@ public abstract class View extends JPanel {
                 JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
                 restartView(pcopy, null);
 
-                if (undo_index == 1 || undo_index == undo.size() - 1)
-                    parent.updateUndoMenu();
+                if (undo_index == 1 || undo_index == undo.size() - 1) {
+                    if (parent != null)
+                        parent.updateUndoMenu();
+                }
             } catch (JuggleExceptionUser jeu) {
                 throw new JuggleExceptionInternal(jeu.getMessage());
             }
         }
     }
 
-    // For the PatternWindow to pass into a newly-initialized view
-    public void setUndoList(ArrayList<JMLPattern> u, int u_index) {
-        undo = u;
-        undo_index = u_index;
-    }
-
+    // For the PatternWindow to retain state when the view changes
     public int getUndoIndex() {
         return undo_index;
     }
 
-    // null argument means no update for that item:
+    //-------------------------------------------------------------------------
+    // Abstract methods for subclasses to define
+    //-------------------------------------------------------------------------
+
+    // null argument means no update for that item
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
 
@@ -134,11 +157,6 @@ public abstract class View extends JPanel {
 
     public abstract JMLPattern getPattern();
 
-    public int getHashCode() {
-        JMLPattern pat = getPattern();
-        return (pat == null) ? 0 : pat.getHashCode();
-    }
-
     public abstract AnimationPrefs getAnimationPrefs();
 
     public abstract boolean getPaused();
@@ -149,9 +167,11 @@ public abstract class View extends JPanel {
 
     public abstract void writeGIF();
 
-
+    //-------------------------------------------------------------------------
     // Utility class for the various View subclasses to use for writing GIFs.
     // This does the processing in a thread separate from the EDT.
+    //-------------------------------------------------------------------------
+
     protected class GIFWriter extends Thread {
         private AnimationPanel ap;
         private Runnable cleanup;
