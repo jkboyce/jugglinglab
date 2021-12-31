@@ -1,6 +1,6 @@
 // ErrorDialog.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -13,7 +13,11 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import jugglinglab.core.Constants;
+import jugglinglab.util.JLFunc;
 
+
+// Utility class for displaying error dialogs to the user. Note these methods
+// can be called from any thread.
 
 public class ErrorDialog {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -36,6 +40,15 @@ public class ErrorDialog {
     // invite users to email us this information.
 
     public static void handleFatalException(Exception e) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                showInternalErrorWindow(e);
+            }
+        });
+    }
+
+    private static void showInternalErrorWindow(Exception e) {
         String exmsg1 = errorstrings.getString("Error_internal_part1");
         String exmsg2 = errorstrings.getString("Error_internal_part2");
         String exmsg3 = errorstrings.getString("Error_internal_part3");
@@ -63,31 +76,31 @@ public class ErrorDialog {
         JLabel text1 = new JLabel(exmsg1);
         text1.setFont(new Font("SansSerif", Font.BOLD, 12));
         exp.add(text1);
-        gb.setConstraints(text1, make_constraints(GridBagConstraints.LINE_START,0,0,
+        gb.setConstraints(text1, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
                                                   new Insets(10,10,0,10)));
 
         JLabel text2 = new JLabel(exmsg2);
         text2.setFont(new Font("SansSerif", Font.PLAIN, 12));
         exp.add(text2);
-        gb.setConstraints(text2, make_constraints(GridBagConstraints.LINE_START,0,1,
+        gb.setConstraints(text2, JLFunc.constraints(GridBagConstraints.LINE_START,0,1,
                                                   new Insets(10,10,0,10)));
 
         JLabel text3 = new JLabel(exmsg3);
         text3.setFont(new Font("SansSerif", Font.PLAIN, 12));
         exp.add(text3);
-        gb.setConstraints(text3, make_constraints(GridBagConstraints.LINE_START,0,2,
+        gb.setConstraints(text3, JLFunc.constraints(GridBagConstraints.LINE_START,0,2,
                                                   new Insets(0,10,0,10)));
 
         JLabel text4 = new JLabel(exmsg4);
         text4.setFont(new Font("SansSerif", Font.PLAIN, 12));
         exp.add(text4);
-        gb.setConstraints(text4, make_constraints(GridBagConstraints.LINE_START,0,3,
+        gb.setConstraints(text4, JLFunc.constraints(GridBagConstraints.LINE_START,0,3,
                                                   new Insets(0,10,0,10)));
 
         JLabel text5 = new JLabel(exmsg5);
         text5.setFont(new Font("SansSerif", Font.BOLD, 12));
         exp.add(text5);
-        gb.setConstraints(text5, make_constraints(GridBagConstraints.LINE_START,0,4,
+        gb.setConstraints(text5, JLFunc.constraints(GridBagConstraints.LINE_START,0,4,
                                                   new Insets(10,10,10,10)));
 
         JTextArea dumpta = new JTextArea();
@@ -96,7 +109,7 @@ public class ErrorDialog {
         JScrollPane jsp = new JScrollPane(dumpta);
         jsp.setPreferredSize(new Dimension(450, 300));
         exp.add(jsp);
-        gb.setConstraints(jsp, make_constraints(GridBagConstraints.CENTER,0,5,
+        gb.setConstraints(jsp, JLFunc.constraints(GridBagConstraints.CENTER,0,5,
                                                 new Insets(10,10,10,10)));
 
         JPanel butp = new JPanel();
@@ -119,7 +132,7 @@ public class ErrorDialog {
         });
         butp.add(okbutton);
         exp.add(butp);
-        gb.setConstraints(butp, make_constraints(GridBagConstraints.LINE_END,0,6,
+        gb.setConstraints(butp, JLFunc.constraints(GridBagConstraints.LINE_END,0,6,
                                                  new Insets(10,10,10,10)));
 
         exframe.setContentPane(exp);
@@ -131,18 +144,5 @@ public class ErrorDialog {
         exframe.setResizable(false);
         exframe.setLocationRelativeTo(null);    // center frame on screen
         exframe.setVisible(true);
-    }
-
-    protected static GridBagConstraints make_constraints(int location, int gridx, int gridy, Insets ins) {
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.anchor = location;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.gridheight = gbc.gridwidth = 1;
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.insets = ins;
-        gbc.weightx = gbc.weighty = 0.0;
-        return gbc;
     }
 }

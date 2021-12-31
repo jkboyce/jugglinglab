@@ -73,12 +73,7 @@ public class OpenFilesServerSockets extends Thread {
                 }
             }
         } catch (IOException e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.handleFatalException(e);
-                }
-            });
+            ErrorDialog.handleFatalException(e);
         } finally {
             try {
                 listen_socket.close();
@@ -194,12 +189,7 @@ class Connection extends Thread {
                 client.close();
             } catch (IOException ioe2) {}
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.handleFatalException(ioe);
-                }
-            });
+            ErrorDialog.handleFatalException(ioe);
             return;
         }
         start();

@@ -111,12 +111,7 @@ public class OpenFilesServerMMF extends Thread {
                     writeMessage(buf_fromserver, line + '\0');
             }
         } catch (IOException ioe) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.handleFatalException(ioe);
-                }
-            });
+            ErrorDialog.handleFatalException(ioe);
         } catch (InterruptedException ie) {
             if (Constants.DEBUG_OPEN_SERVER)
                 System.out.println("thread interrupted, deleting temp file");

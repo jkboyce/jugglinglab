@@ -218,12 +218,7 @@ public class JugglingLab {
                 System.out.println(output);
             } else {
                 // shouldn't ever happen
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ErrorDialog(null, output);
-                    }
-                });
+                new ErrorDialog(null, output);
             }
             return;
         }
