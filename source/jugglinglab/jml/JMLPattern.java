@@ -335,6 +335,25 @@ public class JMLPattern {
         setNeedsLayout();
     }
 
+    // Flip the x-axis in the local coordinates of each juggler.
+    public void invertXAxis() throws JuggleExceptionUser, JuggleExceptionInternal {
+        layoutPattern();
+
+        System.out.println("mirror the pattern here");
+
+        setNeedsLayout();
+    }
+
+    // Flip the time axis to create (as nearly as possible) what the pattern
+    // looks like played in reverse.
+    public void invertTime() throws JuggleExceptionUser, JuggleExceptionInternal {
+        layoutPattern();
+
+        System.out.println("time reverse the pattern here");
+
+        setNeedsLayout();
+    }
+
     public void setNeedsLayout() {
         laidout = false;
     }

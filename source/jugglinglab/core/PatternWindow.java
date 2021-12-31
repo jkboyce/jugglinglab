@@ -220,6 +220,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "Duplicate",
             "Optimize",
+            "Invert Pattern X Axis",
+            "Invert Pattern in Time",
             null,
             "Close",
         };
@@ -233,6 +235,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "duplicate",
             "optimize",
+            "invertx",
+            "inverttime",
             null,
             "close",
         };
@@ -246,6 +250,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             ' ',
             'D',
             'J',
+            ' ',
+            ' ',
             ' ',
             'W',
         };
@@ -428,6 +434,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(FILE_DUPLICATE);
             else if (command.equals("optimize"))
                 doMenuCommand(FILE_OPTIMIZE);
+            else if (command.equals("invertx"))
+                doMenuCommand(FILE_INVERTX);
+            else if (command.equals("inverttime"))
+                doMenuCommand(FILE_INVERTTIME);
             else if (command.equals("restart"))
                 doMenuCommand(VIEW_RESTART);
             else if (command.equals("prefs"))
@@ -471,12 +481,14 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int FILE_GIFSAVE = 6;
     protected static final int FILE_DUPLICATE = 7;
     protected static final int FILE_OPTIMIZE = 8;
-    protected static final int VIEW_RESTART = 9;
-    protected static final int VIEW_ANIMPREFS = 10;
-    protected static final int VIEW_UNDO = 11;
-    protected static final int VIEW_REDO = 12;
-    protected static final int HELP_ABOUT = 13;
-    protected static final int HELP_ONLINE = 14;
+    protected static final int FILE_INVERTX = 9;
+    protected static final int FILE_INVERTTIME = 10;
+    protected static final int VIEW_RESTART = 11;
+    protected static final int VIEW_ANIMPREFS = 12;
+    protected static final int VIEW_UNDO = 13;
+    protected static final int VIEW_REDO = 14;
+    protected static final int HELP_ABOUT = 15;
+    protected static final int HELP_ONLINE = 16;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
@@ -589,6 +601,34 @@ public class PatternWindow extends JFrame implements ActionListener {
                     if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
                         System.out.println("iae: " + iae.getMessage());
                     throw new JuggleExceptionInternal("optimizer iae: " + iae.getMessage());
+                }
+                break;
+
+            case FILE_INVERTX:
+                if (view == null)
+                    break;
+
+                try {
+                    JMLPattern pat = view.getPattern();
+                    pat.invertXAxis();
+                    view.restartView(pat, null);
+                    view.addToUndoList(pat);
+                } catch (JuggleExceptionUser jeu) {
+                    throw new JuggleExceptionInternal("Error in FILE_INVERTX");
+                }
+                break;
+
+            case FILE_INVERTTIME:
+                if (view == null)
+                    break;
+
+                try {
+                    JMLPattern pat = view.getPattern();
+                    pat.invertTime();
+                    view.restartView(pat, null);
+                    view.addToUndoList(pat);
+                } catch (JuggleExceptionUser jeu) {
+                    throw new JuggleExceptionInternal("Error in FILE_INVERTTIME");
                 }
                 break;
 
