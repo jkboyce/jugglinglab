@@ -311,12 +311,12 @@ public class JMLPattern {
 
     public JMLPosition getPositionList() { return positionlist; }
 
-    // Multiply all times in the pattern by a common factor `scale`.
+    // Multiply all times in the pattern by a common factor `scale`. This
+    // does not need the pattern to be laid out.
     public void scaleTime(double scale) {
         JMLEvent ev = getEventList();
         while (ev != null) {
-            if (ev.isMaster())
-                ev.setT(ev.getT() * scale);
+            ev.setT(ev.getT() * scale);
             ev = ev.getNext();
         }
         JMLPosition pos = getPositionList();
