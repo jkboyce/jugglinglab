@@ -309,57 +309,8 @@ public class JMLPattern {
             prev.setNext(next);
     }
 
-    public JMLPosition getPositionList() { return positionlist; }
-
-    // Multiply all times in the pattern by a common factor `scale`.
-    public void scaleTime(double scale) {
-        JMLEvent ev = getEventList();
-        while (ev != null) {
-            if (ev.isMaster())
-                ev.setT(ev.getT() * scale);
-            ev = ev.getNext();
-        }
-        JMLPosition pos = getPositionList();
-        while (pos != null) {
-            pos.setT(pos.getT() * scale);
-            pos = pos.getNext();
-        }
-
-        for (int i = 0; i < getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = getSymmetry(i);
-            double delay = sym.getDelay();
-            if (delay > 0.0)
-                sym.setDelay(delay * scale);
-        }
-
-        setNeedsLayout();
-    }
-
-    // Flip the x-axis in the local coordinates of each juggler.
-    public void invertXAxis() throws JuggleExceptionUser, JuggleExceptionInternal {
-        layoutPattern();
-
-        System.out.println("mirror the pattern here");
-
-        setNeedsLayout();
-    }
-
-    // Flip the time axis to create (as nearly as possible) what the pattern
-    // looks like played in reverse.
-    public void invertTime() throws JuggleExceptionUser, JuggleExceptionInternal {
-        layoutPattern();
-
-        System.out.println("time reverse the pattern here");
-
-        setNeedsLayout();
-    }
-
-    public void setNeedsLayout() {
-        laidout = false;
-    }
-
-    public boolean isValid() {
-        return valid;
+    public JMLPosition getPositionList() {
+        return positionlist;
     }
 
     public int getHashCode() {
@@ -414,6 +365,67 @@ public class JMLPattern {
     }
 
     //-------------------------------------------------------------------------
+    // Some pattern transformations
+    //-------------------------------------------------------------------------
+
+    // Multiply all times in the pattern by a common factor `scale`.
+    public void scaleTime(double scale) {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            if (ev.isMaster())
+                ev.setT(ev.getT() * scale);
+            ev = ev.getNext();
+        }
+        JMLPosition pos = getPositionList();
+        while (pos != null) {
+            pos.setT(pos.getT() * scale);
+            pos = pos.getNext();
+        }
+
+        for (int i = 0; i < getNumberOfSymmetries(); i++) {
+            JMLSymmetry sym = getSymmetry(i);
+            double delay = sym.getDelay();
+            if (delay > 0.0)
+                sym.setDelay(delay * scale);
+        }
+
+        setNeedsLayout();
+    }
+
+    // Flip the x-axis in the local coordinates of each juggler.
+    public void invertXAxis() {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            int juggler = ev.getJuggler();
+            int hand = ev.getHand();
+
+            if (hand == HandLink.LEFT_HAND)
+                hand = HandLink.RIGHT_HAND;
+            else
+                hand = HandLink.LEFT_HAND;
+
+            ev.setHand(juggler, hand);
+
+            Coordinate c = ev.getLocalCoordinate();
+            c.x = -c.x;
+            ev.setLocalCoordinate(c);
+            ev = ev.getNext();
+        }
+
+        setNeedsLayout();
+    }
+
+    // Flip the time axis to create (as nearly as possible) what the pattern
+    // looks like played in reverse.
+    public void invertTime() throws JuggleExceptionUser, JuggleExceptionInternal {
+        layoutPattern();
+
+        System.out.println("time reverse the pattern here");
+
+        setNeedsLayout();
+    }
+
+    //-------------------------------------------------------------------------
     // Lay out the spatial paths in the pattern
     //
     // Note that this can change the pattern's toString() representation,
@@ -463,6 +475,14 @@ public class JMLPattern {
             valid = false;
             throw jei;
         }
+    }
+
+    public void setNeedsLayout() {
+        laidout = false;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 
     //-------------------------------------------------------------------------
@@ -1111,7 +1131,7 @@ public class JMLPattern {
     }
 
     //-------------------------------------------------------------------------
-    // Methods used by animator to get prop and body locations at specified times.
+    // Methods used by the animator to animate the pattern
     //-------------------------------------------------------------------------
 
     public String getTitle() {
@@ -1162,7 +1182,8 @@ public class JMLPattern {
     }
 
     // returns path coordinate in global frame
-    public void getPathCoordinate(int path, double time, Coordinate newPosition) throws JuggleExceptionInternal {
+    public void getPathCoordinate(int path, double time, Coordinate newPosition)
+                            throws JuggleExceptionInternal {
         for (PathLink pl : pathlinks.get(path - 1)) {
             if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT()) {
                 if (pl.isInHand()) {

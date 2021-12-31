@@ -609,10 +609,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                     break;
 
                 try {
-                    JMLPattern pat = view.getPattern();
-                    pat.invertXAxis();
-                    view.restartView(pat, null);
-                    view.addToUndoList(pat);
+                    JMLPattern newpat = new JMLPattern(view.getPattern());
+                    newpat.invertXAxis();
+                    view.restartView(newpat, null);
+                    view.addToUndoList(newpat);
                 } catch (JuggleExceptionUser jeu) {
                     throw new JuggleExceptionInternal("Error in FILE_INVERTX");
                 }
@@ -623,10 +623,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                     break;
 
                 try {
-                    JMLPattern pat = view.getPattern();
-                    pat.invertTime();
-                    view.restartView(pat, null);
-                    view.addToUndoList(pat);
+                    JMLPattern newpat = new JMLPattern(view.getPattern());
+                    newpat.invertTime();
+                    view.restartView(newpat, null);
+                    view.addToUndoList(newpat);
                 } catch (JuggleExceptionUser jeu) {
                     throw new JuggleExceptionInternal("Error in FILE_INVERTTIME");
                 }
