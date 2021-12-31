@@ -1,6 +1,6 @@
 // PathLink.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -9,17 +9,20 @@ import jugglinglab.util.*;
 
 
 public class PathLink {
-    protected int           pathnum;
-    protected JMLEvent      startevent, endevent;
-    protected int           catchtype;
-    protected String        throwtype, mod;
-    protected Path          proppath;
-    protected boolean       inhand;
-    protected int           juggler, hand;
+    protected int pathnum;
+    protected JMLEvent startevent;
+    protected JMLEvent endevent;
+    protected int catchtype;
+    protected String throwtype;
+    protected String mod;
+    protected Path proppath;
+    protected boolean inhand;
+    protected int juggler;
+    protected int hand;
 
-    protected boolean       ismaster;
-    protected PathLink[]    duplicates;     // if master
-    protected PathLink      master;         // if duplicate
+    protected boolean ismaster;
+    protected PathLink[] duplicates;  // if master
+    protected PathLink master;  // if duplicate
 
 
     public PathLink(int pathnum, JMLEvent startevent, JMLEvent endevent) {
@@ -47,18 +50,47 @@ public class PathLink {
         this.hand = hand;
     }
 
-    public Path getPath()           { return proppath; }
+    public Path getPath() {
+        return proppath;
+    }
 
-    public int getCatch()           { return catchtype; }
-    public void setCatch(int catchtype) { this.catchtype = catchtype; }
-    public int getPathNum()         { return pathnum; }
-    public JMLEvent getStartEvent() { return startevent; }
-    public JMLEvent getEndEvent()   { return endevent; }
+    public int getCatch() {
+        return catchtype;
+    }
 
-    public boolean isInHand()       { return inhand; }
-    public int getHoldingJuggler()  { return juggler; }
-    public int getHoldingHand()     { return hand; }
-    public boolean isMaster()       { return ismaster; }
+    public void setCatch(int catchtype) {
+        this.catchtype = catchtype;
+    }
+
+    public int getPathNum() {
+        return pathnum;
+    }
+
+    public JMLEvent getStartEvent() {
+        return startevent;
+    }
+
+    public JMLEvent getEndEvent() {
+        return endevent;
+    }
+
+    public boolean isInHand() {
+        return inhand;
+    }
+
+    public int getHoldingJuggler() {
+        return juggler;
+    }
+
+    public int getHoldingHand() {
+        return hand;
+    }
+
+    public boolean isMaster()       {
+        return ismaster;
+    }
+
+    // java.lang.Object methods
 
     @Override
     public String toString() {

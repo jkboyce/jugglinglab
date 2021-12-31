@@ -1579,7 +1579,7 @@ top:
 
             result.layoutPattern();
             for (int path = 1; path <= result.getNumberOfPaths(); path++) {
-                for (PathLink pl : result.getPathlinks().get(path - 1)) {
+                for (PathLink pl : result.getPathLinks().get(path - 1)) {
                     Path p = pl.getPath();
                     if (p != null) {
                         double d = p.getDuration();

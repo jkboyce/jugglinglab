@@ -255,7 +255,7 @@ public class JMLPattern {
         }
     }
 
-	public ArrayList<ArrayList<PathLink>> getPathlinks() {
+	public ArrayList<ArrayList<PathLink>> getPathLinks() {
         return pathlinks;
     }
 

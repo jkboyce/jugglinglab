@@ -85,7 +85,7 @@ public class MarginEquations {
 
         pat.layoutPattern();
         JMLEvent events = pat.getEventList();
-        ArrayList<ArrayList<PathLink>> pathlinks = pat.getPathlinks();
+        ArrayList<ArrayList<PathLink>> pathlinks = pat.getPathLinks();
 
         // step 2:  Figure out the variables in the margin equations.  Find the master events
         // in the pattern, in particular the ones that are throws or catches.  The x-coordinate
