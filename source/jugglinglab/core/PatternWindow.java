@@ -96,8 +96,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             public void windowClosing(WindowEvent e) {
                 try {
                     doMenuCommand(FILE_CLOSE);
-                } catch (JuggleExceptionInternal jei) {
-                    ErrorDialog.handleFatalException(jei);
+                } catch (JuggleException je) {
+                    ErrorDialog.handleFatalException(je);
                 }
             }
         });
@@ -467,8 +467,8 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(HELP_ONLINE);
         } catch (JuggleExceptionUser je) {
             new ErrorDialog(this, je.getMessage());
-        } catch (Exception e) {
-            ErrorDialog.handleFatalException(e);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
         }
     }
 
@@ -490,7 +490,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected static final int HELP_ABOUT = 15;
     protected static final int HELP_ONLINE = 16;
 
-    protected void doMenuCommand(int action) throws JuggleExceptionInternal {
+    protected void doMenuCommand(int action) throws JuggleExceptionUser,
+                                                JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
                 break;
@@ -500,7 +501,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_NEWPL:
-                new PatternListWindow("Pattern list");
+                (new PatternListWindow("")).setTitle(null);
                 break;
 
             case FILE_OPEN:
@@ -509,23 +510,23 @@ public class PatternWindow extends JFrame implements ActionListener {
 
             case FILE_CLOSE:
                 dispose();
-                if (!PatternWindow.exit_on_last_close)
-                    break;
 
-                int window_count = 0;
-                for (Frame fr : Frame.getFrames()) {
-                    if (fr instanceof PatternWindow && fr.isVisible())
-                        ++window_count;
+                if (PatternWindow.exit_on_last_close) {
+                    int window_count = 0;
+                    for (Frame fr : Frame.getFrames()) {
+                        if (fr instanceof PatternWindow && fr.isVisible())
+                            ++window_count;
+                    }
+                    if (window_count == 0)
+                        System.exit(0);
                 }
-                if (window_count == 0)
-                    System.exit(0);
                 break;
 
             case FILE_SAVE:
-                if (view == null || !view.getPattern().isValid()) {
-                    new ErrorDialog(this, "Could not save: pattern is not valid");
+                if (view == null)
                     break;
-                }
+                if (!view.getPattern().isValid())
+                    throw new JuggleExceptionUser("Could not save: pattern is not valid");
 
                 // create default filename
                 JLFunc.jfc().setSelectedFile(new File(getTitle() + ".jml"));
@@ -557,12 +558,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_DUPLICATE:
-                try {
-                    new PatternWindow(this);
-                } catch (JuggleExceptionUser jeu) {
-                    // This shouldn't ever happen
-                    new ErrorDialog(this, jeu.getMessage());
-                }
+                new PatternWindow(this);
                 break;
 
             case FILE_OPTIMIZE:
@@ -581,14 +577,14 @@ public class PatternWindow extends JFrame implements ActionListener {
                     view.restartView(new_pat, null);
                     view.addToUndoList(new_pat);
                 } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(this, jeu.getMessage());
+                    throw new JuggleExceptionInternal("optimizer jeu: " + jeu.getMessage());
                 } catch (InvocationTargetException ite) {
                     // exceptions thrown by Optimizer.optimize() land here
                     Throwable ex = ite.getCause();
                     if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
                         System.out.println("ite: " + ex.getMessage());
                     if (ex instanceof JuggleExceptionUser)
-                        new ErrorDialog(this, ex.getMessage());
+                        throw (JuggleExceptionUser)ex;
                     else if (ex instanceof JuggleExceptionInternal)
                         throw (JuggleExceptionInternal)ex;
                     else
@@ -633,25 +629,16 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case VIEW_RESTART:
-                try {
-                    if (view != null)
-                        view.restartView();
-                } catch (JuggleExceptionUser je) {
-                    new ErrorDialog(this, je.getMessage());
-                } catch (JuggleException je) {
-                    throw new JuggleExceptionInternal(je.getMessage());
-                }
+                if (view != null)
+                    view.restartView();
                 break;
 
             case VIEW_ANIMPREFS:
-                AnimationPrefsDialog japd = new AnimationPrefsDialog(this);
-                AnimationPrefs jc = null;
-
                 if (view != null)
-                    jc = view.getAnimationPrefs();
-                else
-                    jc = new AnimationPrefs();
+                    break;
 
+                AnimationPrefs jc = view.getAnimationPrefs();
+                AnimationPrefsDialog japd = new AnimationPrefsDialog(this);
                 AnimationPrefs newjc = japd.getPrefs(jc);
 
                 if (newjc.width != jc.width || newjc.height != jc.height) {
@@ -661,22 +648,18 @@ public class PatternWindow extends JFrame implements ActionListener {
                     pack();
                 }
 
-                if (newjc != jc) {  // user clicked OK instead of Cancel?
-                    try {
-                        if (view != null)
-                            view.restartView(null, newjc);
-                    } catch (JuggleExceptionUser jeu) {
-                        new ErrorDialog(this, jeu.getMessage());
-                    }
-                }
+                if (newjc != jc)
+                    view.restartView(null, newjc);
                 break;
 
             case VIEW_UNDO:
-                view.undoEdit();
+                if (view != null)
+                    view.undoEdit();
                 break;
 
             case VIEW_REDO:
-                view.redoEdit();
+                if (view != null)
+                    view.redoEdit();
                 break;
 
             case HELP_ABOUT:

@@ -204,8 +204,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 doMenuCommand(FILE_SAVE);
             else if (command.equals("savetext"))
                 doMenuCommand(FILE_SAVETEXT);
-        } catch (Exception e) {
-            ErrorDialog.handleFatalException(e);
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
         }
     }
 
@@ -227,7 +227,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_NEWPL:
-                new PatternListWindow("Pattern list");
+                (new PatternListWindow("")).setTitle(null);
                 break;
 
             case FILE_OPEN:

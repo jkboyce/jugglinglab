@@ -401,7 +401,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case FILE_NEWPL:
-                new PatternListWindow("Pattern list");
+                (new PatternListWindow("")).setTitle(null);
                 break;
 
             case FILE_OPEN:
