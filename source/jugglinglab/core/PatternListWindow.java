@@ -33,43 +33,27 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
 
     public PatternListWindow(String title) {
-        super(title);
-        makeWindow();
+        super();
+        createMenus();
+        createContents();
+
         pl.setTitle(title);
+        setTitle(title);
 
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setLocation(getNextScreenLocation());
+        setVisible(true);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationWindow.updateWindowMenus();
-            }
-        });
-    }
-
-    public PatternListWindow(String title, Thread th) {
-        this(title);
-        final Thread generator = th;
-
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    if (generator != null)
-                        generator.interrupt();
-                } catch (Exception ex) {
+                    doMenuCommand(FILE_CLOSE);
+                } catch (JuggleException je) {
+                    ErrorDialog.handleFatalException(je);
                 }
             }
         });
-    }
-
-    public PatternListWindow(JMLNode root) throws JuggleExceptionUser {
-        super();
-        makeWindow();
-        pl.readJML(root);
-        setTitle(pl.getTitle());
-
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -79,23 +63,47 @@ public class PatternListWindow extends JFrame implements ActionListener {
         });
     }
 
-    protected void makeWindow() {
+    // Loading pattern list from a file
+    public PatternListWindow(JMLNode root) throws JuggleExceptionUser {
+        this("");
+
+        if (root != null) {
+            pl.readJML(root);
+            setTitle(pl.getTitle());
+        }
+    }
+
+    public PatternListWindow(String title, Thread gen) {
+        this(title);
+
+        if (gen != null) {
+            final Thread generator = gen;
+
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    try {
+                        generator.interrupt();
+                    } catch (Exception ex) {
+                    }
+                }
+            });
+        }
+    }
+
+    protected void createContents() {
         pl = new PatternListPanel(this);
 
         pl.setDoubleBuffered(true);
         setBackground(Color.white);
         setContentPane(pl);
 
-        setSize(300,450);
-        createMenuBar();
+        setSize(300, 450);
 
         Locale loc = JLLocale.getLocale();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         // list contents are always left-to-right -- DISABLE FOR NOW
         // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-
-        setLocation(getNextScreenLocation());
-        setVisible(true);
     }
 
     // Return the location (screen pixels) of where the next animation window to
@@ -124,6 +132,15 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     public PatternListPanel getPatternList() {
         return pl;
+    }
+
+    protected void createMenus() {
+        JMenuBar mb = new JMenuBar();
+        mb.add(createFileMenu());
+        windowmenu = new JMenu(guistrings.getString("Window"));
+        mb.add(windowmenu);
+        mb.add(createHelpMenu());
+        setJMenuBar(mb);
     }
 
     protected static final String[] fileItems = new String[]
@@ -157,34 +174,65 @@ public class PatternListWindow extends JFrame implements ActionListener {
             'W',
         };
 
-    protected void createMenuBar() {
-        JMenuBar mb = new JMenuBar();
-
+    protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
         JMenuItem[] fileitems = new JMenuItem[fileItems.length];
         for (int i = 0; i < fileItems.length; i++) {
             if (fileItems[i] == null)
                 filemenu.addSeparator();
             else {
-                fileitems[i] = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
+                JMenuItem fileitem = new JMenuItem(
+                        guistrings.getString(fileItems[i].replace(' ', '_')));
+
                 if (fileShortcuts[i] != ' ')
-                    fileitems[i].setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                                                                       Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-                fileitems[i].setActionCommand(fileCommands[i]);
-                fileitems[i].addActionListener(this);
-                filemenu.add(fileitems[i]);
+                    fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+
+                fileitem.setActionCommand(fileCommands[i]);
+                fileitem.addActionListener(this);
+                filemenu.add(fileitem);
             }
         }
-        mb.add(filemenu);
-
-        windowmenu = new JMenu(guistrings.getString("Window"));
-        mb.add(windowmenu);
-
-        setJMenuBar(mb);
+        return filemenu;
     }
 
     public JMenu getWindowMenu() {
         return windowmenu;
+    }
+
+    protected static final String[] helpItems = new String[]
+        {
+            "About Juggling Lab",
+            "Juggling Lab Online Help",
+        };
+    protected static final String[] helpCommands = new String[]
+        {
+            "about",
+            "online",
+        };
+
+    protected JMenu createHelpMenu() {
+        // skip the about menu item if About handler was already installed
+        // in JugglingLab.java
+        boolean include_about = !Desktop.isDesktopSupported() ||
+                !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
+
+        String menuname = guistrings.getString("Help");
+        if (jugglinglab.JugglingLab.isMacOS)
+            menuname += ' ';
+        JMenu helpmenu = new JMenu(menuname);
+
+        for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
+            if (helpItems[i] == null)
+                helpmenu.addSeparator();
+            else {
+                JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
+                helpitem.setActionCommand(helpCommands[i]);
+                helpitem.addActionListener(this);
+                helpmenu.add(helpitem);
+            }
+        }
+        return helpmenu;
     }
 
     @Override
@@ -204,6 +252,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 doMenuCommand(FILE_SAVE);
             else if (command.equals("savetext"))
                 doMenuCommand(FILE_SAVETEXT);
+            else if (command.equals("about"))
+                doMenuCommand(HELP_ABOUT);
+            else if (command.equals("online"))
+                doMenuCommand(HELP_ONLINE);
+
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
         }
@@ -216,6 +269,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
     protected static final int FILE_CLOSE = 4;
     protected static final int FILE_SAVE = 5;
     protected static final int FILE_SAVETEXT = 6;
+    protected static final int HELP_ABOUT = 7;
+    protected static final int HELP_ONLINE = 8;
 
     protected void doMenuCommand(int action) throws JuggleExceptionInternal {
         switch (action) {
@@ -292,6 +347,14 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 } finally {
                     setCursor(Cursor.getDefaultCursor());
                 }
+                break;
+
+            case HELP_ABOUT:
+                ApplicationWindow.showAboutBox();
+                break;
+
+            case HELP_ONLINE:
+                ApplicationWindow.showOnlineHelp();
                 break;
         }
     }

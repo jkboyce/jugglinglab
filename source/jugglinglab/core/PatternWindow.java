@@ -48,49 +48,18 @@ public class PatternWindow extends JFrame implements ActionListener {
     public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
         super(title);
-
         loadOptimizer();  // Do this before creating menus
+        createMenus();
+        createContents(pat, jc);
 
-        JMenuBar mb = new JMenuBar();
-        mb.add(createFileMenu());
-        JMenu viewmenu = createViewMenu();
-        mb.add(viewmenu);
-        windowmenu = new JMenu(guistrings.getString("Window"));
-        mb.add(windowmenu);
-        mb.add(createHelpMenu());
-        setJMenuBar(mb);
-
-        if (jc != null && jc.view != View.VIEW_NONE) {
-            setViewMode(jc.view);
-            viewmenu.getItem(jc.view - 1).setSelected(true);
-            jc.view = View.VIEW_NONE;
-        } else {
-            // no view type specified, use defaults
-            if (pat.getNumberOfJugglers() > 1) {
-                setViewMode(View.VIEW_SIMPLE);
-                viewmenu.getItem(View.VIEW_SIMPLE - 1).setSelected(true);
-            } else {
-                setViewMode(View.VIEW_EDIT);
-                viewmenu.getItem(View.VIEW_EDIT - 1).setSelected(true);
-            }
-        }
-        view.setDoubleBuffered(true);
-        if (jc != null)
-            view.setAnimationPanelPreferredSize(new Dimension(jc.width, jc.height));
-
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setBackground(Color.white);
-
-        Locale loc = JLLocale.getLocale();
-        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-
-        pack();
         view.restartView(pat, jc);
         view.setUndoList(undo, -1);
         view.addToUndoList(pat);
+
         setLocation(getNextScreenLocation());
         setVisible(true);
 
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -136,6 +105,35 @@ public class PatternWindow extends JFrame implements ActionListener {
                 System.out.println("Exception loading optimizer: " + e.toString());
         }
         optimizer_loaded = true;
+    }
+
+    protected void createContents(JMLPattern pat, AnimationPrefs jc) throws
+                        JuggleExceptionUser, JuggleExceptionInternal {
+        if (jc != null && jc.view != View.VIEW_NONE) {
+            setViewMode(jc.view);
+            viewmenu.getItem(jc.view - 1).setSelected(true);
+            jc.view = View.VIEW_NONE;
+        } else {
+            // no view type specified, use defaults
+            if (pat.getNumberOfJugglers() > 1) {
+                setViewMode(View.VIEW_SIMPLE);
+                viewmenu.getItem(View.VIEW_SIMPLE - 1).setSelected(true);
+            } else {
+                setViewMode(View.VIEW_EDIT);
+                viewmenu.getItem(View.VIEW_EDIT - 1).setSelected(true);
+            }
+        }
+        view.setDoubleBuffered(true);
+        if (jc != null)
+            view.setAnimationPanelPreferredSize(new Dimension(jc.width, jc.height));
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setBackground(Color.white);
+
+        Locale loc = JLLocale.getLocale();
+        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
+        pack();
     }
 
     // Return the location (screen pixels) of where the next animation window to
@@ -208,6 +206,17 @@ public class PatternWindow extends JFrame implements ActionListener {
     // Used when a single animation is created from the command line
     public static void setExitOnLastClose(boolean value) {
         exit_on_last_close = value;
+    }
+
+    protected void createMenus() {
+        JMenuBar mb = new JMenuBar();
+        mb.add(createFileMenu());
+        JMenu viewmenu = createViewMenu();
+        mb.add(viewmenu);
+        windowmenu = new JMenu(guistrings.getString("Window"));
+        mb.add(windowmenu);
+        mb.add(createHelpMenu());
+        setJMenuBar(mb);
     }
 
     protected static final String[] fileItems = new String[]
@@ -667,22 +676,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case HELP_ONLINE:
-                boolean browse_supported = (Desktop.isDesktopSupported() &&
-                                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
-                boolean browse_problem = false;
-
-                if (browse_supported) {
-                    try {
-                        Desktop.getDesktop().browse(new URI(Constants.help_URL));
-                    } catch (Exception e) {
-                        browse_problem = true;
-                    }
-                }
-
-                if (!browse_supported || browse_problem) {
-                    new LabelDialog(this, "Help", "Find online help at " +
-                                    Constants.help_URL);
-                }
+                ApplicationWindow.showOnlineHelp();
                 break;
         }
     }

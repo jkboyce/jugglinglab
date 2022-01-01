@@ -38,14 +38,12 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                                         JuggleExceptionInternal {
         super(title);
         createMenus();
+        createContents();
 
-        ApplicationPanel ap = new ApplicationPanel(this);
-        ap.setDoubleBuffered(true);
-        setBackground(new Color(0.9f, 0.9f, 0.9f));
-        setContentPane(ap);  // entire contents of window
-
-        // does the real work of adding controls etc.
-        ap.setNotation(Pattern.NOTATION_SITESWAP);
+        Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+        int locx = Math.max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2);
+        setLocation(locx, 50);
+        setVisible(true);
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -58,16 +56,6 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 }
             }
         });
-
-        Locale loc = JLLocale.getLocale();
-        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-
-        Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-        int locx = Math.max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2);
-        pack();
-        setResizable(false);
-        setLocation(locx, 50);
-        setVisible(true);
 
         // There are two ways we can handle requests from the OS to open files:
         // with a OpenFilesHandler (macOS) and with our own OpenFilesServer
@@ -84,6 +72,22 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 ApplicationWindow.updateWindowMenus();
             }
         });
+    }
+
+    protected void createContents() throws JuggleExceptionUser, JuggleExceptionInternal {
+        ApplicationPanel ap = new ApplicationPanel(this);
+        ap.setDoubleBuffered(true);
+        setBackground(new Color(0.9f, 0.9f, 0.9f));
+        setContentPane(ap);  // entire contents of window
+
+        // does the real work of adding controls etc.
+        ap.setNotation(Pattern.NOTATION_SITESWAP);
+
+        Locale loc = JLLocale.getLocale();
+        applyComponentOrientation(ComponentOrientation.getOrientation(loc));
+
+        setResizable(false);
+        pack();
     }
 
     // Try to register a handler for when the OS wants us to open a file type
@@ -421,26 +425,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                 break;
 
             case HELP_ABOUT:
-                showAboutBox();
+                ApplicationWindow.showAboutBox();
                 break;
 
             case HELP_ONLINE:
-                boolean browse_supported = (Desktop.isDesktopSupported() &&
-                                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
-                boolean browse_problem = false;
-
-                if (browse_supported) {
-                    try {
-                        Desktop.getDesktop().browse(new URI(Constants.help_URL));
-                    } catch (Exception e) {
-                        browse_problem = true;
-                    }
-                }
-
-                if (!browse_supported || browse_problem) {
-                    new LabelDialog(this, "Help", "Find online help at " +
-                                    Constants.help_URL);
-                }
+                ApplicationWindow.showOnlineHelp();
                 break;
         }
 
@@ -622,5 +611,24 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         aboutBox.setResizable(false);
         aboutBox.setLocationRelativeTo(null);    // center frame on screen
         aboutBox.setVisible(true);
+    }
+
+    public static void showOnlineHelp() {
+        boolean browse_supported = (Desktop.isDesktopSupported() &&
+                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+        boolean browse_problem = false;
+
+        if (browse_supported) {
+            try {
+                Desktop.getDesktop().browse(new URI(Constants.help_URL));
+            } catch (Exception e) {
+                browse_problem = true;
+            }
+        }
+
+        if (!browse_supported || browse_problem) {
+            new LabelDialog(null, "Help", "Find online help at " +
+                            Constants.help_URL);
+        }
     }
 }
