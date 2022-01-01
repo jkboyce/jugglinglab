@@ -309,38 +309,8 @@ public class JMLPattern {
             prev.setNext(next);
     }
 
-    public JMLPosition getPositionList() { return positionlist; }
-
-    // Multiply all times in the pattern by a common factor `scale`. This
-    // does not need the pattern to be laid out.
-    public void scaleTime(double scale) {
-        JMLEvent ev = getEventList();
-        while (ev != null) {
-            ev.setT(ev.getT() * scale);
-            ev = ev.getNext();
-        }
-        JMLPosition pos = getPositionList();
-        while (pos != null) {
-            pos.setT(pos.getT() * scale);
-            pos = pos.getNext();
-        }
-
-        for (int i = 0; i < getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = getSymmetry(i);
-            double delay = sym.getDelay();
-            if (delay > 0.0)
-                sym.setDelay(delay * scale);
-        }
-
-        setNeedsLayout();
-    }
-
-    public void setNeedsLayout() {
-        laidout = false;
-    }
-
-    public boolean isValid() {
-        return valid;
+    public JMLPosition getPositionList() {
+        return positionlist;
     }
 
     public int getHashCode() {
@@ -395,6 +365,153 @@ public class JMLPattern {
     }
 
     //-------------------------------------------------------------------------
+    // Some pattern transformations
+    //-------------------------------------------------------------------------
+
+    // Multiply all times in the pattern by a common factor `scale`.
+    public void scaleTime(double scale) {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            if (ev.isMaster())
+                ev.setT(ev.getT() * scale);
+            ev = ev.getNext();
+        }
+        JMLPosition pos = getPositionList();
+        while (pos != null) {
+            pos.setT(pos.getT() * scale);
+            pos = pos.getNext();
+        }
+
+        for (int i = 0; i < getNumberOfSymmetries(); i++) {
+            JMLSymmetry sym = getSymmetry(i);
+            double delay = sym.getDelay();
+            if (delay > 0.0)
+                sym.setDelay(delay * scale);
+        }
+
+        setNeedsLayout();
+    }
+
+    // Flip the x-axis in the local coordinates of each juggler.
+    public void invertXAxis() {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            int hand = ev.getHand();
+            Coordinate c = ev.getLocalCoordinate();
+
+            // flip hand assignment, invert x coordinate
+            if (hand == HandLink.LEFT_HAND)
+                hand = HandLink.RIGHT_HAND;
+            else
+                hand = HandLink.LEFT_HAND;
+
+            c.x = -c.x;
+
+            ev.setHand(ev.getJuggler(), hand);
+            ev.setLocalCoordinate(c);
+            ev = ev.getNext();
+        }
+
+        setNeedsLayout();
+    }
+
+    // Flip the time axis to create (as nearly as possible) what the pattern
+    // looks like played in reverse.
+    public void invertTime() throws JuggleExceptionInternal {
+        try {
+            layoutPattern();  // to ensure we have PathLinks
+
+            // For each JMLEvent:
+            //     - set t = looptime - t
+            //     - reverse the doubly-linked event list
+            double looptime = getLoopEndTime();
+
+            JMLEvent ev = getEventList();
+            while (ev != null) {
+                ev.setT(looptime - ev.getT());
+
+                JMLEvent prev = ev.getPrevious();
+                JMLEvent next = ev.getNext();
+                ev.setPrevious(next);
+                ev.setNext(prev);
+
+                if (next == null)
+                    eventlist = ev;  // new list head
+
+                ev = next;
+            }
+
+            // For each symmetry (besides type SWITCH):
+            //     - invert pperm
+            for (int i = 0; i < getNumberOfSymmetries(); ++i) {
+                JMLSymmetry sym = getSymmetry(i);
+
+                if (sym.getType() == JMLSymmetry.TYPE_SWITCH)
+                    continue;
+
+                Permutation newpathperm = sym.getPathPerm().getInverse();
+                sym.setPathPerm(sym.getNumberOfPaths(), newpathperm.toString());
+            }
+
+            // For each PathLink:
+            //     - find corresponding throw-type JMLTransition in startevent
+            //     - find corresponding catch-type JMLTransition in endevent
+            //     - swap {type, throw type, throw mod} for the two transitions
+            for (int path = 1; path <= getNumberOfPaths(); ++path) {
+                for (PathLink pl : getPathLinks().get(path - 1)) {
+                    if (pl.isInHand())
+                        continue;
+
+                    JMLEvent start = pl.getStartEvent();
+                    JMLEvent end = pl.getEndEvent();
+
+                    JMLTransition start_tr = null;
+                    for (int i = 0; i < start.getNumberOfTransitions(); ++i) {
+                        if (start.getTransition(i).getPath() == path) {
+                            start_tr = start.getTransition(i);
+                            break;
+                        }
+                    }
+
+                    JMLTransition end_tr = null;
+                    for (int i = 0; i < end.getNumberOfTransitions(); ++i) {
+                        if (end.getTransition(i).getPath() == path) {
+                            end_tr = end.getTransition(i);
+                            break;
+                        }
+                    }
+
+                    if (start_tr == null || end_tr == null)
+                        throw new JuggleExceptionInternal("invertTime() error 1");
+                    if (start_tr.getOutgoingPathLink() != pl)
+                        throw new JuggleExceptionInternal("invertTime() error 2");
+                    if (end_tr.getIncomingPathLink() != pl)
+                        throw new JuggleExceptionInternal("invertTime() error 3");
+
+                    int start_tr_type = start_tr.getType();
+                    String start_tr_throw_type = start_tr.getThrowType();
+                    String start_tr_throw_mod = start_tr.getMod();
+
+                    start_tr.setType(end_tr.getType());
+                    start_tr.setThrowType(end_tr.getThrowType());
+                    start_tr.setMod(end_tr.getMod());
+                    end_tr.setType(start_tr_type);
+                    end_tr.setThrowType(start_tr_throw_type);
+                    end_tr.setMod(start_tr_throw_mod);
+
+                    // don't need to do surgery on PathLinks or Paths since those
+                    // will be recalculated during pattern layout
+                }
+            }
+
+            setNeedsLayout();
+        } catch (JuggleExceptionUser jeu) {
+            // No user errors here because the pattern has already been animated
+            throw new JuggleExceptionInternal("invertTime() error 4: " + jeu.getMessage());
+        }
+    }
+
+    //-------------------------------------------------------------------------
     // Lay out the spatial paths in the pattern
     //
     // Note that this can change the pattern's toString() representation,
@@ -444,6 +561,14 @@ public class JMLPattern {
             valid = false;
             throw jei;
         }
+    }
+
+    public void setNeedsLayout() {
+        laidout = false;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 
     //-------------------------------------------------------------------------
@@ -1092,7 +1217,7 @@ public class JMLPattern {
     }
 
     //-------------------------------------------------------------------------
-    // Methods used by animator to get prop and body locations at specified times.
+    // Methods used by the animator to animate the pattern
     //-------------------------------------------------------------------------
 
     public String getTitle() {
@@ -1143,7 +1268,8 @@ public class JMLPattern {
     }
 
     // returns path coordinate in global frame
-    public void getPathCoordinate(int path, double time, Coordinate newPosition) throws JuggleExceptionInternal {
+    public void getPathCoordinate(int path, double time, Coordinate newPosition)
+                            throws JuggleExceptionInternal {
         for (PathLink pl : pathlinks.get(path - 1)) {
             if (time >= pl.getStartEvent().getT() && time <= pl.getEndEvent().getT()) {
                 if (pl.isInHand()) {
