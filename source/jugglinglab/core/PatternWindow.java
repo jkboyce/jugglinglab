@@ -27,17 +27,17 @@ import jugglinglab.view.*;
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static protected boolean exit_on_last_close = false;
+    static protected boolean exit_on_last_close;
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
     static protected final Point TILE_START = new Point(420, 50);
     static protected final Point TILE_OFFSET = new Point(25, 25);
-    static protected Point[] tile_locations = null;
+    static protected Point[] tile_locations;
     static protected int next_tile_num;
 
     static protected Class<?> optimizer;
-    static protected boolean optimizer_loaded = false;
+    static protected boolean optimizer_loaded;
 
     protected View view;
     protected JMenu viewmenu;

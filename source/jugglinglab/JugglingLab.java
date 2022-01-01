@@ -441,7 +441,7 @@ public class JugglingLab {
             public void run() {
                 try {
                     registerAboutHandler();
-                    PatternWindow pw = new PatternWindow(fpat.getTitle(), fpat, fjc);
+                    new PatternWindow(fpat.getTitle(), fpat, fjc);
                     PatternWindow.setExitOnLastClose(true);
                 } catch (JuggleExceptionUser jeu) {
                     System.out.println("Error: " + jeu.getMessage());
