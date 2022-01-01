@@ -220,8 +220,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "Duplicate",
             "Optimize",
-            "Invert Pattern X Axis",
-            "Invert Pattern in Time",
+            "Flip Pattern in X",
+            "Flip Pattern in Time",
             null,
             "Close",
         };
@@ -250,8 +250,8 @@ public class PatternWindow extends JFrame implements ActionListener {
             ' ',
             'D',
             'J',
-            ' ',
-            ' ',
+            'M',
+            'T',
             ' ',
             'W',
         };

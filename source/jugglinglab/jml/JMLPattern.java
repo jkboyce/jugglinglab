@@ -396,18 +396,18 @@ public class JMLPattern {
     public void invertXAxis() {
         JMLEvent ev = getEventList();
         while (ev != null) {
-            int juggler = ev.getJuggler();
             int hand = ev.getHand();
+            Coordinate c = ev.getLocalCoordinate();
 
+            // flip hand assignment, invert x coordinate
             if (hand == HandLink.LEFT_HAND)
                 hand = HandLink.RIGHT_HAND;
             else
                 hand = HandLink.LEFT_HAND;
 
-            ev.setHand(juggler, hand);
-
-            Coordinate c = ev.getLocalCoordinate();
             c.x = -c.x;
+
+            ev.setHand(ev.getJuggler(), hand);
             ev.setLocalCoordinate(c);
             ev = ev.getNext();
         }
@@ -417,12 +417,98 @@ public class JMLPattern {
 
     // Flip the time axis to create (as nearly as possible) what the pattern
     // looks like played in reverse.
-    public void invertTime() throws JuggleExceptionUser, JuggleExceptionInternal {
-        layoutPattern();
+    public void invertTime() throws JuggleExceptionInternal {
+        try {
+            layoutPattern();  // to ensure we have PathLinks
 
-        System.out.println("time reverse the pattern here");
+            // For each JMLEvent:
+            //     - set t = looptime - t
+            //     - reverse the doubly-linked event list
+            double looptime = getLoopEndTime();
 
-        setNeedsLayout();
+            JMLEvent ev = getEventList();
+            while (ev != null) {
+                ev.setT(looptime - ev.getT());
+
+                JMLEvent prev = ev.getPrevious();
+                JMLEvent next = ev.getNext();
+                ev.setPrevious(next);
+                ev.setNext(prev);
+
+                if (next == null)
+                    eventlist = ev;  // new list head
+
+                ev = next;
+            }
+
+            // For each symmetry (besides type SWITCH):
+            //     - invert pperm
+            for (int i = 0; i < getNumberOfSymmetries(); ++i) {
+                JMLSymmetry sym = getSymmetry(i);
+
+                if (sym.getType() == JMLSymmetry.TYPE_SWITCH)
+                    continue;
+
+                Permutation newpathperm = sym.getPathPerm().getInverse();
+                sym.setPathPerm(sym.getNumberOfPaths(), newpathperm.toString());
+            }
+
+            // For each PathLink:
+            //     - find corresponding throw-type JMLTransition in startevent
+            //     - find corresponding catch-type JMLTransition in endevent
+            //     - swap {type, throw type, throw mod} for the two transitions
+            for (int path = 1; path <= getNumberOfPaths(); ++path) {
+                for (PathLink pl : getPathLinks().get(path - 1)) {
+                    if (pl.isInHand())
+                        continue;
+
+                    JMLEvent start = pl.getStartEvent();
+                    JMLEvent end = pl.getEndEvent();
+
+                    JMLTransition start_tr = null;
+                    for (int i = 0; i < start.getNumberOfTransitions(); ++i) {
+                        if (start.getTransition(i).getPath() == path) {
+                            start_tr = start.getTransition(i);
+                            break;
+                        }
+                    }
+
+                    JMLTransition end_tr = null;
+                    for (int i = 0; i < end.getNumberOfTransitions(); ++i) {
+                        if (end.getTransition(i).getPath() == path) {
+                            end_tr = end.getTransition(i);
+                            break;
+                        }
+                    }
+
+                    if (start_tr == null || end_tr == null)
+                        throw new JuggleExceptionInternal("invertTime() error 1");
+                    if (start_tr.getOutgoingPathLink() != pl)
+                        throw new JuggleExceptionInternal("invertTime() error 2");
+                    if (end_tr.getIncomingPathLink() != pl)
+                        throw new JuggleExceptionInternal("invertTime() error 3");
+
+                    int start_tr_type = start_tr.getType();
+                    String start_tr_throw_type = start_tr.getThrowType();
+                    String start_tr_throw_mod = start_tr.getMod();
+
+                    start_tr.setType(end_tr.getType());
+                    start_tr.setThrowType(end_tr.getThrowType());
+                    start_tr.setMod(end_tr.getMod());
+                    end_tr.setType(start_tr_type);
+                    end_tr.setThrowType(start_tr_throw_type);
+                    end_tr.setMod(start_tr_throw_mod);
+
+                    // don't need to do surgery on PathLinks or Paths since those
+                    // will be recalculated during pattern layout
+                }
+            }
+
+            setNeedsLayout();
+        } catch (JuggleExceptionUser jeu) {
+            // No user errors here because the pattern has already been animated
+            throw new JuggleExceptionInternal("invertTime() error 4: " + jeu.getMessage());
+        }
     }
 
     //-------------------------------------------------------------------------
