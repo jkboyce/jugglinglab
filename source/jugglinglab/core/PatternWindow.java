@@ -634,7 +634,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case VIEW_ANIMPREFS:
-                if (view != null)
+                if (view == null)
                     break;
 
                 AnimationPrefs jc = view.getAnimationPrefs();
