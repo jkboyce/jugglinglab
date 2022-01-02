@@ -1,6 +1,6 @@
 // PatternListWindow.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -36,7 +36,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
         super();
         createMenus();
         createContents();
-
         pl.setTitle(title);
         setTitle(title);
 
@@ -48,7 +47,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    doMenuCommand(FILE_CLOSE);
+                    doMenuCommand(MenuCommand.FILE_CLOSE);
                 } catch (JuggleException je) {
                     ErrorDialog.handleFatalException(je);
                 }
@@ -63,7 +62,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         });
     }
 
-    // Loading pattern list from a file
+    // JML loaded from a file
     public PatternListWindow(JMLNode root) throws JuggleExceptionUser {
         this("");
 
@@ -73,6 +72,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         }
     }
 
+    // Target of a (running) pattern generator
     public PatternListWindow(String title, Thread gen) {
         this(title);
 
@@ -91,24 +91,35 @@ public class PatternListWindow extends JFrame implements ActionListener {
         }
     }
 
+    //-------------------------------------------------------------------------
+    // Methods to create and manage window contents
+    //-------------------------------------------------------------------------
+
     protected void createContents() {
         pl = new PatternListPanel(this);
-
         pl.setDoubleBuffered(true);
-        setBackground(Color.white);
         setContentPane(pl);
-
-        setSize(300, 450);
 
         Locale loc = JLLocale.getLocale();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         // list contents are always left-to-right -- DISABLE FOR NOW
         // this.getContentPane().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+
+        setBackground(Color.white);
+        setSize(300, 450);
     }
+
+    public PatternListPanel getPatternListPanel() {
+        return pl;
+    }
+
+    //-------------------------------------------------------------------------
+    // Static methods
+    //-------------------------------------------------------------------------
 
     // Return the location (screen pixels) of where the next animation window to
     // be created should go. This allows us to create a tiling effect.
-    protected Point getNextScreenLocation() {
+    protected static Point getNextScreenLocation() {
         if (tile_locations == null) {
             tile_locations = new Point[NUM_TILES];
 
@@ -130,9 +141,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         return loc;
     }
 
-    public PatternListPanel getPatternList() {
-        return pl;
-    }
+    //-------------------------------------------------------------------------
+    // Menu creation and handlers
+    //-------------------------------------------------------------------------
 
     protected void createMenus() {
         JMenuBar mb = new JMenuBar();
@@ -218,6 +229,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT);
 
         String menuname = guistrings.getString("Help");
+        // Menus titled "Help" are handled differently by macOS; only want to
+        // have one of them across the entire app.
         if (jugglinglab.JugglingLab.isMacOS)
             menuname += ' ';
         JMenu helpmenu = new JMenu(menuname);
@@ -226,7 +239,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
             if (helpItems[i] == null)
                 helpmenu.addSeparator();
             else {
-                JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
+                JMenuItem helpitem = new JMenuItem(guistrings.getString(
+                                            helpItems[i].replace(' ', '_')));
                 helpitem.setActionCommand(helpCommands[i]);
                 helpitem.addActionListener(this);
                 helpmenu.add(helpitem);
@@ -241,38 +255,40 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
         try {
             if (command.equals("newpat"))
-                doMenuCommand(FILE_NEWPAT);
+                doMenuCommand(MenuCommand.FILE_NEWPAT);
             else if (command.equals("newpl"))
-                doMenuCommand(FILE_NEWPL);
+                doMenuCommand(MenuCommand.FILE_NEWPL);
             else if (command.equals("open"))
-                doMenuCommand(FILE_OPEN);
+                doMenuCommand(MenuCommand.FILE_OPEN);
             else if (command.equals("close"))
-                doMenuCommand(FILE_CLOSE);
+                doMenuCommand(MenuCommand.FILE_CLOSE);
             else if (command.equals("saveas"))
-                doMenuCommand(FILE_SAVE);
+                doMenuCommand(MenuCommand.FILE_SAVE);
             else if (command.equals("savetext"))
-                doMenuCommand(FILE_SAVETEXT);
+                doMenuCommand(MenuCommand.FILE_SAVETEXT);
             else if (command.equals("about"))
-                doMenuCommand(HELP_ABOUT);
+                doMenuCommand(MenuCommand.HELP_ABOUT);
             else if (command.equals("online"))
-                doMenuCommand(HELP_ONLINE);
+                doMenuCommand(MenuCommand.HELP_ONLINE);
 
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
         }
     }
 
-    protected static final int FILE_NONE = 0;
-    protected static final int FILE_NEWPAT = 1;
-    protected static final int FILE_NEWPL = 2;
-    protected static final int FILE_OPEN = 3;
-    protected static final int FILE_CLOSE = 4;
-    protected static final int FILE_SAVE = 5;
-    protected static final int FILE_SAVETEXT = 6;
-    protected static final int HELP_ABOUT = 7;
-    protected static final int HELP_ONLINE = 8;
+    protected static enum MenuCommand {
+        FILE_NONE,
+        FILE_NEWPAT,
+        FILE_NEWPL,
+        FILE_OPEN,
+        FILE_CLOSE,
+        FILE_SAVE,
+        FILE_SAVETEXT,
+        HELP_ABOUT,
+        HELP_ONLINE,
+    }
 
-    protected void doMenuCommand(int action) throws JuggleExceptionInternal {
+    protected void doMenuCommand(MenuCommand action) throws JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
                 break;
@@ -313,9 +329,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
                     pl.writeJML(fw);
                     fw.close();
                 } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionInternal("File not found on save: " + fnfe.getMessage());
+                    throw new JuggleExceptionInternal("File not found on save: " +
+                            fnfe.getMessage());
                 } catch (IOException ioe) {
-                    throw new JuggleExceptionInternal("IOException on save: " + ioe.getMessage());
+                    throw new JuggleExceptionInternal("IOException on save: " +
+                            ioe.getMessage());
                 } finally {
                     setCursor(Cursor.getDefaultCursor());
                 }
@@ -341,9 +359,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
                     pl.writeText(fw);
                     fw.close();
                 } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionInternal("File not found on save: " + fnfe.getMessage());
+                    throw new JuggleExceptionInternal("File not found on save: " +
+                            fnfe.getMessage());
                 } catch (IOException ioe) {
-                    throw new JuggleExceptionInternal("IOException on save: " + ioe.getMessage());
+                    throw new JuggleExceptionInternal("IOException on save: " +
+                            ioe.getMessage());
                 } finally {
                     setCursor(Cursor.getDefaultCursor());
                 }
@@ -357,10 +377,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
                 ApplicationWindow.showOnlineHelp();
                 break;
         }
-    }
-
-    public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pattern) {
-        pl.addPattern(display, animprefs, notation, anim, pattern);
     }
 
     // java.awt.Frame methods

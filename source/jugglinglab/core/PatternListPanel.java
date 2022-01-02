@@ -236,7 +236,8 @@ public class PatternListPanel extends JPanel {
                     String[] lines = s.stripTrailing().split("\n");
 
                     for (int i = lines.length - 1; i >= 0; --i) {
-                        PatternRecord rec = new PatternRecord(lines[i], null, null, null, null);
+                        PatternRecord rec = new PatternRecord(lines[i],
+                                                    null, null, null, null);
                         model.add(index, rec);
                     }
                     list.setSelectedIndex(index);
@@ -256,7 +257,8 @@ public class PatternListPanel extends JPanel {
                     return;
 
                 if (!model.removeElement(((PatternTransferable)data).rec))
-                    ErrorDialog.handleFatalException(new JuggleExceptionInternal("PLP: exportDone()"));
+                    ErrorDialog.handleFatalException(
+                            new JuggleExceptionInternal("PLP: exportDone()"));
             }
 
             draggingOut = false;

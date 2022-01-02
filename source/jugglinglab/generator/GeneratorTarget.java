@@ -1,6 +1,6 @@
 // GeneratorTarget.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.generator;
 
@@ -14,8 +14,8 @@ import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
 
 
-// This class is an adapter to handle the generated output.
-// It can send output to a PatternList, PrintStream, or StringBuffer
+// This class is an adapter to handle the generated output. It can send output
+// to a PatternListPanel, PrintStream, or StringBuffer.
 
 public class GeneratorTarget {
     PatternListPanel ltarget;
@@ -23,10 +23,6 @@ public class GeneratorTarget {
     StringBuffer btarget;
     String prefix;
     String suffix;
-
-    public GeneratorTarget(PatternListWindow target) {
-        this.ltarget = target.getPatternList();
-    }
 
     public GeneratorTarget(PatternListPanel target) {
         this.ltarget = target;
@@ -68,9 +64,7 @@ public class GeneratorTarget {
         }
 
         if (ltarget != null) {
-            // This method isn't necessarily being called from the event dispatch
-            // thread, so do it this way to ensure the displayed list is only
-            // updated from the event dispatch thread.
+            // Note we may not be running in the event dispatch thread
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {

@@ -29,8 +29,8 @@ public class Optimizer {
     static final protected double epsilon = 0.0000001;
     static final protected double infinity = java.lang.Double.POSITIVE_INFINITY;
 
-    static protected boolean optimizer_loaded = false;
-    static protected boolean optimizer_available = false;
+    static protected boolean optimizer_loaded;
+    static protected boolean optimizer_available;
 
 
     public static boolean optimizerAvailable() {

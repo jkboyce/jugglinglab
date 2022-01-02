@@ -1,6 +1,6 @@
 // ApplicationPanel.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -81,7 +81,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     }
 
     // input is for example Pattern.NOTATION_SITESWAP
-    public void setNotation(int num) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public void setNotation(int num) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
         if (num > Pattern.builtinNotations.length)
             return;
 
@@ -228,9 +229,10 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pl);
                                 //jtp.setSelectedComponent(pl);
                             } else {
-                                String title = trans.getNotationName() + " " + guistrings.getString("Patterns");
+                                String title = trans.getNotationName() + " " +
+                                        guistrings.getString("Patterns");
                                 pw = new PatternListWindow(title, this);
-                                pwot = new GeneratorTarget(pw);
+                                pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
                             trans.runTransitioner(pwot, max_patterns, max_time);
                             if (pl != null)
@@ -241,7 +243,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                             Component parent = pw;
                             if (pw == null)
                                 parent = pl;
-                            new LabelDialog(parent, guistrings.getString("Generator_stopped_title"), ex.getMessage());
+                            new LabelDialog(parent, guistrings.getString(
+                                    "Generator_stopped_title"), ex.getMessage());
                         } catch (JuggleExceptionInterrupted jei) {
                             //System.out.println("generator thread quit");
                         } catch (JuggleExceptionUser ex) {
@@ -307,9 +310,10 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pl);
                                 //jtp.setSelectedComponent(pl);
                             } else {
-                                String title = gen.getNotationName() + " " + guistrings.getString("Patterns");
+                                String title = gen.getNotationName() + " " +
+                                            guistrings.getString("Patterns");
                                 pw = new PatternListWindow(title, this);
-                                pwot = new GeneratorTarget(pw);
+                                pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
                             gen.runGenerator(pwot, max_patterns, max_time);
                             if (pl != null)
@@ -320,7 +324,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                             Component parent = pw;
                             if (pw == null)
                                 parent = pl;
-                            new LabelDialog(parent, guistrings.getString("Generator_stopped_title"), ex.getMessage());
+                            new LabelDialog(parent, guistrings.getString(
+                                    "Generator_stopped_title"), ex.getMessage());
                         } catch (JuggleExceptionInterrupted jei) {
                             //System.out.println("generator thread quit");
                         } catch (JuggleExceptionUser ex) {
@@ -350,7 +355,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         GridBagLayout gb = new GridBagLayout();
         p4.setLayout(gb);
         p4.add(gen_busy);
-        gb.setConstraints(gen_busy, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0, new Insets(0,10,0,0)));
+        gb.setConstraints(gen_busy, JLFunc.constraints(
+                GridBagConstraints.LINE_START, 0, 0, new Insets(0,10,0,0)));
         p3.add(p4, BorderLayout.LINE_START);
         p3.add(p2, BorderLayout.LINE_END);
 
