@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>2 person symmetric passing</title>
+
+<line display="HSS based notation can represent"/>
+<line display="ANY asynchronous pattern."/>
+<line display="Demonstrated here for select 2-juggler"/>
+<line display="symmetric passing patterns, mainly"/>
+<line display="taken from Aidan Burns' new highgate"/>
+<line display="collection of passing patterns."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+<line display="handspec effect: tramline passes"/>
+<line display="5;hss=22286;handspec=(2,1)(3,4)" notation="siteswap">
+pattern=5;
+hss=22286;
+handspec=(2,1)(3,4);
+title=Tramline passes
+</line>
+<line display=""/>
+
+<line display="handspec effect: crossing passes"/>
+<line display="5;hss=22286;handspec=(2,1)(4,3)" notation="siteswap">
+pattern=5;
+hss=22286;
+handspec=(2,1)(4,3);
+title=Crossing passes
+</line>
+<line display=""/>
+
+<line display="parsnip"/>
+<line display="77722;hss=4" notation="siteswap">
+pattern=77722;
+hss=4;
+title=Parsnip
+</line>
+<line display=""/>
+
+<line display="heff zip zap"/>
+<line display="852;hss=4" notation="siteswap">
+pattern=852;
+hss=4;
+title=Heff zip zap
+</line>
+<line display=""/>
+
+<line display="why not?"/>
+<line display="77862;hss=4" notation="siteswap">
+pattern=77862;
+hss=4;
+colors={red}{green}{red}{green}{green}{red};
+title=Why not?
+</line>
+<line display=""/>
+
+<line display="not likely"/>
+<line display="96672;hss=4" notation="siteswap">
+pattern=96672;
+hss=4;
+colors={red}{red}{green}{red}{green}{green};
+title=Not likely
+</line>
+<line display=""/>
+
+<line display="funky bookends"/>
+<line display="77786;hss=4" notation="siteswap">
+pattern=77786;
+hss=4;
+title=Funky bookends
+</line>
+<line display=""/>
+
+<line display="five count popcorn"/>
+<line display="7a666;hss=4" notation="siteswap">
+pattern=7a666;
+hss=4;
+colors={green}{red}{green}{green}{green}{green}{red};
+title=Five count popcorn
+</line>
+<line display=""/>
+
+<line display="the holy grail"/>
+<line display="975;hss=4" notation="siteswap">
+pattern=975;
+hss=4;
+colors={red}{green}{green}{red}{green}{green}{red};
+title=The Holy Grail
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 

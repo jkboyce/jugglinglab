@@ -2,7 +2,7 @@
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
 <jml version="1.2">
 <patternlist>
-<title>Juggling Lab Patterns</title>
+<title>Jack's list</title>
 
 <line display="Around the pair" notation="jml">
 <pattern>
@@ -425,22 +425,6 @@ pattern=7B44;title=4 Ball Box Bounced
 </event>
 <event x="0" y="0" z="0" t="0.6352" hand="1:right">
 <catch path="1"/>
-</event>
-</pattern>
-</line>
-
-<line display="JML switch symmetry example" notation="jml">
-<pattern>
-<title>(4,4)</title>
-<prop type="ball"/>
-<setup jugglers="1" paths="4" props="1,1,1,1"/>
-<symmetry type="delay" pperm="(1,3)(2,4)" delay="0.5882"/>
-<symmetry type="switch" jperm="(1,1*)" pperm="(1,2)(3,4)"/>
-<event x="7.6" y="0" z="0" t="0" hand="1:right">
-<throw path="1" type="toss"/>
-</event>
-<event x="23.7297" y="0" z="0" t="0.2372" hand="1:right">
-<catch path="3"/>
 </event>
 </pattern>
 </line>

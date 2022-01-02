@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>3 person symmetric passing</title>
+
+<line display="HSS based notation can represent"/>
+<line display="ANY asynchronous pattern."/>
+<line display="Demonstrated here for select 3-juggler"/>
+<line display="symmetric passing patterns from Aidan"/>
+<line display="Burns' new highgate collection of"/>
+<line display="passing patterns. 'handspec' parameter"/>
+<line display="mainly used to match left hand start"/>
+<line display="by one juggler as assumed by Burns."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+
+<line display="mild madness triangle"/>
+<line display="ab9b9a3;hss=6" notation="siteswap">
+pattern=ab9b9a3;
+bps=7;
+hss=6;
+title=Mild Madness triangle
+</line>
+<line display=""/>
+
+<line display="martin's one count triangle"/>
+<line display="aabb3;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=aabb3;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={green}{green}{red}{red}{red}{green}{green}{red}{red};
+title=Martin's one count triangle
+</line>
+<line display=""/>
+
+<line display="martin's style one count triangle"/>
+<line display="aaaaaa3;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=aaaaaa3;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={red}{green}{blue};
+title=Martin's style one count triangle
+</line>
+<line display=""/>
+
+<line display="parsnip triangle"/>
+<line display="d33dd;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=d33dd;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={red}{red}{green}{blue}{blue}{red}{green}{green}{blue};
+title=Parsnip triangle
+</line>
+<line display=""/>
+
+<line display="why not? triangle"/>
+<line display="bbbcc933aaac993;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=bbbcc933aaac993;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={red}{green}{blue}{red}{green}{blue}{green}{blue}{red};
+title=Why not? triangle
+</line>
+<line display=""/>
+
+<line display="maybe triangle"/>
+<line display="a3b9c;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=a3b9c;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={red}{black}{green}{green}{red}{black}{blue}{blue}{black};
+title=Maybe triangle
+</line>
+<line display=""/>
+
+<line display="four count triangle: 10 object"/>
+<line display="d999;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=d999;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+title=Four count triangle: 10 object
+</line>
+<line display=""/>
+
+<line display="two count triangle: 10 object"/>
+<line display="b9;hss=6;handspec=(4,1)(6,3)(2,5)" notation="siteswap">
+pattern=b9;
+bps=7;
+hss=6;
+handspec=(4,1)(6,3)(2,5);
+title=Two count triangle: 10 object
+</line>
+<line display=""/>
+
+<line display="one count triangle: 10 object"/>
+<line display="a;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=a;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+colors={red}{blue};
+title=One count triangle: 10 object
+</line>
+<line display=""/>
+
+<line display="why not? triangle: 10 object"/>
+<line display="dd39c;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=dd39c;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+title=Why not? triangle: 10 object
+</line>
+<line display=""/>
+
+<line display="maybe triangle: 10 object"/>
+<line display="d9cd3;hss=6;handspec=(4,1)(2,5)(6,3)" notation="siteswap">
+pattern=d9cd3;
+bps=7;
+hss=6;
+handspec=(4,1)(2,5)(6,3);
+title=Maybe triangle: 10 object
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 

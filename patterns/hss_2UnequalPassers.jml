@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>2 unequal jugglers</title>
+
+<line display="Using HSS notation to convert common"/>
+<line display="siteswaps into passing patterns"/>
+<line display="between jugglers at significantly"/>
+<line display="different skill levels."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+<line display="5;hss=123;handspec=(1,)(,2)" notation="siteswap">
+pattern=5;
+body={
+(0,-30).|(0,30).
+};
+hss=123;
+handspec=(1,)(,2);
+title=oss: 5  hss: 123
+</line>
+
+<line display="5;hss=1124;handspec=(1,)(,2)" notation="siteswap">
+pattern=5;
+body={
+(0,-30).|(0,30).
+};
+hss=1124;
+handspec=(1,)(,2);
+title=oss: 5  hss: 1124
+</line>
+
+<line display="726;hss=3" notation="siteswap">
+pattern=726;
+hss=3;
+title=oss: 726  hss: 3
+</line>
+
+<line display="7;hss=531" notation="siteswap">
+pattern=7;
+hss=531;
+title=oss: 7  hss: 531
+</line>
+
+<line display="7;hss=423" notation="siteswap">
+pattern=7;
+hss=423;
+title=oss: 7  hss: 423
+</line>
+
+<line display="7;hss=423;handspec=(2,1)(,3)" notation="siteswap">
+pattern=7;
+hss=423;
+handspec=(2,1)(,3);
+title=oss: 7  hss: 423
+</line>
+
+<line display="7;hss=426;handspec=(2,1)(4,3)" notation="siteswap">
+pattern=7;
+hss=426;
+handspec=(2,1)(4,3);
+title=oss: 7  hss: 426
+</line>
+
+<line display="7;hss=426;handspec=(2,1)(3,4)" notation="siteswap">
+pattern=7;
+hss=426;
+handspec=(2,1)(3,4);
+title=oss: 7  hss: 426
+</line>
+
+<line display="7;hss=426;handspec=(2,1)(3,)(,4)" notation="siteswap">
+pattern=7;
+body={
+(90,75).|(270,-75,50).|(270,-75,-50).
+};
+hss=426;
+handspec=(2,1)(3,)(,4);
+title=oss: 7  hss: 426
+</line>
+
+<line display="7;hss=441" notation="siteswap">
+pattern=7;
+hss=441;
+title=oss: 7  hss: 441
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 

@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>Two handed HSS</title>
+
+<line display="Using hss, dwellmax and handspec"/>
+<line display="settings to create 'new' patterns"/>
+<line display="from common siteswaps."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+<line display="3;hss=114;dwellmax=false (snake)" notation="siteswap">
+pattern=3;
+hss=114;
+dwellmax=false;
+title=Snake
+</line>
+
+<line display="3;hss=114" notation="siteswap">
+pattern=3;
+hss=114;
+title=oss: 3  hss: 114
+</line>
+
+<line display="3;hss=13;dwellmax=false" notation="siteswap">
+pattern=3;
+hss=13;
+dwellmax=false;
+title=oss: 3  hss: 13
+</line>
+
+<line display="3;hss=2;handspec=(1,)(,2)" notation="siteswap">
+pattern=3;
+body={
+(0,-30).|(0,30).
+};
+hss=2;
+handspec=(1,)(,2);
+title=oss: 3  hss: 2
+</line>
+
+<line display="42;hss=13 (galloped 423)" notation="siteswap">
+pattern=42;
+bps=2.8;
+hss=13;
+title=Galloped 423
+</line>
+
+<line display="42;hss=13;handspec=(1,)(,2)" notation="siteswap">
+pattern=42;
+bps=2.8;
+body={
+(0,-30).|(0,30).
+};
+hss=13;
+handspec=(1,)(,2);
+title=oss: 42  hss: 13
+</line>
+
+<line display="5;hss=2;handspec=(1,)(,2)" notation="siteswap">
+pattern=5;
+body={
+(0,-30).|(0,30).
+};
+hss=2;
+handspec=(1,)(,2);
+title=oss: 5  hss: 2
+</line>
+
+<line display="5;hss=114" notation="siteswap">
+pattern=5;
+hss=114;
+title=oss: 5  hss: 114
+</line>
+
+<line display="5;hss=114;handspec=(1,)(,2)" notation="siteswap">
+pattern=5;
+body={
+(0,-30).|(0,30).
+};
+hss=114;
+handspec=(1,)(,2);
+title=oss: 5  hss: 114
+</line>
+
+<line display="5;hss=1124" notation="siteswap">
+pattern=5;
+hss=1124;
+title=oss: 5  hss: 1124
+</line>
+
+<line display="5;hss=123" notation="siteswap">
+pattern=5;
+hss=123;
+title=oss: 5  hss: 123
+</line>
+
+<line display="5;hss=1223" notation="siteswap">
+pattern=5;
+hss=1223;
+title=oss: 5  hss: 1223
+</line>
+
+<line display="5;hss=1223;handspec=(1,)(,2)" notation="siteswap">
+pattern=5;
+body={
+(0,-30).|(0,30).
+};
+hss=1223;
+handspec=(1,)(,2);
+title=oss: 5  hss: 1223
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 

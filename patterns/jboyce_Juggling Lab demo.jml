@@ -2,7 +2,7 @@
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
 <jml version="1.2">
 <patternlist>
-<title>Demo patterns</title>
+<title>Juggling Lab demo patterns</title>
 
 <line display="Image prop:"/>
 <line display="default image" notation="jml">
@@ -73,9 +73,9 @@ pattern=7
 <line display="7 passing" animprefs="stereo=true" notation="siteswap">
 pattern=&lt;R|L&gt;&lt;4xp|3&gt;&lt;3|4xp&gt;
 </line>
+
 <line display=""/>
 <line display="Body movement:"/>
-
 <line display="turning in circles" notation="jml">
 <pattern>
 <title>5 turning</title>
@@ -320,6 +320,26 @@ pattern=&lt;R|L&gt;&lt;4xp|3&gt;&lt;3|4xp&gt;
 </event>
 </pattern>
 </line>
+
+
+<line display=""/>
+<line display="JML switch symmetry"/>
+<line display="(4,4)" notation="jml">
+<pattern>
+<title>(4,4)</title>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1,3)(2,4)" delay="0.5882"/>
+<symmetry type="switch" jperm="(1,1*)" pperm="(1,2)(3,4)"/>
+<event x="7.6" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="23.7297" y="0" z="0" t="0.2372" hand="1:right">
+<catch path="3"/>
+</event>
+</pattern>
+</line>
+
 
 </patternlist>
 </jml>

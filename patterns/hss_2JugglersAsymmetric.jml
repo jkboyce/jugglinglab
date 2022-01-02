@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>2 person asymmetric passing</title>
+
+<line display="HSS based notation can represent"/>
+<line display="ANY asynchronous pattern."/>
+<line display="Demonstrated here for select 2-juggler"/>
+<line display="asymmetric passing patterns from"/>
+<line display="Aidan Burns' new highgate collection"/>
+<line display="of passing patterns, including a few"/>
+<line display="polyrhythms (slow fast patterns)."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+<line display="Five count popcorn vs why not?"/>
+<line display="7862678682;hss=4" notation="siteswap">
+pattern=7862678682;
+hss=4;
+title=Five count popcorn vs Why not?
+</line>
+<line display=""/>
+
+<line display="funky bookends vs parsnip"/>
+<line display="7772677782;hss=4" notation="siteswap">
+pattern=7772677782;
+hss=4;
+title=Funky bookends vs Parsnip
+</line>
+<line display=""/>
+
+<line display="jim's fizz buzz (asynchronous)"/>
+<line display="666677477466774667747746666774;hss=4" notation="siteswap">
+pattern=666677477466774667747746666774;
+hss=4;
+title=Jim's Fizz Buzz (asynchronous)
+</line>
+<line display=""/>
+
+<line display="779667 with crossing doubles"/>
+<line display="779667;hss=4" notation="siteswap">
+pattern=779667;
+hss=4;
+title=779667 with crossing doubles
+</line>
+<line display=""/>
+
+<line display="777867"/>
+<line display="777867;hss=4" notation="siteswap">
+pattern=777867;
+hss=4;
+title=oss: 777867  hss: 4
+</line>
+<line display=""/>
+
+<line display="why rei?"/>
+<line display="9669968926;hss=4;handspec=(1,3)(4,2)" notation="siteswap">
+pattern=9669968926;
+hss=4;
+handspec=(1,3)(4,2);
+title=Why rei?
+</line>
+<line display=""/>
+
+<line display="copenhagen countdown"/>
+<line display="9669669969929962;hss=4" notation="siteswap">
+pattern=9669669969929962;
+hss=4;
+title=Copenhagen Countdown
+</line>
+<line display=""/>
+
+<line display=""/>
+<line display="Polyrhythms: slow fast patterns"/>
+<line display=""/>
+
+<line display="three count vs two count"/>
+<line display="be00af00a0;hss=a7007a0060;handspec=(4,1)(3,2)" notation="siteswap">
+pattern=be00af00a0;
+bps=10;
+hss=a7007a0060;
+handspec=(4,1)(3,2);
+title=Three count vs two count
+</line>
+<line display=""/>
+
+<line display="two count vs one count"/>
+<line display="7b06;hss=8404;handspec=(4,1)(3,2)" notation="siteswap">
+pattern=7b06;
+bps=6;
+hss=8404;
+handspec=(4,1)(3,2);
+title=Two count vs one count
+</line>
+<line display=""/>
+
+<line display="two count vs one count: 7 ball"/>
+<line display="d960;hss=4840;handspec=(4,2)(3,1)" notation="siteswap">
+pattern=d960;
+bps=6;
+hss=4840;
+handspec=(4,2)(3,1);
+title=Two count vs one count: 7 ball
+</line>
+<line display=""/>
+
+<line display="pass pass self vs two count: 7 ball"/>
+<line display="j00hc000mg00c0e0;hss=800b80008a0080b0" notation="siteswap">
+pattern=j00hc000mg00c0e0;
+bps=10;
+hss=800b80008a0080b0;
+title=Pass pass self vs two count: 7 ball
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 

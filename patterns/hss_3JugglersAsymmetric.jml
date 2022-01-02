@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="1.2">
+<patternlist>
+<title>3 person asymmetric passing</title>
+
+<line display="HSS based notation can represent"/>
+<line display="ANY asynchronous pattern."/>
+<line display="Demonstrated here for select 3-juggler"/>
+<line display="asymmetric passing patterns from"/>
+<line display="Aidan Burns' new highgate collection"/>
+<line display="of passing patterns, including a few"/>
+<line display="polyrhythms (slow fast patterns)."/>
+<line display="____________________________________"/>
+<line display=""/>
+
+<line display="martin 1-count feeds jim 2-count"/>
+<line display="b9aab939abb6a69;hss=6" notation="siteswap">
+pattern=b9aab939abb6a69;
+body={
+(90,75).|(270,-95,80).|(280,-55,-80).
+};
+hss=6;
+title=Martin 1-count feeds Jim 2-count
+</line>
+<line display=""/>
+
+<line display="tarim's triangle: 10 object"/>
+<line display="ab9b9b9b9;hss=6" notation="siteswap">
+pattern=ab9b9b9b9;
+hss=6;
+colors={red}{red}{green}{red}{black}{red}{blue}{red}{green}{red};
+title=Tarim's triangle: 10 object
+</line>
+<line display=""/>
+
+<line display="PPS PPS one count triangle"/>
+<line display="aaaab9b9a;hss=6" notation="siteswap">
+pattern=aaaab9b9a;
+hss=6;
+title=PPS PPS one count triangle
+</line>
+<line display=""/>
+
+<line display="1-count 1-count 3-count triangle"/>
+<line display="b9ab9aaaa;hss=6" notation="siteswap">
+pattern=b9ab9aaaa;
+hss=6;
+title=1-count 1-count 3-count triangle
+</line>
+<line display=""/>
+
+<line display="1-count 1-count PPS triangle"/>
+<line display="bb8bb8ab9;hss=6" notation="siteswap">
+pattern=bb8bb8ab9;
+hss=6;
+title=1-count 1-count PPS triangle
+</line>
+<line display=""/>
+
+<line display="1-count 1-count countdown triangle"/>
+<line display="aaaaaab9aaaab9ab9aaaab9a;hss=6" notation="siteswap">
+pattern=aaaaaab9aaaab9ab9aaaab9a;
+hss=6;
+title=1-count 1-count countdown triangle
+</line>
+<line display=""/>
+
+<line display=""/>
+<line display="Polyrhythms: slow fast patterns"/>
+<line display=""/>
+
+<line display="one count feeding three count"/>
+<line display="dh0c0c;hss=c80808;handspec=(5,1)(4,2)(6,3)" notation="siteswap">
+pattern=dh0c0c;
+bps=8;
+body={
+(90,75).|(270,-95,80).|(280,-55,-80).
+};
+hss=c80808;
+handspec=(5,1)(4,2)(6,3);
+colors={red}{red}{green}{green}{red}{red}{green}{green}{red};
+title=One count feeding three count
+</line>
+<line display=""/>
+
+<line display="pass pass self feeding two count"/>
+<line display="fk00g0jl00el00;hss=e900e09e00ae00;handspec=(5,1)(4,2)(6,3)" notation="siteswap">
+pattern=fk00g0jl00el00;
+bps=10;
+body={
+(270,-95,80).|(90,75).|(280,-55,-80).
+};
+hss=e900e09e00ae00;
+handspec=(5,1)(4,2)(6,3);
+title=PPS feeding two count
+</line>
+
+<line display=""/>
+
+</patternlist>
+</jml> 
