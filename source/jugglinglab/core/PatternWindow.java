@@ -261,11 +261,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     // Returns true if animation found, false if not.
     public static boolean bringToFront(int hash) {
         for (Frame fr : Frame.getFrames()) {
-            if (fr instanceof PatternWindow) {
+            if (fr instanceof PatternWindow && fr.isVisible()) {
                 final PatternWindow pw = (PatternWindow)fr;
-
-                if (!pw.isVisible())
-                    continue;
 
                 if (pw.getHashCode() == hash) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -349,23 +346,24 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
         for (int i = 0; i < fileItems.length; i++) {
-            if (fileItems[i] == null)
+            if (fileItems[i] == null) {
                 filemenu.addSeparator();
-            else {
-                JMenuItem fileitem = new JMenuItem(
-                        guistrings.getString(fileItems[i].replace(' ', '_')));
-
-                if (fileShortcuts[i] != ' ')
-                    fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-
-                fileitem.setActionCommand(fileCommands[i]);
-                fileitem.addActionListener(this);
-                filemenu.add(fileitem);
-
-                if (fileCommands[i].equals("optimize") && optimizer == null)
-                    fileitem.setEnabled(false);
+                continue;
             }
+
+            JMenuItem fileitem = new JMenuItem(
+                    guistrings.getString(fileItems[i].replace(' ', '_')));
+
+            if (fileShortcuts[i] != ' ')
+                fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+
+            fileitem.setActionCommand(fileCommands[i]);
+            fileitem.addActionListener(this);
+            filemenu.add(fileitem);
+
+            if (fileCommands[i].equals("optimize") && optimizer == null)
+                fileitem.setEnabled(false);
         }
         return filemenu;
     }
@@ -416,7 +414,10 @@ public class PatternWindow extends JFrame implements ActionListener {
             if (viewItems[i] == null) {
                 viewmenu.addSeparator();
                 addingviews = false;
-            } else if (addingviews) {
+                continue;
+            }
+
+            if (addingviews) {
                 JRadioButtonMenuItem viewitem = new JRadioButtonMenuItem(
                         guistrings.getString(viewItems[i].replace(' ', '_')));
 

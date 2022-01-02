@@ -503,18 +503,19 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
 
         for (int i = 0; i < (quit_handler ? fileItems.length - 2 : fileItems.length); ++i) {
-            if (fileItems[i] == null)
+            if (fileItems[i] == null) {
                 filemenu.addSeparator();
-            else {
-                JMenuItem fileitem = new JMenuItem(guistrings.getString(
-                                        fileItems[i].replace(' ', '_')));
-                if (fileShortcuts[i] != ' ')
-                    fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-                fileitem.setActionCommand(fileCommands[i]);
-                fileitem.addActionListener(this);
-                filemenu.add(fileitem);
+                continue;
             }
+
+            JMenuItem fileitem = new JMenuItem(guistrings.getString(
+                                    fileItems[i].replace(' ', '_')));
+            if (fileShortcuts[i] != ' ')
+                fileitem.setAccelerator(KeyStroke.getKeyStroke(fileShortcuts[i],
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+            fileitem.setActionCommand(fileCommands[i]);
+            fileitem.addActionListener(this);
+            filemenu.add(fileitem);
         }
         return filemenu;
     }
