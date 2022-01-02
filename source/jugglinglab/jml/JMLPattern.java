@@ -188,7 +188,9 @@ public class JMLPattern {
 
     public void addEvent(JMLEvent ev) {
         setNeedsLayout();
-        if (eventlist == null || eventlist.getT() > ev.getT()) {
+
+        if (eventlist == null || ev.getT() < eventlist.getT()) {
+            // set `ev` as new list head
             ev.setPrevious(null);
             ev.setNext(eventlist);
             if (eventlist != null)
@@ -198,21 +200,60 @@ public class JMLPattern {
         }
 
         JMLEvent current = eventlist;
-        while (current.getNext() != null) {
-            current = current.getNext();
+        while (true) {
+            boolean combine_events =
+                    current.getT() == ev.getT() &&
+                    current.getHand() == ev.getHand() &&
+                    current.getJuggler() == ev.getJuggler();
 
-            if (current.getT() > ev.getT()) {
+            if (combine_events) {
+                // replace `current` with `ev` in the list...
+                ev.setPrevious(current.getPrevious());
+                ev.setNext(current.getNext());
+                if (current.getNext() != null)
+                    current.getNext().setPrevious(ev);
+                if (current.getPrevious() == null)
+                    eventlist = ev;  // new head of the list
+                else
+                    current.getPrevious().setNext(ev);
+
+                // ...then move all the transitions from `current` to `ev`,
+                // except those for a path number that already has a transition
+                // in `ev`.
+                for (int i = 0; i < current.getNumberOfTransitions(); ++i) {
+                    JMLTransition tr_current = current.getTransition(i);
+                    boolean add_transition = true;
+
+                    for (int j = 0; j < ev.getNumberOfTransitions(); ++j) {
+                        if (ev.getTransition(j).getPath() == tr_current.getPath())
+                            add_transition = false;
+                    }
+
+                    if (add_transition)
+                        ev.addTransition(tr_current);
+                }
+                return;
+            }
+
+            if (ev.getT() < current.getT()) {
+                // insert `ev` before `current`
                 ev.setNext(current);
                 ev.setPrevious(current.getPrevious());
                 current.getPrevious().setNext(ev);
                 current.setPrevious(ev);
                 return;
             }
-        }
 
-        current.setNext(ev);
-        ev.setNext(null);
-        ev.setPrevious(current);
+            if (current.getNext() == null) {
+                // append `ev` at the list end, after current
+                current.setNext(ev);
+                ev.setNext(null);
+                ev.setPrevious(current);
+                return;
+            }
+
+            current = current.getNext();
+        }
     }
 
     public void removeEvent(JMLEvent ev) {
