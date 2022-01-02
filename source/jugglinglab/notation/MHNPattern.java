@@ -114,6 +114,8 @@ public abstract class MHNPattern extends Pattern {
         if ((temp = pl.removeParameter("dwell")) != null) {
             try {
                 dwell = Double.parseDouble(temp);
+                if (dwell <= 0.0 || dwell >= 2.0)
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_range"));
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_value"));
             }
