@@ -1726,8 +1726,9 @@ public class JMLPattern {
         if (write_title && title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
         if (base_pattern_notation != null && base_pattern_config != null) {
-            write.println("<basepattern notation=\"" + JMLNode.xmlescape(base_pattern_notation) + "\">");
-            write.println(JMLNode.xmlescape(base_pattern_config));
+            write.println("<basepattern notation=\"" +
+                            JMLNode.xmlescape(base_pattern_notation) + "\">");
+            write.println(JMLNode.xmlescape(base_pattern_config.replaceAll(";", ";\n")));
             write.println("</basepattern>");
         }
         for (int i = 0; i < props.size(); i++)
