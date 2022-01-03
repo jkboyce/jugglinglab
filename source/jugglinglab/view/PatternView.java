@@ -41,8 +41,12 @@ public class PatternView extends View implements DocumentListener {
     protected void makePanel(Dimension dim) {
         setLayout(new BorderLayout());
 
+        // animator on the left
+
         ja = new AnimationPanel();
         ja.setAnimationPanelPreferredSize(dim);
+
+        // controls panel on the right
 
         JPanel controls = new JPanel();
         GridBagLayout gb = new GridBagLayout();
@@ -90,8 +94,14 @@ public class PatternView extends View implements DocumentListener {
         gbc.weightx = gbc.weighty = 1.0;
         gb.setConstraints(jscroll, gbc);
 
+        // split pane dividing the two
+
         jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls);
+        jsp.setResizeWeight(0.75);  // % extra space allocated to left (animation) side
+
         add(jsp, BorderLayout.CENTER);
+
+        // button + error message label across the bottom
 
         JPanel lower = new JPanel();
         GridBagLayout gb2 = new GridBagLayout();

@@ -163,16 +163,19 @@ public class PatternWindow extends JFrame implements ActionListener {
         setContentPane(newview);
 
         if (view != null) {
+            // don't get here for a newly-constructed window; pack(),
+            // restartView(), and setUndoList() happen in constructor
+            if (isWindowMaximized())
+                validate();
+            else
+                pack();
+            newview.restartView(pat, jc);
+            newview.setUndoList(undo, undo_index);
+
             view.disposeView();
-            view = newview;
-            pack();
-            view.restartView(pat, jc);
-            view.setUndoList(undo, undo_index);
-        } else {
-            // Calling from the constructor; pack(), restartView(), and
-            // setUndoList() happen there
-            view = newview;
         }
+
+        view = newview;
     }
 
     public int getViewMode() {
@@ -204,6 +207,16 @@ public class PatternWindow extends JFrame implements ActionListener {
     // system calls it a lot, and menu shortcut keys stop working. Weird.
     protected int getHashCode() {
         return (view == null) ? 0 : view.getHashCode();
+    }
+
+    // For determining if the current window is maximized in the UI.
+    //
+    // Note this does not work on macOS, where java does not set a Frame's
+    // extended state flag when it's maximized. Nor is there any other
+    // replacement for com.apple.eawt.FullScreenListener. See e.g.
+    // https://bugs.openjdk.java.net/browse/JDK-8228638
+    public boolean isWindowMaximized() {
+        return ((getExtendedState() & MAXIMIZED_BOTH) != 0);
     }
 
     //-------------------------------------------------------------------------

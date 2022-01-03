@@ -155,6 +155,7 @@ public class SelectionView extends View {
                 Dimension d = layered.getSize();
                 grid.setBounds(0, 0, d.width, d.height);
                 overlay.setBounds(0, 0, d.width, d.height);
+                SelectionView.this.validate();
             }
         });
 
@@ -221,7 +222,7 @@ public class SelectionView extends View {
         // layout manager, so preferred size info can't propagate up from the
         // individual animation panels. So we go the other direction: set a
         // preferred size for the overall JLayeredPane, which gets propagated to
-        // the grid (and the individual animations) by the ComponentAdapter above.
+        // the grid (and the individual animations) by the ComponentListener above.
         int width = columns * d.width;
         int height = rows * d.height;
         layered.setPreferredSize(new Dimension(width, height));

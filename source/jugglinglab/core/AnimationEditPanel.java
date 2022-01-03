@@ -6,6 +6,7 @@ package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.SwingUtilities;
 
 import jugglinglab.util.*;
 import jugglinglab.jml.JMLEvent;
@@ -209,6 +210,14 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (event_active)
                     createEventView();
                 repaint();
+
+                // Don't update the preferred animation size if the enclosing
+                // window is maximized
+                Component comp = SwingUtilities.getRoot(AnimationEditPanel.this);
+                if (comp instanceof PatternWindow) {
+                    if (((PatternWindow)comp).isWindowMaximized())
+                        return;
+                }
 
                 if (hasResized) {
                     Dimension dim = AnimationEditPanel.this.getSize();

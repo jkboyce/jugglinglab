@@ -16,6 +16,7 @@ import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import jugglinglab.core.PatternWindow;
 import jugglinglab.jml.*;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
@@ -206,6 +207,14 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 anim.setDimension(AnimationPanel.this.getSize());
                 repaint();
+
+                // Don't update the preferred animation size if the enclosing
+                // window is maximized
+                Component comp = SwingUtilities.getRoot(AnimationPanel.this);
+                if (comp instanceof PatternWindow) {
+                    if (((PatternWindow)comp).isWindowMaximized())
+                        return;
+                }
 
                 if (hasResized) {
                     Dimension dim = AnimationPanel.this.getSize();
