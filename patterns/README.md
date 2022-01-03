@@ -1,4 +1,4 @@
-# Juggling Lab pattern list files
+## Juggling Lab pattern list files
 
 These files are for use with Juggling Lab, the latest version of which can be downloaded at https://jugglinglab.org.
 
