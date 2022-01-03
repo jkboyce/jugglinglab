@@ -18,7 +18,7 @@ import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 
 
-// This view provides the ability to edit the textual representation of a pettern.
+// This view provides the ability to edit the textual representation of a pattern.
 
 public class PatternView extends View implements DocumentListener {
     protected AnimationPanel ja;
