@@ -54,7 +54,7 @@ public class PatternView extends View implements DocumentListener {
 
         JLabel lab_view = new JLabel(guistrings.getString("PatternView_heading"));
         gb.setConstraints(lab_view, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
-                          new Insets(15, 0, 10, 0)));
+                        new Insets(15, 4, 10, 0)));
         controls.add(lab_view);
 
         ButtonGroup bg = new ButtonGroup();
@@ -67,7 +67,8 @@ public class PatternView extends View implements DocumentListener {
         if (url != null) {
             ImageIcon edited_icon = new ImageIcon(url);
             if (edited_icon != null) {
-                ImageIcon edited_icon_scaled = new ImageIcon(edited_icon.getImage().getScaledInstance(22, 22,  java.awt.Image.SCALE_SMOOTH));
+                ImageIcon edited_icon_scaled = new ImageIcon(edited_icon.getImage()
+                        .getScaledInstance(22, 22,  java.awt.Image.SCALE_SMOOTH));
                 bp_edited_icon = new JLabel(edited_icon_scaled);
                 bp_edited_icon.setToolTipText(guistrings.getString("PatternView_alert"));
                 bppanel.add(Box.createHorizontalStrut(10));
@@ -75,12 +76,14 @@ public class PatternView extends View implements DocumentListener {
             }
         }
         controls.add(bppanel);
-        gb.setConstraints(bppanel, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1));
+        gb.setConstraints(bppanel, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1,
+                        new Insets(0, 4, 0, 0)));
 
         rb_jml = new JRadioButton(guistrings.getString("PatternView_rb2"));
         bg.add(rb_jml);
         controls.add(rb_jml);
-        gb.setConstraints(rb_jml, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2));
+        gb.setConstraints(rb_jml, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2,
+                        new Insets(0, 4, 0, 0)));
 
         ta = new JTextArea();
         JScrollPane jscroll = new JScrollPane(ta);
@@ -175,7 +178,8 @@ public class PatternView extends View implements DocumentListener {
             if (bp_edited_icon != null)
                 bp_edited_icon.setVisible(false);
             rb_jml.setEnabled(false);
-        } else if (pat.getBasePatternNotation() == null || pat.getBasePatternConfig() == null) {
+        } else if (pat.getBasePatternNotation() == null ||
+                   pat.getBasePatternConfig() == null) {
             // no base pattern set
             rb_bp.setEnabled(false);
             if (bp_edited_icon != null)
