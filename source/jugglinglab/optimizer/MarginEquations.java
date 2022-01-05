@@ -1,6 +1,6 @@
 // MarginEquations.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.optimizer;
 
@@ -16,13 +16,13 @@ public class MarginEquations {
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
     static final protected double epsilon = 0.000001;
 
-    public int              varsNum;        // number of variables in margin equations
-    public JMLEvent[]       varsEvents;     // corresponding JMLEvents, one per variable
-    public double[]         varsValues;     // current values of variables
-    public double[]         varsMin;        // minimum values of variables
-    public double[]         varsMax;        // maximum values of variables
-    public int              marginsNum;     // number of distinct margin equations
-    public LinearEquation[] marginsEqs;     // array of linear equations
+    public int varsNum;  // number of variables in margin equations
+    public JMLEvent[] varsEvents;  // corresponding JMLEvents, one per variable
+    public double[] varsValues;  // current values of variables
+    public double[] varsMin;  // minimum values of variables
+    public double[] varsMax;  // maximum values of variables
+    public int marginsNum;  // number of distinct margin equations
+    public LinearEquation[] marginsEqs;  // array of linear equations
 
 
     public MarginEquations() {
@@ -35,15 +35,14 @@ public class MarginEquations {
         marginsEqs = null;
     }
 
-
     public MarginEquations(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
         this();
         findeqs(pat);
     }
 
-
-    public double getNumberOfEquations()  { return marginsNum; }
-
+    public double getNumberOfEquations() {
+        return marginsNum;
+    }
 
     // returns current value of a given margin equation
 
@@ -80,21 +79,21 @@ public class MarginEquations {
         if (pat.isBouncePattern())
             throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_bouncing"));
 
-        // step 1:  Lay out the pattern.  This generates two things we need, the pattern event
+        // Step 1: Lay out the pattern. This generates two things we need, the pattern event
         // list and the pattern pathlink list.
 
         pat.layoutPattern();
         JMLEvent events = pat.getEventList();
         ArrayList<ArrayList<PathLink>> pathlinks = pat.getPathLinks();
 
-        // step 2:  Figure out the variables in the margin equations.  Find the master events
-        // in the pattern, in particular the ones that are throws or catches.  The x-coordinate
+        // Step 2: Figure out the variables in the margin equations. Find the master events
+        // in the pattern, in particular the ones that are throws or catches. The x-coordinate
         // of each will be a free variable in our equations.
 
         ArrayList<JMLEvent> variableEvents = new ArrayList<JMLEvent>();
 
         double maxValue = 0.0;
-        double g = 980.0;           // cm per second^2
+        double g = 980.0;  // cm per second^2
 
         JMLEvent ev = events;
         while (ev != null) {
@@ -131,7 +130,7 @@ public class MarginEquations {
             System.out.println("   g = " + g);
         }
 
-        // step 3:  Set up the arrays containing the current values of our variables, their
+        // Step 3: Set up the arrays containing the current values of our variables, their
         // minimum and maximum allowed values, and corresponding JMLEvents
 
         varsEvents = new JMLEvent[varsNum];
@@ -164,7 +163,7 @@ public class MarginEquations {
                 System.out.println("   variable " + i + " min = " + varsMin[i] + ", max = " + varsMax[i]);
         }
 
-        // step 4:  Find the maximum radius of props in the pattern, used in the margin
+        // Step 4: Find the maximum radius of props in the pattern, used in the margin
         // calculation below
 
         double propradius = 0.0;
@@ -176,8 +175,8 @@ public class MarginEquations {
         if (Constants.DEBUG_OPTIMIZE)
             System.out.println("   propradius = " + propradius);
 
-        // step 5:  Identify the "master pathlinks", the non-hand pathlinks starting on
-        // master events.  Put them into a linear array for convenience
+        // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting on
+        // master events. Put them into a linear array for convenience
 
         int masterplNum = 0;
         PathLink[] masterpl = null;
@@ -201,7 +200,7 @@ public class MarginEquations {
             System.out.println("   number of master pathlinks = " + masterplNum);
 
 
-        // step 6:  Figure out all distinct potential collisions in the pattern, and the
+        // Step 6: Figure out all distinct potential collisions in the pattern, and the
         // equation determining throw error margin for each one.
         //
         // Find all pathlink pairs (P1, P2) such that:
@@ -400,7 +399,7 @@ public class MarginEquations {
             }
         }
 
-        // step 7.  De-duplicate the list of equations; for various reasons the same equation
+        // Step 7: De-duplicate the list of equations; for various reasons the same equation
         // can appear multiple times.
 
         if (Constants.DEBUG_OPTIMIZE) {
@@ -410,7 +409,7 @@ public class MarginEquations {
                 sb.append("{ ");
                 double[] temp = eqns.get(i);
                 for (int j = 0; j <= varsNum; j++) {
-                    sb.append(JLFunc.toStringTruncated(temp[j], 4));
+                    sb.append(JLFunc.toStringRounded(temp[j], 4));
                     if (j == (varsNum - 1))
                         sb.append(" : ");
                     else if (j != varsNum)
@@ -419,7 +418,7 @@ public class MarginEquations {
                 double dtemp = temp[varsNum];
                 for (int j = 0; j < varsNum; j++)
                     dtemp += temp[j] * varsValues[j];
-                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());
             }
@@ -453,7 +452,7 @@ public class MarginEquations {
                 ++orig_row;
         }
 
-        // step 8.  Move the equations into an array, and sort it based on margins at the
+        // Step 8: Move the equations into an array, and sort it based on margins at the
         // current values of the variables.
 
         marginsEqs = new LinearEquation[marginsNum];
@@ -468,7 +467,7 @@ public class MarginEquations {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
                 for (int j = 0; j <= varsNum; j++) {
-                    sb.append(JLFunc.toStringTruncated(marginsEqs[i].coef(j), 4));
+                    sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
                     if (j == (varsNum - 1))
                         sb.append(" : ");
                     else if (j != varsNum)
@@ -477,7 +476,7 @@ public class MarginEquations {
                 double dtemp = marginsEqs[i].constant();
                 for (int j = 0; j < varsNum; j++)
                     dtemp += marginsEqs[i].coef(j) * varsValues[j];
-                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());
             }
@@ -491,7 +490,7 @@ public class MarginEquations {
                 StringBuffer sb = new StringBuffer();
                 sb.append("{ ");
                 for (int j = 0; j <= varsNum; j++) {
-                    sb.append(JLFunc.toStringTruncated(marginsEqs[i].coef(j), 4));
+                    sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
                     if (j == (varsNum - 1))
                         sb.append(" : ");
                     else if (j != varsNum)
@@ -500,7 +499,7 @@ public class MarginEquations {
                 double dtemp = marginsEqs[i].constant();
                 for (int j = 0; j < varsNum; j++)
                     dtemp += marginsEqs[i].coef(j) * varsValues[j];
-                sb.append(" } --> " + JLFunc.toStringTruncated(dtemp, 4));
+                sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
                 System.out.println("   eq[" + i + "] = " + sb.toString());
             }

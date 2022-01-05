@@ -1,6 +1,6 @@
 // JLFunc.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -131,53 +132,17 @@ public class JLFunc {
         return null;
     }
 
-    // convert a double value to a String, with trailing '.' and '0's suppressed
-    public static String toStringTruncated(double val, int digits) {
-        String result = Double.toString(val);
+    // Convert a double value to a String, rounding to `digits` places after
+    // the decimal point, with trailing '.' and '0's suppressed
+    public static String toStringRounded(double val, int digits) {
+        String fmt = "###.##########".substring(0, digits <= 0 ? 3 : 4 + Math.min(10, digits));
+        DecimalFormat formatter = new DecimalFormat(fmt);
+        String result = formatter.format(val);
 
-        if (result.indexOf('E') > 0) {
-            if (val < 0.0) {
-                val = -val;
-                result = "-";
-            } else
-                result = "";
+        if (result.equals("-0"))  // strange quirk
+            result = "0";
 
-            result += Integer.toString((int)val);
-            if (digits < 1)
-                return result;
-            result += ".";
-            val -= (double)((int)val);
-            for (int i = 0; i < digits; i++)
-                val *= 10.0;
-            String rem = Integer.toString((int)val);
-            for (int i = rem.length(); i < digits; i++)
-                result += "0";
-            result += rem;
-        }
-
-        int decimalpos = result.indexOf('.');
-        if (decimalpos < 0)
-            return result;
-
-        int endpos = decimalpos + digits + 1;
-        if (endpos > result.length())
-            endpos = result.length();
-
-        while (endpos > 0) {
-            int ch = result.charAt(endpos-1);
-
-            if (ch == '.') {
-                endpos--;
-                break;
-            }
-            else if (ch == '0') {
-                endpos--;
-            }
-            else
-                break;
-        }
-
-        return result.substring(0, endpos);
+        return result;
     }
 
     // Helpers for GridBayLayout

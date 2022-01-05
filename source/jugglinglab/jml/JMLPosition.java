@@ -1,6 +1,6 @@
 // JMLPosition.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -16,39 +16,69 @@ public class JMLPosition {
 
     protected double x, y, z, t, angle;
     protected int juggler;
-    protected JMLPosition prev, next;   // for doubly-linked event list
+    protected JMLPosition prev, next;  // for doubly-linked event list
 
 
-    public JMLPosition() {
-        this.prev = this.next = null;
+    public JMLPosition() {}
+
+    public Coordinate getCoordinate() {
+        return new Coordinate(x, y, z);
     }
 
-    public Coordinate getCoordinate()           { return new Coordinate(x,y,z); }
     public void setCoordinate(Coordinate c) {
-        this.x = c.x;
-        this.y = c.y;
-        this.z = c.z;
+        x = c.x;
+        y = c.y;
+        z = c.z;
     }
 
-    public double getAngle()                    { return angle; }
-    public void setAngle(double angle)          { this.angle = angle; }
-    public double getT()                        { return t; }
-    public void setT(double t)                  { this.t = t; }
-    public int getJuggler()                     { return juggler; }
-    public void setJuggler(String strjuggler) throws JuggleExceptionUser {
-        this.juggler = Integer.parseInt(strjuggler);
+    public double getAngle() {
+        return angle;
     }
+
+    public void setAngle(double angle) {
+        this.angle = angle;
+    }
+
+    public double getT() {
+        return t;
+    }
+
+    public void setT(double t) {
+        this.t = t;
+    }
+
+    public int getJuggler() {
+        return juggler;
+    }
+
+    public void setJuggler(String strjuggler) {
+        juggler = Integer.parseInt(strjuggler);
+    }
+
     public void setJuggler(int j) {
-        this.juggler = j;
+        juggler = j;
     }
 
-    public JMLPosition getPrevious()            { return prev; }
-    public void setPrevious(JMLPosition prev)   { this.prev = prev; }
-    public JMLPosition getNext()                { return next; }
-    public void setNext(JMLPosition next)       { this.next = next; }
+    public JMLPosition getPrevious() {
+        return prev;
+    }
 
+    public void setPrevious(JMLPosition prev) {
+        this.prev = prev;
+    }
 
-    // Methods to handle JML
+    public JMLPosition getNext() {
+        return next;
+    }
+
+    public void setNext(JMLPosition next) {
+        this.next = next;
+    }
+
+    //-------------------------------------------------------------------------
+    //  Reader/writer methods
+    //-------------------------------------------------------------------------
+
     public void readJML(JMLNode current, String jmlvers) throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
         double tempx=0.0, tempy=0.0, tempz=0.0, tempt=0.0, tempangle=0.0;
@@ -87,11 +117,11 @@ public class JMLPosition {
 
     public void writeJML(PrintWriter wr) throws IOException {
         Coordinate c = getCoordinate();
-        wr.println("<position x=\""+JLFunc.toStringTruncated(c.x,4)
-                   +"\" y=\""+JLFunc.toStringTruncated(c.y,4)
-                   +"\" z=\""+JLFunc.toStringTruncated(c.z,4)
-                   +"\" t=\""+JLFunc.toStringTruncated(getT(),4)
-                   +"\" angle=\""+JLFunc.toStringTruncated(getAngle(),4)
-                   +"\" juggler=\""+Integer.toString(getJuggler())+"\"/>");
+        wr.println("<position x=\"" + JLFunc.toStringRounded(c.x, 4) +
+                   "\" y=\"" + JLFunc.toStringRounded(c.y, 4) +
+                   "\" z=\"" + JLFunc.toStringRounded(c.z, 4) +
+                   "\" t=\"" + JLFunc.toStringRounded(getT(), 4) +
+                   "\" angle=\"" + JLFunc.toStringRounded(getAngle(), 4) +
+                   "\" juggler=\"" + Integer.toString(getJuggler()) + "\"/>");
     }
 }

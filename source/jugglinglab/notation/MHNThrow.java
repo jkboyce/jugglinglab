@@ -1,6 +1,6 @@
 // MHNThrow.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation;
 
@@ -8,24 +8,25 @@ import jugglinglab.util.*;
 
 
 public class MHNThrow {
-    public int juggler;             // indexed from 0
-    public int hand;                // MHNPattern.RIGHT_HAND or LEFT_HAND
+    public int juggler;  // indexed from 0
+    public int hand;  // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int index;
     public int slot;
-    public int targetjuggler;       // indexed from 0
-    public int targethand;          // MHNPattern.RIGHT_HAND or LEFT_HAND
+    public int targetjuggler;  // indexed from 0
+    public int targethand;  // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int targetindex;
     public int targetslot;
     public String mod;
 
     // used during layout:
-    public int handsindex;          // index of throw in hands sequence, if one exists
+    public int handsindex;  // index of throw in hands sequence, if one exists
     public int pathnum = -1;
     public MHNThrow master;
     public MHNThrow source;
     public MHNThrow target;
-    public boolean catching = false;    // are we catching just before this throw?
-    public int catchnum = -1;       // order (starting at 1) to make catches
+    public boolean catching = false;  // are we catching just before this throw?
+    public int catchnum = -1;  // order (starting at 1) to make catches
+
 
     public MHNThrow() {}
 
@@ -41,6 +42,7 @@ public class MHNThrow {
         this.mod = m;
     }
 
+    @Override
     public String toString() {
         String s = "(" + juggler + ", " + hand + ", " + index + ", " + slot;
         s = s + " -> " + targetjuggler + ", " + targethand + ", " + targetindex + ", " + targetslot + ")";

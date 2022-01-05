@@ -1,6 +1,6 @@
 // JMLSymmetry.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -36,38 +36,68 @@ public class JMLSymmetry {
         setDelay(delay);
     }
 
-    public int getType()                    { return type; }
-    protected void setType(int type)        { this.type = type; }
-    public int getNumberOfJugglers()        { return numjugglers; }
-    public Permutation getJugglerPerm()     { return jugglerperm; }
+    public int getType() {
+        return type;
+    }
+
+    protected void setType(int type) {
+        this.type = type;
+    }
+
+    public int getNumberOfJugglers() {
+        return numjugglers;
+    }
+
+    public Permutation getJugglerPerm() {
+        return jugglerperm;
+    }
+
     protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionUser {
-        this.numjugglers = nj;
+        numjugglers = nj;
         try {
             if (jp == null)
-                this.jugglerperm = new Permutation(numjugglers, true);
+                jugglerperm = new Permutation(numjugglers, true);
             else
-                this.jugglerperm = new Permutation(numjugglers, jp, true);
+                jugglerperm = new Permutation(numjugglers, jp, true);
         } catch (JuggleException je) {
             throw new JuggleExceptionUser(je.getMessage());
         }
     }
-    public int getNumberOfPaths()           { return numpaths; }
-    public Permutation getPathPerm()        { return pathperm; }
+
+    public int getNumberOfPaths() {
+        return numpaths;
+    }
+
+    public Permutation getPathPerm() {
+        return pathperm;
+    }
+
     protected void setPathPerm(int np, String pp) throws JuggleExceptionUser {
-        this.numpaths = np;
+        numpaths = np;
         try {
             if (pp == null)
-                this.pathperm = new Permutation(numpaths, false);
+                pathperm = new Permutation(numpaths, false);
             else
-                this.pathperm = new Permutation(numpaths, pp, false);
+                pathperm = new Permutation(numpaths, pp, false);
         } catch (JuggleException je) {
             throw new JuggleExceptionUser(je.getMessage());
         }
     }
-    public double getDelay()                { return delay; }
-    public void setDelay(double del)        { this.delay = del; }
 
-    public void readJML(JMLNode current, int numjug, int numpat, String version) throws JuggleExceptionUser {
+    public double getDelay() {
+        return delay;
+    }
+
+    public void setDelay(double del) {
+        this.delay = del;
+    }
+
+    //-------------------------------------------------------------------------
+    //  Reader/writer methods
+    //-------------------------------------------------------------------------
+
+    public void readJML(JMLNode current, int numjug, int numpat, String version)
+                                            throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
         String symtype, pathperm, jugglerperm, delaystring;
         int symtypenum;
@@ -106,17 +136,17 @@ public class JMLSymmetry {
         String out = "<symmetry type=\"";
         switch(getType()) {
             case TYPE_DELAY:
-                out += "delay\" pperm=\""+pathperm.toString(true)+
-                "\" delay=\""+JLFunc.toStringTruncated(getDelay(),4)
-                +"\"/>";
+                out += "delay\" pperm=\""+pathperm.toString(true) +
+                       "\" delay=\""+JLFunc.toStringRounded(getDelay(), 4) +
+                       "\"/>";
                 break;
             case TYPE_SWITCH:
-                out += "switch\" jperm=\""+jugglerperm.toString(true)+
-                "\" pperm=\""+pathperm.toString(true)+"\"/>";
+                out += "switch\" jperm=\"" + jugglerperm.toString(true) +
+                       "\" pperm=\"" + pathperm.toString(true)+"\"/>";
                 break;
             case TYPE_SWITCHDELAY:
-                out += "switchdelay\" jperm=\""+jugglerperm.toString(true)+
-                "\" pperm=\""+pathperm.toString(true)+"\"/>";
+                out += "switchdelay\" jperm=\"" + jugglerperm.toString(true) +
+                       "\" pperm=\"" + pathperm.toString(true) + "\"/>";
                 break;
         }
         wr.println(out);
