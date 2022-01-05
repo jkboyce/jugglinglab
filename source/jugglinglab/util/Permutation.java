@@ -1,6 +1,6 @@
 // Permutation.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -8,13 +8,13 @@ import java.util.*;
 
 
 public class Permutation {
-    protected int       size;
-    protected int[]     mapping;
-    protected boolean   reverses;
+    protected int size;
+    protected int[] mapping;
+    protected boolean  reverses;
 
 
-    public Permutation(int n, boolean reverses) {   // identity permutation
-        this.size = n;
+    public Permutation(int n, boolean reverses) {  // identity permutation
+        size = n;
         this.reverses = reverses;
 
         if (reverses) {
@@ -31,7 +31,7 @@ public class Permutation {
     }
 
     public Permutation(int n, int[] mapping, boolean reverses) {
-        this.size = n;
+        size = n;
         this.reverses = reverses;
         this.mapping = mapping;
     }
@@ -40,7 +40,7 @@ public class Permutation {
         int i;
         boolean[] used;
 
-        this.size = n;
+        size = n;
         this.reverses = reverses;
 
         if (reverses) {
@@ -176,8 +176,10 @@ public class Permutation {
 //      }
     }
 
-
-    public String toString()    { return this.toString(true); }
+    @Override
+    public String toString() {
+        return toString(true);
+    }
 
     public String toString(boolean cyclenotation) {
         int i;
@@ -256,9 +258,13 @@ public class Permutation {
             return ((-num)+"*");
     }
 
-    public int getSize()    { return size; }
+    public int getSize() {
+        return size;
+    }
 
-    public boolean hasReverses()    { return reverses; }
+    public boolean hasReverses() {
+        return reverses;
+    }
 
     public boolean equals(Permutation p) {
         if (p == null)
@@ -337,7 +343,7 @@ public class Permutation {
     }
 
 
-    public static int lcm(int x, int y) {   // Euclid's GCD algorithm (x>0, y>0)
+    public static int lcm(int x, int y) {  // Euclid's GCD algorithm (x>0, y>0)
         int x0 = x;
         int y0 = y;
         int g = y;
@@ -347,7 +353,7 @@ public class Permutation {
             x = y % x;
             y = g;
         }
-        return (x0*y0)/g;
+        return (x0 * y0) / g;
     }
 
     public int getOrder() {
@@ -359,7 +365,6 @@ public class Permutation {
 
         return ord;
     }
-
 
     public int getOrder(int elem) {
         int index;

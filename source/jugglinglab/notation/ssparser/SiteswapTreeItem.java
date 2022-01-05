@@ -1,6 +1,6 @@
 // SiteswapTreeItem.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation.ssparser;
 
@@ -50,8 +50,8 @@ public class SiteswapTreeItem {
 
     public SiteswapTreeItem(int type) {
         this.type = type;
-        this.children = new ArrayList<SiteswapTreeItem>();
-        this.sync_throw = false;
+        children = new ArrayList<SiteswapTreeItem>();
+        sync_throw = false;
     }
 
     public void addChild(SiteswapTreeItem item) {
@@ -63,7 +63,7 @@ public class SiteswapTreeItem {
     }
 
     public void removeChildren() {
-        this.children = new ArrayList<SiteswapTreeItem>();
+        children = new ArrayList<SiteswapTreeItem>();
     }
 
     public int getNumberOfChildren() {
@@ -71,18 +71,18 @@ public class SiteswapTreeItem {
     }
 
     public Object clone() {
-        SiteswapTreeItem result = new SiteswapTreeItem(this.type);
+        SiteswapTreeItem result = new SiteswapTreeItem(type);
 
-        result.repeats = this.repeats;
-        result.switchrepeat = this.switchrepeat;
-        result.beats = this.beats;
-        result.seq_beatnum = this.seq_beatnum;
-        result.source_juggler = this.source_juggler;
-        result.value = this.value;
-        result.x = this.x;
-        result.dest_juggler = this.dest_juggler;
-        result.mod = this.mod;
-        result.spec_left = this.spec_left;
+        result.repeats = repeats;
+        result.switchrepeat = switchrepeat;
+        result.beats = beats;
+        result.seq_beatnum = seq_beatnum;
+        result.source_juggler = source_juggler;
+        result.value = value;
+        result.x = x;
+        result.dest_juggler = dest_juggler;
+        result.mod = mod;
+        result.spec_left = spec_left;
 
         for (int i = 0; i < getNumberOfChildren(); i++)
             result.addChild((SiteswapTreeItem)(getChild(i).clone()));
@@ -90,16 +90,27 @@ public class SiteswapTreeItem {
         return result;
     }
 
+    @Override
     public String toString() {
         return toString(0);
     }
 
-
-    private static final String[] typenames = { "Pattern", "Grouped Pattern",
-        "Solo Sequence", "Solo Paired Throw", "Solo Multi Throw", "Solo Single Throw",
-        "Passing Sequence", "Passing Group", "Passing Throws",
-        "Passing Paired Throw", "Passing Multi Throw", "Passing Single Throw",
-        "Wildcard", "Hand Specifier" };
+    private static final String[] typenames = {
+        "Pattern",
+        "Grouped Pattern",
+        "Solo Sequence",
+        "Solo Paired Throw",
+        "Solo Multi Throw",
+        "Solo Single Throw",
+        "Passing Sequence",
+        "Passing Group",
+        "Passing Throws",
+        "Passing Paired Throw",
+        "Passing Multi Throw",
+        "Passing Single Throw",
+        "Wildcard",
+        "Hand Specifier",
+    };
 
     private String toString(int indentlevel) {
         String result = "";
@@ -141,10 +152,20 @@ public class SiteswapTreeItem {
         return result;
     }
 
-    // the following is just the "for types" comments above
-    private static final int[][] field_defined_types = { {1, 7, 8}, {2}, {1},
-        {3, 7, 8, 9, 13}, {4, 5, 6, 8, 9, 10, 11, 12, 14}, {3, 4, 5, 6, 9, 10, 11, 12, 14},
-        {6, 12}, {6, 12}, {6, 12}, {6, 12}, {14} };
+    // The following codifies the "for types" comments above
+    private static final int[][] field_defined_types = {
+        {1, 7, 8},
+        {2},
+        {1},
+        {3, 7, 8, 9, 13},
+        {4, 5, 6, 8, 9, 10, 11, 12, 14},
+        {3, 4, 5, 6, 9, 10, 11, 12, 14},
+        {6, 12},
+        {6, 12},
+        {6, 12},
+        {6, 12},
+        {14},
+    };
 
     private static boolean field_active(int fieldnum, int type) {
         int[] a = field_defined_types[fieldnum];
