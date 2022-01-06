@@ -376,10 +376,10 @@ public class JMLPattern {
 
         if (!base_pattern_hashcode_valid) {
             try {
-                JMLPattern basepat = JMLPattern.fromBasePattern(base_pattern_notation,
-                                                                base_pattern_config);
-                basepat.layoutPattern();
-                base_pattern_hashcode = basepat.getHashCode();
+                base_pattern_hashcode = JMLPattern
+                        .fromBasePattern(base_pattern_notation, base_pattern_config)
+                        .layoutPattern()
+                        .getHashCode();
                 base_pattern_hashcode_valid = true;
             } catch (JuggleException je) {
                 base_pattern_hashcode = 0;
@@ -575,8 +575,6 @@ public class JMLPattern {
         JMLEvent ev = getEventList();
 
         while (ev != null) {
-            int juggler = ev.getJuggler();
-            int hand = ev.getHand() == HandLink.LEFT_HAND ? 0 : 1;
             JMLEvent prev = ev.getPreviousForHand();
             JMLEvent next = ev.getNextForHand();
 
@@ -606,7 +604,7 @@ public class JMLPattern {
         }
 
         if (Constants.DEBUG_LAYOUT) {
-            System.out.println(n_removed + " events removed out of " +
+            System.out.println("Streamline: removed " + n_removed + " events out of " +
                                n_events + " total, " + n_holds + " holds");
         }
     }
@@ -618,9 +616,9 @@ public class JMLPattern {
     // and therefore its hash code.
     //-------------------------------------------------------------------------
 
-    public void layoutPattern() throws JuggleExceptionInternal, JuggleExceptionUser {
+    public JMLPattern layoutPattern() throws JuggleExceptionInternal, JuggleExceptionUser {
         if (laidout)
-            return;
+            return this;
 
         if (!valid)
             throw new JuggleExceptionInternal("Cannot do layout of invalid pattern");
@@ -661,6 +659,8 @@ public class JMLPattern {
             valid = false;
             throw jei;
         }
+
+        return this;
     }
 
     public void setNeedsLayout() {
