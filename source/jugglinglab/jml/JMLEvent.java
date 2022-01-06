@@ -155,6 +155,28 @@ public class JMLEvent {
         this.next = next;
     }
 
+    public JMLEvent getPreviousForHand() {
+        JMLEvent ev = getPrevious();
+
+        while (ev != null) {
+            if (ev.getJuggler() == getJuggler() && ev.getHand() == getHand())
+                return ev;
+            ev = ev.getPrevious();
+        }
+        return null;
+    }
+
+    public JMLEvent getNextForHand() {
+        JMLEvent ev = getNext();
+
+        while (ev != null) {
+            if (ev.getJuggler() == getJuggler() && ev.getHand() == getHand())
+                return ev;
+            ev = ev.getNext();
+        }
+        return null;
+    }
+
     public Permutation getPathPermFromMaster() {
         return pathpermfrommaster;
     }
@@ -181,6 +203,13 @@ public class JMLEvent {
         return false;
     }
 
+    public boolean isSameMasterAs(JMLEvent ev2) {
+        JMLEvent mast1 = (getMaster() == null ? this : getMaster());
+        JMLEvent mast2 = (ev2.getMaster() == null ? ev2 : ev2.getMaster());
+
+        return (mast1 == mast2);
+    }
+
     public JMLTransition getPathTransition(int path, int transtype) {
         for (JMLTransition tr : transitions) {
             if (tr.getPath() == path) {
@@ -189,6 +218,50 @@ public class JMLEvent {
             }
         }
         return null;
+    }
+
+    // Returns true if the event contains a throw transition to another juggler.
+    //
+    // Note this will only work after pattern layout.
+    public boolean hasPassingThrow() {
+        for (int i = 0; i < getNumberOfTransitions(); ++i) {
+            JMLTransition tr = getTransition(i);
+
+            if (tr.getType() != JMLTransition.TRANS_THROW)
+                continue;
+
+            PathLink pl = tr.getOutgoingPathLink();
+            if (pl == null || pl.getEndEvent() == null)
+                continue;
+            if (pl.getEndEvent().getJuggler() != getJuggler())
+                return true;
+        }
+        return false;
+    }
+
+    // Returns true if the event contains a catch transition from another juggler.
+    //
+    // Note this will only work after pattern layout.
+    public boolean hasPassingCatch() {
+        for (int i = 0; i < getNumberOfTransitions(); ++i) {
+            JMLTransition tr = getTransition(i);
+
+            if (tr.getType() != JMLTransition.TRANS_CATCH &&
+                        tr.getType() != JMLTransition.TRANS_SOFTCATCH)
+                continue;
+
+            PathLink pl = tr.getIncomingPathLink();
+            if (pl == null || pl.getStartEvent() == null)
+                continue;
+            if (pl.getStartEvent().getJuggler() != getJuggler())
+                return true;
+        }
+        return false;
+    }
+
+    // Note this will only work after pattern layout.
+    public boolean hasPassingTransition() {
+        return (hasPassingThrow() || hasPassingCatch());
     }
 
     public JMLEvent duplicate(int delay, int delayunits) {

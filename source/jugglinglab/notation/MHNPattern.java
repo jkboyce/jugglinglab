@@ -1,6 +1,6 @@
 // MHNPattern.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.notation;
 
@@ -869,7 +869,7 @@ public abstract class MHNPattern extends Pattern {
                             }
                         }
                     }
-                        break;
+                    break;
                 default:
                     throw new JuggleExceptionUser(errorstrings.getString("Error_unknown_symmetry"));
             }
@@ -1601,6 +1601,15 @@ top:
                     System.out.println("Rescaled time; scale factor = " + scale_factor);
             }
         }
+
+        // Step 10 -- Streamline the pattern to remove excess empty and
+        // holding transitions. Do this only if `hands` has not been specified.
+        //
+        // This process is mostly aimed at making patterns with short beats,
+        // like `<(0,6x)!><(0,0)!><(6x,0)!><(0,0)!>` look more fluid. In these
+        // patterns the layout engine inserts a lot of empty/holding transitions.
+        if (hands == null)
+            result.streamlinePatternWithWindow(0.25);
 
         result.setTitle((title == null) ? pattern : title);
 

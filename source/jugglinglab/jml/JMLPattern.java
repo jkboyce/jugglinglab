@@ -544,11 +544,70 @@ public class JMLPattern {
                     // will be recalculated during pattern layout
                 }
             }
-
-            setNeedsLayout();
         } catch (JuggleExceptionUser jeu) {
             // No user errors here because the pattern has already been animated
             throw new JuggleExceptionInternal("invertTime() error 4: " + jeu.getMessage());
+        } finally {
+            setNeedsLayout();
+        }
+    }
+
+    // Streamline the pattern to remove excess empty and holding events.
+    //
+    // Scan forward in time through the pattern and remove any event for which
+    // all of the following are true:
+    //
+    // (a) event is empty or contains only <holding> transitions
+    // (b) event has a different master event than the previous (surviving)
+    //     event for that hand
+    // (c) event is within `twindow` seconds of the previous (surviving) event
+    //     for that hand
+    // (d) event is not immediately adjacent to a throw or catch event for that
+    //     hand that involves a pass to/from a different juggler
+    public void streamlinePatternWithWindow(double twindow) throws
+                                    JuggleExceptionUser, JuggleExceptionInternal {
+        layoutPattern();  // to ensure we have PathLinks
+
+        int n_events = 0;  // for reporting stats
+        int n_holds = 0;
+        int n_removed = 0;
+
+        JMLEvent ev = getEventList();
+
+        while (ev != null) {
+            int juggler = ev.getJuggler();
+            int hand = ev.getHand() == HandLink.LEFT_HAND ? 0 : 1;
+            JMLEvent prev = ev.getPreviousForHand();
+            JMLEvent next = ev.getNextForHand();
+
+            boolean holding_only = true;
+            for (int i = 0; i < ev.getNumberOfTransitions(); ++i) {
+                if (ev.getTransition(i).getType() != JMLTransition.TRANS_HOLDING)
+                    holding_only = false;
+            }
+            boolean different_masters = (prev == null || !ev.isSameMasterAs(prev));
+            boolean inside_window = (prev != null && (ev.getT() - prev.getT()) < twindow);
+            boolean not_pass_adjacent = (prev != null && next != null &&
+                        !prev.hasPassingTransition() && !next.hasPassingTransition());
+
+            boolean remove = holding_only && different_masters &&
+                             inside_window && not_pass_adjacent;
+
+            n_events++;
+            if (holding_only)
+                n_holds++;
+
+            if (remove) {
+                removeEvent(ev);
+                n_removed++;
+            }
+
+            ev = ev.getNext();
+        }
+
+        if (Constants.DEBUG_LAYOUT) {
+            System.out.println(n_removed + " events removed out of " +
+                               n_events + " total, " + n_holds + " holds");
         }
     }
 
