@@ -77,20 +77,51 @@ public abstract class MHNPattern extends Pattern {
     public static final int RIGHT_HAND = 0;
     public static final int LEFT_HAND = 1;
 
-    public int getNumberOfJugglers() { return numjugglers; }
-    public int getNumberOfPaths() { return numpaths; }
-    public int getPeriod() { return period; }
-    public int getIndexes() { return indexes; }
-    public int getMaxOccupancy() { return max_occupancy; }
-    public int getMaxThrow() { return max_throw; }
-    public MHNThrow[][][][] getThrows() { return th; }
-    public int getNumberOfSymmetries() { return symmetry.size(); }
-    public String getPropName() { return prop; }
-    public void addSymmetry(MHNSymmetry ss) { symmetry.add(ss); }
-    public MHNSymmetry getSymmetry(int i) { return symmetry.get(i); }
+    public int getNumberOfJugglers() {
+        return numjugglers;
+    }
 
+    public int getNumberOfPaths() {
+        return numpaths;
+    }
 
-    // pull out the MHN-related parameters from the given list, leaving any
+    public int getPeriod() {
+        return period;
+    }
+
+    public int getIndexes() {
+        return indexes;
+    }
+
+    public int getMaxOccupancy() {
+        return max_occupancy;
+    }
+
+    public int getMaxThrow() {
+        return max_throw;
+    }
+
+    public MHNThrow[][][][] getThrows() {
+        return th;
+    }
+
+    public int getNumberOfSymmetries() {
+        return symmetry.size();
+    }
+
+    public String getPropName() {
+        return prop;
+    }
+
+    public void addSymmetry(MHNSymmetry ss) {
+        symmetry.add(ss);
+    }
+
+    public MHNSymmetry getSymmetry(int i) {
+        return symmetry.get(i);
+    }
+
+    // Pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
     @Override
     public MHNPattern fromParameters(ParameterList pl) throws
@@ -266,9 +297,9 @@ public abstract class MHNPattern extends Pattern {
         return result;
     }
 
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // Build out internal representation from parsed pattern
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 
     protected void buildRepresentation() throws JuggleExceptionUser, JuggleExceptionInternal {
         // build out the internal pattern representation in steps
@@ -1577,25 +1608,10 @@ top:
         //
         // This should only be done if the user has not manually set `bps`.
         if (bps_set <= 0.0) {
-            double scale_factor = 1.0;
+            double scale_factor = result.scaleTimeToFitThrows(1.01);
 
-            result.layoutPattern();
-            for (int path = 1; path <= result.getNumberOfPaths(); path++) {
-                for (PathLink pl : result.getPathLinks().get(path - 1)) {
-                    Path p = pl.getPath();
-                    if (p != null) {
-                        double d = p.getDuration();
-                        double dmin = p.getMinDuration();
-
-                        if (d < dmin && d > 0.0)
-                            scale_factor = Math.max(scale_factor, dmin / d);
-                    }
-                }
-            }
             if (scale_factor > 1.0) {
-                scale_factor *= 1.01;  // so things aren't just barely feasible
                 bps /= scale_factor;
-                result.scaleTime(scale_factor);
 
                 if (Constants.DEBUG_LAYOUT)
                     System.out.println("Rescaled time; scale factor = " + scale_factor);

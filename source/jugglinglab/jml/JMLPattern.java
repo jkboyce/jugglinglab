@@ -433,6 +433,36 @@ public class JMLPattern {
         setNeedsLayout();
     }
 
+    // Rescale the pattern in time to ensure that all throws are allotted
+    // more time than their minimum required.
+    //
+    // `multiplier` should typically be a little over 1.0
+    public double scaleTimeToFitThrows(double multiplier) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
+        layoutPattern();  // to ensure we have PathLinks
+        double scale_factor = 1.0;
+
+        for (int path = 1; path <= getNumberOfPaths(); path++) {
+            for (PathLink pl : getPathLinks().get(path - 1)) {
+                Path p = pl.getPath();
+                if (p != null) {
+                    double d = p.getDuration();
+                    double dmin = p.getMinDuration();
+
+                    if (d < dmin && d > 0.0)
+                        scale_factor = Math.max(scale_factor, dmin / d);
+                }
+            }
+        }
+
+        if (scale_factor > 1.0) {
+            scale_factor *= multiplier;  // so things aren't just barely feasible
+            scaleTime(scale_factor);
+        }
+
+        return scale_factor;
+    }
+
     // Flip the x-axis in the local coordinates of each juggler.
     public void invertXAxis() {
         JMLEvent ev = getEventList();
