@@ -34,6 +34,7 @@ public abstract class MHNPattern extends Pattern {
     protected static double gravity_default = 980.0;
     protected static double propdiam_default = 10.0;
     protected static double bouncefrac_default = 0.9;
+    protected static double squeezebeats_default = 0.4;
     protected static String prop_default = "ball";
     //hss begin
     protected static boolean hold_default = false;
@@ -50,6 +51,7 @@ public abstract class MHNPattern extends Pattern {
     protected double gravity = gravity_default;
     protected double propdiam = propdiam_default;
     protected double bouncefrac = bouncefrac_default;
+    protected double squeezebeats = squeezebeats_default;
     protected String prop = prop_default;
     protected String[] color;
     protected String title;
@@ -179,6 +181,13 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
+        if ((temp = pl.removeParameter("squeezebeats")) != null) {
+            try {
+                squeezebeats = Double.parseDouble(temp);
+            } catch (NumberFormatException e) {
+            }
+        }
+
         if ((temp = pl.removeParameter("prop")) != null) {
             prop = temp;
         }
@@ -271,7 +280,8 @@ public abstract class MHNPattern extends Pattern {
                 "body",         
                 "gravity", 
                 "propdiam", 
-                "bouncefrac", 
+                "bouncefrac",
+                "squeezebeats",
                 "prop", 
                 "colors",        
                 "hss", 
@@ -783,10 +793,6 @@ public abstract class MHNPattern extends Pattern {
         { 0.0, 30.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0 };
     protected static final double restingx = 25.0;
 
-    // The following is used when multiple catches are made in a hand, on the same beat.
-    // It specifies the fraction of a beat to spread the catches over.
-    protected static final double splitcatchfactor = 0.4;
-
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         JMLPattern result = new JMLPattern();
@@ -1140,7 +1146,7 @@ public abstract class MHNPattern extends Pattern {
                     // the same event, or (2) multiple catch events are made in succession.
                     double lastcatchtime = 0.0;
 
-                    if (splitcatchfactor == 0.0 || num_catches < 2) {
+                    if (squeezebeats == 0.0 || num_catches < 2) {
                         // Case 1: everything happens at a single event
                         ev = new JMLEvent();
 
@@ -1245,10 +1251,10 @@ public abstract class MHNPattern extends Pattern {
                                 double catchtime;
                                 if (onecaught)
                                     catchtime = ((double)k - 0.5*dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
-                                                 splitcatchfactor) / bps;
+                                                 squeezebeats) / bps;
                                 else
                                     catchtime = ((double)k - dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
-                                                 splitcatchfactor) / bps;
+                                                 squeezebeats) / bps;
                                 //hss begin
                                 int newk;
                                 if (hss != null) {
@@ -1261,7 +1267,7 @@ public abstract class MHNPattern extends Pattern {
                                 		newk = k;
                                 	}
                                 	catchtime = ((double)k - dwellarray[newk] + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
-                                            splitcatchfactor) / bps;
+                                            squeezebeats) / bps;
                                 }
                                 //hss end
                                 ev.setT(catchtime);
@@ -1346,13 +1352,13 @@ public abstract class MHNPattern extends Pattern {
                                 //hss end
                             } else {
                                 if (next_onecaught)
-                                    nextcatchtime = ((double)tempk - 0.5*dwell - 0.5*splitcatchfactor) / bps;
+                                    nextcatchtime = ((double)tempk - 0.5*dwell - 0.5*squeezebeats) / bps;
                                 else
-                                    nextcatchtime = ((double)tempk - dwell - 0.5*splitcatchfactor) / bps;
+                                    nextcatchtime = ((double)tempk - dwell - 0.5*squeezebeats) / bps;
 
                                 //hss begin
                                 if (hss != null) {
-                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*splitcatchfactor)  / bps;
+                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*squeezebeats)  / bps;
                                 }
                                 //hss end
                             }
