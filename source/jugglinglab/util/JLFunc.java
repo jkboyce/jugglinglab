@@ -16,11 +16,10 @@ import javax.swing.*;
 
 import jugglinglab.JugglingLab;
 
-
 // Some useful functions
 
 public class JLFunc {
-    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static final ResourceBundle errorstrings = JugglingLab.errorstrings;
 
 
     // Binomial coefficient (a choose b)
@@ -149,7 +148,24 @@ public class JLFunc {
         return result;
     }
 
-    // Helpers for GridBayLayout
+    // Compare two version numbers
+    //
+    // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
+    public static int compareVersions(String v1, String v2) {
+        String[] components1 = v1.split("\\.");
+        String[] components2 = v2.split("\\.");
+        int length = Math.min(components1.length, components2.length);
+        for (int i = 0; i < length; i++) {
+            int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
+            if (result != 0)
+                return result;
+        }
+        return Integer.compare(components1.length, components2.length);
+    }
+
+    //-------------------------------------------------------------------------
+    // Helpers for GridBagLayout
+    //-------------------------------------------------------------------------
 
     public static GridBagConstraints constraints(int location, int gridx, int gridy) {
         GridBagConstraints gbc = new GridBagConstraints();
@@ -170,16 +186,43 @@ public class JLFunc {
         return gbc;
     }
 
-    // Helper for file open/save dialogs
+    //-------------------------------------------------------------------------
+    // Helpers for file opening/saving
+    //-------------------------------------------------------------------------
 
-    protected static JFileChooser jfc = null;
+    protected static JFileChooser jfc;
 
     public static JFileChooser jfc() {
         if (jfc == null) {
+            jfc = new JFileChooser() {
+                @Override
+                public void approveSelection() {
+                    File f = getSelectedFile();
+
+                    if (f.exists() && getDialogType() == SAVE_DIALOG) {
+                        int result = JOptionPane.showConfirmDialog(this,
+                                "\"" + f.getName() +"\" already exists.\nDo you want to replace it?",
+                                "Existing file",
+                                JOptionPane.YES_NO_CANCEL_OPTION);
+                        switch (result) {
+                            case JOptionPane.YES_OPTION:
+                                super.approveSelection();
+                                return;
+                            case JOptionPane.NO_OPTION:
+                                return;
+                            case JOptionPane.CLOSED_OPTION:
+                                return;
+                            case JOptionPane.CANCEL_OPTION:
+                                cancelSelection();
+                                return;
+                        }
+                    }
+                    super.approveSelection();
+                }
+            };
+
             if (JugglingLab.base_dir != null)
-                jfc = new JFileChooser(JugglingLab.base_dir.toFile());
-            else
-                jfc = new JFileChooser();
+                jfc.setCurrentDirectory(JugglingLab.base_dir.toFile());
         }
         return jfc;
     }
@@ -195,7 +238,7 @@ public class JLFunc {
         String base = index >= 0 ? fname.substring(0, index) : fname;
         String extension = index >= 0 ? fname.substring(index) : "";
 
-        if (jugglinglab.JugglingLab.isMacOS) {
+        if (JugglingLab.isMacOS) {
             // remove all instances of `:` and `/`
             String b = base.replaceAll("[:/]", "");
 
@@ -207,7 +250,7 @@ public class JLFunc {
                 b = "Pattern";
 
             return b + extension;
-        } else if (jugglinglab.JugglingLab.isWindows) {
+        } else if (JugglingLab.isWindows) {
             // remove all instances of `\/?:*"`
             String b = base.replaceAll("[\\/?:*\"]", "");
 
@@ -220,7 +263,7 @@ public class JLFunc {
                 b = "Pattern";
 
             return b + extension;
-        } else if (jugglinglab.JugglingLab.isLinux) {
+        } else if (JugglingLab.isLinux) {
             // change all `/` to `:`
             String b = base.replaceAll("/", ":");
 
@@ -242,20 +285,5 @@ public class JLFunc {
 
         throw new JuggleExceptionUser(errorstrings.getString(
                                 "Error_saving_disallowed_character"));
-    }
-
-    // Compare two version numbers
-    //
-    // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
-    public static int compareVersions(String v1, String v2) {
-        String[] components1 = v1.split("\\.");
-        String[] components2 = v2.split("\\.");
-        int length = Math.min(components1.length, components2.length);
-        for (int i = 0; i < length; i++) {
-            int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
-            if (result != 0)
-                return result;
-        }
-        return Integer.compare(components1.length, components2.length);
     }
 }
