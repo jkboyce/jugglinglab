@@ -175,17 +175,15 @@ public abstract class View extends JPanel {
     protected class GIFWriter extends Thread {
         private AnimationPanel ap;
         private Runnable cleanup;
+        private File file;
+        private ProgressMonitor pm;
+        private Animator.WriteGIFMonitor wgm;
+        private double fps;
 
-        public GIFWriter(AnimationPanel ap, Runnable cleanup) {
-            this.ap = ap;
-            this.cleanup = cleanup;
-            setPriority(Thread.MIN_PRIORITY);
-            start();
-        }
 
-        @Override
-        public void run() {
-            File file = null;
+        public GIFWriter(AnimationPanel animpanel, Runnable cleanup_routine) {
+            ap = animpanel;
+            cleanup = cleanup_routine;
 
             try {
                 String fname = parent.getTitle() + ".gif";
@@ -193,22 +191,28 @@ public abstract class View extends JPanel {
                 JLFunc.jfc().setSelectedFile(new File(fname));
                 JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
 
-                if (JLFunc.jfc().showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
+                if (JLFunc.jfc().showSaveDialog(parent) != JFileChooser.APPROVE_OPTION) {
+                    if (cleanup != null)
+                        SwingUtilities.invokeLater(cleanup);
                     return;
+                }
 
                 file = JLFunc.jfc().getSelectedFile();
-                if (file == null)
+                if (file == null) {
+                    if (cleanup != null)
+                        SwingUtilities.invokeLater(cleanup);
                     return;
+                }
                 if (!file.getAbsolutePath().endsWith(".gif"))
                     file = new File(file.getAbsolutePath() + ".gif");
 
                 JLFunc.errorIfNotSanitized(file.getName());
 
-                ProgressMonitor pm = new ProgressMonitor(parent,
+                pm = new ProgressMonitor(parent,
                         guistrings.getString("Saving_animated_GIF"), "", 0, 1);
-                pm.setMillisToPopup(300);
+                pm.setMillisToPopup(200);
 
-                Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
+                wgm = new Animator.WriteGIFMonitor() {
                     @Override
                     public void update(int step, int steps_total) {
                         SwingUtilities.invokeLater(new Runnable() {
@@ -226,7 +230,22 @@ public abstract class View extends JPanel {
                     }
                 };
 
-                ap.getAnimator().writeGIF(new FileOutputStream(file), wgm);
+                AnimationPrefs jc = ap.getAnimationPrefs();
+                fps = (jc.fps == jc.fps_def) ? 30 : jc.fps;
+
+                setPriority(Thread.MIN_PRIORITY);
+                start();
+            } catch (JuggleExceptionUser jeu) {
+                new ErrorDialog(parent, jeu.getMessage());
+                if (cleanup != null)
+                    SwingUtilities.invokeLater(cleanup);
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                ap.getAnimator().writeGIF(new FileOutputStream(file), wgm, fps);
             } catch (IOException ioe) {
                 if (file != null) {
                     String template = errorstrings.getString("Error_writing_file");
@@ -234,8 +253,6 @@ public abstract class View extends JPanel {
                     new ErrorDialog(parent, MessageFormat.format(template, arg));
                 } else
                     ErrorDialog.handleFatalException(ioe);
-            } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(parent, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleFatalException(jei);
             } finally {

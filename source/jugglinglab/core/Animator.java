@@ -349,8 +349,10 @@ public class Animator {
     // we wrote. The ImageIO version is slower but does a better job of building
     // the GIF colormap so we use that one for now.
 
-    public void writeGIF(OutputStream os, Animator.WriteGIFMonitor wgm) throws
-                        IOException, JuggleExceptionInternal {
+    public void writeGIF(OutputStream os,
+                         Animator.WriteGIFMonitor wgm,
+                         double fps)
+                throws IOException, JuggleExceptionInternal {
         ImageWriter iw = ImageIO.getImageWritersByFormatName("gif").next();
         ImageOutputStream ios = new MemoryCacheImageOutputStream(os);
         iw.setOutput(ios);
@@ -368,11 +370,18 @@ public class Animator {
         for (int i = 0; i < pat.getNumberOfPaths(); i++)
             animpropnum[i] = pat.getPropAssignment(i + 1);
 
-        int totalframes = pat.getPeriod() * num_frames;
+        // our own local versions of these three fps-related quantities
+        int gif_num_frames = (int)(0.5 + (pat.getLoopEndTime() - pat.getLoopStartTime()) *
+                                jc.slowdown * fps);
+        double gif_sim_interval_secs = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                                gif_num_frames;
+        double gif_real_interval_millis = (long)(1000.0 * gif_sim_interval_secs * jc.slowdown);
+
+        int totalframes = pat.getPeriod() * gif_num_frames;
         int framecount = 0;
 
         // delay time is embedded in GIF header in terms of hundredths of a second
-        String delayTime = String.valueOf((int)(0.5 + real_interval_millis / 10));
+        String delayTime = String.valueOf((int)(0.5 + gif_real_interval_millis / 10));
 
         ImageWriteParam iwp = iw.getDefaultWriteParam();
         IIOMetadata metadata = null;
@@ -380,7 +389,7 @@ public class Animator {
         for (int i = 0; i < pat.getPeriod(); i++)  {
             double time = pat.getLoopStartTime();
 
-            for (int j = 0; j < num_frames; j++) {
+            for (int j = 0; j < gif_num_frames; j++) {
                 drawFrame(time, g, false);
 
                 // after the second frame all subsequent frames have identical metadata
@@ -393,7 +402,7 @@ public class Animator {
                 IIOImage ii = new IIOImage(image, null, metadata);
                 iw.writeToSequence(ii, (ImageWriteParam) null);
 
-                time += sim_interval_secs;
+                time += gif_sim_interval_secs;
                 framecount++;
 
                 if (wgm != null) {
