@@ -635,10 +635,13 @@ public class PatternWindow extends JFrame implements ActionListener {
                 if (view == null)
                     break;
                 if (!view.getPattern().isValid())
-                    throw new JuggleExceptionUser("Could not save: pattern is not valid");
+                    throw new JuggleExceptionUser(errorstrings.getString(
+                                "Error_saving_invalid_pattern"));
 
                 // create default filename
-                JLFunc.jfc().setSelectedFile(new File(getTitle() + ".jml"));
+                String fname = getTitle() + ".jml";
+                fname = JLFunc.sanitizeFilename(fname);
+                JLFunc.jfc().setSelectedFile(new File(fname));
                 JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
                 if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -649,6 +652,8 @@ public class PatternWindow extends JFrame implements ActionListener {
                     break;
                 if (!f.getAbsolutePath().endsWith(".jml"))
                     f = new File(f.getAbsolutePath() + ".jml");
+
+                JLFunc.errorIfNotSanitized(f.getName());
 
                 try {
                     FileWriter fw = new FileWriter(f);

@@ -188,7 +188,9 @@ public abstract class View extends JPanel {
             File file = null;
 
             try {
-                JLFunc.jfc().setSelectedFile(new File(parent.getTitle() + ".gif"));
+                String fname = parent.getTitle() + ".gif";
+                fname = JLFunc.sanitizeFilename(fname);
+                JLFunc.jfc().setSelectedFile(new File(fname));
                 JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
 
                 if (JLFunc.jfc().showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
@@ -200,11 +202,11 @@ public abstract class View extends JPanel {
                 if (!file.getAbsolutePath().endsWith(".gif"))
                     file = new File(file.getAbsolutePath() + ".gif");
 
-                FileOutputStream out = new FileOutputStream(file);
+                JLFunc.errorIfNotSanitized(file.getName());
 
                 ProgressMonitor pm = new ProgressMonitor(parent,
                         guistrings.getString("Saving_animated_GIF"), "", 0, 1);
-                pm.setMillisToPopup(1000);
+                pm.setMillisToPopup(300);
 
                 Animator.WriteGIFMonitor wgm = new Animator.WriteGIFMonitor() {
                     @Override
@@ -224,7 +226,7 @@ public abstract class View extends JPanel {
                     }
                 };
 
-                ap.getAnimator().writeGIF(out, wgm);
+                ap.getAnimator().writeGIF(new FileOutputStream(file), wgm);
             } catch (IOException ioe) {
                 if (file != null) {
                     String template = errorstrings.getString("Error_writing_file");
@@ -232,6 +234,8 @@ public abstract class View extends JPanel {
                     new ErrorDialog(parent, MessageFormat.format(template, arg));
                 } else
                     ErrorDialog.handleFatalException(ioe);
+            } catch (JuggleExceptionUser jeu) {
+                new ErrorDialog(parent, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleFatalException(jei);
             } finally {

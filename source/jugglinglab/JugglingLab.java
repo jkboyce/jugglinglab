@@ -302,7 +302,6 @@ public class JugglingLab {
 
                 String outpath_string = jlargs.remove(i);
                 Path outpath = Paths.get(outpath_string);
-
                 if (!outpath.isAbsolute() && base_dir != null)
                     outpath = Paths.get(base_dir.toString(), outpath_string);
 

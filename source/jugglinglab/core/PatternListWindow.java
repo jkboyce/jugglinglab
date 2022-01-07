@@ -272,6 +272,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
             else if (command.equals("online"))
                 doMenuCommand(MenuCommand.HELP_ONLINE);
 
+        } catch (JuggleExceptionUser je) {
+            new ErrorDialog(this, je.getMessage());
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
         }
@@ -289,7 +291,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
         HELP_ONLINE,
     }
 
-    protected void doMenuCommand(MenuCommand action) throws JuggleExceptionInternal {
+    protected void doMenuCommand(MenuCommand action) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
         switch (action) {
             case FILE_NONE:
                 break;
@@ -313,7 +316,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
             case FILE_SAVE:
                 try {
                     // create default filename
-                    JLFunc.jfc().setSelectedFile(new File(getTitle() + ".jml"));
+                    String fname = getTitle() + ".jml";
+                    fname = JLFunc.sanitizeFilename(fname);
+                    JLFunc.jfc().setSelectedFile(new File(fname));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
                     if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -324,6 +329,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
                         break;
                     if (!f.getAbsolutePath().endsWith(".jml"))
                         f = new File(f.getAbsolutePath() + ".jml");
+
+                    JLFunc.errorIfNotSanitized(f.getName());
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);
@@ -343,7 +350,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
             case FILE_SAVETEXT:
                 try {
                     // create default filename
-                    JLFunc.jfc().setSelectedFile(new File(getTitle() + ".txt"));
+                    String fname = getTitle() + ".txt";
+                    fname = JLFunc.sanitizeFilename(fname);
+                    JLFunc.jfc().setSelectedFile(new File(fname));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
 
                     if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
@@ -354,6 +363,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
                         break;
                     if (!f.getAbsolutePath().endsWith(".txt"))
                         f = new File(f.getAbsolutePath() + ".txt");
+
+                    JLFunc.errorIfNotSanitized(f.getName());
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);

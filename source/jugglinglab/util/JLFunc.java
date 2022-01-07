@@ -11,6 +11,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ResourceBundle;
 import javax.swing.*;
 
 import jugglinglab.JugglingLab;
@@ -19,6 +20,9 @@ import jugglinglab.JugglingLab;
 // Some useful functions
 
 public class JLFunc {
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+
     // Binomial coefficient (a choose b)
     public static int binomial(int a, int b) {
         int result = 1;
@@ -178,6 +182,66 @@ public class JLFunc {
                 jfc = new JFileChooser();
         }
         return jfc;
+    }
+
+    // Sanitize filename based on platform restrictions
+    //
+    // See e.g.:
+    // https://stackoverflow.com/questions/1976007/
+    //       what-characters-are-forbidden-in-windows-and-linux-directory-names
+    public static String sanitizeFilename(String fname) {
+        int index = fname.lastIndexOf(".");
+
+        String base = index >= 0 ? fname.substring(0, index) : fname;
+        String extension = index >= 0 ? fname.substring(index) : "";
+
+        if (jugglinglab.JugglingLab.isMacOS) {
+            // remove all instances of `:` and `/`
+            String b = base.replaceAll("[:/]", "");
+
+            // remove leading `.` and space
+            while (b.startsWith(".") || b.startsWith(" "))
+                b = b.substring(1);
+
+            if (b.length() == 0)
+                b = "Pattern";
+
+            return b + extension;
+        } else if (jugglinglab.JugglingLab.isWindows) {
+            // remove all instances of `\/?:*"`
+            String b = base.replaceAll("[\\/?:*\"]", "");
+
+            // disallow strings with `><|`
+            boolean forbidden = (b.indexOf(">") >= 0);
+            forbidden = forbidden || (b.indexOf("<") >= 0);
+            forbidden = forbidden || (b.indexOf("|") >= 0);
+
+            if (forbidden || b.length() == 0)
+                b = "Pattern";
+
+            return b + extension;
+        } else if (jugglinglab.JugglingLab.isLinux) {
+            // change all `/` to `:`
+            String b = base.replaceAll("/", ":");
+
+            // remove leading `.` and space
+            while (b.startsWith(".") || b.startsWith(" "))
+                b = b.substring(1);
+
+            if (b.length() == 0)
+                b = "Pattern";
+
+            return b + extension;
+        } else
+            return fname;
+    }
+
+    public static void errorIfNotSanitized(String fname) throws JuggleExceptionUser {
+        if (fname.equals(sanitizeFilename(fname)))
+            return;
+
+        throw new JuggleExceptionUser(errorstrings.getString(
+                                "Error_saving_disallowed_character"));
     }
 
     // Compare two version numbers
