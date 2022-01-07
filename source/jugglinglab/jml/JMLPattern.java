@@ -621,21 +621,22 @@ public class JMLPattern {
             boolean remove = holding_only && different_masters &&
                              inside_window && not_pass_adjacent;
 
-            n_events++;
-            if (holding_only)
-                n_holds++;
-
             if (remove) {
                 removeEvent(ev);
                 n_removed++;
             }
 
+            n_events++;
+            if (holding_only)
+                n_holds++;
+
             ev = ev.getNext();
         }
 
         if (Constants.DEBUG_LAYOUT) {
-            System.out.println("Streamline: removed " + n_removed + " events out of " +
-                               n_events + " total, " + n_holds + " holds");
+            System.out.println("Streamlined with time window " + twindow + " secs:");
+            System.out.println("    Removed " + n_removed + " of " + n_holds +
+                               " holding events (" + n_events + " events total)");
         }
     }
 

@@ -1631,7 +1631,7 @@ top:
         // like `<(0,6x)!><(0,0)!><(6x,0)!><(0,0)!>` look more fluid. In these
         // patterns the layout engine inserts a lot of empty/holding transitions.
         if (hands == null)
-            result.streamlinePatternWithWindow(0.25);
+            result.streamlinePatternWithWindow(1.05 / bps);
 
         result.setTitle((title == null) ? pattern : title);
 
