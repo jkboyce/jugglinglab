@@ -1,6 +1,6 @@
 // JugglingLab.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab;
 
@@ -71,10 +71,10 @@ public class JugglingLab {
             // the app directory structure so we default to user.home instead.
             String isBundle = System.getProperty("JL_run_as_bundle");
 
-            if (isBundle == null || !isBundle.equals("true"))
-                working_dir = System.getProperty("user.dir");
-            else
+            if (isBundle != null && isBundle.equals("true"))
                 working_dir = System.getProperty("user.home");
+            else
+                working_dir = System.getProperty("user.dir");
         }
 
         base_dir = Paths.get(working_dir);

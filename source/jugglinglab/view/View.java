@@ -1,6 +1,6 @@
 // View.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -79,10 +79,9 @@ public abstract class View extends JPanel {
     // Add a pattern to the undo list
     public void addToUndoList(JMLPattern p) {
         try {
-            JMLPattern pcopy = new JMLPattern(p);
-
+            JMLPattern pcopy = new JMLPattern(p);  // add copy so it won't change
             undo_index++;
-            undo.add(undo_index, pcopy);  // add copy so it won't change
+            undo.add(undo_index, pcopy);
             while (undo_index + 1 < undo.size())
                 undo.remove(undo_index + 1);
 
@@ -186,6 +185,7 @@ public abstract class View extends JPanel {
             cleanup = cleanup_routine;
 
             try {
+                // create sanitized default filename
                 String fname = parent.getTitle() + ".gif";
                 fname = JLFunc.sanitizeFilename(fname);
                 JLFunc.jfc().setSelectedFile(new File(fname));
