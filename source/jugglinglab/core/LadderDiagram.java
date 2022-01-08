@@ -144,6 +144,7 @@ public class LadderDiagram extends JPanel {
                           (loop_end - loop_start)) + border_top;
     }
 
+    // Create arrays of all the elements in the ladder diagram
     protected void createView() {
         has_switch_symmetry = has_switchdelay_symmetry = false;
         for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
@@ -224,6 +225,7 @@ public class LadderDiagram extends JPanel {
         updateView();
     }
 
+    // Assign physical locations to all the elements in the ladder diagram
     protected void updateView() {
         Dimension dim = getSize();
         width = dim.width;
@@ -483,7 +485,9 @@ public class LadderDiagram extends JPanel {
     }
     */
 
+    //-------------------------------------------------------------------------
     // javax.swing.JComponent methods
+    //-------------------------------------------------------------------------
 
     @Override
     protected void paintComponent(Graphics gr) {

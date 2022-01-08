@@ -1,6 +1,6 @@
 // EditLadderDiagram.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -25,16 +25,16 @@ import jugglinglab.view.View;
 
 // This class draws the vertical ladder diagram on the right side of Edit view.
 
-public class EditLadderDiagram extends LadderDiagram implements ActionListener {
+public class EditLadderDiagram extends LadderDiagram implements
+                ActionListener, MouseListener, MouseMotionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static final protected double min_throw_time = 0.05;
-    static final protected double min_hold_time = 0.05;
+    static final protected int ladder_width_per_juggler = 150;  // pixels
+    static final protected int ladder_min_width_per_juggler = 80;
 
-    protected AnimationEditPanel animator;
-    protected JFrame parent;
-    protected View parentview;
+    static final protected double min_throw_time = 0.05;  // seconds
+    static final protected double min_hold_time = 0.05;
 
     static final private int STATE_INACTIVE = 0;
     static final private int STATE_EVENT_SELECTED = 1;
@@ -42,7 +42,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final private int STATE_MOVING_TRACKER = 3;
     static final private int STATE_POPUP = 4;
 
-    protected int gui_state;  // one of STATE_x values above
+    static final protected int max_jugglers = 8;
+
+    protected JFrame parent;
+    protected View parentview;
+    protected AnimationEditPanel animator;
+
+    protected int gui_state = STATE_INACTIVE;  // one of STATE_x values above
     protected LadderEventItem active_eventitem;
     protected int start_y;
     protected int delta_y, delta_y_min, delta_y_max;
@@ -60,35 +66,176 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         parent = pframe;
         parentview = pview;
 
-        active_eventitem = null;
-        setupPopup();
+        if (pat.getNumberOfJugglers() > max_jugglers) {
+            setPreferredSize(new Dimension(2 * ladder_width_per_juggler, 1));
+            setMinimumSize(new Dimension(ladder_min_width_per_juggler, 1));
+            return;
+        }
 
-        final JMLPattern fpat = pat;
-        gui_state = STATE_INACTIVE;
+        setPreferredSize(new Dimension(ladder_width_per_juggler * pat.getNumberOfJugglers(), 1));
+        setMinimumSize(new Dimension(ladder_min_width_per_juggler * pat.getNumberOfJugglers(), 1));
 
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(final MouseEvent me) {
-                if (animator != null && animator.writingGIF)
-                    return;
-                int my = me.getY();
-                if (my < border_top)
-                    my = border_top;
-                else if (my > (height-border_top))
-                    my = height - border_top;
+        createPopup();
 
-                if (me.isPopupTrigger()) {
-                    gui_state = STATE_POPUP;
+        addMouseListener(this);
+        addMouseMotionListener(this);
+    }
+
+    public void setAnimationPanel(AnimationEditPanel anim) {
+        animator = anim;
+    }
+
+    // Called from AnimationEditPanel when the user finishes moving a selected
+    // event
+    public void activeEventMoved() {
+        if (active_eventitem == null || animator == null)
+            return;
+
+        // find the screen coordinates of the event that moved
+        int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
+        int y = (active_eventitem.ylow + active_eventitem.yhigh) / 2;
+
+        layoutPattern();    // rebuild pattern event list
+        createView();       // rebuild ladder diagram
+
+        // reactivate the moved event with AnimationEditPanel
+        active_eventitem = getSelectedLadderEvent(x, y);
+        animator.activateEvent(active_eventitem.event);
+    }
+
+    protected void layoutPattern() {
+        try {
+            // use synchronized here to avoid data consistency problems with animation
+            // thread in AnimationPanel's run() method
+            synchronized (pat) {
+                pat.setNeedsLayout();
+                pat.layoutPattern();
+            }
+
+            parentview.addToUndoList(pat);
+
+            if (animator != null) {
+                animator.anim.initAnimator();
+                animator.repaint();
+            }
+        } catch (JuggleExceptionUser jeu) {
+            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
+        } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
+        }
+    }
+
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseListener methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void mousePressed(final MouseEvent me) {
+        if (animator != null && animator.writingGIF)
+            return;
+
+        int my = me.getY();
+        if (my < border_top)
+            my = border_top;
+        else if (my > (height-border_top))
+            my = height - border_top;
+
+        if (me.isPopupTrigger()) {
+            gui_state = STATE_POPUP;
+            active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
+            if (active_eventitem != null)
+                popupitem = active_eventitem;
+            else
+                popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
+            popup_y = me.getY();
+            if (animator != null) {
+                double scale = (pat.getLoopEndTime() -
+                                pat.getLoopStartTime()) /
+                                (double)(height - 2*border_top);
+                double newtime = (double)(my - border_top) * scale;
+                anim_paused = animator.getPaused();
+                animator.setPaused(true);
+                animator.setTime(newtime);
+                animator.deactivateEvent();
+                if (active_eventitem != null)
+                    animator.activateEvent(active_eventitem.event);
+                animator.repaint();
+            }
+            adjustPopup(popupitem);
+            popup.show(EditLadderDiagram.this, me.getX(), me.getY());
+        } else {
+            switch (gui_state) {
+                case STATE_INACTIVE:
+                case STATE_EVENT_SELECTED:
                     active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
-                    if (active_eventitem != null)
-                        popupitem = active_eventitem;
-                    else
-                        popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
-                    popup_y = me.getY();
-                    if (animator != null) {
-                        double scale = (fpat.getLoopEndTime() -
-                                        fpat.getLoopStartTime()) /
-                                        (double)(height - 2*border_top);
+
+                    if (active_eventitem == null) {
+                        gui_state = STATE_MOVING_TRACKER;
+                        tracker_y = my;
+                        repaint();
+                        if (animator != null) {
+                            double scale = (pat.getLoopEndTime() -
+                                            pat.getLoopStartTime()) /
+                                            (double)(height - 2*border_top);
+                            double newtime = (double)(my - border_top) * scale;
+                            anim_paused = animator.getPaused();
+                            animator.setPaused(true);
+                            animator.setTime(newtime);
+                            animator.deactivateEvent();
+                            animator.repaint();
+                        }
+                    } else {
+                        gui_state = STATE_MOVING_EVENT;
+                        start_y = me.getY();
+                        findEventLimits(active_eventitem);
+                        repaint();
+                        if (animator != null) {
+                            animator.activateEvent(active_eventitem.event);
+                            animator.repaint();
+                        }
+                    }
+                        break;
+                case STATE_MOVING_EVENT:
+                    // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                    //          "mouse pressed in MOVING_EVENT state"));
+                    break;
+                case STATE_MOVING_TRACKER:
+                    // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                    //          "mouse pressed in MOVING_TRACKER state"));
+                    break;
+                case STATE_POPUP:
+                    gui_state = (active_eventitem == null) ? STATE_INACTIVE :
+                                            STATE_EVENT_SELECTED;
+                    if (animator != null)
+                        animator.setPaused(anim_paused);
+                        break;
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased(final MouseEvent me) {
+        if (animator != null && animator.writingGIF)
+            return;
+
+        if (me.isPopupTrigger()) {
+            switch (gui_state) {
+                case STATE_INACTIVE:
+                case STATE_EVENT_SELECTED:
+                case STATE_MOVING_EVENT:
+                case STATE_MOVING_TRACKER:
+                    // skip this code for MOVING_TRACKER state, since already
+                    // executed in mousePressed() above
+                    if (gui_state != STATE_MOVING_TRACKER &&
+                                animator != null) {
+                        int my = me.getY();
+                        if (my < border_top)
+                            my = border_top;
+                        else if (my > (height-border_top))
+                            my = height - border_top;
+
+                        double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                            (double)(height - 2*border_top);
                         double newtime = (double)(my - border_top) * scale;
                         anim_paused = animator.getPaused();
                         animator.setPaused(true);
@@ -98,207 +245,138 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                             animator.activateEvent(active_eventitem.event);
                         animator.repaint();
                     }
+
+                    gui_state = STATE_POPUP;
+
+                    if (delta_y != 0) {
+                        delta_y = 0;
+                        repaint();
+                    }
+                    popup_y = me.getY();
+                    popupitem = active_eventitem;
+                    if (popupitem == null) {
+                        popupitem = getSelectedLadderEvent(me.getX(), me.getY());
+                        if (popupitem == null)
+                            popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
+                    }
                     adjustPopup(popupitem);
                     popup.show(EditLadderDiagram.this, me.getX(), me.getY());
-                }
-                else {
-                    switch (gui_state) {
-                        case STATE_INACTIVE:
-                        case STATE_EVENT_SELECTED:
-                            active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
-
-                            if (active_eventitem == null) {
-                                gui_state = STATE_MOVING_TRACKER;
-                                tracker_y = my;
-                                repaint();
-                                if (animator != null) {
-                                    double scale = (fpat.getLoopEndTime() -
-                                                    fpat.getLoopStartTime()) /
-                                                    (double)(height - 2*border_top);
-                                    double newtime = (double)(my - border_top) * scale;
-                                    anim_paused = animator.getPaused();
-                                    animator.setPaused(true);
-                                    animator.setTime(newtime);
-                                    animator.deactivateEvent();
-                                    animator.repaint();
-                                }
-                            } else {
-                                gui_state = STATE_MOVING_EVENT;
-                                start_y = me.getY();
-                                findEventLimits(active_eventitem);
-                                repaint();
-                                if (animator != null) {
-                                    animator.activateEvent(active_eventitem.event);
-                                    animator.repaint();
-                                }
-                            }
-                                break;
-                        case STATE_MOVING_EVENT:
-                            // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                            //          "mouse pressed in MOVING_EVENT state"));
-                            break;
-                        case STATE_MOVING_TRACKER:
-                            // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                            //          "mouse pressed in MOVING_TRACKER state"));
-                            break;
-                        case STATE_POPUP:
-                            gui_state = (active_eventitem == null) ? STATE_INACTIVE :
-                                                    STATE_EVENT_SELECTED;
-                            if (animator != null)
-                                animator.setPaused(anim_paused);
-                                break;
-                    }
-                }
+                    break;
+                case STATE_POPUP:
+                    ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                            "tried to enter POPUP state while already in it"));
+                    break;
             }
+        } else {
+            switch (gui_state) {
+                case STATE_INACTIVE:
+                    // should only get here if user cancelled popup menu or deselected event
+                    break;
+                case STATE_EVENT_SELECTED:
+                    // should only get here if user cancelled popup menu
+                    break;
+                case STATE_MOVING_EVENT:
+                    gui_state = STATE_EVENT_SELECTED;
+                    if (delta_y != 0) {
+                        moveEvent(active_eventitem.eventitem);
+                        for (int i = 0; i < laddereventitems.size(); i++) {
+                            LadderEventItem item = laddereventitems.get(i);
 
-            @Override
-            public void mouseReleased(final MouseEvent me) {
-                if (animator != null && animator.writingGIF)
-                    return;
-                if (me.isPopupTrigger()) {
-                    switch (gui_state) {
-                        case STATE_INACTIVE:
-                        case STATE_EVENT_SELECTED:
-                        case STATE_MOVING_EVENT:
-                        case STATE_MOVING_TRACKER:
-                            // skip this code for MOVING_TRACKER state, since already
-                            // executed in mousePressed() above
-                            if (gui_state != STATE_MOVING_TRACKER &&
-                                        animator != null) {
-                                int my = me.getY();
-                                if (my < border_top)
-                                    my = border_top;
-                                else if (my > (height-border_top))
-                                    my = height - border_top;
-
-                                double scale = (fpat.getLoopEndTime() - fpat.getLoopStartTime()) /
-                                    (double)(height - 2*border_top);
-                                double newtime = (double)(my - border_top) * scale;
-                                anim_paused = animator.getPaused();
-                                animator.setPaused(true);
-                                animator.setTime(newtime);
-                                animator.deactivateEvent();
-                                if (active_eventitem != null)
-                                    animator.activateEvent(active_eventitem.event);
-                                animator.repaint();
+                            if (item.eventitem == active_eventitem.eventitem) {
+                                item.ylow += delta_y;
+                                item.yhigh += delta_y;
                             }
-
-                            gui_state = STATE_POPUP;
-
-                            if (delta_y != 0) {
-                                delta_y = 0;
-                                repaint();
-                            }
-                            popup_y = me.getY();
-                            popupitem = active_eventitem;
-                            if (popupitem == null) {
-                                popupitem = getSelectedLadderEvent(me.getX(), me.getY());
-                                if (popupitem == null)
-                                    popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
-                            }
-                            adjustPopup(popupitem);
-                            popup.show(EditLadderDiagram.this, me.getX(), me.getY());
-                            break;
-                        case STATE_POPUP:
-                            ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                                    "tried to enter POPUP state while already in it"));
-                            break;
-                    }
-                }
-                else {
-                    switch (gui_state) {
-                        case STATE_INACTIVE:
-                            // should only get here if user cancelled popup menu or deselected event
-                            break;
-                        case STATE_EVENT_SELECTED:
-                            // should only get here if user cancelled popup menu
-                            break;
-                        case STATE_MOVING_EVENT:
-                            gui_state = STATE_EVENT_SELECTED;
-                            if (delta_y != 0) {
-                                moveEvent(active_eventitem.eventitem);
-                                for (int i = 0; i < laddereventitems.size(); i++) {
-                                    LadderEventItem item = laddereventitems.get(i);
-
-                                    if (item.eventitem == active_eventitem.eventitem) {
-                                        item.ylow += delta_y;
-                                        item.yhigh += delta_y;
-                                    }
-                                }
-                                delta_y = 0;
-                                activeEventMoved();
-                                /*
-                                layoutPattern();
-                                createView();
-                                active_eventitem = null;
-                                if (animator != null)
-                                    animator.deactivateEvent();
-                                */
-                                repaint();
-                            }
-                                break;
-                        case STATE_MOVING_TRACKER:
-                            gui_state = STATE_INACTIVE;
-                            if (animator != null)
-                                animator.setPaused(anim_paused);
-                                break;
-                        case STATE_POPUP:
-                            break;
-                    }
-                }
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent me) {
-                if (animator != null && animator.writingGIF)
-                    return;
-
-                int my = me.getY();
-                if (my < border_top)
-                        my = border_top;
-                else if (my > (height-border_top))
-                        my = height - border_top;
-
-                switch (gui_state) {
-                    case STATE_INACTIVE:
-                        // This exception was being generated on popup cancelation when
-                        // it could have been ignored. See bug report 861856.
-                        // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                        //                "mouse dragged in INACTIVE state"));
-                        break;
-                    case STATE_EVENT_SELECTED:
-                        ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                                    "mouse dragged in EVENT_SELECTED state"));
-                        break;
-                    case STATE_MOVING_EVENT:
-                        int old_delta_y = delta_y;
-                        delta_y = me.getY() - start_y;
-                        if (delta_y < delta_y_min)
-                                delta_y = delta_y_min;
-                        if (delta_y > delta_y_max)
-                                delta_y = delta_y_max;
-                        if (delta_y != old_delta_y)
-                            EditLadderDiagram.this.repaint();
-                            break;
-                    case STATE_MOVING_TRACKER:
-                        tracker_y = my;
-                        EditLadderDiagram.this.repaint();
-                        if (animator != null) {
-                            double scale = (fpat.getLoopEndTime() - fpat.getLoopStartTime()) /
-                                    (double)(height - 2*border_top);
-                            double newtime = (double)(my - border_top) * scale;
-                            animator.setTime(newtime);
-                            animator.repaint();
                         }
-                            break;
-                    case STATE_POPUP:
+                        delta_y = 0;
+                        activeEventMoved();
+                        /*
+                        layoutPattern();
+                        createView();
+                        active_eventitem = null;
+                        if (animator != null)
+                            animator.deactivateEvent();
+                        */
+                        repaint();
+                    }
                         break;
-                }
+                case STATE_MOVING_TRACKER:
+                    gui_state = STATE_INACTIVE;
+                    if (animator != null)
+                        animator.setPaused(anim_paused);
+                        break;
+                case STATE_POPUP:
+                    break;
             }
-        });
+        }
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseMotionListener methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void mouseDragged(MouseEvent me) {
+        if (animator != null && animator.writingGIF)
+            return;
+
+        int my = me.getY();
+        if (my < border_top)
+                my = border_top;
+        else if (my > (height-border_top))
+                my = height - border_top;
+
+        switch (gui_state) {
+            case STATE_INACTIVE:
+                // This exception was being generated on popup cancelation when
+                // it could have been ignored. See bug report 861856.
+                // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                //                "mouse dragged in INACTIVE state"));
+                break;
+            case STATE_EVENT_SELECTED:
+                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                            "mouse dragged in EVENT_SELECTED state"));
+                break;
+            case STATE_MOVING_EVENT:
+                int old_delta_y = delta_y;
+                delta_y = me.getY() - start_y;
+                if (delta_y < delta_y_min)
+                        delta_y = delta_y_min;
+                if (delta_y > delta_y_max)
+                        delta_y = delta_y_max;
+                if (delta_y != old_delta_y)
+                    EditLadderDiagram.this.repaint();
+                    break;
+            case STATE_MOVING_TRACKER:
+                tracker_y = my;
+                EditLadderDiagram.this.repaint();
+                if (animator != null) {
+                    double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                            (double)(height - 2 * border_top);
+                    double newtime = (double)(my - border_top) * scale;
+                    animator.setTime(newtime);
+                    animator.repaint();
+                }
+                    break;
+            case STATE_POPUP:
+                break;
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {}
+
+    //-------------------------------------------------------------------------
+    // Utility methods for mouse interactions
+    //-------------------------------------------------------------------------
 
     protected void findEventLimits(LadderEventItem item) {
         double tmin = pat.getLoopStartTime();
@@ -543,7 +621,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             "Change to softcatch",
         };
 
-    protected void setupPopup() {
+    protected void createPopup() {
         popup = new JPopupMenu();
         popupmenuitems = new JMenuItem[popupItems.length];
 
@@ -1267,7 +1345,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         dialog_controls = null;
     }
 
-    private static final String[] booleanList = { "True", "False" };
+    private static final String[] booleanList = {
+        "True",
+        "False",
+    };
 
     protected void makeParametersPanel(JPanel jp, ParameterDescriptor[] pd) {
         jp.removeAll();
@@ -1477,51 +1558,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     //-------------------------------------------------------------------------
-
-    public void setAnimationPanel(AnimationEditPanel anim) {
-        this.animator = anim;
-    }
-
-    // Called from AnimationEditPanel when the user finishes moving a selected
-    // event.
-    public void activeEventMoved() {
-        if (active_eventitem == null || animator == null)
-            return;
-        // find the screen coordinates of the event that moved
-        int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
-        int y = (active_eventitem.ylow + active_eventitem.yhigh) / 2;
-
-        layoutPattern();    // rebuild pattern event list
-        createView();       // rebuild ladder diagram
-
-        // reactivate the moved event with AnimationEditPanel
-        active_eventitem = getSelectedLadderEvent(x, y);
-        animator.activateEvent(active_eventitem.event);
-    }
-
-    protected void layoutPattern() {
-        try {
-            // use synchronized here to avoid data consistency problems with animation
-            // thread in AnimationPanel's run() method
-            synchronized (pat) {
-                pat.setNeedsLayout();
-                pat.layoutPattern();
-            }
-
-            parentview.addToUndoList(pat);
-
-            if (animator != null) {
-                animator.anim.initAnimator();
-                animator.repaint();
-            }
-        } catch (JuggleExceptionUser jeu) {
-            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
-        } catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleFatalException(jei);
-        }
-    }
-
     // javax.swing.JComponent methods
+    //-------------------------------------------------------------------------
 
     @Override
     protected void paintComponent(Graphics gr) {
@@ -1531,24 +1569,23 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                  RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-        /*
-        if (pat.getNumberOfJugglers() > 1) {
+        if (pat.getNumberOfJugglers() > max_jugglers) {
             int x, y, width;
-            Dimension cdim = this.getSize();
+            Dimension cdim = getSize();
             int cWidth = cdim.width;
             int cHeight = cdim.height;
             FontMetrics fm = gr.getFontMetrics();
 
-            width = fm.stringWidth("Not available");
+            String message = "At most " + max_jugglers + " jugglers supported";
+            width = fm.stringWidth(message);
             x = (cWidth > width) ? (cWidth-width)/2 : 0;
             y = (cHeight + fm.getHeight()) / 2;
             gr.setColor(Color.white);
             gr.fillRect(0, 0, cWidth, cHeight);
             gr.setColor(Color.black);
-            gr.drawString("Not available", x, y);
+            gr.drawString(message, x, y);
             return;
         }
-        */
 
         paintBackground(gr);
 

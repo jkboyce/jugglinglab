@@ -14,13 +14,13 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 
+// This view provides the ability to edit a pattern visually. It features a
+// ladder diagram on the right and an animator on the left.
+
 public class EditView extends View {
     protected AnimationEditPanel jae;
     protected JPanel ladder;
     protected JSplitPane jsp;
-
-    static final protected int ladder_width_per_juggler = 150;
-    static final protected int ladder_min_width_per_juggler = 80;
 
 
     public EditView(Dimension dim, JMLPattern pat) {
@@ -29,11 +29,11 @@ public class EditView extends View {
 
         ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
-        ladder.setPreferredSize(new Dimension(ladder_width_per_juggler *
-                                            pat.getNumberOfJugglers(), 1));
-        ladder.setMinimumSize(new Dimension(ladder_min_width_per_juggler *
-                                            pat.getNumberOfJugglers(), 1));
         ladder.setBackground(Color.white);
+
+        // add ladder diagram now to get dimensions correct; will be replaced
+        // in restartView()
+        ladder.add(new EditLadderDiagram(pat, parent, this), BorderLayout.CENTER);
 
         Locale loc = JLLocale.getLocale();
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
@@ -43,7 +43,7 @@ public class EditView extends View {
             jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
             jsp.setResizeWeight(0.0);
         }
-        jsp.setBorder(new EmptyBorder(0,0,0,0));
+        jsp.setBorder(new EmptyBorder(0, 0, 0, 0));
         jsp.setBackground(Color.white);
 
         setBackground(Color.white);
@@ -60,10 +60,6 @@ public class EditView extends View {
 
         if (p != null) {
             EditLadderDiagram new_ladder = new EditLadderDiagram(p, parent, this);
-            new_ladder.setPreferredSize(
-                new Dimension(ladder_width_per_juggler * p.getNumberOfJugglers(), 1));
-            new_ladder.setMinimumSize(
-                new Dimension(ladder_min_width_per_juggler * p.getNumberOfJugglers(), 1));
 
             new_ladder.setAnimationPanel(jae);
             jae.setLadderDiagram(new_ladder);
