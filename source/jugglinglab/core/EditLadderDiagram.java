@@ -23,6 +23,8 @@ import jugglinglab.prop.*;
 import jugglinglab.view.View;
 
 
+// This class draws the vertical ladder diagram on the right side of Edit view.
+
 public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
@@ -40,7 +42,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     static final private int STATE_MOVING_TRACKER = 3;
     static final private int STATE_POPUP = 4;
 
-    protected int gui_state;    // one of STATE_x values above
+    protected int gui_state;  // one of STATE_x values above
     protected LadderEventItem active_eventitem;
     protected int start_y;
     protected int delta_y, delta_y_min, delta_y_max;
@@ -63,9 +65,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
         final JMLPattern fpat = pat;
         gui_state = STATE_INACTIVE;
-
-        if (pat.getNumberOfJugglers() > 1)
-            return;
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -164,7 +163,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                         case STATE_MOVING_TRACKER:
                             // skip this code for MOVING_TRACKER state, since already
                             // executed in mousePressed() above
-                            if (gui_state != STATE_MOVING_TRACKER  &&
+                            if (gui_state != STATE_MOVING_TRACKER &&
                                         animator != null) {
                                 int my = me.getY();
                                 if (my < border_top)
@@ -301,7 +300,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         });
     }
 
-
     protected void findEventLimits(LadderEventItem item) {
         double tmin = pat.getLoopStartTime();
         double tmax = pat.getLoopEndTime();
@@ -408,7 +406,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             }
         }
 
-        if (delta_y < 0) {      // moving to earlier time
+        if (delta_y < 0) {  // moving to earlier time
             ev = ev.getPrevious();
             while ((ev != null) && (ev.getT() > newt)) {
                 if (!sameMaster(ev, item.event) &&
@@ -452,7 +450,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                 }
                 ev = ev.getPrevious();
             }
-        } else if (delta_y > 0) {       // moving to later time
+        } else if (delta_y > 0) {  // moving to later time
             ev = ev.getNext();
             while ((ev != null) && (ev.getT() < newt)) {
                 if (!sameMaster(ev, item.event) &&
@@ -521,10 +519,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         }
 
         pat.removeEvent(ev);
-        ev.setT(ev.getT() + shift); // change time of master
-        pat.addEvent(ev);   // remove/add cycle keeps events sorted
+        ev.setT(ev.getT() + shift);  // change time of master
+        pat.addEvent(ev);  // remove/add cycle keeps events sorted
     }
 
+    //-------------------------------------------------------------------------
+    // Popup menu and related handlers
+    //-------------------------------------------------------------------------
 
     private static final String popupItems[] =
         {
@@ -1475,6 +1476,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         return result;
     }
 
+    //-------------------------------------------------------------------------
+
     public void setAnimationPanel(AnimationEditPanel anim) {
         this.animator = anim;
     }
@@ -1528,6 +1531,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                                  RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
+        /*
         if (pat.getNumberOfJugglers() > 1) {
             int x, y, width;
             Dimension cdim = this.getSize();
@@ -1544,6 +1548,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             gr.drawString("Not available", x, y);
             return;
         }
+        */
 
         paintBackground(gr);
 

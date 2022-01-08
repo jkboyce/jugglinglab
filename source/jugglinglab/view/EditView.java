@@ -1,6 +1,6 @@
 // EditView.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -19,26 +19,28 @@ public class EditView extends View {
     protected JPanel ladder;
     protected JSplitPane jsp;
 
-    static protected int ladder_width = 150;
-    static protected int ladder_min_width = 80;
+    static final protected int ladder_width_per_juggler = 150;
+    static final protected int ladder_min_width_per_juggler = 80;
 
 
-    public EditView(Dimension dim) {
-        this.jae = new AnimationEditPanel();
+    public EditView(Dimension dim, JMLPattern pat) {
+        jae = new AnimationEditPanel();
         jae.setAnimationPanelPreferredSize(dim);
 
-        this.ladder = new JPanel();
+        ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
-        ladder.setPreferredSize(new Dimension(ladder_width, 1));
-        ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
+        ladder.setPreferredSize(new Dimension(ladder_width_per_juggler *
+                                            pat.getNumberOfJugglers(), 1));
+        ladder.setMinimumSize(new Dimension(ladder_min_width_per_juggler *
+                                            pat.getNumberOfJugglers(), 1));
         ladder.setBackground(Color.white);
 
         Locale loc = JLLocale.getLocale();
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-            this.jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
             jsp.setResizeWeight(1.0);
         } else {
-            this.jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
             jsp.setResizeWeight(0.0);
         }
         jsp.setBorder(new EmptyBorder(0,0,0,0));
@@ -52,27 +54,24 @@ public class EditView extends View {
     // View methods
 
     @Override
-    public void restartView(JMLPattern p, AnimationPrefs c) throws JuggleExceptionUser,
-                                        JuggleExceptionInternal {
+    public void restartView(JMLPattern p, AnimationPrefs c) throws
+                        JuggleExceptionUser, JuggleExceptionInternal {
         jae.restartJuggle(p, c);
 
         if (p != null) {
-            LadderDiagram new_ladder;
-            /* if (pat.getNumberOfJugglers() > 1) {
-                new_ladder = new PassLadderDiagram(pat, parent);
-                ((PassLadderDiagram)new_ladder).setAnimationPanel(jae);
-            } else {*/
-                new_ladder = new EditLadderDiagram(p, parent, this);
-                ((EditLadderDiagram)new_ladder).setAnimationPanel(jae);
-            // }
+            EditLadderDiagram new_ladder = new EditLadderDiagram(p, parent, this);
+            new_ladder.setPreferredSize(
+                new Dimension(ladder_width_per_juggler * p.getNumberOfJugglers(), 1));
+            new_ladder.setMinimumSize(
+                new Dimension(ladder_min_width_per_juggler * p.getNumberOfJugglers(), 1));
 
+            new_ladder.setAnimationPanel(jae);
             jae.setLadderDiagram(new_ladder);
             jae.deactivateEvent();
-            new_ladder.setPreferredSize(new Dimension(ladder_width, 1));
-            new_ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
-            this.ladder.removeAll();
-            this.ladder.add(new_ladder, BorderLayout.CENTER);
-            this.ladder.validate();
+
+            ladder.removeAll();
+            ladder.add(new_ladder, BorderLayout.CENTER);
+            ladder.validate();
 
             parent.setTitle(p.getTitle());
         }
@@ -123,7 +122,7 @@ public class EditView extends View {
     @Override
     public void writeGIF() {
         jae.writingGIF = true;
-        jae.deactivateEvent();       // so we don't draw event box in animated GIF
+        jae.deactivateEvent();  // so we don't draw event box in animated GIF
         boolean origpause = getPaused();
         setPaused(true);
 

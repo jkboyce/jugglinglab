@@ -94,18 +94,18 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected void createContents(JMLPattern pat, AnimationPrefs jc) throws
                         JuggleExceptionUser, JuggleExceptionInternal {
         if (jc != null && jc.view != View.VIEW_NONE) {
-            setViewMode(jc.view);
+            setViewMode(jc.view, pat);
             viewmenu.getItem(jc.view - 1).setSelected(true);
             jc.view = View.VIEW_NONE;
         } else {
             // no view type specified, use defaults
-            if (pat.getNumberOfJugglers() > 1) {
+            /*if (pat.getNumberOfJugglers() > 1) {
                 setViewMode(View.VIEW_SIMPLE);
                 viewmenu.getItem(View.VIEW_SIMPLE - 1).setSelected(true);
-            } else {
-                setViewMode(View.VIEW_EDIT);
+            } else {*/
+                setViewMode(View.VIEW_EDIT, pat);
                 viewmenu.getItem(View.VIEW_EDIT - 1).setSelected(true);
-            }
+            //}
         }
         view.setDoubleBuffered(true);
         if (jc != null)
@@ -118,18 +118,16 @@ public class PatternWindow extends JFrame implements ActionListener {
         pack();
     }
 
-    protected void setViewMode(int mode) throws JuggleExceptionUser,
-                        JuggleExceptionInternal {
+    protected void setViewMode(int mode, JMLPattern pat) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
         View newview = null;
 
         // items to carry over from old view to the new:
-        JMLPattern pat = null;
         AnimationPrefs jc = null;
         boolean paused = false;
         int undo_index = 0;
 
         if (view != null) {
-            pat = view.getPattern();
             jc = view.getAnimationPrefs();
             paused = view.getPaused();
             undo_index = view.getUndoIndex();
@@ -145,7 +143,7 @@ public class PatternWindow extends JFrame implements ActionListener {
                 newview = new SimpleView(animsize);
                 break;
             case View.VIEW_EDIT:
-                newview = new EditView(animsize);
+                newview = new EditView(animsize, pat);
                 break;
             case View.VIEW_PATTERN:
                 newview = new PatternView(animsize);
@@ -555,19 +553,19 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(MenuCommand.VIEW_REDO);
             else if (command.equals("simple")) {
                 if (getViewMode() != View.VIEW_SIMPLE)
-                    setViewMode(View.VIEW_SIMPLE);
+                    setViewMode(View.VIEW_SIMPLE, view.getPattern());
             }
             else if (command.equals("visual_edit")) {
                 if (getViewMode() != View.VIEW_EDIT)
-                    setViewMode(View.VIEW_EDIT);
+                    setViewMode(View.VIEW_EDIT, view.getPattern());
             }
             else if (command.equals("pattern_edit")) {
                 if (getViewMode() != View.VIEW_PATTERN)
-                    setViewMode(View.VIEW_PATTERN);
+                    setViewMode(View.VIEW_PATTERN, view.getPattern());
             }
             else if (command.equals("selection_edit")) {
                 if (getViewMode() != View.VIEW_SELECTION)
-                    setViewMode(View.VIEW_SELECTION);
+                    setViewMode(View.VIEW_SELECTION, view.getPattern());
             } else if (command.equals("about"))
                 doMenuCommand(MenuCommand.HELP_ABOUT);
             else if (command.equals("online"))
