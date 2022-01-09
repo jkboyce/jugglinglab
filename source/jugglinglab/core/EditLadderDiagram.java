@@ -30,18 +30,19 @@ public class EditLadderDiagram extends LadderDiagram implements
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static final int ladder_width_per_juggler = 150;  // pixels
-    static final int ladder_min_width_per_juggler = 80;
-    static final int max_jugglers = 8;
+    public static final int ladder_width_per_juggler = 150;  // pixels
+    public static final int ladder_min_width_per_juggler = 80;
+    public static final int MAX_JUGGLERS = 8;
+    protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
 
-    static final double min_throw_time = 0.05;  // seconds
-    static final double min_hold_time = 0.05;
+    protected static final double min_throw_time = 0.05;  // seconds
+    protected static final double min_hold_time = 0.05;
 
-    private static final int STATE_INACTIVE = 0;
-    private static final int STATE_EVENT_SELECTED = 1;
-    private static final int STATE_MOVING_EVENT = 2;
-    private static final int STATE_MOVING_TRACKER = 3;
-    private static final int STATE_POPUP = 4;
+    protected static final int STATE_INACTIVE = 0;
+    protected static final int STATE_EVENT_SELECTED = 1;
+    protected static final int STATE_MOVING_EVENT = 2;
+    protected static final int STATE_MOVING_TRACKER = 3;
+    protected static final int STATE_POPUP = 4;
 
     protected JFrame parent;
     protected View parentview;
@@ -65,9 +66,15 @@ public class EditLadderDiagram extends LadderDiagram implements
         parent = pframe;
         parentview = pview;
 
-        if (pat.getNumberOfJugglers() > max_jugglers) {
-            setPreferredSize(new Dimension(2 * ladder_width_per_juggler, 1));
-            setMinimumSize(new Dimension(ladder_min_width_per_juggler, 1));
+        if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
+            // allocate enough space for "too many jugglers" message; see
+            // paintComponent()
+            String template = guistrings.getString("Too_many_jugglers");
+            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
+            String message = MessageFormat.format(template, arguments);
+            int mwidth = 20 + getFontMetrics(msgfont).stringWidth(message);
+            setPreferredSize(new Dimension(mwidth, 1));
+            setMinimumSize(new Dimension(mwidth, 1));
             return;
         }
 
@@ -1568,19 +1575,18 @@ public class EditLadderDiagram extends LadderDiagram implements
                                  RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-        if (pat.getNumberOfJugglers() > max_jugglers) {
-            int x, y, width;
-            Dimension cdim = getSize();
-            int cWidth = cdim.width;
-            int cHeight = cdim.height;
+        if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
+            Dimension dim = getSize();
+            gr.setFont(msgfont);
             FontMetrics fm = gr.getFontMetrics();
-
-            String message = "At most " + max_jugglers + " jugglers supported";
-            width = fm.stringWidth(message);
-            x = (cWidth > width) ? (cWidth-width)/2 : 0;
-            y = (cHeight + fm.getHeight()) / 2;
+            String template = guistrings.getString("Too_many_jugglers");
+            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
+            String message = MessageFormat.format(template, arguments);
+            int mwidth = fm.stringWidth(message);
+            int x = (dim.width > mwidth) ? (dim.width - mwidth) / 2 : 0;
+            int y = (dim.height + fm.getHeight()) / 2;
             gr.setColor(Color.white);
-            gr.fillRect(0, 0, cWidth, cHeight);
+            gr.fillRect(0, 0, dim.width, dim.height);
             gr.setColor(Color.black);
             gr.drawString(message, x, y);
             return;
