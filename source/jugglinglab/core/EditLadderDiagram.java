@@ -30,19 +30,18 @@ public class EditLadderDiagram extends LadderDiagram implements
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static final protected int ladder_width_per_juggler = 150;  // pixels
-    static final protected int ladder_min_width_per_juggler = 80;
+    static final int ladder_width_per_juggler = 150;  // pixels
+    static final int ladder_min_width_per_juggler = 80;
+    static final int max_jugglers = 8;
 
-    static final protected double min_throw_time = 0.05;  // seconds
-    static final protected double min_hold_time = 0.05;
+    static final double min_throw_time = 0.05;  // seconds
+    static final double min_hold_time = 0.05;
 
-    static final private int STATE_INACTIVE = 0;
-    static final private int STATE_EVENT_SELECTED = 1;
-    static final private int STATE_MOVING_EVENT = 2;
-    static final private int STATE_MOVING_TRACKER = 3;
-    static final private int STATE_POPUP = 4;
-
-    static final protected int max_jugglers = 8;
+    private static final int STATE_INACTIVE = 0;
+    private static final int STATE_EVENT_SELECTED = 1;
+    private static final int STATE_MOVING_EVENT = 2;
+    private static final int STATE_MOVING_TRACKER = 3;
+    private static final int STATE_POPUP = 4;
 
     protected JFrame parent;
     protected View parentview;
