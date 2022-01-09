@@ -1469,7 +1469,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     label.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
-                            JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Image file", "jpg", "jpeg", "gif", "png"));
+                            JLFunc.jfc().setFileFilter(new FileNameExtensionFilter(
+                                            "Image file", "jpg", "jpeg", "gif", "png"));
                             int result = JLFunc.jfc().showOpenDialog(EditLadderDiagram.this);
                             if (result != JFileChooser.APPROVE_OPTION)
                                 return;
@@ -1596,7 +1597,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
             String message = MessageFormat.format(template, arguments);
             int mwidth = fm.stringWidth(message);
-            int x = (dim.width > mwidth) ? (dim.width - mwidth) / 2 : 0;
+            int x = Math.max((dim.width - mwidth) / 2, 0);
             int y = (dim.height + fm.getHeight()) / 2;
             gr.setColor(Color.white);
             gr.fillRect(0, 0, dim.width, dim.height);

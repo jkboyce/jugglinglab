@@ -60,7 +60,6 @@ public class EditView extends View {
 
         if (p != null) {
             EditLadderDiagram new_ladder = new EditLadderDiagram(p, parent, this);
-
             new_ladder.setAnimationPanel(jae);
             jae.setLadderDiagram(new_ladder);
             jae.deactivateEvent();
