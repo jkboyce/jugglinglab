@@ -31,7 +31,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     public static final int ladder_width_per_juggler = 150;  // pixels
-    public static final int ladder_min_width_per_juggler = 80;
+    public static final int ladder_min_width_per_juggler = 60;
     public static final int MAX_JUGGLERS = 8;
     protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
 
@@ -66,7 +66,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         parent = pframe;
         parentview = pview;
 
-        if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
+        int jugglers = pat.getNumberOfJugglers();
+        if (jugglers > MAX_JUGGLERS) {
             // allocate enough space for "too many jugglers" message; see
             // paintComponent()
             String template = guistrings.getString("Too_many_jugglers");
@@ -78,8 +79,20 @@ public class EditLadderDiagram extends LadderDiagram implements
             return;
         }
 
-        setPreferredSize(new Dimension(ladder_width_per_juggler * pat.getNumberOfJugglers(), 1));
-        setMinimumSize(new Dimension(ladder_min_width_per_juggler * pat.getNumberOfJugglers(), 1));
+        int pref_width = ladder_width_per_juggler * jugglers;
+        int min_width = ladder_min_width_per_juggler * jugglers;
+        double[] width_mult = new double[] {
+            1.0,
+            1.0,
+            0.85,
+            0.72,
+            0.65,
+            0.55,
+        };
+        pref_width *= (jugglers >= width_mult.length ? 0.5 : width_mult[jugglers]);
+        pref_width = Math.max(pref_width, min_width);
+        setPreferredSize(new Dimension(pref_width, 1));
+        setMinimumSize(new Dimension(min_width, 1));
 
         createPopup();
 
