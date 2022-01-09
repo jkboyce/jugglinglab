@@ -23,18 +23,18 @@ import jugglinglab.prop.*;
 // those are added in EditLadderDiagram.
 
 public class LadderDiagram extends JPanel {
-    static final protected Color background = Color.white;
-    static final protected int image_draw_wait = 5;  // frames
+    protected static final Color background = Color.white;
+    protected static final int image_draw_wait = 5;  // frames
 
     // geometric constants in pixels
-    static final protected int border_top = 25;
-    static final protected int transition_radius = 5;
-    static final protected int path_slop = 5;
+    protected static final int border_top = 25;
+    protected static final int transition_radius = 5;
+    protected static final int path_slop = 5;
 
     // geometric constants as fraction of hands separation for each juggler
-    static final protected double border_sides = 0.15;
-    static final protected double juggler_separation = 0.45;
-    static final protected double selfthrow_width = 0.25;
+    protected static final double border_sides = 0.15;
+    protected static final double juggler_separation = 0.45;
+    protected static final double selfthrow_width = 0.25;
 
     protected JMLPattern pat;
 
@@ -42,19 +42,17 @@ public class LadderDiagram extends JPanel {
     protected int height;
     protected int right_x;  // right/left hand pos. for juggler 1 (px)
     protected int left_x;
-    protected int juggler_delta_x;  // horizontal offset between jugglers
+    protected int juggler_delta_x;  // horizontal offset between jugglers (px)
 
     protected double sim_time;
     protected int tracker_y = border_top;
-    private boolean has_switch_symmetry;
-    private boolean has_switchdelay_symmetry;
+    protected boolean has_switch_symmetry;
+    protected boolean has_switchdelay_symmetry;
 
     protected ArrayList<LadderEventItem> laddereventitems;
     protected ArrayList<LadderPathItem> ladderpathitems;
 
     protected BufferedImage ladderimage;
-    protected BufferedImage circleimage;
-    protected BufferedImage dotimage;
     protected boolean ladder_image_valid;
     protected int frames_until_ladder_image;
 
@@ -516,21 +514,6 @@ public class LadderDiagram extends JPanel {
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
             }
         }
-
-        /*
-        // draw events and transitions
-        // check if circle images have been drawn yet
-        if (circleimage == null)
-            createEventImages();
-
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
-            if (item.type == LadderItem.TYPE_EVENT)
-                gr.drawImage(circleimage, item.xlow, item.ylow, this);
-            else
-                gr.drawImage(dotimage, item.xlow, item.ylow, this);
-        }
-        */
 
         // draw the tracker line showing the time
         gr.setColor(Color.red);
