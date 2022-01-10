@@ -96,7 +96,6 @@ public class PatternWindow extends JFrame implements ActionListener {
         if (jc != null && jc.view != View.VIEW_NONE) {
             setViewMode(jc.view, pat);
             viewmenu.getItem(jc.view - 1).setSelected(true);
-            jc.view = View.VIEW_NONE;
         } else {
             // no view type specified, use defaults
             if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS) {

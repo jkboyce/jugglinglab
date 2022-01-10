@@ -241,6 +241,13 @@ public class AnimationPrefs {
         return this;
     }
 
+    public AnimationPrefs fromString(String s) throws JuggleExceptionUser {
+        ParameterList pl = new ParameterList(s);
+        fromParameters(pl);
+        pl.errorIfParametersLeft();
+        return this;
+    }
+
     @Override
     public String toString() {
         String result = "";

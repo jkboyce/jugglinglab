@@ -24,7 +24,7 @@ public class ParameterList {
 
     public ParameterList(String source) throws JuggleExceptionUser {
         this();
-        this.readParameters(source);
+        readParameters(source);
     }
 
     // Returns true if parameter already existed, false if it was new
