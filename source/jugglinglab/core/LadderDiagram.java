@@ -59,10 +59,12 @@ public class LadderDiagram extends JPanel {
     protected boolean anim_paused;
 
 
-    public LadderDiagram(JMLPattern p) {
+    public LadderDiagram(JMLPattern p) throws
+                    JuggleExceptionUser, JuggleExceptionInternal {
         setBackground(background);
         setOpaque(false);
         pat = p;
+        pat.layoutPattern();  // ensures we have event list
         createView();
     }
 

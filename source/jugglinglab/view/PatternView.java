@@ -1,6 +1,6 @@
 // PatternView.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
@@ -44,7 +44,8 @@ public class PatternView extends View implements DocumentListener {
         // animator on the left
 
         ja = new AnimationPanel();
-        ja.setAnimationPanelPreferredSize(dim);
+        ja.setPreferredSize(dim);
+        ja.setMinimumSize(new Dimension(10, 10));
 
         // controls panel on the right
 
@@ -289,7 +290,7 @@ public class PatternView extends View implements DocumentListener {
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        ja.setAnimationPanelPreferredSize(d);
+        ja.setPreferredSize(d);
         jsp.resetToPreferredSizes();
     }
 

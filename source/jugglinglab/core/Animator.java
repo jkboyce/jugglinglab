@@ -1,6 +1,6 @@
 // Animator.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -27,6 +27,10 @@ import jugglinglab.util.*;
 
 // import gifwriter.GIFAnimWriter;
 
+
+// This class draws individual frames of juggling. It is independent of JPanel
+// or other GUI elements so that it can be used in headless mode, e.g., as
+// when creating an animated GIF from the command line.
 
 public class Animator {
     protected JMLPattern pat;
@@ -104,7 +108,9 @@ public class Animator {
             System.out.println(pat);
     }
 
-    public Dimension getDimension() { return new Dimension(dim); }
+    public Dimension getDimension() {
+        return new Dimension(dim);
+    }
 
     public void setDimension(Dimension d) {
         dim = new Dimension(d);
@@ -339,9 +345,17 @@ public class Animator {
             ren1.initDisplay(d, jc.border, overallmax, overallmin);
     }
 
-    public int[] getAnimPropNum()               { return animpropnum; }
-    public Color getBackground()                { return ren1.getBackground(); }
-    public AnimationPrefs getAnimationPrefs()   { return jc; }
+    public int[] getAnimPropNum() {
+        return animpropnum;
+    }
+
+    public Color getBackground() {
+        return ren1.getBackground();
+    }
+
+    public AnimationPrefs getAnimationPrefs() {
+        return jc;
+    }
 
 
     // There are two versions of writeGIF, one that uses Java's ImageIO library

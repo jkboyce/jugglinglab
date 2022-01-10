@@ -23,9 +23,11 @@ public class EditView extends View {
     protected JSplitPane jsp;
 
 
-    public EditView(Dimension dim, JMLPattern pat) {
+    public EditView(Dimension dim, JMLPattern pat) throws
+                    JuggleExceptionUser, JuggleExceptionInternal {
         jae = new AnimationEditPanel();
-        jae.setAnimationPanelPreferredSize(dim);
+        jae.setPreferredSize(dim);
+        jae.setMinimumSize(new Dimension(10, 10));
 
         ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
@@ -56,6 +58,9 @@ public class EditView extends View {
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                         JuggleExceptionUser, JuggleExceptionInternal {
+        boolean changed_jugglers = (p != null && getPattern() != null &&
+                  p.getNumberOfJugglers() != getPattern().getNumberOfJugglers());
+
         jae.restartJuggle(p, c);
 
         if (p != null) {
@@ -66,9 +71,20 @@ public class EditView extends View {
 
             ladder.removeAll();
             ladder.add(new_ladder, BorderLayout.CENTER);
-            ladder.validate();
 
-            parent.setTitle(p.getTitle());
+            if (changed_jugglers && parent != null) {
+                // the next line is needed to get the JSplitPane divider to
+                // reset during layout
+                jsp.resetToPreferredSizes();
+
+                if (parent.isWindowMaximized())
+                    parent.validate();
+                else
+                    parent.pack();
+            }
+
+            if (parent != null)
+                parent.setTitle(p.getTitle());
         }
     }
 
@@ -84,7 +100,7 @@ public class EditView extends View {
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        jae.setAnimationPanelPreferredSize(d);
+        jae.setPreferredSize(d);
         jsp.resetToPreferredSizes();
     }
 

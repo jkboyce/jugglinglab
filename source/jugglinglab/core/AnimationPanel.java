@@ -1,6 +1,6 @@
 // AnimationPanel.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -22,6 +22,10 @@ import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
 
+// This class creates the juggling animation on screen. It spawns a thread
+// that loops over time and draws frames. It also interprets some mouse
+// interactions such as camera drag and click to pause.
+
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
@@ -31,25 +35,23 @@ public class AnimationPanel extends JPanel implements Runnable {
     protected AnimationPrefs jc;
 
     protected Thread engine;
-    protected boolean engineRunning = false;
-    protected boolean enginePaused = false;
-    protected boolean engineAnimating = false;
+    protected boolean engineRunning;
+    protected boolean enginePaused;
+    protected boolean engineAnimating;
     protected double sim_time;
-    public boolean writingGIF = false;
+    public boolean writingGIF;
     public String message;
 
     protected Clip catchclip;
     protected Clip bounceclip;
 
-    protected boolean waspaused = false;  // for pause on mouse away
-    protected boolean outside = true;
-    protected boolean  outside_valid = false;
+    protected boolean waspaused;  // for pause on mouse away
+    protected boolean outside;
+    protected boolean outside_valid;
 
-    protected boolean cameradrag = false;
+    protected boolean cameradrag;
     protected int startx, starty, lastx, lasty;
     protected double[] dragcamangle;
-
-    protected Dimension prefsize;
 
 
     public AnimationPanel() {
@@ -58,10 +60,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         setOpaque(true);
         loadAudioClips();
         initHandlers();
-    }
-
-    public void setAnimationPanelPreferredSize(Dimension d) {
-        prefsize = d;
     }
 
     protected void loadAudioClips() {
@@ -484,22 +482,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
-                // ErrorDialog.handleFatalException(jei);
             }
         }
-    }
-
-    // java.awt.Component methods
-
-    @Override
-    public Dimension getPreferredSize() {
-        if (prefsize != null)
-            return new Dimension(prefsize);
-        return getMinimumSize();
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-        return new Dimension(10, 10);
     }
 }

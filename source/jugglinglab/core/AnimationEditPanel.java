@@ -1,6 +1,6 @@
 // AnimationEditPanel.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -13,14 +13,18 @@ import jugglinglab.jml.JMLEvent;
 import jugglinglab.jml.JMLPattern;
 
 
+// This subclass of AnimationPanel is used by Edit view. It adds functionality
+// for interacting with on-screen representations of JML events, and
+// interacting with a ladder diagram.
+
 public class AnimationEditPanel extends AnimationPanel {
     protected LadderDiagram ladder;
-    protected boolean event_active = false;
+    protected boolean event_active;
     protected JMLEvent event;
     protected int xlow1, xhigh1, ylow1, yhigh1;
     protected int xlow2, xhigh2, ylow2, yhigh2;
-    protected boolean dragging = false;
-    protected boolean dragging_left = false;
+    protected boolean dragging;
+    protected boolean dragging_left;
     protected int xstart, ystart, xdelta, ydelta;
 
 
@@ -377,7 +381,6 @@ public class AnimationEditPanel extends AnimationPanel {
                 killAnimationThread();
                 System.out.println(jei.getMessage());
                 System.exit(0);
-                // ErrorDialog.handleException(jei);
             }
         }
     }

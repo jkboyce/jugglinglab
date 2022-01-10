@@ -61,7 +61,8 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected ParameterDescriptor[] dialog_pd;
 
 
-    public EditLadderDiagram(JMLPattern pat, JFrame pframe, View pview) {
+    public EditLadderDiagram(JMLPattern pat, JFrame pframe, View pview) throws
+                    JuggleExceptionUser, JuggleExceptionInternal {
         super(pat);
         parent = pframe;
         parentview = pview;

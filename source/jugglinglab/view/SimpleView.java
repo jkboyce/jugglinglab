@@ -17,8 +17,9 @@ public class SimpleView extends View {
 
 
     public SimpleView(Dimension dim) {
-        this.ja = new AnimationPanel();
-        ja.setAnimationPanelPreferredSize(dim);
+        ja = new AnimationPanel();
+        ja.setPreferredSize(dim);
+        ja.setMinimumSize(new Dimension(10, 10));
         setLayout(new BorderLayout());
         add(ja, BorderLayout.CENTER);
     }
@@ -45,7 +46,7 @@ public class SimpleView extends View {
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        ja.setAnimationPanelPreferredSize(d);
+        ja.setPreferredSize(d);
     }
 
     @Override

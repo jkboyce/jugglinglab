@@ -25,14 +25,14 @@ public class SelectionView extends View {
 
 
     public SelectionView(Dimension dim) {
-        this.ja = new AnimationPanel[count];
+        ja = new AnimationPanel[count];
         for (int i = 0; i < count; i++)
             ja[i] = new AnimationPanel();
 
         // JLayeredPane on the left so we can show a grid of animations with
         // an overlay drawn on top
-        this.layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay());
-        this.mutator = new Mutator();
+        layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay());
+        mutator = new Mutator();
 
         GridBagLayout gb = new GridBagLayout();
         setLayout(gb);
