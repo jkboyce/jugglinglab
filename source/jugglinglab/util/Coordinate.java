@@ -86,6 +86,18 @@ public class Coordinate {
                               coord1.z - coord2.z);
     }
 
+    public static Coordinate truncate(Coordinate coord, double epsilon) {
+        Coordinate result = new Coordinate(coord);
+
+        if (Math.abs(result.x) < epsilon)
+            result.x = 0.0;
+        if (Math.abs(result.y) < epsilon)
+            result.y = 0.0;
+        if (Math.abs(result.z) < epsilon)
+            result.z = 0.0;
+        return result;
+    }
+
     public boolean isValid() {
         if (Double.isNaN(this.x) || Double.isInfinite(this.x) ||
                 Double.isNaN(this.y) || Double.isInfinite(this.y) ||
@@ -96,6 +108,6 @@ public class Coordinate {
 
     @Override
     public String toString() {
-        return ("("+x+","+y+","+z+")");
+        return ("(" + x + "," + y + "," + z + ")");
     }
 }

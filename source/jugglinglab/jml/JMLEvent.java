@@ -16,7 +16,7 @@ public class JMLEvent {
 
     protected double x, y, z;  // coordinates in local frame
     protected double gx, gy, gz;  // coordinates in global frame
-    protected boolean globaldirty;  // global coordinates need to be recalced?
+    protected boolean globalvalid;  // global coordinates need to be recalced?
     protected double t;
     protected int juggler;
     protected int hand;
@@ -34,37 +34,36 @@ public class JMLEvent {
     public JMLEvent() {
         calcpos = false;
         transitions = new ArrayList<JMLTransition>();
-        globaldirty = true;
     }
 
     public Coordinate getLocalCoordinate()  {
-        return new Coordinate(x,y,z);
+        return new Coordinate(x, y, z);
     }
 
     public void setLocalCoordinate(Coordinate c) {
         x = c.x;
         y = c.y;
         z = c.z;
-        globaldirty = true;
+        globalvalid = false;
     }
 
     public Coordinate getGlobalCoordinate() {
-        return (globaldirty ? null : new Coordinate(gx, gy, gz));
+        return (globalvalid ? new Coordinate(gx, gy, gz) : null);
     }
 
     public void setGlobalCoordinate(Coordinate c) {
         gx = c.x;
         gy = c.y;
         gz = c.z;
-        globaldirty = false;
+        globalvalid = true;
     }
 
     public double getT() {
         return t;
     }
 
-    public void setT(double t) {
-        this.t = t;
+    public void setT(double time) {
+        t = time;
     }
 
     public int getHand() {
@@ -81,7 +80,8 @@ public class JMLEvent {
             else if (strhand.equalsIgnoreCase("right"))
                 hand = HandLink.RIGHT_HAND;
             else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_hand_name")+" '"+strhand+"'");
+                throw new JuggleExceptionUser(errorstrings.getString("Error_hand_name") +
+                            " '" + strhand + "'");
         } else {
             juggler = Integer.valueOf(strhand.substring(0,index)).intValue();
             String substr = strhand.substring(index+1);
@@ -90,7 +90,8 @@ public class JMLEvent {
             else if (substr.equalsIgnoreCase("right"))
                 hand = HandLink.RIGHT_HAND;
             else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_hand_name")+" '"+strhand+"'");
+                throw new JuggleExceptionUser(errorstrings.getString("Error_hand_name") +
+                            " '" + strhand + "'");
         }
     }
     public void setHand(int j, int h) {

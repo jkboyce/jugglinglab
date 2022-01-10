@@ -18,13 +18,13 @@ import jugglinglab.jml.JMLPattern;
 // interacting with a ladder diagram.
 
 public class AnimationEditPanel extends AnimationPanel {
-    protected LadderDiagram ladder;
+    protected EditLadderDiagram ladder;
     protected boolean event_active;
     protected JMLEvent event;
     protected int xlow1, xhigh1, ylow1, yhigh1;
     protected int xlow2, xhigh2, ylow2, yhigh2;
     protected boolean dragging;
-    protected boolean dragging_left;
+    protected boolean dragging_left;  // may not be necessary
     protected int xstart, ystart, xdelta, ydelta;
 
 
@@ -102,6 +102,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
                             event.getGlobalCoordinate(), xdelta, ydelta);
                     if (AnimationEditPanel.this.jc.stereo) {
+                        // average the coordinate shifts from each perspective
                         Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
                                 event.getGlobalCoordinate(), xdelta, ydelta);
                         newgc = Coordinate.add(newgc, newgc2);
@@ -112,15 +113,16 @@ public class AnimationEditPanel extends AnimationPanel {
                                             event.getJuggler(), event.getT());
                     Coordinate deltalc = Coordinate.sub(newlc,
                                             event.getLocalCoordinate());
+                    deltalc = Coordinate.truncate(deltalc, 1e-7);
 
                     if (flipx)
                         deltalc.x = -deltalc.x;
-                    Coordinate orig = master.getLocalCoordinate();
-                    master.setLocalCoordinate(Coordinate.add(orig, deltalc));
+
+                    Coordinate oldlc = master.getLocalCoordinate();
+                    master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
                     xdelta = ydelta = 0;
 
-                    EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                    eld.activeEventMoved();
+                    ladder.activeEventMoved();
                 }
                 AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
@@ -144,7 +146,6 @@ public class AnimationEditPanel extends AnimationPanel {
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause && !writingGIF) {
                     waspaused = getPaused();
-                    // waspaused_valid = true;
                     setPaused(true);
                 }
                 outside = true;
@@ -159,6 +160,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     return;
                 if (writingGIF)
                     return;
+
                 if (dragging) {
                     int mx = me.getX();
                     int my = me.getY();
@@ -191,8 +193,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 while (ca[0] >= Math.toRadians(360.0))
                     ca[0] -= Math.toRadians(360.0);
 
-                double[] snappedcamangle = snapCamera(ca);
-                AnimationEditPanel.this.anim.setCameraAngle(snappedcamangle);
+                AnimationEditPanel.this.anim.setCameraAngle(snapCamera(ca));
 
                 if (event_active)
                     createEventView();
@@ -210,6 +211,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     return;
                 if (writingGIF)
                     return;
+
                 anim.setDimension(AnimationEditPanel.this.getSize());
                 if (event_active)
                     createEventView();
@@ -278,7 +280,8 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     public void setLadderDiagram(LadderDiagram lad) {
-        ladder = lad;
+        if (lad instanceof EditLadderDiagram)
+            ladder = (EditLadderDiagram)lad;
     }
 
     // set position of tracker bar in ladder diagram as we animate
@@ -290,8 +293,6 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     public void activateEvent(JMLEvent ev) {
-        if ((ladder != null) && !(ladder instanceof EditLadderDiagram))
-            return;
         event = ev;
         event_active = true;
         createEventView();
@@ -345,7 +346,8 @@ public class AnimationEditPanel extends AnimationPanel {
 
         if (g2 instanceof Graphics2D) {
             Graphics2D g22 = (Graphics2D)g2;
-            g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
         }
         g2.setColor(Color.green);
         g2.drawLine(xlow1+xdelta, ylow1+ydelta, xhigh1+xdelta, ylow1+ydelta);
@@ -357,7 +359,8 @@ public class AnimationEditPanel extends AnimationPanel {
             g2 = g.create(d.width/2,0,d.width/2,d.height);
             if (g2 instanceof Graphics2D) {
                 Graphics2D g22 = (Graphics2D)g2;
-                g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
             }
             g2.setColor(Color.green);
             g2.drawLine(xlow2+xdelta, ylow2+ydelta, xhigh2+xdelta, ylow2+ydelta);

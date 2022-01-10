@@ -251,7 +251,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         return result;
     }
 
-    protected double anglediff(double delta) {
+    protected static double anglediff(double delta) {
         while (delta > Math.PI)
             delta -= 2.0 * Math.PI;
         while (delta <= -Math.PI)
