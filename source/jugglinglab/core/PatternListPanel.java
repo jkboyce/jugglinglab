@@ -424,7 +424,14 @@ public class PatternListPanel extends JPanel {
         if (animprefs.length() == 0)
             animprefs = null;
 
-        if (pat.isBasePatternEdited()) {
+        if (pat.hasBasePattern() && !pat.isBasePatternEdited()) {
+            // add as base pattern
+            String notation = pat.getBasePatternNotation();
+            String anim = pat.getBasePatternConfig();
+            JMLNode pattern = null;
+
+            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        } else {
             // add as JML pattern
             String notation = "jml";
             String anim = null;
@@ -439,13 +446,6 @@ public class PatternListPanel extends JPanel {
                 // already animating in another window
                 ErrorDialog.handleFatalException(e);
             }
-
-            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-        } else {
-            // add as base pattern
-            String notation = pat.getBasePatternNotation();
-            String anim = pat.getBasePatternConfig();
-            JMLNode pattern = null;
 
             rec = new PatternRecord(display, animprefs, notation, anim, pattern);
         }

@@ -370,6 +370,10 @@ public class JMLPattern {
         return base_pattern_config;
     }
 
+    public boolean hasBasePattern() {
+        return (getBasePatternNotation() != null && getBasePatternConfig() != null);
+    }
+
     public boolean isBasePatternEdited() {
         if (base_pattern_notation == null || base_pattern_config == null)
             return false;
