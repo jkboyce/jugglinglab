@@ -94,18 +94,14 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     protected void createContents(JMLPattern pat, AnimationPrefs jc) throws
                         JuggleExceptionUser, JuggleExceptionInternal {
-        if (jc != null && jc.view != View.VIEW_NONE) {
+        if (jc != null && jc.view != View.VIEW_NONE)
             setViewMode(jc.view, pat);
-            viewmenu.getItem(jc.view - 1).setSelected(true);
-        } else {
+        else {
             // no view type specified, use defaults
-            if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS) {
+            if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS)
                 setViewMode(View.VIEW_SIMPLE, pat);
-                viewmenu.getItem(View.VIEW_SIMPLE - 1).setSelected(true);
-            } else {
+            else
                 setViewMode(View.VIEW_EDIT, pat);
-                viewmenu.getItem(View.VIEW_EDIT - 1).setSelected(true);
-            }
         }
         view.setDoubleBuffered(true);
         if (jc != null)
@@ -118,9 +114,10 @@ public class PatternWindow extends JFrame implements ActionListener {
         pack();
     }
 
+    // `mode` is one of the View.VIEW_X constants
     protected void setViewMode(int mode, JMLPattern pat) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
-        View newview = null;
+        viewmenu.getItem(mode - 1).setSelected(true);
 
         // items to carry over from old view to the new:
         AnimationPrefs jc = null;
@@ -134,6 +131,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         } else
             jc = new AnimationPrefs();
 
+        View newview = null;
         Dimension animsize = new Dimension(jc.width, jc.height);
 
         switch (mode) {
