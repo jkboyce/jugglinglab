@@ -1,6 +1,6 @@
 // PatternListPanel.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.core;
 
@@ -471,10 +471,10 @@ public class PatternListPanel extends JPanel {
         okbutton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String newline = tf.getText();
+                String display = tf.getText();
                 dialog.dispose();
 
-                PatternRecord rec = new PatternRecord(newline, null, null, null, null);
+                PatternRecord rec = new PatternRecord(display, null, null, null, null);
 
                 if (row < 0) {
                     model.addElement(rec);  // adds at end
@@ -772,7 +772,7 @@ public class PatternListPanel extends JPanel {
             PatternRecord rec = value;
 
             setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
-            setText(rec.display);
+            setText(rec.display.length() > 0 ? rec.display : " ");
 
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
