@@ -24,7 +24,7 @@ public class EditView extends View {
 
 
     public EditView(Dimension dim, JMLPattern pat) throws
-                    JuggleExceptionUser, JuggleExceptionInternal {
+                            JuggleExceptionUser, JuggleExceptionInternal {
         jae = new AnimationEditPanel();
         jae.setPreferredSize(dim);
         jae.setMinimumSize(new Dimension(10, 10));
@@ -57,7 +57,7 @@ public class EditView extends View {
 
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
-                        JuggleExceptionUser, JuggleExceptionInternal {
+                            JuggleExceptionUser, JuggleExceptionInternal {
         boolean changed_jugglers = (p != null && getPattern() != null &&
                   p.getNumberOfJugglers() != getPattern().getNumberOfJugglers());
 
@@ -81,7 +81,8 @@ public class EditView extends View {
                     parent.validate();
                 else
                     parent.pack();
-            }
+            } else
+                ladder.validate();  // to make ladder redraw
 
             if (parent != null)
                 parent.setTitle(p.getTitle());
