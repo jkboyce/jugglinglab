@@ -1,10 +1,11 @@
 // SimpleView.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
 import java.awt.*;
+import java.io.File;
 import javax.swing.*;
 
 import jugglinglab.core.*;
@@ -76,7 +77,7 @@ public class SimpleView extends View {
     }
 
     @Override
-    public void writeGIF() {
+    public void writeGIF(File f) {
         ja.writingGIF = true;
         boolean origpause = getPaused();
         setPaused(true);
@@ -89,6 +90,6 @@ public class SimpleView extends View {
             }
         };
 
-        new View.GIFWriter(ja, cleanup);
+        new View.GIFWriter(ja, f, cleanup);
     }
 }

@@ -6,6 +6,7 @@ package jugglinglab.view;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.StringReader;
 import java.text.MessageFormat;
 import javax.swing.*;
@@ -321,7 +322,7 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
-    public void writeGIF() {
+    public void writeGIF(File f) {
         ja.writingGIF = true;
         updateButtons();
         boolean origpause = getPaused();
@@ -336,7 +337,7 @@ public class PatternView extends View implements DocumentListener {
             }
         };
 
-        new View.GIFWriter(ja, cleanup);
+        new View.GIFWriter(ja, f, cleanup);
     }
 
     // javax.swing.event.DocumentListener methods

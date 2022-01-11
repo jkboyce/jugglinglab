@@ -30,6 +30,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     protected PatternListPanel pl;
     protected JMenu windowmenu;
+    protected String last_jml_filename;
 
 
     public PatternListWindow(String title) {
@@ -111,6 +112,10 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     public PatternListPanel getPatternListPanel() {
         return pl;
+    }
+
+    public void setJMLFilename(String fname) {
+        last_jml_filename = fname;
     }
 
     //-------------------------------------------------------------------------
@@ -315,8 +320,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVE:
                 try {
-                    // create default filename
-                    String fname = getTitle() + ".jml";
+                    String fname = last_jml_filename;
+                    if (fname == null)
+                        fname = getTitle() + ".jml";  // default filename
                     fname = JLFunc.sanitizeFilename(fname);
                     JLFunc.jfc().setSelectedFile(new File(fname));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
@@ -329,8 +335,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
                         break;
                     if (!f.getAbsolutePath().endsWith(".jml"))
                         f = new File(f.getAbsolutePath() + ".jml");
-
                     JLFunc.errorIfNotSanitized(f.getName());
+                    last_jml_filename = f.getName();
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);
@@ -349,8 +355,16 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
             case FILE_SAVETEXT:
                 try {
-                    // create default filename
-                    String fname = getTitle() + ".txt";
+                    String fname = last_jml_filename;
+                    if (fname != null) {
+                        int index = fname.lastIndexOf(".");
+                        String base = index >= 0 ? fname.substring(0, index) : fname;
+                        String extension = index >= 0 ? fname.substring(index) : "";
+                        fname = base + ".txt";
+                    } else {
+                        fname = getTitle() + ".txt";  // default filename
+                    }
+
                     fname = JLFunc.sanitizeFilename(fname);
                     JLFunc.jfc().setSelectedFile(new File(fname));
                     JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
@@ -363,8 +377,10 @@ public class PatternListWindow extends JFrame implements ActionListener {
                         break;
                     if (!f.getAbsolutePath().endsWith(".txt"))
                         f = new File(f.getAbsolutePath() + ".txt");
-
                     JLFunc.errorIfNotSanitized(f.getName());
+                    int index = f.getName().lastIndexOf(".");
+                    String base = index >= 0 ? f.getName().substring(0, index) : f.getName();
+                    last_jml_filename = base + ".jml";
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);

@@ -1,11 +1,12 @@
 // SelectionView.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.view;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import javax.swing.*;
 
 import jugglinglab.core.*;
@@ -257,7 +258,7 @@ public class SelectionView extends View {
     }
 
     @Override
-    public void writeGIF() {
+    public void writeGIF(File f) {
         for (int i = 0; i < count; i++)
             ja[i].writingGIF = true;
         boolean origpause = getPaused();
@@ -272,6 +273,6 @@ public class SelectionView extends View {
             }
         };
 
-        new View.GIFWriter(ja[center], cleanup);
+        new View.GIFWriter(ja[center], f, cleanup);
     }
 }

@@ -43,6 +43,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     protected JMenu viewmenu;
     protected JMenu windowmenu;
     protected ArrayList<JMLPattern> undo = new ArrayList<JMLPattern>();
+    protected String last_jml_filename;
 
 
     public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc) throws
@@ -214,6 +215,10 @@ public class PatternWindow extends JFrame implements ActionListener {
     // https://bugs.openjdk.java.net/browse/JDK-8228638
     public boolean isWindowMaximized() {
         return ((getExtendedState() & MAXIMIZED_BOTH) != 0);
+    }
+
+    public void setJMLFilename(String fname) {
+        last_jml_filename = fname;
     }
 
     //-------------------------------------------------------------------------
@@ -635,39 +640,73 @@ public class PatternWindow extends JFrame implements ActionListener {
                     throw new JuggleExceptionUser(errorstrings.getString(
                                 "Error_saving_invalid_pattern"));
 
-                // create default filename
-                String fname = getTitle() + ".jml";
-                fname = JLFunc.sanitizeFilename(fname);
-                JLFunc.jfc().setSelectedFile(new File(fname));
-                JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+                {
+                    String fname = last_jml_filename;
+                    if (fname == null)
+                        fname = getTitle() + ".jml";  // default filename
+                    fname = JLFunc.sanitizeFilename(fname);
+                    JLFunc.jfc().setSelectedFile(new File(fname));
+                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
-                if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-                    break;
+                    if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                        break;
 
-                File f = JLFunc.jfc().getSelectedFile();
-                if (f == null)
-                    break;
-                if (!f.getAbsolutePath().endsWith(".jml"))
-                    f = new File(f.getAbsolutePath() + ".jml");
+                    File f = JLFunc.jfc().getSelectedFile();
+                    if (f == null)
+                        break;
+                    if (!f.getAbsolutePath().endsWith(".jml"))
+                        f = new File(f.getAbsolutePath() + ".jml");
+                    JLFunc.errorIfNotSanitized(f.getName());
+                    last_jml_filename = f.getName();
 
-                JLFunc.errorIfNotSanitized(f.getName());
-
-                try {
-                    FileWriter fw = new FileWriter(f);
-                    view.getPattern().writeJML(fw, true);
-                    fw.close();
-                } catch (FileNotFoundException fnfe) {
-                    throw new JuggleExceptionInternal("FileNotFound: " +
-                                    fnfe.getMessage());
-                } catch (IOException ioe) {
-                    throw new JuggleExceptionInternal("IOException: " +
-                                    ioe.getMessage());
+                    try {
+                        FileWriter fw = new FileWriter(f);
+                        view.getPattern().writeJML(fw, true);
+                        fw.close();
+                    } catch (FileNotFoundException fnfe) {
+                        throw new JuggleExceptionInternal("FileNotFound: " +
+                                        fnfe.getMessage());
+                    } catch (IOException ioe) {
+                        throw new JuggleExceptionInternal("IOException: " +
+                                        ioe.getMessage());
+                    }
                 }
                 break;
 
             case FILE_GIFSAVE:
-                if (view != null)
-                    view.writeGIF();
+                if (view == null)
+                    break;
+
+                {
+                    String fname = last_jml_filename;
+                    if (fname != null) {
+                        int index = fname.lastIndexOf(".");
+                        String base = index >= 0 ? fname.substring(0, index) : fname;
+                        String extension = index >= 0 ? fname.substring(index) : "";
+                        fname = base + ".gif";
+                    } else {
+                        fname = getTitle() + ".gif";  // default filename
+                    }
+
+                    fname = JLFunc.sanitizeFilename(fname);
+                    JLFunc.jfc().setSelectedFile(new File(fname));
+                    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
+
+                    if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                        break;
+
+                    File f = JLFunc.jfc().getSelectedFile();
+                    if (f == null)
+                        break;
+                    if (!f.getAbsolutePath().endsWith(".gif"))
+                        f = new File(f.getAbsolutePath() + ".gif");
+                    JLFunc.errorIfNotSanitized(f.getName());
+                    int index = f.getName().lastIndexOf(".");
+                    String base = index >= 0 ? f.getName().substring(0, index) : f.getName();
+                    last_jml_filename = base + ".jml";
+
+                    view.writeGIF(f);
+                }
                 break;
 
             case FILE_DUPLICATE:

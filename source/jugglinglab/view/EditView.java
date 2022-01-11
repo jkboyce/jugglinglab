@@ -5,6 +5,7 @@
 package jugglinglab.view;
 
 import java.awt.*;
+import java.io.File;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -132,7 +133,7 @@ public class EditView extends View {
     }
 
     @Override
-    public void writeGIF() {
+    public void writeGIF(File f) {
         jae.writingGIF = true;
         jae.deactivateEvent();  // so we don't draw event box in animated GIF
         boolean origpause = getPaused();
@@ -146,6 +147,6 @@ public class EditView extends View {
             }
         };
 
-        new View.GIFWriter(jae, cleanup);
+        new View.GIFWriter(jae, f, cleanup);
     }
 }
