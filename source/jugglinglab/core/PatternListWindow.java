@@ -359,7 +359,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
                     if (fname != null) {
                         int index = fname.lastIndexOf(".");
                         String base = index >= 0 ? fname.substring(0, index) : fname;
-                        String extension = index >= 0 ? fname.substring(index) : "";
                         fname = base + ".txt";
                     } else {
                         fname = getTitle() + ".txt";  // default filename

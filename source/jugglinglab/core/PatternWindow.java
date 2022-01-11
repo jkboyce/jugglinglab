@@ -682,7 +682,6 @@ public class PatternWindow extends JFrame implements ActionListener {
                     if (fname != null) {
                         int index = fname.lastIndexOf(".");
                         String base = index >= 0 ? fname.substring(0, index) : fname;
-                        String extension = index >= 0 ? fname.substring(index) : "";
                         fname = base + ".gif";
                     } else {
                         fname = getTitle() + ".gif";  // default filename

@@ -18,6 +18,7 @@ import org.xml.sax.*;
 import jugglinglab.jml.*;
 import jugglinglab.notation.*;
 import jugglinglab.util.*;
+import jugglinglab.view.View;
 
 
 // This is the main application window visible when Juggling Lab is launched
@@ -255,9 +256,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     public static void newPattern() throws JuggleExceptionInternal {
         try {
             JMLPattern pat = JMLPattern.fromBasePattern("Siteswap", "pattern=3");
-            ParameterList pl = new ParameterList("view=pattern_editor");
-            AnimationPrefs ap = new AnimationPrefs().fromParameters(pl);
-            new PatternWindow("3", pat, ap);
+            PatternWindow pw = new PatternWindow("3", pat, new AnimationPrefs());
+            pw.setViewMode(View.VIEW_PATTERN, pat);
         } catch (JuggleExceptionUser jeu) {
             throw new JuggleExceptionInternal(jeu.getMessage());
         }
