@@ -303,6 +303,7 @@ public abstract class MHNNotationControl extends NotationControl {
         if (pl.getParameter("title") == null) {
             String hss = pl.getParameter("hss");
             int hands_index = cb1.getSelectedIndex();
+            int body_index = cb2.getSelectedIndex();
 
             if (hss != null) {
                 String title = "oss: " + pl.getParameter("pattern") + "  hss: " + hss;
@@ -310,6 +311,10 @@ public abstract class MHNNotationControl extends NotationControl {
             } else if (hands_index > 0) {
                 // if hands are not default, apply a title
                 String title = pl.getParameter("pattern") + " " + cb1.getItemAt(hands_index);
+                pl.addParameter("title", title);
+            } else if (body_index > 0) {
+                // if body movement is not default, apply a title
+                String title = pl.getParameter("pattern") + " " + cb2.getItemAt(body_index);
                 pl.addParameter("title", title);
             }
         }
