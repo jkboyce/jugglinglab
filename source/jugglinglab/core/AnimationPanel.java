@@ -214,11 +214,8 @@ public class AnimationPanel extends JPanel implements Runnable {
                         return;
                 }
 
-                if (hasResized) {
-                    Dimension dim = AnimationPanel.this.getSize();
-                    jc.width = dim.width;
-                    jc.height = dim.height;
-                }
+                if (hasResized)
+                    jc.setSize(AnimationPanel.this.getSize());
                 hasResized = true;
             }
         });

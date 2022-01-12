@@ -807,15 +807,16 @@ public class PatternWindow extends JFrame implements ActionListener {
                 AnimationPrefsDialog japd = new AnimationPrefsDialog(this);
                 AnimationPrefs newjc = japd.getPrefs(jc);
 
-                if (newjc.width != jc.width || newjc.height != jc.height) {
-                    // user changed the width and/or height
-                    view.setAnimationPanelPreferredSize(new Dimension(newjc.width,
-                                                                newjc.height));
-                    pack();
-                }
-
-                if (newjc != jc)
+                if (newjc != jc) {
                     view.restartView(null, newjc);
+
+                    if (newjc.width != jc.width || newjc.height != jc.height) {
+                        if (isWindowMaximized())
+                            validate();
+                        else
+                            pack();
+                    }
+                }
                 break;
 
             case VIEW_UNDO:

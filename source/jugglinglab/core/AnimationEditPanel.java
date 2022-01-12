@@ -225,11 +225,8 @@ public class AnimationEditPanel extends AnimationPanel {
                         return;
                 }
 
-                if (hasResized) {
-                    Dimension dim = AnimationEditPanel.this.getSize();
-                    jc.width = dim.width;
-                    jc.height = dim.height;
-                }
+                if (hasResized)
+                    jc.setSize(AnimationEditPanel.this.getSize());
                 hasResized = true;
             }
         });
