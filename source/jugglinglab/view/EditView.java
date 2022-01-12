@@ -59,10 +59,9 @@ public class EditView extends View {
     @Override
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
-        boolean changed_jugglers = (p != null && getPattern() != null &&
-                  p.getNumberOfJugglers() != getPattern().getNumberOfJugglers());
-
         jae.restartJuggle(p, c);
+        if (c != null)
+            jae.setPreferredSize(new Dimension(c.width, c.height));
 
         if (p != null) {
             EditLadderDiagram new_ladder = new EditLadderDiagram(p, parent, this);
@@ -72,6 +71,9 @@ public class EditView extends View {
 
             ladder.removeAll();
             ladder.add(new_ladder, BorderLayout.CENTER);
+
+            boolean changed_jugglers = (getPattern() != null &&
+                      p.getNumberOfJugglers() != getPattern().getNumberOfJugglers());
 
             if (changed_jugglers && parent != null) {
                 // the next line is needed to get the JSplitPane divider to

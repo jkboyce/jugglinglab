@@ -31,7 +31,9 @@ public class SimpleView extends View {
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                                 JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
-        if (p != null)
+        if (c != null)
+            ja.setPreferredSize(new Dimension(c.width, c.height));
+        if (p != null && parent != null)
             parent.setTitle(p.getTitle());
     }
 

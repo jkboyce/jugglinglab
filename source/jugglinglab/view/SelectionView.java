@@ -189,6 +189,8 @@ public class SelectionView extends View {
                         JuggleExceptionUser, JuggleExceptionInternal {
         AnimationPrefs newjc = null;
         if (c != null) {
+            setAnimationPanelPreferredSize(new Dimension(c.width, c.height));
+
             newjc = new AnimationPrefs(c);
             // disable startPause for grid of animations
             newjc.startPause = false;
