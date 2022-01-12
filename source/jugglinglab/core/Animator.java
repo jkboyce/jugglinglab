@@ -271,7 +271,7 @@ public class Animator {
             patternmin = Coordinate.min(patternmin, pat.getPathMin(i));
 
             if (jugglinglab.core.Constants.DEBUG_LAYOUT)
-                System.out.println("Pattern max "+i+" = "+patternmax);
+                System.out.println("Pattern max " + i + " = " + patternmax);
         }
 
         // make sure all hands are visible
@@ -320,17 +320,17 @@ public class Animator {
         overallmax.x = maxabsx;
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
-            System.out.println("Hand max = "+handmax);
-            System.out.println("Hand min = "+handmin);
-            System.out.println("Prop max = "+propmax);
-            System.out.println("Prop min = "+propmin);
-            System.out.println("Pattern max = "+patternmax);
-            System.out.println("Pattern min = "+patternmin);
-            System.out.println("Overall max = "+overallmax);
-            System.out.println("Overall min = "+overallmin);
+            System.out.println("Hand max = " + handmax);
+            System.out.println("Hand min = " + handmin);
+            System.out.println("Prop max = " + propmax);
+            System.out.println("Prop min = " + propmin);
+            System.out.println("Pattern max = " + patternmax);
+            System.out.println("Pattern min = " + patternmin);
+            System.out.println("Overall max = " + overallmax);
+            System.out.println("Overall min = " + overallmin);
 
-            overallmax = new Coordinate(100.0,0.0,500.0);
-            overallmin = new Coordinate(-100.0,0.0,-100.0);
+            overallmax = new Coordinate(100.0, 0.0, 500.0);
+            overallmin = new Coordinate(-100.0, 0.0, -100.0);
         }
     }
 
@@ -362,6 +362,10 @@ public class Animator {
     // and a second (much older) version that uses a standalone GIF writer that
     // we wrote. The ImageIO version is slower but does a better job of building
     // the GIF colormap so we use that one for now.
+    //
+    // Note: The GIF header contains the delay time between frames in terms of
+    // hundredths of a second. This is an integer quantity, so only `fps` values
+    // like 50, 33 1/3, 25, 20, ... are precisely achieveable.
 
     public void writeGIF(OutputStream os,
                          Animator.WriteGIFMonitor wgm,
