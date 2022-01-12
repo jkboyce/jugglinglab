@@ -1,12 +1,15 @@
 // JLVector.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.renderer;
 
 
 public class JLVector {
-    public double x = 0.0, y = 0.0, z = 0.0;
+    public double x;
+    public double y;
+    public double z;
+
 
     public JLVector() {
     }
@@ -18,13 +21,13 @@ public class JLVector {
     }
 
     public double length() {
-        return Math.sqrt(x*x+y*y+z*z);
+        return Math.sqrt(x*x + y*y + z*z);
     }
 
     public JLVector transform(JLMatrix m) {
-        double newx = x*m.m00 + y*m.m01 + z*m.m02 + m.m03;
-        double newy = x*m.m10 + y*m.m11 + z*m.m12 + m.m13;
-        double newz = x*m.m20 + y*m.m21 + z*m.m22 + m.m23;
+        double newx = x * m.m00 + y * m.m01 + z * m.m02 + m.m03;
+        double newy = x * m.m10 + y * m.m11 + z * m.m12 + m.m13;
+        double newz = x * m.m20 + y * m.m21 + z * m.m22 + m.m23;
         return new JLVector(newx, newy, newz);
     }
 

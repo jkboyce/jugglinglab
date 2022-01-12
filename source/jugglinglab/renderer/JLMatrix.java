@@ -1,6 +1,6 @@
 // JLMatrix.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.renderer;
 
@@ -10,6 +10,7 @@ public class JLMatrix {
     public double m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0;
     public double m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0;
     public double m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0;
+
 
     public JLMatrix() {
     }
