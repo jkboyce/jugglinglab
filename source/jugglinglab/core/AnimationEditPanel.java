@@ -18,7 +18,7 @@ import jugglinglab.jml.JMLPattern;
 // interacting with a ladder diagram.
 
 public class AnimationEditPanel extends AnimationPanel {
-    protected EditLadderDiagram ladder;
+    protected LadderDiagram ladder;
     protected boolean event_active;
     protected JMLEvent event;
     protected int xlow1, xhigh1, ylow1, yhigh1;
@@ -122,7 +122,8 @@ public class AnimationEditPanel extends AnimationPanel {
                     master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
                     xdelta = ydelta = 0;
 
-                    ladder.activeEventMoved();
+                    if (ladder instanceof EditLadderDiagram)
+                        ((EditLadderDiagram)ladder).activeEventMoved();
                 }
                 AnimationEditPanel.this.cameradrag = false;
                 dragging = false;
@@ -280,8 +281,7 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     public void setLadderDiagram(LadderDiagram lad) {
-        if (lad instanceof EditLadderDiagram)
-            ladder = (EditLadderDiagram)lad;
+        ladder = lad;
     }
 
     // set position of tracker bar in ladder diagram as we animate

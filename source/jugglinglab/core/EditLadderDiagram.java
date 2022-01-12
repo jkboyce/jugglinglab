@@ -1612,11 +1612,20 @@ public class EditLadderDiagram extends LadderDiagram implements
         // Could probably get this permutation from the pattern instead of the animator.
         int[] animpropnum = animator.anim.getAnimPropNum();
 
+        // draw positions
+        gr.setColor(Color.black);
+        for (LadderPositionItem item : ladderpositionitems) {
+            gr.setColor(this.getBackground());
+            gr.fillRect(item.xlow, item.ylow,
+                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+            gr.setColor(Color.black);
+            gr.drawRect(item.xlow, item.ylow,
+                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+        }
+
         // draw events
         gr.setColor(Color.black);
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
-
+        for (LadderEventItem item : laddereventitems) {
             int yoffset = ((gui_state == STATE_MOVING_EVENT) &&
                            (active_eventitem.eventitem == item.eventitem)) ? delta_y : 0;
             if (item.type == LadderItem.TYPE_EVENT)
