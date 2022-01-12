@@ -51,10 +51,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         super(title);
         loadOptimizer();  // Do this before creating menus
         createMenus();
-        createContents(pat, jc);
-
-        view.restartView(pat, jc);
-        view.setUndoList(undo, -1);
+        createInitialView(pat, jc);
         view.addToUndoList(pat);
 
         setLocation(getNextScreenLocation());
@@ -92,44 +89,64 @@ public class PatternWindow extends JFrame implements ActionListener {
     // Methods to create and manage window contents
     //-------------------------------------------------------------------------
 
-    protected void createContents(JMLPattern pat, AnimationPrefs jc) throws
-                        JuggleExceptionUser, JuggleExceptionInternal {
-        if (jc != null && jc.view != View.VIEW_NONE)
-            setViewMode(jc.view, pat);
-        else {
-            // no view type specified, use defaults
-            if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS)
-                setViewMode(View.VIEW_SIMPLE, pat);
-            else
-                setViewMode(View.VIEW_EDIT, pat);
+    protected void createInitialView(JMLPattern pat, AnimationPrefs jc) throws
+                            JuggleExceptionUser, JuggleExceptionInternal {
+        int mode = View.VIEW_EDIT;
+        if (jc.view != View.VIEW_NONE)
+            mode = jc.view;
+        else if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS)
+            mode = View.VIEW_SIMPLE;
+
+        viewmenu.getItem(mode - 1).setSelected(true);
+
+        Dimension animsize = new Dimension(jc.width, jc.height);
+
+        switch (mode) {
+            case View.VIEW_NONE:
+                break;
+            case View.VIEW_SIMPLE:
+                view = new SimpleView(animsize);
+                break;
+            case View.VIEW_EDIT:
+                view = new EditView(animsize, pat);
+                break;
+            case View.VIEW_PATTERN:
+                view = new PatternView(animsize);
+                break;
+            case View.VIEW_SELECTION:
+                view = new SelectionView(animsize);
+                break;
         }
+        if (view == null)
+            throw new JuggleExceptionInternal("createInitialView: problem creating view");
+
+        view.setParent(this);
+        view.setOpaque(true);
         view.setDoubleBuffered(true);
-        if (jc != null)
-            view.setAnimationPanelPreferredSize(new Dimension(jc.width, jc.height));
+        setContentPane(view);
 
         Locale loc = JLLocale.getLocale();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
-
         setBackground(Color.white);
         pack();
+
+        view.restartView(pat, jc);
+        view.setUndoList(undo, -1);
     }
 
     // `mode` is one of the View.VIEW_X constants
-    protected void setViewMode(int mode, JMLPattern pat) throws
+    protected void setViewMode(int mode) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
+        if (view == null)
+            throw new JuggleExceptionInternal("setViewMode called with no prior view");
+
         viewmenu.getItem(mode - 1).setSelected(true);
 
-        // items to carry over from old view to the new:
-        AnimationPrefs jc = null;
-        boolean paused = false;
-        int undo_index = 0;
-
-        if (view != null) {
-            jc = view.getAnimationPrefs();
-            paused = view.getPaused();
-            undo_index = view.getUndoIndex();
-        } else
-            jc = new AnimationPrefs();
+        // items to carry over from old view to the new
+        JMLPattern pat = view.getPattern();
+        AnimationPrefs jc = view.getAnimationPrefs();
+        boolean paused = view.getPaused();
+        int undo_index = view.getUndoIndex();
 
         View newview = null;
         Dimension animsize = new Dimension(jc.width, jc.height);
@@ -156,21 +173,17 @@ public class PatternWindow extends JFrame implements ActionListener {
         newview.setParent(this);
         newview.setPaused(paused);
         newview.setOpaque(true);
+        newview.setDoubleBuffered(true);
         setContentPane(newview);
 
-        if (view != null) {
-            // don't get here for a newly-constructed window; pack(),
-            // restartView(), and setUndoList() happen in constructor
-            if (isWindowMaximized())
-                validate();
-            else
-                pack();
-            newview.restartView(pat, jc);
-            newview.setUndoList(undo, undo_index);
+        if (isWindowMaximized())
+            validate();
+        else
+            pack();
+        newview.restartView(pat, jc);
+        newview.setUndoList(undo, undo_index);
 
-            view.disposeView();
-        }
-
+        view.disposeView();
         view = newview;
     }
 
@@ -555,19 +568,19 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(MenuCommand.VIEW_REDO);
             else if (command.equals("simple")) {
                 if (getViewMode() != View.VIEW_SIMPLE)
-                    setViewMode(View.VIEW_SIMPLE, view.getPattern());
+                    setViewMode(View.VIEW_SIMPLE);
             }
             else if (command.equals("visual_edit")) {
                 if (getViewMode() != View.VIEW_EDIT)
-                    setViewMode(View.VIEW_EDIT, view.getPattern());
+                    setViewMode(View.VIEW_EDIT);
             }
             else if (command.equals("pattern_edit")) {
                 if (getViewMode() != View.VIEW_PATTERN)
-                    setViewMode(View.VIEW_PATTERN, view.getPattern());
+                    setViewMode(View.VIEW_PATTERN);
             }
             else if (command.equals("selection_edit")) {
                 if (getViewMode() != View.VIEW_SELECTION)
-                    setViewMode(View.VIEW_SELECTION, view.getPattern());
+                    setViewMode(View.VIEW_SELECTION);
             } else if (command.equals("about"))
                 doMenuCommand(MenuCommand.HELP_ABOUT);
             else if (command.equals("online"))

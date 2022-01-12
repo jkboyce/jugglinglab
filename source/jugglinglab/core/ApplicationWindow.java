@@ -257,7 +257,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         try {
             JMLPattern pat = JMLPattern.fromBasePattern("Siteswap", "pattern=3");
             PatternWindow pw = new PatternWindow("3", pat, new AnimationPrefs());
-            pw.setViewMode(View.VIEW_PATTERN, pat);
+            pw.setViewMode(View.VIEW_PATTERN);
         } catch (JuggleExceptionUser jeu) {
             throw new JuggleExceptionInternal(jeu.getMessage());
         }
