@@ -248,6 +248,15 @@ public class AnimationPrefs {
         return this;
     }
 
+    public Dimension getSize() {
+        return new Dimension(width, height);
+    }
+
+    public void setSize(Dimension dim) {
+        width = dim.width;
+        height = dim.height;
+    }
+
     @Override
     public String toString() {
         String result = "";

@@ -259,8 +259,7 @@ public class PatternView extends View implements DocumentListener {
     public void restartView(JMLPattern p, AnimationPrefs c) throws
                     JuggleExceptionUser, JuggleExceptionInternal {
         ja.restartJuggle(p, c);
-        if (c != null)
-            ja.setPreferredSize(new Dimension(c.width, c.height));
+        setAnimationPanelPreferredSize(getAnimationPrefs().getSize());
 
         if (p != null) {
             String notation = p.getBasePatternNotation();
