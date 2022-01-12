@@ -441,16 +441,30 @@ public class Renderer2D extends Renderer {
                     double RheadBy = ob.coord[6].y;
                     double RheadTx = ob.coord[7].x;
                     double RheadTy = ob.coord[7].y;
-                    for (int j = 0; j < polysides; j++) {
-                        headx[j] = (int)(0.5 + 0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx-LheadBx)));
-                        heady[j] = (int)(0.5 + 0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy-LheadTy)) +
-                                         (headx[j]-LheadBx)*(RheadBy-LheadBy) / (RheadBx-LheadBx));
-                    }
 
-                    g.setColor(background);
-                    g.fillPolygon(headx, heady, polysides);
-                    g.setColor(Color.black);
-                    g.drawPolygon(headx, heady, polysides);
+                    if (Math.abs(RheadBx - LheadBx) > 1.0) {
+                        // head is at least 1 pixel wide; draw it as a polygon
+                        for (int j = 0; j < polysides; j++) {
+                            headx[j] = (int)(0.5 + 0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
+                            heady[j] = (int)(0.5 + 0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy)) +
+                                             (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx-LheadBx));
+                        }
+
+                        g.setColor(background);
+                        g.fillPolygon(headx, heady, polysides);
+                        g.setColor(Color.black);
+                        g.drawPolygon(headx, heady, polysides);
+                    } else {
+                        // head is edge-on; draw it as a line
+                        double h = Math.sqrt((LheadBy - LheadTy) * (LheadBy - LheadTy) +
+                                             (RheadBy - LheadBy) * (RheadBy - LheadBy));
+                        int headx = (int)(0.5 + 0.5 * (LheadBx + RheadBx));
+                        int heady1 = (int)(0.5 + 0.5 * (LheadTy + RheadBy + h));
+                        int heady2 = (int)(0.5 + 0.5 * (LheadTy + RheadBy - h));
+
+                        g.setColor(Color.black);
+                        g.drawLine(headx, heady1, headx, heady2);
+                    }
                     break;
                 case DrawObject2D.TYPE_LINE:
                      g.setColor(Color.black);
