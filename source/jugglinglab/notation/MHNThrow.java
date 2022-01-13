@@ -31,15 +31,15 @@ public class MHNThrow {
     public MHNThrow() {}
 
     public MHNThrow(int j, int h, int i, int s, int tj, int th, int ti, int ts, String m) {
-        this.juggler = j;
-        this.hand = h;
-        this.index = i;
-        this.slot = s;
-        this.targetjuggler = tj;
-        this.targethand = th;   // 0 for right hand, 1 for left hand
-        this.targetindex = ti;
-        this.targetslot = ts;
-        this.mod = m;
+        juggler = j;
+        hand = h;
+        index = i;
+        slot = s;
+        targetjuggler = tj;
+        targethand = th;   // 0 for right hand, 1 for left hand
+        targetindex = ti;
+        targetslot = ts;
+        mod = m;  // "T" is the default modifier
     }
 
     @Override

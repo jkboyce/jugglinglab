@@ -950,7 +950,6 @@ public abstract class MHNPattern extends Pattern {
         for (int k = 0; k < getPeriod(); k++) {
             for (int j = 0; j < getNumberOfJugglers(); j++) {
                 for (int h = 0; h < 2; h++) {
-
                     MHNThrow sst = th[j][h][k][0];
                     if (sst == null || sst.master != sst)
                         continue;
@@ -967,7 +966,9 @@ public abstract class MHNPattern extends Pattern {
                         if (sst2 == null)
                             continue;
 
-                        String type = null, mod = null;
+                        String type = null;
+                        String mod = null;
+
                         switch (sst2.mod.charAt(0)) {
                             case 'B':
                                 type = "bounce";
@@ -1029,10 +1030,16 @@ public abstract class MHNPattern extends Pattern {
                         }
 
                         if (sst2.mod.charAt(0) != 'H') {
+                            if (sst2.pathnum == -1) {
+                                String template = errorstrings.getString("Error_modifier_on_0");
+                                Object[] arguments = { sst2.mod, Integer.valueOf(k + 1) };
+                                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+                            }
+
                             ev.addTransition(new JMLTransition(JMLTransition.TRANS_THROW, sst2.pathnum, type, mod));
 
                             int throwval = sst2.targetindex - k;
-                            // System.out.println("slot = "+k+", hand = "+h+", throwval = "+throwval);
+                            //System.out.println("k = " + k + ", hand = " + h + ", throwval = " + throwval);
 
                             if (throwval == 1)
                                 onethrown = true;
@@ -1059,7 +1066,7 @@ public abstract class MHNPattern extends Pattern {
                             double throwxav = throwxsum / (double)num_throws;
                             if (h == MHNPattern.LEFT_HAND)
                                 throwxav = -throwxav;
-                            ev.setLocalCoordinate(new Coordinate(throwxav,0.0,0.0));
+                            ev.setLocalCoordinate(new Coordinate(throwxav, 0.0, 0.0));
                             ev.calcpos = false;
                         } else {
                             // mark event to calculate coordinate later
@@ -1111,7 +1118,6 @@ public abstract class MHNPattern extends Pattern {
                         }
                     }
 
-
                     // Step 3c -- Add any catching (or holding) events immediately prior to the on-beat event
                     // added in Step 3b above:
 
@@ -1135,7 +1141,7 @@ public abstract class MHNPattern extends Pattern {
                             throw new JuggleExceptionInternal("Caught path "+catchpath+" twice");*/
                         // pathcaught[catchpath-1] = true;
                         pathtouched[catchpath-1] = true;
-                        // System.out.println("catching value "+catchval);
+                        //System.out.println("catching value "+catchval);
                         catchxsum += (catchval > 8 ? catchx[8] : catchx[catchval]);
                         num_catches++;
                         if (catchval == 1)
@@ -1286,7 +1292,6 @@ public abstract class MHNPattern extends Pattern {
                             }
                         }
                     }
-
 
                     // Step 3d -- Add other hand positioning events between the catch/throw/catch events,
                     // if they are specified:
