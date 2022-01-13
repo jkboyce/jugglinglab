@@ -817,7 +817,7 @@ public abstract class MHNPattern extends Pattern {
         //hss end
         
         int balls = getNumberOfPaths();
-        int props = (color == null) ? 1 : Math.min(balls, color.length);
+        int props = (color == null) ? Math.min(balls, 1) : Math.min(balls, color.length);
         for (int i = 0; i < props; i++) {
             String mod = null;
             if (propdiam != MHNPattern.propdiam_default)
@@ -914,7 +914,8 @@ public abstract class MHNPattern extends Pattern {
             String pathmapstring = "";
             for (int j = 1; j < balls; j++)
                 pathmapstring += pathmap[j] + ",";
-            pathmapstring += pathmap[balls];
+            if (balls > 0)
+                pathmapstring += pathmap[balls];
 
             JMLSymmetry sym = new JMLSymmetry(symtype, sss.getNumberOfJugglers(),
                                                 sss.getJugglerPerm().toString(),
