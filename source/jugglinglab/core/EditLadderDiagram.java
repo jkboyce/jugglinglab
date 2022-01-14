@@ -53,6 +53,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected int start_y;
     protected int delta_y, delta_y_min, delta_y_max;
     protected LadderItem popupitem;
+    protected int popup_x;  // screen coordinates where popup was raised
     protected int popup_y;
 
     protected JPopupMenu popup;
@@ -165,6 +166,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 popupitem = active_eventitem;
             else
                 popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
+            popup_x = me.getX();
             popup_y = me.getY();
             if (animator != null) {
                 double scale = (pat.getLoopEndTime() -
@@ -269,6 +271,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                         delta_y = 0;
                         repaint();
                     }
+                    popup_x = me.getX();
                     popup_y = me.getY();
                     popupitem = active_eventitem;
                     if (popupitem == null) {
@@ -1006,7 +1009,22 @@ public class EditLadderDiagram extends LadderDiagram implements
     }
 
     protected JMLEvent addEventToHand(int hand) {
-        int juggler = 1;    // assumes single juggler
+        int juggler = 1;
+        if (pat.getNumberOfJugglers() > 1) {
+            int mouse_x = popup_x;
+            int juggler_right_px = (left_x + right_x + juggler_delta_x) / 2;
+
+            while (juggler <= pat.getNumberOfJugglers()) {
+                if (mouse_x < juggler_right_px)
+                    break;
+
+                mouse_x -= juggler_delta_x;
+                juggler++;
+            }
+            if (juggler > pat.getNumberOfJugglers())
+                juggler = pat.getNumberOfJugglers();
+        }
+
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                     (double)(height - 2*border_top);
         double evtime = (double)(popup_y - border_top) * scale;
@@ -1024,6 +1042,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         ev.setHand(juggler, hand);
         pat.addEvent(ev);
 
+        // add holding transitions to the new event, if hand is filled
         for (int i = 0; i < pat.getNumberOfPaths(); i++) {
             boolean holding = false;
 
@@ -1076,8 +1095,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             int transnum = ((LadderEventItem)popupitem).transnum;
             JMLTransition tr = ev.getTransition(transnum);
             pn = tr.getPath();
-        }
-        else {
+        } else {
             pn = ((LadderPathItem)popupitem).pathnum;
         }
 
@@ -1208,8 +1226,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 if (gotmatch) {
                     // new prop is identical to pre-existing one
                     pat.setPropAssignment(pathnum, matchingprop);
-                }
-                else {
+                } else {
                     // new prop is different
                     PropDef newprop = new PropDef(type.toLowerCase(), mod);
                     pat.addProp(newprop);
