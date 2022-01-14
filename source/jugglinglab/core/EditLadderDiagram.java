@@ -104,8 +104,11 @@ public class EditLadderDiagram extends LadderDiagram implements
         animator = anim;
     }
 
-    // Called from AnimationEditPanel when the user finishes moving a selected
-    // event
+    // Called whenever the active event in the ladder diagram is changed in
+    // come way.
+    //
+    // This can also be called from AnimationEditPanel when the user finishes
+    // moving the selected event in the animation view.
     public void activeEventChanged() {
         if (active_eventitem == null || animator == null)
             return;
@@ -159,6 +162,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         else if (my > (height-border_top))
             my = height - border_top;
 
+        // on macOS the popup triggers here
         if (me.isPopupTrigger()) {
             gui_state = STATE_POPUP;
             active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
@@ -237,6 +241,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         if (animator != null && animator.writingGIF)
             return;
 
+        // on Windows the popup triggers here
         if (me.isPopupTrigger()) {
             switch (gui_state) {
                 case STATE_INACTIVE:
@@ -245,8 +250,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_TRACKER:
                     // skip this code for MOVING_TRACKER state, since already
                     // executed in mousePressed() above
-                    if (gui_state != STATE_MOVING_TRACKER &&
-                                animator != null) {
+                    if (gui_state != STATE_MOVING_TRACKER && animator != null) {
                         int my = me.getY();
                         if (my < border_top)
                             my = border_top;
@@ -308,21 +312,14 @@ public class EditLadderDiagram extends LadderDiagram implements
                         }
                         delta_y = 0;
                         activeEventChanged();
-                        /*
-                        layoutPattern();
-                        createView();
-                        active_eventitem = null;
-                        if (animator != null)
-                            animator.deactivateEvent();
-                        */
                         repaint();
                     }
-                        break;
+                    break;
                 case STATE_MOVING_TRACKER:
                     gui_state = STATE_INACTIVE;
                     if (animator != null)
                         animator.setPaused(anim_paused);
-                        break;
+                    break;
                 case STATE_POPUP:
                     break;
             }
@@ -373,7 +370,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                         delta_y = delta_y_max;
                 if (delta_y != old_delta_y)
                     EditLadderDiagram.this.repaint();
-                    break;
+                break;
             case STATE_MOVING_TRACKER:
                 tracker_y = my;
                 EditLadderDiagram.this.repaint();
@@ -384,7 +381,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     animator.setTime(newtime);
                     animator.repaint();
                 }
-                    break;
+                break;
             case STATE_POPUP:
                 break;
         }
@@ -855,12 +852,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             int transnum = ((LadderEventItem)popupitem).transnum;
             JMLTransition tr = ev.getTransition(((LadderEventItem)popupitem).transnum);
             tr.setType(JMLTransition.TRANS_CATCH);
-            //active_eventitem = null;
-            //if (animator != null)
-            //    animator.deactivateEvent();
             activeEventChanged();
-            //layoutPattern();
-            //createView();
             repaint();
         } else if (command.equals("changetosoftcatch")) {
             if (popupitem == null) {
@@ -879,12 +871,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             int transnum = ((LadderEventItem)popupitem).transnum;
             JMLTransition tr = ev.getTransition(((LadderEventItem)popupitem).transnum);
             tr.setType(JMLTransition.TRANS_SOFTCATCH);
-            //active_eventitem = null;
-            //if (animator != null)
-            //    animator.deactivateEvent();
             activeEventChanged();
-            //layoutPattern();
-            //createView();
             repaint();
         } else if (command.equals("makelast")) {
             if (popupitem == null) {
@@ -903,7 +890,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             JMLTransition tr = ev.getTransition(((LadderEventItem)popupitem).transnum);
             ev.removeTransition(tr);
             ev.addTransition(tr);   // will add at end
-            active_eventitem = null;
+            active_eventitem = null;  // deselect event since it's moving
             if (animator != null)
                 animator.deactivateEvent();
             layoutPattern();
@@ -914,7 +901,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                             "unknown item in ELD popup"));
 
         popupitem = null;
-        // System.out.println("action performed");
         if (gui_state == STATE_POPUP) {
             gui_state = (active_eventitem == null) ? STATE_INACTIVE :
                                             STATE_EVENT_SELECTED;
@@ -1133,7 +1119,6 @@ public class EditLadderDiagram extends LadderDiagram implements
             @Override
             public void actionPerformed(ActionEvent ae) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
-                //              System.out.println("Got an action item: "+type);
                 try {
                     Prop pt;
                     if (type.equalsIgnoreCase(startprop.getType()))
@@ -1186,11 +1171,11 @@ public class EditLadderDiagram extends LadderDiagram implements
                     return;
                 }
 
-                // System.out.println("type = "+type+", mod = "+mod);
+                //System.out.println("type = " + type + ", mod = " + mod);
 
                 // Sync paths with current prop list
                 for (int i = 0; i < pat.getNumberOfPaths(); i++) {
-                    pat.setPropAssignment(i+1, animpropnum[i]);
+                    pat.setPropAssignment(i + 1, animpropnum[i]);
                 }
 
                 // check to see if any other paths are using this prop definition
@@ -1233,8 +1218,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                     pat.setPropAssignment(pathnum, pat.getNumberOfProps());
                 }
 
-                activeEventChanged();
-                //layoutPattern();
+                if (active_eventitem != null)
+                    activeEventChanged();
+                else
+                    layoutPattern();
                 jd.dispose();
                 animator.setPaused(paused);
             }
@@ -1296,7 +1283,6 @@ public class EditLadderDiagram extends LadderDiagram implements
             @Override
             public void actionPerformed(ActionEvent ae) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
-                // System.out.println("Got an action item: "+type);
                 try {
                     Path ppt;
                     if (type.equalsIgnoreCase(tr.getThrowType()))
@@ -1352,7 +1338,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                 tr.setMod(mod);
 
                 activeEventChanged();
-                //layoutPattern();
                 jd.dispose();
             }
         });
