@@ -122,7 +122,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
                     xdelta = ydelta = 0;
 
-                    ladder.activeEventMoved();
+                    ladder.activeEventChanged();
                 }
                 cameradrag = false;
                 dragging = false;
