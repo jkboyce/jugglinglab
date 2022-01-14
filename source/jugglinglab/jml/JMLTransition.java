@@ -1,6 +1,6 @@
 // JMLTransition.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -11,7 +11,8 @@ public class JMLTransition {
     protected int path;
     protected String type;
     protected String mod;
-    protected PathLink ipl, opl;
+    protected PathLink ipl;
+    protected PathLink opl;
 
     protected int transitiontype;
     public static final int TRANS_NONE = 0;
@@ -29,19 +30,53 @@ public class JMLTransition {
         this.path = path;
     }
 
-    public int getType()                            { return transitiontype; }
-    public void setType(int t)                      { this.transitiontype = t; }
-    public int getPath()                            { return path; }
-    public void setPath(int p)                      { this.path = p; }
-    public String getThrowType()                    { return type; }
-    public void setThrowType(String type)           { this.type = type; }
-    public String getMod()                          { return mod; }
-    public void setMod(String mod)                  { this.mod = mod; }
+    public int getType() {
+        return transitiontype;
+    }
 
-    public void setIncomingPathLink(PathLink ipl)   { this.ipl = ipl; }
-    public PathLink getIncomingPathLink()           { return ipl; }
-    public void setOutgoingPathLink(PathLink opl)   { this.opl = opl; }
-    public PathLink getOutgoingPathLink()           { return opl; }
+    public void setType(int t) {
+        transitiontype = t;
+    }
+
+    public int getPath() {
+        return path;
+    }
+
+    public void setPath(int p) {
+        path = p;
+    }
+
+    public String getThrowType() {
+        return type;
+    }
+
+    public void setThrowType(String type) {
+        this.type = type;
+    }
+
+    public String getMod() {
+        return mod;
+    }
+
+    public void setMod(String mod) {
+        this.mod = mod;
+    }
+
+    public void setIncomingPathLink(PathLink ipl) {
+        this.ipl = ipl;
+    }
+
+    public PathLink getIncomingPathLink() {
+        return ipl;
+    }
+
+    public void setOutgoingPathLink(PathLink opl) {
+        this.opl = opl;
+    }
+
+    public PathLink getOutgoingPathLink() {
+        return opl;
+    }
 
     public JMLTransition duplicate() {
         JMLTransition tr = new JMLTransition(transitiontype, path, type, mod);

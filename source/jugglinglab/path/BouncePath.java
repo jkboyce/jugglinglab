@@ -1,6 +1,6 @@
 // BouncePath.java
 //
-// Copyright 2021 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.path;
 
@@ -9,26 +9,27 @@ import jugglinglab.util.*;
 
 
 public class BouncePath extends Path {
-    protected static final int bounces_def = 1;     // number of bounces
+    protected static final int bounces_def = 1;  // number of bounces
     protected static final boolean forced_def = false;
     protected static final boolean hyper_def = false;
-    protected static final double bounceplane_def = 0.0;    // floor level
+    protected static final double bounceplane_def = 0.0;  // floor level
     protected static final double bouncefrac_def = 0.9;
-    protected static final double g_def = 980.0;        // using CGS units
+    protected static final double g_def = 980.0;  // using CGS units
 
-    protected double    bx, cx;
-    protected double    by, cy;
-    protected double    az[], bz[], cz[];
-    protected double    endtime[];
-    protected int       bounces = bounces_def;
-    protected boolean   forced = forced_def;    // true -> forced throw
-    protected boolean   hyper = hyper_def;  // true -> same type of catch (lift/forced) as throw
-    protected double    bounceplane = bounceplane_def;
-    protected double    bouncefrac = bouncefrac_def;
-    protected double    g = g_def;
-    protected double    bouncefracsqrt;
-    protected double    bouncetime;
-    protected int       numbounces;     // actual number of bounces (<= this.bounces)
+    protected double bx, cx;
+    protected double by, cy;
+    protected double az[], bz[], cz[];
+    protected double endtime[];
+    protected int bounces = bounces_def;
+    protected boolean forced = forced_def;  // true -> forced throw
+    protected boolean hyper = hyper_def;  // true -> same type of catch (lift/forced) as throw
+    protected double bounceplane = bounceplane_def;
+    protected double bouncefrac = bouncefrac_def;
+    protected double g = g_def;
+    protected double bouncefracsqrt;
+    protected double bouncetime;
+    protected int numbounces;  // actual number of bounces (<= this.bounces)
+
 
     @Override
     public String getType() { return "Bounce"; }
@@ -38,17 +39,17 @@ public class BouncePath extends Path {
         ParameterDescriptor[] result = new ParameterDescriptor[6];
 
         result[0] = new ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT,
-                                            null, Integer.valueOf(bounces_def), Integer.valueOf(bounces));
+                            null, Integer.valueOf(bounces_def), Integer.valueOf(bounces));
         result[1] = new ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, Boolean.valueOf(forced_def), Boolean.valueOf(forced));
+                            null, Boolean.valueOf(forced_def), Boolean.valueOf(forced));
         result[2] = new ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, Boolean.valueOf(hyper_def), Boolean.valueOf(hyper));
+                            null, Boolean.valueOf(hyper_def), Boolean.valueOf(hyper));
         result[3] = new ParameterDescriptor("bounceplane", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(bounceplane_def), Double.valueOf(bounceplane));
+                            null, Double.valueOf(bounceplane_def), Double.valueOf(bounceplane));
         result[4] = new ParameterDescriptor("bouncefrac", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(bouncefrac_def), Double.valueOf(bouncefrac));
+                            null, Double.valueOf(bouncefrac_def), Double.valueOf(bouncefrac));
         result[5] = new ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(g_def), Double.valueOf(g));
+                            null, Double.valueOf(g_def), Double.valueOf(g));
 
         return result;
     }
@@ -180,7 +181,7 @@ public class BouncePath extends Path {
                 }
             }
 
-            this.numbounces = n;
+            numbounces = n;
 
             // Set the remaining path variables based on our solution for
             // `numbounces` and `v0`
@@ -230,12 +231,12 @@ public class BouncePath extends Path {
             f1 *= bouncefracsqrt;
         double k = ((bouncefracsqrt == 1.0) ? 2.0*(double)n :
                     1.0 + f1 + 2.0*bouncefracsqrt*(1.0-f1/bouncefracsqrt)/(1.0-bouncefracsqrt));
-        double u = 2.0 * this.g * (start_coord.z - bounceplane);
-        double l = 2.0 * this.g * (end_coord.z - bounceplane);
+        double u = 2.0 * g * (start_coord.z - bounceplane);
+        double l = 2.0 * g * (end_coord.z - bounceplane);
         double f2 = f1 * f1;
         double c = u - l / f2;
         double kk = k * k;
-        double gt = this.g * duration;
+        double gt = g * duration;
 
         // We are solving the following equation for v0 (the throw velocity), where
         // the constants are as defined above:

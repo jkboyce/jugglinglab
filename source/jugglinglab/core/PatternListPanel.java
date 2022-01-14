@@ -307,7 +307,7 @@ public class PatternListPanel extends JPanel {
     // Popup menu and associated handler methods
     //-------------------------------------------------------------------------
 
-    protected static final String[] popupItems = new String[]
+    protected static final String[] popupItems =
         {
             "PLPOPUP Insert text...",
             null,
@@ -318,7 +318,8 @@ public class PatternListPanel extends JPanel {
             null,
             "PLPOPUP Remove line",
         };
-    protected static final String[] popupCommands = new String[]
+
+    protected static final String[] popupCommands =
         {
             "inserttext",
             null,
@@ -405,8 +406,10 @@ public class PatternListPanel extends JPanel {
         popup.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) { checkSelection(); }
+
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
         });

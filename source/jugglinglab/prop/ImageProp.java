@@ -1,6 +1,6 @@
 // ImageProp.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.prop;
 
@@ -21,24 +21,23 @@ public class ImageProp extends Prop {
         image_url_default = ImageProp.class.getResource("/ball.png");
     }
 
-    protected URL           url;
+    protected URL url;
     protected BufferedImage image;
     protected BufferedImage scaled_image;
-    protected final float   width_default = 10.0f;  // in centimeters
-    protected float         width;
-    protected float         height;
-    protected Dimension     size;
-    protected Dimension     center;
-    protected Dimension     grip;
-    protected Coordinate    propmax;
-    protected Coordinate    propmin;
+    protected final double width_def = 10.0f;  // in centimeters
+    protected double width;
+    protected double height;
+    protected Dimension size;
+    protected Dimension center;
+    protected Dimension grip;
 
-    private double          last_zoom = 0.0;
+    private double last_zoom;
+
 
     public ImageProp() throws JuggleExceptionUser {
         if (image_url_default == null)
             throw new JuggleExceptionUser("ImageProp error: Default image not set");
-        this.url = image_url_default;
+        url = image_url_default;
         loadImage();
         rescaleImage(1.0);
     }
@@ -46,7 +45,7 @@ public class ImageProp extends Prop {
     private void loadImage() throws JuggleExceptionUser {
         try {
             MediaTracker mt = new MediaTracker(new Component() {});
-            image = ImageIO.read(this.url);
+            image = ImageIO.read(url);
             mt.addImage(image, 0);
             // Try to laod the image
             try {
@@ -59,9 +58,9 @@ public class ImageProp extends Prop {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_bad_file"));
             }
 
-            float aspectRatio = ((float)image.getHeight())/((float)image.getWidth());
-            this.width = width_default;
-            this.height = width_default * aspectRatio;;
+            double aspectRatio = ((double)image.getHeight()) / ((double)image.getWidth());
+            width = width_def;
+            height = width_def * aspectRatio;
         } catch (IOException e) {
             throw new JuggleExceptionUser(errorstrings.getString("Error_bad_file"));
         } catch (SecurityException se) {
@@ -94,6 +93,8 @@ public class ImageProp extends Prop {
         g.dispose();
     }
 
+    // View methods
+
     @Override
     public String getType() {
         return "Image";
@@ -111,9 +112,9 @@ public class ImageProp extends Prop {
         ParameterDescriptor[] result = new ParameterDescriptor[2];
 
         result[0] = new ParameterDescriptor("image", ParameterDescriptor.TYPE_ICON,
-                                            null, image_url_default, url);
+                            null, image_url_default, url);
         result[1] = new ParameterDescriptor("width", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(width_default), Double.valueOf(width));
+                            null, Double.valueOf(width_def), Double.valueOf(width));
 
         return result;
     }
@@ -127,7 +128,7 @@ public class ImageProp extends Prop {
         String sourcestr = pl.getParameter("image");
         if (sourcestr != null) {
             try {
-                this.url = new URL(sourcestr);
+                url = new URL(sourcestr);
                 loadImage();
             } catch (MalformedURLException ex) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"));
@@ -137,12 +138,11 @@ public class ImageProp extends Prop {
         String widthstr = pl.getParameter("width");
         if (widthstr != null) {
             try {
-                Float width = Float.valueOf(widthstr);
-                float temp = width.floatValue();
+                double temp = Double.valueOf(widthstr).doubleValue();
                 if (temp > 0) {
-                    this.width = temp;
-                    float aspectRatio = ((float)image.getHeight(null))/((float)image.getWidth(null));
-                    this.height = this.width * aspectRatio;
+                    width = temp;
+                    double aspectRatio = ((double)image.getHeight(null)) / ((double)image.getWidth(null));
+                    height = width * aspectRatio;
                 }
                 else
                     throw new NumberFormatException();
@@ -163,19 +163,18 @@ public class ImageProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        if (this.propmax == null)
-            this.propmax = new Coordinate(width / 2.0, 0.0, width);
-        return this.propmax;
-    }
-    @Override
-    public Coordinate getMin() {
-        if (this.propmin == null)
-            this.propmin = new Coordinate(-width / 2.0, 0.0, 0.0);
-        return this.propmin;
+        return new Coordinate(width / 2.0, 0.0, width);
     }
 
     @Override
-    public double getWidth() { return width; }
+    public Coordinate getMin() {
+        return new Coordinate(-width / 2.0, 0.0, 0.0);
+    }
+
+    @Override
+    public double getWidth() {
+        return width;
+    }
 
     @Override
     public Dimension getProp2DSize(double zoom) {
@@ -197,48 +196,4 @@ public class ImageProp extends Prop {
             rescaleImage(zoom);
         return grip;
     }
-
-    /*
-    public Object getPropIDX3D() {
-        Object result = null;
-        try {
-            Class ob = Class.forName("idx3d.idx3d_Object");
-            Class of = Class.forName("idx3d.idx3d_ObjectFactory");
-            Class mat = Class.forName("idx3d.idx3d_Material");
-            Class tex = Class.forName("idx3d.idx3d_Texture");
-
-            Method sphere = of.getMethod("CUBE", new Class[] {Float.TYPE});
-            result = sphere.invoke(null, new Object[] {new Float((float)Math.max(width, height))});
-
-            Constructor texcons = tex.getConstructor(new Class[] {Class.forName("java.awt.Image")});
-            Object texture = texcons.newInstance(new Object[] {image});
-            Object surf = mat.newInstance();
-            Method settexture = mat.getMethod("setTexture", new Class[] {tex});
-            settexture.invoke(surf, new Object[] {texture});
-            Method setmaterial = ob.getMethod("setMaterial", new Class[] {mat});
-            setmaterial.invoke(result, new Object[] {surf});
-        } catch (ClassNotFoundException e) {
-            System.err.println("ClassNotFound");
-            return null;
-        } catch (NoSuchMethodException e) {
-            System.err.println("NoSuchMethod");
-            return null;
-        } catch (SecurityException e) {
-            return null;
-        } catch (IllegalAccessException e) {
-            return null;
-        } catch (InstantiationException e) {
-            System.err.println("Instantiation");
-            return null;
-        } catch (InvocationTargetException e) {
-            System.err.println("InvocationTarget");
-            return null;
-        }
-        return result;
-    }
-
-    public Coordinate getPropIDX3DGrip() {
-        return new Coordinate(0.0, 0.0, -height/2);     // bottom of cube
-    }
-    */
 }

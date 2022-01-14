@@ -1,6 +1,6 @@
 // GIFEncoderHashitem.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package gifwriter;
 
@@ -12,6 +12,7 @@ public class GIFEncoderHashitem {
     public int count;
     public int index;
     public Color color;
+
 
     public GIFEncoderHashitem(int rgb, Color color, int count, int index) {
         this.rgb = rgb;

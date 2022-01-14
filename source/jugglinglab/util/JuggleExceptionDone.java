@@ -1,15 +1,20 @@
 // JuggleExceptionDone.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
 
-// This is our own exception class, which we use to handle juggling-related
-// problems that occur.
+// This exception type is not raised in response to any error condition. It is
+// used as a mechanism to abort from tasks.
 
 public class JuggleExceptionDone extends JuggleExceptionUser {
-    public JuggleExceptionDone()            { super();  }
-    public JuggleExceptionDone(String s)    { super(s); }
+    public JuggleExceptionDone() {
+        super();
+    }
+
+    public JuggleExceptionDone(String s) {
+        super(s);
+    }
 }
 

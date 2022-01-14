@@ -1,6 +1,6 @@
 // JuggleException.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -9,7 +9,12 @@ package jugglinglab.util;
 // problems that occur.
 
 public class JuggleException extends Exception {
-    public JuggleException()            { super();  }
-    public JuggleException(String s)    { super(s); }
+    public JuggleException() {
+        super();
+    }
+
+    public JuggleException(String s) {
+        super(s);
+    }
 }
 

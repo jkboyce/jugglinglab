@@ -81,19 +81,20 @@ public class AnimationPrefsDialog extends JDialog {
             // filter out all the explicit settings above to populate the
             // manual settings box
             ParameterList pl = new ParameterList(oldjc.toString());
-            String[] params_remove = new String[] {
-                "width",
-                "height",
-                "fps",
-                "slowdown",
-                "border",
-                "showground",
-                "stereo",
-                "startpaused",
-                "mousepause",
-                "catchsound",
-                "bouncesound",
-            };
+            String[] params_remove =
+                {
+                    "width",
+                    "height",
+                    "fps",
+                    "slowdown",
+                    "border",
+                    "showground",
+                    "stereo",
+                    "startpaused",
+                    "mousepause",
+                    "catchsound",
+                    "bouncesound",
+                };
             for (String param : params_remove)
                 pl.removeParameter(param);
             tf_other.setText(pl.toString());

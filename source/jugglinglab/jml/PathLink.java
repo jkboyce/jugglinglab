@@ -1,6 +1,6 @@
 // PathLink.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -29,8 +29,8 @@ public class PathLink {
         this.pathnum = pathnum;
         this.startevent = startevent;
         this.endevent = endevent;
-        this.proppath = null;
-        this.inhand = false;
+        proppath = null;
+        inhand = false;
     }
 
     public void setThrow(String type, String mod) throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -39,13 +39,13 @@ public class PathLink {
         proppath.setStart(startevent.getGlobalCoordinate(), startevent.getT());
         proppath.setEnd(endevent.getGlobalCoordinate(), endevent.getT());
         proppath.calcPath();
-        this.throwtype = type;
+        throwtype = type;
         this.mod = mod;
-        this.inhand = false;
+        inhand = false;
     }
 
     public void setInHand(int juggler, int hand) {
-        this.inhand = true;
+        inhand = true;
         this.juggler = juggler;
         this.hand = hand;
     }
