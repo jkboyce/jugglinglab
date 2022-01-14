@@ -110,19 +110,20 @@ public class EditLadderDiagram extends LadderDiagram implements
     // This can also be called from AnimationEditPanel when the user finishes
     // moving the selected event in the animation view.
     public void activeEventChanged() {
-        if (active_eventitem == null || animator == null)
+        if (active_eventitem == null)
             return;
 
-        // find the screen coordinates of the event that moved
+        // find the screen coordinates of the event that changed
         int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
         int y = (active_eventitem.ylow + active_eventitem.yhigh) / 2;
 
         layoutPattern();    // rebuild pattern event list
         createView();       // rebuild ladder diagram
 
-        // reactivate the moved event with AnimationEditPanel
         active_eventitem = getSelectedLadderEvent(x, y);
-        animator.activateEvent(active_eventitem.event);
+        // reactivate the changed event in AnimationEditPanel
+        if (animator != null)
+            animator.activateEvent(active_eventitem.event);
     }
 
     protected void layoutPattern() {
@@ -173,9 +174,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             popup_x = me.getX();
             popup_y = me.getY();
             if (animator != null) {
-                double scale = (pat.getLoopEndTime() -
-                                pat.getLoopStartTime()) /
-                                (double)(height - 2*border_top);
+                double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                                (double)(height - 2 * border_top);
                 double newtime = (double)(my - border_top) * scale;
                 anim_paused = animator.getPaused();
                 animator.setPaused(true);
@@ -197,9 +197,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                         tracker_y = my;
                         repaint();
                         if (animator != null) {
-                            double scale = (pat.getLoopEndTime() -
-                                            pat.getLoopStartTime()) /
-                                            (double)(height - 2*border_top);
+                            double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                                            (double)(height - 2 * border_top);
                             double newtime = (double)(my - border_top) * scale;
                             anim_paused = animator.getPaused();
                             animator.setPaused(true);
@@ -258,7 +257,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                             my = height - border_top;
 
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                            (double)(height - 2*border_top);
+                                            (double)(height - 2 * border_top);
                         double newtime = (double)(my - border_top) * scale;
                         anim_paused = animator.getPaused();
                         animator.setPaused(true);
@@ -626,9 +625,10 @@ public class EditLadderDiagram extends LadderDiagram implements
             "Change title...",
             "Change overall timing...",
             null,
+            "Remove event",
             "Add event to L hand",
             "Add event to R hand",
-            "Remove event",
+            "Add position to juggler",
             null,
             "Define prop...",
             "Define throw...",
@@ -642,9 +642,10 @@ public class EditLadderDiagram extends LadderDiagram implements
             "changetitle",
             "changetiming",
             null,
+            "removeevent",
             "addeventtoleft",
             "addeventtoright",
-            "removeevent",
+            "addposition",
             null,
             "defineprop",
             "definethrow",
@@ -669,7 +670,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             item.setActionCommand(command);
             item.addActionListener(this);
 
-            // determine which items to enable/disable
+            // determine which items to disable based on context
 
             if (laditem == null) {
                 if (Arrays.asList(
@@ -687,6 +688,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                     "changetiming",
                                     "addeventtoleft",
                                     "addeventtoright",
+                                    "addposition",
                                     "defineprop",
                                     "definethrow",
                                     "changetocatch",
@@ -730,6 +732,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                     "changetiming",
                                     "addeventtoleft",
                                     "addeventtoright",
+                                    "addposition",
                                     "removeevent"
                                 ).contains(command))
                     item.setEnabled(false);
@@ -772,7 +775,6 @@ public class EditLadderDiagram extends LadderDiagram implements
 
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                // System.out.println("popup becoming invisible");
                 if (gui_state == STATE_POPUP) {
                     gui_state = (active_eventitem == null) ? STATE_INACTIVE :
                                     STATE_EVENT_SELECTED;
@@ -798,6 +800,23 @@ public class EditLadderDiagram extends LadderDiagram implements
             changeTitle();
         } else if (command.equals("changetiming")) {
             changeTiming();
+        } else if (command.equals("removeevent")) {
+            // makePopupMenu() ensures that the event only has hold transitions
+            if (!(popupitem instanceof LadderEventItem)) {
+                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                            "LadderDiagram remove event class format"));
+                return;
+            }
+            JMLEvent ev = ((LadderEventItem)popupitem).event;
+            if (!ev.isMaster())
+                ev = ev.getMaster();
+            pat.removeEvent(ev);
+            active_eventitem = null;
+            if (animator != null)
+                animator.deactivateEvent();
+            layoutPattern();
+            createView();
+            repaint();
         } else if (command.equals("addeventtoleft")) {
             JMLEvent ev = addEventToHand(HandLink.LEFT_HAND);
             active_eventitem = null;
@@ -814,17 +833,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             layoutPattern();
             createView();
             repaint();
-        } else if (command.equals("removeevent")) {
-            // makePopupMenu() ensures that the event only has hold transitions
-            if (!(popupitem instanceof LadderEventItem)) {
-                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                            "LadderDiagram remove event class format"));
-                return;
-            }
-            JMLEvent ev = ((LadderEventItem)popupitem).event;
-            if (!ev.isMaster())
-                ev = ev.getMaster();
-            pat.removeEvent(ev);
+        } else if (command.equals("addposition")) {
+            addPositionToJuggler();
             active_eventitem = null;
             if (animator != null)
                 animator.deactivateEvent();
@@ -1012,10 +1022,10 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                    (double)(height - 2*border_top);
+                                    (double)(height - 2 * border_top);
         double evtime = (double)(popup_y - border_top) * scale;
-        Coordinate evpos = new Coordinate();
 
+        Coordinate evpos = new Coordinate();
         try {
             pat.getHandCoordinate(juggler, hand, evtime, evpos);
         } catch (JuggleExceptionInternal jei) {
@@ -1036,8 +1046,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             while (evt != null) {
                 JMLTransition tr = evt.getPathTransition(i+1, JMLTransition.TRANS_ANY);
                 if (tr != null) {
-                    if ((evt.getJuggler() != ev.getJuggler()) ||
-                        (evt.getHand() != ev.getHand())) {
+                    if (evt.getJuggler() != ev.getJuggler() ||
+                                evt.getHand() != ev.getHand()) {
                         holding = false;
                         break;
                     }
@@ -1053,12 +1063,45 @@ public class EditLadderDiagram extends LadderDiagram implements
 
             if (holding) {
                 JMLTransition tr = new JMLTransition(JMLTransition.TRANS_HOLDING,
-                                                    (i+1), null, null);
+                                                    (i + 1), null, null);
                 ev.addTransition(tr);
             }
         }
 
         return ev;
+    }
+
+    protected JMLPosition addPositionToJuggler() {
+        int juggler = 1;
+        if (pat.getNumberOfJugglers() > 1) {
+            int mouse_x = popup_x;
+            int juggler_right_px = (left_x + right_x + juggler_delta_x) / 2;
+
+            while (juggler <= pat.getNumberOfJugglers()) {
+                if (mouse_x < juggler_right_px)
+                    break;
+
+                mouse_x -= juggler_delta_x;
+                juggler++;
+            }
+            if (juggler > pat.getNumberOfJugglers())
+                juggler = pat.getNumberOfJugglers();
+        }
+
+        double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                                    (double)(height - 2 * border_top);
+        double postime = (double)(popup_y - border_top) * scale;
+
+        JMLPosition pos = new JMLPosition();
+        Coordinate loc = new Coordinate();
+        pat.getJugglerPosition(juggler, postime, loc);
+        pos.setCoordinate(loc);
+        pos.setAngle(pat.getJugglerAngle(juggler, postime));
+        pos.setT(postime);
+        pos.setJuggler(juggler);
+        pat.addPosition(pos);
+
+        return pos;
     }
 
     protected void defineProp() {

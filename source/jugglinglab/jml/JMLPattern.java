@@ -303,7 +303,7 @@ public class JMLPattern {
         return pathlinks;
     }
 
-    public void addPosition(JMLPosition pos) throws JuggleExceptionUser {
+    public void addPosition(JMLPosition pos) {
         if (pos.getT() < getLoopStartTime() || pos.getT() > getLoopEndTime())
             return;  // throw new JuggleExceptionUser("<position> time out of range");
         setNeedsLayout();
