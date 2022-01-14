@@ -40,7 +40,7 @@ public abstract class View extends JPanel {
 
     // used for `view` parameter setting in AnimationPrefs, these must be in the
     // same order as VIEW_ constants above
-    public static final String[] viewNames = new String[]
+    public static final String[] viewNames =
         {
             "simple",
             "visual_editor",
@@ -211,7 +211,10 @@ public abstract class View extends JPanel {
             };
 
             AnimationPrefs jc = ap.getAnimationPrefs();
-            fps = (jc.fps == jc.fps_def) ? 30 : jc.fps;
+            fps = (jc.fps == jc.fps_def) ? 33.3 : jc.fps;
+            // Note the GIF header specifies inter-frame delay in terms of
+            // hundredths of a second, so only `fps` values like 50, 33 1/3,
+            // 25, 20, ... are precisely achieveable.
 
             setPriority(Thread.MIN_PRIORITY);
             start();

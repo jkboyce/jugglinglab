@@ -1,6 +1,6 @@
 // EventImages.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -8,19 +8,19 @@ import jugglinglab.util.*;
 
 
 public class EventImages {
-    protected JMLPattern pat = null;
+    protected JMLPattern pat;
     protected int numjugglers, numpaths;
     protected double looptime;
-    protected Permutation loopperm = null;
+    protected Permutation loopperm;
 
     protected JMLEvent ev = null;
     protected int evjuggler, evhand, evtransitions; // hand is by index (0 or 1)
     protected double evtime;
 
-    protected Permutation[][][] ea = null;
+    protected Permutation[][][] ea;
 
     protected int numentries;
-    protected int[] transitiontype = null;
+    protected int[] transitiontype;
 
     protected int currentloop, currentj, currenth, currententry;
 
@@ -58,9 +58,9 @@ public class EventImages {
             if (currenth-- == 0) {
                 currenth = 1;
                 if (currentj-- == 0) {
-                    currentj = this.numjugglers - 1;
+                    currentj = numjugglers - 1;
                     if (currententry-- == 0) {
-                        currententry = this.numentries - 1;
+                        currententry = numentries - 1;
                         currentloop--;
                     }
                 }
@@ -81,7 +81,7 @@ public class EventImages {
             newevent.setLocalCoordinate(c1);
         }
         Permutation p = ea[currentj][currenth][currententry];
-        Permutation lp = this.loopperm;
+        Permutation lp = loopperm;
         int pow = currentloop;
         if (pow < 0) {
             lp = lp.getInverse();
@@ -91,26 +91,26 @@ public class EventImages {
             p = lp.apply(p);
             pow--;
         }
-        for (int i = 0; i < this.evtransitions; i++) {
+        for (int i = 0; i < evtransitions; i++) {
             JMLTransition tr = newevent.getTransition(i);
             int masterpath = ev.getTransition(i).getPath();
             tr.setPath(p.getMapping(masterpath));
         }
         newevent.setPathPermFromMaster(p);
 
-        double t = this.evtime +
-            (double)currentloop * this.looptime +
-            (double)currententry * (this.looptime / (double)this.numentries);
+        double t = evtime +
+            (double)currentloop * looptime +
+            (double)currententry * (looptime / (double)numentries);
         newevent.setT(t);
 
         return newevent;
     }
 
     public void resetPosition() {
-        this.currentloop = 0;
-        this.currentj = evjuggler;
-        this.currenth = evhand;
-        this.currententry = 0;
+        currentloop = 0;
+        currentj = evjuggler;
+        currenth = evhand;
+        currententry = 0;
     }
 
     // Does this event have any transitions for the specified hand, after
@@ -188,15 +188,15 @@ public class EventImages {
 
 
     protected void calcarray() throws JuggleExceptionUser {
-        this.numjugglers = pat.getNumberOfJugglers();
-        this.numpaths = pat.getNumberOfPaths();
-        this.looptime = pat.getLoopEndTime() - pat.getLoopStartTime();
-        this.loopperm = pat.getPathPermutation();
+        numjugglers = pat.getNumberOfJugglers();
+        numpaths = pat.getNumberOfPaths();
+        looptime = pat.getLoopEndTime() - pat.getLoopStartTime();
+        loopperm = pat.getPathPermutation();
 
-        this.evjuggler = ev.getJuggler() - 1;
-        this.evhand = HandLink.index(ev.getHand());
-        this.evtransitions = ev.getNumberOfTransitions();
-        this.evtime = ev.getT();
+        evjuggler = ev.getJuggler() - 1;
+        evhand = HandLink.index(ev.getHand());
+        evtransitions = ev.getNumberOfTransitions();
+        evtime = ev.getT();
 
         int numsyms = pat.getNumberOfSymmetries() - 1;
         JMLSymmetry[] sym = new JMLSymmetry[numsyms];
@@ -204,7 +204,7 @@ public class EventImages {
         int[] deltaentries = new int[numsyms];
         Permutation invdelayperm = null;
 
-        this.numentries = 1;
+        numentries = 1;
         for (int i = 0, j = 0; i <= numsyms; i++) {
             JMLSymmetry temp = pat.getSymmetry(i);
             switch (temp.getType()) {
@@ -220,7 +220,7 @@ public class EventImages {
                 case JMLSymmetry.TYPE_SWITCHDELAY:
                     sym[j] = temp;
                     symperiod[j] = temp.getJugglerPerm().getOrder();
-                    this.numentries = Permutation.lcm(this.numentries, symperiod[j]);
+                    numentries = Permutation.lcm(numentries, symperiod[j]);
                     deltaentries[j] = -1;
                     j++;
                     break;
@@ -228,12 +228,12 @@ public class EventImages {
         }
         for (int i = 0; i < numsyms; i++)   // assume exactly one delay symmetry
             if (deltaentries[i] == -1)  // signals a switchdelay symmetry
-                deltaentries[i] = this.numentries / symperiod[i];
+                deltaentries[i] = numentries / symperiod[i];
 
         // System.out.println("numentries = "+numentries);
 
-        this.ea = new Permutation[numjugglers][2][numentries];
-        this.transitiontype = new int[evtransitions];
+        ea = new Permutation[numjugglers][2][numentries];
+        transitiontype = new int[evtransitions];
 
         Permutation idperm = new Permutation(numpaths, false);  // identity
         ev.setPathPermFromMaster(idperm);

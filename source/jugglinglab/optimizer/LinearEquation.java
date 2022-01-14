@@ -1,24 +1,24 @@
 // LinearEquation.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.optimizer;
 
 
 public class LinearEquation {
-    protected int           numVars;    // number of variables
-    protected double[]      coefs;      // coefficients in linear equation
-    protected boolean       done;       // flag for use with optimizer
+    protected int numVars;  // number of variables
+    protected double[] coefs;  // coefficients in linear equation
+    protected boolean done;  // flag for use with optimizer
 
 
     public LinearEquation(int vars) {
-        this.numVars = vars;
-        this.coefs = new double[vars + 1];
-        this.done = false;
+        numVars = vars;
+        coefs = new double[vars + 1];
+        done = false;
     }
 
     public void setCoefficients(double[] c) {
-        this.coefs = c;
+        coefs = c;
     }
 
     public double coef(int col) {
@@ -34,6 +34,6 @@ public class LinearEquation {
     }
 
     public void setDone(boolean d) {
-        this.done = d;
+        done = d;
     }
 }

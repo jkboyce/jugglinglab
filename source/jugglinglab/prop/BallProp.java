@@ -1,13 +1,12 @@
 // BallProp.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.prop;
 
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.lang.reflect.*;
 import java.text.MessageFormat;
 
 import jugglinglab.core.*;
@@ -16,30 +15,53 @@ import jugglinglab.renderer.*;
 
 
 public class BallProp extends Prop {
-    static String[] colornames = {"black", "blue", "cyan", "gray",
-        "green", "magenta", "orange", "pink", "red", "white", "yellow"};
-    static Color[] colorvals = {Color.black, Color.blue, Color.cyan,
-        Color.gray, Color.green, Color.magenta, Color.orange,
-        Color.pink, Color.red, Color.white, Color.yellow};
+    public static final String[] colornames =
+        {
+            "black",
+            "blue",
+            "cyan",
+            "gray",
+            "green",
+            "magenta",
+            "orange",
+            "pink",
+            "red",
+            "white",
+            "yellow",
+        };
 
-    protected static final int colornum_def = 8;    // red
+    public static final Color[] colorvals =
+        {
+            Color.black,
+            Color.blue,
+            Color.cyan,
+            Color.gray,
+            Color.green,
+            Color.magenta,
+            Color.orange,
+            Color.pink,
+            Color.red,
+            Color.white,
+            Color.yellow
+        };
+
+    protected static final int colornum_def = 8;  // red
     protected static final double diam_def = 10.0;  // in cm
     protected static final boolean highlight_def = false;
 
-    protected double        diam = diam_def;    // diameter, in cm
-    protected int           colornum = colornum_def;
-    protected Color         color;
-    protected boolean       highlight = highlight_def;
-    // protected int    ball_pixel_size;
+    protected double diam = diam_def;  // diameter, in cm
+    protected int colornum = colornum_def;
+    protected Color color;
+    protected boolean highlight = highlight_def;
 
     protected BufferedImage ballimage;
-    protected double        lastzoom = 0.0;
-    // protected int        offsetx, offsety;
-    protected Dimension     size;
-    protected Dimension     center;
-    protected Dimension     grip;
-    protected Coordinate    propmax;
-    protected Coordinate    propmin;
+    protected double lastzoom;
+    protected Dimension size;
+    protected Dimension center;
+    protected Dimension grip;
+
+
+    // Prop methods
 
     @Override
     public String getType() {
@@ -60,11 +82,11 @@ public class BallProp extends Prop {
             range.add(colornames[i]);
 
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
-                                            range, colornames[colornum_def], colornames[colornum]);
+                            range, colornames[colornum_def], colornames[colornum]);
         result[1] = new ParameterDescriptor("diam", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(diam_def), Double.valueOf(diam));
+                            null, Double.valueOf(diam_def), Double.valueOf(diam));
         result[2] = new ParameterDescriptor("highlight", ParameterDescriptor.TYPE_BOOLEAN,
-                                            null, Boolean.valueOf(highlight_def), Boolean.valueOf(highlight));
+                            null, Boolean.valueOf(highlight_def), Boolean.valueOf(highlight));
 
         return result;
     }
@@ -111,11 +133,13 @@ public class BallProp extends Prop {
                     } catch (NumberFormatException nfe) {
                         String template = errorstrings.getString("Error_number_format");
                         Object[] arguments = { token };
-                        throw new JuggleExceptionUser("Ball prop color: " + MessageFormat.format(template, arguments));
+                        throw new JuggleExceptionUser("Ball prop color: " +
+                                MessageFormat.format(template, arguments));
                     }
                     temp = new Color(red, green, blue);
                 } else
-                    throw new JuggleExceptionUser("Ball prop color: " + errorstrings.getString("Error_token_count"));
+                    throw new JuggleExceptionUser("Ball prop color: " +
+                            errorstrings.getString("Error_token_count"));
             }
 
             if (temp != null)
@@ -139,7 +163,8 @@ public class BallProp extends Prop {
             } catch (NumberFormatException nfe) {
                 String template = errorstrings.getString("Error_number_format");
                 Object[] arguments = { "diam" };
-                throw new JuggleExceptionUser("Ball prop diameter: " + MessageFormat.format(template, arguments));
+                throw new JuggleExceptionUser("Ball prop diameter: " +
+                        MessageFormat.format(template, arguments));
             }
         }
 
@@ -152,20 +177,18 @@ public class BallProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        if (this.propmax == null)
-            this.propmax = new Coordinate(diam / 2.0, 0.0, diam / 2.0);
-        return this.propmax;
+        return new Coordinate(diam / 2.0, 0.0, diam / 2.0);
     }
 
     @Override
     public Coordinate getMin() {
-        if (this.propmin == null)
-            this.propmin = new Coordinate(-diam / 2.0, 0, -diam / 2.0);
-        return this.propmin;
+        return new Coordinate(-diam / 2.0, 0, -diam / 2.0);
     }
 
     @Override
-    public double getWidth() { return diam; }
+    public double getWidth() {
+        return diam;
+    }
 
     @Override
     public Image getProp2DImage(double zoom, double[] camangle) {
@@ -204,14 +227,15 @@ public class BallProp extends Prop {
 
         // Create a ball image of diameter ball_pixel_size, and transparent background
 
-        ballimage = new BufferedImage(ball_pixel_size+1, ball_pixel_size+1, BufferedImage.TYPE_INT_ARGB_PRE);
+        ballimage = new BufferedImage(ball_pixel_size + 1, ball_pixel_size + 1,
+                            BufferedImage.TYPE_INT_ARGB_PRE);
         Graphics2D ballg = ballimage.createGraphics();
 
         /*
         ballg.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                                RenderingHints.VALUE_ANTIALIAS_ON);
         */
-        if (this.highlight) {
+        if (highlight) {
             float highlightOvals = ball_pixel_size / 1.2f;  // Number of concentric circles to draw.
             float[] rgb = new float[3];
             rgb[0] = (float)color.getRed() / 255f;
@@ -248,40 +272,4 @@ public class BallProp extends Prop {
 
         lastzoom = zoom;
     }
-
-    /*
-    public Object getPropIDX3D() {
-        Object result = null;
-        try {
-            Class ob = Class.forName("idx3d.idx3d_Object");
-            Class of = Class.forName("idx3d.idx3d_ObjectFactory");
-            Class mat = Class.forName("idx3d.idx3d_Material");
-            Method sphere = of.getMethod("SPHERE", new Class[] {Float.TYPE, Integer.TYPE});
-            result = sphere.invoke(null, new Object[] {new Float((float)diam/2),
-                new Integer(10)});
-            Method setcolor = mat.getMethod("setColor", new Class[] {Integer.TYPE});
-            Object surf = mat.newInstance();
-            setcolor.invoke(surf, new Object[] {new Integer(color.getRGB())});
-            Method setmaterial = ob.getMethod("setMaterial", new Class[] {mat});
-            setmaterial.invoke(result, new Object[] {surf});
-        } catch (ClassNotFoundException e) {
-            return null;
-        } catch (NoSuchMethodException e) {
-            return null;
-        } catch (SecurityException e) {
-            return null;
-        } catch (IllegalAccessException e) {
-            return null;
-        } catch (InstantiationException e) {
-            return null;
-        } catch (InvocationTargetException e) {
-            return null;
-        }
-        return result;
-    }
-
-    public Coordinate getPropIDX3DGrip() {
-        return new Coordinate(0.0, 0.0, -diam/2);       // bottom of ball
-    }
-    */
 }

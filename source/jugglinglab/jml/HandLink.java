@@ -1,6 +1,6 @@
 // HandLink.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -9,15 +9,17 @@ import jugglinglab.curve.*;
 
 
 public class HandLink {
-    protected int           jugglernum;
-    protected int           handnum;
-    protected JMLEvent      startevent, endevent;
-    protected VelocityRef   startvelref, endvelref;
-    protected Curve         hp;
+    protected int jugglernum;
+    protected int handnum;
+    protected JMLEvent startevent;
+    protected JMLEvent endevent;
+    protected VelocityRef startvelref;
+    protected VelocityRef endvelref;
+    protected Curve hp;
 
-    protected boolean       ismaster;
-    protected HandLink[]    duplicates;     // if master
-    protected HandLink      master;         // if duplicate
+    protected boolean ismaster;
+    protected HandLink[] duplicates;  // if master
+    protected HandLink master;  // if duplicate
 
     public static final int NO_HAND = 0;
     public static final int LEFT_HAND = 1;
@@ -29,27 +31,59 @@ public class HandLink {
         this.handnum = handnum;
         this.startevent = startevent;
         this.endevent = endevent;
-        this.hp = null;
-        this.ismaster = true;
-        this.duplicates = null;
-        this.master = null;
+        hp = null;
+        ismaster = true;
+        duplicates = null;
+        master = null;
     }
 
     public static int index(int handdescription) {
         return (handdescription == LEFT_HAND ? 0 : 1);
     }
 
-    public int getJuggler()                         { return jugglernum; }
-    public int getHand()                            { return handnum; }
-    public JMLEvent getStartEvent()                 { return startevent; }
-    public JMLEvent getEndEvent()                   { return endevent; }
-    public VelocityRef getStartVelocityRef()        { return startvelref; }
-    public void setStartVelocityRef(VelocityRef vr) { this.startvelref = vr; }
-    public VelocityRef getEndVelocityRef()          { return endvelref; }
-    public void setEndVelocityRef(VelocityRef vr)   { this.endvelref = vr; }
-    public void setHandCurve(Curve hp)              { this.hp = hp; }
-    public Curve getHandCurve()                     { return hp; }
-    public boolean isMaster()                       { return ismaster; }
+    public int getJuggler() {
+        return jugglernum;
+    }
+
+    public int getHand() {
+        return handnum;
+    }
+
+    public JMLEvent getStartEvent() {
+        return startevent;
+    }
+
+    public JMLEvent getEndEvent() {
+        return endevent;
+    }
+
+    public VelocityRef getStartVelocityRef() {
+        return startvelref;
+    }
+
+    public void setStartVelocityRef(VelocityRef vr) {
+        startvelref = vr;
+    }
+
+    public VelocityRef getEndVelocityRef() {
+        return endvelref;
+    }
+
+    public void setEndVelocityRef(VelocityRef vr) {
+        endvelref = vr;
+    }
+
+    public void setHandCurve(Curve hp) {
+        this.hp = hp;
+    }
+
+    public Curve getHandCurve() {
+        return hp;
+    }
+
+    public boolean isMaster() {
+        return ismaster;
+    }
 
     @Override
     public String toString() {

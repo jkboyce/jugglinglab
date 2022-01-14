@@ -1,6 +1,6 @@
 // Path.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.path;
 
@@ -15,11 +15,14 @@ public abstract class Path {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    protected double        start_time, end_time;
-    protected Coordinate    start_coord, end_coord;
+    protected double start_time;
+    protected double end_time;
+    protected Coordinate start_coord;
+    protected Coordinate end_coord;
 
     // The built-in path types
     public static final String[] builtinPaths = { "Toss", "Bounce" };
+
 
     // Creates a new path of the given type
     public static Path newPath(String type) throws JuggleExceptionUser {
@@ -38,17 +41,29 @@ public abstract class Path {
         start_coord = position;
         start_time = time;
     }
+
     public void setEnd(Coordinate position, double time) {
         end_coord = position;
         end_time = time;
     }
-    public double getStartTime()        { return start_time; }
-    public double getEndTime()          { return end_time; }
-    public double getDuration()         { return (end_time-start_time); }
+
+    public double getStartTime() {
+        return start_time;
+    }
+
+    public double getEndTime() {
+        return end_time;
+    }
+
+    public double getDuration() {
+        return (end_time - start_time);
+    }
 
     // minimum duration is nonzero for certain throw types, e.g., a double
     // bounce throw
-    public double getMinDuration()      { return 0.0; }
+    public double getMinDuration() {
+        return 0.0;
+    }
 
     public void translateTime(double deltat) {
         start_time += deltat;
@@ -56,13 +71,20 @@ public abstract class Path {
     }
 
     // for screen layout
-    public Coordinate getMax()  { return getMax2(start_time, end_time); }
-    public Coordinate getMin()  { return getMin2(start_time, end_time); }
+    public Coordinate getMax() {
+        return getMax2(start_time, end_time);
+    }
+
+    public Coordinate getMin() {
+        return getMin2(start_time, end_time);
+    }
+
     public Coordinate getMax(double begin, double end) {
         if (end < start_time || begin > end_time)
             return null;
         return getMax2(begin, end);
     }
+
     public Coordinate getMin(double begin, double end) {
         if (end < start_time || begin > end_time)
             return null;
@@ -71,8 +93,8 @@ public abstract class Path {
 
     // utility for getMax/getMin
     protected Coordinate check(Coordinate result, double t, boolean findmax) {
-        Coordinate loc = new Coordinate(0.0,0.0,0.0);
-        this.getCoordinate(t, loc);
+        Coordinate loc = new Coordinate(0.0, 0.0, 0.0);
+        getCoordinate(t, loc);
         if (findmax)
             result = Coordinate.max(result, loc);
         else
@@ -93,6 +115,7 @@ public abstract class Path {
 
     // for hand layout purposes, only valid after calcPath()
     public abstract Coordinate getStartVelocity();
+
     public abstract Coordinate getEndVelocity();
 
     // only valid after calcPath()
@@ -100,5 +123,6 @@ public abstract class Path {
 
     // for hand layout, only valid after calcPath()
     protected abstract Coordinate getMax2(double begin, double end);
+
     protected abstract Coordinate getMin2(double begin, double end);
 }

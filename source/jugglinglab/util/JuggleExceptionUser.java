@@ -1,15 +1,21 @@
 // JuggleExceptionUser.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
 
-// This is our own exception class, which we use to handle juggling-related
-// problems that occur.
+// This is our own exception class, which we use to handle exceptions resulting
+// from user actions. Typically we respond to these by showing an error message
+// to the user.
 
 public class JuggleExceptionUser extends JuggleException {
-    public JuggleExceptionUser()            { super();  }
-    public JuggleExceptionUser(String s)    { super(s); }
+    public JuggleExceptionUser() {
+        super();
+    }
+
+    public JuggleExceptionUser(String s) {
+        super(s);
+    }
 }
 

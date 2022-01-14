@@ -462,7 +462,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         setJMenuBar(mb);
     }
 
-    protected static final String[] fileItems = new String[]
+    protected static final String[] fileItems =
         {
             "New Pattern",
             "New Pattern List",
@@ -470,7 +470,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
             null,
             "Quit",
         };
-    protected static final String[] fileCommands = new String[]
+    protected static final String[] fileCommands =
         {
             "newpat",
             "newpl",
@@ -544,12 +544,12 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         return windowmenu;
     }
 
-    protected static final String[] helpItems = new String[]
+    protected static final String[] helpItems =
         {
             "About Juggling Lab",
             "Juggling Lab Online Help",
         };
-    protected static final String[] helpCommands = new String[]
+    protected static final String[] helpCommands =
         {
             "about",
             "online",

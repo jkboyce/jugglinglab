@@ -1,6 +1,6 @@
 // JMLPattern.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -164,6 +164,7 @@ public class JMLPattern {
         props.add(pd);
         setNeedsLayout();
     }
+
     public void removeProp(int propnum) {
         props.remove(propnum - 1);
         for (int i = 1; i <= getNumberOfPaths(); i++) {
@@ -172,10 +173,12 @@ public class JMLPattern {
         }
         setNeedsLayout();
     }
+
     public void setPropAssignment(int pathnum, int propnum) {
         propassignment[pathnum - 1] = propnum;
         setNeedsLayout();
     }
+
     public void setPropAssignments(int[] pa) {
         propassignment = pa;
         setNeedsLayout();
@@ -659,7 +662,7 @@ public class JMLPattern {
             throw new JuggleExceptionInternal("Cannot do layout of invalid pattern");
 
         try {
-            if (getNumberOfProps() == 0)
+            if (getNumberOfProps() == 0 && getNumberOfPaths() > 0)
                 addProp(new PropDef("ball", null));
             for (int i = 0; i < getNumberOfProps(); i++)
                 props.get(i).layoutProp();
@@ -1829,9 +1832,13 @@ public class JMLPattern {
             props.get(i).writeJML(write);
 
         String out = "<setup jugglers=\"" + getNumberOfJugglers() + "\" paths=\""+
-            getNumberOfPaths()+"\" props=\""+getPropAssignment(1);
-        for (int i = 2; i <= getNumberOfPaths(); i++)
-            out += "," + getPropAssignment(i);
+            getNumberOfPaths()+"\" props=\"";
+
+        if (getNumberOfPaths() > 0) {
+            out += getPropAssignment(1);
+            for (int i = 2; i <= getNumberOfPaths(); i++)
+                out += "," + getPropAssignment(i);
+        }
         write.println(out + "\"/>");
 
         for (int i = 0; i < symmetries.size(); i++)

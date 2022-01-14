@@ -1,6 +1,6 @@
 // UpdateChecker.java
 //
-// Copyright 2002-2021 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -27,9 +27,10 @@ public class UpdateChecker extends Thread {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+
     public UpdateChecker() {
-        this.setPriority(Thread.MIN_PRIORITY);
-        this.start();
+        setPriority(Thread.MIN_PRIORITY);
+        start();
     }
 
     @Override

@@ -107,8 +107,8 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (writingGIF)
                     return;
 
-                AnimationPanel.this.startx = me.getX();
-                AnimationPanel.this.starty = me.getY();
+                startx = me.getX();
+                starty = me.getY();
             }
 
             @Override
@@ -117,7 +117,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 if (writingGIF)
                     return;
-                AnimationPanel.this.cameradrag = false;
+                cameradrag = false;
 
                 if (!engineAnimating && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
@@ -126,9 +126,9 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (me.getX() == startx && me.getY() == starty &&
                                 engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
-                    AnimationPanel.this.getParent().dispatchEvent(me);
+                    getParent().dispatchEvent(me);
                 }
-                if (AnimationPanel.this.getPaused())
+                if (getPaused())
                     repaint();
             }
 
@@ -160,17 +160,17 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (writingGIF)
                     return;
                 if (!cameradrag) {
-                    AnimationPanel.this.cameradrag = true;
-                    AnimationPanel.this.lastx = AnimationPanel.this.startx;
-                    AnimationPanel.this.lasty = AnimationPanel.this.starty;
-                    AnimationPanel.this.dragcamangle = AnimationPanel.this.getCameraAngle();
+                    cameradrag = true;
+                    lastx = startx;
+                    lasty = starty;
+                    dragcamangle = getCameraAngle();
                 }
 
-                int xdelta = me.getX() - AnimationPanel.this.lastx;
-                int ydelta = me.getY() - AnimationPanel.this.lasty;
-                AnimationPanel.this.lastx = me.getX();
-                AnimationPanel.this.lasty = me.getY();
-                double[] ca = AnimationPanel.this.dragcamangle;
+                int xdelta = me.getX() - lastx;
+                int ydelta = me.getY() - lasty;
+                lastx = me.getX();
+                lasty = me.getY();
+                double[] ca = dragcamangle;
                 ca[0] += (double)(xdelta) * 0.02;
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < Math.toRadians(0.0001))
@@ -183,13 +183,13 @@ public class AnimationPanel extends JPanel implements Runnable {
                     ca[0] -= Math.toRadians(360.0);
 
                 double[] snappedcamangle = snapCamera(ca);
-                AnimationPanel.this.setCameraAngle(snappedcamangle);
+                setCameraAngle(snappedcamangle);
 
                 // send event to the parent so that SelectionView can update
                 // camera angles of other animations
-                AnimationPanel.this.getParent().dispatchEvent(me);
+                getParent().dispatchEvent(me);
 
-                if (AnimationPanel.this.getPaused())
+                if (getPaused())
                     repaint();
             }
         });
@@ -203,7 +203,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 if (writingGIF)
                     return;
-                anim.setDimension(AnimationPanel.this.getSize());
+                anim.setDimension(getSize());
                 repaint();
 
                 // Don't update the preferred animation size if the enclosing
@@ -215,7 +215,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 }
 
                 if (hasResized)
-                    jc.setSize(AnimationPanel.this.getSize());
+                    jc.setSize(getSize());
                 hasResized = true;
             }
         });
@@ -234,7 +234,12 @@ public class AnimationPanel extends JPanel implements Runnable {
             result[1] = Math.toRadians(179.9999);
 
         if (anim.pat.getNumberOfJugglers() == 1) {
-            double a = Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
+            double a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
+
+            while (a < 0)
+                a += Math.toRadians(360.0);
+            while (a >= Math.toRadians(360.0))
+                a -= Math.toRadians(360.0);
 
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;

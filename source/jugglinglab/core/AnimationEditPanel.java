@@ -68,7 +68,7 @@ public class AnimationEditPanel extends AnimationPanel {
                         xdelta = ydelta = 0;
                         return;
                     }
-                    int t = AnimationEditPanel.this.getSize().width / 2;
+                    int t = getSize().width / 2;
                     if (mx >= (xlow2+t) && mx <= (xhigh2+t) && my >= ylow2 && my <= yhigh2) {
                         dragging = true;
                         dragging_left = false;
@@ -80,8 +80,8 @@ public class AnimationEditPanel extends AnimationPanel {
                 }
 
                 // if we get here, start a reposition of the camera
-                AnimationEditPanel.this.startx = me.getX();
-                AnimationEditPanel.this.starty = me.getY();
+                startx = me.getX();
+                starty = me.getY();
             }
 
             @Override
@@ -101,7 +101,7 @@ public class AnimationEditPanel extends AnimationPanel {
 
                     Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
                             event.getGlobalCoordinate(), xdelta, ydelta);
-                    if (AnimationEditPanel.this.jc.stereo) {
+                    if (jc.stereo) {
                         // average the coordinate shifts from each perspective
                         Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
                                 event.getGlobalCoordinate(), xdelta, ydelta);
@@ -123,14 +123,15 @@ public class AnimationEditPanel extends AnimationPanel {
                     xdelta = ydelta = 0;
 
                     if (ladder instanceof EditLadderDiagram)
-                        ((EditLadderDiagram)ladder).activeEventMoved();
+                        ((EditLadderDiagram)ladder).activeEventChanged();
                 }
-                AnimationEditPanel.this.cameradrag = false;
+
+                cameradrag = false;
                 dragging = false;
                 if (me.getX() == startx && me.getY() == starty &&
                                 engine != null && engine.isAlive())
                     setPaused(!enginePaused);
-                if (AnimationEditPanel.this.getPaused())
+                if (getPaused())
                     repaint();
             }
 
@@ -169,20 +170,20 @@ public class AnimationEditPanel extends AnimationPanel {
                     ydelta = my - ystart;
                     repaint();
                 } else if (!cameradrag) {
-                    AnimationEditPanel.this.cameradrag = true;
-                    AnimationEditPanel.this.lastx = AnimationEditPanel.this.startx;
-                    AnimationEditPanel.this.lasty = AnimationEditPanel.this.starty;
-                    AnimationEditPanel.this.dragcamangle = AnimationEditPanel.this.anim.getCameraAngle();
+                    cameradrag = true;
+                    lastx = startx;
+                    lasty = starty;
+                    dragcamangle = anim.getCameraAngle();
                 }
 
                 if (!cameradrag)
                     return;
 
-                int xdelta = me.getX() - AnimationEditPanel.this.lastx;
-                int ydelta = me.getY() - AnimationEditPanel.this.lasty;
-                AnimationEditPanel.this.lastx = me.getX();
-                AnimationEditPanel.this.lasty = me.getY();
-                double[] ca = AnimationEditPanel.this.dragcamangle;
+                int xdelta = me.getX() - lastx;
+                int ydelta = me.getY() - lasty;
+                lastx = me.getX();
+                lasty = me.getY();
+                double[] ca = dragcamangle;
                 ca[0] += (double)(xdelta) * 0.02;
                 ca[1] -= (double)(ydelta) * 0.02;
                 if (ca[1] < Math.toRadians(0.0001))
@@ -194,11 +195,11 @@ public class AnimationEditPanel extends AnimationPanel {
                 while (ca[0] >= Math.toRadians(360.0))
                     ca[0] -= Math.toRadians(360.0);
 
-                AnimationEditPanel.this.anim.setCameraAngle(snapCamera(ca));
+                anim.setCameraAngle(snapCamera(ca));
 
                 if (event_active)
                     createEventView();
-                if (AnimationEditPanel.this.getPaused())
+                if (getPaused())
                     repaint();
             }
         });
@@ -213,7 +214,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (writingGIF)
                     return;
 
-                anim.setDimension(AnimationEditPanel.this.getSize());
+                anim.setDimension(getSize());
                 if (event_active)
                     createEventView();
                 repaint();
@@ -227,7 +228,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 }
 
                 if (hasResized)
-                    jc.setSize(AnimationEditPanel.this.getSize());
+                    jc.setSize(getSize());
                 hasResized = true;
             }
         });
@@ -239,8 +240,9 @@ public class AnimationEditPanel extends AnimationPanel {
         result[0] = ca[0];
         result[1] = ca[1];
 
+        // vertical snap to equator and north/south poles
         if (result[1] < snapangle)
-            result[1] = Math.toRadians(0.0001);
+            result[1] = Math.toRadians(0.0001);  // avoid gimbal lock
         else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
             result[1] = Math.toRadians(90.0);
         else if (result[1] > (Math.toRadians(180.0) - snapangle))
@@ -250,13 +252,18 @@ public class AnimationEditPanel extends AnimationPanel {
         boolean snap_horizontal = true;
 
         if (event_active)
-            a = Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+            a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
         else if (anim.pat.getNumberOfJugglers() == 1)
-            a = Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
+            a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
         else
             snap_horizontal = false;
 
         if (snap_horizontal) {
+            while (a < 0)
+                a += Math.toRadians(360.0);
+            while (a >= Math.toRadians(360.0))
+                a -= Math.toRadians(360.0);
+
             if (anglediff(a - result[0]) < snapangle)
                 result[0] = a;
             else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)

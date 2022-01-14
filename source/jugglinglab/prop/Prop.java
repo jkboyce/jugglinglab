@@ -1,6 +1,6 @@
 // Prop.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.prop;
 
@@ -11,13 +11,21 @@ import java.util.ResourceBundle;
 import jugglinglab.util.*;
 
 
+// This is the base type of all props in Juggling Lab.
+
 public abstract class Prop {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
     protected String initString;
 
-    public static final String[] builtinProps = { "Ball", "Image", "Ring" };
+    public static final String[] builtinProps =
+        {
+            "Ball",
+            "Image",
+            "Ring",
+        };
+
 
     // Creates a new prop of the given type
     public static Prop newProp(String type) throws JuggleExceptionUser {
@@ -38,8 +46,12 @@ public abstract class Prop {
 
     public void initProp(String st) throws JuggleExceptionUser {
         initString = st;
-        this.init(st);
+        init(st);
     }
+
+    //-------------------------------------------------------------------------
+    // Abstract methods defined by subclasses
+    //-------------------------------------------------------------------------
 
     public abstract String getType();
 
@@ -48,16 +60,18 @@ public abstract class Prop {
     public abstract ParameterDescriptor[] getParameterDescriptors();
 
     protected abstract void init(String st) throws JuggleExceptionUser;
-    public abstract Coordinate getMax();    // in cm
-    public abstract Coordinate getMin();    // in cm
-    public abstract double getWidth();      // prop width in cm
-    public abstract Image getProp2DImage(double zoom, double[] camangle);
-    public abstract Dimension getProp2DSize(double zoom);
-    public abstract Dimension getProp2DCenter(double zoom);
-    public abstract Dimension getProp2DGrip(double zoom);
 
-    /*
-    public abstract Object getPropIDX3D();
-    public abstract Coordinate getPropIDX3DGrip();
-    */
+    public abstract Coordinate getMax();  // in cm
+
+    public abstract Coordinate getMin();  // in cm
+
+    public abstract double getWidth();  // prop width in cm
+
+    public abstract Image getProp2DImage(double zoom, double[] camangle);
+
+    public abstract Dimension getProp2DSize(double zoom);
+
+    public abstract Dimension getProp2DCenter(double zoom);
+
+    public abstract Dimension getProp2DGrip(double zoom);
 }

@@ -323,7 +323,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         setJMenuBar(mb);
     }
 
-    protected static final String[] fileItems = new String[]
+    protected static final String[] fileItems =
         {
             "New Pattern",
             "New Pattern List",
@@ -338,7 +338,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "Close",
         };
-    protected static final String[] fileCommands = new String[]
+    protected static final String[] fileCommands =
         {
             "newpat",
             "newpl",
@@ -394,7 +394,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         return filemenu;
     }
 
-    protected static final String[] viewItems = new String[]
+    protected static final String[] viewItems =
         {
             "Simple",
             "Visual Editor",
@@ -406,7 +406,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             "Undo",
             "Redo",
         };
-    protected static final String[] viewCommands = new String[]
+    protected static final String[] viewCommands =
         {
             "simple",
             "visual_edit",
@@ -495,12 +495,12 @@ public class PatternWindow extends JFrame implements ActionListener {
         return windowmenu;
     }
 
-    protected static final String[] helpItems = new String[]
+    protected static final String[] helpItems =
         {
             "About Juggling Lab",
             "Juggling Lab Online Help",
         };
-    protected static final String[] helpCommands = new String[]
+    protected static final String[] helpCommands =
         {
             "about",
             "online",

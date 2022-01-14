@@ -1,6 +1,6 @@
 // SplineCurve.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.curve;
 
@@ -8,9 +8,9 @@ import jugglinglab.util.*;
 
 
 public class SplineCurve extends Curve {
-    protected int           n;              // number of spline segments
-    protected double[][]    a, b, c, d;     // spline coefficients
-    protected double[]      durations;      // durations of segments
+    protected int n;  // number of spline segments
+    protected double[][] a, b, c, d;  // spline coefficients
+    protected double[] durations;  // durations of segments
 
     @Override
     public void initCurve(String st) {}
@@ -28,15 +28,15 @@ public class SplineCurve extends Curve {
         int i, j;
         boolean edgeVelocitiesKnown = (start_velocity != null && end_velocity != null);
 
-        this.n = numpoints - 1;
+        n = numpoints - 1;
         if (n < 1)
             throw new JuggleExceptionInternal("splineCurve error 1");
 
-        this.a = new double[n][3];
-        this.b = new double[n][3];
-        this.c = new double[n][3];
-        this.d = new double[n][3];
-        this.durations = new double[n];
+        a = new double[n][3];
+        b = new double[n][3];
+        c = new double[n][3];
+        d = new double[n][3];
+        durations = new double[n];
         for (i = 0; i < n; i++) {
             durations[i] = times[i+1] - times[i];
             if (durations[i] < 0.0)

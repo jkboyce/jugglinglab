@@ -1,6 +1,6 @@
 // JuggleExceptionInterrupted.java
 //
-// Copyright 2020 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -9,7 +9,12 @@ package jugglinglab.util;
 // problems that occur.
 
 public class JuggleExceptionInterrupted extends JuggleExceptionUser {
-    public JuggleExceptionInterrupted()            { super();  }
-    public JuggleExceptionInterrupted(String s)    { super(s); }
+    public JuggleExceptionInterrupted() {
+        super();
+    }
+
+    public JuggleExceptionInterrupted(String s) {
+        super(s);
+    }
 }
 

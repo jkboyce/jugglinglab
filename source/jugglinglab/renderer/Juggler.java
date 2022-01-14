@@ -1,6 +1,6 @@
 // Juggler.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.renderer;
 
@@ -14,17 +14,17 @@ import jugglinglab.jml.HandLink;
 public class Juggler {
         // juggler dimensions, in centimeters
     public final static double shoulder_hw = 23.0;  // shoulder half-width (cm)
-    public final static double shoulder_h = 40.0;   // throw pos. to shoulder
-    public final static double waist_hw = 17.0;     // waist half-width
+    public final static double shoulder_h = 40.0;  // throw pos. to shoulder
+    public final static double waist_hw = 17.0;  // waist half-width
     public final static double waist_h = -5.0;
-    public final static double elbow_hw = 30.0;     // elbow "home"
+    public final static double elbow_hw = 30.0;  // elbow "home"
     public final static double elbow_h = 6.0;
     public final static double elbow_slop = 12.0;
-    public final static double hand_out = 5.0;      // outside width of hand
+    public final static double hand_out = 5.0;  // outside width of hand
     public final static double hand_in = 5.0;
-    public final static double head_hw = 10.0;      // head half-width
-    public final static double head_h = 26.0;       // head height
-    public final static double neck_h = 5.0;        // neck height
+    public final static double head_hw = 10.0;  // head half-width
+    public final static double head_h = 26.0;  // head height
+    public final static double neck_h = 5.0;  // neck height
     public final static double shoulder_y = 0.0;
     public final static double pattern_y = 30.0;
     public final static double upper_length = 41.0;
@@ -45,8 +45,8 @@ public class Juggler {
     public final static double wrist_radius = 2;
 
 
-
-    public static void findJugglerCoordinates(JMLPattern pat, double time, JLVector[][] result) throws JuggleExceptionInternal {
+    public static void findJugglerCoordinates(JMLPattern pat, double time, JLVector[][] result)
+                                    throws JuggleExceptionInternal {
         for (int juggler = 1; juggler <= pat.getNumberOfJugglers(); juggler++) {
             JLVector lefthand, righthand;
             JLVector leftshoulder, rightshoulder;
@@ -153,18 +153,18 @@ public class Juggler {
                 rightelbow = null;
             }
 
-            result[juggler-1][0] = lefthand;
-            result[juggler-1][1] = righthand;
-            result[juggler-1][2] = leftshoulder;
-            result[juggler-1][3] = rightshoulder;
-            result[juggler-1][4] = leftelbow;
-            result[juggler-1][5] = rightelbow;
-            result[juggler-1][6] = leftwaist;
-            result[juggler-1][7] = rightwaist;
-            result[juggler-1][8] = leftheadbottom;
-            result[juggler-1][9] = leftheadtop;
-            result[juggler-1][10] = rightheadbottom;
-            result[juggler-1][11] = rightheadtop;
+            result[juggler - 1][0] = lefthand;
+            result[juggler - 1][1] = righthand;
+            result[juggler - 1][2] = leftshoulder;
+            result[juggler - 1][3] = rightshoulder;
+            result[juggler - 1][4] = leftelbow;
+            result[juggler - 1][5] = rightelbow;
+            result[juggler - 1][6] = leftwaist;
+            result[juggler - 1][7] = rightwaist;
+            result[juggler - 1][8] = leftheadbottom;
+            result[juggler - 1][9] = leftheadtop;
+            result[juggler - 1][10] = rightheadbottom;
+            result[juggler - 1][11] = rightheadtop;
         }
     }
 

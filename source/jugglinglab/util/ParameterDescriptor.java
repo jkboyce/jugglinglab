@@ -1,6 +1,6 @@
 // ParameterDescriptor.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.util;
 
@@ -20,6 +20,7 @@ public class ParameterDescriptor {
     public ArrayList<String> range;
     public Object default_value;
     public Object value;
+
 
     public ParameterDescriptor(String name, int type, ArrayList<String> range,
                 Object default_value, Object value) {

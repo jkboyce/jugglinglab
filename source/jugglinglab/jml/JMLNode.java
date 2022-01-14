@@ -1,6 +1,6 @@
 // JMLNode.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -11,13 +11,14 @@ import jugglinglab.util.*;
 
 
 public class JMLNode {
-    protected String nodeType;      // from taglist in JMLDefs.java
-    protected String nodeValue;     // nodes with character content
+    protected String nodeType;  // from taglist in JMLDefs.java
+    protected String nodeValue;  // nodes with character content
     protected JMLNode parentNode;
     protected ArrayList<JMLNode> childNodes;
     protected JMLNode previousSibling;
     protected JMLNode nextSibling;
     protected JMLAttributes attributes;
+
 
     public JMLNode(String nodeType) {
         this.nodeType = nodeType;
@@ -25,22 +26,38 @@ public class JMLNode {
         attributes = new JMLAttributes(this);
     }
 
-    public String getNodeType()         { return nodeType; }
-    public String getNodeValue()        { return nodeValue; }
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public String getNodeValue() {
+        return nodeValue;
+    }
+
     public void setNodeValue(String nodeValue) {
         this.nodeValue = nodeValue;
     }
 
-    public JMLNode getParentNode()      { return parentNode; }
-    public void setParentNode(JMLNode parent) { parentNode = parent; }
+    public JMLNode getParentNode() {
+        return parentNode;
+    }
 
-    public int getNumberOfChildren()    { return childNodes.size(); }
+    public void setParentNode(JMLNode parent) {
+        parentNode = parent;
+    }
+
+    public int getNumberOfChildren() {
+        return childNodes.size();
+    }
 
     public JMLNode getChildNode(int index) {
         return childNodes.get(index);
     }
 
-    public JMLNode getFirstChild()      { return childNodes.get(0); }
+    public JMLNode getFirstChild() {
+        return childNodes.get(0);
+    }
+
     public JMLNode getLastChild() {
         int n = childNodes.size();
         if (n > 0)
@@ -48,14 +65,21 @@ public class JMLNode {
         return null;
     }
 
-    public JMLNode getPreviousSibling() { return previousSibling; }
-    public void setPreviousSibling(JMLNode sibling) {
-        this.previousSibling = sibling;
+    public JMLNode getPreviousSibling() {
+        return previousSibling;
     }
 
-    public JMLNode getNextSibling() { return nextSibling; }
-    public void setNextSibling(JMLNode sibling) { this.nextSibling = sibling; }
+    public void setPreviousSibling(JMLNode sibling) {
+        previousSibling = sibling;
+    }
 
+    public JMLNode getNextSibling() {
+        return nextSibling;
+    }
+
+    public void setNextSibling(JMLNode sibling) {
+        nextSibling = sibling;
+    }
 
     public void addAttribute(String name, String value) {
         attributes.addAttribute(name, value);
@@ -77,7 +101,7 @@ public class JMLNode {
             newChild.setNextSibling(refChild);
             refChild.setPreviousSibling(newChild);
         } else {
-            this.appendChild(newChild);
+            appendChild(newChild);
         }
     }
 

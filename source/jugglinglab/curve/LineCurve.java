@@ -1,6 +1,6 @@
 // LineCurve.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.curve;
 
@@ -8,22 +8,22 @@ import jugglinglab.util.*;
 
 
 public class LineCurve extends Curve {
-    protected int           n;              // number of line segments
-    protected double[][]    a, b;           // line coefficients
-    protected double[]      durations;      // durations of segments
+    protected int n;  // number of line segments
+    protected double[][] a, b;  // line coefficients
+    protected double[] durations;  // durations of segments
 
     @Override
     public void initCurve(String st) {}
 
     @Override
     public void calcCurve() throws JuggleExceptionInternal {
-        this.n = numpoints - 1;
+        n = numpoints - 1;
         if (n < 1)
             throw new JuggleExceptionInternal("lineCurve error 1");
 
-        this.a = new double[n][3];
-        this.b = new double[n][3];
-        this.durations = new double[n];
+        a = new double[n][3];
+        b = new double[n][3];
+        durations = new double[n];
         for (int i = 0; i < n; i++) {
             durations[i] = times[i+1] - times[i];
             if (durations[i] < 0.0)

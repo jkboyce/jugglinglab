@@ -1,6 +1,6 @@
 // VelocityRef.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.jml;
 
@@ -11,6 +11,7 @@ import jugglinglab.path.*;
 public class VelocityRef {
     protected Path  pp;
     protected boolean   start;
+
 
     public VelocityRef(Path pp, boolean start) {
         this.pp = pp;

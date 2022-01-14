@@ -1,6 +1,6 @@
 // RingProp.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.prop;
 
@@ -14,33 +14,59 @@ import jugglinglab.util.*;
 
 
 public class RingProp extends Prop {
-    static String[] colornames = {"black", "blue", "cyan", "gray",
-        "green", "magenta", "orange", "pink", "red", "white", "yellow"};
-    static Color[] colorvals = {Color.black, Color.blue, Color.cyan,
-        Color.gray, Color.green, Color.magenta, Color.orange,
-        Color.pink, Color.red, Color.white, Color.yellow};
+    public static final String[] colornames =
+        {
+            "black",
+            "blue",
+            "cyan",
+            "gray",
+            "green",
+            "magenta",
+            "orange",
+            "pink",
+            "red",
+            "white",
+            "yellow",
+        };
 
-    protected static final int colornum_def = 8;    // red
+    public static final Color[] colorvals =
+        {
+            Color.black,
+            Color.blue,
+            Color.cyan,
+            Color.gray,
+            Color.green,
+            Color.magenta,
+            Color.orange,
+            Color.pink,
+            Color.red,
+            Color.white,
+            Color.yellow
+        };
+
+    protected static final int colornum_def = 8;  // red
     protected static final double outside_diam_def = 25.0;  // in cm
-    protected static final double inside_diam_def = 20.0;   // in cm
+    protected static final double inside_diam_def = 20.0;  // in cm
     protected static final int polysides = 200;
 
-    protected double        outside_diam = outside_diam_def;
-    protected double        inside_diam = inside_diam_def;
-    protected int           colornum = colornum_def;
-    protected Color         color;
+    protected double outside_diam = outside_diam_def;
+    protected double inside_diam = inside_diam_def;
+    protected int colornum = colornum_def;
+    protected Color color;
 
     protected BufferedImage image;
 
-    protected double        lastzoom = 0.0;
-    protected double[]      lastcamangle = {0.0, 0.0};
+    protected double lastzoom;
+    protected double[] lastcamangle = { 0.0, 0.0 };
 
-    protected Dimension     size;
-    protected Dimension     center;
-    protected Dimension     grip;
-    protected Coordinate    propmax;
-    protected Coordinate    propmin;
-    protected int[]         px, py;
+    protected Dimension size;
+    protected Dimension center;
+    protected Dimension grip;
+    protected int[] px;
+    protected int[] py;
+
+
+    // View methods
 
     @Override
     public String getType() {
@@ -61,11 +87,11 @@ public class RingProp extends Prop {
             range.add(colornames[i]);
 
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
-                                            range, colornames[colornum_def], colornames[colornum]);
+                            range, colornames[colornum_def], colornames[colornum]);
         result[1] = new ParameterDescriptor("outside", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(outside_diam_def), Double.valueOf(outside_diam));
+                            null, Double.valueOf(outside_diam_def), Double.valueOf(outside_diam));
         result[2] = new ParameterDescriptor("inside", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(inside_diam_def), Double.valueOf(inside_diam));
+                            null, Double.valueOf(inside_diam_def), Double.valueOf(inside_diam));
 
         return result;
     }
@@ -156,46 +182,44 @@ public class RingProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        if (this.propmax == null)
-            this.propmax = new Coordinate(outside_diam / 2.0, 0.0, outside_diam / 2.0);
-        return this.propmax;
+        return new Coordinate(outside_diam / 2.0, 0.0, outside_diam / 2.0);
     }
 
     @Override
     public Coordinate getMin() {
-        if (this.propmin == null)
-            this.propmin = new Coordinate(-outside_diam / 2.0, 0.0, -outside_diam / 2.0);
-        return this.propmin;
+        return new Coordinate(-outside_diam / 2.0, 0.0, -outside_diam / 2.0);
     }
 
     @Override
-    public double getWidth() { return 0.05 * outside_diam; }
+    public double getWidth() {
+        return 0.05 * outside_diam;
+    }
 
     @Override
     public Image getProp2DImage(double zoom, double[] camangle) {
         if ((image == null) || (zoom != lastzoom) ||
-            (camangle[0] != lastcamangle[0]) || (camangle[1] != lastcamangle[1]))   // first call or display resized?
+            (camangle[0] != lastcamangle[0]) || (camangle[1] != lastcamangle[1]))  // first call or display resized?
             redrawImage(zoom, camangle);
         return image;
     }
 
     @Override
     public Dimension getProp2DSize(double zoom) {
-        if ((size == null) || (zoom != lastzoom))       // first call or display resized?
+        if ((size == null) || (zoom != lastzoom))  // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return size;
     }
 
     @Override
     public Dimension getProp2DCenter(double zoom) {
-        if (center == null || zoom != lastzoom)     // first call or display resized?
+        if (center == null || zoom != lastzoom)  // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return center;
     }
 
     @Override
     public Dimension getProp2DGrip(double zoom) {
-        if (grip == null || zoom != lastzoom)       // first call or display resized?
+        if (grip == null || zoom != lastzoom)  // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return grip;
     }
@@ -293,46 +317,4 @@ public class RingProp extends Prop {
         lastzoom = zoom;
         lastcamangle = new double[] {camangle[0], camangle[1]};
     }
-
-    /*
-    public Object getPropIDX3D() {
-        Object result = null;
-        try {
-            Class ob = Class.forName("idx3d.idx3d_Object");
-            Class of = Class.forName("idx3d.idx3d_ObjectFactory");
-            Class mat = Class.forName("idx3d.idx3d_Material");
-            Method spiral = of.getMethod("SPIRAL", new Class[] {Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE,
-                Float.TYPE, Float.TYPE, Integer.TYPE, Integer.TYPE});
-            result = spiral.invoke(null, new Object[] {new Float(0f), new Float((float)outside_diam/2),
-                new Float(0f), new Float((float)(outside_diam-inside_diam)/2), new Float(1.02f), new Float(0f),
-                new Integer(10), new Integer(10)});
-            Method rotate = ob.getMethod("rotate", new Class[] {Float.TYPE, Float.TYPE, Float.TYPE});
-            Method scale = ob.getMethod("scale", new Class[] {Float.TYPE, Float.TYPE, Float.TYPE});
-            rotate.invoke(result, new Object[] {new Float(0f), new Float(JLFunc.pi/2), new Float(0f)});
-            scale.invoke(result, new Object[] {new Float(0.1f), new Float(1f), new Float(1f)});
-            Method setcolor = mat.getMethod("setColor", new Class[] {Integer.TYPE});
-            Object surf = mat.newInstance();
-            setcolor.invoke(surf, new Object[] {new Integer(color.getRGB())});
-            Method setmaterial = ob.getMethod("setMaterial", new Class[] {mat});
-            setmaterial.invoke(result, new Object[] {surf});
-        } catch (ClassNotFoundException e) {
-            return null;
-        } catch (NoSuchMethodException e) {
-            return null;
-        } catch (SecurityException e) {
-            return null;
-        } catch (IllegalAccessException e) {
-            return null;
-        } catch (InstantiationException e) {
-            return null;
-        } catch (InvocationTargetException e) {
-            return null;
-        }
-        return result;
-    }
-
-    public Coordinate getPropIDX3DGrip() {
-        return new Coordinate(0.0, -outside_diam/2, 0.0);
-    }
-    */
 }

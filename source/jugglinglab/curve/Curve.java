@@ -1,6 +1,6 @@
 // Curve.java
 //
-// Copyright 2019 by Jack Boyce (jboyce@gmail.com)
+// Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
 package jugglinglab.curve;
 
@@ -11,10 +11,12 @@ public abstract class Curve {
     public static final int splineCurve = 1;    // implemented types
     public static final int lineCurve = 2;
 
-    protected int           numpoints;
-    protected Coordinate[]  positions;
-    protected double[]      times;
-    protected Coordinate    start_velocity, end_velocity;
+    protected int numpoints;
+    protected Coordinate[] positions;
+    protected double[] times;
+    protected Coordinate start_velocity;
+    protected Coordinate end_velocity;
+
 
     public abstract void initCurve(String st) throws JuggleExceptionUser;
 
@@ -24,7 +26,7 @@ public abstract class Curve {
         this.times = times;
         this.start_velocity = start_velocity;
         this.end_velocity = end_velocity;
-        this.numpoints = positions.length;
+        numpoints = positions.length;
         if (numpoints != times.length)
             throw new JuggleExceptionInternal("Path error 1");
     }
@@ -35,9 +37,18 @@ public abstract class Curve {
 
     public abstract void calcCurve() throws JuggleExceptionInternal;
 
-    public double getStartTime()    { return times[0]; }
-    public double getEndTime()      { return times[numpoints-1]; }
-    public double getDuration()     { return (times[numpoints-1]-times[0]); }
+    public double getStartTime() {
+        return times[0];
+    }
+
+    public double getEndTime() {
+        return times[numpoints - 1];
+    }
+
+    public double getDuration() {
+        return (times[numpoints - 1] - times[0]);
+    }
+
     public void translateTime(double deltat) {
         for (int i = 0; i < numpoints; i++)
             times[i] += deltat;
@@ -45,26 +56,35 @@ public abstract class Curve {
 
     public abstract void getCoordinate(double time, Coordinate newPosition);
 
-        // for screen layout purposes
-    public Coordinate getMax()  { return getMax2(times[0], times[numpoints-1]); }
-    public Coordinate getMin()  { return getMin2(times[0], times[numpoints-1]); }
+    // for screen layout purposes
+    public Coordinate getMax() {
+        return getMax2(times[0], times[numpoints - 1]);
+    }
+
+    public Coordinate getMin() {
+        return getMin2(times[0], times[numpoints - 1]);
+    }
+
     public Coordinate getMax(double begin, double end) {
         if (end < getStartTime() || begin > getEndTime())
             return null;
         return getMax2(begin, end);
     }
+
     public Coordinate getMin(double begin, double end) {
         if (end < getStartTime() || begin > getEndTime())
             return null;
         return getMin2(begin, end);
     }
+
     protected abstract Coordinate getMax2(double begin, double end);
+
     protected abstract Coordinate getMin2(double begin, double end);
 
         // utility for getMax2/getMin2
     protected Coordinate check(Coordinate result, double t, boolean findmax) {
         Coordinate loc = new Coordinate();
-        this.getCoordinate(t, loc);
+        getCoordinate(t, loc);
         if (findmax)
             result = Coordinate.max(result, loc);
         else
