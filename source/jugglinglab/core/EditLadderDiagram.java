@@ -436,6 +436,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                 ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                             "mouse dragged in EVENT_SELECTED state"));
                 break;
+            case STATE_POSITION_SELECTED:
+                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
+                            "mouse dragged in POSITION_SELECTED state"));
+                break;
             case STATE_MOVING_EVENT:
             case STATE_MOVING_POSITION:
                 int old_delta_y = delta_y;
@@ -779,118 +783,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             String command = popupCommands[i];
             item.setActionCommand(command);
             item.addActionListener(this);
-
-            // determine which items to disable based on context
-
-            if (laditem == null) {
-                if (Arrays.asList(
-                                    "removeevent",
-                                    "removeposition",
-                                    "defineprop",
-                                    "definethrow",
-                                    "changetocatch",
-                                    "changetosoftcatch",
-                                    "makelast"
-                                ).contains(command))
-                    item.setEnabled(false);
-            } else if (laditem.type == LadderItem.TYPE_EVENT) {
-                if (Arrays.asList(
-                                    "changetitle",
-                                    "changetiming",
-                                    "addeventtoleft",
-                                    "addeventtoright",
-                                    "addposition",
-                                    "removeposition",
-                                    "defineprop",
-                                    "definethrow",
-                                    "changetocatch",
-                                    "changetosoftcatch",
-                                    "makelast"
-                                ).contains(command))
-                    item.setEnabled(false);
-
-                if (command.equals("removeevent")) {
-                    // can't remove an event with throws or catches
-                    LadderEventItem evitem = (LadderEventItem)laditem;
-
-                    for (int j = 0; j < evitem.event.getNumberOfTransitions(); j++) {
-                        JMLTransition tr = evitem.event.getTransition(j);
-                        if (tr.getType() != JMLTransition.TRANS_HOLDING)
-                            item.setEnabled(false);
-                    }
-
-                    // check to make sure we're not allowing the user to delete
-                    // an event if it's the last one in that hand.
-                    // do this by finding the next event in the same hand; if it
-                    // has the same master, it's the only one
-                    int hand = evitem.event.getHand();
-                    int juggler = evitem.event.getJuggler();
-                    JMLEvent evm1 = evitem.event.isMaster() ? evitem.event :
-                        evitem.event.getMaster();
-                    JMLEvent ev = evitem.event.getNext();
-                    while (ev != null) {
-                        if ((ev.getHand() == hand) && (ev.getJuggler() == juggler)) {
-                            JMLEvent evm2 = ev.isMaster() ? ev : ev.getMaster();
-                            if (evm1 == evm2)
-                                item.setEnabled(false);
-                            break;
-                        }
-                        ev = ev.getNext();
-                    }
-                }
-            } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
-                if (Arrays.asList(
-                                    "changetitle",
-                                    "changetiming",
-                                    "addeventtoleft",
-                                    "addeventtoright",
-                                    "addposition",
-                                    "removeposition",
-                                    "removeevent"
-                                ).contains(command))
-                    item.setEnabled(false);
-
-                LadderEventItem evitem = (LadderEventItem)laditem;
-                JMLTransition tr = evitem.event.getTransition(evitem.transnum);
-
-                if (command.equals("makelast")) {
-                    if (evitem.transnum == (evitem.event.getNumberOfTransitions() - 1))
-                        item.setEnabled(false);
-                } else if (command.equals("definethrow")) {
-                    if (tr.getType() != JMLTransition.TRANS_THROW)
-                        item.setEnabled(false);
-                } else if (command.equals("changetocatch")) {
-                    if (tr.getType() != JMLTransition.TRANS_SOFTCATCH)
-                        item.setEnabled(false);
-                } else if (command.equals("changetosoftcatch")) {
-                    if (tr.getType() != JMLTransition.TRANS_CATCH)
-                        item.setEnabled(false);
-                }
-            } else if (laditem.type == LadderItem.TYPE_POSITION) {
-                if (Arrays.asList(
-                                    "changetitle",
-                                    "changetiming",
-                                    "addeventtoleft",
-                                    "addeventtoright",
-                                    "removeevent",
-                                    "addposition",
-                                    "defineprop",
-                                    "definethrow",
-                                    "changetocatch",
-                                    "changetosoftcatch",
-                                    "makelast"
-                                ).contains(command))
-                    item.setEnabled(false);
-            } else {  // LadderPathItem
-                if (Arrays.asList(
-                                    "removeevent",
-                                    "definethrow",
-                                    "changetocatch",
-                                    "changetosoftcatch",
-                                    "makelast"
-                                ).contains(command))
-                    item.setEnabled(false);
-            }
+            item.setEnabled(isItemEnabled(laditem, command));
 
             popup.add(item);
         }
@@ -916,6 +809,122 @@ public class EditLadderDiagram extends LadderDiagram implements
         });
 
         return popup;
+    }
+
+    // Determine which commands are enabled for a particular LadderItem
+    //
+    // Returns true for enabled, false for disabled
+    protected static boolean isItemEnabled(LadderItem laditem, String command) {
+        if (laditem == null) {
+            if (Arrays.asList(
+                                "removeevent",
+                                "removeposition",
+                                "defineprop",
+                                "definethrow",
+                                "changetocatch",
+                                "changetosoftcatch",
+                                "makelast"
+                            ).contains(command))
+                return false;
+        } else if (laditem.type == LadderItem.TYPE_EVENT) {
+            if (Arrays.asList(
+                                "changetitle",
+                                "changetiming",
+                                "addeventtoleft",
+                                "addeventtoright",
+                                "addposition",
+                                "removeposition",
+                                "defineprop",
+                                "definethrow",
+                                "changetocatch",
+                                "changetosoftcatch",
+                                "makelast"
+                            ).contains(command))
+                return false;
+
+            if (command.equals("removeevent")) {
+                // can't remove an event with throws or catches
+                LadderEventItem evitem = (LadderEventItem)laditem;
+
+                for (int j = 0; j < evitem.event.getNumberOfTransitions(); j++) {
+                    JMLTransition tr = evitem.event.getTransition(j);
+                    if (tr.getType() != JMLTransition.TRANS_HOLDING)
+                        return false;
+                }
+
+                // check to make sure we're not allowing the user to delete
+                // an event if it's the last one in that hand.
+                // do this by finding the next event in the same hand; if it
+                // has the same master, it's the only one
+                int hand = evitem.event.getHand();
+                int juggler = evitem.event.getJuggler();
+                JMLEvent evm1 = evitem.event.isMaster() ? evitem.event :
+                    evitem.event.getMaster();
+                JMLEvent ev = evitem.event.getNext();
+                while (ev != null) {
+                    if ((ev.getHand() == hand) && (ev.getJuggler() == juggler)) {
+                        JMLEvent evm2 = ev.isMaster() ? ev : ev.getMaster();
+                        if (evm1 == evm2)
+                            return false;
+                        break;
+                    }
+                    ev = ev.getNext();
+                }
+            }
+        } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
+            if (Arrays.asList(
+                                "changetitle",
+                                "changetiming",
+                                "addeventtoleft",
+                                "addeventtoright",
+                                "addposition",
+                                "removeposition",
+                                "removeevent"
+                            ).contains(command))
+                return false;
+
+            LadderEventItem evitem = (LadderEventItem)laditem;
+            JMLTransition tr = evitem.event.getTransition(evitem.transnum);
+
+            if (command.equals("makelast")) {
+                if (evitem.transnum == (evitem.event.getNumberOfTransitions() - 1))
+                    return false;
+            } else if (command.equals("definethrow")) {
+                if (tr.getType() != JMLTransition.TRANS_THROW)
+                    return false;
+            } else if (command.equals("changetocatch")) {
+                if (tr.getType() != JMLTransition.TRANS_SOFTCATCH)
+                    return false;
+            } else if (command.equals("changetosoftcatch")) {
+                if (tr.getType() != JMLTransition.TRANS_CATCH)
+                    return false;
+            }
+        } else if (laditem.type == LadderItem.TYPE_POSITION) {
+            if (Arrays.asList(
+                                "changetitle",
+                                "changetiming",
+                                "addeventtoleft",
+                                "addeventtoright",
+                                "removeevent",
+                                "addposition",
+                                "defineprop",
+                                "definethrow",
+                                "changetocatch",
+                                "changetosoftcatch",
+                                "makelast"
+                            ).contains(command))
+                return false;
+        } else {  // LadderPathItem
+            if (Arrays.asList(
+                                "removeevent",
+                                "definethrow",
+                                "changetocatch",
+                                "changetosoftcatch",
+                                "makelast"
+                            ).contains(command))
+                return false;
+        }
+        return true;
     }
 
     @Override
@@ -1540,11 +1549,9 @@ public class EditLadderDiagram extends LadderDiagram implements
         repaint();
     }
 
-    private static final String[] booleanList = {
-        "True",
-        "False",
-    };
+    private static final String[] booleanList = { "True", "False" };
 
+    // Helper for defineProp() and defineThrow()
     protected void makeParametersPanel(JPanel jp, ParameterDescriptor[] pd) {
         jp.removeAll();
         GridBagLayout gb = new GridBagLayout();
@@ -1790,12 +1797,12 @@ public class EditLadderDiagram extends LadderDiagram implements
         // draw positions
         gr.setColor(Color.black);
         for (LadderPositionItem item : ladderpositionitems) {
-            int yoffset = ((gui_state == STATE_MOVING_POSITION) &&
-                           (active_positionitem == item)) ? delta_y : 0;
+            int yoffset = (gui_state == STATE_MOVING_POSITION &&
+                           active_positionitem == item) ? delta_y : 0;
 
             if (item.ylow + yoffset >= border_top ||
                             item.yhigh + yoffset <= height + border_top) {
-                gr.setColor(this.getBackground());
+                gr.setColor(getBackground());
                 gr.fillRect(item.xlow, item.ylow + yoffset,
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
                 gr.setColor(Color.black);
@@ -1821,8 +1828,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         // draw events
         gr.setColor(Color.black);
         for (LadderEventItem item : laddereventitems) {
-            int yoffset = ((gui_state == STATE_MOVING_EVENT) &&
-                           (active_eventitem.eventitem == item.eventitem)) ? delta_y : 0;
+            int yoffset = (gui_state == STATE_MOVING_EVENT &&
+                           active_eventitem.eventitem == item.eventitem) ? delta_y : 0;
             if (item.type == LadderItem.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow + yoffset,
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
