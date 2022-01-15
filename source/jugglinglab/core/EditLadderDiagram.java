@@ -783,7 +783,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             String command = popupCommands[i];
             item.setActionCommand(command);
             item.addActionListener(this);
-            item.setEnabled(isItemEnabled(laditem, command));
+            item.setEnabled(isCommandEnabled(laditem, command));
 
             popup.add(item);
         }
@@ -814,7 +814,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     // Determine which commands are enabled for a particular LadderItem
     //
     // Returns true for enabled, false for disabled
-    protected static boolean isItemEnabled(LadderItem laditem, String command) {
+    protected static boolean isCommandEnabled(LadderItem laditem, String command) {
         if (laditem == null) {
             if (Arrays.asList(
                                 "removeevent",

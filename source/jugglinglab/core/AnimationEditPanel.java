@@ -202,6 +202,8 @@ public class AnimationEditPanel extends AnimationPanel {
 
                 if (event_active)
                     createEventView();
+                if (position_active)
+                    createPositionView();
                 if (getPaused())
                     repaint();
             }
@@ -256,6 +258,8 @@ public class AnimationEditPanel extends AnimationPanel {
 
         if (event_active)
             a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+        else if (position_active)
+            a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
         else if (anim.pat.getNumberOfJugglers() == 1)
             a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
         else
@@ -465,6 +469,7 @@ public class AnimationEditPanel extends AnimationPanel {
             try {
                 anim.drawFrame(getTime(), g, cameradrag);
                 drawEvent(g);
+                drawPosition(g);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 System.out.println(jei.getMessage());

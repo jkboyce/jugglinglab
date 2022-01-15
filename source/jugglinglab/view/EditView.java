@@ -70,6 +70,7 @@ public class EditView extends View {
             new_ladder.setAnimationPanel(jae);
             jae.setLadderDiagram(new_ladder);
             jae.deactivateEvent();
+            jae.deactivatePosition();
 
             ladder.removeAll();
             ladder.add(new_ladder, BorderLayout.CENTER);
@@ -137,6 +138,7 @@ public class EditView extends View {
     public void writeGIF(File f) {
         jae.writingGIF = true;
         jae.deactivateEvent();  // so we don't draw event box in animated GIF
+        jae.deactivatePosition();
         boolean origpause = getPaused();
         setPaused(true);
 
