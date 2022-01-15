@@ -80,6 +80,16 @@ public class LadderDiagram extends JPanel {
         return null;
     }
 
+    protected LadderPositionItem getSelectedLadderPosition(int x, int y) {
+        for (int i = 0; i < ladderpositionitems.size(); i++) {
+            LadderPositionItem item = ladderpositionitems.get(i);
+            if (x >= item.xlow && x <= item.xhigh &&
+                        y >= item.ylow && y <= item.yhigh)
+                return item;
+        }
+        return null;
+    }
+
     protected LadderPathItem getSelectedLadderPath(int x, int y, int slop) {
         LadderPathItem result = null;
         double dmin = 0.0;

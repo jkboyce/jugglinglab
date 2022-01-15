@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 import jugglinglab.util.*;
 import jugglinglab.jml.JMLEvent;
 import jugglinglab.jml.JMLPattern;
+import jugglinglab.jml.JMLPosition;
 
 
 // This subclass of AnimationPanel is used by Edit view. It adds functionality
@@ -21,8 +22,10 @@ public class AnimationEditPanel extends AnimationPanel {
     protected LadderDiagram ladder;
     protected boolean event_active;
     protected JMLEvent event;
+    protected boolean position_active;
+    protected JMLPosition position;
     protected int xlow1, xhigh1, ylow1, yhigh1;
-    protected int xlow2, xhigh2, ylow2, yhigh2;
+    protected int xlow2, xhigh2, ylow2, yhigh2;  // for stereo view
     protected boolean dragging;
     protected boolean dragging_left;  // may not be necessary
     protected int xstart, ystart, xdelta, ydelta;
@@ -346,7 +349,7 @@ public class AnimationEditPanel extends AnimationPanel {
         Dimension d = getSize();
         Graphics g2 = g;
         if (jc.stereo)
-            g2 = g.create(0,0,d.width/2,d.height);
+            g2 = g.create(0, 0, d.width / 2, d.height);
 
         if (g2 instanceof Graphics2D) {
             Graphics2D g22 = (Graphics2D)g2;
@@ -360,7 +363,85 @@ public class AnimationEditPanel extends AnimationPanel {
         g2.drawLine(xlow1+xdelta, yhigh1+ydelta, xlow1+xdelta, ylow1+ydelta);
 
         if (jc.stereo) {
-            g2 = g.create(d.width/2,0,d.width/2,d.height);
+            g2 = g.create(d.width / 2, 0, d.width / 2, d.height);
+            if (g2 instanceof Graphics2D) {
+                Graphics2D g22 = (Graphics2D)g2;
+                g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+            }
+            g2.setColor(Color.green);
+            g2.drawLine(xlow2+xdelta, ylow2+ydelta, xhigh2+xdelta, ylow2+ydelta);
+            g2.drawLine(xhigh2+xdelta, ylow2+ydelta, xhigh2+xdelta, yhigh2+ydelta);
+            g2.drawLine(xhigh2+xdelta, yhigh2+ydelta, xlow2+xdelta, yhigh2+ydelta);
+            g2.drawLine(xlow2+xdelta, yhigh2+ydelta, xlow2+xdelta, ylow2+ydelta);
+        }
+    }
+
+    public void activatePosition(JMLPosition pos) {
+        position = pos;
+        position_active = true;
+        createPositionView();
+    }
+
+    public void deactivatePosition() {
+        position_active = false;
+    }
+
+    protected void createPositionView() {
+        if (position_active) {
+            // translate by one pixel and see how far it was in juggler space
+            {
+                Coordinate c = position.getCoordinate();
+                Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
+                Coordinate dc = Coordinate.sub(c, c2);
+                double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
+                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
+
+                int[] center = anim.ren1.getXY(c);
+                xlow1 = center[0] - boxhw;
+                ylow1 = center[1] - boxhw;
+                xhigh1 = center[0] + boxhw;
+                yhigh1 = center[1] + boxhw;
+            }
+
+            if (jc.stereo) {
+                Coordinate c = position.getCoordinate();
+                Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
+                Coordinate dc = Coordinate.sub(c, c2);
+                double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
+                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
+
+                int[] center = anim.ren2.getXY(c);
+                xlow2 = center[0] - boxhw;
+                ylow2 = center[1] - boxhw;
+                xhigh2 = center[0] + boxhw;
+                yhigh2 = center[1] + boxhw;
+            }
+        }
+    }
+
+    protected void drawPosition(Graphics g) throws JuggleExceptionInternal {
+        if (!position_active)
+            return;
+
+        Dimension d = getSize();
+        Graphics g2 = g;
+        if (jc.stereo)
+            g2 = g.create(0, 0, d.width / 2, d.height);
+
+        if (g2 instanceof Graphics2D) {
+            Graphics2D g22 = (Graphics2D)g2;
+            g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+        g2.setColor(Color.green);
+        g2.drawLine(xlow1+xdelta, ylow1+ydelta, xhigh1+xdelta, ylow1+ydelta);
+        g2.drawLine(xhigh1+xdelta, ylow1+ydelta, xhigh1+xdelta, yhigh1+ydelta);
+        g2.drawLine(xhigh1+xdelta, yhigh1+ydelta, xlow1+xdelta, yhigh1+ydelta);
+        g2.drawLine(xlow1+xdelta, yhigh1+ydelta, xlow1+xdelta, ylow1+ydelta);
+
+        if (jc.stereo) {
+            g2 = g.create(d.width/2, 0, d.width / 2, d.height);
             if (g2 instanceof Graphics2D) {
                 Graphics2D g22 = (Graphics2D)g2;
                 g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
