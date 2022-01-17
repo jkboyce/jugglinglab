@@ -63,8 +63,8 @@ public class SimpleView extends View {
     }
 
     @Override
-    public boolean getPaused() {
-        return ja.getPaused();
+    public boolean isPaused() {
+        return ja.isPaused();
     }
 
     @Override
@@ -81,7 +81,7 @@ public class SimpleView extends View {
     @Override
     public void writeGIF(File f) {
         ja.writingGIF = true;
-        boolean origpause = getPaused();
+        boolean origpause = isPaused();
         setPaused(true);
 
         Runnable cleanup = new Runnable() {

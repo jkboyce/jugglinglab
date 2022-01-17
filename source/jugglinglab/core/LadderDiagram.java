@@ -30,6 +30,7 @@ public class LadderDiagram extends JPanel {
     protected static final int border_top = 25;
     protected static final int transition_radius = 5;
     protected static final int path_slop = 5;
+    protected static final int position_radius = 5;
 
     // geometric constants as fraction of hands separation for each juggler
     protected static final double border_sides = 0.15;
@@ -51,6 +52,7 @@ public class LadderDiagram extends JPanel {
 
     protected ArrayList<LadderEventItem> laddereventitems;
     protected ArrayList<LadderPathItem> ladderpathitems;
+    protected ArrayList<LadderPositionItem> ladderpositionitems;
 
     protected BufferedImage ladderimage;
     protected boolean ladder_image_valid;
@@ -71,6 +73,16 @@ public class LadderDiagram extends JPanel {
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
         for (int i = 0; i < laddereventitems.size(); i++) {
             LadderEventItem item = laddereventitems.get(i);
+            if (x >= item.xlow && x <= item.xhigh &&
+                        y >= item.ylow && y <= item.yhigh)
+                return item;
+        }
+        return null;
+    }
+
+    protected LadderPositionItem getSelectedLadderPosition(int x, int y) {
+        for (int i = 0; i < ladderpositionitems.size(); i++) {
+            LadderPositionItem item = ladderpositionitems.get(i);
             if (x >= item.xlow && x <= item.xhigh &&
                         y >= item.ylow && y <= item.yhigh)
                 return item;
@@ -133,11 +145,11 @@ public class LadderDiagram extends JPanel {
             return;
 
         sim_time = time;
-        setTrackerPosition();
+        updateTrackerPosition();
         repaint();
     }
 
-    protected void setTrackerPosition() {
+    protected void updateTrackerPosition() {
         double loop_start = pat.getLoopStartTime();
         double loop_end = pat.getLoopEndTime();
         tracker_y = (int)(0.5 + (double)(height-2*border_top) * (sim_time-loop_start) /
@@ -159,44 +171,42 @@ public class LadderDiagram extends JPanel {
             }
         }
 
-        // first create events (little circles)
-        laddereventitems = new ArrayList<LadderEventItem>();
         double loop_start = pat.getLoopStartTime();
         double loop_end = pat.getLoopEndTime();
 
+        // first create events (little circles)
+        laddereventitems = new ArrayList<LadderEventItem>();
         JMLEvent eventlist = pat.getEventList();
-        JMLEvent current = eventlist;
+        JMLEvent ev = eventlist;
 
-        while (current.getT() < loop_start)
-            current = current.getNext();
+        while (ev.getT() < loop_start)
+            ev = ev.getNext();
 
-        while (current.getT() < loop_end) {
+        while (ev.getT() < loop_end) {
             LadderEventItem item = new LadderEventItem();
             item.type = LadderEventItem.TYPE_EVENT;
             item.eventitem = item;
-            item.event = current;
+            item.event = ev;
             laddereventitems.add(item);
 
-            for (int i = 0; i < current.getNumberOfTransitions(); i++) {
+            for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
                 LadderEventItem item2 = new LadderEventItem();
                 item2.type = LadderEventItem.TYPE_TRANSITION;
                 item2.eventitem = item;
-                item2.event = current;
+                item2.event = ev;
                 item2.transnum = i;
                 laddereventitems.add(item2);
             }
 
-            current = current.getNext();
+            ev = ev.getNext();
         }
 
         // create paths (lines and arcs)
         ladderpathitems = new ArrayList<LadderPathItem>();
-
-        current = eventlist;
-
-        while (current.getT() <= loop_end) {
-            for (int i = 0; i < current.getNumberOfTransitions(); i++) {
-                JMLTransition tr = current.getTransition(i);
+        ev = eventlist;
+        while (ev.getT() <= loop_end) {
+            for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
+                JMLTransition tr = ev.getTransition(i);
                 PathLink opl = tr.getOutgoingPathLink();
 
                 if (opl != null) {
@@ -219,7 +229,24 @@ public class LadderDiagram extends JPanel {
                 }
             }
 
-            current = current.getNext();
+            ev = ev.getNext();
+        }
+
+        // create juggler positions
+        ladderpositionitems = new ArrayList<LadderPositionItem>();
+        JMLPosition positionlist = pat.getPositionList();
+        JMLPosition pos = positionlist;
+
+        while (pos != null && pos.getT() < loop_start)
+            pos = pos.getNext();
+
+        while (pos != null && pos.getT() < loop_end) {
+            LadderPositionItem item = new LadderPositionItem();
+            item.type = LadderPositionItem.TYPE_POSITION;
+            item.position = pos;
+            ladderpositionitems.add(item);
+
+            pos = pos.getNext();
         }
 
         updateView();
@@ -248,14 +275,13 @@ public class LadderDiagram extends JPanel {
         double loop_end = pat.getLoopEndTime();
 
         // set locations of events and transitions
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
-            JMLEvent current = item.event;
+        for (LadderEventItem item : laddereventitems) {
+            JMLEvent ev = item.event;
 
-            int event_x = (current.getHand() == HandLink.LEFT_HAND ? left_x : right_x) +
-                          (current.getJuggler() - 1) * juggler_delta_x -
+            int event_x = (ev.getHand() == HandLink.LEFT_HAND ? left_x : right_x) +
+                          (ev.getJuggler() - 1) * juggler_delta_x -
                           transition_radius;
-            int event_y = (int)(0.5 + (double)(height-2*border_top) * (current.getT()-loop_start) /
+            int event_y = (int)(0.5 + (double)(height-2*border_top) * (ev.getT()-loop_start) /
                                 (loop_end - loop_start)) + border_top - transition_radius;
 
             if (item.type == LadderEventItem.TYPE_EVENT) {
@@ -264,7 +290,7 @@ public class LadderDiagram extends JPanel {
                 item.ylow = event_y;
                 item.yhigh = event_y + 2 * transition_radius;
             } else {
-                if (current.getHand() == HandLink.LEFT_HAND)
+                if (ev.getHand() == HandLink.LEFT_HAND)
                     event_x += 2 * transition_radius * (item.transnum+1);
                 else
                     event_x -= 2 * transition_radius * (item.transnum+1);
@@ -276,9 +302,7 @@ public class LadderDiagram extends JPanel {
         }
 
         // set locations of paths (lines and arcs)
-        for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = ladderpathitems.get(i);
-
+        for (LadderPathItem item : ladderpathitems) {
             item.xstart = (item.startevent.getHand() == HandLink.LEFT_HAND ?
                            (left_x + (item.transnum_start+1)*2*transition_radius) :
                            (right_x - (item.transnum_start+1)*2*transition_radius)) +
@@ -321,8 +345,24 @@ public class LadderDiagram extends JPanel {
             }
         }
 
+        // set locations of juggler positions
+        for (LadderPositionItem item : ladderpositionitems) {
+            JMLPosition pos = item.position;
+
+            int position_x = (left_x + right_x) / 2 +
+                          (pos.getJuggler() - 1) * juggler_delta_x -
+                          position_radius;
+            int position_y = (int)(0.5 + (double)(height-2*border_top) * (pos.getT()-loop_start) /
+                                (loop_end - loop_start)) + border_top - position_radius;
+
+            item.xlow = position_x;
+            item.xhigh = position_x + 2 * position_radius;
+            item.ylow = position_y;
+            item.yhigh = position_y + 2 * position_radius;
+        }
+
         // update position of tracker bar
-        setTrackerPosition();
+        updateTrackerPosition();
     }
 
     protected void paintBackground(Graphics gr) {
@@ -499,11 +539,20 @@ public class LadderDiagram extends JPanel {
 
         paintBackground(gr);
 
+        // draw positions
+        gr.setColor(Color.black);
+        for (LadderPositionItem item : ladderpositionitems) {
+            gr.setColor(this.getBackground());
+            gr.fillRect(item.xlow, item.ylow,
+                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+            gr.setColor(Color.black);
+            gr.drawRect(item.xlow, item.ylow,
+                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+        }
+
         // draw events
         gr.setColor(Color.black);
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
-
+        for (LadderEventItem item : laddereventitems) {
             if (item.type == LadderItem.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow,
                             (item.xhigh-item.xlow), (item.yhigh-item.ylow));
@@ -531,6 +580,7 @@ class LadderItem {
     static final public int TYPE_CROSS = 4;
     static final public int TYPE_HOLD = 5;
     static final public int TYPE_PASS = 6;
+    static final public int TYPE_POSITION = 7;
 
     public int type;
 }
@@ -538,12 +588,13 @@ class LadderItem {
 class LadderEventItem extends LadderItem {
     public int xlow, xhigh, ylow, yhigh;
 
+    // for transitions within an event, the next two point to the containing
+    // event:
     public LadderEventItem eventitem;
-
     public JMLEvent event;
+
     public int transnum;
 }
-
 
 class LadderPathItem extends LadderItem {
     public int xstart, ystart, xend, yend;
@@ -554,4 +605,10 @@ class LadderPathItem extends LadderItem {
     public JMLEvent endevent;
     public int transnum_start;
     public int pathnum;
+}
+
+class LadderPositionItem extends LadderItem {
+    public int xlow, xhigh, ylow, yhigh;
+
+    public JMLPosition position;
 }

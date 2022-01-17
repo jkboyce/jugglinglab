@@ -11,21 +11,43 @@ import javax.swing.SwingUtilities;
 import jugglinglab.util.*;
 import jugglinglab.jml.JMLEvent;
 import jugglinglab.jml.JMLPattern;
+import jugglinglab.jml.JMLPosition;
+import jugglinglab.renderer.Renderer;
 
 
 // This subclass of AnimationPanel is used by Edit view. It adds functionality
-// for interacting with on-screen representations of JML events, and
+// for interacting with on-screen representations of JML events, and for
 // interacting with a ladder diagram.
 
 public class AnimationEditPanel extends AnimationPanel {
-    protected EditLadderDiagram ladder;
+    protected LadderDiagram ladder;
+
+    public static final double event_box_hw_cm = 5.0;
+    public static final double position_box_hw_cm = 5.0;
+
+    // for when an event is activated/dragged
     protected boolean event_active;
     protected JMLEvent event;
-    protected int xlow1, xhigh1, ylow1, yhigh1;
-    protected int xlow2, xhigh2, ylow2, yhigh2;
+    protected int[][] event_box;
+
+    // for when a position is activated/dragged
+    protected boolean position_active;
+    protected JMLPosition position;
+    protected double[][][] pos_points;
+    protected boolean[][] pos_points_visible;
+    protected boolean dragging_xy;
+    protected boolean dragging_xz;
+    protected boolean dragging_yz;
+    protected boolean dragging_angle;
+
+    // for when a position is dragged in angle
+    protected double deltaangle;
+    protected double[] start_dx, start_dy, start_control;
+
+    // for when either an event or position is dragged
     protected boolean dragging;
     protected boolean dragging_left;  // may not be necessary
-    protected int xstart, ystart, xdelta, ydelta;
+    protected int deltax, deltay;  // extent of drag action (pixels)
 
 
     public AnimationEditPanel() {
@@ -60,22 +82,72 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (event_active) {
                     int mx = me.getX();
                     int my = me.getY();
-                    if (mx >= xlow1 && mx <= xhigh1 && my >= ylow1 && my <= yhigh1) {
-                        dragging = true;
-                        dragging_left = true;
-                        xstart = mx;
-                        ystart = my;
-                        xdelta = ydelta = 0;
-                        return;
+
+                    for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                        int t = i * getSize().width / 2;
+                        if (mx >= (event_box[i][0] + t) && mx <= (event_box[i][2] + t) &&
+                                    my >= event_box[i][1] && my <= event_box[i][3]) {
+                            dragging = true;
+                            dragging_left = (i == 0);
+                            startx = mx;
+                            starty = my;
+                            deltax = deltay = 0;
+                            return;
+                        }
                     }
-                    int t = getSize().width / 2;
-                    if (mx >= (xlow2+t) && mx <= (xhigh2+t) && my >= ylow2 && my <= yhigh2) {
-                        dragging = true;
-                        dragging_left = false;
-                        xstart = mx;
-                        ystart = my;
-                        xdelta = ydelta = 0;
-                        return;
+                }
+
+                if (position_active) {
+                    int mx = me.getX();
+                    int my = me.getY();
+
+                    for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                        int t = i * getSize().width / 2;
+                        dragging_xy = (isInsidePolygon(mx - t, my, i, face_xy1) ||
+                                       isInsidePolygon(mx - t, my, i, face_xy2));
+                        dragging_xz = (isInsidePolygon(mx - t, my, i, face_xz1) ||
+                                       isInsidePolygon(mx - t, my, i, face_xz2));
+                        dragging_yz = (isInsidePolygon(mx - t, my, i, face_yz1) ||
+                                       isInsidePolygon(mx - t, my, i, face_yz2));
+
+                        dragging = dragging_xy || dragging_xz || dragging_yz;
+
+                        if (dragging) {
+                            dragging_left = (i == 0);
+                            startx = mx;
+                            starty = my;
+                            deltax = deltay = 0;
+                            return;
+                        }
+
+                        int dmx = mx - t - (int)(0.5 + pos_points[i][9][0]);
+                        int dmy = my - (int)(0.5 + pos_points[i][9][1]);
+                        dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
+
+                        if (dragging_angle) {
+                            dragging = true;
+                            dragging_left = (i == 0);
+                            startx = mx;
+                            starty = my;
+                            deltax = deltay = 0;
+
+                            // record pixel coordinates of x and y unit vectors
+                            // in juggler's frame, at start of angle drag
+                            start_dx = new double[] {
+                                pos_points[i][16][0] - pos_points[i][8][0],
+                                pos_points[i][16][1] - pos_points[i][8][1]
+                            };
+                            start_dy = new double[] {
+                                pos_points[i][17][0] - pos_points[i][8][0],
+                                pos_points[i][17][1] - pos_points[i][8][1]
+                            };
+                            start_control = new double[] {
+                                pos_points[i][9][0] - pos_points[i][8][0],
+                                pos_points[i][9][1] - pos_points[i][8][1]
+                            };
+
+                            return;
+                        }
                     }
                 }
 
@@ -100,11 +172,11 @@ public class AnimationEditPanel extends AnimationPanel {
                     boolean flipx = (event.getHand() != master.getHand());
 
                     Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
-                            event.getGlobalCoordinate(), xdelta, ydelta);
+                            event.getGlobalCoordinate(), deltax, deltay);
                     if (jc.stereo) {
                         // average the coordinate shifts from each perspective
                         Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
-                                event.getGlobalCoordinate(), xdelta, ydelta);
+                                event.getGlobalCoordinate(), deltax, deltay);
                         newgc = Coordinate.add(newgc, newgc2);
                         newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
                     }
@@ -120,16 +192,97 @@ public class AnimationEditPanel extends AnimationPanel {
 
                     Coordinate oldlc = master.getLocalCoordinate();
                     master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
-                    xdelta = ydelta = 0;
 
-                    ladder.activeEventChanged();
+                    if (ladder instanceof EditLadderDiagram)
+                        ((EditLadderDiagram)ladder).activeEventChanged();
                 }
-                cameradrag = false;
+
+                if (position_active && dragging) {
+                    double angle = Math.toRadians(position.getAngle());
+
+                    if (dragging_angle) {
+                        double new_angle = Math.toDegrees(angle + deltaangle);
+                        while (new_angle > 360.0)
+                            new_angle -= 360.0;
+                        while (new_angle < 0.0)
+                            new_angle += 360.0;
+                        position.setAngle(new_angle);
+                    } else {
+                        // screen (pixel) offset of a 1cm offset in each of the
+                        // cardinal directions
+                        double dx[] = { 0, 0 };
+                        double dy[] = { 0, 0 };
+                        double dz[] = { 0, 0 };
+                        double f = (jc.stereo ? 0.5 : 1.0);
+
+                        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                            dx[0] += f * (pos_points[i][16][0] - pos_points[i][8][0]);
+                            dx[1] += f * (pos_points[i][16][1] - pos_points[i][8][1]);
+                            dy[0] += f * (pos_points[i][17][0] - pos_points[i][8][0]);
+                            dy[1] += f * (pos_points[i][17][1] - pos_points[i][8][1]);
+                            dz[0] += f * (pos_points[i][18][0] - pos_points[i][8][0]);
+                            dz[1] += f * (pos_points[i][18][1] - pos_points[i][8][1]);
+                        }
+
+                        Coordinate c = position.getCoordinate();
+
+                        if (dragging_xy) {
+                            // express deltax, deltay in terms of dx, dy above
+                            //
+                            // deltax = A * dxx + B * dyx;
+                            // deltay = A * dxy + B * dyy;
+                            //
+                            // then position.x += A
+                            //      position.y += B
+                            double det = dx[0] * dy[1] - dx[1] * dy[0];
+                            double a = ( dy[1] * deltax - dy[0] * deltay) / det;
+                            double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                            c.x += a * Math.cos(angle) - b * Math.sin(angle);
+                            c.y += a * Math.sin(angle) + b * Math.cos(angle);
+                        }
+
+                        if (dragging_xz) {
+                            double det = dx[0] * dz[1] - dx[1] * dz[0];
+                            double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                            double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                            c.x += a * Math.cos(angle);
+                            c.y += a * Math.sin(angle);
+                            c.z += b;
+                        }
+
+                        if (dragging_yz) {
+                            double det = dy[0] * dz[1] - dy[1] * dz[0];
+                            double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                            double b = (-dy[1] * deltax + dy[0] * deltay) / det;
+
+                            c.x += -a * Math.sin(angle);
+                            c.y += a * Math.cos(angle);
+                            c.z += b;
+                        }
+
+                        position.setCoordinate(c);
+                    }
+
+                    dragging_xy = false;
+                    dragging_xz = false;
+                    dragging_yz = false;
+                    dragging_angle = false;
+                    deltaangle = 0.0;
+
+                    if (ladder instanceof EditLadderDiagram)
+                        ((EditLadderDiagram)ladder).activePositionChanged();
+                }
+
+                dragging_camera = false;
                 dragging = false;
+                deltax = deltay = 0;
+
                 if (me.getX() == startx && me.getY() == starty &&
                                 engine != null && engine.isAlive())
                     setPaused(!enginePaused);
-                if (getPaused())
+                if (isPaused())
                     repaint();
             }
 
@@ -145,7 +298,7 @@ public class AnimationEditPanel extends AnimationPanel {
             @Override
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause && !writingGIF) {
-                    waspaused = getPaused();
+                    waspaused = isPaused();
                     setPaused(true);
                 }
                 outside = true;
@@ -164,40 +317,63 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (dragging) {
                     int mx = me.getX();
                     int my = me.getY();
-                    xdelta = mx - xstart;
-                    ydelta = my - ystart;
-                    repaint();
-                } else if (!cameradrag) {
-                    cameradrag = true;
+
+                    if (dragging_angle) {
+                        // shift pixel coords of control point by mouse drag
+                        double dcontrol[] = {
+                            start_control[0] + mx - startx,
+                            start_control[1] + my - starty
+                        };
+
+                        // re-express control point location in coordinate
+                        // system of juggler:
+                        //
+                        // dcontrol_x = A * start_dx_x + B * start_dy_x;
+                        // dcontrol_y = A * start_dx_y + B * start_dy_y;
+                        //
+                        // then (A, B) are coordinates of shifted control
+                        // point, in juggler space
+
+                        double det = start_dx[0] * start_dy[1] - start_dx[1] * start_dy[0];
+                        double a = ( start_dy[1] * dcontrol[0] - start_dy[0] * dcontrol[1]) / det;
+                        double b = (-start_dx[1] * dcontrol[0] + start_dx[0] * dcontrol[1]) / det;
+                        deltaangle = -Math.atan2(a, b);
+                    } else {
+                        deltax = mx - startx;
+                        deltay = my - starty;
+                    }
+                } else if (!dragging_camera) {
+                    dragging_camera = true;
                     lastx = startx;
                     lasty = starty;
                     dragcamangle = anim.getCameraAngle();
                 }
 
-                if (!cameradrag)
-                    return;
+                if (dragging_camera) {
+                    int dx = me.getX() - lastx;
+                    int dy = me.getY() - lasty;
+                    lastx = me.getX();
+                    lasty = me.getY();
+                    double[] ca = dragcamangle;
+                    ca[0] += (double)dx * 0.02;
+                    ca[1] -= (double)dy * 0.02;
+                    if (ca[1] < Math.toRadians(0.0001))
+                        ca[1] = Math.toRadians(0.0001);
+                    if (ca[1] > Math.toRadians(179.9999))
+                        ca[1] = Math.toRadians(179.9999);
+                    while (ca[0] < 0.0)
+                        ca[0] += Math.toRadians(360.0);
+                    while (ca[0] >= Math.toRadians(360.0))
+                        ca[0] -= Math.toRadians(360.0);
 
-                int xdelta = me.getX() - lastx;
-                int ydelta = me.getY() - lasty;
-                lastx = me.getX();
-                lasty = me.getY();
-                double[] ca = dragcamangle;
-                ca[0] += (double)(xdelta) * 0.02;
-                ca[1] -= (double)(ydelta) * 0.02;
-                if (ca[1] < Math.toRadians(0.0001))
-                    ca[1] = Math.toRadians(0.0001);
-                if (ca[1] > Math.toRadians(179.9999))
-                    ca[1] = Math.toRadians(179.9999);
-                while (ca[0] < 0.0)
-                    ca[0] += Math.toRadians(360.0);
-                while (ca[0] >= Math.toRadians(360.0))
-                    ca[0] -= Math.toRadians(360.0);
+                    anim.setCameraAngle(snapCamera(ca));
+                }
 
-                anim.setCameraAngle(snapCamera(ca));
-
-                if (event_active)
+                if (event_active && dragging_camera)
                     createEventView();
-                if (getPaused())
+                if (position_active && (dragging_camera || dragging_angle))
+                    createPositionView();
+                if (isPaused())
                     repaint();
             }
         });
@@ -215,7 +391,10 @@ public class AnimationEditPanel extends AnimationPanel {
                 anim.setDimension(getSize());
                 if (event_active)
                     createEventView();
-                repaint();
+                if (position_active)
+                    createPositionView();
+                if (isPaused())
+                    repaint();
 
                 // Don't update the preferred animation size if the enclosing
                 // window is maximized
@@ -251,6 +430,8 @@ public class AnimationEditPanel extends AnimationPanel {
 
         if (event_active)
             a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+        else if (position_active)
+            a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
         else if (anim.pat.getNumberOfJugglers() == 1)
             a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
         else
@@ -280,11 +461,12 @@ public class AnimationEditPanel extends AnimationPanel {
         super.restartJuggle(pat, newjc);
         if (event_active)
             createEventView();
+        if (position_active)
+            createPositionView();
     }
 
     public void setLadderDiagram(LadderDiagram lad) {
-        if (lad instanceof EditLadderDiagram)
-            ladder = (EditLadderDiagram)lad;
+        ladder = lad;
     }
 
     // set position of tracker bar in ladder diagram as we animate
@@ -296,6 +478,7 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     public void activateEvent(JMLEvent ev) {
+        deactivatePosition();
         event = ev;
         event_active = true;
         createEventView();
@@ -306,35 +489,25 @@ public class AnimationEditPanel extends AnimationPanel {
     }
 
     protected void createEventView() {
-        if (event_active) {
-            // translate by one pixel and see how far it was in juggler space
-            {
-                Coordinate c = event.getGlobalCoordinate();
-                Coordinate c2 = anim.ren1.getScreenTranslatedCoordinate(c, 1, 0);
-                Coordinate dc = Coordinate.sub(c, c2);
-                double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
-                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
+        if (!event_active)
+            return;
 
-                int[] center = anim.ren1.getXY(c);
-                xlow1 = center[0] - boxhw;
-                ylow1 = center[1] - boxhw;
-                xhigh1 = center[0] + boxhw;
-                yhigh1 = center[1] + boxhw;
-            }
+        event_box = new int[2][4];
 
-            if (jc.stereo) {
-                Coordinate c = event.getGlobalCoordinate();
-                Coordinate c2 = anim.ren2.getScreenTranslatedCoordinate(c, 1, 0);
-                Coordinate dc = Coordinate.sub(c, c2);
-                double dl = Math.sqrt(dc.x*dc.x + dc.y*dc.y + dc.z*dc.z);
-                int boxhw = (int)(0.5 + 5.0 / dl);  // pixels corresponding to 5cm in juggler space
+        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
-                int[] center = anim.ren2.getXY(c);
-                xlow2 = center[0] - boxhw;
-                ylow2 = center[1] - boxhw;
-                xhigh2 = center[0] + boxhw;
-                yhigh2 = center[1] + boxhw;
-            }
+            // translate by one pixel and see how far it is in juggler space
+            Coordinate c = event.getGlobalCoordinate();
+            Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
+            double dl = Coordinate.distance(c, c2);
+            int boxhw = (int)(0.5 + event_box_hw_cm / dl);  // in pixels
+
+            int[] center = ren.getXY(c);
+            event_box[i][0] = center[0] - boxhw;
+            event_box[i][1] = center[1] - boxhw;
+            event_box[i][2] = center[0] + boxhw;
+            event_box[i][3] = center[1] + boxhw;
         }
     }
 
@@ -344,32 +517,233 @@ public class AnimationEditPanel extends AnimationPanel {
 
         Dimension d = getSize();
         Graphics g2 = g;
-        if (jc.stereo)
-            g2 = g.create(0,0,d.width/2,d.height);
 
-        if (g2 instanceof Graphics2D) {
-            Graphics2D g22 = (Graphics2D)g2;
-            g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        g2.setColor(Color.green);
-        g2.drawLine(xlow1+xdelta, ylow1+ydelta, xhigh1+xdelta, ylow1+ydelta);
-        g2.drawLine(xhigh1+xdelta, ylow1+ydelta, xhigh1+xdelta, yhigh1+ydelta);
-        g2.drawLine(xhigh1+xdelta, yhigh1+ydelta, xlow1+xdelta, yhigh1+ydelta);
-        g2.drawLine(xlow1+xdelta, yhigh1+ydelta, xlow1+xdelta, ylow1+ydelta);
+        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+            if (jc.stereo && i == 0)
+                g2 = g.create(0, 0, d.width / 2, d.height);
+            else if (jc.stereo && i == 1)
+                g2 = g.create(d.width / 2, 0, d.width / 2, d.height);
 
-        if (jc.stereo) {
-            g2 = g.create(d.width/2,0,d.width/2,d.height);
             if (g2 instanceof Graphics2D) {
-                Graphics2D g22 = (Graphics2D)g2;
-                g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                ((Graphics2D)g2).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                        RenderingHints.VALUE_ANTIALIAS_ON);
             }
+
             g2.setColor(Color.green);
-            g2.drawLine(xlow2+xdelta, ylow2+ydelta, xhigh2+xdelta, ylow2+ydelta);
-            g2.drawLine(xhigh2+xdelta, ylow2+ydelta, xhigh2+xdelta, yhigh2+ydelta);
-            g2.drawLine(xhigh2+xdelta, yhigh2+ydelta, xlow2+xdelta, yhigh2+ydelta);
-            g2.drawLine(xlow2+xdelta, yhigh2+ydelta, xlow2+xdelta, ylow2+ydelta);
+            g2.drawLine(event_box[i][0] + deltax, event_box[i][1] + deltay,
+                        event_box[i][2] + deltax, event_box[i][1] + deltay);
+            g2.drawLine(event_box[i][2] + deltax, event_box[i][1] + deltay,
+                        event_box[i][2] + deltax, event_box[i][3] + deltay);
+            g2.drawLine(event_box[i][2] + deltax, event_box[i][3] + deltay,
+                        event_box[i][0] + deltax, event_box[i][3] + deltay);
+            g2.drawLine(event_box[i][0] + deltax, event_box[i][3] + deltay,
+                        event_box[i][0] + deltax, event_box[i][1] + deltay);
+        }
+    }
+
+    public void activatePosition(JMLPosition pos) {
+        deactivateEvent();
+        position = pos;
+        position_active = true;
+        createPositionView();
+    }
+
+    public void deactivatePosition() {
+        position_active = false;
+        dragging_xy = false;
+        dragging_xz = false;
+        dragging_yz = false;
+        dragging_angle = false;
+    }
+
+    // Constants for calculating screen coordinates of selected points in
+    // the juggler's coordinate system. These are used for drawing the onscreen
+    // representation of a selected position.
+
+    protected static final double[][] cube_points =
+        {
+            // cube corners
+            { -1, -1, -1 },
+            { -1, -1,  1 },
+            { -1,  1, -1 },
+            {  1, -1, -1 },
+            { -1,  1,  1 },
+            {  1, -1,  1 },
+            {  1,  1, -1 },
+            {  1,  1,  1 },
+
+            // other useful points for drawing
+            {  0,  0,  0 },
+            {  0,  4,  0 },
+            { -4,  0,  0 },
+            {  4,  0,  0 },
+            {  0, -4,  0 },
+            {  0,  4,  0 },
+            {  0,  0, -4 },
+            {  0,  0,  4 },
+
+            // used for moving the position
+            { 1.0 / position_box_hw_cm, 0, 0 },
+            { 0, 1.0 / position_box_hw_cm, 0 },
+            { 0, 0, 1.0 / position_box_hw_cm },
+        };
+
+    // cube faces in terms of indices into cube_points[]
+    protected static final int[] face_xy1 = { 1, 4, 7, 5 };
+    protected static final int[] face_xy2 = { 0, 2, 6, 3 };
+    protected static final int[] face_xz1 = { 4, 2, 6, 7 };
+    protected static final int[] face_xz2 = { 1, 0, 3, 5 };
+    protected static final int[] face_yz1 = { 5, 7, 6, 3 };
+    protected static final int[] face_yz2 = { 1, 4, 2, 0 };
+
+    protected void createPositionView() {
+        if (!position_active)
+            return;
+
+        pos_points = new double[2][cube_points.length][2];
+        pos_points_visible = new boolean[2][cube_points.length];
+
+        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+
+            // translate by one pixel and see how far it is in juggler space
+            Coordinate c = position.getCoordinate();
+            Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
+            double dl = Coordinate.distance(c, c2);
+            double boxhw = position_box_hw_cm / dl;  // pixel half-width of box
+
+            double[] ca = ren.getCameraAngle();
+            double theta = ca[0] + Math.toRadians(position.getAngle()) + deltaangle;
+            double phi = ca[1];
+
+            double xya = boxhw;
+            double xyb = xya * Math.cos(phi);
+            double zlen = xya * Math.sin(phi);
+            double dxx = -xya * Math.cos(theta);
+            double dxy = xyb * Math.sin(theta);
+            double dyx = xya * Math.sin(theta);
+            double dyy = xyb * Math.cos(theta);
+            double dzx = 0.0;
+            double dzy = -zlen;
+
+            int[] center = ren.getXY(c);
+            for (int j = 0; j < cube_points.length; j++) {
+                pos_points[i][j][0] = (double)center[0] +
+                                        dxx * cube_points[j][0] +
+                                        dyx * cube_points[j][1] +
+                                        dzx * cube_points[j][2];
+                pos_points[i][j][1] = (double)center[1] +
+                                        dxy * cube_points[j][0] +
+                                        dyy * cube_points[j][1] +
+                                        dzy * cube_points[j][2];
+                pos_points_visible[i][j] = true;
+            }
+
+            // top of cube (z = +1)
+            pos_points_visible[i][1] = (phi <= Math.PI/2) || (dxy > 0) || (dyy > 0);
+            pos_points_visible[i][4] = (phi <= Math.PI/2) || (dxx < 0) || (dyx < 0);
+            pos_points_visible[i][5] = (phi <= Math.PI/2) || (dxx > 0) || (dyx > 0);
+            pos_points_visible[i][7] = (phi <= Math.PI/2) || (dxy < 0) || (dyy < 0);
+
+            // bottom of cube (z = -1)
+            pos_points_visible[i][0] = (phi > Math.PI/2) || (dxy < 0) || (dyy < 0);
+            pos_points_visible[i][2] = (phi > Math.PI/2) || (dxx < 0) || (dyx < 0);
+            pos_points_visible[i][3] = (phi > Math.PI/2) || (dxx > 0) || (dyx > 0);
+            pos_points_visible[i][6] = (phi > Math.PI/2) || (dxy > 0) || (dyy > 0);
+        }
+    }
+
+    protected boolean isInsidePolygon(int x, int y, int index, int[] points) {
+        for (int i = 0; i < points.length; i++) {
+            if (!pos_points_visible[index][points[i]])
+                return false;
+        }
+
+        boolean inside = false;
+        for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
+            int xi = (int)(0.5 + pos_points[index][points[i]][0]);
+            int yi = (int)(0.5 + pos_points[index][points[i]][1]);
+            int xj = (int)(0.5 + pos_points[index][points[j]][0]);
+            int yj = (int)(0.5 + pos_points[index][points[j]][1]);
+
+            // note we only evaluate the second term when yj != yi:
+            boolean intersect = ((yi > y) != (yj > y)) &&
+                            (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect)
+                inside = !inside;
+        }
+
+        return inside;
+    }
+
+    protected void drawPosition(Graphics g) throws JuggleExceptionInternal {
+        if (!position_active)
+            return;
+
+        Dimension d = getSize();
+        Graphics g2 = g;
+
+        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+            if (jc.stereo && i == 0)
+                g2 = g.create(0, 0, d.width / 2, d.height);
+            else if (jc.stereo && i == 1)
+                g2 = g.create(d.width / 2, 0, d.width / 2, d.height);
+
+            if (g2 instanceof Graphics2D) {
+                ((Graphics2D)g2).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                        RenderingHints.VALUE_ANTIALIAS_ON);
+            }
+
+            g2.setColor(Color.green);
+
+            // dot at center
+            g2.fillOval((int)(0.5 + pos_points[i][8][0]) - 2 + deltax,
+                        (int)(0.5 + pos_points[i][8][1]) - 2 + deltay, 5, 5);
+
+            // edges of cube
+            drawLine(g2, i, 1, 4);
+            drawLine(g2, i, 4, 7);
+            drawLine(g2, i, 7, 5);
+            drawLine(g2, i, 5, 1);
+            drawLine(g2, i, 0, 2);
+            drawLine(g2, i, 2, 6);
+            drawLine(g2, i, 6, 3);
+            drawLine(g2, i, 3, 0);
+            drawLine(g2, i, 0, 1);
+            drawLine(g2, i, 2, 4);
+            drawLine(g2, i, 3, 5);
+            drawLine(g2, i, 6, 7);
+
+            if (!dragging || dragging_angle) {
+                // angle-changing control pointing forward
+                drawLine(g2, i, 8, 9);
+                g2.fillOval((int)(0.5 + pos_points[i][9][0]) - 4 + deltax,
+                            (int)(0.5 + pos_points[i][9][1]) - 4 + deltay, 10, 10);
+            }
+            if (dragging_xy) {
+                drawLine(g2, i, 10, 11);
+                drawLine(g2, i, 12, 13);
+            }
+            if (dragging_xz) {
+                drawLine(g2, i, 10, 11);
+                drawLine(g2, i, 14, 15);
+            }
+            if (dragging_yz) {
+                drawLine(g2, i, 12, 13);
+                drawLine(g2, i, 14, 15);
+            }
+            if (dragging_angle) {
+                drawLine(g2, i, 14, 15);
+            }
+        }
+    }
+
+    protected void drawLine(Graphics g, int index, int p1, int p2) {
+        if (pos_points_visible[index][p1] && pos_points_visible[index][p2]) {
+            g.drawLine((int)(0.5 + pos_points[index][p1][0]) + deltax,
+                       (int)(0.5 + pos_points[index][p1][1]) + deltay,
+                       (int)(0.5 + pos_points[index][p2][0]) + deltax,
+                       (int)(0.5 + pos_points[index][p2][1]) + deltay);
         }
     }
 
@@ -381,8 +755,9 @@ public class AnimationEditPanel extends AnimationPanel {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, cameradrag);
+                anim.drawFrame(getTime(), g, dragging_camera);
                 drawEvent(g);
+                drawPosition(g);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 System.out.println(jei.getMessage());

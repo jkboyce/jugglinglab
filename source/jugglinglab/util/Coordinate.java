@@ -98,6 +98,11 @@ public class Coordinate {
         return result;
     }
 
+    public static double distance(Coordinate coord1, Coordinate coord2) {
+        Coordinate dc = Coordinate.sub(coord1, coord2);
+        return Math.sqrt(dc.x * dc.x + dc.y * dc.y + dc.z * dc.z);
+    }
+
     public boolean isValid() {
         if (Double.isNaN(this.x) || Double.isInfinite(this.x) ||
                 Double.isNaN(this.y) || Double.isInfinite(this.y) ||
