@@ -49,8 +49,10 @@ public class AnimationPanel extends JPanel implements Runnable {
     protected boolean outside;
     protected boolean outside_valid;
 
-    protected boolean cameradrag;
-    protected int startx, starty, lastx, lasty;
+    // for camera dragging
+    protected boolean dragging_camera;
+    protected int startx, starty;
+    protected int lastx, lasty;
     protected double[] dragcamangle;
 
 
@@ -117,7 +119,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 if (writingGIF)
                     return;
-                cameradrag = false;
+                dragging_camera = false;
 
                 if (!engineAnimating && engine != null && engine.isAlive()) {
                     setPaused(!enginePaused);
@@ -159,8 +161,8 @@ public class AnimationPanel extends JPanel implements Runnable {
                     return;
                 if (writingGIF)
                     return;
-                if (!cameradrag) {
-                    cameradrag = true;
+                if (!dragging_camera) {
+                    dragging_camera = true;
                     lastx = startx;
                     lasty = starty;
                     dragcamangle = getCameraAngle();
@@ -479,7 +481,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, cameradrag);
+                anim.drawFrame(getTime(), g, dragging_camera);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 System.out.println(jei.getMessage());
