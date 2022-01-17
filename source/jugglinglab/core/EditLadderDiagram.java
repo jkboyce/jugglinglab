@@ -789,17 +789,10 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         popup.addPopupMenuListener(new PopupMenuListener() {
             @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
+            public void popupMenuCanceled(PopupMenuEvent e) { finishPopup(); }
 
             @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                if (gui_state == STATE_POPUP) {
-                    gui_state = (active_eventitem == null) ? STATE_INACTIVE :
-                                    STATE_EVENT_SELECTED;
-                    if (animator != null)
-                        animator.setPaused(anim_paused);
-                }
-            }
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
@@ -958,13 +951,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                             "unknown item in ELD popup"));
 
-        popupitem = null;
-        if (gui_state == STATE_POPUP) {
-            gui_state = (active_eventitem == null) ? STATE_INACTIVE :
-                                            STATE_EVENT_SELECTED;
-            if (animator != null)
-                animator.setPaused(anim_paused);
-        }
+        finishPopup();
     }
 
     protected void changeTitle() {
@@ -1755,6 +1742,18 @@ public class EditLadderDiagram extends LadderDiagram implements
             }
         }
         return result;
+    }
+
+    // Be sure to call this at the very end of every popup interaction.
+    protected void finishPopup() {
+        popupitem = null;
+
+        if (gui_state == STATE_POPUP) {
+            gui_state = (active_eventitem == null) ? STATE_INACTIVE :
+                            STATE_EVENT_SELECTED;
+            if (animator != null)
+                animator.setPaused(anim_paused);
+        }
     }
 
     //-------------------------------------------------------------------------
