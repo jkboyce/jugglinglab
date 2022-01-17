@@ -39,12 +39,10 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected static final double min_hold_time = 0.05;
 
     protected static final int STATE_INACTIVE = 0;
-    protected static final int STATE_EVENT_SELECTED = 1;
-    protected static final int STATE_POSITION_SELECTED = 2;
-    protected static final int STATE_MOVING_EVENT = 3;
-    protected static final int STATE_MOVING_TRACKER = 4;
-    protected static final int STATE_MOVING_POSITION = 5;
-    protected static final int STATE_POPUP = 6;
+    protected static final int STATE_MOVING_EVENT = 1;
+    protected static final int STATE_MOVING_TRACKER = 2;
+    protected static final int STATE_MOVING_POSITION = 3;
+    protected static final int STATE_POPUP = 4;
 
     protected JFrame parent;
     protected View parentview;
@@ -220,8 +218,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         } else {
             switch (gui_state) {
                 case STATE_INACTIVE:
-                case STATE_EVENT_SELECTED:
-                case STATE_POSITION_SELECTED:
                     active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
 
                     if (active_eventitem != null) {
@@ -280,14 +276,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     //          "mouse pressed in MOVING_TRACKER state"));
                     break;
                 case STATE_POPUP:
-                    gui_state = STATE_INACTIVE;
-                    if (active_eventitem != null)
-                        gui_state = STATE_EVENT_SELECTED;
-                    if (active_positionitem != null)
-                        gui_state = STATE_POSITION_SELECTED;
-
-                    if (animator != null)
-                        animator.setPaused(anim_paused);
+                    // shouldn't ever get here
+                    finishPopup();
                     break;
             }
         }
@@ -302,9 +292,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         if (me.isPopupTrigger()) {
             switch (gui_state) {
                 case STATE_INACTIVE:
-                case STATE_EVENT_SELECTED:
                 case STATE_MOVING_EVENT:
-                case STATE_POSITION_SELECTED:
                 case STATE_MOVING_POSITION:
                 case STATE_MOVING_TRACKER:
                     // skip this code for MOVING_TRACKER state, since already
@@ -355,12 +343,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_INACTIVE:
                     // should only get here if user cancelled popup menu or deselected event
                     break;
-                case STATE_EVENT_SELECTED:
-                case STATE_POSITION_SELECTED:
-                    // should only get here if user cancelled popup menu
-                    break;
                 case STATE_MOVING_EVENT:
-                    gui_state = STATE_EVENT_SELECTED;
+                    gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
                         moveEvent(active_eventitem.eventitem);
                         for (int i = 0; i < laddereventitems.size(); i++) {
@@ -377,7 +361,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     }
                     break;
                 case STATE_MOVING_POSITION:
-                    gui_state = STATE_POSITION_SELECTED;
+                    gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
                         movePosition(active_positionitem);
                         active_positionitem.ylow += delta_y;
@@ -429,14 +413,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                 // it could have been ignored. See bug report 861856.
                 // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                 //                "mouse dragged in INACTIVE state"));
-                break;
-            case STATE_EVENT_SELECTED:
-                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                            "mouse dragged in EVENT_SELECTED state"));
-                break;
-            case STATE_POSITION_SELECTED:
-                ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                            "mouse dragged in POSITION_SELECTED state"));
                 break;
             case STATE_MOVING_EVENT:
             case STATE_MOVING_POSITION:
@@ -1218,10 +1194,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         //final int propnum = pat.getPropAssignment(pathnum);
         //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         final Prop startprop = pat.getProp(propnum);
-
-        final boolean paused = animator.isPaused();
-        animator.setPaused(true);
-
         String[] prtypes = Prop.builtinProps;
 
         final JDialog jd = new JDialog(parent, guistrings.getString("Define_prop"), true);
@@ -1278,7 +1250,6 @@ public class EditLadderDiagram extends LadderDiagram implements
             @Override
             public void actionPerformed(ActionEvent e) {
                 jd.dispose();
-                animator.setPaused(paused);
             }
         });
         JButton okbutton = new JButton(guistrings.getString("OK"));
@@ -1350,7 +1321,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 else
                     layoutPattern();
                 jd.dispose();
-                animator.setPaused(paused);
+                repaint();
             }
         });
 
@@ -1749,8 +1720,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         popupitem = null;
 
         if (gui_state == STATE_POPUP) {
-            gui_state = (active_eventitem == null) ? STATE_INACTIVE :
-                            STATE_EVENT_SELECTED;
+            gui_state = STATE_INACTIVE;
             if (animator != null)
                 animator.setPaused(anim_paused);
         }
