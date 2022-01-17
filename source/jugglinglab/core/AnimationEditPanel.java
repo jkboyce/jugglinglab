@@ -25,12 +25,12 @@ public class AnimationEditPanel extends AnimationPanel {
     public static final double event_box_hw_cm = 5.0;
     public static final double position_box_hw_cm = 5.0;
 
-    // for when an event is activated
+    // for when an event is activated/dragged
     protected boolean event_active;
     protected JMLEvent event;
     protected int[][] event_box;
 
-    // for when a position is activated
+    // for when a position is activated/dragged
     protected boolean position_active;
     protected JMLPosition position;
     protected double[][][] pos_points;
@@ -39,10 +39,12 @@ public class AnimationEditPanel extends AnimationPanel {
     protected boolean dragging_xz;
     protected boolean dragging_yz;
     protected boolean dragging_angle;
+
+    // for when a position is dragged in angle
     protected double deltaangle;
     protected double[] start_dx, start_dy, start_control;
 
-    // for when either is activated
+    // for when either an event or position is dragged
     protected boolean dragging;
     protected boolean dragging_left;  // may not be necessary
     protected int deltax, deltay;  // extent of drag action (pixels)
@@ -119,7 +121,7 @@ public class AnimationEditPanel extends AnimationPanel {
                         }
 
                         int dmx = mx - t - (int)(0.5 + pos_points[i][9][0]);
-                        int dmy = my - t - (int)(0.5 + pos_points[i][9][1]);
+                        int dmy = my - (int)(0.5 + pos_points[i][9][1]);
                         dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
 
                         if (dragging_angle) {
@@ -196,62 +198,7 @@ public class AnimationEditPanel extends AnimationPanel {
                 }
 
                 if (position_active && dragging) {
-                    // screen (pixel) offset of a 1cm offset in each of the
-                    // cardinal directions
-                    double dx[] = {
-                        pos_points[0][16][0] - pos_points[0][8][0],
-                        pos_points[0][16][1] - pos_points[0][8][1]
-                    };
-                    double dy[] = {
-                        pos_points[0][17][0] - pos_points[0][8][0],
-                        pos_points[0][17][1] - pos_points[0][8][1]
-                    };
-                    double dz[] = {
-                        pos_points[0][18][0] - pos_points[0][8][0],
-                        pos_points[0][18][1] - pos_points[0][8][1]
-                    };
-
-                    Coordinate c = position.getCoordinate();
                     double angle = Math.toRadians(position.getAngle());
-
-                    if (dragging_xy) {
-                        // express deltax, deltay in terms of dx, dy above
-                        //
-                        // deltax = A * dxx + B * dyx;
-                        // deltay = A * dxy + B * dyy;
-                        //
-                        // then position.x += A
-                        //      position.y += B
-                        double det = dx[0] * dy[1] - dx[1] * dy[0];
-                        double a = ( dy[1] * deltax - dy[0] * deltay) / det;
-                        double b = (-dx[1] * deltax + dx[0] * deltay) / det;
-
-                        c.x += a * Math.cos(angle) - b * Math.sin(angle);
-                        c.y += a * Math.sin(angle) + b * Math.cos(angle);
-                        position.setCoordinate(c);
-                    }
-
-                    if (dragging_xz) {
-                        double det = dx[0] * dz[1] - dx[1] * dz[0];
-                        double a = ( dz[1] * deltax - dz[0] * deltay) / det;
-                        double b = (-dx[1] * deltax + dx[0] * deltay) / det;
-
-                        c.x += a * Math.cos(angle);
-                        c.y += a * Math.sin(angle);
-                        c.z += b;
-                        position.setCoordinate(c);
-                    }
-
-                    if (dragging_yz) {
-                        double det = dy[0] * dz[1] - dy[1] * dz[0];
-                        double a = ( dz[1] * deltax - dz[0] * deltay) / det;
-                        double b = (-dy[1] * deltax + dy[0] * deltay) / det;
-
-                        c.x += -a * Math.sin(angle);
-                        c.y += a * Math.cos(angle);
-                        c.z += b;
-                        position.setCoordinate(c);
-                    }
 
                     if (dragging_angle) {
                         double new_angle = Math.toDegrees(angle + deltaangle);
@@ -260,6 +207,62 @@ public class AnimationEditPanel extends AnimationPanel {
                         while (new_angle < 0.0)
                             new_angle += 360.0;
                         position.setAngle(new_angle);
+                    } else {
+                        // screen (pixel) offset of a 1cm offset in each of the
+                        // cardinal directions
+                        double dx[] = { 0, 0 };
+                        double dy[] = { 0, 0 };
+                        double dz[] = { 0, 0 };
+                        double f = (jc.stereo ? 0.5 : 1.0);
+
+                        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                            dx[0] += f * (pos_points[i][16][0] - pos_points[i][8][0]);
+                            dx[1] += f * (pos_points[i][16][1] - pos_points[i][8][1]);
+                            dy[0] += f * (pos_points[i][17][0] - pos_points[i][8][0]);
+                            dy[1] += f * (pos_points[i][17][1] - pos_points[i][8][1]);
+                            dz[0] += f * (pos_points[i][18][0] - pos_points[i][8][0]);
+                            dz[1] += f * (pos_points[i][18][1] - pos_points[i][8][1]);
+                        }
+
+                        Coordinate c = position.getCoordinate();
+
+                        if (dragging_xy) {
+                            // express deltax, deltay in terms of dx, dy above
+                            //
+                            // deltax = A * dxx + B * dyx;
+                            // deltay = A * dxy + B * dyy;
+                            //
+                            // then position.x += A
+                            //      position.y += B
+                            double det = dx[0] * dy[1] - dx[1] * dy[0];
+                            double a = ( dy[1] * deltax - dy[0] * deltay) / det;
+                            double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                            c.x += a * Math.cos(angle) - b * Math.sin(angle);
+                            c.y += a * Math.sin(angle) + b * Math.cos(angle);
+                        }
+
+                        if (dragging_xz) {
+                            double det = dx[0] * dz[1] - dx[1] * dz[0];
+                            double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                            double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                            c.x += a * Math.cos(angle);
+                            c.y += a * Math.sin(angle);
+                            c.z += b;
+                        }
+
+                        if (dragging_yz) {
+                            double det = dy[0] * dz[1] - dy[1] * dz[0];
+                            double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                            double b = (-dy[1] * deltax + dy[0] * deltay) / det;
+
+                            c.x += -a * Math.sin(angle);
+                            c.y += a * Math.cos(angle);
+                            c.z += b;
+                        }
+
+                        position.setCoordinate(c);
                     }
 
                     dragging_xy = false;
@@ -335,9 +338,6 @@ public class AnimationEditPanel extends AnimationPanel {
                         double a = ( start_dy[1] * dcontrol[0] - start_dy[0] * dcontrol[1]) / det;
                         double b = (-start_dx[1] * dcontrol[0] + start_dx[0] * dcontrol[1]) / det;
                         deltaangle = -Math.atan2(a, b);
-                        //System.out.println("dx = (" + start_dx[0] + ", " + start_dx[1] +
-                        //        "), dy = (" + start_dy[0] + ", " + start_dy[1] + ")");
-                        //System.out.println("a = " + a + ", b = " + b + ", angle = " + deltaangle);
                     } else {
                         deltax = mx - startx;
                         deltay = my - starty;
@@ -393,7 +393,8 @@ public class AnimationEditPanel extends AnimationPanel {
                     createEventView();
                 if (position_active)
                     createPositionView();
-                repaint();
+                if (isPaused())
+                    repaint();
 
                 // Don't update the preferred animation size if the enclosing
                 // window is maximized
