@@ -119,8 +119,8 @@ public class EditView extends View {
     }
 
     @Override
-    public boolean getPaused() {
-        return jae.getPaused();
+    public boolean isPaused() {
+        return jae.isPaused();
     }
 
     @Override
@@ -139,7 +139,7 @@ public class EditView extends View {
         jae.writingGIF = true;
         jae.deactivateEvent();  // so we don't draw event box in animated GIF
         jae.deactivatePosition();
-        boolean origpause = getPaused();
+        boolean origpause = isPaused();
         setPaused(true);
 
         Runnable cleanup = new Runnable() {

@@ -161,7 +161,7 @@ public abstract class View extends JPanel {
 
     public abstract AnimationPrefs getAnimationPrefs();
 
-    public abstract boolean getPaused();
+    public abstract boolean isPaused();
 
     public abstract void setPaused(boolean pause);
 

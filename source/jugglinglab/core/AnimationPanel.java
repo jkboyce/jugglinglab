@@ -128,7 +128,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                     setPaused(!enginePaused);
                     getParent().dispatchEvent(me);
                 }
-                if (getPaused())
+                if (isPaused())
                     repaint();
             }
 
@@ -144,7 +144,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             @Override
             public void mouseExited(MouseEvent me) {
                 if (jc.mousePause && !writingGIF) {
-                    waspaused = getPaused();
+                    waspaused = isPaused();
                     setPaused(true);
                 }
                 outside = true;
@@ -189,7 +189,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 // camera angles of other animations
                 getParent().dispatchEvent(me);
 
-                if (getPaused())
+                if (isPaused())
                     repaint();
             }
         });
@@ -415,7 +415,7 @@ public class AnimationPanel extends JPanel implements Runnable {
         }
     }
 
-    public boolean getPaused() {
+    public boolean isPaused() {
         return enginePaused;
     }
 

@@ -205,7 +205,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                 (double)(height - 2 * border_top);
                 double newtime = (double)(my - border_top) * scale;
-                anim_paused = animator.getPaused();
+                anim_paused = animator.isPaused();
                 animator.setPaused(true);
                 animator.setTime(newtime);
                 animator.deactivateEvent();
@@ -261,7 +261,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                         (double)(height - 2 * border_top);
                         double newtime = (double)(my - border_top) * scale;
-                        anim_paused = animator.getPaused();
+                        anim_paused = animator.isPaused();
                         animator.setPaused(true);
                         animator.setTime(newtime);
                         animator.deactivateEvent();
@@ -321,7 +321,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                             (double)(height - 2 * border_top);
                         double newtime = (double)(my - border_top) * scale;
-                        anim_paused = animator.getPaused();
+                        anim_paused = animator.isPaused();
                         animator.setPaused(true);
                         animator.setTime(newtime);
                         animator.deactivateEvent();
@@ -1235,7 +1235,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         final Prop startprop = pat.getProp(propnum);
 
-        final boolean paused = animator.getPaused();
+        final boolean paused = animator.isPaused();
         animator.setPaused(true);
 
         String[] prtypes = Prop.builtinProps;

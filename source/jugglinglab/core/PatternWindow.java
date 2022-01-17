@@ -145,7 +145,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         // items to carry over from old view to the new
         JMLPattern pat = view.getPattern();
         AnimationPrefs jc = view.getAnimationPrefs();
-        boolean paused = view.getPaused();
+        boolean paused = view.isPaused();
         int undo_index = view.getUndoIndex();
 
         View newview = null;

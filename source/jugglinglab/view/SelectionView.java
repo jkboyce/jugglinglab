@@ -242,8 +242,8 @@ public class SelectionView extends View {
     }
 
     @Override
-    public boolean getPaused() {
-        return ja[center].getPaused();
+    public boolean isPaused() {
+        return ja[center].isPaused();
     }
 
     @Override
@@ -263,7 +263,7 @@ public class SelectionView extends View {
     public void writeGIF(File f) {
         for (int i = 0; i < count; i++)
             ja[i].writingGIF = true;
-        boolean origpause = getPaused();
+        boolean origpause = isPaused();
         setPaused(true);
 
         Runnable cleanup = new Runnable() {

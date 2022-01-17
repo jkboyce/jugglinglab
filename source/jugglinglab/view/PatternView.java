@@ -307,8 +307,8 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
-    public boolean getPaused() {
-        return ja.getPaused();
+    public boolean isPaused() {
+        return ja.isPaused();
     }
 
     @Override
@@ -326,7 +326,7 @@ public class PatternView extends View implements DocumentListener {
     public void writeGIF(File f) {
         ja.writingGIF = true;
         updateButtons();
-        boolean origpause = getPaused();
+        boolean origpause = isPaused();
         setPaused(true);
 
         Runnable cleanup = new Runnable() {
