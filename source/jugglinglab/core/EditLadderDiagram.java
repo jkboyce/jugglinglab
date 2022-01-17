@@ -231,7 +231,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                         findEventLimits(active_eventitem);
                         repaint();
                         if (animator != null) {
-                            animator.deactivatePosition();
                             animator.activateEvent(active_eventitem.event);
                             animator.repaint();
                         }
@@ -247,7 +246,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                         findPositionLimits(active_positionitem);
                         repaint();
                         if (animator != null) {
-                            animator.deactivateEvent();
                             animator.activatePosition(active_positionitem.position);
                             animator.repaint();
                         }
@@ -553,7 +551,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     (double)(height - 2 * border_top);
         double shift = delta_y * scale;
         double newt = ev.getT() + shift;
-        if (newt < pat.getLoopStartTime()) {
+        if (newt < pat.getLoopStartTime() + scale) {
+            // within 1 pixel of top
             shift = pat.getLoopStartTime() - ev.getT();
             newt = pat.getLoopStartTime();
         } else if (newt >= pat.getLoopEndTime()) {
@@ -713,18 +712,16 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                     (double)(height - 2 * border_top);
-        double shift = delta_y * scale;
-        double newt = pos.getT() + shift;
-        if (newt < pat.getLoopStartTime()) {
-            shift = pat.getLoopStartTime() - pos.getT();
-            newt = pat.getLoopStartTime();
+
+        double newt = pos.getT() + delta_y * scale;
+        if (newt < pat.getLoopStartTime() + scale) {
+            newt = pat.getLoopStartTime();  // within 1 pixel of top
         } else if (newt >= pat.getLoopEndTime()) {
-            shift = pat.getLoopEndTime() - 0.0001 - pos.getT();
             newt = pat.getLoopEndTime() - 0.0001;
         }
 
         pat.removePosition(pos);
-        pos.setT(pos.getT() + shift);
+        pos.setT(newt);
         pat.addPosition(pos);  // remove/add keeps positions sorted
     }
 
