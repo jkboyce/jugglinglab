@@ -267,6 +267,7 @@ public class AnimationEditPanel extends AnimationPanel {
                     dragging_xz = false;
                     dragging_yz = false;
                     dragging_angle = false;
+                    deltaangle = 0.0;
 
                     if (ladder instanceof EditLadderDiagram)
                         ((EditLadderDiagram)ladder).activePositionChanged();
@@ -914,13 +915,9 @@ public class AnimationEditPanel extends AnimationPanel {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                if (dragging) {
-                    anim.drawBackground(g);
-                    anim.drawFrame(getTime(), g, dragging_camera, false);
+                anim.drawFrame(getTime(), g, dragging_camera, true);
+                if (dragging)
                     drawGrid(g);
-                } else {
-                    anim.drawFrame(getTime(), g, dragging_camera, true);
-                }
                 drawEvent(g);
                 drawPosition(g);
             } catch (JuggleExceptionInternal jei) {
