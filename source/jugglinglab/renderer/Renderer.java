@@ -20,29 +20,27 @@ public abstract class Renderer {
         this.showground = showground;
     }
 
-    protected static JLVector toVector(Coordinate c, JLVector result) {
-        result.x = c.x;
-        result.y = c.z;
-        result.z = c.y;
-        return result;
-    }
-
     public abstract void setPattern(JMLPattern pat);
+
     public abstract void initDisplay(Dimension dim, int border,
                 Coordinate overallmax, Coordinate overallmin);
 
     public abstract void setCameraAngle(double[] angle);
+
     public abstract double[] getCameraAngle();
 
-    // the following return results in local coordinates
+    // the following two methods return results in local coordinates
     public abstract Coordinate getHandWindowMax();
+
     public abstract Coordinate getHandWindowMin();
 
-    // the following return results in global coordinates
+    // the following two methods return results in global coordinates
     public abstract Coordinate getJugglerWindowMax();
+
     public abstract Coordinate getJugglerWindowMin();
 
     public abstract int[] getXY(Coordinate coord);  // pixel coordinates
+
     public abstract Coordinate getScreenTranslatedCoordinate(Coordinate coord,
                 int dx, int dy);
 

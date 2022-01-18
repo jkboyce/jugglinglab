@@ -481,7 +481,7 @@ public class AnimationPanel extends JPanel implements Runnable {
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, dragging_camera);
+                anim.drawFrame(getTime(), g, dragging_camera, true);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 System.out.println(jei.getMessage());

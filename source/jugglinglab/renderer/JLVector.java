@@ -4,6 +4,8 @@
 
 package jugglinglab.renderer;
 
+import jugglinglab.util.Coordinate;
+
 
 public class JLVector {
     public double x;
@@ -41,5 +43,12 @@ public class JLVector {
 
     public static JLVector scale(double f, JLVector a) {
         return new JLVector(f * a.x, f * a.y, f * a.z);
+    }
+
+    public static JLVector fromCoordinate(Coordinate c, JLVector result) {
+        result.x = c.x;
+        result.y = c.z;
+        result.z = c.y;
+        return result;
     }
 }

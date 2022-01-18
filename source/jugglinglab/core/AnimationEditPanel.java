@@ -79,6 +79,9 @@ public class AnimationEditPanel extends AnimationPanel {
                 if (writingGIF)
                     return;
 
+                startx = me.getX();
+                starty = me.getY();
+
                 if (event_active) {
                     int mx = me.getX();
                     int my = me.getY();
@@ -89,9 +92,8 @@ public class AnimationEditPanel extends AnimationPanel {
                                     my >= event_box[i][1] && my <= event_box[i][3]) {
                             dragging = true;
                             dragging_left = (i == 0);
-                            startx = mx;
-                            starty = my;
                             deltax = deltay = 0;
+                            repaint();
                             return;
                         }
                     }
@@ -114,9 +116,8 @@ public class AnimationEditPanel extends AnimationPanel {
 
                         if (dragging) {
                             dragging_left = (i == 0);
-                            startx = mx;
-                            starty = my;
                             deltax = deltay = 0;
+                            repaint();
                             return;
                         }
 
@@ -127,8 +128,6 @@ public class AnimationEditPanel extends AnimationPanel {
                         if (dragging_angle) {
                             dragging = true;
                             dragging_left = (i == 0);
-                            startx = mx;
-                            starty = my;
                             deltax = deltay = 0;
 
                             // record pixel coordinates of x and y unit vectors
@@ -146,14 +145,11 @@ public class AnimationEditPanel extends AnimationPanel {
                                 pos_points[i][9][1] - pos_points[i][8][1]
                             };
 
+                            repaint();
                             return;
                         }
                     }
                 }
-
-                // if we get here, start a reposition of the camera
-                startx = me.getX();
-                starty = me.getY();
             }
 
             @Override
@@ -167,7 +163,9 @@ public class AnimationEditPanel extends AnimationPanel {
                     return;
                 }
 
-                if (event_active && dragging) {
+                boolean mouse_moved = (me.getX() != startx) || (me.getY() != starty);
+
+                if (event_active && dragging && mouse_moved) {
                     JMLEvent master = (event.isMaster() ? event : event.getMaster());
                     boolean flipx = (event.getHand() != master.getHand());
 
@@ -197,7 +195,7 @@ public class AnimationEditPanel extends AnimationPanel {
                         ((EditLadderDiagram)ladder).activeEventChanged();
                 }
 
-                if (position_active && dragging) {
+                if (position_active && dragging && mouse_moved) {
                     double angle = Math.toRadians(position.getAngle());
 
                     if (dragging_angle) {
@@ -269,21 +267,19 @@ public class AnimationEditPanel extends AnimationPanel {
                     dragging_xz = false;
                     dragging_yz = false;
                     dragging_angle = false;
-                    deltaangle = 0.0;
 
                     if (ladder instanceof EditLadderDiagram)
                         ((EditLadderDiagram)ladder).activePositionChanged();
                 }
 
-                dragging_camera = false;
-                dragging = false;
-                deltax = deltay = 0;
-
-                if (me.getX() == startx && me.getY() == starty &&
-                                engine != null && engine.isAlive())
+                if (!mouse_moved && !dragging && engine != null && engine.isAlive())
                     setPaused(!enginePaused);
-                if (isPaused())
-                    repaint();
+
+                dragging_camera = false;
+                dragging = dragging_xy = dragging_xz = dragging_yz = dragging_angle = false;
+                deltax = deltay = 0;
+                deltaangle = 0.0;
+                repaint();
             }
 
             @Override
@@ -538,6 +534,14 @@ public class AnimationEditPanel extends AnimationPanel {
                         event_box[i][0] + deltax, event_box[i][3] + deltay);
             g2.drawLine(event_box[i][0] + deltax, event_box[i][3] + deltay,
                         event_box[i][0] + deltax, event_box[i][1] + deltay);
+
+            if (dragging) {
+                // dot at center
+                int center_x = (event_box[i][0] + event_box[i][2]) / 2;
+                int center_y = (event_box[i][1] + event_box[i][3]) / 2;
+
+                g2.fillOval(center_x - 2 + deltax, center_y - 2 + deltay, 5, 5);
+            }
         }
     }
 
@@ -747,15 +751,176 @@ public class AnimationEditPanel extends AnimationPanel {
         }
     }
 
+    protected void drawGrid(Graphics g) {
+        if (!(g instanceof Graphics2D))
+            return;
+        Graphics2D g2 = (Graphics2D)g;
+
+        g2.setColor(Color.lightGray);
+        Dimension d = getSize();
+
+        if (event_active) {
+            final double grid_spacing_cm = 10.0;
+
+            // draw a rectangular grid with 10cm spacing, centered on the
+            // juggler's origin in local coordinates.
+            JMLPattern pat = getPattern();
+            int juggler = event.getJuggler();
+            Coordinate lc_origin = new Coordinate();
+            Coordinate gc_origin = pat.convertLocalToGlobal(lc_origin, juggler, getTime());
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+
+                if (jc.stereo && i == 0)
+                    g2 = (Graphics2D)g.create(0, 0, d.width / 2, d.height);
+                else if (jc.stereo && i == 1)
+                    g2 = (Graphics2D)g.create(d.width / 2, 0, d.width / 2, d.height);
+
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                            RenderingHints.VALUE_ANTIALIAS_ON);
+
+                Coordinate c2 = ren.getScreenTranslatedCoordinate(gc_origin, 1, 0);
+                double px_spacing = grid_spacing_cm /
+                                Coordinate.distance(gc_origin, c2);
+                int[] center = ren.getXY(gc_origin);
+
+                for (int j = (int)(-center[0] / px_spacing - 1);
+                                j <= (d.width - center[0]) / px_spacing; j++) {
+                    int x = (int)(0.5 + center[0] + j * px_spacing);
+                    if (x >= 0 && x < d.width) {
+                        if (j == 0)
+                            g2.setStroke(new BasicStroke(3));
+                        g2.drawLine(x, 0, x, d.height);
+                        if (j == 0)
+                            g2.setStroke(new BasicStroke(1));
+                    }
+                }
+                for (int j = (int)(-center[1] / px_spacing - 1);
+                                j <= (d.height - center[1]) / px_spacing; j++) {
+                    int y = (int)(0.5 + center[1] + j * px_spacing);
+                    if (y >= 0 && y < d.height) {
+                        if (j == 0)
+                            g2.setStroke(new BasicStroke(3));
+                        g2.drawLine(0, y, d.width, y);
+                        if (j == 0)
+                            g2.setStroke(new BasicStroke(1));
+                    }
+                }
+            }
+        }
+
+        if (position_active) {
+            final double grid_spacing_cm = 20.0;
+            int width = (jc.stereo ? d.width / 2 : d.width);
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+
+                if (jc.stereo && i == 0)
+                    g2 = (Graphics2D)g.create(0, 0, d.width / 2, d.height);
+                else if (jc.stereo && i == 1)
+                    g2 = (Graphics2D)g.create(d.width / 2, 0, d.width / 2, d.height);
+
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                            RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Draw xy, xz, or yz global coordinate plane, depending on the
+                // dragging mode. Center on (0, 0, 100) in global coordinates.
+                int[] center = ren.getXY(new Coordinate(0, 0, 100));
+
+                int[] dx = ren.getXY(new Coordinate(100,   0, 100));
+                int[] dy = ren.getXY(new Coordinate(  0, 100, 100));
+                int[] dz = ren.getXY(new Coordinate(  0,   0, 200));
+                double[] xaxis_spacing = {
+                    grid_spacing_cm * ((double)(dx[0] - center[0]) / 100.0),
+                    grid_spacing_cm * ((double)(dx[1] - center[1]) / 100.0)
+                };
+                double[] yaxis_spacing = {
+                    grid_spacing_cm * ((double)(dy[0] - center[0]) / 100.0),
+                    grid_spacing_cm * ((double)(dy[1] - center[1]) / 100.0)
+                };
+                double[] zaxis_spacing = {
+                    grid_spacing_cm * ((double)(dz[0] - center[0]) / 100.0),
+                    grid_spacing_cm * ((double)(dz[1] - center[1]) / 100.0)
+                };
+
+                double[] axis1 = xaxis_spacing;
+                double[] axis2 = yaxis_spacing;
+
+                if (dragging_xz) {
+                    axis1 = xaxis_spacing;
+                    axis2 = zaxis_spacing;
+                } else if (dragging_yz) {
+                    axis1 = yaxis_spacing;
+                    axis2 = zaxis_spacing;
+                }
+
+                double det = axis1[0] * axis2[1] - axis1[1] * axis2[0];
+                int mmin = 0;
+                int mmax = 0;
+                int nmin = 0;
+                int nmax = 0;
+                for (int j = 0; j < 4; j++) {
+                    double a = (j % 2 == 0 ? 0 : width) - center[0];
+                    double b = (j < 2 ? 0 : d.height) - center[1];
+
+                    double m = (axis2[1] * a - axis2[0] * b) / det;
+                    double n = (-axis1[1] * a + axis1[0] * b) / det;
+                    int mint = (int)Math.floor(m);
+                    int nint = (int)Math.floor(n);
+                    mmin = (j == 0 ? mint : Math.min(mmin, mint));
+                    mmax = (j == 0 ? mint + 1 : Math.max(mmax, mint + 1));
+                    nmin = (j == 0 ? nint : Math.min(nmin, nint));
+                    nmax = (j == 0 ? nint + 1 : Math.max(nmax, nint + 1));
+                }
+
+                for (int j = mmin; j <= mmax; j++) {
+                    int x1 = (int)(0.5 + center[0] + j * axis1[0] + nmin * axis2[0]);
+                    int y1 = (int)(0.5 + center[1] + j * axis1[1] + nmin * axis2[1]);
+                    int x2 = (int)(0.5 + center[0] + j * axis1[0] + nmax * axis2[0]);
+                    int y2 = (int)(0.5 + center[1] + j * axis1[1] + nmax * axis2[1]);
+                    if (j == 0)
+                        g2.setStroke(new BasicStroke(3));
+                    g2.drawLine(x1, y1, x2, y2);
+                    if (j == 0)
+                        g2.setStroke(new BasicStroke(1));
+                }
+                for (int j = nmin; j <= nmax; j++) {
+                    int x1 = (int)(0.5 + center[0] + mmin * axis1[0] + j * axis2[0]);
+                    int y1 = (int)(0.5 + center[1] + mmin * axis1[1] + j * axis2[1]);
+                    int x2 = (int)(0.5 + center[0] + mmax * axis1[0] + j * axis2[0]);
+                    int y2 = (int)(0.5 + center[1] + mmax * axis1[1] + j * axis2[1]);
+                    if (j == 0)
+                        g2.setStroke(new BasicStroke(3));
+                    g2.drawLine(x1, y1, x2, y2);
+                    if (j == 0)
+                        g2.setStroke(new BasicStroke(1));
+                }
+            }
+        }
+    }
+
     // javax.swing.JComponent methods
 
     @Override
     public void paintComponent(Graphics g) {
+        if (g instanceof Graphics2D) {
+            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+
         if (message != null)
             drawString(message, g);
         else if (engineRunning && !writingGIF) {
             try {
-                anim.drawFrame(getTime(), g, dragging_camera);
+                if (dragging) {
+                    anim.drawBackground(g);
+                    anim.drawFrame(getTime(), g, dragging_camera, false);
+                    drawGrid(g);
+                } else {
+                    anim.drawFrame(getTime(), g, dragging_camera, true);
+                }
                 drawEvent(g);
                 drawPosition(g);
             } catch (JuggleExceptionInternal jei) {

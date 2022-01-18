@@ -148,79 +148,61 @@ public class Animator {
         }
     }
 
-    public void drawFrame(double sim_time, Graphics g, boolean draw_axes)
+    public void drawBackground(Graphics g) {
+        g.setColor(ren1.getBackground());
+        g.fillRect(0, 0, dim.width, dim.height);
+    }
+
+    public void drawFrame(double sim_time, Graphics g, boolean draw_axes, boolean draw_background)
                         throws JuggleExceptionInternal {
+        if (draw_background)
+            drawBackground(g);
+
         if (jc.stereo) {
             ren1.drawFrame(sim_time, animpropnum, jc.hideJugglers,
-                                g.create(0, 0, dim.width/2, dim.height));
+                                g.create(0, 0, dim.width / 2, dim.height));
             ren2.drawFrame(sim_time, animpropnum, jc.hideJugglers,
-                                g.create(dim.width/2, 0, dim.width/2, dim.height));
+                                g.create(dim.width / 2, 0, dim.width / 2, dim.height));
         } else {
             ren1.drawFrame(sim_time, animpropnum, jc.hideJugglers, g);
         }
 
         if (draw_axes) {
             if (g instanceof Graphics2D) {
-                Graphics2D g2 = (Graphics2D)g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                                     RenderingHints.VALUE_ANTIALIAS_ON);
             }
 
-            double[] ca = ren1.getCameraAngle();
-            double theta = ca[0];
-            double phi = ca[1];
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                Renderer ren = (i == 0 ? ren1 : ren2);
 
-            double xya = 30.0;
-            double xyb = xya * Math.cos(phi);
-            double zlen = xya * Math.sin(phi);
-            int cx = 38;
-            int cy = 45;
-            int xx = cx + (int)(0.5 - xya * Math.cos(theta));
-            int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
-            int yx = cx + (int)(0.5 + xya * Math.sin(theta));
-            int yy = cy + (int)(0.5 + xyb * Math.cos(theta));
-            int zx = cx;
-            int zy = cy - (int)(0.5 + zlen);
+                double[] ca = ren.getCameraAngle();
+                double theta = ca[0];
+                double phi = ca[1];
 
-            g.setColor(Color.green);
-            g.drawLine(cx, cy, xx, xy);
-            g.drawLine(cx, cy, yx, yy);
-            g.drawLine(cx, cy, zx, zy);
-            g.fillOval(xx-2, xy-2, 5, 5);
-            g.fillOval(yx-2, yy-2, 5, 5);
-            g.fillOval(zx-2, zy-2, 5, 5);
-            g.drawString("x", xx-2, xy-4);
-            g.drawString("y", yx-2, yy-4);
-            g.drawString("z", zx-2, zy-4);
-        }
+                double xya = 30.0;
+                double xyb = xya * Math.cos(phi);
+                double zlen = xya * Math.sin(phi);
+                int cx = 38 + i * (dim.width / 2);
+                int cy = 45;
+                int xx = cx + (int)(0.5 - xya * Math.cos(theta));
+                int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
+                int yx = cx + (int)(0.5 + xya * Math.sin(theta));
+                int yy = cy + (int)(0.5 + xyb * Math.cos(theta));
+                int zx = cx;
+                int zy = cy - (int)(0.5 + zlen);
 
-        if (jc.stereo && draw_axes) {
-            double[] ca = ren2.getCameraAngle();
-            double theta = ca[0];
-            double phi = ca[1];
-
-            double xya = 30.0;
-            double xyb = xya * Math.cos(phi);
-            double zlen = xya * Math.sin(phi);
-            int cx = 38 + dim.width/2;
-            int cy = 45;
-            int xx = cx + (int)(0.5 - xya * Math.cos(theta));
-            int xy = cy + (int)(0.5 + xyb * Math.sin(theta));
-            int yx = cx + (int)(0.5 + xya * Math.sin(theta));
-            int yy = cy + (int)(0.5 + xyb * Math.cos(theta));
-            int zx = cx;
-            int zy = cy - (int)(0.5 + zlen);
-
-            g.setColor(Color.green);
-            g.drawLine(cx, cy, xx, xy);
-            g.drawLine(cx, cy, yx, yy);
-            g.drawLine(cx, cy, zx, zy);
-            g.fillOval(xx-2, xy-2, 5, 5);
-            g.fillOval(yx-2, yy-2, 5, 5);
-            g.fillOval(zx-2, zy-2, 5, 5);
-            g.drawString("x", xx-2, xy-4);
-            g.drawString("y", yx-2, yy-4);
-            g.drawString("z", zx-2, zy-4);
+                g.setColor(Color.green);
+                g.drawLine(cx, cy, xx, xy);
+                g.drawLine(cx, cy, yx, yy);
+                g.drawLine(cx, cy, zx, zy);
+                g.fillOval(xx - 2, xy - 2, 5, 5);
+                g.fillOval(yx - 2, yy - 2, 5, 5);
+                g.fillOval(zx - 2, zy - 2, 5, 5);
+                g.drawString("x", xx - 2, xy - 4);
+                g.drawString("y", yx - 2, yy - 4);
+                g.drawString("z", zx - 2, zy - 4);
+            }
         }
     }
 
@@ -408,7 +390,7 @@ public class Animator {
             double time = pat.getLoopStartTime();
 
             for (int j = 0; j < gif_num_frames; j++) {
-                drawFrame(time, g, false);
+                drawFrame(time, g, false, true);
 
                 // after the second frame all subsequent frames have identical metadata
                 if (framecount < 2) {

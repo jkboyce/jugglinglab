@@ -180,7 +180,7 @@ public class Renderer2D extends Renderer {
             pat.getPathCoordinate(i, time, tempc);
             if (!tempc.isValid())
                 tempc.setCoordinate(0.0, 0.0, 0.0);
-            getXYZ(Renderer.toVector(tempc, tempv1), obj[index].coord[0]);
+            getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0]);
             int x = (int)(0.5 + obj[index].coord[0].x);
             int y = (int)(0.5 + obj[index].coord[0].y);
             Prop pr = pat.getProp(pnum[i-1]);
@@ -389,9 +389,6 @@ public class Renderer2D extends Renderer {
         }
 
         // draw the objects in the sorted order
-        g.setColor(background);
-        g.fillRect(0, 0, width, height);
-
         for (int i = 0; i < numobjects; i++) {
             DrawObject2D ob = obj2[i];
 
