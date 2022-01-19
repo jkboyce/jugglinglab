@@ -64,7 +64,7 @@ public class GeneratorTarget {
         }
 
         if (ltarget != null) {
-            // Note we may not be running in the event dispatch thread
+            // Note we may not be running on the event dispatch thread
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -84,7 +84,17 @@ public class GeneratorTarget {
         suffix = su;
     }
 
+    // Messages like "# of patterns found" come through here
     public void setStatus(String display) {
+        if (ltarget != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ltarget.addPattern(display, null, null, null, null);
+                }
+            });
+        }
+
         if (ptarget != null)
             ptarget.println(display);
     }

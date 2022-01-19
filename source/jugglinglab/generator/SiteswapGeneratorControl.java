@@ -357,13 +357,13 @@ class SiteswapGeneratorControl extends JPanel {
         tf7.setEnabled(false);
         // tf8.setEnabled(false);
 
-        cb13.setEnabled(false); // multiplexing initially off
+        cb13.setEnabled(false);  // multiplexing initially off
         cb14.setEnabled(false);
         lab13.setEnabled(false);
         tf9.setEnabled(false);
         cb16.setEnabled(false);
 
-        cb9.setEnabled(true);   // excited-state patterns initially on
+        cb9.setEnabled(true);  // excited-state patterns initially on
     }
 
     public String getParams() {
@@ -390,12 +390,12 @@ class SiteswapGeneratorControl extends JPanel {
 
             if (cb17.isEnabled()) {
                 if (cb17.isSelected())
-                    sb.append(" -jp");      // juggler permutations
+                    sb.append(" -jp");  // juggler permutations
             } else
                 sb.append(" -jp");
 
             if (cb15.isSelected())
-                sb.append(" -cp");      // connected patterns
+                sb.append(" -cp");  // connected patterns
         }
 
         if (cb5.isSelected())
@@ -428,6 +428,8 @@ class SiteswapGeneratorControl extends JPanel {
             sb.append(" -x " + tf4.getText());
         if (tf5.getText().length() > 0)
             sb.append(" -i " + tf5.getText());
+
+        sb.append(" -n");
 
         return sb.toString();
     }
