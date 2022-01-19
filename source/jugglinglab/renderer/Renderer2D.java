@@ -97,11 +97,33 @@ public class Renderer2D extends Renderer {
         width = dim.width;
         height = dim.height;
         Rectangle r = new Rectangle(border, border, width-2*border, height-2*border);
-        calcScaling(r, overallmax, overallmin);
+
+        // Make some adjustments to the bounding box.
+        Coordinate adjusted_max = new Coordinate(overallmax);
+        Coordinate adjusted_min = new Coordinate(overallmin);
+
+        // We want to ensure everything stays visible as we rotate the camera
+        // viewpoint. The following is simple and seems to work ok.
+        if (pat.getNumberOfJugglers() == 1) {
+            adjusted_min.z -= 0.3 * Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
+            adjusted_max.z += 5.0;    // keeps objects from rubbing against top of window
+        } else {
+            double tempx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
+            double tempy = Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
+            adjusted_min.z -= 0.4 * Math.max(tempx, tempy);
+            adjusted_max.z += 0.4 * Math.max(tempx, tempy);
+        }
+
+        // make the x-coordinate origin at the center of the view
+        double maxabsx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
+        adjusted_min.x = -maxabsx;
+        adjusted_max.x = maxabsx;
+
+        calcScaling(r, adjusted_max, adjusted_min);
         cameradistance = 1000.0;
-        cameracenter = new JLVector(0.5 * (overallmax.x + overallmin.x),
-                                    0.5 * (overallmax.z + overallmin.z),
-                                    0.5 * (overallmax.y + overallmin.y));
+        cameracenter = new JLVector(0.5 * (adjusted_max.x + adjusted_min.x),
+                                    0.5 * (adjusted_max.z + adjusted_min.z),
+                                    0.5 * (adjusted_max.y + adjusted_min.y));
         setCameraAngle(cameraangle);  // sets camera position
     }
 

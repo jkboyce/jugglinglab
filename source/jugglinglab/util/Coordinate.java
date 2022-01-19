@@ -113,6 +113,8 @@ public class Coordinate {
 
     @Override
     public String toString() {
-        return ("(" + x + "," + y + "," + z + ")");
+        return "(" + JLFunc.toStringRounded(x, 5) +
+               ", " + JLFunc.toStringRounded(y, 5) +
+               ", " + JLFunc.toStringRounded(z, 5) + ")";
     }
 }

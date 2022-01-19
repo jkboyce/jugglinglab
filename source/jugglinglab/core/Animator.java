@@ -239,24 +239,42 @@ public class Animator {
     }
 
     // Find the overall bounding box of the juggler and pattern, in real-space
-    // (centimeters) coordinates.
-    //
-    // The algorithm here could be improved to take into account which props are
-    // on which paths.  We may also want to leave room for the rest of the juggler.
-    private void findMaxMin() {
-        Coordinate patternmax = null, patternmin = null;
-        Coordinate handmax = null, handmin = null;
-        Coordinate propmax = null, propmin = null;
+    // (centimeters) global coordinates. Output is the variables `overallmin`
+    // and `overallmax`, which determine a bounding box.
+    protected void findMaxMin() {
 
+        // Step 1: Work out a bounding box that contains all paths through space
+        // for the pattern, including the props
+
+        Coordinate patternmax = null;
+        Coordinate patternmin = null;
         for (int i = 1; i <= pat.getNumberOfPaths(); i++) {
             patternmax = Coordinate.max(patternmax, pat.getPathMax(i));
             patternmin = Coordinate.min(patternmin, pat.getPathMin(i));
 
-            if (jugglinglab.core.Constants.DEBUG_LAYOUT)
-                System.out.println("Pattern max " + i + " = " + patternmax);
+            if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
+                System.out.println("Path max " + i + " = " + pat.getPathMax(i));
+                System.out.println("Path min " + i + " = " + pat.getPathMin(i));
+            }
         }
 
-        // make sure all hands are visible
+        Coordinate propmax = null;
+        Coordinate propmin = null;
+        for (int i = 1; i <= pat.getNumberOfProps(); i++) {
+            propmax = Coordinate.max(propmax, pat.getProp(i).getMax());
+            propmin = Coordinate.min(propmin, pat.getProp(i).getMin());
+        }
+
+        // Make sure props are entirely visible along all paths. In principle
+        // not all props go on all paths so this could be done more carefully.
+        patternmax = Coordinate.add(patternmax, propmax);
+        patternmin = Coordinate.add(patternmin, propmin);
+
+        // Step 2: Work out a bounding box that contains the hands at all times,
+        // factoring in the physical extent of the hands.
+
+        Coordinate handmax = null;
+        Coordinate handmin = null;
         for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
             handmax = Coordinate.max(handmax, pat.getHandMax(i, HandLink.LEFT_HAND));
             handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.LEFT_HAND));
@@ -264,42 +282,40 @@ public class Animator {
             handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.RIGHT_HAND));
         }
 
-        for (int i = 1; i <= pat.getNumberOfProps(); i++) {
-            propmax = Coordinate.max(propmax, pat.getProp(i).getMax());
-            propmin = Coordinate.min(propmin, pat.getProp(i).getMin());
-        }
-
-        // make sure props are entirely visible along all paths
-        patternmax = Coordinate.add(patternmax, propmax);
-        patternmin = Coordinate.add(patternmin, propmin);
+        // The renderer's hand window is in local coordinates. We don't know
+        // the juggler's rotation angle when `handmax` and `handmin` are
+        // achieved. So we create a bounding box that contains the hand
+        // regardless of rotation angle.
+        Coordinate hwmax = ren1.getHandWindowMax();
+        Coordinate hwmin = ren1.getHandWindowMin();
+        hwmax.x = Math.max(Math.max(Math.abs(hwmax.x), Math.abs(hwmin.x)),
+                           Math.max(Math.abs(hwmax.y), Math.abs(hwmin.y)));
+        hwmin.x = -hwmax.x;
+        hwmax.y = hwmax.x;
+        hwmin.y = hwmin.x;
 
         // make sure hands are entirely visible
-        handmax = Coordinate.add(handmax, ren1.getHandWindowMax());
-        handmin = Coordinate.add(handmin, ren1.getHandWindowMin());
+        handmax = Coordinate.add(handmax, hwmax);
+        handmin = Coordinate.add(handmin, hwmin);
 
-        // make sure jugglers' bodies are visible
-        overallmax = Coordinate.max(handmax, ren1.getJugglerWindowMax());
-        overallmax = Coordinate.max(overallmax, patternmax);
+        // Step 3: Work out a bounding box that contains the juggler's body
+        // at all times.
 
-        overallmin = Coordinate.min(handmin, ren1.getJugglerWindowMin());
-        overallmin = Coordinate.min(overallmin, patternmin);
+        // Similarly to the hand window above, we create a bounding box that
+        // contains the juggler's body regardless of rotation angle.
+        Coordinate jwmax = ren1.getJugglerWindowMax();
+        Coordinate jwmin = ren1.getJugglerWindowMin();
+        jwmax.x = Math.max(Math.max(Math.abs(jwmax.x), Math.abs(jwmin.x)),
+                           Math.max(Math.abs(jwmax.y), Math.abs(jwmin.y)));
+        jwmin.x = -jwmax.x;
+        jwmax.y = jwmax.x;
+        jwmin.y = jwmin.x;
 
-        // we want to ensure everything stays visible as we rotate the camera
-        // viewpoint.  the following is simple and seems to work ok.
-        if (pat.getNumberOfJugglers() == 1) {
-            overallmin.z -= 0.3 * Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
-            overallmax.z += 5.0;    // keeps objects from rubbing against top of window
-        } else {
-            double tempx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
-            double tempy = Math.max(Math.abs(overallmin.y), Math.abs(overallmax.y));
-            overallmin.z -= 0.4 * Math.max(tempx, tempy);
-            overallmax.z += 0.4 * Math.max(tempx, tempy);
-        }
+        // Step 4: Combine the pattern, hand, and juggler bounding boxes into
+        // an overall bounding box.
 
-        // make the x-coordinate origin at the center of the view
-        double maxabsx = Math.max(Math.abs(overallmin.x), Math.abs(overallmax.x));
-        overallmin.x = -maxabsx;
-        overallmax.x = maxabsx;
+        overallmax = Coordinate.max(patternmax, Coordinate.max(handmax, jwmax));
+        overallmin = Coordinate.min(patternmin, Coordinate.min(handmin, jwmin));
 
         if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
             System.out.println("Hand max = " + handmax);
@@ -308,6 +324,8 @@ public class Animator {
             System.out.println("Prop min = " + propmin);
             System.out.println("Pattern max = " + patternmax);
             System.out.println("Pattern min = " + patternmin);
+            System.out.println("Juggler max = " + jwmax);
+            System.out.println("Juggler min = " + jwmin);
             System.out.println("Overall max = " + overallmax);
             System.out.println("Overall min = " + overallmin);
 
@@ -316,7 +334,9 @@ public class Animator {
         }
     }
 
-    private void syncRenderersToSize() {
+    // Pass the global bounding box, and the viewport pixel size, to the
+    // renderer so it can calculate a zoom factor.
+    protected void syncRenderersToSize() {
         Dimension d = new Dimension(dim);
 
         if (jc.stereo) {
