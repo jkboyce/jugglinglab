@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ResourceBundle;
@@ -19,8 +20,8 @@ import jugglinglab.JugglingLab;
 // Some useful functions
 
 public class JLFunc {
+    static final ResourceBundle guistrings = JugglingLab.guistrings;
     static final ResourceBundle errorstrings = JugglingLab.errorstrings;
-
 
     // Binomial coefficient (a choose b)
     public static int binomial(int a, int b) {
@@ -200,10 +201,13 @@ public class JLFunc {
                     File f = getSelectedFile();
 
                     if (f.exists() && getDialogType() == SAVE_DIALOG) {
-                        int result = JOptionPane.showConfirmDialog(this,
-                                "\"" + f.getName() +"\" already exists.\nDo you want to replace it?",
-                                "Existing file",
-                                JOptionPane.YES_NO_CANCEL_OPTION);
+                        String template = guistrings.getString("JFC_File_exists_message");
+                        Object[] arguments = { f.getName() };
+                        String msg = MessageFormat.format(template, arguments);
+                        String title = guistrings.getString("JFC_File_exists_title");
+
+                        int result = JOptionPane.showConfirmDialog(this, msg, title,
+                                        JOptionPane.YES_NO_CANCEL_OPTION);
                         switch (result) {
                             case JOptionPane.YES_OPTION:
                                 super.approveSelection();
