@@ -439,8 +439,8 @@ public class Renderer2D extends Renderer {
                     double RheadTx = ob.coord[7].x;
                     double RheadTy = ob.coord[7].y;
 
-                    if (Math.abs(RheadBx - LheadBx) > 1.0) {
-                        // head is at least 1 pixel wide; draw it as a polygon
+                    if (Math.abs(RheadBx - LheadBx) > 2.0) {
+                        // head is at least 2 pixels wide; draw it as a polygon
                         for (int j = 0; j < polysides; j++) {
                             headx[j] = (int)(0.5 + 0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
                             heady[j] = (int)(0.5 + 0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy)) +
