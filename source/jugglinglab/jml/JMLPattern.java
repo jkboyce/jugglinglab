@@ -519,6 +519,23 @@ public class JMLPattern {
                 ev = next;
             }
 
+            // For each JMLPosition:
+            //     - set t = looptime - t
+            //     - sort the position list in time
+            JMLPosition pos = getPositionList();
+            positionlist = null;
+            while (pos != null) {
+                // no notion analagous to master events, so have to keep
+                // position time within [0, looptime).
+                if (pos.getT() != 0)
+                    pos.setT(looptime - pos.getT());
+
+                JMLPosition next = pos.getNext();
+                addPosition(pos);
+
+                pos = next;
+            }
+
             // For each symmetry (besides type SWITCH):
             //     - invert pperm
             for (int i = 0; i < getNumberOfSymmetries(); ++i) {
