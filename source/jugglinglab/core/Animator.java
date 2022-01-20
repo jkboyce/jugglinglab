@@ -298,18 +298,12 @@ public class Animator {
         handmax = Coordinate.add(handmax, hwmax);
         handmin = Coordinate.add(handmin, hwmin);
 
-        // Step 3: Work out a bounding box that contains the juggler's body
-        // at all times.
+        // Step 3: Find a bounding box that contains the juggler's body
+        // at all times, incorporating any juggler movements as well as the
+        // physical extent of the juggler's body.
 
-        // Similarly to the hand window above, we create a bounding box that
-        // contains the juggler's body regardless of rotation angle.
         Coordinate jwmax = ren1.getJugglerWindowMax();
         Coordinate jwmin = ren1.getJugglerWindowMin();
-        jwmax.x = Math.max(Math.max(Math.abs(jwmax.x), Math.abs(jwmin.x)),
-                           Math.max(Math.abs(jwmax.y), Math.abs(jwmin.y)));
-        jwmin.x = -jwmax.x;
-        jwmax.y = jwmax.x;
-        jwmin.y = jwmin.x;
 
         // Step 4: Combine the pattern, hand, and juggler bounding boxes into
         // an overall bounding box.
@@ -328,9 +322,8 @@ public class Animator {
             System.out.println("Juggler min = " + jwmin);
             System.out.println("Overall max = " + overallmax);
             System.out.println("Overall min = " + overallmin);
-
-            overallmax = new Coordinate(100.0, 0.0, 500.0);
-            overallmin = new Coordinate(-100.0, 0.0, -100.0);
+            // overallmax = new Coordinate(100.0, 0.0, 500.0);
+            // overallmin = new Coordinate(-100.0, 0.0, -100.0);
         }
     }
 

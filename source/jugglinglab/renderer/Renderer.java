@@ -34,7 +34,8 @@ public abstract class Renderer {
 
     public abstract Coordinate getHandWindowMin();
 
-    // the following two methods return results in global coordinates
+    // the following two methods return results in global coordinates,
+    // including any body movement during the pattern
     public abstract Coordinate getJugglerWindowMax();
 
     public abstract Coordinate getJugglerWindowMin();

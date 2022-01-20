@@ -11,6 +11,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
+import jugglinglab.core.Constants;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.Coordinate;
 import jugglinglab.util.JLFunc;
@@ -96,35 +97,66 @@ public class Renderer2D extends Renderer {
                             Coordinate overallmax, Coordinate overallmin) {
         width = dim.width;
         height = dim.height;
-        Rectangle r = new Rectangle(border, border, width-2*border, height-2*border);
+        Rectangle r = new Rectangle(border, border, width - 2 * border, height - 2 * border);
 
         // Make some adjustments to the bounding box.
         Coordinate adjusted_max = new Coordinate(overallmax);
         Coordinate adjusted_min = new Coordinate(overallmin);
-
-        // We want to ensure everything stays visible as we rotate the camera
-        // viewpoint. The following is simple and seems to work ok.
-        if (pat.getNumberOfJugglers() == 1) {
-            adjusted_min.z -= 0.3 * Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
-            adjusted_max.z += 5.0;    // keeps objects from rubbing against top of window
-        } else {
-            double tempx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
-            double tempy = Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
-            adjusted_min.z -= 0.4 * Math.max(tempx, tempy);
-            adjusted_max.z += 0.4 * Math.max(tempx, tempy);
-        }
 
         // make the x-coordinate origin at the center of the view
         double maxabsx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
         adjusted_min.x = -maxabsx;
         adjusted_max.x = maxabsx;
 
-        calcScaling(r, adjusted_max, adjusted_min);
+        // Find the diameter (in centimeters) of the smallest cylinders that
+        // entirely contain the bounding box: One parallel to the z axis and
+        // another parallel to the x axis.
+        /*
+        double cm_diam = Coordinate.distance(adjusted_max, adjusted_min);
+        zoom = Math.min((double)r.width / cm_diam, (double)r.height / cm_diam);
+        */
+        double dx = adjusted_max.x - adjusted_min.x;
+        double dy = adjusted_max.y - adjusted_min.y;
+        double dz = adjusted_max.z - adjusted_min.z;
+        double dxy = Math.max(dx, dy);
+
+        zoom = Math.min((double)r.width / Math.sqrt(dx * dx + dy * dy),
+                        (double)r.height / Math.sqrt(dxy * dxy + dz * dz));
+        /*
+        Coordinate temp = new Coordinate(adjusted_min);
+        temp.z = adjusted_max.z;
+        double cm_diam_z = Coordinate.distance(adjusted_max, temp);
+        temp = new Coordinate(adjusted_min);
+        temp.x = adjusted_max.x;
+        double cm_diam_x = Coordinate.distance(adjusted_max, temp);
+        zoom = Math.min((double)r.width / cm_diam_z, (double)r.height / cm_diam_x);
+        */
+        // Find `zoom`, `originx`, and `originz` values that keep the adjusted
+        // bounding box visible in the viewport.
+/*
+        double cm_width = adjusted_max.x - adjusted_min.x;
+        double cm_height = adjusted_max.z - adjusted_min.z;
+        zoom = Math.min((double)r.width / cm_width, (double)r.height / cm_height);
+*/
+        originx = r.x + (int)(0.5 + 0.5 * (r.width - zoom*(adjusted_max.x + adjusted_min.x)));
+        originz = r.y + (int)(0.5 + 0.5 * (r.height + zoom*(adjusted_max.z + adjusted_min.z)));
+
+        // Set the pattern center vis-a-vis camera rotation
+
         cameradistance = 1000.0;
         cameracenter = new JLVector(0.5 * (adjusted_max.x + adjusted_min.x),
                                     0.5 * (adjusted_max.z + adjusted_min.z),
                                     0.5 * (adjusted_max.y + adjusted_min.y));
         setCameraAngle(cameraangle);  // sets camera position
+
+        if (Constants.DEBUG_LAYOUT) {
+            System.out.println("overallmax = " + overallmax);
+            System.out.println("overallmin = " + overallmin);
+            System.out.println("adjusted_max = " + adjusted_max);
+            System.out.println("adjusted_min = " + adjusted_min);
+            //System.out.println("diam (cm) = " + cm_diam);
+            System.out.println("zoom (px/cm) = " + zoom);
+        }
     }
 
     @Override
@@ -536,20 +568,8 @@ public class Renderer2D extends Renderer {
         for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
             min = Coordinate.min(min, pat.getJugglerMin(i));
 
-        min = Coordinate.add(min, new Coordinate(-Juggler.shoulder_hw, -Juggler.shoulder_hw, // -Juggler.head_hw,
-                                                 Juggler.shoulder_h));
+        min = Coordinate.add(min, new Coordinate(-Juggler.shoulder_hw, -Juggler.shoulder_hw, 0));
         return min;
-    }
-
-
-    protected void calcScaling(Rectangle r, Coordinate coordmax, Coordinate coordmin) {
-        //      double frame_width = 2.0 * Math.max(Math.abs(coordmax.x), Math.abs(coordmin.x));
-        double frame_width = coordmax.x - coordmin.x;
-        double frame_height = coordmax.z - coordmin.z;
-        zoom = Math.min((double)(r.width) / frame_width,
-                        (double)(r.height) / frame_height);
-        originx = r.x + (int)(0.5 + 0.5 * (r.width - zoom*(coordmax.x+coordmin.x)));   // r.x + r.width / 2;
-        originz = r.y + (int)(0.5 + 0.5 * (r.height + zoom*(coordmax.z+coordmin.z)));
     }
 
 
