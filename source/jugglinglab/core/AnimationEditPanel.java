@@ -19,7 +19,8 @@ import jugglinglab.renderer.Renderer;
 // for interacting with on-screen representations of JML events, and for
 // interacting with a ladder diagram.
 
-public class AnimationEditPanel extends AnimationPanel {
+public class AnimationEditPanel extends AnimationPanel
+                                implements MouseListener, MouseMotionListener {
     public static final double event_box_hw_cm = 5.0;
     public static final double position_box_hw_cm = 10.0;
     public static final double position_box_z_cm = 0.0;
@@ -56,295 +57,314 @@ public class AnimationEditPanel extends AnimationPanel {
         super();
     }
 
+    public void setLadderDiagram(LadderDiagram lad) {
+        ladder = lad;
+    }
+
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseListener methods
+    //-------------------------------------------------------------------------
+
+    long lastpress = 0L;
+    long lastenter = 1L;
+
+    @Override
+    public void mousePressed(MouseEvent me) {
+        lastpress = me.getWhen();
+
+        // The following (and the equivalent in mouseReleased()) is a hack to swallow
+        // a mouseclick when the browser stops reporting enter/exit events because the
+        // user has clicked on something else.  The system reports simultaneous enter/press
+        // events when the user mouses down in the component; we want to swallow this as a
+        // click, and just use it to get focus back.
+        if (jc.mousePause && lastpress == lastenter)
+            return;
+
+        if (!engineAnimating)
+            return;
+        if (writingGIF)
+            return;
+
+        startx = me.getX();
+        starty = me.getY();
+
+        if (event_active) {
+            int mx = me.getX();
+            int my = me.getY();
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                int t = i * getSize().width / 2;
+                if (mx >= (event_box[i][0] + t) && mx <= (event_box[i][2] + t) &&
+                            my >= event_box[i][1] && my <= event_box[i][3]) {
+                    dragging = true;
+                    dragging_left = (i == 0);
+                    deltax = deltay = 0;
+                    repaint();
+                    return;
+                }
+            }
+        }
+
+        if (position_active) {
+            int mx = me.getX();
+            int my = me.getY();
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                int t = i * getSize().width / 2;
+                dragging_z = JLFunc.isNearLine(mx - t, my,
+                                    (int)Math.round(pos_points[i][4][0]),
+                                    (int)Math.round(pos_points[i][4][1]),
+                                    (int)Math.round(pos_points[i][6][0]),
+                                    (int)Math.round(pos_points[i][6][1]),
+                                    7);
+
+                if (dragging_z) {
+                    dragging = true;
+                    dragging_left = (i == 0);
+                    deltax = deltay = 0;
+                    repaint();
+                    return;
+                }
+
+                dragging_xy = isInsidePolygon(mx - t, my, i, face_xy);
+
+                if (dragging_xy) {
+                    dragging = true;
+                    dragging_left = (i == 0);
+                    deltax = deltay = 0;
+                    repaint();
+                    return;
+                }
+
+                int dmx = mx - t - (int)Math.round(pos_points[i][5][0]);
+                int dmy = my - (int)Math.round(pos_points[i][5][1]);
+                dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
+
+                if (dragging_angle) {
+                    dragging = true;
+                    dragging_left = (i == 0);
+                    deltax = deltay = 0;
+
+                    // record pixel coordinates of x and y unit vectors
+                    // in juggler's frame, at start of angle drag
+                    start_dx = new double[] {
+                        pos_points[i][11][0] - pos_points[i][4][0],
+                        pos_points[i][11][1] - pos_points[i][4][1]
+                    };
+                    start_dy = new double[] {
+                        pos_points[i][12][0] - pos_points[i][4][0],
+                        pos_points[i][12][1] - pos_points[i][4][1]
+                    };
+                    start_control = new double[] {
+                        pos_points[i][5][0] - pos_points[i][4][0],
+                        pos_points[i][5][1] - pos_points[i][4][1]
+                    };
+
+                    repaint();
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent me) {
+        if (jc.mousePause && lastpress == lastenter)
+            return;
+        if (writingGIF)
+            return;
+        if (!engineAnimating && engine != null && engine.isAlive()) {
+            setPaused(!enginePaused);
+            return;
+        }
+
+        boolean mouse_moved = (me.getX() != startx) || (me.getY() != starty);
+
+        if (event_active && dragging && mouse_moved) {
+            JMLEvent master = (event.isMaster() ? event : event.getMaster());
+            boolean flipx = (event.getHand() != master.getHand());
+
+            Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
+                    event.getGlobalCoordinate(), deltax, deltay);
+            if (jc.stereo) {
+                // average the coordinate shifts from each perspective
+                Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
+                        event.getGlobalCoordinate(), deltax, deltay);
+                newgc = Coordinate.add(newgc, newgc2);
+                newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
+            }
+
+            Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
+                                    event.getJuggler(), event.getT());
+            Coordinate deltalc = Coordinate.sub(newlc,
+                                    event.getLocalCoordinate());
+            deltalc = Coordinate.truncate(deltalc, 1e-7);
+
+            if (flipx)
+                deltalc.x = -deltalc.x;
+
+            Coordinate oldlc = master.getLocalCoordinate();
+            master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
+
+            if (ladder instanceof EditLadderDiagram)
+                ((EditLadderDiagram)ladder).activeEventChanged();
+        }
+
+        if (position_active && dragging && mouse_moved) {
+            if (dragging_angle) {
+                double angle = Math.toRadians(position.getAngle());
+                double new_angle = Math.toDegrees(angle + deltaangle);
+                while (new_angle > 360.0)
+                    new_angle -= 360.0;
+                while (new_angle < 0.0)
+                    new_angle += 360.0;
+                position.setAngle(new_angle);
+            } else {
+                position.setCoordinate(getCurrentPosition());
+            }
+
+            dragging_xy = dragging_z = dragging_angle = false;
+            deltaangle = 0.0;
+
+            if (ladder instanceof EditLadderDiagram)
+                ((EditLadderDiagram)ladder).activePositionChanged();
+        }
+
+        if (!mouse_moved && !dragging && engine != null && engine.isAlive())
+            setPaused(!enginePaused);
+
+        dragging_camera = false;
+        dragging = false;
+        dragging_xy = dragging_z = dragging_angle = false;
+        deltax = deltay = 0;
+        deltaangle = 0.0;
+        repaint();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent me) {
+        lastenter = me.getWhen();
+        if (jc.mousePause && !writingGIF)
+            setPaused(waspaused);
+        outside = false;
+        outside_valid = true;
+    }
+
+    @Override
+    public void mouseExited(MouseEvent me) {
+        if (jc.mousePause && !writingGIF) {
+            waspaused = isPaused();
+            setPaused(true);
+        }
+        outside = true;
+        outside_valid = true;
+    }
+
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseMotionListener methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void mouseDragged(MouseEvent me) {
+        if (!engineAnimating)
+            return;
+        if (writingGIF)
+            return;
+
+        if (dragging) {
+            int mx = me.getX();
+            int my = me.getY();
+
+            if (dragging_angle) {
+                // shift pixel coords of control point by mouse drag
+                double dcontrol[] = {
+                    start_control[0] + mx - startx,
+                    start_control[1] + my - starty
+                };
+
+                // re-express control point location in coordinate
+                // system of juggler:
+                //
+                // dcontrol_x = A * start_dx_x + B * start_dy_x;
+                // dcontrol_y = A * start_dx_y + B * start_dy_y;
+                //
+                // then (A, B) are coordinates of shifted control
+                // point, in juggler space
+
+                double det = start_dx[0] * start_dy[1] - start_dx[1] * start_dy[0];
+                double a = ( start_dy[1] * dcontrol[0] - start_dy[0] * dcontrol[1]) / det;
+                double b = (-start_dx[1] * dcontrol[0] + start_dx[0] * dcontrol[1]) / det;
+                deltaangle = -Math.atan2(-a, -b);
+
+                // snap the angle to the four cardinal directions
+                double angle = Math.toRadians(position.getAngle());
+                double new_angle = angle + deltaangle;
+                if (anglediff(new_angle) < snapangle / 2)
+                    deltaangle = -angle;
+                else if (anglediff(new_angle + 0.5 * Math.PI) < snapangle / 2)
+                    deltaangle = -angle - 0.5 * Math.PI;
+                else if (anglediff(new_angle + Math.PI) < snapangle / 2)
+                    deltaangle = -angle + Math.PI;
+                else if (anglediff(new_angle + 1.5 * Math.PI) < snapangle / 2)
+                    deltaangle = -angle + 0.5 * Math.PI;
+            } else if (dragging_z) {
+                deltax = 0;
+                deltay = my - starty;
+                getCurrentPosition();
+            } else {
+                deltax = mx - startx;
+                deltay = my - starty;
+                getCurrentPosition();
+            }
+        } else if (!dragging_camera) {
+            dragging_camera = true;
+            lastx = startx;
+            lasty = starty;
+            dragcamangle = anim.getCameraAngle();
+        }
+
+        if (dragging_camera) {
+            int dx = me.getX() - lastx;
+            int dy = me.getY() - lasty;
+            lastx = me.getX();
+            lasty = me.getY();
+            double[] ca = dragcamangle;
+            ca[0] += (double)dx * 0.02;
+            ca[1] -= (double)dy * 0.02;
+            if (ca[1] < Math.toRadians(0.0001))
+                ca[1] = Math.toRadians(0.0001);
+            if (ca[1] > Math.toRadians(179.9999))
+                ca[1] = Math.toRadians(179.9999);
+            while (ca[0] < 0.0)
+                ca[0] += Math.toRadians(360.0);
+            while (ca[0] >= Math.toRadians(360.0))
+                ca[0] -= Math.toRadians(360.0);
+
+            anim.setCameraAngle(snapCamera(ca));
+        }
+
+        if (event_active && dragging_camera)
+            createEventView();
+        if (position_active && (dragging_camera || dragging_angle))
+            createPositionView();
+        if (isPaused())
+            repaint();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {}
+
+    //-------------------------------------------------------------------------
+    // AnimationPanel methods
+    //-------------------------------------------------------------------------
+
     @Override
     protected void initHandlers() {
-        final JMLPattern fpat = anim.pat;
-
-        addMouseListener(new MouseAdapter() {
-            long lastpress = 0L;
-            long lastenter = 1L;
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-                lastpress = me.getWhen();
-
-                // The following (and the equivalent in mouseReleased()) is a hack to swallow
-                // a mouseclick when the browser stops reporting enter/exit events because the
-                // user has clicked on something else.  The system reports simultaneous enter/press
-                // events when the user mouses down in the component; we want to swallow this as a
-                // click, and just use it to get focus back.
-                if (jc.mousePause && lastpress == lastenter)
-                    return;
-
-                if (!engineAnimating)
-                    return;
-                if (writingGIF)
-                    return;
-
-                startx = me.getX();
-                starty = me.getY();
-
-                if (event_active) {
-                    int mx = me.getX();
-                    int my = me.getY();
-
-                    for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-                        int t = i * getSize().width / 2;
-                        if (mx >= (event_box[i][0] + t) && mx <= (event_box[i][2] + t) &&
-                                    my >= event_box[i][1] && my <= event_box[i][3]) {
-                            dragging = true;
-                            dragging_left = (i == 0);
-                            deltax = deltay = 0;
-                            repaint();
-                            return;
-                        }
-                    }
-                }
-
-                if (position_active) {
-                    int mx = me.getX();
-                    int my = me.getY();
-
-                    for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-                        int t = i * getSize().width / 2;
-                        dragging_z = JLFunc.isNearLine(mx - t, my,
-                                            (int)Math.round(pos_points[i][4][0]),
-                                            (int)Math.round(pos_points[i][4][1]),
-                                            (int)Math.round(pos_points[i][6][0]),
-                                            (int)Math.round(pos_points[i][6][1]),
-                                            7);
-
-                        if (dragging_z) {
-                            dragging = true;
-                            dragging_left = (i == 0);
-                            deltax = deltay = 0;
-                            repaint();
-                            return;
-                        }
-
-                        dragging_xy = isInsidePolygon(mx - t, my, i, face_xy);
-
-                        if (dragging_xy) {
-                            dragging = true;
-                            dragging_left = (i == 0);
-                            deltax = deltay = 0;
-                            repaint();
-                            return;
-                        }
-
-                        int dmx = mx - t - (int)Math.round(pos_points[i][5][0]);
-                        int dmy = my - (int)Math.round(pos_points[i][5][1]);
-                        dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
-
-                        if (dragging_angle) {
-                            dragging = true;
-                            dragging_left = (i == 0);
-                            deltax = deltay = 0;
-
-                            // record pixel coordinates of x and y unit vectors
-                            // in juggler's frame, at start of angle drag
-                            start_dx = new double[] {
-                                pos_points[i][11][0] - pos_points[i][4][0],
-                                pos_points[i][11][1] - pos_points[i][4][1]
-                            };
-                            start_dy = new double[] {
-                                pos_points[i][12][0] - pos_points[i][4][0],
-                                pos_points[i][12][1] - pos_points[i][4][1]
-                            };
-                            start_control = new double[] {
-                                pos_points[i][5][0] - pos_points[i][4][0],
-                                pos_points[i][5][1] - pos_points[i][4][1]
-                            };
-
-                            repaint();
-                            return;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-                if (jc.mousePause && lastpress == lastenter)
-                    return;
-                if (writingGIF)
-                    return;
-                if (!engineAnimating && engine != null && engine.isAlive()) {
-                    setPaused(!enginePaused);
-                    return;
-                }
-
-                boolean mouse_moved = (me.getX() != startx) || (me.getY() != starty);
-
-                if (event_active && dragging && mouse_moved) {
-                    JMLEvent master = (event.isMaster() ? event : event.getMaster());
-                    boolean flipx = (event.getHand() != master.getHand());
-
-                    Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
-                            event.getGlobalCoordinate(), deltax, deltay);
-                    if (jc.stereo) {
-                        // average the coordinate shifts from each perspective
-                        Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
-                                event.getGlobalCoordinate(), deltax, deltay);
-                        newgc = Coordinate.add(newgc, newgc2);
-                        newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
-                    }
-
-                    Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
-                                            event.getJuggler(), event.getT());
-                    Coordinate deltalc = Coordinate.sub(newlc,
-                                            event.getLocalCoordinate());
-                    deltalc = Coordinate.truncate(deltalc, 1e-7);
-
-                    if (flipx)
-                        deltalc.x = -deltalc.x;
-
-                    Coordinate oldlc = master.getLocalCoordinate();
-                    master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
-
-                    if (ladder instanceof EditLadderDiagram)
-                        ((EditLadderDiagram)ladder).activeEventChanged();
-                }
-
-                if (position_active && dragging && mouse_moved) {
-                    if (dragging_angle) {
-                        double angle = Math.toRadians(position.getAngle());
-                        double new_angle = Math.toDegrees(angle + deltaangle);
-                        while (new_angle > 360.0)
-                            new_angle -= 360.0;
-                        while (new_angle < 0.0)
-                            new_angle += 360.0;
-                        position.setAngle(new_angle);
-                    } else {
-                        position.setCoordinate(getCurrentPosition());
-                    }
-
-                    dragging_xy = dragging_z = dragging_angle = false;
-                    deltaangle = 0.0;
-
-                    if (ladder instanceof EditLadderDiagram)
-                        ((EditLadderDiagram)ladder).activePositionChanged();
-                }
-
-                if (!mouse_moved && !dragging && engine != null && engine.isAlive())
-                    setPaused(!enginePaused);
-
-                dragging_camera = false;
-                dragging = false;
-                dragging_xy = dragging_z = dragging_angle = false;
-                deltax = deltay = 0;
-                deltaangle = 0.0;
-                repaint();
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-                lastenter = me.getWhen();
-                if (jc.mousePause && !writingGIF)
-                    setPaused(waspaused);
-                outside = false;
-                outside_valid = true;
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-                if (jc.mousePause && !writingGIF) {
-                    waspaused = isPaused();
-                    setPaused(true);
-                }
-                outside = true;
-                outside_valid = true;
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent me) {
-                if (!engineAnimating)
-                    return;
-                if (writingGIF)
-                    return;
-
-                if (dragging) {
-                    int mx = me.getX();
-                    int my = me.getY();
-
-                    if (dragging_angle) {
-                        // shift pixel coords of control point by mouse drag
-                        double dcontrol[] = {
-                            start_control[0] + mx - startx,
-                            start_control[1] + my - starty
-                        };
-
-                        // re-express control point location in coordinate
-                        // system of juggler:
-                        //
-                        // dcontrol_x = A * start_dx_x + B * start_dy_x;
-                        // dcontrol_y = A * start_dx_y + B * start_dy_y;
-                        //
-                        // then (A, B) are coordinates of shifted control
-                        // point, in juggler space
-
-                        double det = start_dx[0] * start_dy[1] - start_dx[1] * start_dy[0];
-                        double a = ( start_dy[1] * dcontrol[0] - start_dy[0] * dcontrol[1]) / det;
-                        double b = (-start_dx[1] * dcontrol[0] + start_dx[0] * dcontrol[1]) / det;
-                        deltaangle = -Math.atan2(-a, -b);
-
-                        // snap the angle to the four cardinal directions
-                        double angle = Math.toRadians(position.getAngle());
-                        double new_angle = angle + deltaangle;
-                        if (anglediff(new_angle) < snapangle / 2)
-                            deltaangle = -angle;
-                        else if (anglediff(new_angle + 0.5 * Math.PI) < snapangle / 2)
-                            deltaangle = -angle - 0.5 * Math.PI;
-                        else if (anglediff(new_angle + Math.PI) < snapangle / 2)
-                            deltaangle = -angle + Math.PI;
-                        else if (anglediff(new_angle + 1.5 * Math.PI) < snapangle / 2)
-                            deltaangle = -angle + 0.5 * Math.PI;
-                    } else if (dragging_z) {
-                        deltax = 0;
-                        deltay = my - starty;
-                        getCurrentPosition();
-                    } else {
-                        deltax = mx - startx;
-                        deltay = my - starty;
-                        getCurrentPosition();
-                    }
-                } else if (!dragging_camera) {
-                    dragging_camera = true;
-                    lastx = startx;
-                    lasty = starty;
-                    dragcamangle = anim.getCameraAngle();
-                }
-
-                if (dragging_camera) {
-                    int dx = me.getX() - lastx;
-                    int dy = me.getY() - lasty;
-                    lastx = me.getX();
-                    lasty = me.getY();
-                    double[] ca = dragcamangle;
-                    ca[0] += (double)dx * 0.02;
-                    ca[1] -= (double)dy * 0.02;
-                    if (ca[1] < Math.toRadians(0.0001))
-                        ca[1] = Math.toRadians(0.0001);
-                    if (ca[1] > Math.toRadians(179.9999))
-                        ca[1] = Math.toRadians(179.9999);
-                    while (ca[0] < 0.0)
-                        ca[0] += Math.toRadians(360.0);
-                    while (ca[0] >= Math.toRadians(360.0))
-                        ca[0] -= Math.toRadians(360.0);
-
-                    anim.setCameraAngle(snapCamera(ca));
-                }
-
-                if (event_active && dragging_camera)
-                    createEventView();
-                if (position_active && (dragging_camera || dragging_angle))
-                    createPositionView();
-                if (isPaused())
-                    repaint();
-            }
-        });
+        addMouseListener(this);
+        addMouseMotionListener(this);
 
         addComponentListener(new ComponentAdapter() {
             boolean hasResized = false;
@@ -432,10 +452,6 @@ public class AnimationEditPanel extends AnimationPanel {
             createEventView();
         if (position_active)
             createPositionView();
-    }
-
-    public void setLadderDiagram(LadderDiagram lad) {
-        ladder = lad;
     }
 
     // set position of tracker bar in ladder diagram as we animate
@@ -652,6 +668,9 @@ public class AnimationEditPanel extends AnimationPanel {
             c.y += a * Math.sin(angle) + b * Math.cos(angle);
 
             // Snap to selected grid lines
+
+            if (getCameraAngle()[1] > Math.toRadians(70.0))
+                return c;  // don't snap if grid isn't showing
 
             boolean snapped = false;
             double oldcx = c.x;
