@@ -214,43 +214,54 @@ public class EditLadderDiagram extends LadderDiagram implements
                     animator.activatePosition(active_positionitem.position);
                 animator.repaint();
             }
+
             makePopupMenu(popupitem).show(EditLadderDiagram.this, me.getX(), me.getY());
         } else {
             switch (gui_state) {
                 case STATE_INACTIVE:
+                    LadderEventItem old_eventitem = active_eventitem;
                     active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
+
+                    if (old_eventitem != null && active_eventitem == old_eventitem) {
+                        // selecting twice de-selects
+                        active_eventitem = null;
+                        if (animator != null)
+                            animator.deactivateEvent();
+                        break;
+                    }
 
                     if (active_eventitem != null) {
                         gui_state = STATE_MOVING_EVENT;
                         active_positionitem = null;
                         start_y = me.getY();
                         findEventLimits(active_eventitem);
-                        repaint();
-                        if (animator != null) {
+                        if (animator != null)
                             animator.activateEvent(active_eventitem.event);
-                            animator.repaint();
-                        }
                         break;
                     }
 
+                    LadderPositionItem old_positionitem = active_positionitem;
                     active_positionitem = getSelectedLadderPosition(me.getX(), me.getY());
+
+                    if (old_positionitem != null && active_positionitem == old_positionitem) {
+                        active_positionitem = null;
+                        if (animator != null)
+                            animator.deactivatePosition();
+                        break;
+                    }
 
                     if (active_positionitem != null) {
                         gui_state = STATE_MOVING_POSITION;
                         active_eventitem = null;
                         start_y = me.getY();
                         findPositionLimits(active_positionitem);
-                        repaint();
-                        if (animator != null) {
+                        if (animator != null)
                             animator.activatePosition(active_positionitem.position);
-                            animator.repaint();
-                        }
                         break;
                     }
 
                     gui_state = STATE_MOVING_TRACKER;
                     tracker_y = my;
-                    repaint();
                     if (animator != null) {
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                         (double)(height - 2 * border_top);
@@ -260,7 +271,6 @@ public class EditLadderDiagram extends LadderDiagram implements
                         animator.setTime(newtime);
                         animator.deactivateEvent();
                         animator.deactivatePosition();
-                        animator.repaint();
                     }
                     break;
                 case STATE_MOVING_EVENT:
@@ -280,6 +290,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                     finishPopup();
                     break;
             }
+
+            repaint();
+            if (animator != null)
+                animator.repaint();
         }
     }
 
@@ -883,6 +897,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         } else {  // LadderPathItem
             if (Arrays.asList(
                                 "removeevent",
+                                "removeposition",
                                 "definethrow",
                                 "changetocatch",
                                 "changetosoftcatch",

@@ -164,6 +164,21 @@ public class JLFunc {
         return Integer.compare(components1.length, components2.length);
     }
 
+    // Check if point (x, y) is near a line segment connecting (x1, y1) and
+    // (x2, y2). "Near" means shortest distance is less than `slop`.
+    public static boolean isNearLine(int x, int y,
+                                int x1, int y1, int x2, int y2, int slop) {
+        if (x < (Math.min(x1, x2) - slop) || x > (Math.max(x1, x2) + slop))
+            return false;
+        if (y < (Math.min(y1, y2) - slop) || y > (Math.max(y1, y2) + slop))
+            return false;
+
+        double d = (x2 - x1)*(y - y1) - (x - x1)*(y2 - y1);
+        d = Math.abs(d) / Math.sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+
+        return (int)d <= slop;
+    }
+
     //-------------------------------------------------------------------------
     // Helpers for GridBagLayout
     //-------------------------------------------------------------------------
