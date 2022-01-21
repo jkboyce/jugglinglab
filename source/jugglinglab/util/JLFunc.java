@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ResourceBundle;
@@ -19,8 +20,8 @@ import jugglinglab.JugglingLab;
 // Some useful functions
 
 public class JLFunc {
+    static final ResourceBundle guistrings = JugglingLab.guistrings;
     static final ResourceBundle errorstrings = JugglingLab.errorstrings;
-
 
     // Binomial coefficient (a choose b)
     public static int binomial(int a, int b) {
@@ -163,6 +164,21 @@ public class JLFunc {
         return Integer.compare(components1.length, components2.length);
     }
 
+    // Check if point (x, y) is near a line segment connecting (x1, y1) and
+    // (x2, y2). "Near" means shortest distance is less than `slop`.
+    public static boolean isNearLine(int x, int y,
+                                int x1, int y1, int x2, int y2, int slop) {
+        if (x < (Math.min(x1, x2) - slop) || x > (Math.max(x1, x2) + slop))
+            return false;
+        if (y < (Math.min(y1, y2) - slop) || y > (Math.max(y1, y2) + slop))
+            return false;
+
+        double d = (x2 - x1)*(y - y1) - (x - x1)*(y2 - y1);
+        d = Math.abs(d) / Math.sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+
+        return (int)d <= slop;
+    }
+
     //-------------------------------------------------------------------------
     // Helpers for GridBagLayout
     //-------------------------------------------------------------------------
@@ -200,10 +216,13 @@ public class JLFunc {
                     File f = getSelectedFile();
 
                     if (f.exists() && getDialogType() == SAVE_DIALOG) {
-                        int result = JOptionPane.showConfirmDialog(this,
-                                "\"" + f.getName() +"\" already exists.\nDo you want to replace it?",
-                                "Existing file",
-                                JOptionPane.YES_NO_CANCEL_OPTION);
+                        String template = guistrings.getString("JFC_File_exists_message");
+                        Object[] arguments = { f.getName() };
+                        String msg = MessageFormat.format(template, arguments);
+                        String title = guistrings.getString("JFC_File_exists_title");
+
+                        int result = JOptionPane.showConfirmDialog(this, msg, title,
+                                        JOptionPane.YES_NO_CANCEL_OPTION);
                         switch (result) {
                             case JOptionPane.YES_OPTION:
                                 super.approveSelection();
