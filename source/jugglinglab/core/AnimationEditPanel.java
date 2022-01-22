@@ -16,8 +16,8 @@ import jugglinglab.renderer.Renderer;
 
 
 // This subclass of AnimationPanel is used by Edit view. It adds functionality
-// for interacting with on-screen representations of JML events, and for
-// interacting with a ladder diagram.
+// for interacting with on-screen representations of JML events and positions,
+// and for interacting with a ladder diagram.
 
 public class AnimationEditPanel extends AnimationPanel
                                 implements MouseListener, MouseMotionListener {
@@ -72,11 +72,12 @@ public class AnimationEditPanel extends AnimationPanel
     public void mousePressed(MouseEvent me) {
         lastpress = me.getWhen();
 
-        // The following (and the equivalent in mouseReleased()) is a hack to swallow
-        // a mouseclick when the browser stops reporting enter/exit events because the
-        // user has clicked on something else.  The system reports simultaneous enter/press
-        // events when the user mouses down in the component; we want to swallow this as a
-        // click, and just use it to get focus back.
+        // The following (and its equivalent in mouseReleased()) is a hack to
+        // swallow a mouseclick when the browser stops reporting enter/exit
+        // events because the user has clicked on something else. The system
+        // reports simultaneous enter/press events when the user mouses down in
+        // the component; we want to not treat this as a click, but just use it
+        // to get focus back.
         if (jc.mousePause && lastpress == lastenter)
             return;
 

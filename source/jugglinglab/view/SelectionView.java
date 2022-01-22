@@ -15,10 +15,10 @@ import jugglinglab.util.*;
 
 
 public class SelectionView extends View {
-    protected static final int rows = 3;
-    protected static final int columns = 3;
-    protected static final int count = rows * columns;
-    protected static final int center = (count - 1) / 2;
+    protected static final int ROWS = 3;
+    protected static final int COLUMNS = 3;
+    protected static final int COUNT = ROWS * COLUMNS;
+    protected static final int CENTER = (COUNT - 1) / 2;
 
     protected AnimationPanel[] ja;
     protected JLayeredPane layered;
@@ -27,8 +27,8 @@ public class SelectionView extends View {
 
 
     public SelectionView(Dimension dim) {
-        ja = new AnimationPanel[count];
-        for (int i = 0; i < count; i++)
+        ja = new AnimationPanel[COUNT];
+        for (int i = 0; i < COUNT; i++)
             ja[i] = new AnimationPanel();
 
         // JLayeredPane on the left so we can show a grid of animations with
@@ -63,9 +63,9 @@ public class SelectionView extends View {
     }
 
     protected JPanel makeAnimationGrid() {
-        JPanel grid = new JPanel(new GridLayout(rows, columns));
+        JPanel grid = new JPanel(new GridLayout(ROWS, COLUMNS));
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < COUNT; i++)
             grid.add(ja[i]);
 
         grid.addMouseListener(new MouseAdapter() {
@@ -76,16 +76,16 @@ public class SelectionView extends View {
             public void mouseReleased(MouseEvent me) {
                 Component c = me.getComponent();
                 int num;
-                for (num = 0; num < count; num++) {
+                for (num = 0; num < COUNT; num++) {
                     if (c == SelectionView.this.ja[num])
                         break;
                 }
-                if (num == count)
+                if (num == COUNT)
                     return;
                 try {
                     SelectionView.this.restartView(ja[num].getPattern(), null);
-                    if (num != center)
-                        addToUndoList(ja[center].getPattern());
+                    if (num != CENTER)
+                        addToUndoList(ja[CENTER].getPattern());
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
@@ -102,14 +102,14 @@ public class SelectionView extends View {
             public void mouseDragged(MouseEvent me) {
                 Component c = me.getComponent();
                 int num;
-                for (num = 0; num < count; num++) {
+                for (num = 0; num < COUNT; num++) {
                     if (c == SelectionView.this.ja[num])
                         break;
                 }
-                if (num == count)
+                if (num == COUNT)
                     return;
                 double[] ca = ja[num].getCameraAngle();
-                for (int i = 0; i < count; i++) {
+                for (int i = 0; i < COUNT; i++) {
                     if (i != num)
                         ja[i].setCameraAngle(ca);
                 }
@@ -124,10 +124,10 @@ public class SelectionView extends View {
             @Override
             public void paintComponent(Graphics g) {
                 Dimension d = getSize();
-                int xleft = (d.width * ((columns - 1) / 2)) / columns;
-                int ytop = (d.height * ((rows - 1) / 2)) / rows;
-                int width = d.width / columns;
-                int height = d.height / rows;
+                int xleft = (d.width * ((COLUMNS - 1) / 2)) / COLUMNS;
+                int ytop = (d.height * ((ROWS - 1) / 2)) / ROWS;
+                int width = d.width / COLUMNS;
+                int height = d.height / ROWS;
 
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT,
@@ -162,8 +162,8 @@ public class SelectionView extends View {
         });
 
         // ensure the entire grid fits on the screen, rescaling if needed
-        int pref_width = columns * d.width;
-        int pref_height = rows * d.height;
+        int pref_width = COLUMNS * d.width;
+        int pref_height = ROWS * d.height;
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int max_width = screenSize.width - 300;    // allocation for controls etc.
@@ -196,9 +196,9 @@ public class SelectionView extends View {
             newjc.startPause = false;
         }
 
-        ja[center].restartJuggle(p, newjc);
-        for (int i = 0; i < count; i++) {
-            if (i != center) {
+        ja[CENTER].restartJuggle(p, newjc);
+        for (int i = 0; i < COUNT; i++) {
+            if (i != CENTER) {
                 JMLPattern newp = (p == null ? null : mutator.mutatePattern(p));
                 ja[i].restartJuggle(newp, newjc);
             }
@@ -212,13 +212,13 @@ public class SelectionView extends View {
 
     @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < COUNT; i++)
             ja[i].restartJuggle();
     }
 
     @Override
     public Dimension getAnimationPanelSize() {
-        return ja[center].getSize(new Dimension());
+        return ja[CENTER].getSize(new Dimension());
     }
 
     @Override
@@ -228,14 +228,14 @@ public class SelectionView extends View {
         // individual animation panels. So we go the other direction: set a
         // preferred size for the overall JLayeredPane, which gets propagated to
         // the grid (and the individual animations) by the ComponentListener above.
-        int width = columns * d.width;
-        int height = rows * d.height;
+        int width = COLUMNS * d.width;
+        int height = ROWS * d.height;
         layered.setPreferredSize(new Dimension(width, height));
     }
 
     @Override
     public JMLPattern getPattern() {
-        return ja[center].getPattern();
+        return ja[CENTER].getPattern();
     }
 
     @Override
@@ -245,37 +245,37 @@ public class SelectionView extends View {
 
     @Override
     public double getZoomLevel() {
-        return ja[center].getZoomLevel();
+        return ja[CENTER].getZoomLevel();
     }
 
     @Override
     public void setZoomLevel(double z) {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < COUNT; i++)
             ja[i].setZoomLevel(z);
     }
 
 
     @Override
     public boolean isPaused() {
-        return ja[center].isPaused();
+        return ja[CENTER].isPaused();
     }
 
     @Override
     public void setPaused(boolean pause) {
-        if (ja[center].message == null)
-            for (int i = 0; i < count; i++)
+        if (ja[CENTER].message == null)
+            for (int i = 0; i < COUNT; i++)
                 ja[i].setPaused(pause);
     }
 
     @Override
     public void disposeView() {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < COUNT; i++)
             ja[i].disposeAnimation();
     }
 
     @Override
     public void writeGIF(File f) {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < COUNT; i++)
             ja[i].writingGIF = true;
         boolean origpause = isPaused();
         setPaused(true);
@@ -284,11 +284,11 @@ public class SelectionView extends View {
             @Override
             public void run() {
                 setPaused(origpause);
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < COUNT; i++)
                     ja[i].writingGIF = false;
             }
         };
 
-        new View.GIFWriter(ja[center], f, cleanup);
+        new View.GIFWriter(ja[CENTER], f, cleanup);
     }
 }
