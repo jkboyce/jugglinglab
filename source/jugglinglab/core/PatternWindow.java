@@ -27,13 +27,15 @@ import jugglinglab.view.*;
 public class PatternWindow extends JFrame implements ActionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+    static protected final double MAX_ZOOM = 3;
+    static protected final double MIN_ZOOM = 0.25;
+    static protected final double ZOOM_PER_STEP = 1.1;
     static protected boolean exit_on_last_close;
 
     // used for tiling the animation windows on the screen as they're created
     static protected final int NUM_TILES = 8;
     static protected final Point TILE_START = new Point(420, 50);
     static protected final Point TILE_OFFSET = new Point(25, 25);
-    static protected final double ZOOM_PER_STEP = 1.1;
     static protected Point[] tile_locations;
     static protected int next_tile_num;
 
@@ -863,12 +865,12 @@ public class PatternWindow extends JFrame implements ActionListener {
                 break;
 
             case VIEW_ZOOMIN:
-                if (view != null && view.getZoomLevel() < (3 / ZOOM_PER_STEP))
+                if (view != null && view.getZoomLevel() < (MAX_ZOOM / ZOOM_PER_STEP))
                     view.setZoomLevel(ZOOM_PER_STEP * view.getZoomLevel());
                 break;
 
             case VIEW_ZOOMOUT:
-                if (view != null && view.getZoomLevel() > (0.3 * ZOOM_PER_STEP))
+                if (view != null && view.getZoomLevel() > (MIN_ZOOM * ZOOM_PER_STEP))
                     view.setZoomLevel(view.getZoomLevel() / ZOOM_PER_STEP);
                 break;
 

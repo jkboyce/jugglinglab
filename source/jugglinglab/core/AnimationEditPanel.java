@@ -116,7 +116,7 @@ public class AnimationEditPanel extends AnimationPanel
                                     (int)Math.round(pos_points[i][4][1]),
                                     (int)Math.round(pos_points[i][6][0]),
                                     (int)Math.round(pos_points[i][6][1]),
-                                    7);
+                                    4);
 
                 if (dragging_z) {
                     dragging = true;
@@ -814,7 +814,8 @@ public class AnimationEditPanel extends AnimationPanel
                                );
                     int message_y = (int)Math.round(y) + deltay + 40;
 
-                    g2.drawString("z = " + JLFunc.toStringRounded(z, 1),
+                    g2.setColor(Color.black);
+                    g2.drawString("z = " + JLFunc.toStringRounded(z, 1) + " cm",
                                 xy_projection[0] + 5, message_y);
                 }
             }
