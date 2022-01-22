@@ -21,11 +21,11 @@ import jugglinglab.renderer.Renderer;
 
 public class AnimationEditPanel extends AnimationPanel
                                 implements MouseListener, MouseMotionListener {
-    public static final double event_box_hw_cm = 5.0;
-    public static final double position_box_hw_cm = 10.0;
-    public static final double position_box_z_cm = 0.0;
-    public static final double xy_grid_spacing_cm = 20.0;
-    public static final double xyz_grid_snap_cm = 3.0;
+    public static final double EVENT_BOX_HW_CM = 5;
+    public static final double POSITION_BOX_HW_CM = 10;
+    public static final double POSITION_BOX_Z_CM = 0;
+    public static final double XY_GRID_SPACING_CM = 20;
+    public static final double XYZ_GRID_SNAP_CM = 3;
 
     protected LadderDiagram ladder;
 
@@ -484,6 +484,7 @@ public class AnimationEditPanel extends AnimationPanel
     }
 
     public void deactivateEvent() {
+        event = null;
         event_active = false;
     }
 
@@ -500,7 +501,7 @@ public class AnimationEditPanel extends AnimationPanel
             Coordinate c = event.getGlobalCoordinate();
             Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
             double dl = Coordinate.distance(c, c2);
-            int boxhw = (int)Math.round(event_box_hw_cm / dl);  // in pixels
+            int boxhw = (int)Math.round(EVENT_BOX_HW_CM / dl);  // in pixels
 
             int[] center = ren.getXY(c);
             event_box[i][0] = center[0] - boxhw;
@@ -560,6 +561,7 @@ public class AnimationEditPanel extends AnimationPanel
     }
 
     public void deactivatePosition() {
+        position = null;
         position_active = false;
         dragging_xy = dragging_z = dragging_angle = false;
     }
@@ -569,10 +571,10 @@ public class AnimationEditPanel extends AnimationPanel
     protected static final double[][] pos_control_points =
         {
             // corners of square representing xy movement control
-            { -position_box_hw_cm, -position_box_hw_cm,  0 },
-            { -position_box_hw_cm,  position_box_hw_cm,  0 },
-            {  position_box_hw_cm,  position_box_hw_cm,  0 },
-            {  position_box_hw_cm, -position_box_hw_cm,  0 },
+            { -POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM,  0 },
+            { -POSITION_BOX_HW_CM,  POSITION_BOX_HW_CM,  0 },
+            {  POSITION_BOX_HW_CM,  POSITION_BOX_HW_CM,  0 },
+            {  POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM,  0 },
 
             {  0,    0,   0 },  // center
             {  0,  -20,   0 },  // angle control point
@@ -602,7 +604,7 @@ public class AnimationEditPanel extends AnimationPanel
 
             // translate by one pixel and see how far it is in juggler space
             Coordinate c = Coordinate.add(position.getCoordinate(),
-                                    new Coordinate(0, 0, position_box_z_cm));
+                                    new Coordinate(0, 0, POSITION_BOX_Z_CM));
             Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
             double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
@@ -686,15 +688,15 @@ public class AnimationEditPanel extends AnimationPanel
             double oldcx = c.x;
             double oldcy = c.y;
 
-            double closest_grid = xy_grid_spacing_cm *
-                                        Math.round(c.x / xy_grid_spacing_cm);
-            if (Math.abs(c.x - closest_grid) < xyz_grid_snap_cm) {
+            double closest_grid = XY_GRID_SPACING_CM *
+                                        Math.round(c.x / XY_GRID_SPACING_CM);
+            if (Math.abs(c.x - closest_grid) < XYZ_GRID_SNAP_CM) {
                 c.x = closest_grid;
                 snapped = true;
             }
-            closest_grid = xy_grid_spacing_cm *
-                                        Math.round(c.y / xy_grid_spacing_cm);
-            if (Math.abs(c.y - closest_grid) < xyz_grid_snap_cm) {
+            closest_grid = XY_GRID_SPACING_CM *
+                                        Math.round(c.y / XY_GRID_SPACING_CM);
+            if (Math.abs(c.y - closest_grid) < XYZ_GRID_SNAP_CM) {
                 c.y = closest_grid;
                 snapped = true;
             }
@@ -717,7 +719,7 @@ public class AnimationEditPanel extends AnimationPanel
         if (dragging_z) {
             c.z += deltay / dz[1];
 
-            if (Math.abs(c.z - 100) < xyz_grid_snap_cm) {
+            if (Math.abs(c.z - 100) < XYZ_GRID_SNAP_CM) {
                 deltay += (int)Math.round(dz[1] * (100 - c.z));
                 c.z = 100;
             }
@@ -864,12 +866,12 @@ public class AnimationEditPanel extends AnimationPanel
             int[] dx = ren.getXY(new Coordinate(100,   0,   0));
             int[] dy = ren.getXY(new Coordinate(  0, 100,   0));
             double[] xaxis_spacing = {
-                xy_grid_spacing_cm * ((double)(dx[0] - center[0]) / 100.0),
-                xy_grid_spacing_cm * ((double)(dx[1] - center[1]) / 100.0)
+                XY_GRID_SPACING_CM * ((double)(dx[0] - center[0]) / 100.0),
+                XY_GRID_SPACING_CM * ((double)(dx[1] - center[1]) / 100.0)
             };
             double[] yaxis_spacing = {
-                xy_grid_spacing_cm * ((double)(dy[0] - center[0]) / 100.0),
-                xy_grid_spacing_cm * ((double)(dy[1] - center[1]) / 100.0)
+                XY_GRID_SPACING_CM * ((double)(dy[0] - center[0]) / 100.0),
+                XY_GRID_SPACING_CM * ((double)(dy[1] - center[1]) / 100.0)
             };
 
             double[] axis1 = xaxis_spacing;

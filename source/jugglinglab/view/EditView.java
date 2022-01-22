@@ -147,8 +147,7 @@ public class EditView extends View {
     @Override
     public void writeGIF(File f) {
         jae.writingGIF = true;
-        jae.deactivateEvent();  // so we don't draw event box in animated GIF
-        jae.deactivatePosition();
+
         boolean origpause = isPaused();
         setPaused(true);
 
