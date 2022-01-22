@@ -111,6 +111,9 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     protected void createInitialView(JMLPattern pat, AnimationPrefs jc) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
+        if (jc == null)
+            jc = new AnimationPrefs();
+
         int mode = View.VIEW_EDIT;
         if (jc.view != View.VIEW_NONE)
             mode = jc.view;
