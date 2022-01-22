@@ -474,8 +474,10 @@ public class AnimationPanel extends JPanel implements Runnable {
     }
 
     public void setZoomLevel(double z) {
-        if (!writingGIF)
+        if (!writingGIF) {
             getAnimator().setZoomLevel(z);
+            repaint();
+        }
     }
 
     public void disposeAnimation() {

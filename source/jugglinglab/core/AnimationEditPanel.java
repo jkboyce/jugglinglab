@@ -468,6 +468,7 @@ public class AnimationEditPanel extends AnimationPanel
             getAnimator().setZoomLevel(z);
             createEventView();
             createPositionView();
+            repaint();
         }
     }
 
