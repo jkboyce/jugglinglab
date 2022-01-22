@@ -3,7 +3,7 @@
 
 #define MyAppName "Juggling Lab"
 #define MyOutputFileName "JugglingLab"
-#define MyAppVersion "1.5.3"
+#define MyAppVersion "1.6"
 #define MyAppYear "2022"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
@@ -31,8 +31,8 @@ DisableFinishedPage=Yes
 DisableWelcomePage=No
 ;Optional License
 LicenseFile=
-;Java 17 requires Windows 8 or above
-MinVersion=6.2
+;require Windows 7 SP1 or above
+MinVersion=0,6.1.7601
 OutputBaseFilename={#MyOutputFileName}-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes

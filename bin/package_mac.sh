@@ -3,7 +3,7 @@
 #
 # Juggling Lab macOS application packager
 #
-# Copyright 2021 by Jack Boyce and the Juggling Lab contributors
+# Copyright 2022 by Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
 #
 # -----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ cp -r ortools-lib/* target
 jpackage --type app-image \
    --input target/ \
    --name "Juggling Lab" \
-   --app-version "1.5.3" \
+   --app-version "1.6" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
    --resource-dir "../source/resources/package/macos/" \
@@ -63,7 +63,7 @@ codesign --remove-signature "Juggling Lab.app"
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
    --name "Juggling Lab" \
-   --app-version "1.5.3" \
+   --app-version "1.6" \
    --verbose
 
 find . -name "Juggling Lab*.dmg" -type f \
