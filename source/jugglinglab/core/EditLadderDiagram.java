@@ -51,6 +51,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected int gui_state = STATE_INACTIVE;  // one of STATE_x values above
     protected LadderEventItem active_eventitem;
     protected LadderPositionItem active_positionitem;
+    protected boolean item_was_selected;  // for detecting de-selecting clicks
     protected int start_y;
     protected int delta_y;
     protected int delta_y_min, delta_y_max;  // limits for dragging up/down
@@ -219,16 +220,12 @@ public class EditLadderDiagram extends LadderDiagram implements
         } else {
             switch (gui_state) {
                 case STATE_INACTIVE:
+                    item_was_selected = false;
+
                     LadderEventItem old_eventitem = active_eventitem;
                     active_eventitem = getSelectedLadderEvent(me.getX(), me.getY());
-
-                    if (old_eventitem != null && active_eventitem == old_eventitem) {
-                        // selecting twice de-selects
-                        active_eventitem = null;
-                        if (animator != null)
-                            animator.deactivateEvent();
-                        break;
-                    }
+                    if (old_eventitem != null && old_eventitem == active_eventitem)
+                        item_was_selected = true;
 
                     if (active_eventitem != null) {
                         gui_state = STATE_MOVING_EVENT;
@@ -242,13 +239,8 @@ public class EditLadderDiagram extends LadderDiagram implements
 
                     LadderPositionItem old_positionitem = active_positionitem;
                     active_positionitem = getSelectedLadderPosition(me.getX(), me.getY());
-
-                    if (old_positionitem != null && active_positionitem == old_positionitem) {
-                        active_positionitem = null;
-                        if (animator != null)
-                            animator.deactivatePosition();
-                        break;
-                    }
+                    if (old_positionitem != null && old_positionitem == active_positionitem)
+                        item_was_selected = true;
 
                     if (active_positionitem != null) {
                         gui_state = STATE_MOVING_POSITION;
@@ -372,6 +364,14 @@ public class EditLadderDiagram extends LadderDiagram implements
                         delta_y = 0;
                         activeEventChanged();
                         repaint();
+                    } else if (item_was_selected) {
+                        // clicked without moving --> deselect
+                        active_eventitem = null;
+                        if (animator != null) {
+                            animator.deactivateEvent();
+                            animator.repaint();
+                        }
+                        repaint();
                     }
                     break;
                 case STATE_MOVING_POSITION:
@@ -383,6 +383,13 @@ public class EditLadderDiagram extends LadderDiagram implements
 
                         delta_y = 0;
                         activePositionChanged();
+                        repaint();
+                    } else if (item_was_selected) {
+                        active_positionitem = null;
+                        if (animator != null) {
+                            animator.deactivatePosition();
+                            animator.repaint();
+                        }
                         repaint();
                     }
                     break;
