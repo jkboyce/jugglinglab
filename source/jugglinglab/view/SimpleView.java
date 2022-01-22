@@ -63,6 +63,16 @@ public class SimpleView extends View {
     }
 
     @Override
+    public double getZoomLevel() {
+        return ja.getZoomLevel();
+    }
+
+    @Override
+    public void setZoomLevel(double z) {
+        ja.setZoomLevel(z);
+    }
+
+    @Override
     public boolean isPaused() {
         return ja.isPaused();
     }

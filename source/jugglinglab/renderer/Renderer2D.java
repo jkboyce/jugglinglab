@@ -34,14 +34,16 @@ public class Renderer2D extends Renderer {
     protected Coordinate right;
     protected JLVector cameracenter;
     protected double[] cameraangle;
-    protected double cameradistance;
     protected JLMatrix m;
 
     protected int width;
     protected int height;
+    protected Rectangle viewport;
     protected JMLPattern pat;
 
-    protected double zoom;
+    protected double zoom;  // pixels/cm
+    protected double zoom_orig;  // pixels/cm at zoomfactor=1
+    protected double zoomfactor;  // multiplier of `zoom`
     protected int originx;
     protected int originz;
     protected int polysides;  // # sides in polygon for head
@@ -74,6 +76,7 @@ public class Renderer2D extends Renderer {
         tempc = new Coordinate();
         tempv1 = new JLVector();
         tempv2 = new JLVector();
+        zoomfactor = 1;
     }
 
     @Override
@@ -97,66 +100,86 @@ public class Renderer2D extends Renderer {
                             Coordinate overallmax, Coordinate overallmin) {
         width = dim.width;
         height = dim.height;
-        Rectangle r = new Rectangle(border, border, width - 2 * border, height - 2 * border);
+        viewport = new Rectangle(border, border, width - 2 * border, height - 2 * border);
 
         // Make some adjustments to the bounding box.
         Coordinate adjusted_max = new Coordinate(overallmax);
         Coordinate adjusted_min = new Coordinate(overallmin);
 
-        // make the x-coordinate origin at the center of the view
-        double maxabsx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
-        adjusted_min.x = -maxabsx;
-        adjusted_max.x = maxabsx;
+        final boolean ORIGINAL_ZOOM = true;
 
-        // Find the diameter (in centimeters) of the smallest cylinders that
-        // entirely contain the bounding box: One parallel to the z axis and
-        // another parallel to the x axis.
-        /*
-        double cm_diam = Coordinate.distance(adjusted_max, adjusted_min);
-        zoom = Math.min((double)r.width / cm_diam, (double)r.height / cm_diam);
-        */
-        double dx = adjusted_max.x - adjusted_min.x;
-        double dy = adjusted_max.y - adjusted_min.y;
-        double dz = adjusted_max.z - adjusted_min.z;
-        double dxy = Math.max(dx, dy);
+        if (ORIGINAL_ZOOM) {
+            // This is the zoom algorithm that has been in Juggling Lab for many
+            // years. It's a bit too zoomed-in for some patterns.
 
-        zoom = Math.min((double)r.width / Math.sqrt(dx * dx + dy * dy),
-                        (double)r.height / Math.sqrt(dxy * dxy + dz * dz));
-        /*
-        Coordinate temp = new Coordinate(adjusted_min);
-        temp.z = adjusted_max.z;
-        double cm_diam_z = Coordinate.distance(adjusted_max, temp);
-        temp = new Coordinate(adjusted_min);
-        temp.x = adjusted_max.x;
-        double cm_diam_x = Coordinate.distance(adjusted_max, temp);
-        zoom = Math.min((double)r.width / cm_diam_z, (double)r.height / cm_diam_x);
-        */
-        // Find `zoom`, `originx`, and `originz` values that keep the adjusted
-        // bounding box visible in the viewport.
-/*
-        double cm_width = adjusted_max.x - adjusted_min.x;
-        double cm_height = adjusted_max.z - adjusted_min.z;
-        zoom = Math.min((double)r.width / cm_width, (double)r.height / cm_height);
-*/
-        originx = r.x + (int)(0.5 + 0.5 * (r.width - zoom*(adjusted_max.x + adjusted_min.x)));
-        originz = r.y + (int)(0.5 + 0.5 * (r.height + zoom*(adjusted_max.z + adjusted_min.z)));
+            // We want to ensure everything stays visible as we rotate the camera
+            // viewpoint. The following is simple and seems to work ok.
+            if (pat.getNumberOfJugglers() == 1) {
+                adjusted_min.z -= 0.3 * Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
+                adjusted_max.z += 5.0;    // keeps objects from rubbing against top of window
+            } else {
+                double tempx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
+                double tempy = Math.max(Math.abs(adjusted_min.y), Math.abs(adjusted_max.y));
+                adjusted_min.z -= 0.4 * Math.max(tempx, tempy);
+                adjusted_max.z += 0.4 * Math.max(tempx, tempy);
+            }
 
-        // Set the pattern center vis-a-vis camera rotation
+            // make the x-coordinate origin at the center of the view
+            double maxabsx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
+            adjusted_min.x = -maxabsx;
+            adjusted_max.x = maxabsx;
 
-        cameradistance = 1000.0;
+            zoom_orig = Math.min((double)viewport.width / (adjusted_max.x - adjusted_min.x),
+                            (double)viewport.height / (adjusted_max.z - adjusted_min.z));
+        } else {
+            // NEW ALGORITHM
+
+            // make the x-coordinate origin at the center of the view
+            double maxabsx = Math.max(Math.abs(adjusted_min.x), Math.abs(adjusted_max.x));
+            adjusted_min.x = -maxabsx;
+            adjusted_max.x = maxabsx;
+
+            double dx = adjusted_max.x - adjusted_min.x;
+            double dy = adjusted_max.y - adjusted_min.y;
+            double dz = adjusted_max.z - adjusted_min.z;
+            double dxy = Math.max(dx, dy);
+
+            // Find `zoom` value that keeps the adjusted bounding box visible in
+            // the viewport
+            zoom_orig = Math.min((double)viewport.width / Math.sqrt(dx * dx + dy * dy),
+                            (double)viewport.height / Math.sqrt(dxy * dxy + dz * dz));
+        }
+
+        // Pattern center vis-a-vis camera rotation
         cameracenter = new JLVector(0.5 * (adjusted_max.x + adjusted_min.x),
                                     0.5 * (adjusted_max.z + adjusted_min.z),
                                     0.5 * (adjusted_max.y + adjusted_min.y));
-        setCameraAngle(cameraangle);  // sets camera position
+
+        setZoomLevel(getZoomLevel());  // calculate camera matrix etc.
 
         if (Constants.DEBUG_LAYOUT) {
             System.out.println("overallmax = " + overallmax);
             System.out.println("overallmin = " + overallmin);
             System.out.println("adjusted_max = " + adjusted_max);
             System.out.println("adjusted_min = " + adjusted_min);
-            //System.out.println("diam (cm) = " + cm_diam);
-            System.out.println("zoom (px/cm) = " + zoom);
+            System.out.println("zoom_orig (px/cm) = " + zoom_orig);
         }
+    }
+
+    @Override
+    public double getZoomLevel() {
+        return zoomfactor;
+    }
+
+    @Override
+    public void setZoomLevel(double z) {
+        zoomfactor = z;
+        zoom = zoom_orig * zoomfactor;
+
+        originx = viewport.x + (int)Math.round(0.5 * viewport.width - zoom * cameracenter.x);
+        originz = viewport.y + (int)Math.round(0.5 * viewport.height + zoom * cameracenter.y);
+
+        calculateCameraMatrix();
     }
 
     @Override
@@ -167,6 +190,10 @@ public class Renderer2D extends Renderer {
         if (cameracenter == null)
             return;
 
+        calculateCameraMatrix();
+    }
+
+    protected void calculateCameraMatrix() {
         m = JLMatrix.shiftMatrix(-cameracenter.x, -cameracenter.y, -cameracenter.z);
         m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraangle[0], 0.0));
         m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0.0, 0.0));
@@ -193,8 +220,8 @@ public class Renderer2D extends Renderer {
     protected int[] getXY(JLVector vec) {
         JLVector v = vec.transform(m);  // apply camera rotation
         int[] val = new int[2];
-        val[0] = (int)(v.x + 0.5);
-        val[1] = (int)(v.y + 0.5);
+        val[0] = (int)Math.round(v.x);
+        val[1] = (int)Math.round(v.y);
         return val;
     }
 
@@ -235,8 +262,8 @@ public class Renderer2D extends Renderer {
             if (!tempc.isValid())
                 tempc.setCoordinate(0.0, 0.0, 0.0);
             getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0]);
-            int x = (int)(0.5 + obj[index].coord[0].x);
-            int y = (int)(0.5 + obj[index].coord[0].y);
+            int x = (int)Math.round(obj[index].coord[0].x);
+            int y = (int)Math.round(obj[index].coord[0].y);
             Prop pr = pat.getProp(pnum[i-1]);
             if (pr.getProp2DImage(zoom, cameraangle) != null) {
                 Dimension center = pr.getProp2DCenter(zoom);
@@ -277,14 +304,14 @@ public class Renderer2D extends Renderer {
 
                 getXYZ(tempv1, obj[index].coord[0]);
                 getXYZ(tempv2, obj[index].coord[1]);
-                int x = Math.min((int)(0.5 + obj[index].coord[0].x),
-                                 (int)(0.5 + obj[index].coord[1].x));
-                int y = Math.min((int)(0.5 + obj[index].coord[0].y),
-                                 (int)(0.5 + obj[index].coord[1].y));
-                int width = Math.abs((int)(0.5 + obj[index].coord[0].x)
-                                     - (int)(0.5 + obj[index].coord[1].x)) + 1;
-                int height = Math.abs((int)(0.5 + obj[index].coord[0].y)
-                                      - (int)(0.5 + obj[index].coord[1].y)) + 1;
+                int x = Math.min((int)Math.round(obj[index].coord[0].x),
+                                 (int)Math.round(obj[index].coord[1].x));
+                int y = Math.min((int)Math.round(obj[index].coord[0].y),
+                                 (int)Math.round(obj[index].coord[1].y));
+                int width = Math.abs((int)Math.round(obj[index].coord[0].x)
+                                     - (int)Math.round(obj[index].coord[1].x)) + 1;
+                int height = Math.abs((int)Math.round(obj[index].coord[0].y)
+                                      - (int)Math.round(obj[index].coord[1].y)) + 1;
                 obj[index].boundingbox.x = x;
                 obj[index].boundingbox.y = y;
                 obj[index].boundingbox.width = width;
@@ -317,11 +344,11 @@ public class Renderer2D extends Renderer {
             getXYZ(jugglervec[i - 1][10], obj[index].coord[6]);   // right head bottom
             getXYZ(jugglervec[i - 1][11], obj[index].coord[7]);   // right head top
             int xmin, xmax, ymin, ymax;
-            xmin = xmax = (int)(0.5 + obj[index].coord[0].x);
-            ymin = ymax = (int)(0.5 + obj[index].coord[0].y);
+            xmin = xmax = (int)Math.round(obj[index].coord[0].x);
+            ymin = ymax = (int)Math.round(obj[index].coord[0].y);
             for (int j = 1; j < 8; j++) {
-                int x = (int)(0.5 + obj[index].coord[j].x);
-                int y = (int)(0.5 + obj[index].coord[j].y);
+                int x = (int)Math.round(obj[index].coord[j].x);
+                int y = (int)Math.round(obj[index].coord[j].y);
                 if (x < xmin) xmin = x;
                 if (x > xmax) xmax = x;
                 if (y < ymin) ymin = y;
@@ -341,14 +368,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i - 1][2+j], obj[index].coord[0]);  // entire arm
                     getXYZ(jugglervec[i - 1][0+j], obj[index].coord[1]);
-                    int x = Math.min((int)(0.5 + obj[index].coord[0].x),
-                                     (int)(0.5 + obj[index].coord[1].x));
-                    int y = Math.min((int)(0.5 + obj[index].coord[0].y),
-                                     (int)(0.5 + obj[index].coord[1].y));
-                    int width = Math.abs((int)(0.5 + obj[index].coord[0].x)
-                                         - (int)(0.5 + obj[index].coord[1].x)) + 1;
-                    int height = Math.abs((int)(0.5 + obj[index].coord[0].y)
-                                          - (int)(0.5 + obj[index].coord[1].y)) + 1;
+                    int x = Math.min((int)Math.round(obj[index].coord[0].x),
+                                     (int)Math.round(obj[index].coord[1].x));
+                    int y = Math.min((int)Math.round(obj[index].coord[0].y),
+                                     (int)Math.round(obj[index].coord[1].y));
+                    int width = Math.abs((int)Math.round(obj[index].coord[0].x)
+                                         - (int)Math.round(obj[index].coord[1].x)) + 1;
+                    int height = Math.abs((int)Math.round(obj[index].coord[0].y)
+                                          - (int)Math.round(obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -359,14 +386,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i - 1][2+j], obj[index].coord[0]);  // upper arm
                     getXYZ(jugglervec[i - 1][4+j], obj[index].coord[1]);
-                    int x = Math.min((int)(0.5 + obj[index].coord[0].x),
-                                     (int)(0.5 + obj[index].coord[1].x));
-                    int y = Math.min((int)(0.5 + obj[index].coord[0].y),
-                                     (int)(0.5 + obj[index].coord[1].y));
-                    int width = Math.abs((int)(0.5 + obj[index].coord[0].x)
-                                         - (int)(0.5 + obj[index].coord[1].x)) + 1;
-                    int height = Math.abs((int)(0.5 + obj[index].coord[0].y)
-                                          - (int)(0.5 + obj[index].coord[1].y)) + 1;
+                    int x = Math.min((int)Math.round(obj[index].coord[0].x),
+                                     (int)Math.round(obj[index].coord[1].x));
+                    int y = Math.min((int)Math.round(obj[index].coord[0].y),
+                                     (int)Math.round(obj[index].coord[1].y));
+                    int width = Math.abs((int)Math.round(obj[index].coord[0].x)
+                                         - (int)Math.round(obj[index].coord[1].x)) + 1;
+                    int height = Math.abs((int)Math.round(obj[index].coord[0].y)
+                                          - (int)Math.round(obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -377,14 +404,14 @@ public class Renderer2D extends Renderer {
                     obj[index].number = i;
                     getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[0]);  // lower arm
                     getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
-                    x = Math.min((int)(0.5 + obj[index].coord[0].x),
-                                 (int)(0.5 + obj[index].coord[1].x));
-                    y = Math.min((int)(0.5 + obj[index].coord[0].y),
-                                 (int)(0.5 + obj[index].coord[1].y));
-                    width = Math.abs((int)(0.5 + obj[index].coord[0].x)
-                                     - (int)(0.5 + obj[index].coord[1].x)) + 1;
-                    height = Math.abs((int)(0.5 + obj[index].coord[0].y)
-                                      - (int)(0.5 + obj[index].coord[1].y)) + 1;
+                    x = Math.min((int)Math.round(obj[index].coord[0].x),
+                                 (int)Math.round(obj[index].coord[1].x));
+                    y = Math.min((int)Math.round(obj[index].coord[0].y),
+                                 (int)Math.round(obj[index].coord[1].y));
+                    width = Math.abs((int)Math.round(obj[index].coord[0].x)
+                                     - (int)Math.round(obj[index].coord[1].x)) + 1;
+                    height = Math.abs((int)Math.round(obj[index].coord[0].y)
+                                      - (int)Math.round(obj[index].coord[1].y)) + 1;
                     obj[index].boundingbox.x = x;
                     obj[index].boundingbox.y = y;
                     obj[index].boundingbox.width = width;
@@ -449,8 +476,8 @@ public class Renderer2D extends Renderer {
             switch (ob.type) {
                 case DrawObject2D.TYPE_PROP:
                     Prop pr = pat.getProp(pnum[ob.number-1]);
-                    int x = (int)(0.5 + ob.coord[0].x);
-                    int y = (int)(0.5 + ob.coord[0].y);
+                    int x = (int)Math.round(ob.coord[0].x);
+                    int y = (int)Math.round(ob.coord[0].y);
                     Image propimage = pr.getProp2DImage(zoom, cameraangle);
                     if (propimage != null) {
                         Dimension grip = pr.getProp2DGrip(zoom);
@@ -476,8 +503,8 @@ public class Renderer2D extends Renderer {
                     int[] bodyx = new int[4];
                     int[] bodyy = new int[4];
                     for (int j = 0; j < 4; j++) {
-                        bodyx[j] = (int)(0.5 + ob.coord[j].x);
-                        bodyy[j] = (int)(0.5 + ob.coord[j].y);
+                        bodyx[j] = (int)Math.round(ob.coord[j].x);
+                        bodyy[j] = (int)Math.round(ob.coord[j].y);
                     }
                     g.setColor(background);
                     g.fillPolygon(bodyx, bodyy, 4);
@@ -496,8 +523,8 @@ public class Renderer2D extends Renderer {
                     if (Math.abs(RheadBx - LheadBx) > 2.0) {
                         // head is at least 2 pixels wide; draw it as a polygon
                         for (int j = 0; j < polysides; j++) {
-                            headx[j] = (int)(0.5 + 0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
-                            heady[j] = (int)(0.5 + 0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy)) +
+                            headx[j] = (int)Math.round(0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
+                            heady[j] = (int)Math.round(0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy)) +
                                              (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx-LheadBx));
                         }
 
@@ -509,9 +536,9 @@ public class Renderer2D extends Renderer {
                         // head is edge-on; draw it as a line
                         double h = Math.sqrt((LheadBy - LheadTy) * (LheadBy - LheadTy) +
                                              (RheadBy - LheadBy) * (RheadBy - LheadBy));
-                        int headx = (int)(0.5 + 0.5 * (LheadBx + RheadBx));
-                        int heady1 = (int)(0.5 + 0.5 * (LheadTy + RheadBy + h));
-                        int heady2 = (int)(0.5 + 0.5 * (LheadTy + RheadBy - h));
+                        int headx = (int)Math.round(0.5 * (LheadBx + RheadBx));
+                        int heady1 = (int)Math.round(0.5 * (LheadTy + RheadBy + h));
+                        int heady2 = (int)Math.round(0.5 * (LheadTy + RheadBy - h));
 
                         g.setColor(Color.black);
                         g.drawLine(headx, heady1, headx, heady2);
@@ -519,10 +546,10 @@ public class Renderer2D extends Renderer {
                     break;
                 case DrawObject2D.TYPE_LINE:
                      g.setColor(Color.black);
-                    int x1 = (int)(0.5 + ob.coord[0].x);
-                    int y1 = (int)(0.5 + ob.coord[0].y);
-                    int x2 = (int)(0.5 + ob.coord[1].x);
-                    int y2 = (int)(0.5 + ob.coord[1].y);
+                    int x1 = (int)Math.round(ob.coord[0].x);
+                    int y1 = (int)Math.round(ob.coord[0].y);
+                    int x2 = (int)Math.round(ob.coord[1].x);
+                    int y2 = (int)Math.round(ob.coord[1].y);
                     g.drawLine(x1, y1, x2, y2);
                     break;
             }

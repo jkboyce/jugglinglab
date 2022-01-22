@@ -307,6 +307,16 @@ public class PatternView extends View implements DocumentListener {
     }
 
     @Override
+    public double getZoomLevel() {
+        return ja.getZoomLevel();
+    }
+
+    @Override
+    public void setZoomLevel(double z) {
+        ja.setZoomLevel(z);
+    }
+
+    @Override
     public boolean isPaused() {
         return ja.isPaused();
     }

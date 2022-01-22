@@ -469,6 +469,15 @@ public class AnimationPanel extends JPanel implements Runnable {
         return jc;
     }
 
+    public double getZoomLevel() {
+        return getAnimator().getZoomLevel();
+    }
+
+    public void setZoomLevel(double z) {
+        if (!writingGIF)
+            getAnimator().setZoomLevel(z);
+    }
+
     public void disposeAnimation() {
         killAnimationThread();
     }

@@ -49,4 +49,8 @@ public abstract class Renderer {
                 throws JuggleExceptionInternal;
 
     public abstract Color getBackground();
+
+    public abstract double getZoomLevel();
+
+    public abstract void setZoomLevel(double zoom);
 }

@@ -119,6 +119,16 @@ public class EditView extends View {
     }
 
     @Override
+    public double getZoomLevel() {
+        return jae.getZoomLevel();
+    }
+
+    @Override
+    public void setZoomLevel(double z) {
+        jae.setZoomLevel(z);
+    }
+
+    @Override
     public boolean isPaused() {
         return jae.isPaused();
     }

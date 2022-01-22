@@ -161,6 +161,10 @@ public abstract class View extends JPanel {
 
     public abstract AnimationPrefs getAnimationPrefs();
 
+    public abstract double getZoomLevel();
+
+    public abstract void setZoomLevel(double z);
+
     public abstract boolean isPaused();
 
     public abstract void setPaused(boolean pause);

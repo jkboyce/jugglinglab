@@ -238,6 +238,17 @@ public class Animator {
         invpathperm = pat.getPathPermutation().getInverse();
     }
 
+    public double getZoomLevel() {
+        return ren1 == null ? 1 : ren1.getZoomLevel();
+    }
+
+    public void setZoomLevel(double z) {
+        if (ren1 != null)
+            ren1.setZoomLevel(z);
+        if (ren2 != null)
+            ren2.setZoomLevel(z);
+    }
+
     // Find the overall bounding box of the juggler and pattern, in real-space
     // (centimeters) global coordinates. Output is the variables `overallmin`
     // and `overallmax`, which determine a bounding box.

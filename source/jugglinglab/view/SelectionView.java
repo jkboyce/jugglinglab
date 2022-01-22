@@ -242,6 +242,18 @@ public class SelectionView extends View {
     }
 
     @Override
+    public double getZoomLevel() {
+        return ja[center].getZoomLevel();
+    }
+
+    @Override
+    public void setZoomLevel(double z) {
+        for (int i = 0; i < count; i++)
+            ja[i].setZoomLevel(z);
+    }
+
+
+    @Override
     public boolean isPaused() {
         return ja[center].isPaused();
     }

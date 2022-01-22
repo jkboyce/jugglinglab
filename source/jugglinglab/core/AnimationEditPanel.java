@@ -462,6 +462,15 @@ public class AnimationEditPanel extends AnimationPanel
             ladder.setTime(time);
     }
 
+    @Override
+    public void setZoomLevel(double z) {
+        if (!writingGIF) {
+            getAnimator().setZoomLevel(z);
+            createEventView();
+            createPositionView();
+        }
+    }
+
     //-------------------------------------------------------------------------
     // Helper functions related to event editing
     //-------------------------------------------------------------------------

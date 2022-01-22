@@ -33,6 +33,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     static protected final int NUM_TILES = 8;
     static protected final Point TILE_START = new Point(420, 50);
     static protected final Point TILE_OFFSET = new Point(25, 25);
+    static protected final double ZOOM_PER_STEP = 1.1;
     static protected Point[] tile_locations;
     static protected int next_tile_num;
 
@@ -63,6 +64,23 @@ public class PatternWindow extends JFrame implements ActionListener {
             public void windowClosing(WindowEvent e) {
                 try {
                     doMenuCommand(MenuCommand.FILE_CLOSE);
+                } catch (JuggleException je) {
+                    ErrorDialog.handleFatalException(je);
+                }
+            }
+        });
+
+        addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent mwe) {
+                mwe.consume();  // or it triggers twice
+                try {
+                    if (mwe.getWheelRotation() > 0) {
+                        // scrolling up -> zoom in
+                        doMenuCommand(MenuCommand.VIEW_ZOOMIN);
+                    } else if (mwe.getWheelRotation() < 0) {
+                        doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
+                    }
                 } catch (JuggleException je) {
                     ErrorDialog.handleFatalException(je);
                 }
@@ -401,10 +419,13 @@ public class PatternWindow extends JFrame implements ActionListener {
             "Pattern Editor",
             "Selection Editor",
             null,
-            "Restart",
-            "Animation Preferences...",
             "Undo",
             "Redo",
+            null,
+            "Restart",
+            "Animation Preferences...",
+            "Zoom In",
+            "Zoom Out",
         };
     protected static final String[] viewCommands =
         {
@@ -413,10 +434,13 @@ public class PatternWindow extends JFrame implements ActionListener {
             "pattern_edit",
             "selection_edit",
             null,
-            "restart",
-            "prefs",
             "undo",
             "redo",
+            null,
+            "restart",
+            "prefs",
+            "zoomin",
+            "zoomout",
         };
     protected static final char[] viewShortcuts =
         {
@@ -425,10 +449,13 @@ public class PatternWindow extends JFrame implements ActionListener {
             '3',
             '4',
             ' ',
-            ' ',
-            'P',
             'Z',
             'Y',
+            ' ',
+            ' ',
+            'P',
+            '=',
+            '-',
         };
 
     protected JMenu createViewMenu() {
@@ -566,6 +593,10 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(MenuCommand.VIEW_UNDO);
             else if (command.equals("redo"))
                 doMenuCommand(MenuCommand.VIEW_REDO);
+            else if (command.equals("zoomin"))
+                doMenuCommand(MenuCommand.VIEW_ZOOMIN);
+            else if (command.equals("zoomout"))
+                doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
             else if (command.equals("simple")) {
                 if (getViewMode() != View.VIEW_SIMPLE)
                     setViewMode(View.VIEW_SIMPLE);
@@ -608,6 +639,8 @@ public class PatternWindow extends JFrame implements ActionListener {
         VIEW_ANIMPREFS,
         VIEW_UNDO,
         VIEW_REDO,
+        VIEW_ZOOMIN,
+        VIEW_ZOOMOUT,
         HELP_ABOUT,
         HELP_ONLINE,
     }
@@ -827,6 +860,16 @@ public class PatternWindow extends JFrame implements ActionListener {
             case VIEW_REDO:
                 if (view != null)
                     view.redoEdit();
+                break;
+
+            case VIEW_ZOOMIN:
+                if (view != null && view.getZoomLevel() < (3 / ZOOM_PER_STEP))
+                    view.setZoomLevel(ZOOM_PER_STEP * view.getZoomLevel());
+                break;
+
+            case VIEW_ZOOMOUT:
+                if (view != null && view.getZoomLevel() > (0.3 * ZOOM_PER_STEP))
+                    view.setZoomLevel(view.getZoomLevel() / ZOOM_PER_STEP);
                 break;
 
             case HELP_ABOUT:
