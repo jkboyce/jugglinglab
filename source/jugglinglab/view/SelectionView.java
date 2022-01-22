@@ -23,6 +23,7 @@ public class SelectionView extends View {
     protected AnimationPanel[] ja;
     protected JLayeredPane layered;
     protected Mutator mutator;
+    protected AnimationPrefs saved_prefs;
 
 
     public SelectionView(Dimension dim) {
@@ -189,6 +190,7 @@ public class SelectionView extends View {
                         JuggleExceptionUser, JuggleExceptionInternal {
         AnimationPrefs newjc = null;
         if (c != null) {
+            saved_prefs = c;
             newjc = new AnimationPrefs(c);
             // disable startPause for grid of animations
             newjc.startPause = false;
@@ -238,7 +240,7 @@ public class SelectionView extends View {
 
     @Override
     public AnimationPrefs getAnimationPrefs() {
-        return ja[center].getAnimationPrefs();
+        return saved_prefs;
     }
 
     @Override
