@@ -22,18 +22,25 @@ import jugglinglab.renderer.Renderer;
 public class AnimationEditPanel extends AnimationPanel
                                 implements MouseListener, MouseMotionListener {
     public static final double EVENT_BOX_HW_CM = 5;
+    public static final double YZ_EVENT_SNAP_CM = 3;
+    public static final double Y_CONTROL_SHOW_DEG = 30;
+
     public static final double POSITION_BOX_HW_CM = 10;
     public static final double POSITION_BOX_Z_CM = 0;
     public static final double XY_GRID_SPACING_CM = 20;
-    public static final double XYZ_GRID_SNAP_CM = 3;
+    public static final double XYZ_GRID_POSITION_SNAP_CM = 3;
     public static final double GRID_SHOW_AZIMUTH_DEG = 70;
+
 
     protected LadderDiagram ladder;
 
     // for when an event is activated/dragged
     protected boolean event_active;
     protected JMLEvent event;
-    protected int[][] event_box;
+    protected double[][][] event_points;
+    protected boolean dragging_xz;
+    protected boolean dragging_y;
+    protected boolean show_y_drag_control;
 
     // for when a position is activated/dragged
     protected boolean position_active;
@@ -96,8 +103,27 @@ public class AnimationEditPanel extends AnimationPanel
 
             for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
                 int t = i * getSize().width / 2;
-                if (mx >= (event_box[i][0] + t) && mx <= (event_box[i][2] + t) &&
-                            my >= event_box[i][1] && my <= event_box[i][3]) {
+                dragging_xz = isInsidePolygon(mx - t, my, event_points, i, face_xz);
+
+                if (dragging_xz) {
+                    dragging = true;
+                    dragging_left = (i == 0);
+                    deltax = deltay = 0;
+                    repaint();
+                    return;
+                }
+
+                if (!show_y_drag_control)
+                    continue;
+
+                dragging_y = JLFunc.isNearLine(mx - t, my,
+                                    (int)Math.round(event_points[i][5][0]),
+                                    (int)Math.round(event_points[i][5][1]),
+                                    (int)Math.round(event_points[i][6][0]),
+                                    (int)Math.round(event_points[i][6][1]),
+                                    4);
+
+                if (dragging_y) {
                     dragging = true;
                     dragging_left = (i == 0);
                     deltax = deltay = 0;
@@ -128,7 +154,7 @@ public class AnimationEditPanel extends AnimationPanel
                     return;
                 }
 
-                dragging_xy = isInsidePolygon(mx - t, my, i, face_xy);
+                dragging_xy = isInsidePolygon(mx - t, my, pos_points, i, face_xy);
 
                 if (dragging_xy) {
                     dragging = true;
@@ -183,30 +209,17 @@ public class AnimationEditPanel extends AnimationPanel
         boolean mouse_moved = (me.getX() != startx) || (me.getY() != starty);
 
         if (event_active && dragging && mouse_moved) {
+            // set the new coordinate in the master event
             JMLEvent master = (event.isMaster() ? event : event.getMaster());
             boolean flipx = (event.getHand() != master.getHand());
-
-            Coordinate newgc = anim.ren1.getScreenTranslatedCoordinate(
-                    event.getGlobalCoordinate(), deltax, deltay);
-            if (jc.stereo) {
-                // average the coordinate shifts from each perspective
-                Coordinate newgc2 = anim.ren2.getScreenTranslatedCoordinate(
-                        event.getGlobalCoordinate(), deltax, deltay);
-                newgc = Coordinate.add(newgc, newgc2);
-                newgc.setCoordinate(0.5*newgc.x, 0.5*newgc.y, 0.5*newgc.z);
-            }
-
-            Coordinate newlc = anim.pat.convertGlobalToLocal(newgc,
-                                    event.getJuggler(), event.getT());
-            Coordinate deltalc = Coordinate.sub(newlc,
+            Coordinate deltalc = Coordinate.sub(getCurrentCoordinate(),
                                     event.getLocalCoordinate());
             deltalc = Coordinate.truncate(deltalc, 1e-7);
-
             if (flipx)
                 deltalc.x = -deltalc.x;
+            master.setLocalCoordinate(Coordinate.add(master.getLocalCoordinate(), deltalc));
 
-            Coordinate oldlc = master.getLocalCoordinate();
-            master.setLocalCoordinate(Coordinate.add(oldlc, deltalc));
+            dragging_xz = dragging_y = false;
 
             if (ladder instanceof EditLadderDiagram)
                 ((EditLadderDiagram)ladder).activeEventChanged();
@@ -222,7 +235,7 @@ public class AnimationEditPanel extends AnimationPanel
                     new_angle += 360.0;
                 position.setAngle(new_angle);
             } else {
-                position.setCoordinate(getCurrentPosition());
+                position.setCoordinate(getCurrentCoordinate());
             }
 
             dragging_xy = dragging_z = dragging_angle = false;
@@ -237,6 +250,7 @@ public class AnimationEditPanel extends AnimationPanel
 
         dragging_camera = false;
         dragging = false;
+        dragging_xz = dragging_y = false;
         dragging_xy = dragging_z = dragging_angle = false;
         deltax = deltay = 0;
         deltaangle = 0.0;
@@ -312,14 +326,10 @@ public class AnimationEditPanel extends AnimationPanel
                     deltaangle = -angle + Math.PI;
                 else if (anglediff(new_angle + 1.5 * Math.PI) < snapangle / 2)
                     deltaangle = -angle + 0.5 * Math.PI;
-            } else if (dragging_z) {
-                deltax = 0;
-                deltay = my - starty;
-                getCurrentPosition();
             } else {
                 deltax = mx - startx;
                 deltay = my - starty;
-                getCurrentPosition();
+                getCurrentCoordinate();  // modifies deltax, deltay based on snapping, etc.
             }
         } else if (!dragging_camera) {
             dragging_camera = true;
@@ -488,13 +498,41 @@ public class AnimationEditPanel extends AnimationPanel
     public void deactivateEvent() {
         event = null;
         event_active = false;
+        dragging_xz = dragging_y = false;
     }
+
+    // Points in the juggler's coordinate system that are used for drawing the
+    // onscreen representation of a selected event.
+    protected static final double[][] event_control_points =
+        {
+            // corners of square representing xz movement control
+            { -EVENT_BOX_HW_CM, 0, -EVENT_BOX_HW_CM },
+            { -EVENT_BOX_HW_CM, 0,  EVENT_BOX_HW_CM },
+            {  EVENT_BOX_HW_CM, 0,  EVENT_BOX_HW_CM },
+            {  EVENT_BOX_HW_CM, 0, -EVENT_BOX_HW_CM },
+
+            { 0,   0,  0 },  // center
+            { 0,  10,  0 },  // end 1 of y-axis control
+            { 0, -10,  0 },  // end 2 of y-axis control
+            { 0,   7,  2 },  // arrow at end 1 of y-axis control
+            { 0,   7, -2 },
+            { 0,  -7,  2 },  // array at end 2 of y-axis control
+            { 0,  -7, -2 },
+
+            // used for moving the event
+            { 1, 0, 0 },
+            { 0, 1, 0 },
+            { 0, 0, 1 },
+        };
+
+    // faces in terms of indices in event_control_points[]
+    protected static final int[] face_xz = { 0, 1, 2, 3 };
 
     protected void createEventView() {
         if (!event_active)
             return;
 
-        event_box = new int[2][4];
+        event_points = new double[2][event_control_points.length][2];
 
         for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
             Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
@@ -502,14 +540,36 @@ public class AnimationEditPanel extends AnimationPanel
             // translate by one pixel and see how far it is in juggler space
             Coordinate c = event.getGlobalCoordinate();
             Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
-            double dl = Coordinate.distance(c, c2);
-            int boxhw = (int)Math.round(EVENT_BOX_HW_CM / dl);  // in pixels
+            double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
+
+            double[] ca = ren.getCameraAngle();
+            double theta = ca[0] + Math.toRadians(
+                    getPattern().getJugglerAngle(event.getJuggler(), event.getT()));
+            double phi = ca[1];
+
+            double dlc = dl * Math.cos(phi);
+            double dls = dl * Math.sin(phi);
+            double dxx = -dl * Math.cos(theta);
+            double dxy = dlc * Math.sin(theta);
+            double dyx = dl * Math.sin(theta);
+            double dyy = dlc * Math.cos(theta);
+            double dzx = 0.0;
+            double dzy = -dls;
 
             int[] center = ren.getXY(c);
-            event_box[i][0] = center[0] - boxhw;
-            event_box[i][1] = center[1] - boxhw;
-            event_box[i][2] = center[0] + boxhw;
-            event_box[i][3] = center[1] + boxhw;
+            for (int j = 0; j < event_control_points.length; j++) {
+                event_points[i][j][0] = (double)center[0] +
+                                        dxx * event_control_points[j][0] +
+                                        dyx * event_control_points[j][1] +
+                                        dzx * event_control_points[j][2];
+                event_points[i][j][1] = (double)center[1] +
+                                        dxy * event_control_points[j][0] +
+                                        dyy * event_control_points[j][1] +
+                                        dzy * event_control_points[j][2];
+            }
+
+            show_y_drag_control = (anglediff(theta) > Math.toRadians(Y_CONTROL_SHOW_DEG) ||
+                    anglediff(phi - Math.PI/2) > Math.toRadians(Y_CONTROL_SHOW_DEG));
         }
     }
 
@@ -521,6 +581,8 @@ public class AnimationEditPanel extends AnimationPanel
         Graphics g2 = g;
 
         for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+
             if (jc.stereo && i == 0)
                 g2 = g.create(0, 0, d.width / 2, d.height);
             else if (jc.stereo && i == 1)
@@ -532,21 +594,24 @@ public class AnimationEditPanel extends AnimationPanel
             }
 
             g2.setColor(Color.green);
-            g2.drawLine(event_box[i][0] + deltax, event_box[i][1] + deltay,
-                        event_box[i][2] + deltax, event_box[i][1] + deltay);
-            g2.drawLine(event_box[i][2] + deltax, event_box[i][1] + deltay,
-                        event_box[i][2] + deltax, event_box[i][3] + deltay);
-            g2.drawLine(event_box[i][2] + deltax, event_box[i][3] + deltay,
-                        event_box[i][0] + deltax, event_box[i][3] + deltay);
-            g2.drawLine(event_box[i][0] + deltax, event_box[i][3] + deltay,
-                        event_box[i][0] + deltax, event_box[i][1] + deltay);
 
-            if (dragging) {
-                // dot at center
-                int center_x = (event_box[i][0] + event_box[i][2]) / 2;
-                int center_y = (event_box[i][1] + event_box[i][3]) / 2;
+            // dot at center
+            g2.fillOval((int)Math.round(event_points[i][4][0]) + deltax - 2,
+                        (int)Math.round(event_points[i][4][1]) + deltay - 2, 5, 5);
 
-                g2.fillOval(center_x - 2 + deltax, center_y - 2 + deltay, 5, 5);
+            // edges of xz plane control
+            drawLine(g2, event_points, i, 0, 1);
+            drawLine(g2, event_points, i, 1, 2);
+            drawLine(g2, event_points, i, 2, 3);
+            drawLine(g2, event_points, i, 3, 0);
+
+            if (show_y_drag_control && (!dragging || dragging_y)) {
+                // y-axis control pointing forward/backward
+                drawLine(g2, event_points, i, 5, 6);
+                drawLine(g2, event_points, i, 5, 7);
+                drawLine(g2, event_points, i, 5, 8);
+                drawLine(g2, event_points, i, 6, 9);
+                drawLine(g2, event_points, i, 6, 10);
             }
         }
     }
@@ -637,121 +702,6 @@ public class AnimationEditPanel extends AnimationPanel
         }
     }
 
-    // Returns the current position coordinate. When dragging this includes any
-    // offset from its original position.
-    //
-    // When the user is dragging, this also snaps to selected grid lines, and
-    // adjusts the returned Coordinate accordingly. When a grid snap occurs,
-    // `deltax` and `deltay` are adjusted so that the position displays in its
-    // snapped position.
-    protected Coordinate getCurrentPosition() {
-        if (!position_active)
-            return null;
-
-        Coordinate c = position.getCoordinate();
-
-        if (!dragging)
-            return c;
-
-        // screen (pixel) offset of a 1cm offset in each of the
-        // cardinal directions
-        double dx[] = { 0, 0 };
-        double dy[] = { 0, 0 };
-        double dz[] = { 0, 0 };
-        double f = (jc.stereo ? 0.5 : 1.0);
-
-        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-            dx[0] += f * (pos_points[i][11][0] - pos_points[i][4][0]);
-            dx[1] += f * (pos_points[i][11][1] - pos_points[i][4][1]);
-            dy[0] += f * (pos_points[i][12][0] - pos_points[i][4][0]);
-            dy[1] += f * (pos_points[i][12][1] - pos_points[i][4][1]);
-            dz[0] += f * (pos_points[i][13][0] - pos_points[i][4][0]);
-            dz[1] += f * (pos_points[i][13][1] - pos_points[i][4][1]);
-        }
-
-        if (dragging_xy) {
-            // express deltax, deltay in terms of dx, dy above
-            //
-            // deltax = A * dxx + B * dyx;
-            // deltay = A * dxy + B * dyy;
-            //
-            // then position.x += A
-            //      position.y += B
-            double det = dx[0] * dy[1] - dx[1] * dy[0];
-            double a = ( dy[1] * deltax - dy[0] * deltay) / det;
-            double b = (-dx[1] * deltax + dx[0] * deltay) / det;
-
-            double angle = Math.toRadians(position.getAngle());
-            c.x += a * Math.cos(angle) - b * Math.sin(angle);
-            c.y += a * Math.sin(angle) + b * Math.cos(angle);
-
-            // Snap to selected grid lines
-
-            if (getCameraAngle()[1] > Math.toRadians(70.0))
-                return c;  // don't snap if grid isn't showing
-
-            boolean snapped = false;
-            double oldcx = c.x;
-            double oldcy = c.y;
-
-            double closest_grid = XY_GRID_SPACING_CM *
-                                        Math.round(c.x / XY_GRID_SPACING_CM);
-            if (Math.abs(c.x - closest_grid) < XYZ_GRID_SNAP_CM) {
-                c.x = closest_grid;
-                snapped = true;
-            }
-            closest_grid = XY_GRID_SPACING_CM *
-                                        Math.round(c.y / XY_GRID_SPACING_CM);
-            if (Math.abs(c.y - closest_grid) < XYZ_GRID_SNAP_CM) {
-                c.y = closest_grid;
-                snapped = true;
-            }
-
-            if (snapped) {
-                // Calculate `deltax` and `deltay` that get us closest to the
-                // snapped position.
-                double deltacx = c.x - oldcx;
-                double deltacy = c.y - oldcy;
-                double deltaa = deltacx * Math.cos(angle) + deltacy * Math.sin(angle);
-                double deltab = -deltacx * Math.sin(angle) + deltacy * Math.cos(angle);
-                double delta_x_px = dx[0] * deltaa + dy[0] * deltab;
-                double delta_y_px = dx[1] * deltaa + dy[1] * deltab;
-
-                deltax += (int)Math.round(delta_x_px);
-                deltay += (int)Math.round(delta_y_px);
-            }
-        }
-
-        if (dragging_z) {
-            c.z += deltay / dz[1];
-
-            if (Math.abs(c.z - 100) < XYZ_GRID_SNAP_CM) {
-                deltay += (int)Math.round(dz[1] * (100 - c.z));
-                c.z = 100;
-            }
-        }
-
-        return c;
-    }
-
-    protected boolean isInsidePolygon(int x, int y, int index, int[] points) {
-        boolean inside = false;
-        for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
-            int xi = (int)Math.round(pos_points[index][points[i]][0]);
-            int yi = (int)Math.round(pos_points[index][points[i]][1]);
-            int xj = (int)Math.round(pos_points[index][points[j]][0]);
-            int yj = (int)Math.round(pos_points[index][points[j]][1]);
-
-            // note we only evaluate the second term when yj != yi:
-            boolean intersect = ((yi > y) != (yj > y)) &&
-                            (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect)
-                inside = !inside;
-        }
-
-        return inside;
-    }
-
     protected void drawPosition(Graphics g) throws JuggleExceptionInternal {
         if (!position_active)
             return;
@@ -779,34 +729,34 @@ public class AnimationEditPanel extends AnimationPanel
                         (int)Math.round(pos_points[i][4][1]) + deltay - 2, 5, 5);
 
             // edges of xy plane control
-            drawLine(g2, i, 0, 1);
-            drawLine(g2, i, 1, 2);
-            drawLine(g2, i, 2, 3);
-            drawLine(g2, i, 3, 0);
+            drawLine(g2, pos_points, i, 0, 1);
+            drawLine(g2, pos_points, i, 1, 2);
+            drawLine(g2, pos_points, i, 2, 3);
+            drawLine(g2, pos_points, i, 3, 0);
 
             if (!dragging || dragging_z) {
                 // z-axis control pointing upward
-                drawLine(g2, i, 4, 6);
-                drawLine(g2, i, 6, 7);
-                drawLine(g2, i, 6, 8);
+                drawLine(g2, pos_points, i, 4, 6);
+                drawLine(g2, pos_points, i, 6, 7);
+                drawLine(g2, pos_points, i, 6, 8);
             }
 
             if (!dragging || dragging_angle) {
                 // angle-changing control pointing backward
-                drawLine(g2, i, 4, 5);
+                drawLine(g2, pos_points, i, 4, 5);
                 g2.fillOval((int)Math.round(pos_points[i][5][0]) - 4 + deltax,
                             (int)Math.round(pos_points[i][5][1]) - 4 + deltay, 10, 10);
             }
 
             if (dragging_angle) {
                 // sighting line during angle rotation
-                drawLine(g2, i, 9, 10);
+                drawLine(g2, pos_points, i, 9, 10);
             }
 
             if (!dragging_angle) {
                 if (dragging_z || (getCameraAngle()[1] <= Math.toRadians(GRID_SHOW_AZIMUTH_DEG))) {
                     // line dropping down to projection on ground (z = 0)
-                    Coordinate c = getCurrentPosition();
+                    Coordinate c = getCurrentCoordinate();
                     double z = c.z;
                     c.z = 0;
                     int[] xy_projection = ren.getXY(c);
@@ -832,14 +782,7 @@ public class AnimationEditPanel extends AnimationPanel
         }
     }
 
-    protected void drawLine(Graphics g, int index, int p1, int p2) {
-        g.drawLine((int)Math.round(pos_points[index][p1][0]) + deltax,
-                   (int)Math.round(pos_points[index][p1][1]) + deltay,
-                   (int)Math.round(pos_points[index][p2][0]) + deltax,
-                   (int)Math.round(pos_points[index][p2][1]) + deltay);
-    }
-
-    // In position editing mode, draw an xy grid where the ground is
+    // In position editing mode, draw an xy grid at ground level (z = 0)
     protected void drawGrid(Graphics g) {
         if (!(g instanceof Graphics2D))
             return;
@@ -929,6 +872,215 @@ public class AnimationEditPanel extends AnimationPanel
                     g2.setStroke(new BasicStroke(1));
             }
         }
+    }
+
+    //-------------------------------------------------------------------------
+    // Helper functions for both event and position editing
+    //-------------------------------------------------------------------------
+
+    // Return the current coordinate for the selected item.
+    //
+    // For an event the result is in the juggler's local coordinates, and for a
+    // position it's in global coordinates.
+    //
+    // When dragging, this includes any offset from its original coordinate
+    // based on mouse deltas and dragging mode.
+    //
+    // When the user is dragging, this also snaps to selected grid lines, and
+    // adjusts the returned Coordinate accordingly. When a grid snap occurs,
+    // `deltax` and `deltay` are adjusted so that the item displays in its
+    // snapped position.
+    protected Coordinate getCurrentCoordinate() {
+        if (event_active) {
+            Coordinate c = event.getLocalCoordinate();
+
+            if (!dragging)
+                return c;
+
+            // screen (pixel) offset of a 1cm offset in each of the cardinal
+            // directions in the juggler's coordinate system (i.e., global
+            // coordinates rotated by the juggler's angle)
+            double dx[] = { 0, 0 };
+            double dy[] = { 0, 0 };
+            double dz[] = { 0, 0 };
+            double f = (jc.stereo ? 0.5 : 1.0);
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                dx[0] += f * (event_points[i][11][0] - event_points[i][4][0]);
+                dx[1] += f * (event_points[i][11][1] - event_points[i][4][1]);
+                dy[0] += f * (event_points[i][12][0] - event_points[i][4][0]);
+                dy[1] += f * (event_points[i][12][1] - event_points[i][4][1]);
+                dz[0] += f * (event_points[i][13][0] - event_points[i][4][0]);
+                dz[1] += f * (event_points[i][13][1] - event_points[i][4][1]);
+            }
+
+            if (dragging_xz) {
+                // express deltax, deltay in terms of dx, dz above
+                //
+                // deltax = A * dxx + B * dzx;
+                // deltay = A * dxy + B * dzy;
+                //
+                // then c.x += A
+                //      c.z += B
+                double det = dx[0] * dz[1] - dx[1] * dz[0];
+                double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                c.x += a;
+                c.z += b;
+
+                // Snap to z = 0 in local coordinates ("normal" throwing height)
+                if (Math.abs(c.z) < YZ_EVENT_SNAP_CM) {
+                    deltay += (int)Math.round(dz[1] * (-c.z));
+                    c.z = 0;
+                }
+            }
+
+            if (dragging_y) {
+                // express deltax, deltay in terms of dy, dz above
+                //
+                // deltax = A * dyx + B * dzx;
+                // deltay = A * dyy + B * dzy;
+                //
+                // then c.y += A
+                double det = dy[0] * dz[1] - dy[1] * dz[0];
+                double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+
+                c.y += a;
+
+                // Snap to y = 0 in local coordinates ("normal" throwing depth)
+                if (Math.abs(c.y) < YZ_EVENT_SNAP_CM)
+                    c.y = 0;
+
+                // Calculate `deltax`, `deltay` that put the event closest to
+                // its final location.
+                Coordinate origlc = event.getLocalCoordinate();
+
+                deltax = (int)Math.round((c.y - origlc.y) * dy[0]);
+                deltay = (int)Math.round((c.y - origlc.y) * dy[1]);
+            }
+
+            return c;
+        }
+
+        if (position_active) {
+            Coordinate c = position.getCoordinate();
+
+            if (!dragging_xy && !dragging_z)
+                return c;
+
+            // screen (pixel) offset of a 1cm offset in each of the cardinal
+            // directions in the position's coordinate system (i.e., global
+            // coordinates rotated by the position's angle)
+            double dx[] = { 0, 0 };
+            double dy[] = { 0, 0 };
+            double dz[] = { 0, 0 };
+            double f = (jc.stereo ? 0.5 : 1.0);
+
+            for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+                dx[0] += f * (pos_points[i][11][0] - pos_points[i][4][0]);
+                dx[1] += f * (pos_points[i][11][1] - pos_points[i][4][1]);
+                dy[0] += f * (pos_points[i][12][0] - pos_points[i][4][0]);
+                dy[1] += f * (pos_points[i][12][1] - pos_points[i][4][1]);
+                dz[0] += f * (pos_points[i][13][0] - pos_points[i][4][0]);
+                dz[1] += f * (pos_points[i][13][1] - pos_points[i][4][1]);
+            }
+
+            if (dragging_xy) {
+                // express deltax, deltay in terms of dx, dy above
+                //
+                // deltax = A * dxx + B * dyx;
+                // deltay = A * dxy + B * dyy;
+                //
+                // then position.x += A
+                //      position.y += B
+                double det = dx[0] * dy[1] - dx[1] * dy[0];
+                double a = ( dy[1] * deltax - dy[0] * deltay) / det;
+                double b = (-dx[1] * deltax + dx[0] * deltay) / det;
+
+                // transform changes to global coordinates
+                double angle = Math.toRadians(position.getAngle());
+                c.x += a * Math.cos(angle) - b * Math.sin(angle);
+                c.y += a * Math.sin(angle) + b * Math.cos(angle);
+
+                // Snap to selected grid lines
+
+                if (getCameraAngle()[1] > Math.toRadians(70.0))
+                    return c;  // don't snap if grid isn't showing
+
+                boolean snapped = false;
+                double oldcx = c.x;
+                double oldcy = c.y;
+
+                double closest_grid = XY_GRID_SPACING_CM *
+                                            Math.round(c.x / XY_GRID_SPACING_CM);
+                if (Math.abs(c.x - closest_grid) < XYZ_GRID_POSITION_SNAP_CM) {
+                    c.x = closest_grid;
+                    snapped = true;
+                }
+                closest_grid = XY_GRID_SPACING_CM *
+                                            Math.round(c.y / XY_GRID_SPACING_CM);
+                if (Math.abs(c.y - closest_grid) < XYZ_GRID_POSITION_SNAP_CM) {
+                    c.y = closest_grid;
+                    snapped = true;
+                }
+
+                if (snapped) {
+                    // Calculate `deltax` and `deltay` that get us closest to the
+                    // snapped position.
+                    double deltacx = c.x - oldcx;
+                    double deltacy = c.y - oldcy;
+                    double deltaa = deltacx * Math.cos(angle) + deltacy * Math.sin(angle);
+                    double deltab = -deltacx * Math.sin(angle) + deltacy * Math.cos(angle);
+                    double delta_x_px = dx[0] * deltaa + dy[0] * deltab;
+                    double delta_y_px = dx[1] * deltaa + dy[1] * deltab;
+
+                    deltax += (int)Math.round(delta_x_px);
+                    deltay += (int)Math.round(delta_y_px);
+                }
+            }
+
+            if (dragging_z) {
+                deltax = 0;  // constrain movement to be vertical
+                c.z += deltay / dz[1];
+
+                if (Math.abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
+                    deltay += (int)Math.round(dz[1] * (100 - c.z));
+                    c.z = 100;
+                }
+            }
+
+            return c;
+        }
+
+        return null;
+    }
+
+    protected void drawLine(Graphics g, double[][][] array, int index, int p1, int p2) {
+        g.drawLine((int)Math.round(array[index][p1][0]) + deltax,
+                   (int)Math.round(array[index][p1][1]) + deltay,
+                   (int)Math.round(array[index][p2][0]) + deltax,
+                   (int)Math.round(array[index][p2][1]) + deltay);
+    }
+
+    // Test whether a point (x, y) lies inside a polygon.
+    protected static boolean isInsidePolygon(
+                int x, int y, double[][][] array, int index, int[] points) {
+        boolean inside = false;
+        for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
+            int xi = (int)Math.round(array[index][points[i]][0]);
+            int yi = (int)Math.round(array[index][points[i]][1]);
+            int xj = (int)Math.round(array[index][points[j]][0]);
+            int yj = (int)Math.round(array[index][points[j]][1]);
+
+            // note we only evaluate the second term when yj != yi:
+            boolean intersect = ((yi > y) != (yj > y)) &&
+                            (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect)
+                inside = !inside;
+        }
+
+        return inside;
     }
 
     // javax.swing.JComponent methods
