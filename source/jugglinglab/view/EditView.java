@@ -147,17 +147,20 @@ public class EditView extends View {
     @Override
     public void writeGIF(File f) {
         jae.writingGIF = true;
-
         boolean origpause = isPaused();
         setPaused(true);
         jsp.setEnabled(false);
+        if (parent != null)
+            parent.setResizable(false);
 
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
-                setPaused(origpause);
                 jae.writingGIF = false;
+                setPaused(origpause);
                 jsp.setEnabled(true);
+                if (parent != null)
+                    parent.setResizable(true);
             }
         };
 

@@ -279,13 +279,17 @@ public class SelectionView extends View {
             ja[i].writingGIF = true;
         boolean origpause = isPaused();
         setPaused(true);
+        if (parent != null)
+            parent.setResizable(false);
 
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
-                setPaused(origpause);
                 for (int i = 0; i < COUNT; i++)
                     ja[i].writingGIF = false;
+                setPaused(origpause);
+                if (parent != null)
+                    parent.setResizable(true);
             }
         };
 

@@ -338,13 +338,19 @@ public class PatternView extends View implements DocumentListener {
         updateButtons();
         boolean origpause = isPaused();
         setPaused(true);
+        jsp.setEnabled(false);
+        if (parent != null)
+            parent.setResizable(false);
 
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
-                setPaused(origpause);
                 ja.writingGIF = false;
+                setPaused(origpause);
                 updateButtons();
+                jsp.setEnabled(true);
+                if (parent != null)
+                    parent.setResizable(true);
             }
         };
 

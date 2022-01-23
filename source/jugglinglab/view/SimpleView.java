@@ -93,12 +93,16 @@ public class SimpleView extends View {
         ja.writingGIF = true;
         boolean origpause = isPaused();
         setPaused(true);
+        if (parent != null)
+            parent.setResizable(false);
 
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
-                setPaused(origpause);
                 ja.writingGIF = false;
+                setPaused(origpause);
+                if (parent != null)
+                    parent.setResizable(true);
             }
         };
 
