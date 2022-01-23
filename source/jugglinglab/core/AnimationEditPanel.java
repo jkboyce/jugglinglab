@@ -26,6 +26,7 @@ public class AnimationEditPanel extends AnimationPanel
     public static final double POSITION_BOX_Z_CM = 0;
     public static final double XY_GRID_SPACING_CM = 20;
     public static final double XYZ_GRID_SNAP_CM = 3;
+    public static final double GRID_SHOW_AZIMUTH_DEG = 70;
 
     protected LadderDiagram ladder;
 
@@ -636,15 +637,21 @@ public class AnimationEditPanel extends AnimationPanel
         }
     }
 
-    // While dragging a position, returns the current coordinate based on
-    // dragging mode.
+    // Returns the current position coordinate. When dragging this includes any
+    // offset from its original position.
     //
-    // This also snaps to selected grid lines, and adjusts the returned
-    // Coordinate accordingly. When a grid snap occurs, `deltax` and `deltay`
-    // are adjusted so that the position displays in its snapped position.
+    // When the user is dragging, this also snaps to selected grid lines, and
+    // adjusts the returned Coordinate accordingly. When a grid snap occurs,
+    // `deltax` and `deltay` are adjusted so that the position displays in its
+    // snapped position.
     protected Coordinate getCurrentPosition() {
-        if (!position_active || !dragging)
+        if (!position_active)
             return null;
+
+        Coordinate c = position.getCoordinate();
+
+        if (!dragging)
+            return c;
 
         // screen (pixel) offset of a 1cm offset in each of the
         // cardinal directions
@@ -661,8 +668,6 @@ public class AnimationEditPanel extends AnimationPanel
             dz[0] += f * (pos_points[i][13][0] - pos_points[i][4][0]);
             dz[1] += f * (pos_points[i][13][1] - pos_points[i][4][1]);
         }
-
-        Coordinate c = position.getCoordinate();
 
         if (dragging_xy) {
             // express deltax, deltay in terms of dx, dy above
@@ -798,28 +803,30 @@ public class AnimationEditPanel extends AnimationPanel
                 drawLine(g2, i, 9, 10);
             }
 
-            if (dragging_z || dragging_xy) {
-                // line dropping down to projection on ground (z = 0)
-                Coordinate c = getCurrentPosition();
-                double z = c.z;
-                c.z = 0;
-                int[] xy_projection = ren.getXY(c);
-                g2.drawLine(xy_projection[0], xy_projection[1],
-                            (int)Math.round(pos_points[i][4][0]) + deltax,
-                            (int)Math.round(pos_points[i][4][1]) + deltay);
-                g2.fillOval(xy_projection[0] - 2, xy_projection[1] - 2, 5, 5);
+            if (!dragging_angle) {
+                if (dragging_z || (getCameraAngle()[1] <= Math.toRadians(GRID_SHOW_AZIMUTH_DEG))) {
+                    // line dropping down to projection on ground (z = 0)
+                    Coordinate c = getCurrentPosition();
+                    double z = c.z;
+                    c.z = 0;
+                    int[] xy_projection = ren.getXY(c);
+                    g2.drawLine(xy_projection[0], xy_projection[1],
+                                (int)Math.round(pos_points[i][4][0]) + deltax,
+                                (int)Math.round(pos_points[i][4][1]) + deltay);
+                    g2.fillOval(xy_projection[0] - 2, xy_projection[1] - 2, 5, 5);
 
-                if (dragging_z) {
-                    // z-label on the line
-                    double y = Math.max(
-                                    Math.max(pos_points[i][0][1], pos_points[i][1][1]),
-                                    Math.max(pos_points[i][2][1], pos_points[i][3][1])
-                               );
-                    int message_y = (int)Math.round(y) + deltay + 40;
+                    if (dragging_z) {
+                        // z-label on the line
+                        double y = Math.max(
+                                        Math.max(pos_points[i][0][1], pos_points[i][1][1]),
+                                        Math.max(pos_points[i][2][1], pos_points[i][3][1])
+                                   );
+                        int message_y = (int)Math.round(y) + deltay + 40;
 
-                    g2.setColor(Color.black);
-                    g2.drawString("z = " + JLFunc.toStringRounded(z, 1) + " cm",
-                                xy_projection[0] + 5, message_y);
+                        g2.setColor(Color.black);
+                        g2.drawString("z = " + JLFunc.toStringRounded(z, 1) + " cm",
+                                    xy_projection[0] + 5, message_y);
+                    }
                 }
             }
         }
@@ -841,7 +848,7 @@ public class AnimationEditPanel extends AnimationPanel
             return;
 
         // only draw grid when looking down from above
-        if (getCameraAngle()[1] > Math.toRadians(70.0))
+        if (getCameraAngle()[1] > Math.toRadians(GRID_SHOW_AZIMUTH_DEG))
             return;
 
         Graphics2D g2 = (Graphics2D)g;
