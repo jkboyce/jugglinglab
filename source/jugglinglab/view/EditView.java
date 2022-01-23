@@ -150,12 +150,14 @@ public class EditView extends View {
 
         boolean origpause = isPaused();
         setPaused(true);
+        jsp.setEnabled(false);
 
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
                 setPaused(origpause);
                 jae.writingGIF = false;
+                jsp.setEnabled(true);
             }
         };
 
