@@ -21,16 +21,21 @@ import jugglinglab.renderer.Renderer;
 
 public class AnimationEditPanel extends AnimationPanel
                                 implements MouseListener, MouseMotionListener {
-    public static final double EVENT_BOX_HW_CM = 5;
-    public static final double YZ_EVENT_SNAP_CM = 3;
-    public static final double Y_CONTROL_SHOW_DEG = 30;
+    // constants for rendering events
+    protected static final double EVENT_BOX_HW_CM = 5;
+    protected static final double YZ_EVENT_SNAP_CM = 3;
+    protected static final double XZ_CONTROL_SHOW_DEG = 60;
+    protected static final double Y_CONTROL_SHOW_DEG = 30;
 
-    public static final double POSITION_BOX_HW_CM = 10;
-    public static final double POSITION_BOX_Z_CM = 0;
-    public static final double XY_GRID_SPACING_CM = 20;
-    public static final double XYZ_GRID_POSITION_SNAP_CM = 3;
-    public static final double GRID_SHOW_AZIMUTH_DEG = 70;
-
+    // constants for rendering positions
+    protected static final double POSITION_BOX_HW_CM = 10;
+    protected static final double POSITION_BOX_Z_OFFSET_CM = 0;
+    protected static final double XY_GRID_SPACING_CM = 20;
+    protected static final double XYZ_GRID_POSITION_SNAP_CM = 3;
+    protected static final double GRID_SHOW_DEG = 70;
+    protected static final double ANGLE_CONTROL_SHOW_DEG = 70;
+    protected static final double XY_CONTROL_SHOW_DEG = 70;
+    protected static final double Z_CONTROL_SHOW_DEG = 30;
 
     protected LadderDiagram ladder;
 
@@ -40,24 +45,27 @@ public class AnimationEditPanel extends AnimationPanel
     protected double[][][] event_points;
     protected boolean dragging_xz;
     protected boolean dragging_y;
+    protected boolean show_xz_drag_control;
     protected boolean show_y_drag_control;
 
     // for when a position is activated/dragged
     protected boolean position_active;
     protected JMLPosition position;
     protected double[][][] pos_points;
-    //protected boolean[][] pos_points_visible;
     protected boolean dragging_xy;
     protected boolean dragging_z;
     protected boolean dragging_angle;
+    protected boolean show_xy_drag_control;
+    protected boolean show_z_drag_control;
+    protected boolean show_angle_drag_control;
 
-    // for when a position is dragged in angle
+    // for when a position angle is being dragged
     protected double deltaangle;
     protected double[] start_dx, start_dy, start_control;
 
-    // for when either an event or position is dragged
+    // for when either an event or position is being dragged
     protected boolean dragging;
-    protected boolean dragging_left;  // may not be necessary
+    protected boolean dragging_left;  // for stereo mode; may not be necessary?
     protected int deltax, deltay;  // extent of drag action (pixels)
 
 
@@ -103,32 +111,34 @@ public class AnimationEditPanel extends AnimationPanel
 
             for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
                 int t = i * getSize().width / 2;
-                dragging_xz = isInsidePolygon(mx - t, my, event_points, i, face_xz);
 
-                if (dragging_xz) {
-                    dragging = true;
-                    dragging_left = (i == 0);
-                    deltax = deltay = 0;
-                    repaint();
-                    return;
+                if (show_y_drag_control) {
+                    dragging_y = JLFunc.isNearLine(mx - t, my,
+                                        (int)Math.round(event_points[i][5][0]),
+                                        (int)Math.round(event_points[i][5][1]),
+                                        (int)Math.round(event_points[i][6][0]),
+                                        (int)Math.round(event_points[i][6][1]),
+                                        4);
+
+                    if (dragging_y) {
+                        dragging = true;
+                        dragging_left = (i == 0);
+                        deltax = deltay = 0;
+                        repaint();
+                        return;
+                    }
                 }
 
-                if (!show_y_drag_control)
-                    continue;
+                if (show_xz_drag_control) {
+                    dragging_xz = isInsidePolygon(mx - t, my, event_points, i, face_xz);
 
-                dragging_y = JLFunc.isNearLine(mx - t, my,
-                                    (int)Math.round(event_points[i][5][0]),
-                                    (int)Math.round(event_points[i][5][1]),
-                                    (int)Math.round(event_points[i][6][0]),
-                                    (int)Math.round(event_points[i][6][1]),
-                                    4);
-
-                if (dragging_y) {
-                    dragging = true;
-                    dragging_left = (i == 0);
-                    deltax = deltay = 0;
-                    repaint();
-                    return;
+                    if (dragging_xz) {
+                        dragging = true;
+                        dragging_left = (i == 0);
+                        deltax = deltay = 0;
+                        repaint();
+                        return;
+                    }
                 }
             }
         }
@@ -139,57 +149,64 @@ public class AnimationEditPanel extends AnimationPanel
 
             for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
                 int t = i * getSize().width / 2;
-                dragging_z = JLFunc.isNearLine(mx - t, my,
-                                    (int)Math.round(pos_points[i][4][0]),
-                                    (int)Math.round(pos_points[i][4][1]),
-                                    (int)Math.round(pos_points[i][6][0]),
-                                    (int)Math.round(pos_points[i][6][1]),
-                                    4);
 
-                if (dragging_z) {
-                    dragging = true;
-                    dragging_left = (i == 0);
-                    deltax = deltay = 0;
-                    repaint();
-                    return;
+                if (show_z_drag_control) {
+                    dragging_z = JLFunc.isNearLine(mx - t, my,
+                                        (int)Math.round(pos_points[i][4][0]),
+                                        (int)Math.round(pos_points[i][4][1]),
+                                        (int)Math.round(pos_points[i][6][0]),
+                                        (int)Math.round(pos_points[i][6][1]),
+                                        4);
+
+                    if (dragging_z) {
+                        dragging = true;
+                        dragging_left = (i == 0);
+                        deltax = deltay = 0;
+                        repaint();
+                        return;
+                    }
                 }
 
-                dragging_xy = isInsidePolygon(mx - t, my, pos_points, i, face_xy);
+                if (show_xy_drag_control) {
+                    dragging_xy = isInsidePolygon(mx - t, my, pos_points, i, face_xy);
 
-                if (dragging_xy) {
-                    dragging = true;
-                    dragging_left = (i == 0);
-                    deltax = deltay = 0;
-                    repaint();
-                    return;
+                    if (dragging_xy) {
+                        dragging = true;
+                        dragging_left = (i == 0);
+                        deltax = deltay = 0;
+                        repaint();
+                        return;
+                    }
                 }
 
-                int dmx = mx - t - (int)Math.round(pos_points[i][5][0]);
-                int dmy = my - (int)Math.round(pos_points[i][5][1]);
-                dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
+                if (show_angle_drag_control) {
+                    int dmx = mx - t - (int)Math.round(pos_points[i][5][0]);
+                    int dmy = my - (int)Math.round(pos_points[i][5][1]);
+                    dragging_angle = (dmx * dmx + dmy * dmy < 49.0);
 
-                if (dragging_angle) {
-                    dragging = true;
-                    dragging_left = (i == 0);
-                    deltax = deltay = 0;
+                    if (dragging_angle) {
+                        dragging = true;
+                        dragging_left = (i == 0);
+                        deltax = deltay = 0;
 
-                    // record pixel coordinates of x and y unit vectors
-                    // in juggler's frame, at start of angle drag
-                    start_dx = new double[] {
-                        pos_points[i][11][0] - pos_points[i][4][0],
-                        pos_points[i][11][1] - pos_points[i][4][1]
-                    };
-                    start_dy = new double[] {
-                        pos_points[i][12][0] - pos_points[i][4][0],
-                        pos_points[i][12][1] - pos_points[i][4][1]
-                    };
-                    start_control = new double[] {
-                        pos_points[i][5][0] - pos_points[i][4][0],
-                        pos_points[i][5][1] - pos_points[i][4][1]
-                    };
+                        // record pixel coordinates of x and y unit vectors
+                        // in juggler's frame, at start of angle drag
+                        start_dx = new double[] {
+                            pos_points[i][11][0] - pos_points[i][4][0],
+                            pos_points[i][11][1] - pos_points[i][4][1]
+                        };
+                        start_dy = new double[] {
+                            pos_points[i][12][0] - pos_points[i][4][0],
+                            pos_points[i][12][1] - pos_points[i][4][1]
+                        };
+                        start_control = new double[] {
+                            pos_points[i][5][0] - pos_points[i][4][0],
+                            pos_points[i][5][1] - pos_points[i][4][1]
+                        };
 
-                    repaint();
-                    return;
+                        repaint();
+                        return;
+                    }
                 }
             }
         }
@@ -570,6 +587,8 @@ public class AnimationEditPanel extends AnimationPanel
 
             show_y_drag_control = (anglediff(theta) > Math.toRadians(Y_CONTROL_SHOW_DEG) ||
                     anglediff(phi - Math.PI/2) > Math.toRadians(Y_CONTROL_SHOW_DEG));
+            show_xz_drag_control = (anglediff(phi - Math.PI/2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
+                    anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG));
         }
     }
 
@@ -599,11 +618,13 @@ public class AnimationEditPanel extends AnimationPanel
             g2.fillOval((int)Math.round(event_points[i][4][0]) + deltax - 2,
                         (int)Math.round(event_points[i][4][1]) + deltay - 2, 5, 5);
 
-            // edges of xz plane control
-            drawLine(g2, event_points, i, 0, 1);
-            drawLine(g2, event_points, i, 1, 2);
-            drawLine(g2, event_points, i, 2, 3);
-            drawLine(g2, event_points, i, 3, 0);
+            if (show_xz_drag_control || dragging) {
+                // edges of xz plane control
+                drawLine(g2, event_points, i, 0, 1);
+                drawLine(g2, event_points, i, 1, 2);
+                drawLine(g2, event_points, i, 2, 3);
+                drawLine(g2, event_points, i, 3, 0);
+            }
 
             if (show_y_drag_control && (!dragging || dragging_y)) {
                 // y-axis control pointing forward/backward
@@ -671,7 +692,7 @@ public class AnimationEditPanel extends AnimationPanel
 
             // translate by one pixel and see how far it is in juggler space
             Coordinate c = Coordinate.add(position.getCoordinate(),
-                                    new Coordinate(0, 0, POSITION_BOX_Z_CM));
+                                    new Coordinate(0, 0, POSITION_BOX_Z_OFFSET_CM));
             Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
             double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
@@ -699,6 +720,13 @@ public class AnimationEditPanel extends AnimationPanel
                                         dyy * pos_control_points[j][1] +
                                         dzy * pos_control_points[j][2];
             }
+
+            show_angle_drag_control = (anglediff(phi - Math.PI/2) >
+                            Math.toRadians(90 - ANGLE_CONTROL_SHOW_DEG));
+            show_xy_drag_control = (anglediff(phi - Math.PI/2) >
+                            Math.toRadians(90 - XY_CONTROL_SHOW_DEG));
+            show_z_drag_control = (anglediff(phi - Math.PI/2) <
+                            Math.toRadians(90 - Z_CONTROL_SHOW_DEG));
         }
     }
 
@@ -728,20 +756,22 @@ public class AnimationEditPanel extends AnimationPanel
             g2.fillOval((int)Math.round(pos_points[i][4][0]) + deltax - 2,
                         (int)Math.round(pos_points[i][4][1]) + deltay - 2, 5, 5);
 
-            // edges of xy plane control
-            drawLine(g2, pos_points, i, 0, 1);
-            drawLine(g2, pos_points, i, 1, 2);
-            drawLine(g2, pos_points, i, 2, 3);
-            drawLine(g2, pos_points, i, 3, 0);
+            if (show_xy_drag_control || dragging) {
+                // edges of xy plane control
+                drawLine(g2, pos_points, i, 0, 1);
+                drawLine(g2, pos_points, i, 1, 2);
+                drawLine(g2, pos_points, i, 2, 3);
+                drawLine(g2, pos_points, i, 3, 0);
+            }
 
-            if (!dragging || dragging_z) {
+            if (show_z_drag_control && (!dragging || dragging_z)) {
                 // z-axis control pointing upward
                 drawLine(g2, pos_points, i, 4, 6);
                 drawLine(g2, pos_points, i, 6, 7);
                 drawLine(g2, pos_points, i, 6, 8);
             }
 
-            if (!dragging || dragging_angle) {
+            if (show_angle_drag_control && (!dragging || dragging_angle)) {
                 // angle-changing control pointing backward
                 drawLine(g2, pos_points, i, 4, 5);
                 g2.fillOval((int)Math.round(pos_points[i][5][0]) - 4 + deltax,
@@ -754,7 +784,7 @@ public class AnimationEditPanel extends AnimationPanel
             }
 
             if (!dragging_angle) {
-                if (dragging_z || (getCameraAngle()[1] <= Math.toRadians(GRID_SHOW_AZIMUTH_DEG))) {
+                if (dragging_z || (getCameraAngle()[1] <= Math.toRadians(GRID_SHOW_DEG))) {
                     // line dropping down to projection on ground (z = 0)
                     Coordinate c = getCurrentCoordinate();
                     double z = c.z;
@@ -791,7 +821,7 @@ public class AnimationEditPanel extends AnimationPanel
             return;
 
         // only draw grid when looking down from above
-        if (getCameraAngle()[1] > Math.toRadians(GRID_SHOW_AZIMUTH_DEG))
+        if (getCameraAngle()[1] > Math.toRadians(GRID_SHOW_DEG))
             return;
 
         Graphics2D g2 = (Graphics2D)g;
@@ -1004,9 +1034,6 @@ public class AnimationEditPanel extends AnimationPanel
                 c.y += a * Math.sin(angle) + b * Math.cos(angle);
 
                 // Snap to selected grid lines
-
-                if (getCameraAngle()[1] > Math.toRadians(70.0))
-                    return c;  // don't snap if grid isn't showing
 
                 boolean snapped = false;
                 double oldcx = c.x;
