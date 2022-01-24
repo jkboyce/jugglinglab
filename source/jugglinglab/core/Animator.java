@@ -73,16 +73,11 @@ public class Animator {
         if (pat == null)
             return;
 
-        boolean sg = (jc.showGround == AnimationPrefs.GROUND_ON
-                || (jc.showGround == AnimationPrefs.GROUND_AUTO && pat.isBouncePattern()));
-
         ren1 = new Renderer2D();
         ren1.setPattern(pat);
-        ren1.setGround(sg);
         if (jc.stereo) {
             ren2 = new Renderer2D();
             ren2.setPattern(pat);
-            ren2.setGround(sg);
         } else
             ren2 = null;
 
@@ -222,6 +217,12 @@ public class Animator {
     // Rescales the animator so that the pattern and key parts of the juggler
     // are visible. Call this whenever the pattern changes.
     public void initAnimator() {
+        boolean sg = (jc.showGround == AnimationPrefs.GROUND_ON
+                || (jc.showGround == AnimationPrefs.GROUND_AUTO && pat.isBouncePattern()));
+        ren1.setGround(sg);
+        if (jc.stereo)
+            ren2.setGround(sg);
+
         findMaxMin();
         syncRenderersToSize();
 
