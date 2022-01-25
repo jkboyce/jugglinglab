@@ -385,8 +385,10 @@ public class SiteswapGenerator extends Generator {
         try {
             if (args[1].equals("-"))  // signal to not specify a maximum throw
                 ht = -1;
+            else if (args[1].matches("^[0-9]+$"))
+                ht = Integer.parseInt(args[1]);  // numbers only
             else
-                ht = Integer.parseInt(args[1]);
+                ht = Integer.parseInt(args[1], 36);  // 'a' = 10, 'b' = 11, ...
         } catch (NumberFormatException nfe) {
             String template = errorstrings.getString("Error_number_format");
             String str = guistrings.getString("max._throw");
