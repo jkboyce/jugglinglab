@@ -12,16 +12,14 @@ public class SplineCurve extends Curve {
     protected double[][] a, b, c, d;  // spline coefficients
     protected double[] durations;  // durations of segments
 
-    @Override
-    public void initCurve(String st) {}
-
     // Calculate the coefficients a, b, c, d for each portion of the spline path.
-    // To solve for these four unknowns, we need four boundary conditions: the
-    // path position at each endpoint (2), and the hand velocity at each endpoint (2).
-    // hand the hand is making a throw or softcatch, the velocities are known and
-    // given by the velocity of the object being thrown/caught.  The other velocities
-    // are not known and must be assigned -- we assign them according to one of three
-    // minimization techniques.
+    // To solve for these four unknowns, we use four boundary conditions: the
+    // position at both endpoints, and the velocity at both endpoints.
+    //
+    // When the hand is making a throw or softcatch, the velocities are known and
+    // given by the velocity of the object being thrown/caught. The other velocities
+    // are not known and must be assigned -- we assign them according to one of
+    // three minimization techniques.
 
     @Override
     public void calcCurve() throws JuggleExceptionInternal {
@@ -38,8 +36,8 @@ public class SplineCurve extends Curve {
         d = new double[n][3];
         durations = new double[n];
         for (i = 0; i < n; i++) {
-            durations[i] = times[i+1] - times[i];
-            if (durations[i] < 0.0)
+            durations[i] = times[i + 1] - times[i];
+            if (durations[i] <= 0.0)
                 throw new JuggleExceptionInternal("splineCurve error 2");
         }
 
@@ -48,7 +46,7 @@ public class SplineCurve extends Curve {
         double t;
 
         for (i = 0; i < 3; i++) {
-            for (j = 0; j < (n+1); j++)
+            for (j = 0; j < (n + 1); j++)
                 x[j] = positions[j].getIndex(i);
 
             if (edgeVelocitiesKnown) {
@@ -96,7 +94,8 @@ public class SplineCurve extends Curve {
     // in tridiagonal form, which is solved efficiently in O(N) time.  A is
     // also a symmetric matrix, so the sub- and super-diagonals are equal.
 
-    static protected void findvels_edges_known(double[] v, double[] x, double[] t, int n, int method) throws JuggleExceptionInternal {
+    static protected void findvels_edges_known(double[] v, double[] x, double[] t, int n, int method)
+                                            throws JuggleExceptionInternal {
         if (n < 2) return;
 
         double[] Adiag = new double[n-1];
@@ -147,7 +146,8 @@ public class SplineCurve extends Curve {
     // to solve the full problem.  See pg. 77 from Numerical Recipes in C, first
     // edition.
 
-    static protected void findvels_edges_unknown(double[] v, double[] x, double[] t, int n, int method) throws JuggleExceptionInternal {
+    static protected void findvels_edges_unknown(double[] v, double[] x, double[] t, int n, int method)
+                                            throws JuggleExceptionInternal {
         if (n < 2) return;
 
         double[] Adiag = new double[n];

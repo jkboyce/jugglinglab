@@ -13,9 +13,6 @@ public class LineCurve extends Curve {
     protected double[] durations;  // durations of segments
 
     @Override
-    public void initCurve(String st) {}
-
-    @Override
     public void calcCurve() throws JuggleExceptionInternal {
         n = numpoints - 1;
         if (n < 1)
@@ -26,7 +23,7 @@ public class LineCurve extends Curve {
         durations = new double[n];
         for (int i = 0; i < n; i++) {
             durations[i] = times[i+1] - times[i];
-            if (durations[i] < 0.0)
+            if (durations[i] <= 0.0)
                 throw new JuggleExceptionInternal("lineCurve error 2");
         }
 
@@ -57,10 +54,9 @@ public class LineCurve extends Curve {
             i = n - 1;
 
         time -= times[i];
-        newPosition.setCoordinate(
-                                  a[i][0] + time * b[i][0],
-                                  a[i][1] + time * b[i][1],
-                                  a[i][2] + time * b[i][2] );
+        newPosition.setCoordinate( a[i][0] + time * b[i][0],
+                                   a[i][1] + time * b[i][1],
+                                   a[i][2] + time * b[i][2] );
     }
 
     @Override
