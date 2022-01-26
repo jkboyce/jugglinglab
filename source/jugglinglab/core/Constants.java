@@ -22,7 +22,7 @@ public class Constants {
     public static final boolean DEBUG_OPEN_SERVER = false;
     public static final boolean VALIDATE_GENERATED_PATTERNS = false;
 
-    public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.lineCurve;
+    public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.splineCurve;
     public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.SplineCurve.rmsaccel;
     public static final int OPEN_FILES_METHOD = jugglinglab.util.OpenFilesServer.memorymappedfile;
 
