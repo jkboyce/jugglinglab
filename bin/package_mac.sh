@@ -35,7 +35,7 @@ cp -r ortools-lib/* target
 jpackage --type app-image \
    --input target/ \
    --name "Juggling Lab" \
-   --app-version "1.6" \
+   --app-version "1.6.1" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
    --resource-dir "../source/resources/package/macos/" \
@@ -63,7 +63,7 @@ codesign --remove-signature "Juggling Lab.app"
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
    --name "Juggling Lab" \
-   --app-version "1.6" \
+   --app-version "1.6.1" \
    --verbose
 
 find . -name "Juggling Lab*.dmg" -type f \
