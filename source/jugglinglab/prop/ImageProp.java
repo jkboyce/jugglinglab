@@ -138,7 +138,7 @@ public class ImageProp extends Prop {
         String widthstr = pl.getParameter("width");
         if (widthstr != null) {
             try {
-                double temp = Double.valueOf(widthstr).doubleValue();
+                double temp = JLFunc.parseDouble(widthstr);
                 if (temp > 0) {
                     width = temp;
                     double aspectRatio = ((double)image.getHeight(null)) / ((double)image.getWidth(null));

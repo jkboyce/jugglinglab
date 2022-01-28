@@ -1009,7 +1009,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             public void actionPerformed(ActionEvent e) {
                 double scale;
                 try {
-                    scale = Double.valueOf(tf.getText()).doubleValue() / 100.0;
+                    scale = JLFunc.parseDouble(tf.getText()) / 100.0;
                 } catch (NumberFormatException nfe) {
                     new ErrorDialog(EditLadderDiagram.this,
                                     "Number format error in rescale percentage");
@@ -1686,7 +1686,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             else if (dialog_pd[i].type == ParameterDescriptor.TYPE_FLOAT) {
                 JTextField tf = (JTextField)control;
                 try {
-                    double val = Double.valueOf(tf.getText()).doubleValue();
+                    double val = JLFunc.parseDouble(tf.getText());
                     double def_val = ((Double)(dialog_pd[i].default_value)).doubleValue();
                     if (val != def_val)
                         term = tf.getText().trim();

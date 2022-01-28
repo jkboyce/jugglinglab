@@ -4,8 +4,8 @@
 
 package jugglinglab.jml;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 import jugglinglab.util.*;
 
@@ -109,7 +109,7 @@ public class JMLSymmetry {
         delaystring = at.getAttribute("delay");
         if (delaystring != null) {
             try {
-                delay = Double.valueOf(delaystring).doubleValue();
+                delay = JLFunc.parseDouble(delaystring);
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_symmetry_format"));
             }

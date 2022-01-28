@@ -150,8 +150,7 @@ public class RingProp extends Prop {
         String outsidestr = pl.getParameter("outside");
         if (outsidestr != null) {
             try {
-                Double ddiam = Double.valueOf(outsidestr);
-                double temp = ddiam.doubleValue();
+                double temp = JLFunc.parseDouble(outsidestr);
                 if (temp > 0.0)
                     outside_diam = temp;
                 else
@@ -166,8 +165,7 @@ public class RingProp extends Prop {
         String insidestr = pl.getParameter("inside");
         if (insidestr != null) {
             try {
-                Double ddiam = Double.valueOf(insidestr);
-                double temp = ddiam.doubleValue();
+                double temp = JLFunc.parseDouble(insidestr);
                 if (temp > 0.0)
                     inside_diam = temp;
                 else

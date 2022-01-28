@@ -88,15 +88,15 @@ public class JMLPosition {
             for (int i = 0; i < at.getNumberOfAttributes(); i++) {
                 //          System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equalsIgnoreCase("x"))
-                    tempx = Double.valueOf(at.getAttributeValue(i)).doubleValue();
+                    tempx = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("y"))
-                    tempy = Double.valueOf(at.getAttributeValue(i)).doubleValue();
+                    tempy = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("z"))
-                    tempz = Double.valueOf(at.getAttributeValue(i)).doubleValue();
+                    tempz = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("t"))
-                    tempt = Double.valueOf(at.getAttributeValue(i)).doubleValue();
+                    tempt = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("angle"))
-                    tempangle = Double.valueOf(at.getAttributeValue(i)).doubleValue();
+                    tempangle = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("juggler"))
                     jugglerstr = at.getAttributeValue(i);
             }

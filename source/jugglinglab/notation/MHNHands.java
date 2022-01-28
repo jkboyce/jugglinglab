@@ -108,13 +108,13 @@ public class MHNHands {
                         try {
                             StringTokenizer st4 = new StringTokenizer(str2, ",", false);
                             handpath[juggler][beat][coordnum][0] =
-                                Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                             if (st4.hasMoreTokens())
                                 handpath[juggler][beat][coordnum][2] =
-                                    Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                             if (st4.hasMoreTokens())
                                 handpath[juggler][beat][coordnum][1] =
-                                    Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                         } catch (NumberFormatException e) {
                             throw new JuggleExceptionUser(errorstrings.getString("Error_hands_coordinate"));
                         } catch (NoSuchElementException e) {

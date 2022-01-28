@@ -9,7 +9,11 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ResourceBundle;
@@ -136,19 +140,6 @@ public class JLFunc {
         return null;
     }
 
-    // Convert a double value to a String, rounding to `digits` places after
-    // the decimal point, with trailing '.' and '0's suppressed
-    public static String toStringRounded(double val, int digits) {
-        String fmt = "###.##########".substring(0, digits <= 0 ? 3 : 4 + Math.min(10, digits));
-        DecimalFormat formatter = new DecimalFormat(fmt);
-        String result = formatter.format(val);
-
-        if (result.equals("-0"))  // strange quirk
-            result = "0";
-
-        return result;
-    }
-
     // Compare two version numbers
     //
     // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2
@@ -177,6 +168,42 @@ public class JLFunc {
         d = Math.abs(d) / Math.sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
 
         return (int)d <= slop;
+    }
+
+    //-------------------------------------------------------------------------
+    // Helpers for converting numbers to/from strings
+    //-------------------------------------------------------------------------
+
+    protected static NumberFormat nf;
+
+    public static NumberFormat nf() {
+        if (nf == null) {
+            // use US-style number formatting for interoperability of JML
+            // files across Locales
+            nf = NumberFormat.getInstance(Locale.US);
+        }
+        return nf;
+    }
+
+    public static double parseDouble(String s) throws NumberFormatException {
+        try {
+            return nf().parse(s).doubleValue();
+        } catch (ParseException pe) {
+            throw new NumberFormatException();
+        }
+    }
+
+    // Convert a double value to a String, rounding to `digits` places after
+    // the decimal point, with trailing '.' and '0's suppressed
+    public static String toStringRounded(double val, int digits) {
+        String fmt = "###.##########".substring(0, digits <= 0 ? 3 : 4 + Math.min(10, digits));
+        DecimalFormat formatter = new DecimalFormat(fmt, new DecimalFormatSymbols(Locale.US));
+        String result = formatter.format(val);
+
+        if (result.equals("-0"))  // strange quirk
+            result = "0";
+
+        return result;
     }
 
     //-------------------------------------------------------------------------

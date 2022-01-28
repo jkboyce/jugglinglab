@@ -67,8 +67,8 @@ public class AnimationPrefsDialog extends JDialog {
         // Fill in UI elements with current prefs
         tf_width.setText(Integer.toString(oldjc.width));
         tf_height.setText(Integer.toString(oldjc.height));
-        tf_fps.setText(Double.toString(oldjc.fps));
-        tf_slowdown.setText(Double.toString(oldjc.slowdown));
+        tf_fps.setText(JLFunc.toStringRounded(oldjc.fps, 2));
+        tf_slowdown.setText(JLFunc.toStringRounded(oldjc.slowdown, 2));
         tf_border.setText(Integer.toString(oldjc.border));
         combo_showground.setSelectedIndex(oldjc.showGround);
         cb_paused.setSelected(oldjc.startPause);

@@ -113,7 +113,7 @@ public class MarginEquations {
                             String gparam = pl.getParameter("g");
                             if (gparam != null) {
                                 try {
-                                    g = Double.valueOf(gparam).doubleValue();
+                                    g = JLFunc.parseDouble(gparam);
                                 } catch (NumberFormatException nfe) {
                                 }
                             }

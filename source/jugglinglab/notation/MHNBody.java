@@ -85,16 +85,16 @@ public class MHNBody {
                         try {
                             StringTokenizer st4 = new StringTokenizer(str2, ",", false);
                             bodypath[juggler][beat][coordnum][0] =
-                                Double.valueOf(st4.nextToken()).doubleValue();
+                                JLFunc.parseDouble(st4.nextToken());
                             if (st4.hasMoreTokens())
                                 bodypath[juggler][beat][coordnum][1] =
-                                    Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                             if (st4.hasMoreTokens())
                                 bodypath[juggler][beat][coordnum][2] =
-                                    Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                             if (st4.hasMoreTokens())
                                 bodypath[juggler][beat][coordnum][3] =
-                                    Double.valueOf(st4.nextToken()).doubleValue();
+                                    JLFunc.parseDouble(st4.nextToken());
                         } catch (NumberFormatException e) {
                             throw new JuggleExceptionUser(errorstrings.getString("Error_body_coordinate"));
                         } catch (NoSuchElementException e) {

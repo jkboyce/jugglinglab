@@ -84,7 +84,7 @@ public class BouncePath extends Path {
                 hyper = Boolean.valueOf(pvalue).booleanValue();
             } else if (pname.equalsIgnoreCase("bounceplane")) {
                 try {
-                    bounceplane = Double.valueOf(pvalue).doubleValue();
+                    bounceplane = JLFunc.parseDouble(pvalue);
                 } catch (NumberFormatException nfe) {
                     String template = errorstrings.getString("Error_number_format");
                     Object[] arguments = { "bounceplane" };
@@ -92,7 +92,7 @@ public class BouncePath extends Path {
                 }
             } else if (pname.equalsIgnoreCase("bouncefrac")) {
                 try {
-                    bouncefrac = Double.valueOf(pvalue).doubleValue();
+                    bouncefrac = JLFunc.parseDouble(pvalue);
                 } catch (NumberFormatException nfe) {
                     String template = errorstrings.getString("Error_number_format");
                     Object[] arguments = { "bouncefrac" };
@@ -100,7 +100,7 @@ public class BouncePath extends Path {
                 }
             } else if (pname.equalsIgnoreCase("g")) {
                 try {
-                    g = Double.valueOf(pvalue).doubleValue();
+                    g = JLFunc.parseDouble(pvalue);
                 } catch (NumberFormatException nfe) {
                     String template = errorstrings.getString("Error_number_format");
                     Object[] arguments = { "g" };

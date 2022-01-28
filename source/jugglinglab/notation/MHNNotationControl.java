@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import jugglinglab.prop.Prop;
+import jugglinglab.util.JLFunc;
 import jugglinglab.util.JuggleExceptionUser;
 import jugglinglab.util.ParameterList;
 
@@ -256,7 +257,7 @@ public abstract class MHNNotationControl extends NotationControl {
     @Override
     public void resetControl() {
         tf1.setText("3");                                               // pattern
-        tf2.setText(Double.valueOf(MHNPattern.dwell_default).toString());   // dwell beats
+        tf2.setText(JLFunc.toStringRounded(MHNPattern.dwell_default, 2));   // dwell beats
         tf3.setText("");                                                // beats per second
         tf4.setText("");
         cb1.setSelectedIndex(0);
@@ -275,7 +276,7 @@ public abstract class MHNNotationControl extends NotationControl {
         if (cb3.getSelectedIndex() != 0)
             sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
         if (tf2.getText().length() > 0) {
-            if (!tf2.getText().equals(Double.valueOf(MHNPattern.dwell_default).toString())) {
+            if (!tf2.getText().equals(JLFunc.toStringRounded(MHNPattern.dwell_default, 2))) {
                 sb.append(";dwell=");
                 sb.append(tf2.getText());
             }

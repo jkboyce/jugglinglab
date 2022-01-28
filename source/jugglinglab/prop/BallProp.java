@@ -154,8 +154,7 @@ public class BallProp extends Prop {
         String diamstr = pl.getParameter("diam");
         if (diamstr != null) {
             try {
-                Double ddiam = Double.valueOf(diamstr.trim());
-                double temp = ddiam.doubleValue();
+                double temp = JLFunc.parseDouble(diamstr.trim());
                 if (temp > 0.0)
                     diam = temp;
                 else
