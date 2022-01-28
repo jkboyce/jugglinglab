@@ -397,6 +397,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     gui_state = STATE_INACTIVE;
                     if (animator != null)
                         animator.setPaused(anim_paused);
+                    repaint();
                     break;
                 case STATE_POPUP:
                     break;
@@ -1858,6 +1859,10 @@ public class EditLadderDiagram extends LadderDiagram implements
         // draw the tracker line showing the time
         gr.setColor(Color.red);
         gr.drawLine(0, tracker_y, width, tracker_y);
+        if (gui_state == STATE_MOVING_TRACKER) {
+            gr.drawString(JLFunc.toStringRounded(sim_time, 2) + " s",
+                        width / 2 - 18, tracker_y - 5);
+        }
     }
 
 /*
