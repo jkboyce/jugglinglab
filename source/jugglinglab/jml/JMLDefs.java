@@ -6,16 +6,20 @@ package jugglinglab.jml;
 
 
 public class JMLDefs {
-    public static final String CURRENT_JML_VERSION = "2";
+    public static final String CURRENT_JML_VERSION = "3";
 
     public static final String jmldtd =
         "<!ELEMENT jml (pattern|patternlist)>\n" +
         "<!ATTLIST jml\n" +
         "          version  CDATA   \"" + CURRENT_JML_VERSION + "\">\n" +
         "\n" +
-        "<!ELEMENT pattern (title?,basepattern?,prop*,setup,symmetry+,(event|position)*)>\n" +
+        "<!ELEMENT pattern (title?,info?,basepattern?,prop*,setup,symmetry+,(event|position)*)>\n" +
         "\n" +
         "<!ELEMENT title (#PCDATA)>\n" +
+        "\n" +
+        "<!ELEMENT info (#PCDATA)>\n" +
+        "<!ATTLIST info\n" +
+        "          tags     CDATA   #IMPLIED>\n" +
         "\n" +
         "<!ELEMENT basepattern (#PCDATA)>\n" +
         "<!ATTLIST basepattern\n" +
@@ -74,9 +78,9 @@ public class JMLDefs {
         "          angle    CDATA   \"0.0\"\n" +
         "          juggler  CDATA   \"1\">\n" +
         "\n" +
-        "<!ELEMENT patternlist (title?,line*)>\n" +
+        "<!ELEMENT patternlist (title?,info?,line*)>\n" +
         "\n" +
-        "<!ELEMENT line (#PCDATA|pattern)*>\n"+
+        "<!ELEMENT line (#PCDATA|pattern|info)*>\n"+
         "<!ATTLIST line\n" +
         "          display    CDATA   #REQUIRED\n" +
         "          animprefs  CDATA   #IMPLIED\n" +
@@ -95,6 +99,7 @@ public class JMLDefs {
         "pattern",
         "patternlist",
         "title",
+        "info",
         "basepattern",
         "prop",
         "setup",

@@ -36,7 +36,8 @@ public class GeneratorTarget {
         this.btarget = sb;
     }
 
-    public void writePattern(String display, final String notation, String anim) throws JuggleExceptionInternal {
+    public void writePattern(String display, final String notation, String anim)
+                                            throws JuggleExceptionInternal {
         if (prefix != null) {
             display = prefix + display;
             anim = prefix + anim;
@@ -55,8 +56,10 @@ public class GeneratorTarget {
                     try {
                         (new SiteswapPattern()).fromString(anim);
                     } catch (JuggleException je) {
-                        System.out.println("Error: pattern \"" + anim + "\" did not validate");
-                        throw new JuggleExceptionInternal("Error: pattern \"" + anim + "\" did not validate");
+                        String msg = "Error: pattern \"" +
+                                            anim + "\" did not validate";
+                        System.out.println(msg);
+                        throw new JuggleExceptionInternal(msg);
                     }
                     System.out.println("pattern \"" + anim + "\" validated");
                 }
@@ -68,7 +71,7 @@ public class GeneratorTarget {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ltarget.addPattern(fdisplay, null, notation, fanim, null);
+                    ltarget.addPattern(fdisplay, null, notation, fanim);
                 }
             });
         }
@@ -78,7 +81,7 @@ public class GeneratorTarget {
             btarget.append(fdisplay + '\n');
     }
 
-    // Sets a prefix and suffix for both the displayed string and animation string.
+    // Sets a prefix and suffix for both the displayed string and animation string
     public void setPrefixSuffix(String pr, String su) {
         prefix = pr;
         suffix = su;
@@ -90,7 +93,7 @@ public class GeneratorTarget {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ltarget.addPattern(display, null, null, null, null);
+                    ltarget.addPattern(display, null, null, null);
                 }
             });
         }

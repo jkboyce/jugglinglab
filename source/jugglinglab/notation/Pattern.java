@@ -37,6 +37,15 @@ public abstract class Pattern {
         throw new JuggleExceptionUser("Notation type '"+notation+"' not recognized");
     }
 
+    // returns the notation name with canonical capitalization
+    public static String canonicalNotation(String notation) {
+        for (String n : builtinNotations) {
+            if (n.equalsIgnoreCase(notation))
+                return n;
+        }
+        return null;
+    }
+
     // return the notation name
     public abstract String getNotationName();
 

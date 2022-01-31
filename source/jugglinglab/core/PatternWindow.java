@@ -710,7 +710,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
                     try {
                         FileWriter fw = new FileWriter(f);
-                        view.getPattern().writeJML(fw, true);
+                        view.getPattern().writeJML(fw, true, true);
                         fw.close();
                     } catch (FileNotFoundException fnfe) {
                         throw new JuggleExceptionInternal("FileNotFound: " +

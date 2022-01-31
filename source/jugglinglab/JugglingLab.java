@@ -486,7 +486,7 @@ public class JugglingLab {
         else {
             try {
                 FileWriter fw = new FileWriter(outpath.toFile());
-                pat.writeJML(fw, true);
+                pat.writeJML(fw, true, true);
                 fw.close();
             } catch (IOException ioe) {
                 System.out.println("Error: Problem writing JML to path " + outpath.toString());

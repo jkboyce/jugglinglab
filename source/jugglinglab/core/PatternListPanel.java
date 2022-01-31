@@ -36,6 +36,7 @@ public class PatternListPanel extends JPanel {
     protected View animtarget;
     protected String version = JMLDefs.CURRENT_JML_VERSION;
     protected String title;
+    protected String info;
     protected JList<PatternRecord> list;
     protected DefaultListModel<PatternRecord> model;
     protected String loadingversion = JMLDefs.CURRENT_JML_VERSION;
@@ -134,11 +135,18 @@ public class PatternListPanel extends JPanel {
             JMLPattern pat = null;
             Pattern p = null;
 
-            if (rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
-                pat = new JMLPattern(rec.pattern, PatternListPanel.this.loadingversion);
-            else if (rec.anim != null)
+            if (rec.notation.equalsIgnoreCase("jml") && rec.patnode != null) {
+                pat = new JMLPattern(rec.patnode, PatternListPanel.this.loadingversion);
+            } else if (rec.anim != null) {
                 pat = JMLPattern.fromBasePattern(rec.notation, rec.anim);
-            else
+
+                if (rec.info != null)
+                    pat.setInfo(rec.info);
+                if (rec.tags != null) {
+                    for (String tag : rec.tags)
+                        pat.addTag(tag);
+                }
+            } else
                 return;
 
             pat.layoutPattern();
@@ -237,7 +245,7 @@ public class PatternListPanel extends JPanel {
 
                     for (int i = lines.length - 1; i >= 0; --i) {
                         PatternRecord rec = new PatternRecord(lines[i],
-                                                    null, null, null, null);
+                                                null, null, null, null, null, null);
                         model.add(index, rec);
                     }
                     list.setSelectedIndex(index);
@@ -419,52 +427,42 @@ public class PatternListPanel extends JPanel {
 
     // Insert the pattern in the given PatternWindow into the given row
     protected void addPattern(int row, PatternWindow pw) {
-        JMLPattern pat = pw.getPattern();
-        PatternRecord rec = null;
-
         String display = pw.getTitle();
         String animprefs = pw.getAnimationPrefs().toString();
         if (animprefs.length() == 0)
             animprefs = null;
 
-        if (pat.hasBasePattern() && !pat.isBasePatternEdited()) {
-            // add as base pattern
-            String notation = pat.getBasePatternNotation();
-            String anim = pat.getBasePatternConfig();
-            JMLNode pattern = null;
+        String notation = "jml";
+        String anim = null;
 
-            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
-        } else {
-            // add as JML pattern
-            String notation = "jml";
-            String anim = null;
-            JMLNode pattern = null;
-
-            try {
-                JMLParser parser = new JMLParser();
-                parser.parse(new StringReader(pat.toString()));
-                pattern = parser.getTree().findNode("pattern");
-            } catch (Exception e) {
-                // any error here cannot be user error since pattern is
-                // already animating in another window
-                ErrorDialog.handleFatalException(e);
-            }
-
-            rec = new PatternRecord(display, animprefs, notation, anim, pattern);
+        JMLPattern pattern = pw.getPattern();
+        JMLNode patnode = null;
+        try {
+            patnode = pattern.getRootNode().findNode("pattern");
+        } catch (JuggleExceptionInternal jei) {
+            // any error here cannot be user error since pattern is
+            // already animating in another window
+            ErrorDialog.handleFatalException(jei);
+            return;
         }
+        JMLNode infonode = patnode.findNode("info");
+
+        if (pattern.hasBasePattern() && !pattern.isBasePatternEdited()) {
+            // add as base pattern instead of JML
+            notation = pattern.getBasePatternNotation();
+            anim = pattern.getBasePatternConfig();
+            patnode = null;
+        }
+
+        addPattern(row, display, animprefs, notation, anim, patnode, infonode);
 
         if (row < 0) {
-            if (BLANK_AT_END) {
-                model.add(model.size() - 1, rec);
+            if (BLANK_AT_END)
                 list.setSelectedIndex(model.size() - 2);
-            } else {
-                model.addElement(rec);  // adds at end
+            else
                 list.setSelectedIndex(model.size() - 1);
-            }
-        } else {
-            model.add(row, rec);
+        } else
             list.setSelectedIndex(row);
-        }
     }
 
     // Open a dialog to allow the user to insert a line of text
@@ -477,7 +475,7 @@ public class PatternListPanel extends JPanel {
                 String display = tf.getText();
                 dialog.dispose();
 
-                PatternRecord rec = new PatternRecord(display, null, null, null, null);
+                PatternRecord rec = new PatternRecord(display, null, null, null, null, null, null);
 
                 if (row < 0) {
                     model.addElement(rec);  // adds at end
@@ -576,27 +574,66 @@ public class PatternListPanel extends JPanel {
         animtarget = target;
     }
 
-    public void addPattern(String display, String animprefs, String notation, String anim, JMLNode pat) {
-        if (notation != null)
-            notation = notation.strip();
+    // Used by GeneratorTarget
+    public void addPattern(String display, String animprefs, String notation, String anim) {
+        addPattern(-1, display, animprefs, notation, anim, null, null);
+    }
+
+    // Add a pattern at a specific row in the list.
+    // When `row` < 0, add it at the end.
+    protected void addPattern(int row, String display, String animprefs, String notation,
+                        String anim, JMLNode patnode, JMLNode infonode) {
+        if (display == null)
+            display = "";
         if (animprefs != null)
             animprefs = animprefs.strip();
+        if (notation != null)
+            notation = notation.strip();
         if (anim != null)
             anim = anim.strip();
 
-        PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, pat);
+        String info = null;
+        ArrayList<String> tags = null;
 
-        if (BLANK_AT_END)
-            model.add(model.size() - 1, rec);
-        else
-            model.addElement(rec);
+        if (infonode != null) {
+            info = infonode.getNodeValue();
+            info = (info != null && info.strip().length() > 0) ? info.strip() : null;
+
+            String tagstr = infonode.getAttributes().getAttribute("tags");
+            if (tagstr != null) {
+                tags = new ArrayList<String>();
+
+                for (String t : tagstr.split(",")) {
+                    t = t.strip();
+                    boolean is_new = true;
+
+                    for (String t2 : tags) {
+                        if (t2.equalsIgnoreCase(t))
+                            is_new = false;
+                    }
+
+                    if (is_new)
+                        tags.add(t);
+                }
+            }
+        }
+
+        PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, patnode, info, tags);
+
+        if (row < 0) {
+            if (BLANK_AT_END)
+                model.add(model.size() - 1, rec);
+            else
+                model.addElement(rec);  // adds at end
+        } else
+            model.add(row, rec);
     }
 
     public void clearList() {
         model.clear();
 
         if (BLANK_AT_END)
-            model.addElement(new PatternRecord(" ", null, null, null, null));
+            model.addElement(new PatternRecord(" ", null, null, null, null, null, null));
     }
 
     public void setTitle(String t) {
@@ -630,38 +667,35 @@ public class PatternListPanel extends JPanel {
             JMLNode child = listnode.getChildNode(i);
             if (child.getNodeType().equalsIgnoreCase("title")) {
                 title = child.getNodeValue().strip();
+            } else if (child.getNodeType().equalsIgnoreCase("info")) {
+                info = child.getNodeValue().strip();
             } else if (child.getNodeType().equalsIgnoreCase("line")) {
                 linenumber++;
                 JMLAttributes attr = child.getAttributes();
 
                 String display = attr.getAttribute("display");
-                if ((display==null) || display.equals(""))
-                    display = " ";      // JList won't display empty strings
                 String animprefs = attr.getAttribute("animprefs");
                 String notation = attr.getAttribute("notation");
                 String anim = null;
-                JMLNode pattern = null;
+                JMLNode patnode = null;
+                JMLNode infonode = null;
 
                 if (notation != null) {
-                    if (notation.equalsIgnoreCase("JML")) {
-                        for (int j = 0; j < child.getNumberOfChildren(); j++) {
-                            JMLNode subchild = child.getChildNode(j);
-                            if (subchild.getNodeType().equalsIgnoreCase("pattern")) {
-                                pattern = subchild;
-                                break;
-                            }
-                        }
-                        if (pattern == null) {
+                    if (notation.equalsIgnoreCase("jml")) {
+                        patnode = child.findNode("pattern");
+                        if (patnode == null) {
                             String template = errorstrings.getString("Error_missing_pattern");
                             Object[] arguments = { Integer.valueOf(linenumber) };
                             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
                         }
+                        infonode = patnode.findNode("info");
                     } else {
                         anim = child.getNodeValue().strip();
+                        infonode = child.findNode("info");
                     }
                 }
 
-                addPattern(display, animprefs, notation, anim, pattern);
+                addPattern(-1, display, animprefs, notation, anim, patnode, infonode);
             } else
                 throw new JuggleExceptionUser(errorstrings.getString("Error_illegal_tag"));
         }
@@ -674,8 +708,10 @@ public class PatternListPanel extends JPanel {
 
         write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
         write.println("<patternlist>");
-        if (title != null)
+        if (title != null && title.length() > 0)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
+        if (info != null && info.length() > 0)
+            write.println("<info>" + JMLNode.xmlescape(info) + "</info>");
 
         boolean empty = (model.size() == (BLANK_AT_END ? 1 : 0));
         if (!empty)
@@ -699,18 +735,33 @@ public class PatternListPanel extends JPanel {
 
             if (hasAnimation) {
                 line += ">";
-                write.println();
+                if (i > 0)
+                    write.println();
                 write.println(line);
 
-                if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.pattern != null)
-                    rec.pattern.writeNode(write, 0);
-                else if (rec.anim != null)
+                if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.patnode != null)
+                    rec.patnode.writeNode(write, 0);
+                else if (rec.anim != null) {
                     write.println(JMLNode.xmlescape(rec.anim));
+                    if (rec.info != null || (rec.tags != null && rec.tags.size() > 0)) {
+                        String tagstr = (rec.tags != null ? String.join(",", rec.tags) : "");
+
+                        if (rec.info != null) {
+                            if (tagstr.length() == 0)
+                                write.println("<info>" + JMLNode.xmlescape(rec.info) + "</info>");
+                            else
+                                write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\">" +
+                                            JMLNode.xmlescape(rec.info) + "</info>");
+                        } else {
+                            write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\"/>");
+                        }
+                    }
+                }
 
                 write.println("</line>");
             } else {
                 line += "/>";
-                if (previousLineWasAnimation)
+                if (previousLineWasAnimation && i > 0)
                     write.println();
                 write.println(line);
             }
@@ -743,15 +794,20 @@ public class PatternListPanel extends JPanel {
         public String display;
         public String animprefs;
         public String notation;
-        public String anim;
-        public JMLNode pattern;  // if the pattern is in JML notation
+        public String anim;  // if pattern is not in JML notation
+        public JMLNode patnode;  // if pattern is in JML
+        public String info;
+        public ArrayList<String> tags;
 
-        public PatternRecord(String dis, String ap, String not, String ani, JMLNode pat) {
+        public PatternRecord(String dis, String ap, String not, String ani, JMLNode pat,
+                             String inf, ArrayList<String> t) {
             display = dis;
             animprefs = ap;
             notation = not;
             anim = ani;
-            pattern = pat;
+            patnode = pat;
+            info = inf;
+            tags = t;
         }
 
         public PatternRecord(PatternRecord pr) {
@@ -759,7 +815,15 @@ public class PatternListPanel extends JPanel {
             animprefs = pr.animprefs;
             notation = pr.notation;
             anim = pr.anim;
-            pattern = pr.pattern;
+            patnode = pr.patnode;
+            info = pr.info;
+
+            if (pr.tags != null) {
+                tags = new ArrayList<String>();
+                for (String tag : pr.tags)
+                    tags.add(tag);
+            } else
+                tags = null;
         }
     }
 
@@ -774,7 +838,7 @@ public class PatternListPanel extends JPanel {
         {
             PatternRecord rec = value;
 
-            setFont((rec.anim == null && rec.pattern == null) ? font_nopattern : font_pattern);
+            setFont((rec.anim == null && rec.patnode == null) ? font_nopattern : font_pattern);
             setText(rec.display.length() > 0 ? rec.display : " ");
 
             if (isSelected) {

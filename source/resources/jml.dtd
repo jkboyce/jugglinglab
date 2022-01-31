@@ -1,11 +1,23 @@
+<!--
+  Document Type Definition for Juggling Markup Language (JML)
+
+  Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
+
+  Note this is for informational purposes only; the actual DTD used by
+  Juggling Lab's validating XML parser is in JMLDefs.java.
+-->
 
 <!ELEMENT jml (pattern|patternlist)>
 <!ATTLIST jml
-          version  CDATA   "1.0">
+          version  CDATA   "1">
 
-<!ELEMENT pattern (title?,prop*,setup,symmetry+,(event|position)*)>
+<!ELEMENT pattern (title?,info?,basepattern?,prop*,setup,symmetry+,(event|position)*)>
 
 <!ELEMENT title (#PCDATA)>
+
+<!ELEMENT info (#PCDATA)>
+<!ATTLIST info
+          tags     CDATA   #IMPLIED>
 
 <!ELEMENT basepattern (#PCDATA)>
 <!ATTLIST basepattern
@@ -64,9 +76,9 @@
           angle    CDATA   "0.0"
           juggler  CDATA   "1">
 
-<!ELEMENT patternlist (title?,line*)>
+<!ELEMENT patternlist (title?,info?,line*)>
 
-<!ELEMENT line (#PCDATA|pattern)*>
+<!ELEMENT line (#PCDATA|pattern|info)*>
 <!ATTLIST line
           display    CDATA   #REQUIRED
           animprefs  CDATA   #IMPLIED

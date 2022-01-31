@@ -6,7 +6,6 @@ package jugglinglab.jml;
 
 import java.io.*;
 import java.net.*;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,32 +23,52 @@ public class JMLParser extends DefaultHandler {
     protected JMLNode rootNode;  // tree of JML tags
     protected JMLNode currentNode;
 
-    public static final int JML_INVALID = 0;
+    public static final int JML_INVALID = 0;  // file types
     public static final int JML_PATTERN = 1;
     public static final int JML_LIST = 2;
 
 
-    public JMLParser() {
-        patternStarted = patternFinished = false;
-    }
-
-    // --------------- call parser to create pattern from XML -----------------
+    //-------------------------------------------------------------------------
+    // Methods to parse JML and get the results
+    //-------------------------------------------------------------------------
 
     public void parse(Reader read) throws SAXException, IOException {
         try {
             if (Constants.DEBUG_JML_PARSING)
                 System.out.println("Starting JMLParser.parse()...");
+
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setValidating(true);
-            SAXParser parser = factory.newSAXParser();
 
-            // Parse the document.
-            parser.parse(new InputSource(read), this);
+            // Parse the document
+            factory.newSAXParser().parse(new InputSource(read), this);
         } catch (ParserConfigurationException pce) {
             throw new SAXException(pce.getMessage());
         }
     }
 
+    public JMLNode getTree() {
+        return rootNode;
+    }
+
+    public int getFileType() {
+        if (rootNode.getNodeType().equalsIgnoreCase("jml")) {
+            if (rootNode.getNumberOfChildren() == 1) {
+                String child = rootNode.getChildNode(0).getNodeType();
+
+                if (child.equalsIgnoreCase("pattern"))
+                    return JML_PATTERN;
+                else if (child.equalsIgnoreCase("patternlist"))
+                    return JML_LIST;
+                else
+                    return JML_INVALID;
+            } else
+                return JML_INVALID;
+        } else
+            return JML_INVALID;
+    }
+
+    //-------------------------------------------------------------------------
 
     // Implementation of org.xml.sax.EntityResolver
 
@@ -191,6 +210,26 @@ public class JMLParser extends DefaultHandler {
             System.out.println("Processing instruction: " + target + ' ' + data);
     }
 
+    // Display text, escaping some characters.
+    private static void display(char ch[], int start, int length) {
+        if (Constants.DEBUG_JML_PARSING) {
+            for (int i = start; i < start + length; i++) {
+                switch (ch[i]) {
+                    case '\n':
+                        System.out.print("\\n");
+                        break;
+                    case '\t':
+                        System.out.print("\\t");
+                        break;
+                    default:
+                        System.out.print(ch[i]);
+                        break;
+                }
+            }
+            System.out.print("\n");
+        }
+    }
+
     // Implementation of org.xml.sax.ErrorHandler
 
     @Override
@@ -229,47 +268,22 @@ public class JMLParser extends DefaultHandler {
         throw exception;
     }
 
+    //-------------------------------------------------------------------------
+    // Methods called by parser to create the JMLNode tree
+    //-------------------------------------------------------------------------
 
-    // Utility routines.
-
-    /**
-        * Display text, escaping some characters.
-     */
-    private static void display(char ch[], int start, int length) {
-        if (Constants.DEBUG_JML_PARSING) {
-            for (int i = start; i < start + length; i++) {
-                switch (ch[i]) {
-                    case '\n':
-                        System.out.print("\\n");
-                        break;
-                    case '\t':
-                        System.out.print("\\t");
-                        break;
-                    default:
-                        System.out.print(ch[i]);
-                        break;
-                }
-            }
-            System.out.print("\n");
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    //   Methods for pattern creation, used to create the JMLNode tree.
-    // ------------------------------------------------------------------------
-
-    public void startJMLPattern() throws JuggleExceptionInternal {
+    protected void startJMLPattern() throws JuggleExceptionInternal {
         if (patternStarted)
             throw new JuggleExceptionInternal("startJMLPattern(): pattern already started");
         patternStarted = true;
     }
 
-    public void startJMLElement(String name) throws JuggleExceptionInternal {
+    protected void startJMLElement(String name) throws JuggleExceptionInternal {
         if (!patternStarted)
             throw new JuggleExceptionInternal("startJMLEleent(): pattern not started");
         if (patternFinished)
             throw new JuggleExceptionInternal("startJMLElement(): pattern already finished");
-        if ((currentNode == null) && (rootNode != null))
+        if (currentNode == null && rootNode != null)
             throw new JuggleExceptionInternal("startJMLElement(): can only have one root element");
 
         JMLNode newNode = new JMLNode(name);
@@ -280,7 +294,7 @@ public class JMLParser extends DefaultHandler {
             rootNode = currentNode = newNode;
     }
 
-    public void endJMLElement(String name) throws JuggleExceptionInternal {
+    protected void endJMLElement(String name) throws JuggleExceptionInternal {
         if (!patternStarted)
             throw new JuggleExceptionInternal("endJMLElement(): pattern not started");
         if (patternFinished)
@@ -290,7 +304,7 @@ public class JMLParser extends DefaultHandler {
         currentNode = currentNode.getParentNode();
     }
 
-    public void addJMLAttribute(String name, String value) throws JuggleExceptionInternal {
+    protected void addJMLAttribute(String name, String value) throws JuggleExceptionInternal {
         if (!patternStarted)
             throw new JuggleExceptionInternal("addJMLAttribute(): pattern not started");
         if (patternFinished)
@@ -301,7 +315,7 @@ public class JMLParser extends DefaultHandler {
         currentNode.addAttribute(name, value);
     }
 
-    public void addJMLText(String text) throws JuggleExceptionInternal {
+    protected void addJMLText(String text) throws JuggleExceptionInternal {
         if (!patternStarted)
             throw new JuggleExceptionInternal("addJMLText(): pattern not started");
         if (patternFinished)
@@ -317,7 +331,7 @@ public class JMLParser extends DefaultHandler {
         currentNode.setNodeValue(newvalue);
     }
 
-    public void endJMLPattern() throws JuggleExceptionInternal {
+    protected void endJMLPattern() throws JuggleExceptionInternal {
         if (!patternStarted)
             throw new JuggleExceptionInternal("endJMLPattern(): pattern not started");
         if (patternFinished)
@@ -328,24 +342,5 @@ public class JMLParser extends DefaultHandler {
             throw new JuggleExceptionInternal("endJMLPattern(): missing endElement()");
 
         patternFinished = true;
-    }
-
-    public JMLNode getTree()    { return rootNode; }
-
-    public int getFileType() {
-        if (rootNode.getNodeType().equalsIgnoreCase("jml")) {
-            if (rootNode.getNumberOfChildren() == 1) {
-                String child = rootNode.getChildNode(0).getNodeType();
-
-                if (child.equalsIgnoreCase("pattern"))
-                    return JML_PATTERN;
-                else if (child.equalsIgnoreCase("patternlist"))
-                    return JML_LIST;
-                else
-                    return JML_INVALID;
-            } else
-                return JML_INVALID;
-        } else
-            return JML_INVALID;
     }
 }

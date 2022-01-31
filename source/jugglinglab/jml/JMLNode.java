@@ -85,7 +85,9 @@ public class JMLNode {
         attributes.addAttribute(name, value);
     }
 
-    public JMLAttributes getAttributes() { return attributes; }
+    public JMLAttributes getAttributes() {
+        return attributes;
+    }
 
     // Inserts a child node newChild before the existing child node refChild.
     public void insertBefore(JMLNode newChild, JMLNode refChild) {
@@ -147,7 +149,9 @@ public class JMLNode {
         newChild.setParentNode(this);
     }
 
-    public boolean hasChildNodes() { return (childNodes.size() != 0); }
+    public boolean hasChildNodes() {
+        return (childNodes.size() != 0);
+    }
 
     // Recursively traverse the node tree to find the first instance of a given
     // node type

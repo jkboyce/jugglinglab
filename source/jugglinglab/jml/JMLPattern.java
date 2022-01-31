@@ -44,6 +44,8 @@ public class JMLPattern {
 
     protected String version = JMLDefs.CURRENT_JML_VERSION;
     protected String title;
+    protected String info;
+    protected ArrayList<String> tags;
     protected int numjugglers;
     protected int numpaths;
     protected ArrayList<PropDef> props;
@@ -80,6 +82,7 @@ public class JMLPattern {
     public JMLPattern() {
         laidout = false;
         valid = true;
+        tags = new ArrayList<String>();
         props = new ArrayList<PropDef>();
         symmetries = new ArrayList<JMLSymmetry>();
     }
@@ -124,7 +127,7 @@ public class JMLPattern {
         if (t != null)
             t = t.replaceAll(";", "");  // semicolons not allowed in titles
 
-        title = ((t == null || t.length() == 0) ? null : t.trim());
+        title = ((t == null || t.length() == 0) ? null : t.strip());
 
         // Check if there is a base pattern defined, and if so set the new title
         // in the base pattern as well
@@ -148,6 +151,31 @@ public class JMLPattern {
             // compiled
             ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
         }
+    }
+
+    public void setInfo(String info_string) {
+        if (info_string != null && info_string.strip().length() > 0)
+            info = info_string.strip();
+        else
+            info = null;
+    }
+
+    public void addTag(String tag) {
+        if (tag != null && tag.length() > 0 && !isTaggedWith(tag))
+            tags.add(tag);
+    }
+
+    public boolean removeTag(String tag) {
+        if (tag == null || !isTaggedWith(tag))
+            return false;
+
+        for (int i = 0; i < tags.size(); i++) {
+            if (tags.get(i).equalsIgnoreCase(tag)) {
+                tags.remove(i);
+                return true;
+            }
+        }
+        return false;  // shouldn't happen
     }
 
     public void setNumberOfJugglers(int n) {
@@ -358,7 +386,15 @@ public class JMLPattern {
     }
 
     public int getHashCode() {
-        return toString().hashCode();
+        StringWriter sw = new StringWriter();
+        try {
+            // Omit <info> tag metadata for the purposes of evaluating hash code.
+            // Two patterns that differ only by metadata are treated as identical.
+            writeJML(sw, true, false);
+        } catch (IOException ioe) {
+        }
+
+        return sw.toString().hashCode();
     }
 
     //-------------------------------------------------------------------------
@@ -1379,6 +1415,25 @@ public class JMLPattern {
         return title;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+
+    public boolean isTaggedWith(String tag) {
+        if (tag == null)
+            return false;
+
+        for (String t : tags) {
+            if (t.equalsIgnoreCase(tag))
+                return true;
+        }
+        return false;
+    }
+
     public int getNumberOfJugglers() {
         return numjugglers;
     }
@@ -1757,10 +1812,18 @@ public class JMLPattern {
         } else if (type.equalsIgnoreCase("pattern")) {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {
-            setTitle(current.getNodeValue());
+            setTitle(current.getNodeValue().strip());
+        } else if (type.equalsIgnoreCase("info")) {
+            setInfo(current.getNodeValue());
+            String tagstr = current.getAttributes().getAttribute("tags");
+            if (tagstr != null) {
+                for (String t : tagstr.split(","))
+                    addTag(t.strip());
+            }
         } else if (type.equalsIgnoreCase("basepattern")) {
-            base_pattern_notation = current.getAttributes().getAttribute("notation");
-            base_pattern_config = current.getNodeValue().trim();
+            base_pattern_notation = Pattern.canonicalNotation(
+                                current.getAttributes().getAttribute("notation"));
+            base_pattern_config = current.getNodeValue().strip();
         } else if (type.equalsIgnoreCase("prop")) {
             PropDef pd = new PropDef();
             pd.readJML(current, loadingversion);
@@ -1830,7 +1893,7 @@ public class JMLPattern {
             setTitle(title);
     }
 
-    public void writeJML(Writer wr, boolean write_title) throws IOException {
+    public void writeJML(Writer wr, boolean write_title, boolean write_info) throws IOException {
         PrintWriter write = new PrintWriter(wr);
 
         for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
@@ -1839,9 +1902,22 @@ public class JMLPattern {
         write.println("<pattern>");
         if (write_title && title != null)
             write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
+        if (write_info && (info != null || tags.size() > 0)) {
+            String tagstr = String.join(",", tags);
+
+            if (info != null) {
+                if (tagstr.length() == 0)
+                    write.println("<info>" + JMLNode.xmlescape(info) + "</info>");
+                else
+                    write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\">" +
+                                JMLNode.xmlescape(info) + "</info>");
+            } else {
+                write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\"/>");
+            }
+        }
         if (base_pattern_notation != null && base_pattern_config != null) {
             write.println("<basepattern notation=\"" +
-                            JMLNode.xmlescape(base_pattern_notation) + "\">");
+                            JMLNode.xmlescape(base_pattern_notation.toLowerCase()) + "\">");
             write.println(JMLNode.xmlescape(base_pattern_config.replaceAll(";", ";\n")));
             write.println("</basepattern>");
         }
@@ -1881,13 +1957,25 @@ public class JMLPattern {
         write.flush();
     }
 
+    public JMLNode getRootNode() throws JuggleExceptionInternal {
+        try {
+            JMLParser parser = new JMLParser();
+            parser.parse(new StringReader(toString()));
+            return parser.getTree();
+        } catch (SAXException se) {
+            throw new JuggleExceptionInternal(se.getMessage());
+        } catch (IOException ioe) {
+            throw new JuggleExceptionInternal(ioe.getMessage());
+        }
+    }
+
     // java.lang.Object methods
 
     @Override
     public String toString() {
         StringWriter sw = new StringWriter();
         try {
-            writeJML(sw, true);
+            writeJML(sw, true, true);
         } catch (IOException ioe) {
         }
 
