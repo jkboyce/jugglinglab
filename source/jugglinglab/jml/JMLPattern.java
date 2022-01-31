@@ -127,7 +127,7 @@ public class JMLPattern {
         if (t != null)
             t = t.replaceAll(";", "");  // semicolons not allowed in titles
 
-        title = ((t == null || t.length() == 0) ? null : t.strip());
+        title = ((t != null && t.strip().length() > 0) ? t.strip() : null);
 
         // Check if there is a base pattern defined, and if so set the new title
         // in the base pattern as well
@@ -1812,7 +1812,7 @@ public class JMLPattern {
         } else if (type.equalsIgnoreCase("pattern")) {
             // do nothing
         } else if (type.equalsIgnoreCase("title")) {
-            setTitle(current.getNodeValue().strip());
+            setTitle(current.getNodeValue());
         } else if (type.equalsIgnoreCase("info")) {
             setInfo(current.getNodeValue());
             String tagstr = current.getAttributes().getAttribute("tags");
