@@ -207,6 +207,8 @@ public class SiteswapPattern extends MHNPattern {
 
         doSecondPass(tree, false, 0);
 
+        resolveModifiers();
+
         // Finally, add pattern symmetries
         addSymmetry(new MHNSymmetry(MHNSymmetry.TYPE_DELAY, numjugglers, null, period));
         if (tree.switchrepeat) {    // know that tree is of type Pattern
@@ -551,25 +553,29 @@ public class SiteswapPattern extends MHNPattern {
                         else
                             source_hand = (sti.left ? LEFT_HAND : RIGHT_HAND);
 
-                        int dest_hand = (child.value % 2 == 0) ? source_hand : (1-source_hand);
+                        int dest_hand = (child.value % 2 == 0) ? source_hand : (1 - source_hand);
                         if (child.x)
                             dest_hand = 1 - dest_hand;
 
                         String mod = child.mod;
                         if (mod == null) {
-                            mod = "T";      // default throw modifier
+                            mod = "T";  // default throw modifier
                             if (child.source_juggler == child.dest_juggler && source_hand == dest_hand) {
-                                if (child.value <= 2)   // want something more sophisticated?
+                                if (child.value <= 1) {
                                     mod = "H";
+                                } else if (child.value == 2) {
+                                    // resolve hold vs. throw on third pass
+                                    mod = "?";
+                                }
                             }
                         }
 
                         int dest_juggler = child.dest_juggler;
                         if (dest_juggler > getNumberOfJugglers())
-                            dest_juggler = 1 + (dest_juggler-1) % getNumberOfJugglers();
+                            dest_juggler = 1 + (dest_juggler - 1) % getNumberOfJugglers();
 
                         MHNThrow t = new MHNThrow(child.source_juggler, source_hand, index, i,
-                                          dest_juggler, dest_hand, index+child.value, -1, mod);
+                                          dest_juggler, dest_hand, index + child.value, -1, mod);
                         if (hands != null) {
                             int idx = index;
                             if (sti.sync_throw && source_hand == RIGHT_HAND)
@@ -577,7 +583,7 @@ public class SiteswapPattern extends MHNPattern {
                             idx %= hands.getPeriod(child.source_juggler);
                             t.handsindex = idx;
                         }
-                        th[child.source_juggler-1][source_hand][index][i] = t;
+                        th[child.source_juggler - 1][source_hand][index][i] = t;
 
                         // System.out.println("added throw value "+child.value+" at index "+index);
                     }
@@ -588,4 +594,38 @@ public class SiteswapPattern extends MHNPattern {
         }
     }
 
+    // Resolve any unresolved '?' modifiers
+    protected void resolveModifiers() {
+        for (int i = 0; i < indexes; ++i) {
+            for (int j = 0; j < numjugglers; ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < max_occupancy; ++slot) {
+                        MHNThrow mhnt = th[j][h][i][slot];
+
+                        if (mhnt == null)
+                            continue;
+
+                        if (mhnt.mod.equals("?")) {
+                            boolean do_hold = true;
+
+                            if (i + 1 < indexes) {
+                                for (int slot2 = 0; slot2 < max_occupancy; ++slot2) {
+                                    MHNThrow mhnt2 = th[j][h][i + 1][slot2];
+
+                                    if (mhnt2 == null || mhnt2.targetindex == i + 1)
+                                        continue;
+
+                                    do_hold = false;
+                                    break;
+                                }
+                            }
+
+                            mhnt.mod = (do_hold ? "H" : "T");
+                        }
+                    }
+                }
+            }
+        }
+
+    }
 }

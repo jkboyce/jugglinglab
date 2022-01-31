@@ -193,7 +193,7 @@ public abstract class MHNPattern extends Pattern {
         }
 
         if ((temp = pl.removeParameter("colors")) != null) {
-            if (temp.trim().equals("mixed"))
+            if (temp.strip().equals("mixed"))
                 temp = "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}";
             else
                 temp = JLFunc.expandRepeats(temp);
@@ -208,7 +208,7 @@ public abstract class MHNPattern extends Pattern {
             // Parse the colors parameter
             for (int i = 0; i < numcolors; i++) {
                 // Look for next {...} block
-                str = st1.nextToken().replace('{', ' ').trim();
+                str = st1.nextToken().replace('{', ' ').strip();
 
                 // Parse commas
                 st2 = new StringTokenizer(str, ",", false);
@@ -216,7 +216,7 @@ public abstract class MHNPattern extends Pattern {
                 switch (st2.countTokens()) {
                     case 1:
                         // Use the value as a color name
-                        color[i] = st2.nextToken().trim().toLowerCase();
+                        color[i] = st2.nextToken().strip().toLowerCase();
                         break;
                     case 3:
                         // Use the three values as RGB values
@@ -255,7 +255,7 @@ public abstract class MHNPattern extends Pattern {
         }
 
         if ((temp = pl.removeParameter("title")) != null) {
-            title = temp.trim();
+            title = temp.strip();
         }
 
         return this;
@@ -272,7 +272,7 @@ public abstract class MHNPattern extends Pattern {
         try {
             ParameterList pl = new ParameterList(config);
 
-            List<String> keys = Arrays.asList(
+            String[] keys = {
                 "pattern", 
                 "bps", 
                 "dwell", 
@@ -288,8 +288,8 @@ public abstract class MHNPattern extends Pattern {
                 "hold", 
                 "dwellmax", 
                 "handspec", 
-                "title"
-            );
+                "title",
+            };
 
             for (String key : keys) {
                 String value = pl.getParameter(key);
@@ -344,7 +344,7 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // Determines which throws are "master" throws. Because of symmetries defined
+    // Determine which throws are "master" throws. Because of symmetries defined
     // for the pattern, some throws are shifted or reflected copies of others.
     // For each such chain of related throws, appoint one as the master.
     protected void findMasterThrows() throws JuggleExceptionInternal {
@@ -434,7 +434,7 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // Figures out which throws are filling other throws, and assigns path
+    // Figure out which throws are filling other throws, and assigns path
     // numbers to all throws.
     //
     // This process is complicated by the fact that we allow multiplexing.
@@ -572,7 +572,7 @@ public abstract class MHNPattern extends Pattern {
             throw new JuggleExceptionInternal("Problem assigning path numbers 2");
     }
 
-    // Sets the `source` field for all throws that don't already have it set.
+    // Set the `source` field for all throws that don't already have it set.
     protected void findThrowSources() throws JuggleExceptionInternal {
         for (int i = indexes - 1; i >= 0; --i) {
             for (int j = 0; j < numjugglers; ++j) {
@@ -612,39 +612,7 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // Decide whether the catches immediately prior to the two given throws should be
-    // made in the order given, or whether they should be switched.
-    //
-    // The following implementation isn't ideal; we would like a function that is
-    // invariant with respect to the various pattern symmetries we can apply, but
-    // I don't think this is possible with respect to the jugglers.
-    protected static boolean isCatchOrderIncorrect(MHNThrow t1, MHNThrow t2) {
-        // first look at the time spent in the air; catch higher throws first
-        if (t1.source.index > t2.source.index)
-            return true;
-        if (t1.source.index < t2.source.index)
-            return false;
-
-        // look at which juggler it's from; catch from "faraway" jugglers first
-        int jdiff1 = Math.abs(t1.juggler - t1.source.juggler);
-        int jdiff2 = Math.abs(t2.juggler - t2.source.juggler);
-        if (jdiff1 < jdiff2)
-            return true;
-        if (jdiff1 > jdiff2)
-            return false;
-
-        // look at which hand it's from; catch from same hand first
-        int hdiff1 = Math.abs(t1.hand - t1.source.hand);
-        int hdiff2 = Math.abs(t2.hand - t2.source.hand);
-        if (hdiff1 > hdiff2)
-            return true;
-        if (hdiff1 < hdiff2)
-            return false;
-
-        return false;
-    }
-
-    // Sets the MHNThrow.catching and MHNThrow.catchnum fields
+    // Set the MHNThrow.catching and MHNThrow.catchnum fields
     protected void setCatchOrder() throws JuggleExceptionInternal {
         MHNThrow[][][][] th = getThrows();
 
@@ -720,7 +688,39 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // dump the internal state of the pattern to a string; intended to be used
+    // Decide whether the catches immediately prior to the two given throws should be
+    // made in the order given, or whether they should be switched.
+    //
+    // The following implementation isn't ideal; we would like a function that is
+    // invariant with respect to the various pattern symmetries we can apply, but
+    // I don't think this is possible with respect to the jugglers.
+    protected static boolean isCatchOrderIncorrect(MHNThrow t1, MHNThrow t2) {
+        // first look at the time spent in the air; catch higher throws first
+        if (t1.source.index > t2.source.index)
+            return true;
+        if (t1.source.index < t2.source.index)
+            return false;
+
+        // look at which juggler it's from; catch from "faraway" jugglers first
+        int jdiff1 = Math.abs(t1.juggler - t1.source.juggler);
+        int jdiff2 = Math.abs(t2.juggler - t2.source.juggler);
+        if (jdiff1 < jdiff2)
+            return true;
+        if (jdiff1 > jdiff2)
+            return false;
+
+        // look at which hand it's from; catch from same hand first
+        int hdiff1 = Math.abs(t1.hand - t1.source.hand);
+        int hdiff2 = Math.abs(t2.hand - t2.source.hand);
+        if (hdiff1 > hdiff2)
+            return true;
+        if (hdiff1 < hdiff2)
+            return false;
+
+        return false;
+    }
+
+    // Dump the internal state of the pattern to a string; intended to be used
     // for debugging
     protected String getInternalRepresentation() {
         StringBuffer sb = new StringBuffer();
@@ -755,9 +755,9 @@ public abstract class MHNPattern extends Pattern {
         return sb.toString();
     }
 
-    // returns the pattern's starting state
+    // Return the pattern's starting state
     //
-    // result is a matrix of dimension (jugglers) x 2 x (indexes), with values
+    // Result is a matrix of dimension (jugglers) x 2 x (indexes), with values
     // between 0 and (max_occupancy) inclusive
     public int[][][] getStartingState(int indexes) {
         int[][][] result = new int[getNumberOfJugglers()][2][indexes];
