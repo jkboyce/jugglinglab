@@ -31,7 +31,7 @@ public class MHNThrow {
     public int pathnum = -1;
     public boolean catching = false;  // are we catching just before this throw?
     public int catchnum = -1;  // order (starting at 1) to make catches
-    // # of beats before this of last nonzero element for this hand
+    // # of beats prior of the previous nonzero element for this hand
     public int dwellwindow;
 
     // filled in during asJMLPattern():
@@ -76,7 +76,15 @@ public class MHNThrow {
     }
 
     public boolean isZero() {
-        return (targetindex == index);
+        return (throwValue() == 0);
+    }
+
+    public int throwValue() {
+        return (targetindex - index);
+    }
+
+    public boolean isThrownOne() {
+        return (mod != null && mod.charAt(0) != 'H' && throwValue() == 1);
     }
 
     // Establishes an ordering relation for throws.

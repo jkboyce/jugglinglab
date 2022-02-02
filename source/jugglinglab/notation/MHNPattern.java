@@ -885,7 +885,11 @@ public abstract class MHNPattern extends Pattern {
                 delayperm = tempsym.getPathPerm();
         }*/
 
-        // Step 3 -- Add the primary events to the pattern:
+        // Step 3 -- Assign catch, throw times to each MHNThrow in the
+        // juggling matrix
+        findThrowCatchTimes();
+
+        // Step 4 -- Add the primary events to the pattern:
 
         // We'll need to keep track of which hands/paths don't get any events,
         // so we can add positioning events in later steps
@@ -901,8 +905,6 @@ public abstract class MHNPattern extends Pattern {
         for (int j = 0; j < getNumberOfPaths(); j++)
             pathtouched[j] = false;
 
-        MHNThrow[][][][] th = getThrows();
-
         for (int k = 0; k < getPeriod(); k++) {
             for (int j = 0; j < getNumberOfJugglers(); j++) {
                 for (int h = 0; h < 2; h++) {
@@ -910,12 +912,11 @@ public abstract class MHNPattern extends Pattern {
                     if (sst == null || sst.master != sst)
                         continue;
 
-                    // Step 3a -- Add transitions to the on-beat event (throw or holding transitions):
+                    // Step 4a -- Add transitions to the on-beat event (throw or holding transitions):
 
                     JMLEvent ev = new JMLEvent();
                     double throwxsum = 0.0;
                     int num_throws = 0;
-                    boolean onethrown = false;
 
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
@@ -997,8 +998,6 @@ public abstract class MHNPattern extends Pattern {
                             int throwval = sst2.targetindex - k;
                             //System.out.println("k = " + k + ", hand = " + h + ", throwval = " + throwval);
 
-                            if (throwval == 1)
-                                onethrown = true;
                             if (sst2.targethand == h) {
                                 throwxsum += (throwval > 8 ? samethrowx[8] : samethrowx[throwval]);
                             } else {
@@ -1009,12 +1008,12 @@ public abstract class MHNPattern extends Pattern {
                             if (sst2.pathnum != -1) {   // -1 signals a 0 throw
                                 // add holding transition if there's a ball in hand and "hands" is specified
                                 ev.addTransition(new JMLTransition(JMLTransition.TRANS_HOLDING, sst2.pathnum, type, mod));
-                                pathtouched[sst2.pathnum-1] = true;
+                                pathtouched[sst2.pathnum - 1] = true;
                             }
                         }
                     }
 
-                    // Step 3b -- Finish off the on-beat event based on the transitions we've added:
+                    // Step 4b -- Finish off the on-beat event based on the transitions we've added:
 
                     // set the event position
                     if (hands == null) {
@@ -1036,23 +1035,7 @@ public abstract class MHNPattern extends Pattern {
                         ev.calcpos = false;
                     }
 
-                    // set the event time
-                    double throwtime;
-                    if (onethrown)
-                        throwtime = ((double)k - BEATS_ONE_THROW_EARLY) / bps;
-                    else
-                        throwtime = (double)k / bps;
-
-                    //hss begin
-                    if (hss != null) {
-                        //if (onethrown)
-                        //    throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
-                        //else
-                    	throwtime = (double)k / bps;
-                    }
-                    //hss end
-                    
-                    ev.setT(throwtime);
+                    ev.setT(sst.throwtime);
 
                     // set the event juggler and hand
                     ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
@@ -1073,21 +1056,18 @@ public abstract class MHNPattern extends Pattern {
                         }
                     }
 
-                    // Step 3c -- Add any catching (or holding) events immediately prior to the on-beat event
-                    // added in Step 3b above:
+                    // Step 4c -- Add any catching (or holding) events immediately prior to the on-beat event
+                    // added in Step 4b above:
 
                     // calculate pathcaught[], catchxsum, num_catches, and onecaught
                     /* for (int z = 0; z < p.getNumberOfPaths(); z++)
                         pathcaught[z] = false; */
                     double catchxsum = 0;
                     int num_catches = 0;
-                    boolean onecaught = false;
 
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
-                        if (sst2 == null)
-                            break;
-                        if (!sst2.catching)
+                        if (sst2 == null || !sst2.catching)
                             continue;
 
                         int catchpath = sst2.pathnum;
@@ -1099,48 +1079,7 @@ public abstract class MHNPattern extends Pattern {
                         //System.out.println("catching value "+catchval);
                         catchxsum += (catchval > 8 ? catchx[8] : catchx[catchval]);
                         num_catches++;
-                        if (catchval == 1)
-                            onecaught = true;
                     }
-
-                    // Figure out when the object we just threw was caught, prior
-                    // to the throw.
-                    //
-                    // We call this `firstthrowtime` because if there are multiple
-                    // catches spread out over time, this is the earliest catch.
-
-                    // Did the previous throw out of this same hand contain
-                    // a 1 throw?
-                    boolean prev_onethrown = false;
-                    int tempindex = k - sst.dwellwindow;
-                    while (tempindex < 0)
-                        tempindex += getPeriod();
-                    for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
-                        MHNThrow sst3 = th[j][h][tempindex][slot2];
-                        if (sst3 != null && (sst3.targetindex - sst3.index) == 1)
-                            prev_onethrown = true;
-                    }
-
-                    // requested dwell beats
-                    double firstcatchtime = throwtime - dwell / bps;
-
-                    // don't allow catch to move before the previous throw
-                    // from the same hand (plus margin)
-                    firstcatchtime = Math.max(firstcatchtime,
-                            ((double)(k - sst.dwellwindow) -
-                                (prev_onethrown ? BEATS_ONE_THROW_EARLY : 0) +
-                                BEATS_THROW_CATCH_MIN) / bps);
-
-                    // if catching a 1 throw, allocate enough air time to it
-                    if (onecaught) {
-                        firstcatchtime = Math.max(firstcatchtime,
-                            ((double)(k - 1) - BEATS_ONE_THROW_EARLY +
-                                BEATS_AIRTIME_MIN) / bps);
-                    }
-
-                    // ensure we have enough time between catch and throw
-                    firstcatchtime = Math.min(firstcatchtime,
-                            throwtime - BEATS_CATCH_THROW_MIN / bps);
 
                     // Now add the catch event(s). Two cases to consider: (1) all catches
                     // happen at the same event, or (2) multiple catch events are made in
@@ -1174,25 +1113,8 @@ public abstract class MHNPattern extends Pattern {
                             ev.calcpos = false;
                         }
 
-                        // Set the catch event time
-                        lastcatchtime = firstcatchtime;
-
-                        //hss begin
-                        int newk = 0;
-                        if (hss != null) {
-                        	// if getPeriod() > size of dwellarray due to repeats
-                        	// to account for hand/body positions, then reuse
-                        	// dwellarray timings from prior array elements
-                        	if (k >= dwellarray.length) {
-                        		newk = k % dwellarray.length;
-                        	} else {
-                        		newk = k;
-                        	}
-
-                        	lastcatchtime = ((double)k - dwellarray[newk]) / bps;
-                        }
-                        //hss end
-                        ev.setT(lastcatchtime);
+                        ev.setT(sst.catchtime);
+                        lastcatchtime = sst.catchtime;
 
                         // set the event juggler and hand
                         ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
@@ -1220,72 +1142,48 @@ public abstract class MHNPattern extends Pattern {
                         // Case 2: separate event for each catch; we know that numcatches > 1 here
                         for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                             MHNThrow sst2 = th[j][h][k][slot];
-                            if (sst2 == null)
+                            if (sst2 == null || !sst2.catching)
                                 continue;
 
                             // we only need to add catch transitions here; holding transitions will be
-                            // added in Step 8
-                            if (sst2.catching) {
-                                ev = new JMLEvent();
+                            // added in Step 9
 
-                                // first set the event position
-                                if (hands == null) {
-                                    double cx = catchxsum / (double)num_catches;
-                                    // System.out.println("average catch pos. = "+cx);
-                                    ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx),0.0,0.0));
-                                } else {
-                                    int pos = sst.handsindex - 2;
-                                    while (pos < 0)
-                                        pos += hands.getPeriod(sst.juggler);
-                                    int index = hands.getCatchIndex(sst.juggler, pos);
-                                    Coordinate c = hands.getCoordinate(sst.juggler, pos, index);
-                                    if (h == MHNPattern.LEFT_HAND)
-                                        c.x = -c.x;
-                                    ev.setLocalCoordinate(c);
-                                }
-                                ev.calcpos = false;
+                            ev = new JMLEvent();
 
-                                // set the event time
-                                double catchtime = firstcatchtime + (double)sst2.catchnum /
-                                            (double)(num_catches - 1) * squeezebeats / bps;
-
-                                catchtime = Math.min(catchtime,
-                                        throwtime - BEATS_CATCH_THROW_MIN / bps);
-
-                                //hss begin
-                                int newk;
-                                if (hss != null) {
-                                	// if getPeriod() > size of dwellarray due to repeats
-                                	// to account for hand/body positions, then reuse
-                                	// dwellarray timings from prior array elements
-                                	if (k >= dwellarray.length) {
-                                		newk = k % dwellarray.length;
-                                	} else {
-                                		newk = k;
-                                	}
-                                	catchtime = ((double)k - dwellarray[newk] +
-                                            ((double)sst2.catchnum / (double)(num_catches-1) - 0.5) *
-                                            squeezebeats) / bps;
-                                }
-                                //hss end
-                                ev.setT(catchtime);
-
-                                if (sst.catchnum == (num_catches - 1))
-                                    lastcatchtime = catchtime;
-
-                                // set the event juggler and hand
-                                ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
-
-                                // add the transition
-                                ev.addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, sst2.pathnum, null, null));
-
-                                // add catch event to the pattern
-                                result.addEvent(ev);
+                            // first set the event position
+                            if (hands == null) {
+                                double cx = catchxsum / (double)num_catches;
+                                // System.out.println("average catch pos. = "+cx);
+                                ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx),0.0,0.0));
+                            } else {
+                                int pos = sst.handsindex - 2;
+                                while (pos < 0)
+                                    pos += hands.getPeriod(sst.juggler);
+                                int index = hands.getCatchIndex(sst.juggler, pos);
+                                Coordinate c = hands.getCoordinate(sst.juggler, pos, index);
+                                if (h == MHNPattern.LEFT_HAND)
+                                    c.x = -c.x;
+                                ev.setLocalCoordinate(c);
                             }
+                            ev.calcpos = false;
+
+                            ev.setT(sst2.catchtime);
+
+                            if (sst2.catchnum == (num_catches - 1))
+                                lastcatchtime = sst2.catchtime;
+
+                            // set the event juggler and hand
+                            ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
+
+                            // add the transition
+                            ev.addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, sst2.pathnum, null, null));
+
+                            // add catch event to the pattern
+                            result.addEvent(ev);
                         }
                     }
 
-                    // Step 3d -- Add other hand positioning events between the catch/throw/catch events,
+                    // Step 4d -- Add other hand positioning events between the catch/throw/catch events,
                     // if they are specified:
 
                     if (hands == null)
@@ -1307,10 +1205,15 @@ public abstract class MHNPattern extends Pattern {
                             c.x = -c.x;
                         ev.setLocalCoordinate(c);
                         ev.calcpos = false;
-                        ev.setT(lastcatchtime + (double)di*(throwtime-lastcatchtime)/numcoords);
+                        ev.setT(lastcatchtime + (double)di*(sst.throwtime-lastcatchtime)/numcoords);
                         ev.setHand(sst.juggler, (h==MHNPattern.RIGHT_HAND?HandLink.RIGHT_HAND:HandLink.LEFT_HAND));
                         result.addEvent(ev);
                     }
+
+
+                    // JKB FIX `nextcatchtime` CALCULATION BELOW
+
+
 
                     // figure out when the next catch or hold is:
                     double nextcatchtime = lastcatchtime;
@@ -1378,13 +1281,13 @@ public abstract class MHNPattern extends Pattern {
                             c.x = -c.x;
                         ev.setLocalCoordinate(c);
                         ev.calcpos = false;
-                        ev.setT(throwtime + (double)di*(nextcatchtime-throwtime)/numcoords);
+                        ev.setT(sst.throwtime + (double)di*(nextcatchtime-sst.throwtime)/numcoords);
                         ev.setHand(sst.juggler, (h==MHNPattern.RIGHT_HAND?HandLink.RIGHT_HAND:HandLink.LEFT_HAND));
                         result.addEvent(ev);
                     }
                 }
 
-                // Step 3e -- Define a body position for this juggler and beat, if one is specified:
+                // Step 4e -- Define a body position for this juggler and beat, if one is specified:
 
                 if (bodies != null) {
                     int index = k % bodies.getPeriod(j + 1);
@@ -1400,7 +1303,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        // Step 4 -- Add simple positioning events for hands that got no events:
+        // Step 5 -- Add simple positioning events for hands that got no events:
 
         for (int j = 0; j < getNumberOfJugglers(); j++) {
             for (int h = 0; h < 2; h++) {
@@ -1415,7 +1318,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        // Step 5 -- Add <holding> transitions for paths that got no events:
+        // Step 6 -- Add <holding> transitions for paths that got no events:
 
         //     first, apply all pattern symmetries to figure out which paths don't get touched
         for (int j = 0; j < result.getNumberOfSymmetries(); j++) {
@@ -1475,11 +1378,11 @@ top:
             //      throw new JuggleExceptionUser("Could not find event for hand");
         }
 
-        // Step 6 -- Do a build of the full event list so we can scan through it chronologically in Steps 7 and 8:
+        // Step 7 -- Do a build of the full event list so we can scan through it chronologically in Steps 7 and 8:
 
         result.buildEventList();
 
-        // Step 7 -- Specify positions for events that don't have them defined yet:
+        // Step 8 -- Specify positions for events that don't have them defined yet:
 
         for (int j = 1; j <= getNumberOfJugglers(); j++) {
             for (int h = 0; h < 2; h++) {
@@ -1548,7 +1451,7 @@ top:
             }
         }
 
-        // Step 8 -- Scan through the list of events, and look for cases where we need to add additional
+        // Step 9 -- Scan through the list of events, and look for cases where we need to add additional
         // <holding> transitions.  These are marked by cases where the catch and throw transitions for
         // a given path have intervening events in that hand; we want to add <holding> transitions to
         // these intervening events:
@@ -1605,7 +1508,7 @@ top:
             }
         }
 
-        // Step 9 -- Confirm that each throw in the JMLPattern has enough time to satisfy
+        // Step 10 -- Confirm that each throw in the JMLPattern has enough time to satisfy
         // its minimum duration requirement. If not then rescale time (bps) to make
         // everything feasible.
         //
@@ -1621,7 +1524,7 @@ top:
             }
         }
 
-        // Step 10 -- Streamline the pattern to remove excess empty and
+        // Step 11 -- Streamline the pattern to remove excess empty and
         // holding transitions. Do this only if `hands` has not been specified.
         //
         // This process is mostly aimed at making patterns with short beats,
@@ -1788,4 +1691,144 @@ top:
             pat.addSymmetry(sym);
         }
     }
+
+    // Assign throwing and catching times to each element in the juggling matrix
+    public void findThrowCatchTimes() {
+        for (int k = 0; k < getPeriod(); k++) {
+            for (int j = 0; j < getNumberOfJugglers(); j++) {
+                for (int h = 0; h < 2; h++) {
+                    MHNThrow sst = th[j][h][k][0];
+                    if (sst == null)
+                        continue;
+
+                    // Are we throwing a 1 on this beat?
+                    boolean onethrown = false;
+                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                        MHNThrow sst2 = th[j][h][k][slot];
+
+                        if (sst2 != null && sst2.isThrownOne()) {
+                            onethrown = true;
+                        }
+                    }
+
+                    // Set throwing times
+                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                        MHNThrow sst2 = th[j][h][k][slot];
+                        if (sst2 == null)
+                            continue;
+
+                        if (onethrown)
+                            sst2.throwtime = ((double)k - BEATS_ONE_THROW_EARLY) / bps;
+                        else
+                            sst2.throwtime = (double)k / bps;
+
+                        //hss begin
+                        if (hss != null) {
+                            //if (onethrown)
+                            //    throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
+                            //else
+                            sst2.throwtime = (double)k / bps;
+                        }
+                        //hss end
+                    }
+
+                    int num_catches = 0;
+                    boolean onecaught = false;
+
+                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                        MHNThrow sst2 = th[j][h][k][slot];
+                        if (sst2 == null || !sst2.catching)
+                            continue;
+
+                        num_catches++;
+
+                        if (sst2.source.isThrownOne())
+                            onecaught = true;
+                    }
+
+                    // Figure out when the object we just threw was caught, prior
+                    // to the throw.
+                    //
+                    // We call this `firstthrowtime` because if there are multiple
+                    // catches spread out over time, this is the earliest catch.
+
+                    // Did the previous throw out of this same hand contain
+                    // a 1 throw?
+
+                    boolean prev_onethrown = false;
+                    int tempindex = k - sst.dwellwindow;
+                    while (tempindex < 0)
+                        tempindex += getPeriod();
+
+                    for (int slot = 0; slot < getMaxOccupancy(); ++slot) {
+                        MHNThrow sst2 = th[j][h][tempindex][slot];
+                        if (sst2 != null && sst2.isThrownOne())
+                            prev_onethrown = true;
+                    }
+
+                    // first, give the requested dwell beats
+                    double firstcatchtime = sst.throwtime - dwell / bps;
+
+                    // don't allow catch to move before the previous throw
+                    // from the same hand (plus margin)
+                    firstcatchtime = Math.max(firstcatchtime,
+                            ((double)(k - sst.dwellwindow) -
+                                (prev_onethrown ? BEATS_ONE_THROW_EARLY : 0) +
+                                BEATS_THROW_CATCH_MIN) / bps);
+
+                    // if catching a 1 throw, allocate enough air time to it
+                    if (onecaught) {
+                        firstcatchtime = Math.max(firstcatchtime,
+                            ((double)(k - 1) - BEATS_ONE_THROW_EARLY +
+                                BEATS_AIRTIME_MIN) / bps);
+                    }
+
+                    // ensure we have enough time between catch and throw
+                    firstcatchtime = Math.min(firstcatchtime,
+                            sst.throwtime - BEATS_CATCH_THROW_MIN / bps);
+
+
+                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                        MHNThrow sst2 = th[j][h][k][slot];
+                        if (sst2 == null  /* || !sst2.catching  */)
+                            continue;
+
+                        double catchtime = firstcatchtime;
+
+                        if (num_catches > 1) {
+                            catchtime += (double)sst2.catchnum /
+                                    (double)(num_catches - 1) * squeezebeats / bps;
+                        }
+
+                        //hss begin
+                        int newk;
+                        if (hss != null) {
+                            // if getPeriod() > size of dwellarray due to repeats
+                            // to account for hand/body positions, then reuse
+                            // dwellarray timings from prior array elements
+                            if (k >= dwellarray.length) {
+                                newk = k % dwellarray.length;
+                            } else {
+                                newk = k;
+                            }
+
+                            catchtime = ((double)k - dwellarray[newk]) / bps;
+
+                            if (num_catches > 1) {
+                                catchtime += (double)sst2.catchnum /
+                                    (double)(num_catches - 1) * squeezebeats / bps;
+                            }
+                        }
+                        //hss end
+
+                        catchtime = Math.min(catchtime,
+                                sst.throwtime - BEATS_CATCH_THROW_MIN / bps);
+
+                        sst2.catchtime = catchtime;
+                    }
+                }
+            }
+        }
+    }
+
 }
