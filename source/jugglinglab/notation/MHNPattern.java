@@ -125,6 +125,10 @@ public abstract class MHNPattern extends Pattern {
 
     // Pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
+    //
+    // Note this doesn't create a valid pattern as-is, since MHNNotation doesn't
+    // know how to interpret `pattern`. Subclasses like SiteswapPattern should
+    // override this to add that functionality.
     @Override
     public MHNPattern fromParameters(ParameterList pl) throws
                                     JuggleExceptionUser, JuggleExceptionInternal {
@@ -308,13 +312,18 @@ public abstract class MHNPattern extends Pattern {
     }
 
     //-------------------------------------------------------------------------
-    // Build out internal representation from parsed pattern
+    // Fill in details of the juggling matrix th[], to prepare for animation
+    //
+    // Note that th[] is assumed to be pre-populated with MHNThrows from the
+    // parsing step, prior to this. This function fills in missing data elements
+    // in the MHNThrows, connecting them up into a pattern. See MHNThrow.java
+    // for more details.
     //-------------------------------------------------------------------------
 
-    protected void buildRepresentation() throws JuggleExceptionUser, JuggleExceptionInternal {
-        // build out the internal pattern representation in steps
+    protected void buildJugglingMatrix() throws JuggleExceptionUser, JuggleExceptionInternal {
+        // build out the juggling matrix in steps
         //
-        // this will find and raise any errors in the pattern
+        // this will find and raise many types of errors in the pattern
         if (Constants.DEBUG_SITESWAP_PARSING) {
             System.out.println("-----------------------------------------------------");
             System.out.println("Building internal MHNPattern representation...\n");
@@ -327,12 +336,16 @@ public abstract class MHNPattern extends Pattern {
         assignPaths();
 
         if (Constants.DEBUG_SITESWAP_PARSING)
-            System.out.println("findThrowSources()");
-        findThrowSources();
+            System.out.println("addThrowSources()");
+        addThrowSources();
 
         if (Constants.DEBUG_SITESWAP_PARSING)
             System.out.println("setCatchOrder()");
         setCatchOrder();
+
+        if (Constants.DEBUG_SITESWAP_PARSING)
+            System.out.println("findDwellWindows()");
+        findDwellWindows();
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             String s = getInternalRepresentation();
@@ -573,7 +586,10 @@ public abstract class MHNPattern extends Pattern {
     }
 
     // Set the `source` field for all throws that don't already have it set.
-    protected void findThrowSources() throws JuggleExceptionInternal {
+    //
+    // In doing this we create new MHNThrows that are not part of the juggling
+    // matrix th[] because they occur before index 0.
+    protected void addThrowSources() throws JuggleExceptionInternal {
         for (int i = indexes - 1; i >= 0; --i) {
             for (int j = 0; j < numjugglers; ++j) {
                 for (int h = 0; h < 2; ++h) {
@@ -614,7 +630,7 @@ public abstract class MHNPattern extends Pattern {
 
     // Set the MHNThrow.catching and MHNThrow.catchnum fields
     protected void setCatchOrder() throws JuggleExceptionInternal {
-        MHNThrow[][][][] th = getThrows();
+        //MHNThrow[][][][] th = getThrows();
 
         // figure out the correct catch order for master throws...
         for (int k = 0; k < getIndexes(); ++k) {
@@ -720,6 +736,43 @@ public abstract class MHNPattern extends Pattern {
         return false;
     }
 
+    protected void findDwellWindows() {
+        for (int k = 0; k < getIndexes(); ++k) {
+            for (int j = 0; j < getNumberOfJugglers(); ++j) {
+                for (int h = 0; h < 2; ++h) {
+                    for (int slot = 0; slot < getMaxOccupancy(); ++slot) {
+                        MHNThrow sst = th[j][h][k][slot];
+                        if (sst == null || sst.isZero())
+                            break;
+
+                        // search backward in time, looking for a nonzero matrix
+                        // element for that hand
+                        int dwellwindow = 0;
+                        int index = k;
+                        while (true) {
+                            dwellwindow++;
+                            index--;
+                            if (index < 0)
+                                index = getIndexes() - 1;
+
+                            boolean empty = true;
+                            for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
+                                MHNThrow sst2 = th[j][h][index][slot2];
+                                if (sst2 != null && !sst2.isZero())
+                                    empty = false;
+                            }
+
+                            if (!empty) {
+                                sst.dwellwindow = dwellwindow;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Dump the internal state of the pattern to a string; intended to be used
     // for debugging
     protected String getInternalRepresentation() {
@@ -786,25 +839,22 @@ public abstract class MHNPattern extends Pattern {
 
     // The following are default spatial coordinates to use
     protected static final double[] samethrowx =
-        { 0.0, 20.0, 25.0, 12.0, 10.0,  7.5,  5.0,  5.0,  5.0 };
+            { 0, 20, 25, 12, 10, 7.5,  5,  5,  5 };
     protected static final double[] crossingthrowx =
-        { 0.0, 20.0, 25.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0 };
+            { 0, 20, 25, 12, 10,  18, 25, 25, 30 };
     protected static final double[] catchx =
-        { 0.0, 30.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0 };
-    protected static final double restingx = 25.0;
+            { 0, 30, 25, 30, 40,  45, 45, 50, 50 };
+    protected static final double restingx = 25;
+
+    protected static double BEATS_ONE_THROW_EARLY = 0.2;
+    protected static double BEATS_AIRTIME_MIN = 0.5;
+    protected static double BEATS_THROW_CATCH_MIN = 0.2;
+    protected static double BEATS_CATCH_THROW_MIN = 0;
+
 
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
-        JMLPattern result = new JMLPattern();
-
-        // Step 1 -- Set up the basic pattern information:
-
-        // pattern title needs to be set elsewhere
-
-        result.setNumberOfJugglers(getNumberOfJugglers());
-        result.setNumberOfPaths(getNumberOfPaths());
-
-        if (bps_set <= 0.0)       // signal that we should calculate bps
+        if (bps_set <= 0.0)  // signal that we should calculate bps
             bps = calcBps();
 
         //hss begin
@@ -812,118 +862,20 @@ public abstract class MHNPattern extends Pattern {
         //  and potentially the specific pattern being juggled
         //  can be inserted here for example:
         //        if (hss != null) {
-        //        	bps *= result.getNumberOfJugglers();
+        //          bps *= getNumberOfJugglers();
         //        }
         //hss end
-        
-        int balls = getNumberOfPaths();
-        int props = (color == null) ? Math.min(balls, 1) : Math.min(balls, color.length);
-        for (int i = 0; i < props; i++) {
-            String mod = null;
-            if (propdiam != MHNPattern.propdiam_default)
-                mod = "diam="+propdiam;
-            if (color != null) {
-                String colorstr = "color="+color[i];
-                if (mod == null)
-                    mod = colorstr;
-                else
-                    mod = mod + ";" + colorstr;
-            }
-            result.addProp(new PropDef(getPropName(), mod));
-        }
-        int[] pa = new int[balls];
-        for (int i = 0; i < balls; i++)
-            pa[i] = 1 + (i % props);
-        result.setPropAssignments(pa);
 
-        // Step 2 -- Add the symmetries to the pattern:
+        JMLPattern result = new JMLPattern();
 
-        for (int i = 0; i < getNumberOfSymmetries(); i++) {
-            MHNSymmetry sss = getSymmetry(i);
-            int symtype;
-            int[] pathmap = new int[balls+1];
+        // Step 1 -- Set up the basic pattern information:
+        // Note: pattern title needs to be set elsewhere
 
-            switch (sss.getType()) {
-                case MHNSymmetry.TYPE_DELAY:
-                    symtype = JMLSymmetry.TYPE_DELAY;
-                    // figure out the path mapping
-                    {
-                        MHNThrow[][][][] th = getThrows();
-                        for (int k = 0; k < (getIndexes()-sss.getDelay()); k++) {
-                            for (int j = 0; j < getNumberOfJugglers(); j++) {
-                                for (int h = 0; h < 2; h++) {
-                                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
-                                        MHNThrow sst = th[j][h][k][slot];
-                                        if (sst != null && sst.pathnum != -1) {
-                                            MHNThrow sst2 = th[j][h][k+sss.getDelay()][slot];
-                                            if (sst2 == null)
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
-                                            if ((sst.pathnum == 0) || (sst2.pathnum == 0))
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
-                                            if (pathmap[sst.pathnum] == 0)
-                                                pathmap[sst.pathnum] = sst2.pathnum;
-                                            else if (pathmap[sst.pathnum] != sst2.pathnum)
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_delay"));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                        break;
-                case MHNSymmetry.TYPE_SWITCH:
-                    symtype = JMLSymmetry.TYPE_SWITCH;
-                    break;
-                case MHNSymmetry.TYPE_SWITCHDELAY:
-                    symtype = JMLSymmetry.TYPE_SWITCHDELAY;
+        result.setNumberOfJugglers(getNumberOfJugglers());
+        addPropsToJML(result);
 
-                    // figure out the path mapping
-                    {
-                        Permutation jugperm = sss.getJugglerPerm();
-
-                        MHNThrow[][][][] th = getThrows();
-                        for (int k = 0; k < (getIndexes()-sss.getDelay()); k++) {
-                            for (int j = 0; j < getNumberOfJugglers(); j++) {
-                                for (int h = 0; h < 2; h++) {
-                                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
-                                        MHNThrow sst = th[j][h][k][slot];
-                                        if (sst != null && sst.pathnum != -1) {
-                                            int map = jugperm.getMapping(j+1);
-                                            int newj = Math.abs(map)-1;
-                                            int newh = (map > 0 ? h : 1-h);
-                                            MHNThrow sst2 = th[newj][newh][k+sss.getDelay()][slot];
-                                            if (sst2 == null)
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
-                                            if (sst.pathnum == 0 || sst2.pathnum == 0)
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
-                                            if (pathmap[sst.pathnum] == 0)
-                                                pathmap[sst.pathnum] = sst2.pathnum;
-                                            else if (pathmap[sst.pathnum] != sst2.pathnum)
-                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_switchdelay"));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    throw new JuggleExceptionUser(errorstrings.getString("Error_unknown_symmetry"));
-            }
-            // convert path mapping to a string
-            String pathmapstring = "";
-            for (int j = 1; j < balls; j++)
-                pathmapstring += pathmap[j] + ",";
-            if (balls > 0)
-                pathmapstring += pathmap[balls];
-
-            JMLSymmetry sym = new JMLSymmetry(symtype, sss.getNumberOfJugglers(),
-                                                sss.getJugglerPerm().toString(),
-                                                getNumberOfPaths(), pathmapstring,
-                                                (double)sss.getDelay() / bps);
-
-            result.addSymmetry(sym);
-        }
+        // Step 2 -- Add the symmetries to the pattern
+        addSymmetriesToJML(result);
 
         /*
         Permutation delayperm = null;
@@ -939,9 +891,12 @@ public abstract class MHNPattern extends Pattern {
         // so we can add positioning events in later steps
         // boolean[] pathcaught = new boolean[p.getNumberOfPaths()];
         boolean[][] handtouched = new boolean[getNumberOfJugglers()][2];
-        for (int j = 0; j < getNumberOfJugglers(); j++)
-            for (int h = 0; h < 2; h++)
+        for (int j = 0; j < getNumberOfJugglers(); j++) {
+            for (int h = 0; h < 2; h++) {
                 handtouched[j][h] = false;
+            }
+        }
+
         boolean[] pathtouched = new boolean[getNumberOfPaths()];
         for (int j = 0; j < getNumberOfPaths(); j++)
             pathtouched[j] = false;
@@ -1084,7 +1039,7 @@ public abstract class MHNPattern extends Pattern {
                     // set the event time
                     double throwtime;
                     if (onethrown)
-                        throwtime = ((double)k - 0.25*dwell) / bps;
+                        throwtime = ((double)k - BEATS_ONE_THROW_EARLY) / bps;
                     else
                         throwtime = (double)k / bps;
 
@@ -1098,7 +1053,6 @@ public abstract class MHNPattern extends Pattern {
                     //hss end
                     
                     ev.setT(throwtime);
-
 
                     // set the event juggler and hand
                     ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
@@ -1125,7 +1079,7 @@ public abstract class MHNPattern extends Pattern {
                     // calculate pathcaught[], catchxsum, num_catches, and onecaught
                     /* for (int z = 0; z < p.getNumberOfPaths(); z++)
                         pathcaught[z] = false; */
-                    double catchxsum = 0.0;
+                    double catchxsum = 0;
                     int num_catches = 0;
                     boolean onecaught = false;
 
@@ -1141,7 +1095,7 @@ public abstract class MHNPattern extends Pattern {
                         /* if (pathcaught[catchpath-1] == true)
                             throw new JuggleExceptionInternal("Caught path "+catchpath+" twice");*/
                         // pathcaught[catchpath-1] = true;
-                        pathtouched[catchpath-1] = true;
+                        pathtouched[catchpath - 1] = true;
                         //System.out.println("catching value "+catchval);
                         catchxsum += (catchval > 8 ? catchx[8] : catchx[catchval]);
                         num_catches++;
@@ -1149,11 +1103,51 @@ public abstract class MHNPattern extends Pattern {
                             onecaught = true;
                     }
 
-                    // Now add the event(s).  There are two cases to consider:  (1) all catches happen at
-                    // the same event, or (2) multiple catch events are made in succession.
-                    double lastcatchtime = 0.0;
+                    // Figure out when the object we just threw was caught, prior
+                    // to the throw.
+                    //
+                    // We call this `firstthrowtime` because if there are multiple
+                    // catches spread out over time, this is the earliest catch.
 
-                    if (squeezebeats == 0.0 || num_catches < 2) {
+                    // Did the previous throw out of this same hand contain
+                    // a 1 throw?
+                    boolean prev_onethrown = false;
+                    int tempindex = k - sst.dwellwindow;
+                    while (tempindex < 0)
+                        tempindex += getPeriod();
+                    for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
+                        MHNThrow sst3 = th[j][h][tempindex][slot2];
+                        if (sst3 != null && (sst3.targetindex - sst3.index) == 1)
+                            prev_onethrown = true;
+                    }
+
+                    // requested dwell beats
+                    double firstcatchtime = throwtime - dwell / bps;
+
+                    // don't allow catch to move before the previous throw
+                    // from the same hand (plus margin)
+                    firstcatchtime = Math.max(firstcatchtime,
+                            ((double)(k - sst.dwellwindow) -
+                                (prev_onethrown ? BEATS_ONE_THROW_EARLY : 0) +
+                                BEATS_THROW_CATCH_MIN) / bps);
+
+                    // if catching a 1 throw, allocate enough air time to it
+                    if (onecaught) {
+                        firstcatchtime = Math.max(firstcatchtime,
+                            ((double)(k - 1) - BEATS_ONE_THROW_EARLY +
+                                BEATS_AIRTIME_MIN) / bps);
+                    }
+
+                    // ensure we have enough time between catch and throw
+                    firstcatchtime = Math.min(firstcatchtime,
+                            throwtime - BEATS_CATCH_THROW_MIN / bps);
+
+                    // Now add the catch event(s). Two cases to consider: (1) all catches
+                    // happen at the same event, or (2) multiple catch events are made in
+                    // succession.
+                    double lastcatchtime = 0;
+
+                    if (squeezebeats == 0 || num_catches < 2) {
                         // Case 1: everything happens at a single event
                         ev = new JMLEvent();
 
@@ -1162,7 +1156,7 @@ public abstract class MHNPattern extends Pattern {
                             if (num_catches > 0) {
                                 double cx = catchxsum / (double)num_catches;
                                 // System.out.println("average catch pos. = "+cx);
-                                ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx),0.0,0.0));
+                                ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx), 0, 0));
                                 ev.calcpos = false;
                             } else {
                                 // mark event to calculate coordinate later
@@ -1180,11 +1174,8 @@ public abstract class MHNPattern extends Pattern {
                             ev.calcpos = false;
                         }
 
-                        // set the event time
-                        if (onecaught)
-                            lastcatchtime = ((double)k - 0.5*dwell) / bps;
-                        else
-                            lastcatchtime = ((double)k - dwell) / bps;
+                        // Set the catch event time
+                        lastcatchtime = firstcatchtime;
 
                         //hss begin
                         int newk = 0;
@@ -1226,7 +1217,7 @@ public abstract class MHNPattern extends Pattern {
                         // add event to the pattern
                         result.addEvent(ev);
                     } else {
-                        // Case 2: separate event for each catch; we know that numcatches>1 here
+                        // Case 2: separate event for each catch; we know that numcatches > 1 here
                         for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                             MHNThrow sst2 = th[j][h][k][slot];
                             if (sst2 == null)
@@ -1255,13 +1246,12 @@ public abstract class MHNPattern extends Pattern {
                                 ev.calcpos = false;
 
                                 // set the event time
-                                double catchtime;
-                                if (onecaught)
-                                    catchtime = ((double)k - 0.5*dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
-                                                 squeezebeats) / bps;
-                                else
-                                    catchtime = ((double)k - dwell + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
-                                                 squeezebeats) / bps;
+                                double catchtime = firstcatchtime + (double)sst2.catchnum /
+                                            (double)(num_catches - 1) * squeezebeats / bps;
+
+                                catchtime = Math.min(catchtime,
+                                        throwtime - BEATS_CATCH_THROW_MIN / bps);
+
                                 //hss begin
                                 int newk;
                                 if (hss != null) {
@@ -1273,7 +1263,8 @@ public abstract class MHNPattern extends Pattern {
                                 	} else {
                                 		newk = k;
                                 	}
-                                	catchtime = ((double)k - dwellarray[newk] + ((double)sst2.catchnum/(double)(num_catches-1) - 0.5) *
+                                	catchtime = ((double)k - dwellarray[newk] +
+                                            ((double)sst2.catchnum / (double)(num_catches-1) - 0.5) *
                                             squeezebeats) / bps;
                                 }
                                 //hss end
@@ -1396,10 +1387,10 @@ public abstract class MHNPattern extends Pattern {
                 // Step 3e -- Define a body position for this juggler and beat, if one is specified:
 
                 if (bodies != null) {
-                    int index = k % bodies.getPeriod(j+1);
-                    int coords = bodies.getNumberOfPositions(j+1, index);
+                    int index = k % bodies.getPeriod(j + 1);
+                    int coords = bodies.getNumberOfPositions(j + 1, index);
                     for (int z = 0; z < coords; z++) {
-                        JMLPosition jmlp = bodies.getPosition(j+1, index, z);
+                        JMLPosition jmlp = bodies.getPosition(j + 1, index, z);
                         if (jmlp != null) {
                             jmlp.setT(((double)k + (double)z / (double)coords) / bps);
                             result.addPosition(jmlp);
@@ -1683,4 +1674,118 @@ top:
         return result;
     }
 
+    protected void addPropsToJML(JMLPattern pat) {
+        int balls = getNumberOfPaths();
+        pat.setNumberOfPaths(balls);
+        int props = (color == null) ? Math.min(balls, 1) : Math.min(balls, color.length);
+        for (int i = 0; i < props; i++) {
+            String mod = null;
+            if (propdiam != MHNPattern.propdiam_default)
+                mod = "diam="+propdiam;
+            if (color != null) {
+                String colorstr = "color="+color[i];
+                if (mod == null)
+                    mod = colorstr;
+                else
+                    mod = mod + ";" + colorstr;
+            }
+            pat.addProp(new PropDef(getPropName(), mod));
+        }
+        int[] pa = new int[balls];
+        for (int i = 0; i < balls; i++)
+            pa[i] = 1 + (i % props);
+        pat.setPropAssignments(pa);
+    }
+
+    // Step 2 -- Add the symmetries to the pattern
+    protected void addSymmetriesToJML(JMLPattern pat) throws JuggleExceptionUser {
+        int balls = getNumberOfPaths();
+
+        for (int i = 0; i < getNumberOfSymmetries(); i++) {
+            MHNSymmetry sss = getSymmetry(i);
+            int symtype;
+            int[] pathmap = new int[balls+1];
+
+            switch (sss.getType()) {
+                case MHNSymmetry.TYPE_DELAY:
+                    symtype = JMLSymmetry.TYPE_DELAY;
+                    // figure out the path mapping
+                    {
+                        MHNThrow[][][][] th = getThrows();
+                        for (int k = 0; k < (getIndexes()-sss.getDelay()); k++) {
+                            for (int j = 0; j < getNumberOfJugglers(); j++) {
+                                for (int h = 0; h < 2; h++) {
+                                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                                        MHNThrow sst = th[j][h][k][slot];
+                                        if (sst != null && sst.pathnum != -1) {
+                                            MHNThrow sst2 = th[j][h][k+sss.getDelay()][slot];
+                                            if (sst2 == null)
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
+                                            if ((sst.pathnum == 0) || (sst2.pathnum == 0))
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
+                                            if (pathmap[sst.pathnum] == 0)
+                                                pathmap[sst.pathnum] = sst2.pathnum;
+                                            else if (pathmap[sst.pathnum] != sst2.pathnum)
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_delay"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                        break;
+                case MHNSymmetry.TYPE_SWITCH:
+                    symtype = JMLSymmetry.TYPE_SWITCH;
+                    break;
+                case MHNSymmetry.TYPE_SWITCHDELAY:
+                    symtype = JMLSymmetry.TYPE_SWITCHDELAY;
+
+                    // figure out the path mapping
+                    {
+                        Permutation jugperm = sss.getJugglerPerm();
+
+                        MHNThrow[][][][] th = getThrows();
+                        for (int k = 0; k < (getIndexes()-sss.getDelay()); k++) {
+                            for (int j = 0; j < getNumberOfJugglers(); j++) {
+                                for (int h = 0; h < 2; h++) {
+                                    for (int slot = 0; slot < getMaxOccupancy(); slot++) {
+                                        MHNThrow sst = th[j][h][k][slot];
+                                        if (sst != null && sst.pathnum != -1) {
+                                            int map = jugperm.getMapping(j+1);
+                                            int newj = Math.abs(map)-1;
+                                            int newh = (map > 0 ? h : 1-h);
+                                            MHNThrow sst2 = th[newj][newh][k+sss.getDelay()][slot];
+                                            if (sst2 == null)
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
+                                            if (sst.pathnum == 0 || sst2.pathnum == 0)
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_paths"));
+                                            if (pathmap[sst.pathnum] == 0)
+                                                pathmap[sst.pathnum] = sst2.pathnum;
+                                            else if (pathmap[sst.pathnum] != sst2.pathnum)
+                                                throw new JuggleExceptionUser(errorstrings.getString("Error_badpattern_switchdelay"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    throw new JuggleExceptionUser(errorstrings.getString("Error_unknown_symmetry"));
+            }
+            // convert path mapping to a string
+            String pathmapstring = "";
+            for (int j = 1; j < balls; j++)
+                pathmapstring += pathmap[j] + ",";
+            if (balls > 0)
+                pathmapstring += pathmap[balls];
+
+            JMLSymmetry sym = new JMLSymmetry(symtype, sss.getNumberOfJugglers(),
+                                                sss.getJugglerPerm().toString(),
+                                                getNumberOfPaths(), pathmapstring,
+                                                (double)sss.getDelay() / bps);
+
+            pat.addSymmetry(sym);
+        }
+    }
 }

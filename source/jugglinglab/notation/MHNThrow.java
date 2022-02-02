@@ -6,8 +6,13 @@ package jugglinglab.notation;
 
 import jugglinglab.util.*;
 
+// This class represents an element in the juggling matrix. Often this represents
+// the throw of a specific object to some later element in the matrix. It can
+// also have a value of zero (`targetindex` == `index`), meaning no throw.
 
 public class MHNThrow {
+    // filled in during initial pattern definition:
+
     public int juggler;  // indexed from 0
     public int hand;  // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int index;
@@ -18,14 +23,22 @@ public class MHNThrow {
     public int targetslot;
     public String mod;
 
-    // used during layout:
-    public int handsindex;  // index of throw in hands sequence, if one exists
-    public int pathnum = -1;
+    // filled in during buildJugglingMatrix():
+
     public MHNThrow master;
     public MHNThrow source;
     public MHNThrow target;
+    public int pathnum = -1;
     public boolean catching = false;  // are we catching just before this throw?
     public int catchnum = -1;  // order (starting at 1) to make catches
+    // # of beats before this of last nonzero element for this hand
+    public int dwellwindow;
+
+    // filled in during asJMLPattern():
+
+    public double throwtime;  // in seconds
+    public double catchtime;  // time of catch prior to throw
+    public int handsindex;  // index of throw in hands sequence, if one exists
 
 
     public MHNThrow() {}
@@ -60,6 +73,10 @@ public class MHNThrow {
             return false;
 
         return true;
+    }
+
+    public boolean isZero() {
+        return (targetindex == index);
     }
 
     // Establishes an ordering relation for throws.

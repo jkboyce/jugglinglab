@@ -90,7 +90,7 @@ public class SiteswapPattern extends MHNPattern {
             }
         }
 
-        super.buildRepresentation();
+        super.buildJugglingMatrix();
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             System.out.println("Siteswap parser finished");
@@ -573,6 +573,9 @@ public class SiteswapPattern extends MHNPattern {
                         int dest_juggler = child.dest_juggler;
                         if (dest_juggler > getNumberOfJugglers())
                             dest_juggler = 1 + (dest_juggler - 1) % getNumberOfJugglers();
+
+                        // Note we want to add an MHNThrow for 0 throws as well, to
+                        // serve as a placeholder in case of patterns like 24[504],
 
                         MHNThrow t = new MHNThrow(child.source_juggler, source_hand, index, i,
                                           dest_juggler, dest_hand, index + child.value, -1, mod);
