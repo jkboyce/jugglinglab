@@ -13,11 +13,11 @@ import jugglinglab.util.*;
 public class MHNThrow {
     // filled in during initial pattern definition:
 
-    public int juggler;  // indexed from 0
+    public int juggler;  // indexed from 1
     public int hand;  // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int index;
     public int slot;
-    public int targetjuggler;  // indexed from 0
+    public int targetjuggler;  // indexed from 1
     public int targethand;  // MHNPattern.RIGHT_HAND or LEFT_HAND
     public int targetindex;
     public int targetslot;
