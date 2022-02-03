@@ -29,10 +29,10 @@ import jugglinglab.path.Path;
 // avoid duplicating this functionality.
 
 public abstract class MHNPattern extends Pattern {
-    protected static double bps_default = -1.0;  // calculate bps
+    protected static double bps_default = -1;  // calculate bps
     protected static double dwell_default = 1.3;
-    protected static double gravity_default = 980.0;
-    protected static double propdiam_default = 10.0;
+    protected static double gravity_default = 980;
+    protected static double propdiam_default = 10;
     protected static double bouncefrac_default = 0.9;
     protected static double squeezebeats_default = 0.4;
     protected static String prop_default = "ball";
@@ -151,7 +151,7 @@ public abstract class MHNPattern extends Pattern {
         if ((temp = pl.removeParameter("dwell")) != null) {
             try {
                 dwell = Double.parseDouble(temp);
-                if (dwell <= 0.0 || dwell >= 2.0)
+                if (dwell <= 0 || dwell >= 2)
                     throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_range"));
             } catch (NumberFormatException nfe) {
                 throw new JuggleExceptionUser(errorstrings.getString("Error_dwell_value"));
@@ -840,7 +840,7 @@ public abstract class MHNPattern extends Pattern {
             { 0, 30, 25, 30, 40,  45, 45, 50, 50 };
     protected static final double restingx = 25;
 
-    // How many beats early to throw a '1'. (All other throws are on-beat.)
+    // How many beats early to throw a '1' (all other throws are on-beat)
     protected static double BEATS_ONE_THROW_EARLY = 0.2;
 
     // Minimum airtime for a throw, in beats
@@ -911,7 +911,7 @@ public abstract class MHNPattern extends Pattern {
         // (bps) to make everything feasible.
         //
         // This should only be done if the user has not manually set `bps`.
-        if (bps_set <= 0.0) {
+        if (bps_set <= 0) {
             double scale_factor = result.scaleTimeToFitThrows(1.01);
 
             if (scale_factor > 1.0) {
@@ -1112,7 +1112,7 @@ public abstract class MHNPattern extends Pattern {
                             onethrown = true;
                     }
 
-                    // Set throwing times
+                    // Set throw times
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
                         if (sst2 == null)
@@ -1152,8 +1152,9 @@ public abstract class MHNPattern extends Pattern {
                     // Figure out when the object we just threw was caught, prior
                     // to the throw.
                     //
-                    // We call this `firstthrowtime` because if there are multiple
-                    // catches spread out over time, this is the earliest catch.
+                    // We call this `firstcatchtime` because if there are multiple
+                    // catches spread out over time on this beat (i.e., a squeeze
+                    // catch), this is the earliest one.
 
                     // Did the previous throw out of this same hand contain
                     // a 1 throw?
@@ -1190,11 +1191,11 @@ public abstract class MHNPattern extends Pattern {
                     firstcatchtime = Math.min(firstcatchtime,
                             sst.throwtime - BEATS_CATCH_THROW_MIN / bps);
 
-
+                    // Set catch times
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
                         if (sst2 == null)
-                            continue;
+                            break;
 
                         double catchtime = firstcatchtime;
 
@@ -1250,13 +1251,13 @@ public abstract class MHNPattern extends Pattern {
                     // Step 3a: Add transitions to the on-beat event (throw or holding transitions)
 
                     JMLEvent ev = new JMLEvent();
-                    double throwxsum = 0.0;
+                    double throwxsum = 0;
                     int num_throws = 0;
 
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
                         if (sst2 == null)
-                            continue;
+                            break;
 
                         String type = null;
                         String mod = null;
@@ -1322,7 +1323,7 @@ public abstract class MHNPattern extends Pattern {
                         }
 
                         if (sst2.mod.charAt(0) != 'H') {
-                            if (sst2.pathnum == -1) {
+                            if (sst2.isZero()) {
                                 String template = errorstrings.getString("Error_modifier_on_0");
                                 Object[] arguments = { sst2.mod, Integer.valueOf(k + 1) };
                                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -1340,7 +1341,7 @@ public abstract class MHNPattern extends Pattern {
                             }
                             num_throws++;
                         } else if (hands != null) {
-                            if (sst2.pathnum != -1) {   // -1 signals a 0 throw
+                            if (!sst2.isZero()) {
                                 // add holding transition if there's a ball in hand and "hands" is specified
                                 ev.addTransition(new JMLTransition(JMLTransition.TRANS_HOLDING, sst2.pathnum, type, mod));
                                 pathtouched[sst2.pathnum - 1] = true;
@@ -1356,7 +1357,7 @@ public abstract class MHNPattern extends Pattern {
                             double throwxav = throwxsum / (double)num_throws;
                             if (h == MHNPattern.LEFT_HAND)
                                 throwxav = -throwxav;
-                            ev.setLocalCoordinate(new Coordinate(throwxav, 0.0, 0.0));
+                            ev.setLocalCoordinate(new Coordinate(throwxav, 0, 0));
                             ev.calcpos = false;
                         } else {
                             // mark event to calculate coordinate later
@@ -1371,11 +1372,7 @@ public abstract class MHNPattern extends Pattern {
                     }
 
                     ev.setT(sst.throwtime);
-
-                    // set the event juggler and hand
                     ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
-
-                    // add it to the pattern
                     pat.addEvent(ev);
 
                     // record which hands are touched by this event, for later reference
@@ -1412,6 +1409,8 @@ public abstract class MHNPattern extends Pattern {
                     // Now add the catch event(s). Two cases to consider: (1) all catches
                     // happen at the same event, or (2) multiple catch events are made in
                     // succession.
+
+                    // keep track of the time of last catch, for Step 3d below
                     double lastcatchtime = 0;
 
                     if (squeezebeats == 0 || num_catches < 2) {
@@ -1444,7 +1443,6 @@ public abstract class MHNPattern extends Pattern {
                         ev.setT(sst.catchtime);
                         lastcatchtime = sst.catchtime;
 
-                        // set the event juggler and hand
                         ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
 
                         // add all the transitions
@@ -1481,7 +1479,7 @@ public abstract class MHNPattern extends Pattern {
                             if (hands == null) {
                                 double cx = catchxsum / (double)num_catches;
                                 // System.out.println("average catch pos. = "+cx);
-                                ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx),0.0,0.0));
+                                ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?cx:-cx), 0, 0));
                             } else {
                                 int pos = sst.handsindex - 2;
                                 while (pos < 0)
@@ -1495,14 +1493,11 @@ public abstract class MHNPattern extends Pattern {
                             ev.calcpos = false;
 
                             ev.setT(sst2.catchtime);
-
                             if (sst2.catchnum == (num_catches - 1))
                                 lastcatchtime = sst2.catchtime;
 
                             ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
-
                             ev.addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, sst2.pathnum, null, null));
-
                             pat.addEvent(ev);
                         }
                     }
@@ -1599,7 +1594,7 @@ public abstract class MHNPattern extends Pattern {
             for (int h = 0; h < 2; h++) {
                 if (!handtouched[j][h]) {
                     JMLEvent ev = new JMLEvent();
-                    ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?restingx:-restingx),0.0,0.0));
+                    ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?restingx:-restingx), 0, 0));
                     ev.setT(-1.0);
                     ev.setHand(j+1, (h==0?HandLink.RIGHT_HAND:HandLink.LEFT_HAND));
                     ev.calcpos = false;
@@ -1730,7 +1725,7 @@ public abstract class MHNPattern extends Pattern {
                 ev = pat.getEventList();
                 while (ev != null) {
                     if (ev.getJuggler() == j && ev.getHand() == hand && ev.calcpos) {
-                        ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?restingx:-restingx),0.0,0.0));
+                        ev.setLocalCoordinate(new Coordinate((h==MHNPattern.RIGHT_HAND?restingx:-restingx), 0, 0));
                         ev.calcpos = false;
                     }
                     ev = ev.getNext();

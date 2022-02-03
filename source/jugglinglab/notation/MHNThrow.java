@@ -76,7 +76,7 @@ public class MHNThrow {
     }
 
     public boolean isZero() {
-        return (throwValue() == 0);
+        return (throwValue() == 0 /* pathnum == -1 */);
     }
 
     public int throwValue() {
