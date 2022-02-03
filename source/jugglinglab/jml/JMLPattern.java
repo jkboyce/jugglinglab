@@ -1053,7 +1053,7 @@ public class JMLPattern {
 
     public void findPositions() throws JuggleExceptionInternal {
         jugglercurve = new SplineCurve[getNumberOfJugglers()];
-        jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
+        jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE) ?
                               (Curve[])(new LineCurve[getNumberOfJugglers()]) :
                               (Curve[])(new SplineCurve[getNumberOfJugglers()]) );
 
@@ -1069,7 +1069,7 @@ public class JMLPattern {
 
             if (num == 0) {
                 jugglercurve[i - 1] = new SplineCurve();
-                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
+                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE) ?
                                         (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[2];
                 times[0] = getLoopStartTime();
@@ -1101,7 +1101,7 @@ public class JMLPattern {
                 jugglerangle[i - 1].calcCurve();
             } else {
                 jugglercurve[i - 1] = new SplineCurve();
-                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.lineCurve) ?
+                jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE) ?
                                         (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
                 double[] times = new double[num+1];
                 Coordinate[] positions = new Coordinate[num+1];

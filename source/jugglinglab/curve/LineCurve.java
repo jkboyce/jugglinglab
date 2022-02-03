@@ -16,7 +16,7 @@ public class LineCurve extends Curve {
     public void calcCurve() throws JuggleExceptionInternal {
         n = numpoints - 1;
         if (n < 1)
-            throw new JuggleExceptionInternal("lineCurve error 1");
+            throw new JuggleExceptionInternal("LineCurve error 1");
 
         a = new double[n][3];
         b = new double[n][3];
@@ -24,7 +24,7 @@ public class LineCurve extends Curve {
         for (int i = 0; i < n; i++) {
             durations[i] = times[i+1] - times[i];
             if (durations[i] <= 0.0)
-                throw new JuggleExceptionInternal("lineCurve error 2");
+                throw new JuggleExceptionInternal("LineCurve error 2");
         }
 
         double[] x = new double[n+1];

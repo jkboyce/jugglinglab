@@ -11,8 +11,8 @@ import jugglinglab.util.*;
 // well as juggler positions/angles.
 
 public abstract class Curve {
-    public static final int splineCurve = 1;  // implemented types
-    public static final int lineCurve = 2;
+    public static final int CURVE_SPLINE = 1;  // implemented types
+    public static final int CURVE_LINE = 2;
 
     protected int numpoints;
     protected Coordinate[] positions;
