@@ -630,9 +630,7 @@ public abstract class MHNPattern extends Pattern {
 
     // Set the MHNThrow.catching and MHNThrow.catchnum fields
     protected void setCatchOrder() throws JuggleExceptionInternal {
-        //MHNThrow[][][][] th = getThrows();
-
-        // figure out the correct catch order for master throws...
+        // Figure out the correct catch order for master throws
         for (int k = 0; k < getIndexes(); ++k) {
             for (int j = 0; j < getNumberOfJugglers(); ++j) {
                 for (int h = 0; h < 2; ++h) {
@@ -688,7 +686,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        // ...and then copy that over to the non-master throws
+        // Copy that over to the non-master throws
         for (int k = 0; k < getIndexes(); ++k) {
             for (int j = 0; j < getNumberOfJugglers(); ++j) {
                 for (int h = 0; h < 2; ++h) {
@@ -736,6 +734,9 @@ public abstract class MHNPattern extends Pattern {
         return false;
     }
 
+    // Determine, for each throw in the juggling matrix, how many beats prior to
+    // that throw was the last throw from that hand. This determines the
+    // earliest we can catch (i.e., the maximum dwell time).
     protected void findDwellWindows() {
         for (int k = 0; k < getIndexes(); ++k) {
             for (int j = 0; j < getNumberOfJugglers(); ++j) {
@@ -757,6 +758,8 @@ public abstract class MHNPattern extends Pattern {
                                 prev_beat_throw = true;
                         }
 
+                        // don't bother with dwellwindow > 2 since in practice
+                        // we never want to dwell for more than two beats
                         sst.dwellwindow = (prev_beat_throw ? 1 : 2);
                     }
                 }
@@ -837,11 +840,17 @@ public abstract class MHNPattern extends Pattern {
             { 0, 30, 25, 30, 40,  45, 45, 50, 50 };
     protected static final double restingx = 25;
 
+    // How many beats early to throw a '1'. (All other throws are on-beat.)
     protected static double BEATS_ONE_THROW_EARLY = 0.2;
-    protected static double BEATS_AIRTIME_MIN = 0.5;
-    protected static double BEATS_THROW_CATCH_MIN = 0.2;
-    protected static double BEATS_CATCH_THROW_MIN = 0;
 
+    // Minimum airtime for a throw, in beats
+    protected static double BEATS_AIRTIME_MIN = 0.5;
+
+    // Minimum time from a throw to a subsequent catch for that hand, in beats
+    protected static double BEATS_THROW_CATCH_MIN = 0.3;
+
+    // Minimum time from a catch to a subsequent throw for that hand, in beats
+    protected static double BEATS_CATCH_THROW_MIN = 0;
 
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -866,7 +875,7 @@ public abstract class MHNPattern extends Pattern {
 
         // Step 2: Assign catch and throw times to each MHNThrow in the
         // juggling matrix
-        findThrowCatchTimes();
+        findCatchThrowTimes();
 
         // Step 3: Add the primary events to the pattern
         //
@@ -933,7 +942,7 @@ public abstract class MHNPattern extends Pattern {
     }
 
     //--------------------------------------------------------------------------
-    // Helpers for conversion to JML
+    // Helpers for converting to JML
     //--------------------------------------------------------------------------
 
     protected static final double[] throwspersec =
@@ -941,9 +950,7 @@ public abstract class MHNPattern extends Pattern {
 
     protected double calcBps() {
         // Calculate a default beats per second (bps) for the pattern
-        double result = 0.0;
-
-        MHNThrow[][][][] th = getThrows();
+        double result = 0;
         int numberaveraged = 0;
 
         for (int k = 0; k < getPeriod(); k++) {
@@ -965,7 +972,7 @@ public abstract class MHNPattern extends Pattern {
         if (numberaveraged > 0)
             result /= (double)numberaveraged;
         else
-            result = 2.0;
+            result = 2;
 
         return result;
     }
@@ -1084,8 +1091,11 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // Assign throwing and catching times to each element in the juggling matrix
-    public void findThrowCatchTimes() {
+    // Assign throw and catch times to each element in the juggling matrix.
+    //
+    // The catch time here refers to that prop's catch immediately prior to the
+    // throw represented by MHNThrow.
+    public void findCatchThrowTimes() {
         for (int k = 0; k < getPeriod(); k++) {
             for (int j = 0; j < getNumberOfJugglers(); j++) {
                 for (int h = 0; h < 2; h++) {
@@ -1221,7 +1231,7 @@ public abstract class MHNPattern extends Pattern {
 
     protected void addPrimaryEventsToJML(JMLPattern pat,
                     boolean[][] handtouched, boolean[] pathtouched)
-                    throws JuggleExceptionUser, JuggleExceptionInternal {
+                                throws JuggleExceptionUser, JuggleExceptionInternal {
         for (int j = 0; j < getNumberOfJugglers(); j++) {
             for (int h = 0; h < 2; h++) {
                 handtouched[j][h] = false;
@@ -1237,7 +1247,7 @@ public abstract class MHNPattern extends Pattern {
                     if (sst == null || sst.master != sst)
                         continue;
 
-                    // Step 4a -- Add transitions to the on-beat event (throw or holding transitions):
+                    // Step 3a: Add transitions to the on-beat event (throw or holding transitions)
 
                     JMLEvent ev = new JMLEvent();
                     double throwxsum = 0.0;
@@ -1338,7 +1348,7 @@ public abstract class MHNPattern extends Pattern {
                         }
                     }
 
-                    // Step 4b -- Finish off the on-beat event based on the transitions we've added:
+                    // Step 3b: Finish off the on-beat event based on the transitions we've added
 
                     // set the event position
                     if (hands == null) {
@@ -1381,12 +1391,9 @@ public abstract class MHNPattern extends Pattern {
                         }
                     }
 
-                    // Step 4c -- Add any catching (or holding) events immediately prior to the on-beat event
-                    // added in Step 4b above:
+                    // Step 3c: Add any catching (or holding) events immediately prior to the
+                    // on-beat event added in Step 3b above:
 
-                    // calculate pathcaught[], catchxsum, num_catches, and onecaught
-                    /* for (int z = 0; z < p.getNumberOfPaths(); z++)
-                        pathcaught[z] = false; */
                     double catchxsum = 0;
                     int num_catches = 0;
 
@@ -1397,11 +1404,7 @@ public abstract class MHNPattern extends Pattern {
 
                         int catchpath = sst2.pathnum;
                         int catchval = k - sst2.source.index;
-                        /* if (pathcaught[catchpath-1] == true)
-                            throw new JuggleExceptionInternal("Caught path "+catchpath+" twice");*/
-                        // pathcaught[catchpath-1] = true;
                         pathtouched[catchpath - 1] = true;
-                        //System.out.println("catching value "+catchval);
                         catchxsum += (catchval > 8 ? catchx[8] : catchx[catchval]);
                         num_catches++;
                     }
@@ -1461,7 +1464,6 @@ public abstract class MHNPattern extends Pattern {
                             }
                         }
 
-                        // add event to the pattern
                         pat.addEvent(ev);
                     } else {
                         // Case 2: separate event for each catch; we know that numcatches > 1 here
@@ -1497,19 +1499,16 @@ public abstract class MHNPattern extends Pattern {
                             if (sst2.catchnum == (num_catches - 1))
                                 lastcatchtime = sst2.catchtime;
 
-                            // set the event juggler and hand
                             ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
 
-                            // add the transition
                             ev.addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, sst2.pathnum, null, null));
 
-                            // add catch event to the pattern
                             pat.addEvent(ev);
                         }
                     }
 
-                    // Step 4d -- Add other hand positioning events between the catch/throw/catch events,
-                    // if they are specified:
+                    // Step 3d: If hand positionss are specified, add any extra hand positioning
+                    // events after the catch above, until the next catch for the hand
 
                     if (hands == null)
                         continue;
@@ -1534,7 +1533,6 @@ public abstract class MHNPattern extends Pattern {
                         ev.setHand(sst.juggler, (h==MHNPattern.RIGHT_HAND?HandLink.RIGHT_HAND:HandLink.LEFT_HAND));
                         pat.addEvent(ev);
                     }
-
 
                     // figure out when the next catch or hold is
                     double nextcatchtime = lastcatchtime;
@@ -1633,7 +1631,7 @@ public abstract class MHNPattern extends Pattern {
             int hand = HandLink.LEFT_HAND;
             int juggler = 0;
 
-top:
+            top:
             for (int tempk = 0; tempk < getIndexes(); tempk++) {
                 for (int tempj = 0; tempj < getNumberOfJugglers(); tempj++) {
                     for (int temph = 0; temph < 2; temph++) {
@@ -1741,7 +1739,7 @@ top:
         }
     }
 
-    // Step 9 -- Scan through the list of events, and look for cases where we need
+    // Step 9: Scan through the list of events, and look for cases where we need
     // to add additional <holding> transitions.  These are marked by cases where the
     // catch and throw transitions for a given path have intervening events in that
     // hand; we want to add <holding> transitions to these intervening events.
