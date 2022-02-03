@@ -376,4 +376,17 @@ public class JMLEvent {
             getTransition(i).writeJML(wr);
         wr.println("</event>");
     }
+
+    // java.lang.Object methods
+
+    @Override
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        try {
+            writeJML(new PrintWriter(sw));
+        } catch (IOException ioe) {
+        }
+
+        return sw.toString();
+    }
 }
