@@ -704,8 +704,8 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    // Decide whether the catches immediately prior to the two given throws should be
-    // made in the order given, or whether they should be switched.
+    // Decide whether the catches immediately prior to the two given throws should
+    // be made in the order given, or whether they should be switched.
     //
     // The following implementation isn't ideal; we would like a function that is
     // invariant with respect to the various pattern symmetries we can apply, but
@@ -742,31 +742,22 @@ public abstract class MHNPattern extends Pattern {
                 for (int h = 0; h < 2; ++h) {
                     for (int slot = 0; slot < getMaxOccupancy(); ++slot) {
                         MHNThrow sst = th[j][h][k][slot];
-                        if (sst == null || sst.isZero())
-                            break;
+                        if (sst == null)
+                            continue;
 
-                        // search backward in time, looking for a nonzero matrix
-                        // element for that hand
-                        int dwellwindow = 0;
-                        int index = k;
-                        while (true) {
-                            dwellwindow++;
-                            index--;
-                            if (index < 0)
-                                index = getIndexes() - 1;
+                        // see if we made a throw on the beat immediately prior
+                        int index = k - 1;
+                        if (index < 0)
+                            index = getIndexes() - 1;
 
-                            boolean empty = true;
-                            for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
-                                MHNThrow sst2 = th[j][h][index][slot2];
-                                if (sst2 != null && !sst2.isZero())
-                                    empty = false;
-                            }
-
-                            if (!empty) {
-                                sst.dwellwindow = dwellwindow;
-                                break;
-                            }
+                        boolean prev_beat_throw = false;
+                        for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
+                            MHNThrow sst2 = th[j][h][index][slot2];
+                            if (sst2 != null && !sst2.isZero())
+                                prev_beat_throw = true;
                         }
+
+                        sst.dwellwindow = (prev_beat_throw ? 1 : 2);
                     }
                 }
             }
@@ -854,7 +845,7 @@ public abstract class MHNPattern extends Pattern {
 
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
-        if (bps_set <= 0.0)  // signal that we should calculate bps
+        if (bps_set <= 0)  // signal that we should calculate bps
             bps = calcBps();
 
         //hss begin
@@ -885,15 +876,14 @@ public abstract class MHNPattern extends Pattern {
                 delayperm = tempsym.getPathPerm();
         }*/
 
-        // Step 3 -- Assign catch, throw times to each MHNThrow in the
+        // Step 3 -- Assign catch and throw times to each MHNThrow in the
         // juggling matrix
         findThrowCatchTimes();
 
         // Step 4 -- Add the primary events to the pattern:
 
         // We'll need to keep track of which hands/paths don't get any events,
-        // so we can add positioning events in later steps
-        // boolean[] pathcaught = new boolean[p.getNumberOfPaths()];
+        // so we can add positioning events in steps 5 and 6
         boolean[][] handtouched = new boolean[getNumberOfJugglers()][2];
         for (int j = 0; j < getNumberOfJugglers(); j++) {
             for (int h = 0; h < 2; h++) {
@@ -1044,10 +1034,10 @@ public abstract class MHNPattern extends Pattern {
                     result.addEvent(ev);
 
                     // record which hands are touched by this event, for later reference
-                    for (int i2 = 0; i2 < indexes; i2++) {
-                        for (int j2 = 0; j2 < numjugglers; j2++) {
+                    for (int i2 = 0; i2 < getIndexes(); i2++) {
+                        for (int j2 = 0; j2 < getNumberOfJugglers(); j2++) {
                             for (int h2 = 0; h2 < 2; h2++) {
-                                for (int slot2 = 0; slot2 < max_occupancy; slot2++) {
+                                for (int slot2 = 0; slot2 < getMaxOccupancy(); slot2++) {
                                     MHNThrow sst2 = th[j2][h2][i2][slot2];
                                     if (sst2 != null && sst2.master == sst)
                                         handtouched[j2][h2] = true;
@@ -1211,62 +1201,24 @@ public abstract class MHNPattern extends Pattern {
                     }
 
 
-                    // JKB FIX `nextcatchtime` CALCULATION BELOW
-
-
-
-                    // figure out when the next catch or hold is:
+                    // figure out when the next catch or hold is
                     double nextcatchtime = lastcatchtime;
 
-                    for (int tempk = (k+1); tempk < getIndexes(); tempk++) {
-                        int next_num_catches = 0;
-                        boolean next_gotevent = false;
-                        boolean next_onecaught = false;
-
+                    for (int tempk = (k + 1); tempk < getIndexes(); tempk++) {
                         for (int tempslot = 0; tempslot < getMaxOccupancy(); tempslot++) {
                             MHNThrow tempsst = th[j][h][tempk][tempslot];
                             if (tempsst == null)
                                 break;
 
-                            next_gotevent = true;
-
-                            if (tempsst.catching) {
-                                next_num_catches++;
-                                if ((tempk - tempsst.source.index) == 1)
-                                    next_onecaught = true;
-                            }
+                            nextcatchtime = (tempslot == 0 ? tempsst.catchtime :
+                                        Math.min(nextcatchtime, tempsst.catchtime));
                         }
 
-                        if (next_gotevent) {
-                            if (next_num_catches < 2) {
-                                if (next_onecaught)
-                                    nextcatchtime = ((double)tempk - 0.5*dwell) / bps;
-                                else
-                                    nextcatchtime = ((double)tempk - dwell) / bps;
-
-                                //hss begin
-                                // why do things work without modifying nextcatchtime logic?
-                                if (hss != null) {
-                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]) / bps;
-                                }
-                                //hss end
-                            } else {
-                                if (next_onecaught)
-                                    nextcatchtime = ((double)tempk - 0.5*dwell - 0.5*squeezebeats) / bps;
-                                else
-                                    nextcatchtime = ((double)tempk - dwell - 0.5*squeezebeats) / bps;
-
-                                //hss begin
-                                if (hss != null) {
-                                    // nextcatchtime = ((double)tempk - dwellarray[tempk]  - 0.5*squeezebeats)  / bps;
-                                }
-                                //hss end
-                            }
+                        if (nextcatchtime != lastcatchtime)
                             break;
-                        }
                     }
                     if (nextcatchtime == lastcatchtime)
-                        throw new JuggleExceptionInternal("Couldn't find next catch/hold past t="+lastcatchtime);
+                        throw new JuggleExceptionInternal("Couldn't find next catch/hold past t=" + lastcatchtime);
 
                     // add other events between the current throw and the next catch
                     pos = sst.handsindex;
@@ -1378,7 +1330,7 @@ top:
             //      throw new JuggleExceptionUser("Could not find event for hand");
         }
 
-        // Step 7 -- Do a build of the full event list so we can scan through it chronologically in Steps 7 and 8:
+        // Step 7 -- Do a build of the full event list so we can scan through it chronologically in Steps 8 and 9:
 
         result.buildEventList();
 
@@ -1706,16 +1658,15 @@ top:
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
 
-                        if (sst2 != null && sst2.isThrownOne()) {
+                        if (sst2 != null && sst2.isThrownOne())
                             onethrown = true;
-                        }
                     }
 
                     // Set throwing times
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
                         if (sst2 == null)
-                            continue;
+                            break;
 
                         if (onethrown)
                             sst2.throwtime = ((double)k - BEATS_ONE_THROW_EARLY) / bps;
@@ -1737,13 +1688,15 @@ top:
 
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
-                        if (sst2 == null || !sst2.catching)
-                            continue;
+                        if (sst2 == null)
+                            break;
 
-                        num_catches++;
+                        if (sst2.catching) {
+                            num_catches++;
 
-                        if (sst2.source.isThrownOne())
-                            onecaught = true;
+                            if (sst2.source.isThrownOne())
+                                onecaught = true;
+                        }
                     }
 
                     // Figure out when the object we just threw was caught, prior
@@ -1790,7 +1743,7 @@ top:
 
                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
                         MHNThrow sst2 = th[j][h][k][slot];
-                        if (sst2 == null  /* || !sst2.catching  */)
+                        if (sst2 == null)
                             continue;
 
                         double catchtime = firstcatchtime;
@@ -1801,16 +1754,11 @@ top:
                         }
 
                         //hss begin
-                        int newk;
                         if (hss != null) {
                             // if getPeriod() > size of dwellarray due to repeats
                             // to account for hand/body positions, then reuse
                             // dwellarray timings from prior array elements
-                            if (k >= dwellarray.length) {
-                                newk = k % dwellarray.length;
-                            } else {
-                                newk = k;
-                            }
+                            int newk = k % dwellarray.length;
 
                             catchtime = ((double)k - dwellarray[newk]) / bps;
 
