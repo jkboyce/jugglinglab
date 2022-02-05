@@ -46,6 +46,15 @@ public class Coordinate {
             return z;
     }
 
+    public void setIndex(int index, double value) {
+        if (index == 0)
+            x = value;
+        else if (index == 1)
+            y = value;
+        else
+            z = value;
+    }
+
     public static Coordinate max(Coordinate coord1, Coordinate coord2) {
         if (coord1 == null)
             return coord2;

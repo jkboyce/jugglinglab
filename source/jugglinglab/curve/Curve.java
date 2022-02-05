@@ -15,12 +15,22 @@ public abstract class Curve {
     public static final int CURVE_LINE = 2;
 
     protected int numpoints;
-    protected Coordinate[] positions;
     protected double[] times;
 
-    // valocities at the endpoints are optional and null if undefined
-    protected Coordinate start_velocity;
-    protected Coordinate end_velocity;
+    // Positions must not be null. The curve is expected to match each position
+    // at its corresponding time.
+    protected Coordinate[] positions;
+
+    // How the velocities are used depends on the curve type.
+    //
+    // For line curves, velocities are ignored.
+    //
+    // For spline curves, if the velocities at the endpoints are defined (non-
+    // null), the curve will match those velocities precisely. For velocities
+    // in the middle, the curve will match the *directions* of those velocities,
+    // but not their magnitudes. Any of the velocities may be null, in which
+    // case the spline will choose a velocity.
+    protected Coordinate[] velocities;
 
 
     //-------------------------------------------------------------------------
@@ -46,19 +56,15 @@ public abstract class Curve {
     // Helper methods
     //-------------------------------------------------------------------------
 
-    public void setCurve(Coordinate[] positions, double[] times, Coordinate start_velocity,
-                Coordinate end_velocity) throws JuggleExceptionInternal {
-        this.positions = positions;
+    public void setCurve(double[] times, Coordinate[] positions, Coordinate[] velocities)
+                                                throws JuggleExceptionInternal {
+        numpoints = times.length;
         this.times = times;
-        this.start_velocity = start_velocity;
-        this.end_velocity = end_velocity;
-        numpoints = positions.length;
-        if (numpoints != times.length)
-            throw new JuggleExceptionInternal("Path error 1");
-    }
+        this.positions = positions;
+        this.velocities = velocities;
 
-    public void setCurve(Coordinate[] positions, double[] times) throws JuggleExceptionInternal {
-        this.setCurve(positions, times, null, null);
+        if (numpoints != positions.length || numpoints != velocities.length)
+            throw new JuggleExceptionInternal("Curve error 1");
     }
 
     public double getStartTime() {
@@ -67,6 +73,14 @@ public abstract class Curve {
 
     public double getEndTime() {
         return times[numpoints - 1];
+    }
+
+    public Coordinate getStartVelocity() {
+        return velocities[0];
+    }
+
+    public Coordinate getEndVelocity() {
+        return velocities[numpoints - 1];
     }
 
     public double getDuration() {

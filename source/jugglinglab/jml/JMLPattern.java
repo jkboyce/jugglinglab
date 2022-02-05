@@ -469,7 +469,7 @@ public class JMLPattern {
         for (int i = 0; i < getNumberOfSymmetries(); i++) {
             JMLSymmetry sym = getSymmetry(i);
             double delay = sym.getDelay();
-            if (delay > 0.0)
+            if (delay > 0)
                 sym.setDelay(delay * scale);
         }
 
@@ -479,11 +479,11 @@ public class JMLPattern {
     // Rescale the pattern in time to ensure that all throws are allotted
     // more time than their minimum required.
     //
-    // `multiplier` should typically be a little over 1.0
+    // `multiplier` should typically be a little over 1
     public double scaleTimeToFitThrows(double multiplier) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
         layoutPattern();  // to ensure we have PathLinks
-        double scale_factor = 1.0;
+        double scale_factor = 1;
 
         for (int path = 1; path <= getNumberOfPaths(); path++) {
             for (PathLink pl : getPathLinks().get(path - 1)) {
@@ -492,13 +492,13 @@ public class JMLPattern {
                     double d = p.getDuration();
                     double dmin = p.getMinDuration();
 
-                    if (d < dmin && d > 0.0)
+                    if (d < dmin && d > 0)
                         scale_factor = Math.max(scale_factor, dmin / d);
                 }
             }
         }
 
-        if (scale_factor > 1.0) {
+        if (scale_factor > 1) {
             scale_factor *= multiplier;  // so things aren't just barely feasible
             scaleTime(scale_factor);
         }
@@ -1081,31 +1081,31 @@ public class JMLPattern {
 
                 // default juggler body positions
                 if (getNumberOfJugglers() == 1) {
-                    positions[0].setCoordinate(0.0, 0.0, 100.0);
-                    angles[0].setCoordinate(0.0, 0.0, 0.0);
+                    positions[0].setCoordinate(0, 0, 100);
+                    angles[0].setCoordinate(0, 0, 0);
                 } else {
-                    double r = 70.0;
-                    double theta = 360.0 / (double)getNumberOfJugglers();
-                    if (r * Math.sin(Math.toRadians(0.5*theta)) < 65.0)
-                        r = 65.0 / Math.sin(Math.toRadians(0.5*theta));
+                    double r = 70;
+                    double theta = 360 / (double)getNumberOfJugglers();
+                    if (r * Math.sin(Math.toRadians(0.5 * theta)) < 65)
+                        r = 65 / Math.sin(Math.toRadians(0.5 * theta));
                     positions[0].setCoordinate(r*Math.cos(Math.toRadians(theta*(double)(i-1))),
-                                               r*Math.sin(Math.toRadians(theta*(double)(i-1))), 100.0);
-                    angles[0].setCoordinate(90.0 + theta*(double)(i-1), 0.0, 0.0);
+                                               r*Math.sin(Math.toRadians(theta*(double)(i-1))), 100);
+                    angles[0].setCoordinate(90 + theta*(double)(i-1), 0, 0);
                 }
 
                 positions[1] = positions[0];
                 angles[1] = angles[0];
-                jugglercurve[i - 1].setCurve(positions, times);
+                jugglercurve[i - 1].setCurve(times, positions, new Coordinate[2]);
                 jugglercurve[i - 1].calcCurve();
-                jugglerangle[i - 1].setCurve(angles, times);
+                jugglerangle[i - 1].setCurve(times, angles, new Coordinate[2]);
                 jugglerangle[i - 1].calcCurve();
             } else {
                 jugglercurve[i - 1] = new SplineCurve();
                 jugglerangle[i - 1] = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE) ?
                                         (Curve)(new LineCurve()) : (Curve)(new SplineCurve()) );
-                double[] times = new double[num+1];
-                Coordinate[] positions = new Coordinate[num+1];
-                Coordinate[] angles = new Coordinate[num+1];
+                double[] times = new double[num + 1];
+                Coordinate[] positions = new Coordinate[num + 1];
+                Coordinate[] angles = new Coordinate[num + 1];
 
                 current = positionlist;
                 int j = 0;
@@ -1114,7 +1114,7 @@ public class JMLPattern {
                     if (current.getJuggler() == i) {
                         times[j] = current.getT();
                         positions[j] = current.getCoordinate();
-                        angles[j] = new Coordinate(current.getAngle(),0.0,0.0);
+                        angles[j] = new Coordinate(current.getAngle(), 0, 0);
                         ++j;
                     }
                     current = current.getNext();
@@ -1124,15 +1124,15 @@ public class JMLPattern {
                 angles[num] = new Coordinate(angles[0]);
 
                 for (j = 1; j <= num; j++) {
-                    while ((angles[j].x - angles[j-1].x) > 180.0)
-                        angles[j].x -= 360.0;
-                    while ((angles[j].x - angles[j-1].x) < -180.0)
-                        angles[j].x += 360.0;
+                    while ((angles[j].x - angles[j-1].x) > 180)
+                        angles[j].x -= 360;
+                    while ((angles[j].x - angles[j-1].x) < -180)
+                        angles[j].x += 360;
                 }
 
-                jugglercurve[i - 1].setCurve(positions, times);
+                jugglercurve[i - 1].setCurve(times, positions, new Coordinate[num + 1]);
                 jugglercurve[i - 1].calcCurve();
-                jugglerangle[i - 1].setCurve(angles, times);
+                jugglerangle[i - 1].setCurve(times, angles, new Coordinate[num + 1]);
                 jugglerangle[i - 1].calcCurve();
             }
         }
@@ -1315,48 +1315,51 @@ public class JMLPattern {
 
         // go through HandLink lists, creating Path objects and calculating paths
 
-        for (int i = 0; i < getNumberOfJugglers(); i++) {
-            for (int j = 0; j < 2; j++) {
-                // There are two cases -- a hand has throw or softcatch events (which define
+        for (int j = 0; j < getNumberOfJugglers(); j++) {
+            for (int h = 0; h < 2; h++) {
+                // There are two cases: a hand has throw or softcatch events (which define
                 // hand velocities at points in time), or it does not (no velocities known).
                 // To determine the spline paths, we need to solve for hand velocity at each
                 // of its events, but this is done differently in the two cases.
 
-                if (hasVDHandJMLTransition[i][j]) {
+                if (hasVDHandJMLTransition[j][h]) {
                     int num = 0;
                     HandLink startlink = null;
 
-                    for (int k = 0; k < handlinks.get(i).get(j).size(); k++) {
-                        HandLink hl = handlinks.get(i).get(j).get(k);
+                    for (int k = 0; k < handlinks.get(j).get(h).size(); k++) {
+                        HandLink hl = handlinks.get(j).get(h).get(k);
                         if (hl.getStartVelocityRef() != null) {
                             // this is guaranteed to happen before the loop start time, given
                             // the way we built the event list above
                             startlink = hl;
                             num = 1;
                         }
-                        if ((hl.getEndVelocityRef() != null) && (startlink != null)) {
-                            Coordinate[] pos = new Coordinate[num+1];
-                            double[] times = new double[num+1];
+                        if (hl.getEndVelocityRef() != null && startlink != null) {
+                            Coordinate[] pos = new Coordinate[num + 1];
+                            double[] times = new double[num + 1];
                             Curve hp = new SplineCurve();
 
                             for (int l = 0; l < num; l++) {
-                                HandLink hl2 = handlinks.get(i).get(j).get(k-num+1+l);
+                                HandLink hl2 = handlinks.get(j).get(h).get(k-num+1+l);
                                 pos[l] = hl2.getStartEvent().getGlobalCoordinate();
                                 times[l] = hl2.getStartEvent().getT();
                                 hl2.setHandCurve(hp);
                             }
-                            pos[num] = hl.getEndEvent().getGlobalCoordinate();
                             times[num] = hl.getEndEvent().getT();
-                            Coordinate startvel = startlink.getStartVelocityRef().getVelocity();
-                            Coordinate endvel = hl.getEndVelocityRef().getVelocity();
-                            hp.setCurve(pos, times, startvel, endvel);
+                            pos[num] = hl.getEndEvent().getGlobalCoordinate();
+                            Coordinate[] velocities = new Coordinate[num + 1];
+                            velocities[0] = startlink.getStartVelocityRef().getVelocity();
+                            velocities[num] = hl.getEndVelocityRef().getVelocity();
+                            // leave the rest of the velocities null for now
+
+                            hp.setCurve(times, pos, velocities);
                             hp.calcCurve();
                             startlink = null;
                         }
                         ++num;
                     }
                 } else {
-                    // Build chain and solve for velocities.  This implementation is a little
+                    // Build chain and solve for velocities. This implementation is a little
                     // inefficient since it builds the second chain by a duplicate calculation rather
                     // than a copy. Sketch of algorithm:
                     //    find first handlink that straddles loopStartTime -- call it startlink
@@ -1370,8 +1373,8 @@ public class JMLPattern {
                     //    build spline hand path from startlink to endlink, and calculate (chain 2)
                     int k;
                     HandLink hl = null;
-                    for (k = 0; k < handlinks.get(i).get(j).size(); ++k) {
-                        hl = handlinks.get(i).get(j).get(k);
+                    for (k = 0; k < handlinks.get(j).get(h).size(); ++k) {
+                        hl = handlinks.get(j).get(h).get(k);
                         if (hl.getEndEvent().getT() > getLoopStartTime())
                             break;
                     }
@@ -1381,26 +1384,27 @@ public class JMLPattern {
                         JMLEvent startevent = startlink.getStartEvent();
                         int num = 1;    // number of links in chain
                         while (hl.getEndEvent().isDelayOf(startevent) == false) {
-                            hl = handlinks.get(i).get(j).get(++k);
+                            hl = handlinks.get(j).get(h).get(++k);
                             ++num;
                         }
+                        double[] times = new double[num + 1];
                         Coordinate[] pos = new Coordinate[num + 1];
-                        double[] times = new double[num+1];
                         Curve hp = new SplineCurve();
 
                         for (int l = 0; l < num; ++l) {
-                            HandLink hl2 = handlinks.get(i).get(j).get(k - num + 1 + l);
+                            HandLink hl2 = handlinks.get(j).get(h).get(k - num + 1 + l);
                             pos[l] = hl2.getStartEvent().getGlobalCoordinate();
                             times[l] = hl2.getStartEvent().getT();
                             hl2.setHandCurve(hp);
                         }
                         pos[num] = hl.getEndEvent().getGlobalCoordinate();
                         times[num] = hl.getEndEvent().getT();
-                        hp.setCurve(pos, times, null, null); // null endpoint velocities signals to calculate
+                        // all velocities are null (unknown) -> signal to calculate
+                        hp.setCurve(times, pos, new Coordinate[num + 1]);
                         hp.calcCurve();
 
                         if (chain == 0)
-                            hl = handlinks.get(i).get(j).get(++k);
+                            hl = handlinks.get(j).get(h).get(++k);
                     }
                 }
             }
@@ -1467,14 +1471,14 @@ public class JMLPattern {
     }
 
     public double getLoopStartTime() {
-        return 0.0;
+        return 0;
     }
 
     public double getLoopEndTime() {
         for (int i = 0; i < getNumberOfSymmetries(); i++)
             if (getSymmetry(i).getType() == JMLSymmetry.TYPE_DELAY)
                 return getSymmetry(i).getDelay();
-        return -1.0;
+        return -1;
     }
 
     // returns path coordinate in global frame
@@ -1514,10 +1518,10 @@ public class JMLPattern {
     // returns orientation of prop on given path, in global frame
     // result is {pitch, yaw, roll}
     public double getPathOrientation(int path, double time, Coordinate axis) {
-        axis.x = 0.0;       // components of unit vector to rotate around
-        axis.y = 0.0;
-        axis.z = 1.0;
-        return (3.0 * time);
+        axis.x = 0;       // components of unit vector to rotate around
+        axis.y = 0;
+        axis.z = 1;
+        return (3 * time);
     }
 
     // returns juggler coordinate in global frame
@@ -1593,7 +1597,7 @@ public class JMLPattern {
         throw new JuggleExceptionInternal("time t="+time+" (j="+juggler+",h="+handindex+") is out of handpath range");
     }
 
-    // Get volume of any catch made between time1 and time2; if no catch, returns 0.0
+    // Get volume of any catch made between time1 and time2; if no catch, returns 0
     public double getPathCatchVolume(int path, double time1, double time2) {
         int i;
         PathLink pl1 = null, pl2 = null;
@@ -1606,7 +1610,7 @@ public class JMLPattern {
                 break;
         }
         if (i == pathlinks.get(path - 1).size())
-            return 0.0;
+            return 0;
         while (true) {
             pl2 = pathlinks.get(path - 1).get(i);
             if (!pl2.isInHand())
@@ -1626,12 +1630,12 @@ public class JMLPattern {
         // We don't adjust the playback volume of the audio clip, so this is just
         // yes/no for now
         if (gotcatch)
-            return 1.0;
+            return 1;
 
-        return 0.0;
+        return 0;
     }
 
-    // Get volume of any bounce between time1 and time2; if no catch, returns 0.0
+    // Get volume of any bounce between time1 and time2; if no catch, returns 0
     public double getPathBounceVolume(int path, double time1, double time2) {
         int i;
         PathLink pl = null;
@@ -1642,14 +1646,14 @@ public class JMLPattern {
                 break;
         }
         if (i == pathlinks.get(path - 1).size())
-            return 0.0;
+            return 0;
         while (true) {
             pl = pathlinks.get(path - 1).get(i);
             Path p = pl.getPath();
             if (p instanceof BouncePath) {
                 BouncePath bp = (BouncePath)p;
                 double vol = bp.getBounceVolume(time1, time2);
-                if (vol > 0.0)
+                if (vol > 0)
                     return vol;
             }
             if (time2 >= pl.getStartEvent().getT() && time2 <= pl.getEndEvent().getT())
@@ -1660,7 +1664,7 @@ public class JMLPattern {
                 i = 0;
         }
 
-        return 0.0;
+        return 0;
     }
 
     public Coordinate getPathMax(int path) {    // maximum of each coordinate

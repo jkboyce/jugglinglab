@@ -4,28 +4,33 @@
 
 package jugglinglab.curve;
 
+import jugglinglab.core.Constants;
 import jugglinglab.util.*;
 
 
 public class SplineCurve extends Curve {
     protected int n;  // number of spline segments
     protected double[][] a, b, c, d;  // spline coefficients
-    protected double[] durations;  // durations of segments
 
     // Calculate the coefficients a, b, c, d for each portion of the spline path.
     // To solve for these four unknowns, we use four boundary conditions: the
     // position at both endpoints, and the velocity at both endpoints.
     //
     // When the hand is making a throw or softcatch, the velocities are known and
-    // given by the velocity of the object being thrown/caught. The other velocities
-    // are not known and must be assigned -- we assign them via one of three
-    // techniques described below.
+    // given by the velocity of the object being thrown/caught. When the hand is
+    // making a "natural" catch, we want the spline velocity to match the
+    // direction of the landing object's velocity. All remaining unknowns in
+    // the velocities must be assigned, which we do via one of three techniques
+    // described below.
+    //
+    // For spline curves, if the velocities at the endpoints are defined (non-
+    // null), the curve will match those velocities precisely. For velocities
+    // in the middle, the curve will match the *directions* of those velocities,
+    // but not their magnitudes. Any of the velocities may be null, in which
+    // case the spline will choose a velocity.
 
     @Override
     public void calcCurve() throws JuggleExceptionInternal {
-        int i, j;
-        boolean edgeVelocitiesKnown = (start_velocity != null && end_velocity != null);
-
         n = numpoints - 1;
         if (n < 1)
             throw new JuggleExceptionInternal("SplineCurve error 1");
@@ -34,44 +39,41 @@ public class SplineCurve extends Curve {
         b = new double[n][3];
         c = new double[n][3];
         d = new double[n][3];
-        durations = new double[n];
-        for (i = 0; i < n; i++) {
-            durations[i] = times[i + 1] - times[i];
+        double[] durations = new double[n];
+        for (int i = 0; i < n; i++) {
+            durations[i] = times[i+1] - times[i];
             if (durations[i] <= 0)
                 throw new JuggleExceptionInternal("SplineCurve error 2");
         }
 
-        double[] x = new double[n+1];
-        double[] v = new double[n+1];
-        double t;
+        // copy the velocity array so we can modify it
+        Coordinate[] vel = new Coordinate[n+1];
+        for (int i = 0; i < (n + 1); i++)
+            vel[i] = (velocities[i] == null ? null : new Coordinate(velocities[i]));
 
-        for (i = 0; i < 3; i++) {
-            for (j = 0; j < (n + 1); j++)
-                x[j] = positions[j].getIndex(i);
+        if (getStartVelocity() != null && getEndVelocity() != null)
+            findvels_edges_known(n, durations, positions, vel);
+        else
+            findvels_edges_unknown(n, durations, positions, vel);
 
-            if (edgeVelocitiesKnown) {
-                v[0] = start_velocity.getIndex(i);
-                v[n] = end_velocity.getIndex(i);
-                // find velocities by minimizing rms acceleration
-                findvels_edges_known(v, x, durations, n, jugglinglab.core.Constants.SPLINE_LAYOUT_METHOD);
-            } else {
-                findvels_edges_unknown(v, x, durations, n, jugglinglab.core.Constants.SPLINE_LAYOUT_METHOD);
-            }
+        // now that we have all velocities, solve for spline coefficients
+        for (int i = 0; i < n; i++) {
+            double t = durations[i];
 
-            //System.out.println("index = "+i+", v[1] = "+v[1]+"\n");
+            for (int j = 0; j < 3; j++) {
+                double xi0 = positions[i].getIndex(j);
+                double xi1 = positions[i+1].getIndex(j);
+                double vi0 = vel[i].getIndex(j);
+                double vi1 = vel[i+1].getIndex(j);
 
-            // now that we have velocities, solve for spline coefficients
-            for (j = 0; j < n; j++) {
-                a[j][i] = x[j];
-                b[j][i] = v[j];
-                t = durations[j];
-                c[j][i] = (3*(x[j+1] - x[j]) - (v[j+1] + 2*v[j])*t) / (t*t);
-                d[j][i] = (-2*(x[j+1] - x[j]) + (v[j+1] + v[j])*t) / (t*t*t);
-                //System.out.println("a="+a[j][i]+", b="+b[j][i]+", c="+c[j][i]+", d="+d[j][i]+"\n");
+                a[i][j] = xi0;
+                b[i][j] = vi0;
+                c[i][j] = (3 * (xi1 - xi0) - (vi1 + 2 * vi0) * t) / (t * t);
+                d[i][j] = (-2 * (xi1 - xi0) + (vi1 + vi0) * t) / (t * t * t);
+                //System.out.println("a="+a[i][j]+", b="+b[i][j]+", c="+c[i][j]+", d="+d[i][j]+"\n");
             }
         }
     }
-
 
     // These are the three techniques to assign velocities:
     //    "MINIMIZE_RMSACCEL" minimizes the rms acceleration of the hand
@@ -84,55 +86,68 @@ public class SplineCurve extends Curve {
 
     // This method assigns the unknown velocities at the intermediate times
     // from the known velocities at the endpoints (and positions at all
-    // times).  n is the number of sections -- (n-1) is the number of
-    // unknown velocities.  v and x have dimension (n+1), t has dimension
-    // n.  v[0] and v[n] are assumed to be initialized to known endpoints.
+    // times). n is the number of sections -- (n-1) is the number of
+    // unknown velocities. v and x have dimension (n+1), t has dimension
+    // n. v[0] and v[n] are assumed to be initialized to known endpoints.
     //
-    // In each minimization technique, the calculus problem reduces to
+    // For the minimization techniques, the calculus problem reduces to
     // solving a system of linear equations of the form A.v = b, where v
-    // is a column vector of the velocities.  In this case, the matrix A is
-    // in tridiagonal form, which is solved efficiently in O(N) time.  A is
-    // also a symmetric matrix, so the sub- and super-diagonals are equal.
+    // is a column vector of the velocities. In this case, the matrix A is
+    // in tridiagonal form, which is solved efficiently in O(N) time. A is
+    // also a symmetric matrix: the sub- and super-diagonals are equal.
 
-    static protected void findvels_edges_known(double[] v, double[] x, double[] t, int n, int method)
+    static protected void findvels_edges_known(int n, double[] t, Coordinate[] x, Coordinate[] v)
                                             throws JuggleExceptionInternal {
         if (n < 2)
             return;
 
-        double[] Adiag = new double[n - 1];
-        double[] Aoffd = new double[n - 1];  // A is symmetric
-        double[] b = new double[n - 1];
+        double[] Adiag = new double[3 * (n - 1)];  // v[1] ... v[n-1] for each axis
+        double[] Aoffd = new double[3 * (n - 1)];  // A is symmetric
+        double[] b = new double[3 * (n - 1)];
 
-        for (int i = 0; i < n-1; i++) {
-            switch (method) {
-                case MINIMIZE_RMSACCEL:
-                case CONTINUOUS_ACCEL:
-                    // cases end up being identical
-                    Adiag[i] = 2 / t[i+1] + 2 / t[i];
-                    Aoffd[i] = 1 / t[i+1];
-                    b[i] = 3 * (x[i+2] - x[i+1]) / (t[i+1] * t[i+1]) +
-                            3 * (x[i+1] - x[i]) / (t[i] * t[i]);
-                    if (i == 0)
-                        b[0] -= v[0] / t[0];
-                    if (i == (n - 2))
-                        b[n-2] -= v[n] / t[n-1];
-                    break;
-                case MINIMIZE_RMSVEL:
-                    Adiag[i] = 4 * (t[i] + t[i+1]);
-                    Aoffd[i] = -t[i+1];
-                    b[i] = 3 * (x[i+2] - x[i]);
-                    if (i == 0)
-                        b[0] += v[0] * t[0];
-                    if (i == (n - 2))
-                        b[n-2] += v[n] * t[n-1];
-                    break;
+        // In this case we put all three axes into one big matrix, and solve once.
+
+        for (int axis = 0; axis < 3; axis++) {
+            double v0 = v[0].getIndex(axis);
+            double vn = v[n].getIndex(axis);
+
+            for (int i = 0; i < n - 1; i++) {
+                double xi0 = x[i].getIndex(axis);
+                double xi1 = x[i+1].getIndex(axis);
+                double xi2 = x[i+2].getIndex(axis);
+                int index = i + axis * (n - 1);
+
+                switch (Constants.SPLINE_LAYOUT_METHOD) {
+                    case MINIMIZE_RMSACCEL:
+                    case CONTINUOUS_ACCEL:
+                        // cases end up being identical
+                        Adiag[index] = 2 / t[i+1] + 2 / t[i];
+                        Aoffd[index] = (i == n - 2 ? 0 : 1 / t[i+1]);
+                        b[index] = 3 * (xi2 - xi1) / (t[i+1] * t[i+1]) +
+                                3 * (xi1 - xi0) / (t[i] * t[i]);
+                        if (i == 0)
+                            b[index] -= v0 / t[i];
+                        if (i == (n - 2))
+                            b[index] -= vn / t[n-1];
+                        break;
+                    case MINIMIZE_RMSVEL:
+                        Adiag[index] = 4 * (t[i] + t[i+1]);
+                        Aoffd[index] = (i == n - 2 ? 0 : -t[i+1]);
+                        b[index] = 3 * (xi2 - xi0);
+                        if (i == 0)
+                            b[index] += v0 * t[0];
+                        if (i == (n - 2))
+                            b[index] += vn * t[n-1];
+                        break;
+                }
             }
         }
 
-        double[] vtemp = new double[n - 1];  // n - 1 unknown velocities
-        tridag(Aoffd, Adiag, Aoffd, b, vtemp, n - 1);  // solve
+        double[] vtemp = new double[3 * (n - 1)];  // n - 1 unknown velocities for each axis
+        tridag(Aoffd, Adiag, Aoffd, b, vtemp, 3 * (n - 1));  // solve
+
         for (int i = 0; i < n - 1; i++)
-            v[i+1] = vtemp[i];
+            v[i+1] = new Coordinate(vtemp[i], vtemp[i + (n-1)], vtemp[i + 2*(n-1)]);
     }
 
     // This method assigns the unknown velocities at the intermediate times.
@@ -147,86 +162,108 @@ public class SplineCurve extends Curve {
     // to solve the full problem. See pg. 77 from Numerical Recipes in C, first
     // edition.
 
-    static protected void findvels_edges_unknown(double[] v, double[] x, double[] t, int n, int method)
+    static protected void findvels_edges_unknown(int n, double[] t, Coordinate[] x, Coordinate[] v)
                                             throws JuggleExceptionInternal {
-        if (n < 2)
+        if (n < 1)
             return;
 
-        double[] Adiag = new double[n];
+        double[] Adiag = new double[n];  // v[0]...v[n-1]
         double[] Aoffd = new double[n];  // A is symmetric
         double Acorner = 0;  // nonzero element in UR/LL corners of A
         double[] b = new double[n];
 
-        for (int i = 0; i < n; i++) {
-            switch (method) {
-                case MINIMIZE_RMSACCEL:
-                case CONTINUOUS_ACCEL:
-                    if (i == 0) {
-                        Adiag[0] = 2 / t[n-1] + 2 / t[0];
-                        Acorner = 1 / t[n-1];
-                        b[0] = 3 * (x[1] - x[0]) / (t[0] * t[0]) +
-                                3 * (x[n] - x[n-1]) / (t[n-1] * t[n-1]);
-                    } else {
-                        Adiag[i] = 2 / t[i-1] + 2 / t[i];
-                        b[i] = 3 * (x[i+1] - x[i]) / (t[i] * t[i]) +
-                                3 * (x[i] - x[i-1]) / (t[i-1] * t[i-1]);
-                    }
-                    Aoffd[i] = 1 / t[i];  // not used for i = n - 1
-                    break;
-                case MINIMIZE_RMSVEL:
-                    if (i == 0) {
-                        Adiag[0] = 4 * (t[n-1] + t[0]);
-                        Acorner = -t[n-1];
-                        b[0] = 3 * (x[n] - x[n-1] + x[1] - x[0]);
-                    } else {
-                        Adiag[i] = 4 * (t[i-1] + t[i]);
-                        b[i] = 3 * (x[i+1] - x[i-1]);
-                    }
-                    Aoffd[i] = -t[i];
-                    break;
-            }
-        }
-
-        /* System.out.println("\nBeginning solution.  RHS:");
         for (int i = 0; i < n; i++)
-            System.out.println("  b["+i+"] = "+b[i]); */
+            v[i] = new Coordinate(0, 0, 0);
 
-        // Woodbury's formula: First solve the problem ignoring A's nonzero corners
-        tridag(Aoffd, Adiag, Aoffd, b, v, n);
+        // Here we can solve each axis independently, and combine the results
 
-        if (n > 2) {  // need to deal with nonzero corners?
-            // solve a few auxiliary problems
-            double[] z1 = new double[n];
-            b[0] = Acorner;
-            for (int i = 1; i < n; i++)
-                b[i] = 0;
-            tridag(Aoffd, Adiag, Aoffd, b, z1, n);
+        for (int axis = 0; axis < 3; axis++) {
+            double xn0 = x[n].getIndex(axis);
+            double xnm1 = x[n-1].getIndex(axis);
 
-            double[] z2 = new double[n];
-            b[n-1] = Acorner;
-            for (int i = 0; i < n - 1; i++)
-                b[i] = 0;
-            tridag(Aoffd, Adiag, Aoffd, b, z2, n);
+            for (int i = 0; i < n; i++) {
+                double xi0 = x[i].getIndex(axis);
+                double xi1 = x[i+1].getIndex(axis);
+                double xim1 = (i == 0 ? 0 : x[i-1].getIndex(axis));
 
-            // calculate a 2x2 matrix H
-            double H00, H01, H10, H11;
-            H00 = 1 + z2[0];
-            H01 = -z2[n-1];
-            H10 = -z1[0];
-            H11 = 1 + z1[n-1];
-            double det = H00 * H11 - H01 * H10;
-            H00 /= det;
-            H01 /= det;
-            H10 /= det;
-            H11 /= det;
+                switch (Constants.SPLINE_LAYOUT_METHOD) {
+                    case MINIMIZE_RMSACCEL:
+                    case CONTINUOUS_ACCEL:
+                        if (i == 0) {
+                            Adiag[i] = 2 / t[n-1] + 2 / t[0];
+                            Acorner = 1 / t[n-1];
+                            b[i] = 3 * (xi1 - xi0) / (t[0] * t[0]) +
+                                    3 * (xn0 - xnm1) / (t[n-1] * t[n-1]);
+                        } else {
+                            Adiag[i] = 2 / t[i-1] + 2 / t[i];
+                            b[i] = 3 * (xi1 - xi0) / (t[i] * t[i]) +
+                                    3 * (xi0 - xim1) / (t[i-1] * t[i-1]);
+                        }
+                        Aoffd[i] = 1 / t[i];  // not used for i = n - 1
+                        break;
+                    case MINIMIZE_RMSVEL:
+                        if (i == 0) {
+                            Adiag[i] = 4 * (t[n-1] + t[0]);
+                            Acorner = -t[n-1];
+                            b[i] = 3 * (xn0 - xnm1 + xi1 - xi0);
+                        } else {
+                            Adiag[i] = 4 * (t[i-1] + t[i]);
+                            b[i] = 3 * (xi1 - xim1);
+                        }
+                        Aoffd[i] = -t[i];
+                        break;
+                }
+            }
 
-            // use Woodbury's formula to adjust the velocities
-            double m0 = H00 * v[n-1] + H01 * v[0];
-            double m1 = H10 * v[n-1] + H11 * v[0];
+            // System.out.println("\nBeginning solution.  RHS:");
+            // for (int i = 0; i < n; i++)
+            //     System.out.println("  b["+i+"] = "+b[i]);
+
+            double[] vel = new double[n];
             for (int i = 0; i < n; i++)
-                v[i] -= (z1[i] * m0 + z2[i] * m1);
+                vel[i] = v[i].getIndex(axis);
+
+            // Woodbury's formula: First solve the problem ignoring A's nonzero corners
+            tridag(Aoffd, Adiag, Aoffd, b, vel, n);
+
+            if (n > 2) {  // need to deal with nonzero corners?
+                // solve a few auxiliary problems
+                double[] z1 = new double[n];
+                b[0] = Acorner;
+                for (int i = 1; i < n; i++)
+                    b[i] = 0;
+                tridag(Aoffd, Adiag, Aoffd, b, z1, n);
+
+                double[] z2 = new double[n];
+                b[n-1] = Acorner;
+                for (int i = 0; i < n - 1; i++)
+                    b[i] = 0;
+                tridag(Aoffd, Adiag, Aoffd, b, z2, n);
+
+                // calculate a 2x2 matrix H
+                double H00, H01, H10, H11;
+                H00 = 1 + z2[0];
+                H01 = -z2[n-1];
+                H10 = -z1[0];
+                H11 = 1 + z1[n-1];
+                double det = H00 * H11 - H01 * H10;
+                H00 /= det;
+                H01 /= det;
+                H10 /= det;
+                H11 /= det;
+
+                // use Woodbury's formula to adjust the velocities
+                double m0 = H00 * vel[n-1] + H01 * vel[0];
+                double m1 = H10 * vel[n-1] + H11 * vel[0];
+                for (int i = 0; i < n; i++)
+                    vel[i] -= (z1[i] * m0 + z2[i] * m1);
+            }
+
+            for (int i = 0; i < n; i++)
+                v[i].setIndex(axis, vel[i]);
         }
-        v[n] = v[0];
+
+        v[n] = new Coordinate(v[0]);
 
         /*
         // do the matrix multiply to check the answer
