@@ -1280,11 +1280,15 @@ public class JMLPattern {
                             if (tr.getType() == JMLTransition.TRANS_THROW) {
                                 PathLink pl = tr.getOutgoingPathLink();
                                 if (pl != null)
-                                    vr = new VelocityRef(pl.getPath(), true);
+                                    vr = new VelocityRef(pl.getPath(), VelocityRef.VR_THROW);
                             } else if (tr.getType() == JMLTransition.TRANS_SOFTCATCH) {
                                 PathLink pl = tr.getIncomingPathLink();
                                 if (pl != null)
-                                    vr = new VelocityRef(pl.getPath(), false);
+                                    vr = new VelocityRef(pl.getPath(), VelocityRef.VR_SOFTCATCH);
+                            } else if (tr.getType() == JMLTransition.TRANS_CATCH) {
+                                PathLink pl = tr.getIncomingPathLink();
+                                if (pl != null)
+                                    vr = new VelocityRef(pl.getPath(), VelocityRef.VR_CATCH);
                             }
                         }
                     }
@@ -1323,34 +1327,43 @@ public class JMLPattern {
                 // of its events, but this is done differently in the two cases.
 
                 if (hasVDHandJMLTransition[j][h]) {
-                    int num = 0;
                     HandLink startlink = null;
+                    int num = 0;
 
                     for (int k = 0; k < handlinks.get(j).get(h).size(); k++) {
                         HandLink hl = handlinks.get(j).get(h).get(k);
-                        if (hl.getStartVelocityRef() != null) {
-                            // this is guaranteed to happen before the loop start time, given
-                            // the way we built the event list above
+
+                        VelocityRef vr = hl.getStartVelocityRef();
+                        if (vr != null && (vr.getSource() == VelocityRef.VR_THROW ||
+                                           vr.getSource() == VelocityRef.VR_SOFTCATCH)) {
+                            // this is guaranteed to happen before the loop start time,
+                            // given the way we built the event list above
                             startlink = hl;
                             num = 1;
                         }
-                        if (hl.getEndVelocityRef() != null && startlink != null) {
-                            Coordinate[] pos = new Coordinate[num + 1];
+
+                        vr = hl.getEndVelocityRef();
+                        if (startlink != null && vr != null &&
+                                    (vr.getSource() == VelocityRef.VR_THROW ||
+                                    vr.getSource() == VelocityRef.VR_SOFTCATCH)) {
                             double[] times = new double[num + 1];
+                            Coordinate[] pos = new Coordinate[num + 1];
+                            Coordinate[] velocities = new Coordinate[num + 1];
                             Curve hp = new SplineCurve();
 
                             for (int l = 0; l < num; l++) {
                                 HandLink hl2 = handlinks.get(j).get(h).get(k-num+1+l);
-                                pos[l] = hl2.getStartEvent().getGlobalCoordinate();
                                 times[l] = hl2.getStartEvent().getT();
+                                pos[l] = hl2.getStartEvent().getGlobalCoordinate();
+                                VelocityRef vr2 = hl2.getStartVelocityRef();
+                                if (l > 0 && vr2 != null && vr2.getSource() == VelocityRef.VR_CATCH)
+                                    velocities[l] = vr2.getVelocity();
                                 hl2.setHandCurve(hp);
                             }
                             times[num] = hl.getEndEvent().getT();
                             pos[num] = hl.getEndEvent().getGlobalCoordinate();
-                            Coordinate[] velocities = new Coordinate[num + 1];
                             velocities[0] = startlink.getStartVelocityRef().getVelocity();
                             velocities[num] = hl.getEndVelocityRef().getVelocity();
-                            // leave the rest of the velocities null for now
 
                             hp.setCurve(times, pos, velocities);
                             hp.calcCurve();

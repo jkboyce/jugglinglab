@@ -9,19 +9,27 @@ import jugglinglab.path.*;
 
 
 public class VelocityRef {
-    protected Path  pp;
-    protected boolean   start;
+    public static int VR_THROW = 0;
+    public static int VR_CATCH = 1;
+    public static int VR_SOFTCATCH = 2;
+
+    protected Path pp;
+    protected int src;
 
 
-    public VelocityRef(Path pp, boolean start) {
-        this.pp = pp;
-        this.start = start;
+    public VelocityRef(Path path, int source) {
+        pp = path;
+        src = source;
     }
 
     public Coordinate getVelocity() {
-        if (start)
+        if (src == VR_THROW)
             return pp.getStartVelocity();
         else
             return pp.getEndVelocity();
+    }
+
+    public int getSource() {
+        return src;
     }
 }

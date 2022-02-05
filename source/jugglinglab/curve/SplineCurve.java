@@ -103,10 +103,22 @@ public class SplineCurve extends Curve {
         if (n < 2)
             return;
 
-        double[][] m = new double[3 * (n - 1)][3 * (n - 1)];
-        double[] b = new double[3 * (n - 1)];
+        int numcatches = 0;
+        for (int i = 1; i < n; i++) {
+            if (v[i] != null)
+                numcatches++;
+        }
+        //System.out.println("# of catches = " + numcatches);
 
         // In this case we put all three axes into one big matrix, and solve once.
+        //
+        // Number of variables in linear solve:
+        //    3 for each interior velocity v[1]...v[n-1]
+        //    2 for each natural catch (Lagrange multipliers for constraints)
+        int dim = 3 * (n - 1) + 2 * numcatches;
+
+        double[][] m = new double[dim][dim];
+        double[] b = new double[dim];
 
         for (int axis = 0; axis < 3; axis++) {
             double v0 = v[0].getIndex(axis);
@@ -154,13 +166,70 @@ public class SplineCurve extends Curve {
             }
         }
 
-        DecompositionSolver solver = new LUDecomposition(new Array2DRowRealMatrix(m)).getSolver();
-        RealVector solution = solver.solve(new ArrayRealVector(b));
+        // Now we apply the "natural throwing" constraint, that the hand
+        // velocity must be parallel to the catch velocity at the time of catch.
+        // We implement this constraint by requiring the cross product between
+        // vel[] and the catch velocity to be zero. This is three separate
+        // constraints (one for each spatial dimension), however they are not
+        // linearly independent so we only need to apply two. We select the two
+        // to retain based on the components of catch velocity.
+        //
+        // The constraints are implemented using Lagrange multipliers, two per
+        // specified catch velocity.
 
-        for (int i = 0; i < n - 1; i++) {
-            v[i+1] = new Coordinate(solution.getEntry(i),
-                                    solution.getEntry(i + (n-1)),
-                                    solution.getEntry(i + 2*(n-1)));
+        for (int i = 0, catchnum = 0; i < n - 1; i++) {
+            if (v[i+1] == null)
+                continue;
+
+            int index = 3 * (n - 1) + 2 * catchnum;
+            double ci0 = v[i+1].getIndex(0);  // components of catch velocity
+            double ci1 = v[i+1].getIndex(1);
+            double ci2 = v[i+1].getIndex(2);
+
+            //System.out.println("catch velocity (i=" + (i+1) + ") = " + v[i+1]);
+
+            int largeaxis = 0;
+            if (Math.abs(ci1) >= Math.max(Math.abs(ci0), Math.abs(ci2)))
+                largeaxis = 1;
+            else if (Math.abs(ci2) >= Math.max(Math.abs(ci0), Math.abs(ci1)))
+                largeaxis = 2;
+
+            switch (largeaxis) {
+                case 0:
+                    m[i][index] = m[index][i] = ci2;
+                    m[i][index+1] = m[index+1][i] = ci1;
+                    m[i+(n-1)][index+1] = m[index+1][i+(n-1)] = -ci0;
+                    m[i+2*(n-1)][index] = m[index][i+2*(n-1)] = -ci0;
+                    break;
+                case 1:
+                    m[i][index+1] = m[index+1][i] = ci1;
+                    m[i+(n-1)][index] = m[index][i+(n-1)] = ci2;
+                    m[i+(n-1)][index+1] = m[index+1][i+(n-1)] = -ci0;
+                    m[i+2*(n-1)][index] = m[index][i+2*(n-1)] = -ci1;
+                    break;
+                case 2:
+                    m[i][index+1] = m[index+1][i] = ci2;
+                    m[i+(n-1)][index] = m[index][i+(n-1)] = ci2;
+                    m[i+2*(n-1)][index] = m[index][i+2*(n-1)] = -ci1;
+                    m[i+2*(n-1)][index+1] = m[index+1][i+2*(n-1)] = -ci0;
+                    break;
+            }
+
+            catchnum++;
+        }
+
+        try {
+            //System.out.println(new Array2DRowRealMatrix(m));
+            DecompositionSolver solver = new LUDecomposition(new Array2DRowRealMatrix(m)).getSolver();
+            RealVector solution = solver.solve(new ArrayRealVector(b));
+
+            for (int i = 0; i < n - 1; i++) {
+                v[i+1] = new Coordinate(solution.getEntry(i),
+                                        solution.getEntry(i + (n-1)),
+                                        solution.getEntry(i + 2*(n-1)));
+            }
+        } catch (SingularMatrixException sme) {
+            throw new JuggleExceptionInternal("Singular matrix in findvels_edges_known()");
         }
     }
 
