@@ -75,14 +75,6 @@ public abstract class Curve {
         return times[numpoints - 1];
     }
 
-    public Coordinate getStartVelocity() {
-        return velocities[0];
-    }
-
-    public Coordinate getEndVelocity() {
-        return velocities[numpoints - 1];
-    }
-
     public double getDuration() {
         return (times[numpoints - 1] - times[0]);
     }

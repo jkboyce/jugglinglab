@@ -7,6 +7,8 @@ package jugglinglab.curve;
 import jugglinglab.core.Constants;
 import jugglinglab.util.*;
 
+import org.apache.commons.math3.linear.*;
+
 
 public class SplineCurve extends Curve {
     protected int n;  // number of spline segments
@@ -48,10 +50,10 @@ public class SplineCurve extends Curve {
 
         // copy the velocity array so we can modify it
         Coordinate[] vel = new Coordinate[n+1];
-        for (int i = 0; i < (n + 1); i++)
+        for (int i = 0; i < n + 1; i++)
             vel[i] = (velocities[i] == null ? null : new Coordinate(velocities[i]));
 
-        if (getStartVelocity() != null && getEndVelocity() != null)
+        if (vel[0] != null && vel[n] != null)
             findvels_edges_known(n, durations, positions, vel);
         else
             findvels_edges_unknown(n, durations, positions, vel);
@@ -101,8 +103,7 @@ public class SplineCurve extends Curve {
         if (n < 2)
             return;
 
-        double[] Adiag = new double[3 * (n - 1)];  // v[1] ... v[n-1] for each axis
-        double[] Aoffd = new double[3 * (n - 1)];  // A is symmetric
+        double[][] m = new double[3 * (n - 1)][3 * (n - 1)];
         double[] b = new double[3 * (n - 1)];
 
         // In this case we put all three axes into one big matrix, and solve once.
@@ -121,8 +122,13 @@ public class SplineCurve extends Curve {
                     case MINIMIZE_RMSACCEL:
                     case CONTINUOUS_ACCEL:
                         // cases end up being identical
-                        Adiag[index] = 2 / t[i+1] + 2 / t[i];
-                        Aoffd[index] = (i == n - 2 ? 0 : 1 / t[i+1]);
+                        m[index][index] = 2 / t[i+1] + 2 / t[i];
+                        double offdiag1 = (i == n - 2 ? 0 : 1 / t[i+1]);
+                        if (index < 3 * (n - 1) - 1) {
+                            m[index][index + 1] = offdiag1;
+                            m[index + 1][index] = offdiag1;
+                        }
+
                         b[index] = 3 * (xi2 - xi1) / (t[i+1] * t[i+1]) +
                                 3 * (xi1 - xi0) / (t[i] * t[i]);
                         if (i == 0)
@@ -131,8 +137,13 @@ public class SplineCurve extends Curve {
                             b[index] -= vn / t[n-1];
                         break;
                     case MINIMIZE_RMSVEL:
-                        Adiag[index] = 4 * (t[i] + t[i+1]);
-                        Aoffd[index] = (i == n - 2 ? 0 : -t[i+1]);
+                        m[index][index] = 4 * (t[i] + t[i+1]);
+                        double offdiag2 = (i == n - 2 ? 0 : -t[i+1]);
+                        if (index < 3 * (n - 1) - 1) {
+                            m[index][index + 1] = offdiag2;
+                            m[index + 1][index] = offdiag2;
+                        }
+
                         b[index] = 3 * (xi2 - xi0);
                         if (i == 0)
                             b[index] += v0 * t[0];
@@ -143,11 +154,14 @@ public class SplineCurve extends Curve {
             }
         }
 
-        double[] vtemp = new double[3 * (n - 1)];  // n - 1 unknown velocities for each axis
-        tridag(Aoffd, Adiag, Aoffd, b, vtemp, 3 * (n - 1));  // solve
+        DecompositionSolver solver = new LUDecomposition(new Array2DRowRealMatrix(m)).getSolver();
+        RealVector solution = solver.solve(new ArrayRealVector(b));
 
-        for (int i = 0; i < n - 1; i++)
-            v[i+1] = new Coordinate(vtemp[i], vtemp[i + (n-1)], vtemp[i + 2*(n-1)]);
+        for (int i = 0; i < n - 1; i++) {
+            v[i+1] = new Coordinate(solution.getEntry(i),
+                                    solution.getEntry(i + (n-1)),
+                                    solution.getEntry(i + 2*(n-1)));
+        }
     }
 
     // This method assigns the unknown velocities at the intermediate times.
