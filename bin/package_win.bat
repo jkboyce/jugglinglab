@@ -27,6 +27,7 @@ REM Step 1: Build the application bundle directory "Juggling Lab\"
 
 mkdir target
 copy JugglingLab.jar target
+copy commons-math3-3.6.1.jar target
 copy ortools-lib\* target
 
 jpackage --type app-image ^
