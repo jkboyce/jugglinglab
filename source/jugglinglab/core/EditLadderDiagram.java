@@ -745,8 +745,9 @@ public class EditLadderDiagram extends LadderDiagram implements
             null,
             "Define prop...",
             "Define throw...",
-            "Change to catch",
-            "Change to softcatch",
+            "Change to normal catch",
+            "Change to soft catch",
+            "Change to grab catch",
             "Make last in event",
         };
 
@@ -765,6 +766,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             "definethrow",
             "changetocatch",
             "changetosoftcatch",
+            "changetograbcatch",
             "makelast",
         };
 
@@ -816,6 +818,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 "definethrow",
                                 "changetocatch",
                                 "changetosoftcatch",
+                                "changetograbcatch",
                                 "makelast"
                             ).contains(command))
                 return false;
@@ -831,6 +834,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 "definethrow",
                                 "changetocatch",
                                 "changetosoftcatch",
+                                "changetograbcatch",
                                 "makelast"
                             ).contains(command))
                 return false;
@@ -891,6 +895,9 @@ public class EditLadderDiagram extends LadderDiagram implements
             } else if (command.equals("changetosoftcatch")) {
                 if (tr.getType() != JMLTransition.TRANS_CATCH && tr.getType() != JMLTransition.TRANS_GRABCATCH)
                     return false;
+            } else if (command.equals("changetograbcatch")) {
+                if (tr.getType() != JMLTransition.TRANS_CATCH && tr.getType() != JMLTransition.TRANS_SOFTCATCH)
+                    return false;
             }
         } else if (laditem.type == LadderItem.TYPE_POSITION) {
             if (Arrays.asList(
@@ -904,6 +911,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 "definethrow",
                                 "changetocatch",
                                 "changetosoftcatch",
+                                "changetograbcatch",
                                 "makelast"
                             ).contains(command))
                 return false;
@@ -914,6 +922,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 "definethrow",
                                 "changetocatch",
                                 "changetosoftcatch",
+                                "changetograbcatch",
                                 "makelast"
                             ).contains(command))
                 return false;
@@ -949,6 +958,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             changeCatchStyleTo(JMLTransition.TRANS_CATCH);
         } else if (command.equals("changetosoftcatch")) {
             changeCatchStyleTo(JMLTransition.TRANS_SOFTCATCH);
+        } else if (command.equals("changetograbcatch")) {
+            changeCatchStyleTo(JMLTransition.TRANS_GRABCATCH);
         } else if (command.equals("makelast")) {
             makeLastInEvent();
         } else
