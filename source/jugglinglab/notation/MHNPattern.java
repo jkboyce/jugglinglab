@@ -835,16 +835,16 @@ public abstract class MHNPattern extends Pattern {
     protected static final double[] samethrowx =
             { 0, 20, 25, 12, 10, 7.5,  5,  5,  5 };
     protected static final double[] crossingthrowx =
-            { 0, 20, 25, 12, 10,  18, 25, 25, 30 };
+            { 0, 17, 17, 12, 10,  18, 25, 25, 30 };
     protected static final double[] catchx =
-            { 0, 30, 25, 30, 40,  45, 45, 50, 50 };
+            { 0, 17, 25, 30, 40,  45, 45, 50, 50 };
     protected static final double restingx = 25;
 
     // How many beats early to throw a '1' (all other throws are on-beat)
-    protected static double BEATS_ONE_THROW_EARLY = 0.2;
+    protected static double BEATS_ONE_THROW_EARLY = 0;
 
     // Minimum airtime for a throw, in beats
-    protected static double BEATS_AIRTIME_MIN = 0.5;
+    protected static double BEATS_AIRTIME_MIN = 0.3;
 
     // Minimum time from a throw to a subsequent catch for that hand, in beats
     protected static double BEATS_THROW_CATCH_MIN = 0.3;
