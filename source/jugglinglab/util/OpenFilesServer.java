@@ -25,8 +25,8 @@ import jugglinglab.core.Constants;
 
 public class OpenFilesServer {
     // implemented types
-    public static final int memorymappedfile = 1;
-    public static final int sockets = 2;
+    public static final int SERVER_MMF = 1;
+    public static final int SERVER_SOCKETS = 2;
 
     private static OpenFilesServerMMF ofs_mmf;
     private static OpenFilesServerSockets ofs_sockets;
@@ -34,11 +34,11 @@ public class OpenFilesServer {
 
     public OpenFilesServer() {
         switch (Constants.OPEN_FILES_METHOD) {
-            case memorymappedfile:
+            case SERVER_MMF:
                 if (ofs_mmf == null)
                     ofs_mmf = new OpenFilesServerMMF();
                 break;
-            case sockets:
+            case SERVER_SOCKETS:
                 if (ofs_sockets == null)
                     ofs_sockets = new OpenFilesServerSockets();
                 break;
@@ -50,9 +50,9 @@ public class OpenFilesServer {
     // Otherwise return false.
     public static boolean tryOpenFile(File f) {
         switch (Constants.OPEN_FILES_METHOD) {
-            case memorymappedfile:
+            case SERVER_MMF:
                 return OpenFilesServerMMF.tryOpenFile(f);
-            case sockets:
+            case SERVER_SOCKETS:
                 return OpenFilesServerSockets.tryOpenFile(f);
         }
         return false;
