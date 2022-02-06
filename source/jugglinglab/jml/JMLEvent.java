@@ -248,7 +248,8 @@ public class JMLEvent {
             JMLTransition tr = getTransition(i);
 
             if (tr.getType() != JMLTransition.TRANS_CATCH &&
-                        tr.getType() != JMLTransition.TRANS_SOFTCATCH)
+                        tr.getType() != JMLTransition.TRANS_SOFTCATCH &&
+                        tr.getType() != JMLTransition.TRANS_GRABCATCH)
                 continue;
 
             PathLink pl = tr.getIncomingPathLink();
@@ -289,7 +290,7 @@ public class JMLEvent {
     public void readJML(JMLNode current, String jmlvers, int njugglers, int npaths)
                                             throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
-        double tempx = 0.0, tempy = 0.0, tempz = 0.0, tempt = 0.0;
+        double tempx = 0, tempy = 0, tempz = 0, tempt = 0;
         String handstr = null;
 
         try {
@@ -317,7 +318,7 @@ public class JMLEvent {
             tempz = temp;
         }
 
-        setLocalCoordinate(new Coordinate(tempx,tempy,tempz));
+        setLocalCoordinate(new Coordinate(tempx, tempy, tempz));
         setT(tempt);
         if (handstr == null)
             throw new JuggleExceptionUser(errorstrings.getString("Error_unspecified_hand"));
@@ -328,16 +329,16 @@ public class JMLEvent {
         // process current event node children
         for (int i = 0; i < current.getNumberOfChildren(); i++) {
             JMLNode child = current.getChildNode(i);
-            String type = child.getNodeType();
+            String nodetype = child.getNodeType();
             at = child.getAttributes();
-            String path = null, throwtype = null, mod = null;
+            String path = null, transtype = null, mod = null;
 
             for (int j = 0; j < at.getNumberOfAttributes(); j++) {
                 String value = at.getAttributeValue(j);
                 if (at.getAttributeName(j).equalsIgnoreCase("path"))
                     path = value;
                 else if (at.getAttributeName(j).equalsIgnoreCase("type"))
-                    throwtype = value;
+                    transtype = value;
                 else if (at.getAttributeName(j).equalsIgnoreCase("mod"))
                     mod = value;
             }
@@ -349,13 +350,15 @@ public class JMLEvent {
             if ((pnum > npaths) || (pnum < 1))
                 throw new JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"));
 
-            if (type.equalsIgnoreCase("throw"))
-                addTransition(new JMLTransition(JMLTransition.TRANS_THROW, pnum, throwtype, mod));
-            else if (type.equalsIgnoreCase("catch"))
-                addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, pnum, null, null));
-            else if (type.equalsIgnoreCase("softcatch"))
+            if (nodetype.equalsIgnoreCase("throw"))
+                addTransition(new JMLTransition(JMLTransition.TRANS_THROW, pnum, transtype, mod));
+            else if (nodetype.equalsIgnoreCase("catch") && transtype.equalsIgnoreCase("soft"))
                 addTransition(new JMLTransition(JMLTransition.TRANS_SOFTCATCH, pnum, null, null));
-            else if (type.equalsIgnoreCase("holding"))
+            else if (nodetype.equalsIgnoreCase("catch") && transtype.equalsIgnoreCase("grab"))
+                addTransition(new JMLTransition(JMLTransition.TRANS_GRABCATCH, pnum, null, null));
+            else if (nodetype.equalsIgnoreCase("catch"))
+                addTransition(new JMLTransition(JMLTransition.TRANS_CATCH, pnum, null, null));
+            else if (nodetype.equalsIgnoreCase("holding"))
                 addTransition(new JMLTransition(JMLTransition.TRANS_HOLDING, pnum, null, null));
 
             if (child.getNumberOfChildren() != 0)

@@ -134,8 +134,8 @@ public class EventImages {
             return false;
 
         for (int j = 0; j < evtransitions; j++)
-            if ((transitiontype[j] == JMLTransition.TRANS_THROW) ||
-                (transitiontype[j] == JMLTransition.TRANS_SOFTCATCH))
+            if (transitiontype[j] == JMLTransition.TRANS_THROW ||
+                        transitiontype[j] == JMLTransition.TRANS_SOFTCATCH)
                 return true;
         return false;
     }
@@ -165,8 +165,8 @@ public class EventImages {
         int[] cycle = loopperm.getCycle(path);
 
         for (int k = 0; k < evtransitions; k++) {
-            if ((transitiontype[k] == JMLTransition.TRANS_THROW) ||
-                (transitiontype[k] == JMLTransition.TRANS_SOFTCATCH)) {
+            if (transitiontype[k] == JMLTransition.TRANS_THROW ||
+                        transitiontype[k] == JMLTransition.TRANS_SOFTCATCH) {
                 for (int i = 0; i < numjugglers; i++) {
                     for (int j = 0; j < numentries; j++) {
                         for (int h = 0; h < 2; h++) {

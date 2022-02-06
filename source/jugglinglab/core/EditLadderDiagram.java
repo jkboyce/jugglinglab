@@ -485,7 +485,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     JMLEvent ev = item.event.getPrevious();
                     while (ev != null) {
                         if (ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_CATCH) != null ||
-                            ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_SOFTCATCH) != null)
+                                ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_SOFTCATCH) != null ||
+                                ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_GRABCATCH) != null)
                             break;
                         ev = ev.getPrevious();
                     }
@@ -506,6 +507,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     break;
                 case JMLTransition.TRANS_CATCH:
                 case JMLTransition.TRANS_SOFTCATCH:
+                case JMLTransition.TRANS_GRABCATCH:
                 {
                     // previous throw is easy to find
                     JMLEvent ev = tr.getIncomingPathLink().getStartEvent();
@@ -570,6 +572,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     break;
                 case JMLTransition.TRANS_CATCH:
                 case JMLTransition.TRANS_SOFTCATCH:
+                case JMLTransition.TRANS_GRABCATCH:
                     catchpath[tr.getPath()-1] = true;
                     break;
                 case JMLTransition.TRANS_HOLDING:
@@ -592,6 +595,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 break;
                             case JMLTransition.TRANS_CATCH:
                             case JMLTransition.TRANS_SOFTCATCH:
+                            case JMLTransition.TRANS_GRABCATCH:
                                 holdpathnew[tr.getPath()-1] = false;
                                 break;
                             case JMLTransition.TRANS_HOLDING:
@@ -636,6 +640,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                 break;
                             case JMLTransition.TRANS_CATCH:
                             case JMLTransition.TRANS_SOFTCATCH:
+                            case JMLTransition.TRANS_GRABCATCH:
                                 holdpathnew[tr.getPath()-1] = true;
                                 break;
                             case JMLTransition.TRANS_HOLDING:
@@ -881,10 +886,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                 if (tr.getType() != JMLTransition.TRANS_THROW)
                     return false;
             } else if (command.equals("changetocatch")) {
-                if (tr.getType() != JMLTransition.TRANS_SOFTCATCH)
+                if (tr.getType() != JMLTransition.TRANS_SOFTCATCH && tr.getType() != JMLTransition.TRANS_GRABCATCH)
                     return false;
             } else if (command.equals("changetosoftcatch")) {
-                if (tr.getType() != JMLTransition.TRANS_CATCH)
+                if (tr.getType() != JMLTransition.TRANS_CATCH && tr.getType() != JMLTransition.TRANS_GRABCATCH)
                     return false;
             }
         } else if (laditem.type == LadderItem.TYPE_POSITION) {

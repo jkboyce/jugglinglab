@@ -57,12 +57,9 @@
 
 <!ELEMENT catch EMPTY>
 <!ATTLIST catch
-          path     CDATA   #REQUIRED>
+          path     CDATA   #REQUIRED
+          type     CDATA   "natural">
 
-<!ELEMENT softcatch EMPTY>
-<!ATTLIST softcatch
-          path     CDATA   #REQUIRED>
-		  
 <!ELEMENT holding EMPTY>
 <!ATTLIST holding
           path     CDATA   #REQUIRED>

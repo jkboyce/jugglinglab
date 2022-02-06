@@ -59,11 +59,8 @@ public class JMLDefs {
         "\n" +
         "<!ELEMENT catch EMPTY>\n" +
         "<!ATTLIST catch\n" +
-        "          path     CDATA   #REQUIRED>\n" +
-        "\n" +
-        "<!ELEMENT softcatch EMPTY>\n" +
-        "<!ATTLIST softcatch\n" +
-        "          path     CDATA   #REQUIRED>\n" +
+        "          path     CDATA   #REQUIRED\n" +
+        "          type     CDATA   \"natural\">\n" +
         "\n" +
         "<!ELEMENT holding EMPTY>\n" +
         "<!ATTLIST holding\n" +

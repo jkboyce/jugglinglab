@@ -101,7 +101,8 @@ public class MarginEquations {
                 for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
                     int type = ev.getTransition(i).getType();
                     if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
-                                    type == JMLTransition.TRANS_SOFTCATCH) {
+                                    type == JMLTransition.TRANS_SOFTCATCH ||
+                                    type == JMLTransition.TRANS_GRABCATCH) {
                         ++varsNum;
                         variableEvents.add(ev);
                         Coordinate coord = ev.getLocalCoordinate();

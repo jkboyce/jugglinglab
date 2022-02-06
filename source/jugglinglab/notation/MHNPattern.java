@@ -1764,6 +1764,7 @@ public abstract class MHNPattern extends Pattern {
                             break;
                         case JMLTransition.TRANS_CATCH:
                         case JMLTransition.TRANS_SOFTCATCH:
+                        case JMLTransition.TRANS_GRABCATCH:
                             add_mode = true;
                             add_juggler = ev.getJuggler();
                             add_hand = ev.getHand();

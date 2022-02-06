@@ -887,6 +887,7 @@ public class JMLPattern {
                             needSpecialPathEvent[path] = false;
                             break;
                         case JMLTransition.TRANS_CATCH:
+                        case JMLTransition.TRANS_GRABCATCH:
                             break;
                         case JMLTransition.TRANS_SOFTCATCH:
                             if (needVDHandEvent[jug][han] == true)
@@ -897,6 +898,8 @@ public class JMLPattern {
                             if (hasVDPathJMLTransition[path] == false)  // if no throws for this path, then done
                                 needPathEvent[path] = false;
                             break;
+                        default:
+                            throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()");
                     }
                 }
             }
@@ -970,6 +973,7 @@ public class JMLPattern {
                                 needVDHandEvent[jug][han] = needHandEvent[jug][han] = false;
                             break;
                         case JMLTransition.TRANS_CATCH:
+                        case JMLTransition.TRANS_GRABCATCH:
                             needPathEvent[path] = false;
                             needSpecialPathEvent[path] = false;
                             break;
@@ -982,6 +986,8 @@ public class JMLPattern {
                             if (hasVDPathJMLTransition[path] == false)      // if no throws for this path,
                                 needPathEvent[path] = false;            // then done
                             break;
+                        default:
+                            throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()");
                     }
                 }
             }
@@ -1209,14 +1215,8 @@ public class JMLPattern {
                             pl.setInHand(ev.getJuggler(), ev.getHand());
                             break;
                         case JMLTransition.TRANS_CATCH:
-                            if (lasttr.getType() != JMLTransition.TRANS_THROW) {
-                                String template = errorstrings.getString("Error_successive_catches");
-                                Object[] arguments = { Integer.valueOf(i+1) };
-                                throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-                            }
-                            pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
-                            break;
                         case JMLTransition.TRANS_SOFTCATCH:
+                        case JMLTransition.TRANS_GRABCATCH:
                             if (lasttr.getType() != JMLTransition.TRANS_THROW) {
                                 String template = errorstrings.getString("Error_successive_catches");
                                 Object[] arguments = { Integer.valueOf(i+1) };
@@ -1224,6 +1224,8 @@ public class JMLPattern {
                             }
                             pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
                             break;
+                        default:
+                            throw new JuggleExceptionInternal("unrecognized transition type in buildLinkLists()");
                     }
 
                     pathlinks.get(i).add(pl);
@@ -1290,6 +1292,8 @@ public class JMLPattern {
                                 if (pl != null)
                                     vr = new VelocityRef(pl.getPath(), VelocityRef.VR_CATCH);
                             }
+                            // can skip adding VelocityRef for GRABCATCH because it's
+                            // never used by hand layout
                         }
                     }
 
