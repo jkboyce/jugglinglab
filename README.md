@@ -35,6 +35,7 @@ Over that long span of time the project has seen contributions from many people,
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
 - Romain Richard and Frédéric Rayar – [Android version](https://code.google.com/archive/p/jugglinglab/) ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
+- Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - P. R. Vaidyanathan – Hand Siteswap feature input
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
