@@ -749,7 +749,7 @@ public abstract class MHNPattern extends Pattern {
                         // see if we made a throw on the beat immediately prior
                         int index = k - 1;
                         if (index < 0)
-                            index = getIndexes() - 1;
+                            index += getPeriod();
 
                         boolean prev_beat_throw = false;
                         for (int slot2 = 0; slot2 < getMaxOccupancy(); ++slot2) {
