@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
@@ -208,10 +209,10 @@ public class JugglingLab {
         });
     }
 
-    // Open the JML file whose path is given as a command-line argument
+    // Open the JML file(s) whose paths are given as command-line arguments
     private static void doOpen() {
-        if (jlargs.size() != 1) {
-            String output = "Error: Expected 1 argument after 'open', got " + jlargs.size();
+        if (jlargs.size() == 0) {
+            String output = "Error: Expected file path(s) after 'open', none provided";
 
             if (isCLI) {
                 System.setProperty("java.awt.headless", "true");
@@ -223,19 +224,31 @@ public class JugglingLab {
             return;
         }
 
-        String filepath = jlargs.remove(0);
-        if (filepath.startsWith("\""))
-            filepath = filepath.substring(1, filepath.length() - 1);
+        // Make a list of File objects from the paths provided
+        ArrayList<File> files = new ArrayList<File>();
+        for (String filestr : jlargs) {
+            if (filestr.startsWith("\""))
+                filestr = filestr.substring(1, filestr.length() - 1);
 
-        final File file = new File(filepath);
+            Path filepath = Paths.get(filestr);
+            if (!filepath.isAbsolute() && base_dir != null)
+                filepath = Paths.get(base_dir.toString(), filestr);
 
-        // First try to hand off the open request to another instance of
+            files.add(filepath.toFile());
+        }
+
+        // First try to hand off the open requests to another instance of
         // Juggling Lab that may be running
         boolean noOpenFilesHandler = (!Desktop.isDesktopSupported() ||
             !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE));
 
         if (noOpenFilesHandler) {
-            if (OpenFilesServer.tryOpenFile(file)) {
+            for (Iterator<File> iterator = files.iterator(); iterator.hasNext(); ) {
+                if (OpenFilesServer.tryOpenFile(iterator.next()))
+                    iterator.remove();
+            }
+
+            if (files.size() == 0) {
                 System.setProperty("java.awt.headless", "true");
                 if (Constants.DEBUG_OPEN_SERVER)
                     System.out.println("Open file command handed off; quitting");
@@ -243,20 +256,27 @@ public class JugglingLab {
             }
         }
 
-        // If that doesn't work, launch the app and open the file
+        // If that doesn't work, launch the app and open the file(s)
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
                     registerAboutHandler();
                     new ApplicationWindow("Juggling Lab");
-                    ApplicationWindow.openJMLFile(file);
+
+                    for (File file : files) {
+                        try {
+                            ApplicationWindow.openJMLFile(file);
+                        } catch (JuggleExceptionUser jeu) {
+                            String template = errorstrings.getString("Error_reading_file");
+                            Object[] arguments = { file.getName() };
+                            String msg = MessageFormat.format(template, arguments) +
+                                    ":\n" + jeu.getMessage();
+                            new ErrorDialog(null, msg);
+                        }
+                    }
                 } catch (JuggleExceptionUser jeu) {
-                    String template = errorstrings.getString("Error_reading_file");
-                    Object[] arguments = { file.getName() };
-                    String msg = MessageFormat.format(template, arguments) +
-                                 ":\n" + jeu.getMessage();
-                    new ErrorDialog(null, msg);
+                    new ErrorDialog(null, jeu.getMessage());
                 } catch (JuggleExceptionInternal jei) {
                     ErrorDialog.handleFatalException(jei);
                 }
