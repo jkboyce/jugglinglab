@@ -24,12 +24,6 @@ public class SplineCurve extends Curve {
     // direction of the landing object's velocity. All remaining unknowns in
     // the velocities must be assigned, which we do via one of three techniques
     // described below.
-    //
-    // For spline curves, if the velocities at the endpoints are defined (non-
-    // null), the curve will match those velocities precisely. For velocities
-    // in the middle, the curve will match the *directions* of those velocities,
-    // but not their magnitudes. Any of the velocities may be null, in which
-    // case the spline will choose a velocity.
 
     @Override
     public void calcCurve() throws JuggleExceptionInternal {
@@ -86,17 +80,28 @@ public class SplineCurve extends Curve {
     public static final int CONTINUOUS_ACCEL = 1;
     public static final int MINIMIZE_RMSVEL = 2;
 
-    // This method assigns the unknown velocities at the intermediate times
-    // from the known velocities at the endpoints (and positions at all
-    // times). n is the number of sections -- (n-1) is the number of
-    // unknown velocities. v and x have dimension (n+1), t has dimension
-    // n. v[0] and v[n] are assumed to be initialized to known endpoints.
+    // The next method assigns velocities at the intermediate times from known
+    // velocities at the endpoints, and positions at all times.
+    //
+    // Inputs:
+    //    n is the number of spline segments -- (n-1) is the number of unknown
+    //          interior velocities v[1]...v[n-1]
+    //    t[] is the duration of each segment, dimension n
+    //    x[] is the position at each segment endpoint, dimension (n+1)
+    //    v[] is the velocity at each segment endpoint, dimension (n+1)
+    //
+    // Outputs:
+    //    v[1]...v[n-1]
+    //
+    // v[0] and v[n] are assumed to be initialized to known endpoints. The
+    // interior velocities v[1]...v[n-1] may be initialized to non-null values,
+    // to indicate there is a natural catch at that time (v[i] is the catch
+    // velocity). For a natural catch the hand velocity is constrained to be
+    // parallel to the catch velocity, at the time of catch.
     //
     // For the minimization techniques, the calculus problem reduces to
     // solving a system of linear equations of the form A.v = b, where v
-    // is a column vector of the velocities. In this case, the matrix A is
-    // in tridiagonal form, which is solved efficiently in O(N) time. A is
-    // also a symmetric matrix: the sub- and super-diagonals are equal.
+    // is a column vector of velocities and Lagrange multipliers.
 
     static protected void findvels_edges_known(int n, double[] t, Coordinate[] x, Coordinate[] v)
                                             throws JuggleExceptionInternal {
@@ -108,7 +113,6 @@ public class SplineCurve extends Curve {
             if (v[i] != null)
                 numcatches++;
         }
-        //System.out.println("# of catches = " + numcatches);
 
         // In this case we put all three axes into one big matrix, and solve once.
         //
@@ -134,7 +138,7 @@ public class SplineCurve extends Curve {
                     case MINIMIZE_RMSACCEL:
                     case CONTINUOUS_ACCEL:
                         // cases end up being identical
-                        m[index][index] = 2 / t[i+1] + 2 / t[i];
+                        m[index][index] = 2 / t[i] + 2 / t[i+1];
                         double offdiag1 = (i == n - 2 ? 0 : 1 / t[i+1]);
                         if (index < 3 * (n - 1) - 1) {
                             m[index][index + 1] = offdiag1;
@@ -144,7 +148,7 @@ public class SplineCurve extends Curve {
                         b[index] = 3 * (xi2 - xi1) / (t[i+1] * t[i+1]) +
                                 3 * (xi1 - xi0) / (t[i] * t[i]);
                         if (i == 0)
-                            b[index] -= v0 / t[i];
+                            b[index] -= v0 / t[0];
                         if (i == (n - 2))
                             b[index] -= vn / t[n-1];
                         break;
@@ -169,7 +173,7 @@ public class SplineCurve extends Curve {
         // Now we apply the "natural throwing" constraint, that the hand
         // velocity must be parallel to the catch velocity at the time of catch.
         // We implement this constraint by requiring the cross product between
-        // vel[] and the catch velocity to be zero. This is three separate
+        // v[] and the catch velocity to be zero. This is three separate
         // constraints (one for each spatial dimension), however they are not
         // linearly independent so we only need to apply two. We select the two
         // to retain based on the components of catch velocity.
@@ -233,17 +237,20 @@ public class SplineCurve extends Curve {
         }
     }
 
-    // This method assigns the unknown velocities at the intermediate times.
-    // Unlike the case above, here none of the velocities are known. They are
-    // all assigned via minimization, with the constraint that v[n] = v[0].
+    // The next method, like the one above, assigns velocities at the spline
+    // endpoints. The difference is that here the endpoint velocities v[0] and
+    // v[n] are not known but are assigned, with the constraint that v[n] = v[0].
     //
-    // Also unlike the case above, here the calculus does not reduce to a pure
-    // tridiagonal system.  The matrix A is tridiagonal, except for nonzero
-    // elements in the upper-right and lower-left corners.  Since A is close
-    // to tridiagonal, we can use the Woodbury formula, which allows us to
-    // solve a few auxiliary tridiagonal problems and then combine the results
-    // to solve the full problem. See pg. 77 from Numerical Recipes in C, first
-    // edition.
+    // There are no catch velocity constraints to consider here, since if there
+    // were catches for the hand there would be throws as well -- and the edge
+    // velocities would be known. Because there is no catch velocity constraint,
+    // we can solve each axis independently.
+    //
+    // The matrix A is close to tridiagonal, except for nonzero elements in the
+    // upper-right and lower-left corners. Since A is close to tridiagonal, we
+    // use the Woodbury formula which allows us to solve a few auxiliary
+    // tridiagonal problems and then combine the results to solve the full
+    // problem. See pg. 77 from Numerical Recipes in C, first edition.
 
     static protected void findvels_edges_unknown(int n, double[] t, Coordinate[] x, Coordinate[] v)
                                             throws JuggleExceptionInternal {
@@ -344,51 +351,50 @@ public class SplineCurve extends Curve {
 
             for (int i = 0; i < n; i++)
                 v[i].setIndex(axis, vel[i]);
+
+            /*
+            // do the matrix multiply to check the answer
+            System.out.println("Final result RHS:");
+            for (int i = 0; i < n; i++) {
+                double res = v[i] * Adiag[i];
+                if (i != (n-1))
+                    res += v[i+1] * Aoffd[i];
+                if (i > 0)
+                    res += v[i-1] * Aoffd[i-1];
+                if ((i == 0) && (n > 2))
+                    res += Acorner * v[n-1];
+                if ((i == (n-1)) && (n > 2))
+                    res += Acorner * v[0];
+                System.out.println("  rhs["+i+"] = "+res);
+            }
+            */
         }
 
-        v[n] = new Coordinate(v[0]);
-
-        /*
-        // do the matrix multiply to check the answer
-        System.out.println("Final result RHS:");
-        for (int i = 0; i < n; i++) {
-            double res = v[i] * Adiag[i];
-            if (i != (n-1))
-                res += v[i+1] * Aoffd[i];
-            if (i > 0)
-                res += v[i-1] * Aoffd[i-1];
-            if ((i == 0) && (n > 2))
-                res += Acorner * v[n-1];
-            if ((i == (n-1)) && (n > 2))
-                res += Acorner * v[0];
-            System.out.println("  rhs["+i+"] = "+res);
-        }
-        */
+        v[n] = new Coordinate(v[0]);  // v[n] = v[0]
     }
 
-    // The following method is adapted from Numerical Recipes. It solves
-    // the linear system A.u = r where A is tridiagonal. a[] is the
-    // subdiagonal, b[] the diagonal, c[] the superdiagonal. a, b, c, r, and
-    // u are indexed from 0. Only the array u[] is changed.
+    // The following method is adapted from Numerical Recipes. It solves the
+    // linear system A.u = r where A is tridiagonal. a[] is the subdiagonal,
+    // b[] the diagonal, c[] the superdiagonal. All arrays are indexed from 0.
+    // Only the array u[] is changed.
 
     static protected void tridag(double[] a, double[] b, double[] c, double[] r, double[] u, int n)
                         throws JuggleExceptionInternal {
-        int j;
-        double bet;
-        double[] gam = new double[n];
-
         if (b[0] == 0)
             throw new JuggleExceptionInternal("Error 1 in TRIDAG");
-        bet = b[0];
+
+        double bet = b[0];
+        double[] gam = new double[n];
+
         u[0] = r[0] / bet;
-        for (j = 1; j < n; j++) {
+        for (int j = 1; j < n; j++) {
             gam[j] = c[j-1] / bet;
             bet = b[j] - a[j-1] * gam[j];
             if (bet == 0)
                 throw new JuggleExceptionInternal("Error 2 in TRIDAG");
             u[j] = (r[j] - a[j-1] * u[j-1]) / bet;
         }
-        for (j = (n-1); j > 0; j--)
+        for (int j = (n-1); j > 0; j--)
             u[j-1] -= gam[j] * u[j];
     }
 
