@@ -15,7 +15,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     if [[ -x "${OSX_JL_EXEC}" ]]; then
         if [[ $# -ne 0 ]]; then
-            "${OSX_JL_EXEC}" $*
+            "${OSX_JL_EXEC}" ${1+"$@"}
         else
             # print a help message if no command line args
             "${OSX_JL_EXEC}" help
@@ -52,7 +52,7 @@ else
 
     if [ -a "${JL_JAR}" ]; then
         if [[ $# -ne 0 ]]; then
-            "$_java" -cp "${JL_JAR}:commons-math3-3.6.1.jar:ortools-lib/protobuf.jar:ortools-lib/com.google.ortools.jar" -Xss2048k -Djava.library.path=ortools-lib jugglinglab.JugglingLab $*
+            "$_java" -cp "${JL_JAR}:commons-math3-3.6.1.jar:ortools-lib/protobuf.jar:ortools-lib/com.google.ortools.jar" -Xss2048k -Djava.library.path=ortools-lib jugglinglab.JugglingLab ${1+"$@"}
         else
             # print a help message if no command line args
             "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
