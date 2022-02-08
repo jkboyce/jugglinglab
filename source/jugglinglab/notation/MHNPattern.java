@@ -852,6 +852,9 @@ public abstract class MHNPattern extends Pattern {
     // Minimum time from a catch to a subsequent throw for that hand, in beats
     protected static double BEATS_CATCH_THROW_MIN = 0;
 
+    // Maximum allowed time without events for a given hand, in seconds
+    protected static double SECS_EVENT_GAP_MAX = 0.5;
+
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
         if (bps_set <= 0)  // signal that we should calculate bps
@@ -883,7 +886,6 @@ public abstract class MHNPattern extends Pattern {
         // add positioning events later
         boolean[][] handtouched = new boolean[getNumberOfJugglers()][2];
         boolean[] pathtouched = new boolean[getNumberOfPaths()];
-
         addPrimaryEventsToJML(result, handtouched, pathtouched);
 
         // Step 4: Define a body position for this juggler and beat, if specified
@@ -896,17 +898,21 @@ public abstract class MHNPattern extends Pattern {
         addEventsForUntouchedPathsToJML(result, pathtouched);
 
         // Step 7: Build the full event list so we can scan through it
-        // chronologically in Steps 8 and 9
+        // chronologically in Steps 8-10
         result.buildEventList();
 
-        // Step 8: Specify positions for events that don't have them defined yet
-        addPositionsForUndefinedEventsToJML(result);
+        // Step 8: Add events where there are long gaps for a hand
+        if (hands == null)
+            addEventsForGapsToJML(result);
 
-        // Step 9: Add additional <holding> transitions where needed (i.e., a
+        // Step 9: Specify positions for events that don't have them defined yet
+        addLocationsForIncompleteEventsToJML(result);
+
+        // Step 10: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
         addMissingHoldsToJML(result);
 
-        // Step 10: Confirm that each throw in the JMLPattern has enough time to
+        // Step 11: Confirm that each throw in the JMLPattern has enough time to
         // satisfy its minimum duration requirement. If not then rescale time
         // (bps) to make everything feasible.
         //
@@ -917,19 +923,17 @@ public abstract class MHNPattern extends Pattern {
             if (scale_factor > 1.0) {
                 bps /= scale_factor;
 
+                if (hands == null) {
+                    // redo steps 8-10
+                    addEventsForGapsToJML(result);
+                    addLocationsForIncompleteEventsToJML(result);
+                    addMissingHoldsToJML(result);
+                }
+
                 if (Constants.DEBUG_LAYOUT)
                     System.out.println("Rescaled time; scale factor = " + scale_factor);
             }
         }
-
-        // Step 11: Streamline the pattern to remove excess empty and
-        // holding transitions. Do this only if `hands` has not been specified.
-        //
-        // This process is mostly aimed at making patterns with short beats,
-        // like `<(0,6x)!><(0,0)!><(6x,0)!><(0,0)!>` look more fluid. In these
-        // patterns the layout engine inserts a lot of empty/holding transitions.
-        if (hands == null)
-            result.streamlinePatternWithWindow(1.05 / bps);
 
         result.setTitle((title == null) ? pattern : title);
 
@@ -1351,38 +1355,43 @@ public abstract class MHNPattern extends Pattern {
 
                     // Step 3b: Finish off the on-beat event based on the transitions we've added
 
-                    // set the event position
-                    if (hands == null) {
-                        if (num_throws > 0) {
-                            double throwxav = throwxsum / (double)num_throws;
-                            if (h == MHNPattern.LEFT_HAND)
-                                throwxav = -throwxav;
-                            ev.setLocalCoordinate(new Coordinate(throwxav, 0, 0));
-                            ev.calcpos = false;
-                        } else {
-                            // mark event to calculate coordinate later
-                            ev.calcpos = true;
-                        }
+                    if (hands == null && num_throws == 0) {
+                        // don't add on-beat event if there are no throws -- unless a hand
+                        // layout is specified
                     } else {
-                        Coordinate c = hands.getCoordinate(sst.juggler, sst.handsindex, 0);
-                        if (h == MHNPattern.LEFT_HAND)
-                            c.x = -c.x;
-                        ev.setLocalCoordinate(c);
-                        ev.calcpos = false;
-                    }
+                        // set the event position
+                        if (hands == null) {
+                            if (num_throws > 0) {
+                                double throwxav = throwxsum / (double)num_throws;
+                                if (h == MHNPattern.LEFT_HAND)
+                                    throwxav = -throwxav;
+                                ev.setLocalCoordinate(new Coordinate(throwxav, 0, 0));
+                                ev.calcpos = false;
+                            } else {
+                                // mark event to calculate coordinate later
+                                ev.calcpos = true;
+                            }
+                        } else {
+                            Coordinate c = hands.getCoordinate(sst.juggler, sst.handsindex, 0);
+                            if (h == MHNPattern.LEFT_HAND)
+                                c.x = -c.x;
+                            ev.setLocalCoordinate(c);
+                            ev.calcpos = false;
+                        }
 
-                    ev.setT(sst.throwtime);
-                    ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
-                    pat.addEvent(ev);
+                        ev.setT(sst.throwtime);
+                        ev.setHand(j+1, (h==MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
+                        pat.addEvent(ev);
 
-                    // record which hands are touched by this event, for later reference
-                    for (int i2 = 0; i2 < getIndexes(); i2++) {
-                        for (int j2 = 0; j2 < getNumberOfJugglers(); j2++) {
-                            for (int h2 = 0; h2 < 2; h2++) {
-                                for (int slot2 = 0; slot2 < getMaxOccupancy(); slot2++) {
-                                    MHNThrow sst2 = th[j2][h2][i2][slot2];
-                                    if (sst2 != null && sst2.master == sst)
-                                        handtouched[j2][h2] = true;
+                        // record which hands are touched by this event, for later reference
+                        for (int i2 = 0; i2 < getIndexes(); i2++) {
+                            for (int j2 = 0; j2 < getNumberOfJugglers(); j2++) {
+                                for (int h2 = 0; h2 < 2; h2++) {
+                                    for (int slot2 = 0; slot2 < getMaxOccupancy(); slot2++) {
+                                        MHNThrow sst2 = th[j2][h2][i2][slot2];
+                                        if (sst2 != null && sst2.master == sst)
+                                            handtouched[j2][h2] = true;
+                                    }
                                 }
                             }
                         }
@@ -1405,6 +1414,11 @@ public abstract class MHNPattern extends Pattern {
                         catchxsum += (catchval > 8 ? catchx[8] : catchx[catchval]);
                         num_catches++;
                     }
+
+                    // Don't put an event at the catch time if there are no catches on
+                    // this beat -- unless a hand layout is specified
+                    if (hands == null && num_catches == 0)
+                        continue;
 
                     // Now add the catch event(s). Two cases to consider: (1) all catches
                     // happen at the same event, or (2) multiple catch events are made in
@@ -1665,7 +1679,52 @@ public abstract class MHNPattern extends Pattern {
         }
     }
 
-    protected void addPositionsForUndefinedEventsToJML(JMLPattern pat) {
+    protected void addEventsForGapsToJML(JMLPattern pat) throws JuggleExceptionUser, JuggleExceptionInternal {
+        for (int h = 0; h < 2; h++) {
+            int hand = (h==0 ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND);
+
+            if (h == 1) {
+                // only need to do this if there's a switch or switchdelay symmetry
+                pat.buildEventList();
+            }
+
+            for (int j = 1; j <= getNumberOfJugglers(); j++) {
+                JMLEvent ev = pat.getEventList();
+                JMLEvent start = null;
+
+                while (ev != null) {
+                    if (ev.getJuggler() == j && ev.getHand() == hand) {
+                        if (start != null) {
+                            double gap = ev.getT() - start.getT();
+
+                            if (gap > SECS_EVENT_GAP_MAX) {
+                                int add = (int)(gap / SECS_EVENT_GAP_MAX);
+                                double deltat = gap / (double)(add + 1);
+
+                                for (int i = 1; i <= add; i++) {
+                                    double evtime = start.getT() + i * deltat;
+                                    if (evtime < pat.getLoopStartTime() || evtime >= pat.getLoopEndTime())
+                                        continue;
+
+                                    JMLEvent ev2 = new JMLEvent();
+                                    ev2.setT(evtime);
+                                    ev2.setHand(j, hand);
+                                    ev2.calcpos = true;
+                                    pat.addEvent(ev2);
+                                }
+                            }
+                        }
+
+                        start = ev;
+                    }
+
+                    ev = ev.getNext();
+                }
+            }
+        }
+    }
+
+    protected void addLocationsForIncompleteEventsToJML(JMLPattern pat) {
         for (int j = 1; j <= getNumberOfJugglers(); j++) {
             for (int h = 0; h < 2; h++) {
                 int hand = (h==MHNPattern.RIGHT_HAND?HandLink.RIGHT_HAND:HandLink.LEFT_HAND);

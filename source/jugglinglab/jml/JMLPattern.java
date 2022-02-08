@@ -772,7 +772,7 @@ public class JMLPattern {
         int numevents = 0;
         JMLEvent current = eventlist;
         while (current != null) {
-            if ((current.getJuggler() < 1) || (current.getJuggler() > numjugglers))
+            if (current.getJuggler() < 1 || current.getJuggler() > numjugglers)
                 throw new JuggleExceptionUser(errorstrings.getString("Error_juggler_outofrange"));
             if (current.isMaster())
                 numevents++;
