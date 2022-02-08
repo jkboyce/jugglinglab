@@ -935,7 +935,7 @@ public abstract class MHNPattern extends Pattern {
             }
         }
 
-        result.setTitle((title == null) ? pattern : title);
+        result.setTitle(title == null ? pattern : title);
 
         if (Constants.DEBUG_LAYOUT) {
             System.out.println("Pattern in JML format:\n");
@@ -1545,22 +1545,31 @@ public abstract class MHNPattern extends Pattern {
 
                     // figure out when the next catch or hold is
                     double nextcatchtime = lastcatchtime;
+                    int k2 = k + 1;
 
-                    for (int tempk = (k + 1); tempk < getIndexes(); tempk++) {
+                    while (nextcatchtime == lastcatchtime) {
+                        int tempk = k2;
+                        int wrap = 0;
+
+                        while (tempk >= getIndexes()) {
+                            tempk -= getIndexes();
+                            wrap++;
+                        }
+
+                        if (wrap > 1)
+                            throw new JuggleExceptionInternal("Couldn't find next catch/hold past t=" + lastcatchtime);
+
                         for (int tempslot = 0; tempslot < getMaxOccupancy(); tempslot++) {
                             MHNThrow tempsst = th[j][h][tempk][tempslot];
                             if (tempsst == null)
                                 break;
 
-                            nextcatchtime = (tempslot == 0 ? tempsst.catchtime :
-                                        Math.min(nextcatchtime, tempsst.catchtime));
+                            double catcht = tempsst.catchtime + wrap * getIndexes() / bps;
+                            nextcatchtime = (tempslot == 0 ? catcht : Math.min(nextcatchtime, catcht));
                         }
 
-                        if (nextcatchtime != lastcatchtime)
-                            break;
+                        k2++;
                     }
-                    if (nextcatchtime == lastcatchtime)
-                        throw new JuggleExceptionInternal("Couldn't find next catch/hold past t=" + lastcatchtime);
 
                     // add other events between the current throw and the next catch
                     pos = sst.handsindex;
