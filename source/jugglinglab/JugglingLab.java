@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 import jugglinglab.core.*;
 import jugglinglab.jml.JMLParser;
 import jugglinglab.jml.JMLPattern;
+import jugglinglab.jml.JMLPatternList;
 import jugglinglab.generator.SiteswapGenerator;
 import jugglinglab.generator.SiteswapTransitioner;
 import jugglinglab.generator.GeneratorTarget;
@@ -134,7 +135,7 @@ public class JugglingLab {
         if (!isCLI)
             return;
 
-        List<String> modes = Arrays.asList("gen", "trans", "anim", "togif", "tojml");
+        List<String> modes = Arrays.asList("gen", "trans", "verify", "anim", "togif", "tojml");
         boolean show_help = !modes.contains(firstarg);
 
         if (show_help) {
@@ -153,6 +154,11 @@ public class JugglingLab {
 
         if (firstarg.equals("trans")) {
             doTrans(outpath, jc);
+            return;
+        }
+
+        if (firstarg.equals("verify")) {
+            doVerify(outpath, jc);
             return;
         }
 
@@ -211,31 +217,9 @@ public class JugglingLab {
 
     // Open the JML file(s) whose paths are given as command-line arguments
     private static void doOpen() {
-        if (jlargs.size() == 0) {
-            String output = "Error: Expected file path(s) after 'open', none provided";
-
-            if (isCLI) {
-                System.setProperty("java.awt.headless", "true");
-                System.out.println(output);
-            } else {
-                // shouldn't ever happen
-                new ErrorDialog(null, output);
-            }
+        ArrayList<File> files = parse_filelist();
+        if (files == null)
             return;
-        }
-
-        // Make a list of File objects from the paths provided
-        ArrayList<File> files = new ArrayList<File>();
-        for (String filestr : jlargs) {
-            if (filestr.startsWith("\""))
-                filestr = filestr.substring(1, filestr.length() - 1);
-
-            Path filepath = Paths.get(filestr);
-            if (!filepath.isAbsolute() && base_dir != null)
-                filepath = Paths.get(base_dir.toString(), filestr);
-
-            files.add(filepath.toFile());
-        }
 
         // First try to hand off the open requests to another instance of
         // Juggling Lab that may be running
@@ -282,6 +266,40 @@ public class JugglingLab {
                 }
             }
         });
+    }
+
+    // Read a list of file paths from jlargs and return an array of File
+    // objects. Relative file paths are converted to absolute paths.
+    //
+    // In the event of an error, print an error message and return null.
+    private static ArrayList<File> parse_filelist() {
+        if (jlargs.size() == 0) {
+            String output = "Error: Expected file path(s), none provided";
+
+            if (isCLI) {
+                System.setProperty("java.awt.headless", "true");
+                System.out.println(output);
+            } else {
+                // shouldn't ever happen
+                new ErrorDialog(null, output);
+            }
+            return null;
+        }
+
+        ArrayList<File> files = new ArrayList<File>();
+
+        for (String filestr : jlargs) {
+            if (filestr.startsWith("\""))
+                filestr = filestr.substring(1, filestr.length() - 1);
+
+            Path filepath = Paths.get(filestr);
+            if (!filepath.isAbsolute() && base_dir != null)
+                filepath = Paths.get(base_dir.toString(), filestr);
+
+            files.add(filepath.toFile());
+        }
+
+        return files;
     }
 
     // Show the help message
@@ -391,6 +409,117 @@ public class JugglingLab {
 
         if (jc != null)
             System.out.println("Note: Animator prefs not used in transitions mode; ignored");
+    }
+
+    // Verify the validity of JML file(s) whose paths are given as command-line
+    // arguments. For pattern lists the validity of each line within the list is
+    // verified.
+    private static void doVerify(Path outpath, AnimationPrefs jc) {
+        System.setProperty("java.awt.headless", "true");
+        ArrayList<File> files = parse_filelist();
+        if (files == null)
+            return;
+        if (jc != null)
+            System.out.println("Note: Animator prefs not used in verify mode; ignored\n");
+
+        PrintStream ps = System.out;
+        try {
+            if (outpath != null)
+                ps = new PrintStream(outpath.toFile());
+        } catch (FileNotFoundException fnfe) {
+            System.out.println("Error: Problem writing to file path " + outpath.toString());
+            return;
+        }
+
+        int error_count = 0;
+        int files_with_errors_count = 0;
+        int files_count = 0;
+        int patterns_count = 0;
+
+        for (File file : files) {
+            ps.println("Verifying file '" + file.getAbsolutePath());
+            files_count++;
+
+            int error_count_current_file = 0;
+
+            JMLParser parser = new JMLParser();
+            try {
+                parser.parse(new FileReader(file));
+            } catch (SAXException se) {
+                ps.println("   Error: Formatting error in JML file");
+                error_count_current_file++;
+            } catch (IOException ioe) {
+                ps.println("   Error: Problem reading JML file from path " +
+                                                    file.getAbsolutePath());
+                error_count_current_file++;
+            }
+
+            if (error_count_current_file > 0) {
+                error_count += error_count_current_file;
+                files_with_errors_count++;
+                continue;
+            }
+
+            if (parser.getFileType() == JMLParser.JML_PATTERN) {
+                try {
+                    patterns_count++;
+                    JMLPattern pat = new JMLPattern(parser.getTree());
+                    pat.layoutPattern();
+                    ps.println("   OK");
+                } catch (JuggleException je) {
+                    ps.println("   Error creating pattern: " + je.getMessage());
+                    error_count_current_file++;
+                }
+            } else if (parser.getFileType() == JMLParser.JML_LIST) {
+                JMLPatternList pl = null;
+                try {
+                    pl = new JMLPatternList(parser.getTree());
+                } catch (JuggleExceptionUser jeu) {
+                    ps.println("   Error creating pattern list: " + jeu.getMessage());
+                    error_count_current_file++;
+                }
+
+                if (error_count_current_file > 0) {
+                    error_count += error_count_current_file;
+                    files_with_errors_count++;
+                    continue;
+                }
+
+                for (int i = 0; i < pl.size(); i++) {
+                    // Verify pattern and animprefs for each line
+                    try {
+                        JMLPattern pat = pl.getPatternForLine(i);
+                        if (pat != null) {
+                            patterns_count++;
+                            pat.layoutPattern();
+                            AnimationPrefs ap = pl.getAnimationPrefsForLine(i);
+                            ps.println("   Pattern line " + (i+1) + ": OK");
+                        }
+                    } catch (JuggleException je) {
+                        ps.println("   Pattern line " + (i+1) + ": Error: " + je.getMessage());
+                        error_count_current_file++;
+                    }
+                }
+            } else {
+                ps.println("   Error: File is not valid JML");
+                error_count_current_file++;
+            }
+
+            if (error_count_current_file > 0) {
+                error_count += error_count_current_file;
+                files_with_errors_count++;
+            }
+        }
+
+        ps.println();
+        ps.println("Processed " + patterns_count + " patterns in " + files_count + " files");
+
+        if (error_count == 0) {
+            ps.println("   All files OK");
+        } else {
+            ps.println("   Files with errors: " + files_with_errors_count);
+            ps.println("   Total errors found: " + error_count);
+        }
     }
 
     // Look at beginning of jlargs to see if there's a pattern, and if so then
