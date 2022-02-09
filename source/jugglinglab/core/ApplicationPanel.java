@@ -193,7 +193,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         jtp.addTab(guistrings.getString("Pattern_entry"), np1);
     }
 
-    protected void addTransitionerControl(Transitioner trans, PatternListPanel pl) {
+    protected void addTransitionerControl(Transitioner trans, PatternListPanel plp) {
         JPanel p1 = new JPanel();
         p1.setLayout(new BorderLayout());
         p1.add(trans.getTransitionerControl(), BorderLayout.PAGE_START);
@@ -224,10 +224,10 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                         try {
                             trans.initTransitioner();
                             GeneratorTarget pwot = null;
-                            if (pl != null) {
-                                pl.clearList();
-                                pwot = new GeneratorTarget(pl);
-                                //jtp.setSelectedComponent(pl);
+                            if (plp != null) {
+                                plp.clearList();
+                                pwot = new GeneratorTarget(plp);
+                                //jtp.setSelectedComponent(plp);
                             } else {
                                 String title = trans.getNotationName() + " " +
                                         guistrings.getString("Patterns");
@@ -235,14 +235,14 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
                             trans.runTransitioner(pwot, max_patterns, max_time);
-                            if (pl != null)
-                                jtp.setSelectedComponent(pl);
+                            if (plp != null)
+                                jtp.setSelectedComponent(plp);
                         } catch (JuggleExceptionDone ex) {
-                            if (pl != null)
-                                jtp.setSelectedComponent(pl);
+                            if (plp != null)
+                                jtp.setSelectedComponent(plp);
                             Component parent = pw;
                             if (pw == null)
-                                parent = pl;
+                                parent = plp;
                             new LabelDialog(parent, guistrings.getString(
                                     "Generator_stopped_title"), ex.getMessage());
                         } catch (JuggleExceptionInterrupted jei) {
@@ -274,7 +274,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
         jtp.addTab(guistrings.getString("Transitions"), p1);
     }
 
-    protected void addGeneratorControl(Generator gen, PatternListPanel pl) {
+    protected void addGeneratorControl(Generator gen, PatternListPanel plp) {
         JPanel p1 = new JPanel();
         p1.setLayout(new BorderLayout());
         p1.add(gen.getGeneratorControl(), BorderLayout.PAGE_START);
@@ -305,10 +305,10 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                         try {
                             gen.initGenerator();
                             GeneratorTarget pwot = null;
-                            if (pl != null) {
-                                pl.clearList();
-                                pwot = new GeneratorTarget(pl);
-                                //jtp.setSelectedComponent(pl);
+                            if (plp != null) {
+                                plp.clearList();
+                                pwot = new GeneratorTarget(plp);
+                                //jtp.setSelectedComponent(plp);
                             } else {
                                 String title = gen.getNotationName() + " " +
                                             guistrings.getString("Patterns");
@@ -316,14 +316,14 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
                             gen.runGenerator(pwot, max_patterns, max_time);
-                            if (pl != null)
-                                jtp.setSelectedComponent(pl);
+                            if (plp != null)
+                                jtp.setSelectedComponent(plp);
                         } catch (JuggleExceptionDone ex) {
-                            if (pl != null)
-                                jtp.setSelectedComponent(pl);
+                            if (plp != null)
+                                jtp.setSelectedComponent(plp);
                             Component parent = pw;
                             if (pw == null)
-                                parent = pl;
+                                parent = plp;
                             new LabelDialog(parent, guistrings.getString(
                                     "Generator_stopped_title"), ex.getMessage());
                         } catch (JuggleExceptionInterrupted jei) {
