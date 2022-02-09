@@ -28,7 +28,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     static protected Point[] tile_locations;
     static protected int next_tile_num;
 
-    protected PatternListPanel pl;
+    protected PatternListPanel plp;
     protected JMenu windowmenu;
     protected String last_jml_filename;
 
@@ -37,7 +37,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
         super();
         createMenus();
         createContents();
-        pl.setTitle(title);
+        plp.getPatternList().setTitle(title);
         setTitle(title);
 
         setLocation(getNextScreenLocation());
@@ -68,8 +68,8 @@ public class PatternListWindow extends JFrame implements ActionListener {
         this("");
 
         if (root != null) {
-            pl.readJML(root);
-            setTitle(pl.getTitle());
+            plp.getPatternList().readJML(root);
+            setTitle(plp.getPatternList().getTitle());
         }
     }
 
@@ -97,9 +97,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
     //-------------------------------------------------------------------------
 
     protected void createContents() {
-        pl = new PatternListPanel(this);
-        pl.setDoubleBuffered(true);
-        setContentPane(pl);
+        plp = new PatternListPanel(this);
+        plp.setDoubleBuffered(true);
+        setContentPane(plp);
 
         Locale loc = JLLocale.getLocale();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
@@ -110,8 +110,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         setSize(300, 450);
     }
 
+    // Used by GeneratorTarget
     public PatternListPanel getPatternListPanel() {
-        return pl;
+        return plp;
     }
 
     public void setJMLFilename(String fname) {
@@ -340,7 +341,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);
-                    pl.writeJML(fw);
+                    plp.getPatternList().writeJML(fw);
                     fw.close();
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionInternal("File not found on save: " +
@@ -383,7 +384,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileWriter fw = new FileWriter(f);
-                    pl.writeText(fw);
+                    plp.getPatternList().writeText(fw);
                     fw.close();
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionInternal("File not found on save: " +

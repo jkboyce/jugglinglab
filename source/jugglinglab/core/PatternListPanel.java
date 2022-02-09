@@ -7,8 +7,6 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
-import java.io.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.*;
@@ -16,6 +14,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.*;
 
 import jugglinglab.jml.*;
+import jugglinglab.jml.JMLPatternList.PatternRecord;
 import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
@@ -32,14 +31,10 @@ public class PatternListPanel extends JPanel {
     static final DataFlavor patternFlavor = new DataFlavor(PatternRecord.class,
                                                  "Juggling Lab pattern record");
 
+    protected JMLPatternList pl;
     protected JFrame parent;
     protected View animtarget;
-    protected String version = JMLDefs.CURRENT_JML_VERSION;
-    protected String title;
-    protected String info;
     protected JList<PatternRecord> list;
-    protected DefaultListModel<PatternRecord> model;
-    protected String loadingversion = JMLDefs.CURRENT_JML_VERSION;
 
     // for mouse/popup menu handling
     protected boolean didPopup;
@@ -51,12 +46,9 @@ public class PatternListPanel extends JPanel {
     // for drag and drop operations
     protected boolean draggingOut;
 
-    // whether to include a blank line at the end of every pattern list,
-    // so that items can be inserted at the end
-    protected static final boolean BLANK_AT_END = true;
-
 
     protected PatternListPanel() {
+        pl = new JMLPatternList();
         makePanel();
         setOpaque(false);
     }
@@ -71,12 +63,14 @@ public class PatternListPanel extends JPanel {
         setTargetView(target);
     }
 
+    //-------------------------------------------------------------------------
+    // Methods to create and manage contents
+    //-------------------------------------------------------------------------
+
     protected void makePanel() {
-        model = new DefaultListModel<PatternRecord>();
-        list = new JList<PatternRecord>(model);
+        list = new JList<PatternRecord>(pl.getModel());
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new PatternCellRenderer());
-        clearList();
 
         list.setDragEnabled(true);
         list.setTransferHandler(new PatternTransferHandler());
@@ -125,41 +119,17 @@ public class PatternListPanel extends JPanel {
 
         try {
             int row = list.getSelectedIndex();
-            if (row < 0 || (BLANK_AT_END && row == model.size() - 1))
+            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1))
                 return;
 
-            PatternRecord rec = model.get(row);
-            if (rec.notation == null)
+            JMLPattern pat = pl.getPatternForLine(row);
+            if (pat == null)
                 return;
-
-            JMLPattern pat = null;
-            Pattern p = null;
-
-            if (rec.notation.equalsIgnoreCase("jml") && rec.patnode != null) {
-                pat = new JMLPattern(rec.patnode, PatternListPanel.this.loadingversion);
-            } else if (rec.anim != null) {
-                pat = JMLPattern.fromBasePattern(rec.notation, rec.anim);
-
-                if (rec.info != null)
-                    pat.setInfo(rec.info);
-                if (rec.tags != null) {
-                    for (String tag : rec.tags)
-                        pat.addTag(tag);
-                }
-            } else
-                return;
-
-            pat.layoutPattern();
-
+            pat.layoutPattern();  // do this before getting hash code
             if (PatternWindow.bringToFront(pat.getHashCode()))
                 return;
 
-            AnimationPrefs ap = new AnimationPrefs();
-            if (rec.animprefs != null) {
-                ParameterList pl = new ParameterList(rec.animprefs);
-                ap.fromParameters(pl);
-                pl.errorIfParametersLeft();
-            }
+            AnimationPrefs ap = pl.getAnimationPrefsForLine(row);
 
             if (animtarget != null)
                 animtarget.restartView(pat, ap);
@@ -176,139 +146,21 @@ public class PatternListPanel extends JPanel {
         }
     }
 
-    //-------------------------------------------------------------------------
-    // Classes to support drag and drop operations
-    //-------------------------------------------------------------------------
-
-    class PatternTransferHandler extends TransferHandler {
-        @Override
-        public int getSourceActions(JComponent c) {
-            return TransferHandler.COPY_OR_MOVE;
-        }
-
-        @Override
-        public Transferable createTransferable(JComponent c) {
-            int row = list.getSelectedIndex();
-            if (row < 0 || (BLANK_AT_END && row == model.size() - 1))
-                return null;
-
-            draggingOut = true;
-            PatternRecord rec = model.get(row);
-            return new PatternTransferable(rec);
-        }
-
-        @Override
-        public boolean canImport(TransferHandler.TransferSupport info) {
-            // support only drop (not clipboard paste)
-            if (!info.isDrop())
-                return false;
-
-            if (draggingOut)
-                info.setDropAction(MOVE);  // within same list
-            else
-                info.setDropAction(COPY);  // between lists
-
-            if (info.isDataFlavorSupported(patternFlavor))
-                return true;
-            if (info.isDataFlavorSupported(DataFlavor.stringFlavor))
-                return true;
-
-            return false;
-        }
-
-        @Override
-        public boolean importData(TransferHandler.TransferSupport info) {
-            if (!info.isDrop())
-                return false;
-
-            JList.DropLocation dl = (JList.DropLocation)info.getDropLocation();
-            int index = dl.getIndex();
-            if (index < 0)
-                index = (BLANK_AT_END ? model.size() - 1 : model.size());
-
-            // Get the record that is being dropped
-            Transferable t = info.getTransferable();
-
-            try {
-                if (t.isDataFlavorSupported(patternFlavor)) {
-                    PatternRecord rec = (PatternRecord)t.getTransferData(patternFlavor);
-                    model.add(index, new PatternRecord(rec));
-                    list.setSelectedIndex(index);
-                    return true;
-                }
-
-                if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                    String s = (String)t.getTransferData(DataFlavor.stringFlavor);
-
-                    // allow for multi-line strings
-                    String[] lines = s.stripTrailing().split("\n");
-
-                    for (int i = lines.length - 1; i >= 0; --i) {
-                        PatternRecord rec = new PatternRecord(lines[i],
-                                                null, null, null, null, null, null);
-                        model.add(index, rec);
-                    }
-                    list.setSelectedIndex(index);
-                    return true;
-                }
-            } catch (Exception e) {
-                ErrorDialog.handleFatalException(e);
-            }
-
-            return false;
-        }
-
-        @Override
-        protected void exportDone(JComponent c, Transferable data, int action) {
-            if (action == TransferHandler.MOVE) {
-                if (!(data instanceof PatternTransferable))
-                    return;
-
-                if (!model.removeElement(((PatternTransferable)data).rec))
-                    ErrorDialog.handleFatalException(
-                            new JuggleExceptionInternal("PLP: exportDone()"));
-            }
-
-            draggingOut = false;
-        }
+    public JMLPatternList getPatternList() {
+        return pl;
     }
 
-    class PatternTransferable implements Transferable {
-        public PatternRecord rec;
+    public void clearList() {
+        pl.clearModel();
+    }
 
-        public PatternTransferable(PatternRecord pr) {
-            rec = pr;
-        }
+    public void setTargetView(View target) {
+        animtarget = target;
+    }
 
-        @Override
-        public Object getTransferData(DataFlavor flavor) {
-            if (flavor.equals(patternFlavor))
-                return rec;
-
-            if (flavor.equals(DataFlavor.stringFlavor)) {
-                String s;
-                if (rec.anim == null || rec.anim.equals(""))
-                    s = rec.display;
-                else
-                    s = rec.anim;
-                return s;
-            }
-
-            return null;
-        }
-
-        @Override
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[] {
-                patternFlavor,
-                DataFlavor.stringFlavor,
-            };
-        }
-
-        @Override
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(patternFlavor) || flavor.equals(DataFlavor.stringFlavor);
-        }
+    // Used by GeneratorTarget
+    public void addPattern(String display, String animprefs, String notation, String anim) {
+        pl.addLine(-1, display, animprefs, notation, anim, null, null);
     }
 
     //-------------------------------------------------------------------------
@@ -364,12 +216,12 @@ public class PatternListPanel extends JPanel {
                 } else if (command.equals("displaytext")) {
                     changeDisplayText(row);
                 } else if (command.equals("remove")) {
-                    model.remove(row);
+                    pl.getModel().remove(row);
                 } else {
-                    // adding a pattern
+                    // inserting a pattern
                     int patnum = Integer.parseInt(command.substring(3, command.length()));
                     PatternWindow pw = popupPatterns.get(patnum);
-                    addPattern(row, pw);
+                    insertPattern(row, pw);
                 }
             }
         };
@@ -389,7 +241,7 @@ public class PatternListPanel extends JPanel {
             if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
                 item.setEnabled(false);
             if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) &&
-                        BLANK_AT_END && row == model.size() - 1)
+                        JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1)
                 item.setEnabled(false);
             if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
                 item.setEnabled(false);
@@ -426,7 +278,7 @@ public class PatternListPanel extends JPanel {
     }
 
     // Insert the pattern in the given PatternWindow into the given row
-    protected void addPattern(int row, PatternWindow pw) {
+    protected void insertPattern(int row, PatternWindow pw) {
         String display = pw.getTitle();
         String animprefs = pw.getAnimationPrefs().toString();
         if (animprefs.length() == 0)
@@ -454,13 +306,13 @@ public class PatternListPanel extends JPanel {
             patnode = null;
         }
 
-        addPattern(row, display, animprefs, notation, anim, patnode, infonode);
+        pl.addLine(row, display, animprefs, notation, anim, patnode, infonode);
 
         if (row < 0) {
-            if (BLANK_AT_END)
-                list.setSelectedIndex(model.size() - 2);
+            if (JMLPatternList.BLANK_AT_END)
+                list.setSelectedIndex(pl.getModel().size() - 2);
             else
-                list.setSelectedIndex(model.size() - 1);
+                list.setSelectedIndex(pl.getModel().size() - 1);
         } else
             list.setSelectedIndex(row);
     }
@@ -475,15 +327,12 @@ public class PatternListPanel extends JPanel {
                 String display = tf.getText();
                 dialog.dispose();
 
-                PatternRecord rec = new PatternRecord(display, null, null, null, null, null, null);
+                pl.addLine(row, display, null, null, null, null, null);
 
-                if (row < 0) {
-                    model.addElement(rec);  // adds at end
-                    list.setSelectedIndex(model.size() - 1);
-                } else {
-                    model.add(row, rec);
+                if (row < 0)
+                    list.setSelectedIndex(pl.size() - 1);
+                else
                     list.setSelectedIndex(row);
-                }
             }
         });
 
@@ -492,16 +341,16 @@ public class PatternListPanel extends JPanel {
 
     // Open a dialog to allow the user to change the pattern list's title
     protected void changeTitle() {
-        makeDialog(guistrings.getString("PLDIALOG_Change_title"), getTitle());
+        makeDialog(guistrings.getString("PLDIALOG_Change_title"), pl.getTitle());
 
         okbutton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setTitle(tf.getText());
+                pl.setTitle(tf.getText());
                 dialog.dispose();
 
                 if (parent != null)
-                    parent.setTitle(getTitle());
+                    parent.setTitle(pl.getTitle());
             }
         });
 
@@ -511,7 +360,7 @@ public class PatternListPanel extends JPanel {
 
     // Open a dialog to allow the user to change the display text of a line
     protected void changeDisplayText(int row) {
-        PatternRecord rec = model.get(row);
+        PatternRecord rec = pl.getModel().get(row);
         makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display);
 
         okbutton.addActionListener(new ActionListener() {
@@ -520,7 +369,7 @@ public class PatternListPanel extends JPanel {
                 rec.display = tf.getText();
                 dialog.dispose();
 
-                model.set(row, rec);
+                pl.getModel().set(row, rec);
             }
         });
 
@@ -559,7 +408,7 @@ public class PatternListPanel extends JPanel {
 
     // Be sure to call this at the very end of any mouse-related interaction
     protected void checkSelection() {
-        if (BLANK_AT_END && list.getSelectedIndex() == model.size() - 1)
+        if (JMLPatternList.BLANK_AT_END && list.getSelectedIndex() == pl.getModel().size() - 1)
             list.clearSelection();
 
         popupPatterns = null;
@@ -569,264 +418,143 @@ public class PatternListPanel extends JPanel {
     }
 
     //-------------------------------------------------------------------------
+    // Classes to support drag and drop operations
+    //-------------------------------------------------------------------------
 
-    public void setTargetView(View target) {
-        animtarget = target;
-    }
-
-    // Used by GeneratorTarget
-    public void addPattern(String display, String animprefs, String notation, String anim) {
-        addPattern(-1, display, animprefs, notation, anim, null, null);
-    }
-
-    // Add a pattern at a specific row in the list.
-    // When `row` < 0, add it at the end.
-    protected void addPattern(int row, String display, String animprefs, String notation,
-                        String anim, JMLNode patnode, JMLNode infonode) {
-        if (display == null)
-            display = "";
-        if (animprefs != null)
-            animprefs = animprefs.strip();
-        if (notation != null)
-            notation = notation.strip();
-        if (anim != null)
-            anim = anim.strip();
-
-        String info = null;
-        ArrayList<String> tags = null;
-
-        if (infonode != null) {
-            info = infonode.getNodeValue();
-            info = (info != null && info.strip().length() > 0) ? info.strip() : null;
-
-            String tagstr = infonode.getAttributes().getAttribute("tags");
-            if (tagstr != null) {
-                tags = new ArrayList<String>();
-
-                for (String t : tagstr.split(",")) {
-                    t = t.strip();
-                    boolean is_new = true;
-
-                    for (String t2 : tags) {
-                        if (t2.equalsIgnoreCase(t))
-                            is_new = false;
-                    }
-
-                    if (is_new)
-                        tags.add(t);
-                }
-            }
+    class PatternTransferHandler extends TransferHandler {
+        @Override
+        public int getSourceActions(JComponent c) {
+            return TransferHandler.COPY_OR_MOVE;
         }
 
-        PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, patnode, info, tags);
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            int row = list.getSelectedIndex();
+            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1))
+                return null;
 
-        if (row < 0) {
-            if (BLANK_AT_END)
-                model.add(model.size() - 1, rec);
+            draggingOut = true;
+            PatternRecord rec = pl.getModel().get(row);
+            return new PatternTransferable(rec);
+        }
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+            // support only drop (not clipboard paste)
+            if (!info.isDrop())
+                return false;
+
+            if (draggingOut)
+                info.setDropAction(MOVE);  // within same list
             else
-                model.addElement(rec);  // adds at end
-        } else
-            model.add(row, rec);
-    }
+                info.setDropAction(COPY);  // between lists
 
-    public void clearList() {
-        model.clear();
+            if (info.isDataFlavorSupported(patternFlavor))
+                return true;
+            if (info.isDataFlavorSupported(DataFlavor.stringFlavor))
+                return true;
 
-        if (BLANK_AT_END)
-            model.addElement(new PatternRecord(" ", null, null, null, null, null, null));
-    }
-
-    public void setTitle(String t) {
-        // by convention we don't allow title to be zero-length string "", but
-        // use null instead
-        title = ((t == null || t.length() == 0) ? null : t.strip());
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void readJML(JMLNode root) throws JuggleExceptionUser {
-        if (!root.getNodeType().equalsIgnoreCase("jml"))
-            throw new JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"));
-
-        String version = root.getAttributes().getAttribute("version");
-        if (version != null) {
-            if (JLFunc.compareVersions(version, JMLDefs.CURRENT_JML_VERSION) > 0)
-                throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
-            loadingversion = version;
+            return false;
         }
 
-        JMLNode listnode = root.getChildNode(0);
-        if (!listnode.getNodeType().equalsIgnoreCase("patternlist"))
-            throw new JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"));
+        @Override
+        public boolean importData(TransferHandler.TransferSupport info) {
+            if (!info.isDrop())
+                return false;
 
-        int linenumber = 0;
+            JList.DropLocation dl = (JList.DropLocation)info.getDropLocation();
+            int index = dl.getIndex();
+            if (index < 0)
+                index = (JMLPatternList.BLANK_AT_END ? pl.getModel().size() - 1 : pl.getModel().size());
 
-        for (int i = 0; i < listnode.getNumberOfChildren(); i++) {
-            JMLNode child = listnode.getChildNode(i);
-            if (child.getNodeType().equalsIgnoreCase("title")) {
-                title = child.getNodeValue().strip();
-            } else if (child.getNodeType().equalsIgnoreCase("info")) {
-                info = child.getNodeValue().strip();
-            } else if (child.getNodeType().equalsIgnoreCase("line")) {
-                linenumber++;
-                JMLAttributes attr = child.getAttributes();
+            // Get the record that is being dropped
+            Transferable t = info.getTransferable();
 
-                String display = attr.getAttribute("display");
-                String animprefs = attr.getAttribute("animprefs");
-                String notation = attr.getAttribute("notation");
-                String anim = null;
-                JMLNode patnode = null;
-                JMLNode infonode = null;
-
-                if (notation != null) {
-                    if (notation.equalsIgnoreCase("jml")) {
-                        patnode = child.findNode("pattern");
-                        if (patnode == null) {
-                            String template = errorstrings.getString("Error_missing_pattern");
-                            Object[] arguments = { Integer.valueOf(linenumber) };
-                            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-                        }
-                        infonode = patnode.findNode("info");
-                    } else {
-                        anim = child.getNodeValue().strip();
-                        infonode = child.findNode("info");
-                    }
+            try {
+                if (t.isDataFlavorSupported(patternFlavor)) {
+                    PatternRecord rec = (PatternRecord)t.getTransferData(patternFlavor);
+                    pl.getModel().add(index, new PatternRecord(rec));
+                    list.setSelectedIndex(index);
+                    return true;
                 }
 
-                addPattern(-1, display, animprefs, notation, anim, patnode, infonode);
-            } else
-                throw new JuggleExceptionUser(errorstrings.getString("Error_illegal_tag"));
-        }
-    }
+                if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    String s = (String)t.getTransferData(DataFlavor.stringFlavor);
 
-    public void writeJML(Writer wr) throws IOException {
-        PrintWriter write = new PrintWriter(wr);
-        for (int i = 0; i < JMLDefs.jmlprefix.length; i++)
-            write.println(JMLDefs.jmlprefix[i]);
+                    // allow for multi-line strings
+                    String[] lines = s.stripTrailing().split("\n");
 
-        write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
-        write.println("<patternlist>");
-        if (title != null && title.length() > 0)
-            write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
-        if (info != null && info.length() > 0)
-            write.println("<info>" + JMLNode.xmlescape(info) + "</info>");
-
-        boolean empty = (model.size() == (BLANK_AT_END ? 1 : 0));
-        if (!empty)
-            write.println();
-
-        boolean previousLineWasAnimation = false;
-
-        for (int i = 0; i < (BLANK_AT_END ? model.size() - 1 : model.size()); ++i) {
-            PatternRecord rec = model.get(i);
-            String line = "<line display=\"" + JMLNode.xmlescape(rec.display.stripTrailing()) + "\"";
-            boolean hasAnimation = false;
-
-            if (rec.notation != null) {
-                line += " notation=\"" + JMLNode.xmlescape(rec.notation.toLowerCase()) + "\"";
-                hasAnimation = true;
-            }
-            if (rec.animprefs != null) {
-                line += " animprefs=\"" + JMLNode.xmlescape(rec.animprefs) + "\"";
-                hasAnimation = true;
-            }
-
-            if (hasAnimation) {
-                line += ">";
-                if (i > 0)
-                    write.println();
-                write.println(line);
-
-                if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.patnode != null)
-                    rec.patnode.writeNode(write, 0);
-                else if (rec.anim != null) {
-                    write.println(JMLNode.xmlescape(rec.anim));
-                    if (rec.info != null || (rec.tags != null && rec.tags.size() > 0)) {
-                        String tagstr = (rec.tags != null ? String.join(",", rec.tags) : "");
-
-                        if (rec.info != null) {
-                            if (tagstr.length() == 0)
-                                write.println("<info>" + JMLNode.xmlescape(rec.info) + "</info>");
-                            else
-                                write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\">" +
-                                            JMLNode.xmlescape(rec.info) + "</info>");
-                        } else {
-                            write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\"/>");
-                        }
+                    for (int i = lines.length - 1; i >= 0; --i) {
+                        PatternRecord rec = new PatternRecord(lines[i],
+                                                null, null, null, null, null, null);
+                        pl.getModel().add(index, rec);
                     }
+                    list.setSelectedIndex(index);
+                    return true;
                 }
-
-                write.println("</line>");
-            } else {
-                line += "/>";
-                if (previousLineWasAnimation && i > 0)
-                    write.println();
-                write.println(line);
+            } catch (Exception e) {
+                ErrorDialog.handleFatalException(e);
             }
 
-            previousLineWasAnimation = hasAnimation;
+            return false;
         }
 
-        if (!empty)
-            write.println();
+        @Override
+        protected void exportDone(JComponent c, Transferable data, int action) {
+            if (action == TransferHandler.MOVE) {
+                if (!(data instanceof PatternTransferable))
+                    return;
 
-        write.println("</patternlist>");
-        write.println("</jml>");
-        for (int i = 0; i < JMLDefs.jmlsuffix.length; i++)
-            write.println(JMLDefs.jmlsuffix[i]);
-        write.flush();
-    }
+                if (!pl.getModel().removeElement(((PatternTransferable)data).rec))
+                    ErrorDialog.handleFatalException(
+                            new JuggleExceptionInternal("PLP: exportDone()"));
+            }
 
-    public void writeText(Writer wr) throws IOException {
-        PrintWriter write = new PrintWriter(wr);
-
-        for (int i = 0; i < (BLANK_AT_END ? model.size() - 1 : model.size()); i++) {
-            PatternRecord rec = model.get(i);
-            write.println(rec.display);
-        }
-        write.flush();
-    }
-
-
-    class PatternRecord {
-        public String display;
-        public String animprefs;
-        public String notation;
-        public String anim;  // if pattern is not in JML notation
-        public JMLNode patnode;  // if pattern is in JML
-        public String info;
-        public ArrayList<String> tags;
-
-        public PatternRecord(String dis, String ap, String not, String ani, JMLNode pat,
-                             String inf, ArrayList<String> t) {
-            display = dis;
-            animprefs = ap;
-            notation = not;
-            anim = ani;
-            patnode = pat;
-            info = inf;
-            tags = t;
-        }
-
-        public PatternRecord(PatternRecord pr) {
-            display = pr.display;
-            animprefs = pr.animprefs;
-            notation = pr.notation;
-            anim = pr.anim;
-            patnode = pr.patnode;
-            info = pr.info;
-
-            if (pr.tags != null) {
-                tags = new ArrayList<String>();
-                for (String tag : pr.tags)
-                    tags.add(tag);
-            } else
-                tags = null;
+            draggingOut = false;
         }
     }
 
+    class PatternTransferable implements Transferable {
+        public PatternRecord rec;
+
+        public PatternTransferable(PatternRecord pr) {
+            rec = pr;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) {
+            if (flavor.equals(patternFlavor))
+                return rec;
+
+            if (flavor.equals(DataFlavor.stringFlavor)) {
+                String s;
+                if (rec.anim == null || rec.anim.equals(""))
+                    s = rec.display;
+                else
+                    s = rec.anim;
+                return s;
+            }
+
+            return null;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[] {
+                patternFlavor,
+                DataFlavor.stringFlavor,
+            };
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(patternFlavor) || flavor.equals(DataFlavor.stringFlavor);
+        }
+    }
+
+    //-------------------------------------------------------------------------
+    // Class to support rendering of list items
+    //-------------------------------------------------------------------------
 
     class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
         public Component getListCellRendererComponent(
@@ -838,7 +566,7 @@ public class PatternListPanel extends JPanel {
         {
             PatternRecord rec = value;
 
-            setFont((rec.anim == null && rec.patnode == null) ? font_nopattern : font_pattern);
+            setFont(rec.anim == null && rec.patnode == null ? font_nopattern : font_pattern);
             setText(rec.display.length() > 0 ? rec.display : " ");
 
             if (isSelected) {
@@ -853,5 +581,4 @@ public class PatternListPanel extends JPanel {
             return this;
         }
     }
-
 }
