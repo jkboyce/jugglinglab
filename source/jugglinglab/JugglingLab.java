@@ -437,7 +437,7 @@ public class JugglingLab {
         int patterns_count = 0;
 
         for (File file : files) {
-            ps.println("Verifying file '" + file.getAbsolutePath());
+            ps.println("Verifying " + file.getAbsolutePath());
             files_count++;
 
             int error_count_current_file = 0;
@@ -449,8 +449,7 @@ public class JugglingLab {
                 ps.println("   Error: Formatting error in JML file");
                 error_count_current_file++;
             } catch (IOException ioe) {
-                ps.println("   Error: Problem reading JML file from path " +
-                                                    file.getAbsolutePath());
+                ps.println("   Error: Problem reading JML file");
                 error_count_current_file++;
             }
 
