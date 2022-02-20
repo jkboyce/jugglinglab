@@ -16,7 +16,7 @@ public class Constants {
     public static final int SPLINE_LAYOUT_METHOD = jugglinglab.curve.SplineCurve.MINIMIZE_RMSACCEL;
 
     // how juggler angles are interpolated
-    public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.CURVE_SPLINE;
+    public static final int ANGLE_LAYOUT_METHOD = jugglinglab.curve.Curve.CURVE_LINE;
 
     // method for communicating open-file messages between two running instances
     // of Juggling Lab (used on Windows when the user double-clicks a JML file)
