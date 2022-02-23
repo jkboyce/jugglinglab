@@ -14,6 +14,7 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ResourceBundle;
@@ -263,6 +264,13 @@ public class JLFunc {
                                 return;
                         }
                     }
+
+                    try {
+                        Preferences.userRoot()
+                                   .node("Juggling Lab")
+                                   .put("base_dir", f.getParent());
+                    } catch (Exception e) {}
+
                     super.approveSelection();
                 }
             };

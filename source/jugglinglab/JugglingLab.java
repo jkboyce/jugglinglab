@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
 import org.xml.sax.SAXException;
@@ -67,9 +68,21 @@ public class JugglingLab {
         isCLI = (working_dir != null);
 
         if (working_dir == null) {
-            // If not found, then user.dir (current working directory when Java
-            // was invoked) is the most logical choice, UNLESS we're running in
-            // an application bundle. For bundled apps user.dir is buried inside
+            // If not found, then see if there is a base directory set in the
+            // user's preferences.
+            try {
+                Preferences prefs = Preferences.userRoot();
+                if (prefs.nodeExists("Juggling Lab")) {
+                    working_dir = prefs.node("Juggling Lab")
+                                       .get("base_dir", null);
+                }
+            } catch (Exception e) {}
+        }
+
+        if (working_dir == null) {
+            // Otherwise, user.dir (current working directory when Java was
+            // invoked) is the most logical choice, UNLESS we're running in an
+            // application bundle. For bundled apps user.dir is buried inside
             // the app directory structure so we default to user.home instead.
             String isBundle = System.getProperty("JL_run_as_bundle");
 
