@@ -841,19 +841,21 @@ public abstract class MHNPattern extends Pattern {
     protected static final double restingx = 25;
 
     // How many beats early to throw a '1' (all other throws are on-beat)
+    //
+    // This value is calculated; see asJMLPattern()
     protected static double BEATS_ONE_THROW_EARLY = 0;
 
     // Minimum airtime for a throw, in beats
-    protected static double BEATS_AIRTIME_MIN = 0.3;
+    protected static final double BEATS_AIRTIME_MIN = 0.3;
 
     // Minimum time from a throw to a subsequent catch for that hand, in beats
-    protected static double BEATS_THROW_CATCH_MIN = 0.3;
+    protected static final double BEATS_THROW_CATCH_MIN = 0.3;
 
     // Minimum time from a catch to a subsequent throw for that hand, in beats
-    protected static double BEATS_CATCH_THROW_MIN = 0;
+    protected static final double BEATS_CATCH_THROW_MIN = 0.02;
 
     // Maximum allowed time without events for a given hand, in seconds
-    protected static double SECS_EVENT_GAP_MAX = 0.5;
+    protected static final double SECS_EVENT_GAP_MAX = 0.5;
 
     @Override
     public JMLPattern asJMLPattern() throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -868,6 +870,10 @@ public abstract class MHNPattern extends Pattern {
         //          bps *= getNumberOfJugglers();
         //        }
         //hss end
+
+        // The following ensures a uniform catching rhythm in patterns with 1
+        // throws, so long as dwell <= (2 - BEATS_THROW_CATCH_MIN)
+        BEATS_ONE_THROW_EARLY = Math.max(0, dwell + BEATS_AIRTIME_MIN - 1);
 
         JMLPattern result = new JMLPattern();
 
@@ -1174,24 +1180,32 @@ public abstract class MHNPattern extends Pattern {
                             prev_onethrown = true;
                     }
 
-                    // first, give the requested dwell beats
-                    double firstcatchtime = sst.throwtime - dwell / bps;
+                    // Start by giving the requested number of dwell beats
+                    //
+                    // Note we assume here all throws are on-beat, so we get
+                    // a uniform catching rhythm. Thus for 1 throws when
+                    // BEATS_ONE_THROW_EARLY > 0, the assigned dwell before the
+                    // 1 will actually be (dwell - BEATS_ONE_THROW_EARLY) beats.
+                    // Note that in all cases BEATS_ONE_THROW_EARLY < dwell.
+                    double firstcatchtime = ((double)k - dwell) / bps;
 
-                    // don't allow catch to move before the previous throw
-                    // from the same hand (plus margin)
+                    // Constraint #1: Don't allow catch to move before the
+                    // previous throw from the same hand (plus margin)
                     firstcatchtime = Math.max(firstcatchtime,
                             ((double)(k - sst.dwellwindow) -
                                 (prev_onethrown ? BEATS_ONE_THROW_EARLY : 0) +
                                 BEATS_THROW_CATCH_MIN) / bps);
 
-                    // if catching a 1 throw, allocate enough air time to it
+                    // Constraint #2: If catching a 1 throw, allocate enough air
+                    // time to it
                     if (onecaught) {
                         firstcatchtime = Math.max(firstcatchtime,
                             ((double)(k - 1) - BEATS_ONE_THROW_EARLY +
                                 BEATS_AIRTIME_MIN) / bps);
                     }
 
-                    // ensure we have enough time between catch and throw
+                    // Constraint #3: Ensure we have enough time between catch
+                    // and subsequent throw
                     firstcatchtime = Math.min(firstcatchtime,
                             sst.throwtime - BEATS_CATCH_THROW_MIN / bps);
 
@@ -1204,8 +1218,8 @@ public abstract class MHNPattern extends Pattern {
                         double catchtime = firstcatchtime;
 
                         if (num_catches > 1) {
-                            catchtime += (double)sst2.catchnum /
-                                    (double)(num_catches - 1) * squeezebeats / bps;
+                            catchtime += ((double)sst2.catchnum /
+                                    (double)(num_catches - 1)) * (squeezebeats / bps);
                         }
 
                         //hss begin
