@@ -31,6 +31,8 @@ rm -rf "Juggling Lab.app"
 mkdir target
 cp JugglingLab.jar target
 cp commons-math3-3.6.1.jar target
+cp com.google.ortools.jar target
+cp protobuf.jar target
 cp -r ortools-lib/* target
 
 jpackage --type app-image \
