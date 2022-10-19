@@ -167,7 +167,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 animator.repaint();
             }
         } catch (JuggleExceptionUser jeu) {
-            ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
+            new ErrorDialog(parentview, jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
         }
