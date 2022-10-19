@@ -223,7 +223,6 @@ public class SplineCurve extends Curve {
         }
 
         try {
-            //System.out.println(new Array2DRowRealMatrix(m));
             DecompositionSolver solver = new LUDecomposition(new Array2DRowRealMatrix(m)).getSolver();
             RealVector solution = solver.solve(new ArrayRealVector(b));
 

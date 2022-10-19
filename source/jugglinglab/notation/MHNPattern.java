@@ -36,10 +36,10 @@ public abstract class MHNPattern extends Pattern {
     protected static double bouncefrac_default = 0.9;
     protected static double squeezebeats_default = 0.4;
     protected static String prop_default = "ball";
-    //hss begin
+
+    // hss config:
     protected static boolean hold_default = false;
     protected static boolean dwellmax_default = true;
-    //hss end
 
     // original config string:
     protected String config;
@@ -55,13 +55,13 @@ public abstract class MHNPattern extends Pattern {
     protected String prop = prop_default;
     protected String[] color;
     protected String title;
-    //hss begin
-    protected String hss;  
+
+    // hss parameters:
+    protected String hss;
     protected boolean hold = hold_default; 
     protected boolean dwellmax = dwellmax_default;
     protected String handspec;
     protected double[] dwellarray;
-    //hss end
 
     // internal variables:
     protected int numjugglers;
@@ -862,14 +862,12 @@ public abstract class MHNPattern extends Pattern {
         if (bps_set <= 0)  // signal that we should calculate bps
             bps = calcBps();
 
-        //hss begin
         //  code to modify bps according to number of jugglers
         //  and potentially the specific pattern being juggled
         //  can be inserted here for example:
         //        if (hss != null) {
         //          bps *= getNumberOfJugglers();
         //        }
-        //hss end
 
         // The following ensures a uniform catching rhythm in patterns with 1
         // throws, so long as dwell <= (2 - BEATS_THROW_CATCH_MIN)
@@ -1133,14 +1131,12 @@ public abstract class MHNPattern extends Pattern {
                         else
                             sst2.throwtime = (double)k / bps;
 
-                        //hss begin
                         if (hss != null) {
                             //if (onethrown)
                             //    throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
                             //else
                             sst2.throwtime = (double)k / bps;
                         }
-                        //hss end
                     }
 
                     int num_catches = 0;
@@ -1222,7 +1218,6 @@ public abstract class MHNPattern extends Pattern {
                                     (double)(num_catches - 1)) * (squeezebeats / bps);
                         }
 
-                        //hss begin
                         if (hss != null) {
                             // if getPeriod() > size of dwellarray due to repeats
                             // to account for hand/body positions, then reuse
@@ -1236,7 +1231,6 @@ public abstract class MHNPattern extends Pattern {
                                     (double)(num_catches - 1) * squeezebeats / bps;
                             }
                         }
-                        //hss end
 
                         catchtime = Math.min(catchtime,
                                 sst.throwtime - BEATS_CATCH_THROW_MIN / bps);

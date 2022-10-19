@@ -141,10 +141,7 @@ public class JugglingLab {
             return;
         }
 
-        //
         // The remaining modes are only accessible from the command line
-        //
-
         if (!isCLI)
             return;
 

@@ -141,10 +141,12 @@ public abstract class View extends JPanel {
     // Abstract methods for subclasses to define
     //-------------------------------------------------------------------------
 
-    // null argument means no update for that item
+    // restart view with a new pattern and/or preferences
     //
-    // This method is responsible for setting preferred sizes of all UI
-    // elements, since it may be followed by layout.
+    // note:
+    // - a null argument means no update for that item
+    // - this method is responsible for setting preferred sizes of all UI
+    //   elements, since it may be followed by layout
     public abstract void restartView(JMLPattern p, AnimationPrefs c) throws
                             JuggleExceptionUser, JuggleExceptionInternal;
 

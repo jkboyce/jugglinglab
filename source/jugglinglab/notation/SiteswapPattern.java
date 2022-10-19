@@ -45,13 +45,11 @@ public class SiteswapPattern extends MHNPattern {
 
         super.fromParameters(pl);
         
-        //hss Begin
         if (hss != null) {
             ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
             pattern = modinfo.convertedPattern;
             dwellarray = modinfo.dwellBeatsArray;
         }
-        //hss End
 
         // pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation();
