@@ -108,7 +108,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     }
 
     // Called whenever the active event in the ladder diagram is changed in
-    // come way.
+    // some way.
     //
     // This can also be called from AnimationEditPanel when the user finishes
     // moving the selected event in the animation view.
@@ -153,23 +153,33 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     protected void layoutPattern() {
         try {
-            // use synchronized here to avoid data consistency problems with animation
-            // thread in AnimationPanel's run() method
+            // use synchronized here to avoid data consistency problems with
+            // animation thread in AnimationPanel's run() method
             synchronized (pat) {
                 pat.setNeedsLayout();
                 pat.layoutPattern();
+
+                if (animator != null) {
+                    animator.anim.initAnimator();
+                    animator.repaint();
+                }
             }
 
             parentview.addToUndoList(pat);
-
-            if (animator != null) {
-                animator.anim.initAnimator();
-                animator.repaint();
-            }
         } catch (JuggleExceptionUser jeu) {
             new ErrorDialog(parentview, jeu.getMessage());
+
+            try {
+                parentview.revertCurrent();
+            } catch (JuggleExceptionInternal jei2) {
+            }
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
+
+            try {
+                parentview.revertCurrent();
+            } catch (JuggleExceptionInternal jei2) {
+            }
         }
     }
 
