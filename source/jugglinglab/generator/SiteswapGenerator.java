@@ -205,7 +205,7 @@ public class SiteswapGenerator extends Generator {
     // Non-public methods below
     //--------------------------------------------------------------------------
 
-    // Sets the generator configuration variables based on arguments
+    // Set the generator configuration variables based on arguments
     protected void configGenerator(String[] args) throws JuggleExceptionUser {
         if (Constants.DEBUG_GENERATOR) {
             System.out.println("-----------------------------------------------------");
@@ -504,7 +504,7 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Initializes configuration data structures to reflect operating mode.
+    // Initialize configuration data structures to reflect operating mode.
     protected void configMode() {
         switch (mode) {
             case ASYNC:
@@ -537,8 +537,8 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Allocates space for the states, rhythms, and throws in the pattern,
-    // plus other incidental variables.
+    // Allocate space for the states, rhythms, and throws in the pattern, plus
+    // other incidental variables.
     protected void allocateWorkspace() {
         state = new int[l_max + 1][hands][ground_state_length];  // last index not ht because of findStartEnd()
         holes = new int[hands][l_max + ht];
@@ -572,10 +572,10 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Generates all patterns.
+    // Generate all patterns.
     //
-    // It does this by generating all possible starting states recursively,
-    // then calling findCycles() to find the loops for each one.
+    // Do this by generating all possible starting states recursively, then
+    // calling findCycles() to find the loops for each one.
     protected int findPatterns(int balls_placed, int min_value, int min_to) throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Thread.interrupted())
             throw new JuggleExceptionInterrupted();
@@ -686,9 +686,9 @@ public class SiteswapGenerator extends Generator {
         return num;
     }
 
-    // Generates cycles in the state graph, starting from some given vertex.
+    // Generate cycles in the state graph, starting from some given vertex.
     //
-    // Arguments:
+    // Inputs:
     // int pos;              // beat number in pattern that we're constructing
     // int min_throw;        // lowest we can throw this time
     // int min_hand;         // lowest hand we can throw to this time
@@ -815,7 +815,7 @@ public class SiteswapGenerator extends Generator {
         return num;
     }
 
-    // Calculates the state based on previous beat's state and throws.
+    // Calculate the state based on previous beat's state and throws.
     protected void calculateState(int pos) {
         if (pos == 0)
             return;
@@ -837,7 +837,7 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Checks if the state is valid at a given position in the pattern.
+    // Check if the state is valid at a given position in the pattern.
     protected boolean isStateValid(int pos) {
         // Check if this is a valid state for a period-L pattern.
         // This check added 01/19/98.
@@ -874,8 +874,8 @@ public class SiteswapGenerator extends Generator {
         return true;
     }
 
-    // Updates the multiplexing filter with the throws at position `pos`, and
-    // checks whether the combination of throws is valid.
+    // Update the multiplexing filter with the throws at position `pos`, and
+    // check whether the combination of throws is valid.
     //
     // The filter ensures that, other than holds, objects from only one source
     // are landing in any given hand (for example, a cluster of 3's).
@@ -916,7 +916,7 @@ public class SiteswapGenerator extends Generator {
         return true;
     }
 
-    // Initializes data structures to start filling in pattern at position `pos`.
+    // Initialize data structures to start filling in pattern at position `pos`.
     protected void startBeat(int pos) {
         for (int i = 0; i < hands; ++i) {
             throws_left[pos][i] = state[pos][i][0];
@@ -928,7 +928,7 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Checks if the throws made on a given beat are valid.
+    // Check if the throws made on a given beat are valid.
     //
     // Test for excluded throws and a passing communication delay, as well as
     // a custom filter (if in CUSTOM mode).
@@ -1006,7 +1006,7 @@ public class SiteswapGenerator extends Generator {
         return true;
     }
 
-    // Tests if a completed pattern is valid.
+    // Test if a completed pattern is valid.
     protected boolean isPatternValid(int outputpos) {
         // check #1: verify against inclusions
         for (Pattern regex : include) {
@@ -1158,7 +1158,7 @@ public class SiteswapGenerator extends Generator {
         return true;
     }
 
-    // Compares two rotations of the same pattern.
+    // Compare two rotations of the same pattern.
     //
     // This method assumes the throws are comparable, i.e., that pos1 is
     // congruent to pos2 mod rhythm_period
@@ -1213,9 +1213,9 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Compares two throws.
+    // Compare two throws.
     //
-    // Returns 1 if the throw at pos1 is greater than the throw at pos2,
+    // Return 1 if the throw at pos1 is greater than the throw at pos2,
     // -1 if lesser, and 0 iff the throws are identical.
     //
     // This method assumes the throws are comparable, i.e., that pos1 is congruent
@@ -1243,9 +1243,9 @@ public class SiteswapGenerator extends Generator {
         return 0;
     }
 
-    // Compares two states.
+    // Compare two states.
     //
-    // Returns 1 if state1 > state2, -1 if state1 < state2, and 0 iff state1
+    // Return 1 if state1 > state2, -1 if state1 < state2, and 0 iff state1
     // and state2 are identical.
     protected int compareStates(int state1[][], int state2[][]) {
         int mo1 = 0;
@@ -1279,12 +1279,12 @@ public class SiteswapGenerator extends Generator {
         return 0;
     }
 
-    // Returns number as single character
+    // Return number as single character
     protected static char convertNumber(int value) {
         return Character.toLowerCase(Character.forDigit(value, 36));
     }
 
-    // Prints the throws for a given beat
+    // Print the throws for a given beat
     protected int outputBeat(int pos, char[] out, int outpos) {
         boolean no_throw = true;
         for (int i = 0; i < rhythm[pos].length; ++i)
@@ -1472,7 +1472,7 @@ public class SiteswapGenerator extends Generator {
         target.writePattern(outputline.toString(), "siteswap", outputline2.toString().trim());
     }
 
-    // Adds a throw to a multiplexing filter slot (part of the multiplexing
+    // Add a throw to a multiplexing filter slot (part of the multiplexing
     // filter).
     //
     // Returns 1 if there is a collision, 0 otherwise.
@@ -1517,7 +1517,7 @@ public class SiteswapGenerator extends Generator {
         return 1;
     }
 
-    // Finds valid starting and ending sequences for excited state patterns.
+    // Find valid starting and ending sequences for excited state patterns.
     // Note that these sequences are not unique.
     //
     // Rewritten on 12/31/03
@@ -1640,7 +1640,7 @@ public class SiteswapGenerator extends Generator {
             ending_seq_length = outputBeat(i, ending_seq, ending_seq_length);
     }
 
-    // Finds the ground state for our rhythm. It does so by putting the balls
+    // Find the ground state for our rhythm. It does so by putting the balls
     // into the lowest possible slots, with no multiplexing.
     protected void findGround() {
         int balls_left = n;
@@ -1675,7 +1675,7 @@ public class SiteswapGenerator extends Generator {
         }
     }
 
-    // Outputs the state to the command line (useful for debugging).
+    // Output the state to the command line (useful for debugging).
     protected void printState(int[][] st) {
         int last_index = 0;
         for (int i = 0; i < ground_state_length; ++i) {
@@ -1811,7 +1811,7 @@ public class SiteswapGenerator extends Generator {
     }
     */
 
-    // Reformats the exclude/include terms into standard regular expressions.
+    // Reformat the exclude/include terms into standard regular expressions.
     // Exchange "\x" for "x", where x is one of the RE metacharacters that conflicts
     // with siteswap notation: []()|
     protected static String makeStandardRegex(String term) {
@@ -1851,8 +1851,7 @@ public class SiteswapGenerator extends Generator {
 
             template = guistrings.getString("Copyright_message");
             Object[] arg2 = { Constants.year };
-            output += MessageFormat.format(template, arg2) + "\n\n";
-
+            output += MessageFormat.format(template, arg2) + "\n";
             output += guistrings.getString("GPL_message") + "\n\n";
             output += guistrings.getString("Generator_intro");
 
@@ -1868,7 +1867,7 @@ public class SiteswapGenerator extends Generator {
             ssg.initGenerator(args);
             ssg.runGenerator(target);
         } catch (Exception e) {
-            System.out.println(errorstrings.getString("Error")+": "+e.getMessage());
+            System.out.println(errorstrings.getString("Error")+": " + e.getMessage());
         }
     }
 
