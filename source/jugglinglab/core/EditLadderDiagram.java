@@ -167,19 +167,13 @@ public class EditLadderDiagram extends LadderDiagram implements
 
             parentview.addToUndoList(pat);
         } catch (JuggleExceptionUser jeu) {
-            new ErrorDialog(parentview, jeu.getMessage());
-
-            try {
-                parentview.revertCurrent();
-            } catch (JuggleExceptionInternal jei2) {
-            }
+            // The various editing functions below (e.g., from the popup menu)
+            // should never put the pattern into an invalid state -- it is their
+            // responsibility to validate input and handle errors. So we
+            // shouldn't ever get here.
+            ErrorDialog.handleFatalException(jeu);
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
-
-            try {
-                parentview.revertCurrent();
-            } catch (JuggleExceptionInternal jei2) {
-            }
         }
     }
 
@@ -1309,16 +1303,19 @@ public class EditLadderDiagram extends LadderDiagram implements
             @Override
             public void actionPerformed(ActionEvent e) {
                 String type = cb1.getItemAt(cb1.getSelectedIndex());
-
                 String mod = null;
+
                 try {
                     mod = getParameterList();
+                    //System.out.println("type = " + type + ", mod = " + mod);
+
+                    // fail if prop definition is invalid, before we change the
+                    // pattern
+                    (new PropDef(type.toLowerCase(), mod)).layoutProp();
                 } catch (JuggleExceptionUser jeu) {
                     new ErrorDialog(parent, jeu.getMessage());
                     return;
                 }
-
-                //System.out.println("type = " + type + ", mod = " + mod);
 
                 // Sync paths with current prop list
                 for (int i = 0; i < pat.getNumberOfPaths(); i++) {

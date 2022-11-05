@@ -132,16 +132,6 @@ public abstract class View extends JPanel {
         }
     }
 
-    // Restart the current state
-    public void revertCurrent() throws JuggleExceptionInternal {
-        try {
-            JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
-            restartView(pcopy, null);
-        } catch (JuggleExceptionUser jeu) {
-            throw new JuggleExceptionInternal(jeu.getMessage());
-        }
-    }
-
     // For the PatternWindow to retain state when the view changes
     public int getUndoIndex() {
         return undo_index;
