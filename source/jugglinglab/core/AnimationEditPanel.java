@@ -47,6 +47,8 @@ public class AnimationEditPanel extends AnimationPanel
     protected boolean dragging_y;
     protected boolean show_xz_drag_control;
     protected boolean show_y_drag_control;
+    protected Coordinate event_start;
+    protected Coordinate master_start;
 
     // for when a position is activated/dragged
     protected boolean position_active;
@@ -136,6 +138,9 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
+                        event_start = new Coordinate(event.getLocalCoordinate());
+                        JMLEvent master = (event.isMaster() ? event : event.getMaster());
+                        master_start = new Coordinate(master.getLocalCoordinate());
                         repaint();
                         return;
                     }
@@ -226,18 +231,14 @@ public class AnimationEditPanel extends AnimationPanel
         boolean mouse_moved = (me.getX() != startx) || (me.getY() != starty);
 
         if (event_active && dragging && mouse_moved) {
-            // set the new coordinate in the master event
-            JMLEvent master = (event.isMaster() ? event : event.getMaster());
-            boolean flipx = (event.getHand() != master.getHand());
-            Coordinate deltalc = Coordinate.sub(getCurrentCoordinate(),
-                                    event.getLocalCoordinate());
-            deltalc = Coordinate.truncate(deltalc, 1e-7);
-            if (flipx)
-                deltalc.x = -deltalc.x;
-            master.setLocalCoordinate(Coordinate.add(master.getLocalCoordinate(), deltalc));
-
             dragging_xz = dragging_y = false;
 
+            // Does layout, then re-selects the event so that `event`
+            // references the newly laid out pattern. This also calls
+            // activateEvent() so the event box displays properly.
+            //
+            // This does an extra layout that we don't need, which we could
+            // avoid at the cost of some code complexity.
             if (ladder instanceof EditLadderDiagram)
                 ((EditLadderDiagram)ladder).activeEventChanged();
         }
@@ -346,7 +347,33 @@ public class AnimationEditPanel extends AnimationPanel
             } else {
                 deltax = mx - startx;
                 deltay = my - starty;
-                getCurrentCoordinate();  // modifies deltax, deltay based on snapping, etc.
+
+                Coordinate cc = getCurrentCoordinate();  // modifies deltax, deltay based on snapping, etc.
+
+                if (event_active) {
+                    // set new coordinate in the master event
+                    JMLEvent master = (event.isMaster() ? event : event.getMaster());
+                    boolean flipx = (event.getHand() != master.getHand());
+                    Coordinate deltalc = Coordinate.sub(cc, event_start);
+
+                    deltalc = Coordinate.truncate(deltalc, 1e-7);
+                    if (flipx)
+                        deltalc.x = -deltalc.x;
+                    master.setLocalCoordinate(Coordinate.add(master_start, deltalc));
+
+                    try {
+                        synchronized (anim.pat) {
+                            anim.pat.setNeedsLayout();
+                            anim.pat.layoutPattern();
+                        }
+                    } catch (JuggleExceptionUser jeu) {
+                        ErrorDialog.handleFatalException(jeu);
+                    } catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+
+                    repaint();
+                }
             }
         } else if (!dragging_camera) {
             dragging_camera = true;
@@ -922,10 +949,10 @@ public class AnimationEditPanel extends AnimationPanel
     // snapped position.
     protected Coordinate getCurrentCoordinate() {
         if (event_active) {
-            Coordinate c = event.getLocalCoordinate();
-
             if (!dragging)
-                return c;
+                return event.getLocalCoordinate();
+
+            Coordinate c = new Coordinate(event_start);
 
             // screen (pixel) offset of a 1cm offset in each of the cardinal
             // directions in the juggler's coordinate system (i.e., global
