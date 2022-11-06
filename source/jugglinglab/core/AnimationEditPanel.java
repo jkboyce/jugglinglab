@@ -126,6 +126,9 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
+                        event_start = new Coordinate(event.getLocalCoordinate());
+                        JMLEvent master = (event.isMaster() ? event : event.getMaster());
+                        master_start = new Coordinate(master.getLocalCoordinate());
                         repaint();
                         return;
                     }
@@ -272,6 +275,7 @@ public class AnimationEditPanel extends AnimationPanel
         dragging_xy = dragging_z = dragging_angle = false;
         deltax = deltay = 0;
         deltaangle = 0.0;
+        event_start = master_start = null;
         repaint();
     }
 
@@ -348,15 +352,16 @@ public class AnimationEditPanel extends AnimationPanel
                 deltax = mx - startx;
                 deltay = my - starty;
 
-                Coordinate cc = getCurrentCoordinate();  // modifies deltax, deltay based on snapping, etc.
+                // modifies deltax, deltay based on snapping and projection
+                Coordinate cc = getCurrentCoordinate();
 
                 if (event_active) {
+                    Coordinate deltalc = Coordinate.sub(cc, event_start);
+                    deltalc = Coordinate.truncate(deltalc, 1e-7);
+
                     // set new coordinate in the master event
                     JMLEvent master = (event.isMaster() ? event : event.getMaster());
                     boolean flipx = (event.getHand() != master.getHand());
-                    Coordinate deltalc = Coordinate.sub(cc, event_start);
-
-                    deltalc = Coordinate.truncate(deltalc, 1e-7);
                     if (flipx)
                         deltalc.x = -deltalc.x;
                     master.setLocalCoordinate(Coordinate.add(master_start, deltalc));
@@ -367,6 +372,9 @@ public class AnimationEditPanel extends AnimationPanel
                             anim.pat.layoutPattern();
                         }
                     } catch (JuggleExceptionUser jeu) {
+                        // The editing operations here should never put the
+                        // pattern into an invalid state, so we shouldn't ever
+                        // get here.
                         ErrorDialog.handleFatalException(jeu);
                     } catch (JuggleExceptionInternal jei) {
                         ErrorDialog.handleFatalException(jei);
@@ -1001,7 +1009,7 @@ public class AnimationEditPanel extends AnimationPanel
                 //
                 // then c.y += A
                 double det = dy[0] * dz[1] - dy[1] * dz[0];
-                double a = ( dz[1] * deltax - dz[0] * deltay) / det;
+                double a = (dz[1] * deltax - dz[0] * deltay) / det;
 
                 c.y += a;
 
@@ -1011,10 +1019,8 @@ public class AnimationEditPanel extends AnimationPanel
 
                 // Calculate `deltax`, `deltay` that put the event closest to
                 // its final location.
-                Coordinate origlc = event.getLocalCoordinate();
-
-                deltax = (int)Math.round((c.y - origlc.y) * dy[0]);
-                deltay = (int)Math.round((c.y - origlc.y) * dy[1]);
+                deltax = (int)Math.round((c.y - event_start.y) * dy[0]);
+                deltay = (int)Math.round((c.y - event_start.y) * dy[1]);
             }
 
             return c;
