@@ -48,7 +48,7 @@ public class AnimationEditPanel extends AnimationPanel
     protected boolean show_xz_drag_control;
     protected boolean show_y_drag_control;
     protected Coordinate event_start;
-    protected Coordinate master_start;
+    protected Coordinate event_master_start;
 
     // for when a position is activated/dragged
     protected boolean position_active;
@@ -60,6 +60,8 @@ public class AnimationEditPanel extends AnimationPanel
     protected boolean show_xy_drag_control;
     protected boolean show_z_drag_control;
     protected boolean show_angle_drag_control;
+    protected Coordinate position_start;
+    protected double startangle;
 
     // for when a position angle is being dragged
     protected double deltaangle;
@@ -126,9 +128,9 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
-                        event_start = new Coordinate(event.getLocalCoordinate());
+                        event_start = event.getLocalCoordinate();
                         JMLEvent master = (event.isMaster() ? event : event.getMaster());
-                        master_start = new Coordinate(master.getLocalCoordinate());
+                        event_master_start = master.getLocalCoordinate();
                         repaint();
                         return;
                     }
@@ -141,9 +143,9 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
-                        event_start = new Coordinate(event.getLocalCoordinate());
+                        event_start = event.getLocalCoordinate();
                         JMLEvent master = (event.isMaster() ? event : event.getMaster());
-                        master_start = new Coordinate(master.getLocalCoordinate());
+                        event_master_start = master.getLocalCoordinate();
                         repaint();
                         return;
                     }
@@ -170,6 +172,7 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
+                        position_start = position.getCoordinate();
                         repaint();
                         return;
                     }
@@ -182,6 +185,7 @@ public class AnimationEditPanel extends AnimationPanel
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
+                        position_start = position.getCoordinate();
                         repaint();
                         return;
                     }
@@ -247,18 +251,6 @@ public class AnimationEditPanel extends AnimationPanel
         }
 
         if (position_active && dragging && mouse_moved) {
-            if (dragging_angle) {
-                double angle = Math.toRadians(position.getAngle());
-                double new_angle = Math.toDegrees(angle + deltaangle);
-                while (new_angle > 360.0)
-                    new_angle -= 360.0;
-                while (new_angle < 0.0)
-                    new_angle += 360.0;
-                position.setAngle(new_angle);
-            } else {
-                position.setCoordinate(getCurrentCoordinate());
-            }
-
             dragging_xy = dragging_z = dragging_angle = false;
             deltaangle = 0.0;
 
@@ -275,7 +267,8 @@ public class AnimationEditPanel extends AnimationPanel
         dragging_xy = dragging_z = dragging_angle = false;
         deltax = deltay = 0;
         deltaangle = 0.0;
-        event_start = master_start = null;
+        event_start = event_master_start = null;
+        position_start = null;
         repaint();
     }
 
@@ -315,6 +308,7 @@ public class AnimationEditPanel extends AnimationPanel
         if (dragging) {
             int mx = me.getX();
             int my = me.getY();
+            boolean dolayout = false;
 
             if (dragging_angle) {
                 // shift pixel coords of control point by mouse drag
@@ -338,21 +332,30 @@ public class AnimationEditPanel extends AnimationPanel
                 deltaangle = -Math.atan2(-a, -b);
 
                 // snap the angle to the four cardinal directions
-                double angle = Math.toRadians(position.getAngle());
-                double new_angle = angle + deltaangle;
+                double new_angle = startangle + deltaangle;
                 if (anglediff(new_angle) < snapangle / 2)
-                    deltaangle = -angle;
+                    deltaangle = -startangle;
                 else if (anglediff(new_angle + 0.5 * Math.PI) < snapangle / 2)
-                    deltaangle = -angle - 0.5 * Math.PI;
+                    deltaangle = -startangle - 0.5 * Math.PI;
                 else if (anglediff(new_angle + Math.PI) < snapangle / 2)
-                    deltaangle = -angle + Math.PI;
+                    deltaangle = -startangle + Math.PI;
                 else if (anglediff(new_angle + 1.5 * Math.PI) < snapangle / 2)
-                    deltaangle = -angle + 0.5 * Math.PI;
+                    deltaangle = -startangle + 0.5 * Math.PI;
+
+                double final_angle = Math.toDegrees(startangle + deltaangle);
+                while (final_angle > 360.0)
+                    final_angle -= 360.0;
+                while (final_angle < 0.0)
+                    final_angle += 360.0;
+                position.setAngle(final_angle);
+
+                dolayout = true;
             } else {
                 deltax = mx - startx;
                 deltay = my - starty;
 
-                // modifies deltax, deltay based on snapping and projection
+                // Get updated event/position coordinate based on mouse position.
+                // This modifies deltax, deltay based on snapping and projection.
                 Coordinate cc = getCurrentCoordinate();
 
                 if (event_active) {
@@ -364,24 +367,33 @@ public class AnimationEditPanel extends AnimationPanel
                     boolean flipx = (event.getHand() != master.getHand());
                     if (flipx)
                         deltalc.x = -deltalc.x;
-                    master.setLocalCoordinate(Coordinate.add(master_start, deltalc));
+                    master.setLocalCoordinate(Coordinate.add(event_master_start, deltalc));
 
-                    try {
-                        synchronized (anim.pat) {
-                            anim.pat.setNeedsLayout();
-                            anim.pat.layoutPattern();
-                        }
-                    } catch (JuggleExceptionUser jeu) {
-                        // The editing operations here should never put the
-                        // pattern into an invalid state, so we shouldn't ever
-                        // get here.
-                        ErrorDialog.handleFatalException(jeu);
-                    } catch (JuggleExceptionInternal jei) {
-                        ErrorDialog.handleFatalException(jei);
-                    }
-
-                    repaint();
+                    dolayout = true;
                 }
+
+                if (position_active) {
+                    position.setCoordinate(cc);
+                    dolayout = true;
+                }
+            }
+
+            if (dolayout) {
+                try {
+                    synchronized (anim.pat) {
+                        anim.pat.setNeedsLayout();
+                        anim.pat.layoutPattern();
+                    }
+                } catch (JuggleExceptionUser jeu) {
+                    // The editing operations here should never put the
+                    // pattern into an invalid state, so we shouldn't ever
+                    // get here.
+                    ErrorDialog.handleFatalException(jeu);
+                } catch (JuggleExceptionInternal jei) {
+                    ErrorDialog.handleFatalException(jei);
+                }
+
+                repaint();
             }
         } else if (!dragging_camera) {
             dragging_camera = true;
@@ -680,6 +692,7 @@ public class AnimationEditPanel extends AnimationPanel
         deactivateEvent();
         position = pos;
         position_active = true;
+        startangle = Math.toRadians(position.getAngle());
         createPositionView();
     }
 
@@ -732,7 +745,7 @@ public class AnimationEditPanel extends AnimationPanel
             double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
             double[] ca = ren.getCameraAngle();
-            double theta = ca[0] + Math.toRadians(position.getAngle()) + deltaangle;
+            double theta = ca[0] + startangle + deltaangle;
             double phi = ca[1];
 
             double dlc = dl * Math.cos(phi);
@@ -1027,10 +1040,10 @@ public class AnimationEditPanel extends AnimationPanel
         }
 
         if (position_active) {
-            Coordinate c = position.getCoordinate();
-
             if (!dragging_xy && !dragging_z)
-                return c;
+                return position.getCoordinate();
+
+            Coordinate c = new Coordinate(position_start);
 
             // screen (pixel) offset of a 1cm offset in each of the cardinal
             // directions in the position's coordinate system (i.e., global
