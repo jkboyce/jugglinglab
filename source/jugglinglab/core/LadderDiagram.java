@@ -71,8 +71,7 @@ public class LadderDiagram extends JPanel {
     }
 
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
+        for (LadderEventItem item : laddereventitems) {
             if (x >= item.xlow && x <= item.xhigh &&
                         y >= item.ylow && y <= item.yhigh)
                 return item;
@@ -81,8 +80,7 @@ public class LadderDiagram extends JPanel {
     }
 
     protected LadderPositionItem getSelectedLadderPosition(int x, int y) {
-        for (int i = 0; i < ladderpositionitems.size(); i++) {
-            LadderPositionItem item = ladderpositionitems.get(i);
+        for (LadderPositionItem item : ladderpositionitems) {
             if (x >= item.xlow && x <= item.xhigh &&
                         y >= item.ylow && y <= item.yhigh)
                 return item;
@@ -97,8 +95,7 @@ public class LadderDiagram extends JPanel {
         if (y < (border_top - slop) || y > (height - border_top + slop))
             return null;
 
-        for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = ladderpathitems.get(i);
+        for (LadderPathItem item : ladderpathitems) {
             double d;
 
             if (item.type == LadderPathItem.TYPE_SELF) {
@@ -133,8 +130,7 @@ public class LadderDiagram extends JPanel {
     }
 
     public void setPathColor(int path, Color color) {
-        for (int i = 0; i < ladderpathitems.size(); i++) {
-            LadderPathItem item = ladderpathitems.get(i);
+        for (LadderPathItem item : ladderpathitems) {
             if (item.pathnum == path)
                 item.color = color;
         }
@@ -429,8 +425,7 @@ public class LadderDiagram extends JPanel {
             // draw paths
             Shape clip = g.getClip();
 
-            for (int i = 0; i < ladderpathitems.size(); i++) {
-                LadderPathItem item = ladderpathitems.get(i);
+            for (LadderPathItem item : ladderpathitems) {
                 g.setColor(item.color);
 
                 Graphics2D gdash = null;
@@ -544,10 +539,10 @@ public class LadderDiagram extends JPanel {
         for (LadderPositionItem item : ladderpositionitems) {
             gr.setColor(this.getBackground());
             gr.fillRect(item.xlow, item.ylow,
-                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                        item.xhigh - item.xlow, item.yhigh - item.ylow);
             gr.setColor(Color.black);
             gr.drawRect(item.xlow, item.ylow,
-                        (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                        item.xhigh - item.xlow, item.yhigh - item.ylow);
         }
 
         // draw events
@@ -555,14 +550,14 @@ public class LadderDiagram extends JPanel {
         for (LadderEventItem item : laddereventitems) {
             if (item.type == LadderItem.TYPE_EVENT)
                 gr.fillOval(item.xlow, item.ylow,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
             else {
                 gr.setColor(this.getBackground());
                 gr.fillOval(item.xlow, item.ylow,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
                 gr.setColor(Color.black);
                 gr.drawOval(item.xlow, item.ylow,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
             }
         }
 
@@ -594,6 +589,10 @@ class LadderEventItem extends LadderItem {
     public JMLEvent event;
 
     public int transnum;
+
+    public int getHashCode() {
+        return event.getHashCode() * 17 + type * 23 + transnum * 27;
+    }
 }
 
 class LadderPathItem extends LadderItem {
@@ -611,4 +610,8 @@ class LadderPositionItem extends LadderItem {
     public int xlow, xhigh, ylow, yhigh;
 
     public JMLPosition position;
+
+    public int getHashCode() {
+        return position.getHashCode();
+    }
 }

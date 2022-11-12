@@ -75,6 +75,10 @@ public class JMLPosition {
         this.next = next;
     }
 
+    public int getHashCode() {
+        return toString().hashCode();
+    }
+
     //-------------------------------------------------------------------------
     //  Reader/writer methods
     //-------------------------------------------------------------------------
@@ -123,5 +127,18 @@ public class JMLPosition {
                    "\" t=\"" + JLFunc.toStringRounded(getT(), 4) +
                    "\" angle=\"" + JLFunc.toStringRounded(getAngle(), 4) +
                    "\" juggler=\"" + Integer.toString(getJuggler()) + "\"/>");
+    }
+
+    // java.lang.Object methods
+
+    @Override
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        try {
+            writeJML(new PrintWriter(sw));
+        } catch (IOException ioe) {
+        }
+
+        return sw.toString();
     }
 }

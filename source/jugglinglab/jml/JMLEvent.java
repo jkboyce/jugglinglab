@@ -283,8 +283,21 @@ public class JMLEvent {
         return dup;
     }
 
+    // For locating a particular event in a pattern
+    public int getHashCode() {
+        Coordinate c = getLocalCoordinate();
+        String s = "<event x=\"" + JLFunc.toStringRounded(c.x, 4) +
+                   "\" y=\"" + JLFunc.toStringRounded(c.y, 4) +
+                   "\" z=\"" + JLFunc.toStringRounded(c.z, 4) +
+                   "\" t=\"" + JLFunc.toStringRounded(getT(), 4) +
+                   "\" hand=\"" + Integer.toString(getJuggler()) + ":" +
+                   (getHand() == HandLink.LEFT_HAND ? "left" : "right") +
+                   "\">";
+        return s.hashCode();
+    }
+
     //-------------------------------------------------------------------------
-    //  Reader/writer methods
+    // Reader/writer methods
     //-------------------------------------------------------------------------
 
     public void readJML(JMLNode current, String jmlvers, int njugglers, int npaths)

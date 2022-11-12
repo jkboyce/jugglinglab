@@ -53,6 +53,8 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected LadderPositionItem active_positionitem;
     protected boolean item_was_selected;  // for detecting de-selecting clicks
     protected int start_y;
+    protected int start_ylow, start_yhigh;  // initial box y-coordinates
+    protected double start_t;  // initial time
     protected int delta_y;
     protected int delta_y_min, delta_y_max;  // limits for dragging up/down
 
@@ -116,17 +118,35 @@ public class EditLadderDiagram extends LadderDiagram implements
         if (active_eventitem == null)
             return;
 
-        // find the screen coordinates of the event that changed
-        int x = (active_eventitem.xlow + active_eventitem.xhigh) / 2;
-        int y = (active_eventitem.ylow + active_eventitem.yhigh) / 2;
+        int hash = active_eventitem.getHashCode();
+        //String ev_before = active_eventitem.event.toString();
 
-        layoutPattern();  // rebuild pattern event list
-        createView();  // rebuild ladder diagram
+        layoutPattern(false);  // rebuild pattern event list
+        createView();  // rebuild ladder diagram (LadderItem arrays)
 
-        active_eventitem = getSelectedLadderEvent(x, y);
-        // reactivate the changed event in AnimationEditPanel
-        if (animator != null)
+        // locate the event we're editing, in the updated pattern
+        active_eventitem = null;
+        for (LadderEventItem item : laddereventitems) {
+            //System.out.println(item.event.toString());
+            if (item.getHashCode() == hash) {
+                active_eventitem = item;
+                break;
+            }
+        }
+
+        if (active_eventitem == null) {
+            /*
+            System.out.println(ev_before);
+            System.out.println("-----------------");
+
+            for (LadderEventItem item : laddereventitems)
+                System.out.println(item.event.toString());
+            */
+            ErrorDialog.handleFatalException(
+                        new JuggleExceptionInternal("ELD: event not found"));
+        } else if (animator != null) {
             animator.activateEvent(active_eventitem.event);
+        }
     }
 
     // Called whenever the active position in the ladder diagram is changed in
@@ -138,20 +158,29 @@ public class EditLadderDiagram extends LadderDiagram implements
         if (active_positionitem == null)
             return;
 
-        // find the screen coordinates of the event that changed
-        int x = (active_positionitem.xlow + active_positionitem.xhigh) / 2;
-        int y = (active_positionitem.ylow + active_positionitem.yhigh) / 2;
+        int hash = active_positionitem.getHashCode();
 
-        layoutPattern();
+        layoutPattern(false);
         createView();
 
-        active_positionitem = getSelectedLadderPosition(x, y);
-        // reactivate the changed event in AnimationEditPanel
-        if (animator != null)
+        active_positionitem = null;
+        for (LadderPositionItem item : ladderpositionitems) {
+            //System.out.println(item.event.toString());
+            if (item.getHashCode() == hash) {
+                active_positionitem = item;
+                break;
+            }
+        }
+
+        if (active_positionitem == null) {
+            ErrorDialog.handleFatalException(
+                        new JuggleExceptionInternal("ELD: position not found"));
+        } else if (animator != null) {
             animator.activatePosition(active_positionitem.position);
+        }
     }
 
-    protected void layoutPattern() {
+    protected void layoutPattern(boolean undo) {
         try {
             // use synchronized here to avoid data consistency problems with
             // animation thread in AnimationPanel's run() method
@@ -165,7 +194,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                 }
             }
 
-            parentview.addToUndoList(pat);
+            if (undo)
+                addToUndoList();
         } catch (JuggleExceptionUser jeu) {
             // The various editing functions below (e.g., from the popup menu)
             // should never put the pattern into an invalid state -- it is their
@@ -175,6 +205,10 @@ public class EditLadderDiagram extends LadderDiagram implements
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
         }
+    }
+
+    public void addToUndoList() {
+        parentview.addToUndoList(pat);
     }
 
     //-------------------------------------------------------------------------
@@ -235,6 +269,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                         gui_state = STATE_MOVING_EVENT;
                         active_positionitem = null;
                         start_y = me.getY();
+                        start_ylow = active_eventitem.ylow;
+                        start_yhigh = active_eventitem.yhigh;
+                        start_t = active_eventitem.event.getT();
                         findEventLimits(active_eventitem);
                         if (animator != null)
                             animator.activateEvent(active_eventitem.event);
@@ -250,6 +287,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                         gui_state = STATE_MOVING_POSITION;
                         active_eventitem = null;
                         start_y = me.getY();
+                        start_ylow = active_positionitem.ylow;
+                        start_yhigh = active_positionitem.yhigh;
+                        start_t = active_positionitem.position.getT();
                         findPositionLimits(active_positionitem);
                         if (animator != null)
                             animator.activatePosition(active_positionitem.position);
@@ -356,17 +396,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_EVENT:
                     gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
-                        moveEvent(active_eventitem.eventitem);
-                        for (int i = 0; i < laddereventitems.size(); i++) {
-                            LadderEventItem item = laddereventitems.get(i);
-
-                            if (item.eventitem == active_eventitem.eventitem) {
-                                item.ylow += delta_y;
-                                item.yhigh += delta_y;
-                            }
-                        }
+                        moveEventInPattern(active_eventitem.eventitem);
                         delta_y = 0;
                         activeEventChanged();
+                        addToUndoList();
                         repaint();
                     } else if (item_was_selected) {
                         // clicked without moving --> deselect
@@ -381,12 +414,13 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_POSITION:
                     gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
-                        movePosition(active_positionitem);
+                        movePositionInPattern(active_positionitem);
                         active_positionitem.ylow += delta_y;
                         active_positionitem.yhigh += delta_y;
 
                         delta_y = 0;
                         activePositionChanged();
+                        addToUndoList();
                         repaint();
                     } else if (item_was_selected) {
                         active_positionitem = null;
@@ -435,21 +469,27 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         switch (gui_state) {
             case STATE_INACTIVE:
-                // This exception was being generated on popup cancelation when
-                // it could have been ignored. See bug report 861856.
-                // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-                //                "mouse dragged in INACTIVE state"));
                 break;
             case STATE_MOVING_EVENT:
             case STATE_MOVING_POSITION:
                 int old_delta_y = delta_y;
+
                 delta_y = me.getY() - start_y;
                 if (delta_y < delta_y_min)
-                        delta_y = delta_y_min;
+                    delta_y = delta_y_min;
                 if (delta_y > delta_y_max)
-                        delta_y = delta_y_max;
-                if (delta_y != old_delta_y)
-                    EditLadderDiagram.this.repaint();
+                    delta_y = delta_y_max;
+
+                if (delta_y != old_delta_y) {
+                    if (gui_state == STATE_MOVING_EVENT) {
+                        moveEventInPattern(active_eventitem.eventitem);
+                        activeEventChanged();
+                    } else {
+                        movePositionInPattern(active_positionitem);
+                        activePositionChanged();
+                    }
+                    repaint();
+                }
                 break;
             case STATE_MOVING_TRACKER:
                 tracker_y = my;
@@ -548,19 +588,19 @@ public class EditLadderDiagram extends LadderDiagram implements
         return (ev1m == ev2m);
     }
 
-    protected void moveEvent(LadderEventItem item) {
+    protected void moveEventInPattern(LadderEventItem item) {
         JMLEvent ev = item.event;
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                     (double)(height - 2 * border_top);
         double shift = delta_y * scale;
-        double newt = ev.getT() + shift;
+        double newt = start_t + shift;
         if (newt < pat.getLoopStartTime() + scale) {
             // within 1 pixel of top
-            shift = pat.getLoopStartTime() - ev.getT();
+            shift = pat.getLoopStartTime() - start_t;
             newt = pat.getLoopStartTime();
         } else if (newt >= pat.getLoopEndTime()) {
-            shift = pat.getLoopEndTime() - 0.0001 - ev.getT();
+            shift = pat.getLoopEndTime() - 0.0001 - start_t;
             newt = pat.getLoopEndTime() - 0.0001;
         }
 
@@ -587,7 +627,7 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         if (delta_y < 0) {  // moving to earlier time
             ev = ev.getPrevious();
-            while ((ev != null) && (ev.getT() > newt)) {
+            while (ev != null && ev.getT() > newt) {
                 if (!sameMaster(ev, item.event) &&
                                     ev.getJuggler() == item.event.getJuggler() &&
                                     ev.getHand() == item.event.getHand()) {
@@ -616,7 +656,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     for (int j = 0; j < pat.getNumberOfPaths(); j++) {
                         if (catchpath[j]) {
                             JMLTransition tr = new JMLTransition(
-                                    JMLTransition.TRANS_HOLDING,(j+1), null, null);
+                                    JMLTransition.TRANS_HOLDING, (j+1), null, null);
                             ev.addTransition(tr);
                             if (!ev.isMaster()) {
                                 Permutation pp = ev.getPathPermFromMaster().getInverse();
@@ -632,7 +672,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             }
         } else if (delta_y > 0) {  // moving to later time
             ev = ev.getNext();
-            while ((ev != null) && (ev.getT() < newt)) {
+            while (ev != null && ev.getT() < newt) {
                 if (!sameMaster(ev, item.event) &&
                                 ev.getJuggler() == item.event.getJuggler() &&
                                 ev.getHand() == item.event.getHand()) {
@@ -679,8 +719,14 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         ev = item.event;
         Permutation pp = ev.getPathPermFromMaster().getInverse();
-        if (!ev.isMaster())
+        double new_master_t = start_t + shift;
+
+        if (!ev.isMaster()) {
+            double new_event_t = new_master_t;
+            new_master_t += ev.getMaster().getT() - ev.getT();
+            ev.setT(new_event_t);  // update event time so getHashCode() works
             ev = ev.getMaster();
+        }
 
         for (int j = 0; j < pat.getNumberOfPaths(); j++) {
             if (holdpathnew[j] != holdpathorig[j]) {
@@ -700,7 +746,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         pat.removeEvent(ev);
-        ev.setT(ev.getT() + shift);  // change time of master
+        ev.setT(new_master_t);  // change time of master
         pat.addEvent(ev);  // remove/add cycle keeps events sorted
     }
 
@@ -714,13 +760,13 @@ public class EditLadderDiagram extends LadderDiagram implements
         delta_y_max = (int)((tmax - item.position.getT()) / scale);
     }
 
-    protected void movePosition(LadderPositionItem item) {
+    protected void movePositionInPattern(LadderPositionItem item) {
         JMLPosition pos = item.position;
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                     (double)(height - 2 * border_top);
 
-        double newt = pos.getT() + delta_y * scale;
+        double newt = start_t + delta_y * scale;
         if (newt < pat.getLoopStartTime() + scale) {
             newt = pat.getLoopStartTime();  // within 1 pixel of top
         } else if (newt >= pat.getLoopEndTime()) {
@@ -989,7 +1035,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 pat.setTitle(newtitle);
                 jd.dispose();
 
-                parentview.addToUndoList(pat);
+                addToUndoList();
             }
         });
 
@@ -1039,7 +1085,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 if (scale > 0.0) {
                     pat.scaleTime(scale);
                     animator.setTime(0.0);
-                    layoutPattern();
+                    layoutPattern(true);
                     createView();
                 }
                 jd.dispose();
@@ -1125,7 +1171,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         active_eventitem = null;
         if (animator != null)
             animator.deactivateEvent();
-        layoutPattern();
+        layoutPattern(true);
         createView();
         repaint();
 
@@ -1146,7 +1192,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         active_eventitem = null;
         if (animator != null)
             animator.deactivateEvent();
-        layoutPattern();
+        layoutPattern(true);
         createView();
         repaint();
     }
@@ -1184,7 +1230,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         active_eventitem = null;
         if (animator != null)
             animator.deactivateEvent();
-        layoutPattern();
+        layoutPattern(true);
         createView();
         repaint();
 
@@ -1202,7 +1248,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         active_positionitem = null;
         if (animator != null)
             animator.deactivatePosition();
-        layoutPattern();
+        layoutPattern(true);
         createView();
         repaint();
     }
@@ -1365,7 +1411,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 if (active_eventitem != null)
                     activeEventChanged();
                 else
-                    layoutPattern();
+                    layoutPattern(true);
                 jd.dispose();
                 repaint();
             }
@@ -1545,7 +1591,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         active_eventitem = null;  // deselect event since it's moving
         if (animator != null)
             animator.deactivateEvent();
-        layoutPattern();
+        layoutPattern(true);
         createView();
         repaint();
     }
@@ -1809,74 +1855,65 @@ public class EditLadderDiagram extends LadderDiagram implements
         // draw positions
         gr.setColor(Color.black);
         for (LadderPositionItem item : ladderpositionitems) {
-            int yoffset = (gui_state == STATE_MOVING_POSITION &&
-                           active_positionitem == item) ? delta_y : 0;
-
-            if (item.ylow + yoffset >= border_top ||
-                            item.yhigh + yoffset <= height + border_top) {
+            if (item.ylow >= border_top || item.yhigh <= height + border_top) {
                 gr.setColor(getBackground());
-                gr.fillRect(item.xlow, item.ylow + yoffset,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                gr.fillRect(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
                 gr.setColor(Color.black);
-                gr.drawRect(item.xlow, item.ylow + yoffset,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                gr.drawRect(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
             }
         }
 
         // draw the box around the selected position
         if (active_positionitem != null) {
-            int yoffset = (gui_state == STATE_MOVING_POSITION) ? delta_y : 0;
             gr.setColor(Color.green);
-            gr.drawLine(active_positionitem.xlow-1, active_positionitem.ylow+yoffset-1,
-                        active_positionitem.xhigh+1, active_positionitem.ylow+yoffset-1);
-            gr.drawLine(active_positionitem.xhigh+1, active_positionitem.ylow+yoffset-1,
-                        active_positionitem.xhigh+1, active_positionitem.yhigh+yoffset+1);
-            gr.drawLine(active_positionitem.xhigh+1, active_positionitem.yhigh+yoffset+1,
-                        active_positionitem.xlow, active_positionitem.yhigh+yoffset+1);
-            gr.drawLine(active_positionitem.xlow-1, active_positionitem.yhigh+yoffset+1,
-                        active_positionitem.xlow-1, active_positionitem.ylow+yoffset-1);
+            gr.drawLine(active_positionitem.xlow - 1, active_positionitem.ylow - 1,
+                        active_positionitem.xhigh + 1, active_positionitem.ylow - 1);
+            gr.drawLine(active_positionitem.xhigh + 1, active_positionitem.ylow - 1,
+                        active_positionitem.xhigh + 1, active_positionitem.yhigh + 1);
+            gr.drawLine(active_positionitem.xhigh + 1, active_positionitem.yhigh + 1,
+                        active_positionitem.xlow, active_positionitem.yhigh + 1);
+            gr.drawLine(active_positionitem.xlow - 1, active_positionitem.yhigh + 1,
+                        active_positionitem.xlow - 1, active_positionitem.ylow - 1);
         }
 
         // draw events
         gr.setColor(Color.black);
         for (LadderEventItem item : laddereventitems) {
-            int yoffset = (gui_state == STATE_MOVING_EVENT &&
-                           active_eventitem.eventitem == item.eventitem) ? delta_y : 0;
             if (item.type == LadderItem.TYPE_EVENT)
-                gr.fillOval(item.xlow, item.ylow + yoffset,
-                            (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                gr.fillOval(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
             else {
                 // This condition could probably be applied to all event drawing.
-                if (item.ylow + yoffset >= border_top ||
-                                item.yhigh + yoffset <= height + border_top) {
+                if (item.ylow >= border_top || item.yhigh <= height + border_top) {
                     // Color ball representation with the prop's color.
                     JMLTransition tr = item.event.getTransition(item.transnum);
                     int pathnum = tr.getPath();
                     int propnum = animpropnum[pathnum - 1];
 
                     gr.setColor(pat.getProp(propnum).getEditorColor());
-                    gr.fillOval(item.xlow, item.ylow + yoffset,
-                                (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                    gr.fillOval(item.xlow, item.ylow,
+                                item.xhigh - item.xlow, item.yhigh - item.ylow);
 
                     gr.setColor(Color.black);
-                    gr.drawOval(item.xlow, item.ylow + yoffset,
-                                (item.xhigh-item.xlow), (item.yhigh-item.ylow));
+                    gr.drawOval(item.xlow, item.ylow,
+                                item.xhigh-item.xlow, item.yhigh-item.ylow);
                 }
             }
         }
 
         // draw the box around the selected event
         if (active_eventitem != null) {
-            int yoffset = (gui_state == STATE_MOVING_EVENT) ? delta_y : 0;
             gr.setColor(Color.green);
-            gr.drawLine(active_eventitem.xlow-1, active_eventitem.ylow+yoffset-1,
-                        active_eventitem.xhigh+1, active_eventitem.ylow+yoffset-1);
-            gr.drawLine(active_eventitem.xhigh+1, active_eventitem.ylow+yoffset-1,
-                        active_eventitem.xhigh+1, active_eventitem.yhigh+yoffset+1);
-            gr.drawLine(active_eventitem.xhigh+1, active_eventitem.yhigh+yoffset+1,
-                        active_eventitem.xlow, active_eventitem.yhigh+yoffset+1);
-            gr.drawLine(active_eventitem.xlow-1, active_eventitem.yhigh+yoffset+1,
-                        active_eventitem.xlow-1, active_eventitem.ylow+yoffset-1);
+            gr.drawLine(active_eventitem.xlow - 1, active_eventitem.ylow - 1,
+                        active_eventitem.xhigh + 1, active_eventitem.ylow - 1);
+            gr.drawLine(active_eventitem.xhigh + 1, active_eventitem.ylow - 1,
+                        active_eventitem.xhigh + 1, active_eventitem.yhigh + 1);
+            gr.drawLine(active_eventitem.xhigh + 1, active_eventitem.yhigh + 1,
+                        active_eventitem.xlow, active_eventitem.yhigh + 1);
+            gr.drawLine(active_eventitem.xlow - 1, active_eventitem.yhigh + 1,
+                        active_eventitem.xlow - 1, active_eventitem.ylow - 1);
         }
 
         // draw the tracker line showing the time

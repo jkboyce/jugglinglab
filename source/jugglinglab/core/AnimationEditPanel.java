@@ -242,20 +242,27 @@ public class AnimationEditPanel extends AnimationPanel
 
             // Does layout, then re-selects the event so that `event`
             // references the newly laid out pattern. This also calls
-            // activateEvent() so the event box displays properly.
+            // activateEvent() so the event box displays properly. It also
+            // adds the new pattern to the undo list.
             //
             // This does an extra layout that we don't need, which we could
             // avoid at the cost of some code complexity.
-            if (ladder instanceof EditLadderDiagram)
-                ((EditLadderDiagram)ladder).activeEventChanged();
+            if (ladder instanceof EditLadderDiagram) {
+                EditLadderDiagram eld = (EditLadderDiagram)ladder;
+                eld.activeEventChanged();
+                eld.addToUndoList();
+            }
         }
 
         if (position_active && dragging && mouse_moved) {
             dragging_xy = dragging_z = dragging_angle = false;
             deltaangle = 0.0;
 
-            if (ladder instanceof EditLadderDiagram)
-                ((EditLadderDiagram)ladder).activePositionChanged();
+            if (ladder instanceof EditLadderDiagram) {
+                EditLadderDiagram eld = (EditLadderDiagram)ladder;
+                eld.activePositionChanged();
+                eld.addToUndoList();
+            }
         }
 
         if (!mouse_moved && !dragging && engine != null && engine.isAlive())
@@ -361,13 +368,16 @@ public class AnimationEditPanel extends AnimationPanel
                 if (event_active) {
                     Coordinate deltalc = Coordinate.sub(cc, event_start);
                     deltalc = Coordinate.truncate(deltalc, 1e-7);
+                    event.setLocalCoordinate(Coordinate.add(event_start, deltalc));
 
-                    // set new coordinate in the master event
-                    JMLEvent master = (event.isMaster() ? event : event.getMaster());
-                    boolean flipx = (event.getHand() != master.getHand());
-                    if (flipx)
-                        deltalc.x = -deltalc.x;
-                    master.setLocalCoordinate(Coordinate.add(event_master_start, deltalc));
+                    if (!event.isMaster()) {
+                        // set new coordinate in the master event
+                        JMLEvent master = event.getMaster();
+                        boolean flipx = (event.getHand() != master.getHand());
+                        if (flipx)
+                            deltalc.x = -deltalc.x;
+                        master.setLocalCoordinate(Coordinate.add(event_master_start, deltalc));
+                    }
 
                     dolayout = true;
                 }
