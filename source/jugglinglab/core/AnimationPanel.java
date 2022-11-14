@@ -495,8 +495,7 @@ public class AnimationPanel extends JPanel implements Runnable {
                 anim.drawFrame(getTime(), g, dragging_camera, true);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
-                System.out.println(jei.getMessage());
-                System.exit(0);
+                ErrorDialog.handleFatalException(jei);
             }
         }
     }

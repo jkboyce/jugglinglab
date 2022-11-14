@@ -1186,8 +1186,7 @@ public class AnimationEditPanel extends AnimationPanel
                 drawPosition(g);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
-                System.out.println(jei.getMessage());
-                System.exit(0);
+                ErrorDialog.handleFatalException(jei);
             }
         }
     }

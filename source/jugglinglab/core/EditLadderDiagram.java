@@ -30,13 +30,19 @@ public class EditLadderDiagram extends LadderDiagram implements
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    public static final int ladder_width_per_juggler = 150;  // pixels
-    public static final int ladder_min_width_per_juggler = 60;
+    public static final int LADDER_WIDTH_PER_JUGGLER = 150;  // pixels
+    public static final int LADDER_MIN_WIDTH_PER_JUGGLER = 60;
     public static final int MAX_JUGGLERS = 8;
     protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
 
-    protected static final double min_throw_time = 0.05;  // seconds
-    protected static final double min_hold_time = 0.05;
+    // minimum time (seconds) between a throw and another event with transitions
+    protected static final double MIN_THROW_SEP_TIME = 0.05;
+
+    // minimum time (seconds) between all events for a hand
+    protected static final double MIN_EVENT_SEP_TIME = 0.01;
+
+    // minimum time (seconds) between positions for a juggler
+    protected static final double MIN_POSITION_SEP_TIME = 0.02;
 
     protected static final int STATE_INACTIVE = 0;
     protected static final int STATE_MOVING_EVENT = 1;
@@ -86,8 +92,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             return;
         }
 
-        int pref_width = ladder_width_per_juggler * jugglers;
-        int min_width = ladder_min_width_per_juggler * jugglers;
+        int pref_width = LADDER_WIDTH_PER_JUGGLER * jugglers;
+        int min_width = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers;
         double[] width_mult = new double[] {
             1.0,
             1.0,
@@ -202,8 +208,12 @@ public class EditLadderDiagram extends LadderDiagram implements
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
             ErrorDialog.handleFatalException(jeu);
+            if (parent != null)
+                parent.dispose();
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
+            if (parent != null)
+                parent.dispose();
         }
     }
 
@@ -217,14 +227,11 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     @Override
     public void mousePressed(final MouseEvent me) {
-        if (animator != null && animator.writingGIF)
+        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
             return;
 
         int my = me.getY();
-        if (my < border_top)
-            my = border_top;
-        else if (my > (height-border_top))
-            my = height - border_top;
+        my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
 
         // on macOS the popup triggers here
         if (me.isPopupTrigger()) {
@@ -234,14 +241,14 @@ public class EditLadderDiagram extends LadderDiagram implements
             active_positionitem = getSelectedLadderPosition(me.getX(), me.getY());
             popupitem = active_eventitem != null ? active_eventitem : active_positionitem;
             if (popupitem == null)
-                popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
+                popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP);
 
             popup_x = me.getX();
             popup_y = me.getY();
             if (animator != null) {
                 double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                (double)(height - 2 * border_top);
-                double newtime = (double)(my - border_top) * scale;
+                                (double)(height - 2 * BORDER_TOP);
+                double newtime = (double)(my - BORDER_TOP) * scale;
                 anim_paused = animator.isPaused();
                 animator.setPaused(true);
                 animator.setTime(newtime);
@@ -300,8 +307,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     tracker_y = my;
                     if (animator != null) {
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                        (double)(height - 2 * border_top);
-                        double newtime = (double)(my - border_top) * scale;
+                                        (double)(height - 2 * BORDER_TOP);
+                        double newtime = (double)(my - BORDER_TOP) * scale;
                         anim_paused = animator.isPaused();
                         animator.setPaused(true);
                         animator.setTime(newtime);
@@ -335,7 +342,7 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     @Override
     public void mouseReleased(final MouseEvent me) {
-        if (animator != null && animator.writingGIF)
+        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
             return;
 
         // on Windows the popup triggers here
@@ -349,14 +356,11 @@ public class EditLadderDiagram extends LadderDiagram implements
                     // executed in mousePressed() above
                     if (gui_state != STATE_MOVING_TRACKER && animator != null) {
                         int my = me.getY();
-                        if (my < border_top)
-                            my = border_top;
-                        else if (my > (height-border_top))
-                            my = height - border_top;
+                        my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
 
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                            (double)(height - 2 * border_top);
-                        double newtime = (double)(my - border_top) * scale;
+                                            (double)(height - 2 * BORDER_TOP);
+                        double newtime = (double)(my - BORDER_TOP) * scale;
                         anim_paused = animator.isPaused();
                         animator.setPaused(true);
                         animator.setTime(newtime);
@@ -379,7 +383,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     popup_y = me.getY();
                     popupitem = (active_eventitem != null ? active_eventitem : active_positionitem);
                     if (popupitem == null)
-                        popupitem = getSelectedLadderPath(me.getX(), me.getY(), path_slop);
+                        popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP);
 
                     makePopupMenu(popupitem).show(EditLadderDiagram.this, me.getX(), me.getY());
                     break;
@@ -396,11 +400,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_EVENT:
                     gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
-                        moveEventInPattern(active_eventitem.eventitem);
                         delta_y = 0;
-                        activeEventChanged();
                         addToUndoList();
-                        repaint();
                     } else if (item_was_selected) {
                         // clicked without moving --> deselect
                         active_eventitem = null;
@@ -414,14 +415,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_POSITION:
                     gui_state = STATE_INACTIVE;
                     if (delta_y != 0) {
-                        movePositionInPattern(active_positionitem);
-                        active_positionitem.ylow += delta_y;
-                        active_positionitem.yhigh += delta_y;
-
                         delta_y = 0;
-                        activePositionChanged();
                         addToUndoList();
-                        repaint();
                     } else if (item_was_selected) {
                         active_positionitem = null;
                         if (animator != null) {
@@ -458,46 +453,46 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     @Override
     public void mouseDragged(MouseEvent me) {
-        if (animator != null && animator.writingGIF)
+        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
             return;
 
         int my = me.getY();
-        if (my < border_top)
-                my = border_top;
-        else if (my > (height-border_top))
-                my = height - border_top;
+        my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
 
         switch (gui_state) {
             case STATE_INACTIVE:
                 break;
             case STATE_MOVING_EVENT:
-            case STATE_MOVING_POSITION:
+            {
                 int old_delta_y = delta_y;
-
-                delta_y = me.getY() - start_y;
-                if (delta_y < delta_y_min)
-                    delta_y = delta_y_min;
-                if (delta_y > delta_y_max)
-                    delta_y = delta_y_max;
+                delta_y = getClippedEventTime(me, active_eventitem.event);
 
                 if (delta_y != old_delta_y) {
-                    if (gui_state == STATE_MOVING_EVENT) {
-                        moveEventInPattern(active_eventitem.eventitem);
-                        activeEventChanged();
-                    } else {
-                        movePositionInPattern(active_positionitem);
-                        activePositionChanged();
-                    }
+                    moveEventInPattern(active_eventitem.eventitem);
+                    activeEventChanged();
                     repaint();
                 }
                 break;
+            }
+            case STATE_MOVING_POSITION:
+            {
+                int old_delta_y = delta_y;
+                delta_y = getClippedPositionTime(me, active_positionitem.position);
+
+                if (delta_y != old_delta_y) {
+                    movePositionInPattern(active_positionitem);
+                    activePositionChanged();
+                    repaint();
+                }
+                break;
+            }
             case STATE_MOVING_TRACKER:
                 tracker_y = my;
                 EditLadderDiagram.this.repaint();
                 if (animator != null) {
                     double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                            (double)(height - 2 * border_top);
-                    double newtime = (double)(my - border_top) * scale;
+                            (double)(height - 2 * BORDER_TOP);
+                    double newtime = (double)(my - BORDER_TOP) * scale;
                     animator.setTime(newtime);
                     animator.repaint();
                 }
@@ -518,7 +513,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         double tmin = pat.getLoopStartTime();
         double tmax = pat.getLoopEndTime();
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                    (double)(height - 2 * border_top);
+                    (double)(height - 2 * BORDER_TOP);
 
         for (int j = 0; j < item.event.getNumberOfTransitions(); j++) {
             JMLTransition tr = item.event.getTransition(j);
@@ -534,19 +529,19 @@ public class EditLadderDiagram extends LadderDiagram implements
                             break;
                         ev = ev.getPrevious();
                     }
-                    if (ev == null)
+                    if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 1 in mousePressed()"));
-                    double tlim = ev.getT() + min_hold_time;
-                    if (tlim > tmin)
-                        tmin = tlim;
+                        if (parent != null)
+                            parent.dispose();
+                        return;
+                    }
+                    tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
+
                     // next catch is easy to find
                     ev = tr.getOutgoingPathLink().getEndEvent();
-                    if (!sameMaster(ev, item.event)) {
-                        tlim = ev.getT() - min_throw_time;
-                        if (tlim < tmax)
-                            tmax = tlim;
-                    }
+                    if (!sameMaster(ev, item.event))
+                        tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
                 }
                     break;
                 case JMLTransition.TRANS_CATCH:
@@ -555,11 +550,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                 {
                     // previous throw is easy to find
                     JMLEvent ev = tr.getIncomingPathLink().getStartEvent();
-                    if (!sameMaster(ev, item.event)) {
-                        double tlim = ev.getT() + min_throw_time;
-                        if (tlim > tmin)
-                            tmin = tlim;
-                    }
+                    if (!sameMaster(ev, item.event))
+                        tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
+
                     // Find out when the ball being caught is next thrown
                     ev = item.event.getNext();
                     while (ev != null) {
@@ -567,12 +560,14 @@ public class EditLadderDiagram extends LadderDiagram implements
                             break;
                         ev = ev.getNext();
                     }
-                    if (ev == null)
+                    if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 2 in mousePressed()"));
-                    double tlim = ev.getT() - min_hold_time;
-                    if (tlim < tmax)
-                        tmax = tlim;
+                        if (parent != null)
+                            parent.dispose();
+                        return;
+                    }
+                    tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
                 }
                     break;
 
@@ -580,6 +575,80 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
         delta_y_min = (int)((tmin - item.event.getT()) / scale);
         delta_y_max = (int)((tmax - item.event.getT()) / scale);
+    }
+
+    // Return value of `delta_y` during mouse drag of an event, clipping it to
+    // enforce proximity limits between various event types, as well as hard
+    // limits `delta_y_min` and `delta_y_max`.
+    protected int getClippedEventTime(MouseEvent me, JMLEvent event) {
+        int dy = me.getY() - start_y;
+
+        dy = Math.min(Math.max(dy, delta_y_min), delta_y_max);
+
+        double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                    (double)(height - 2 * BORDER_TOP);
+        double shift = dy * scale;
+        double newt = start_t + shift;  // unclipped new event time
+
+        // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
+        // proximity to other events, where `newt` is contained within the window.
+
+        double t_excl_min = newt;
+        double t_excl_max = newt;
+        boolean changed;
+
+        do {
+            changed = false;
+            JMLEvent ev = pat.getEventList();
+            double sep;
+
+            while (ev != null) {
+                if (ev != event && ev.getJuggler() == event.getJuggler() &&
+                            ev.getHand() == event.getHand()) {
+                    if (ev.hasThrow() && event.hasThrowOrCatch() ||
+                            ev.hasThrowOrCatch() && event.hasThrow())
+                        sep = MIN_THROW_SEP_TIME;
+                    else
+                        sep = MIN_EVENT_SEP_TIME;
+
+                    double ev_excl_min = ev.getT() - sep;
+                    double ev_excl_max = ev.getT() + sep;
+
+                    if (ev_excl_max > t_excl_max && ev_excl_min <= t_excl_max) {
+                        t_excl_max = ev_excl_max;
+                        changed = true;
+                    }
+
+                    if (ev_excl_min < t_excl_min && ev_excl_max >= t_excl_min) {
+                        t_excl_min = ev_excl_min;
+                        changed = true;
+                    }
+                }
+                ev = ev.getNext();
+            }
+        } while (changed);
+
+        // System.out.println("t_excl_min = " + t_excl_min + ", t_excl_max = " + t_excl_max);
+
+        // Clip the event time `newt` to whichever end of the exclusion window
+        // is closest. First check if each end is feasible.
+        int excl_dy_min = (int)Math.floor((t_excl_min - start_t) / scale);
+        int excl_dy_max = (int)Math.ceil((t_excl_max - start_t) / scale);
+        boolean feasible_min = (excl_dy_min >= delta_y_min && excl_dy_min <= delta_y_max);
+        boolean feasible_max = (excl_dy_max >= delta_y_min && excl_dy_max <= delta_y_max);
+
+        int result_dy = dy;
+
+        if (feasible_min && feasible_max) {
+            double t_midpoint = 0.5 * (t_excl_min + t_excl_max);
+            result_dy = (newt <= t_midpoint ? excl_dy_min : excl_dy_max);
+        } else if (feasible_min && !feasible_max) {
+            result_dy = excl_dy_min;
+        } else if (!feasible_min && feasible_max) {
+            result_dy = excl_dy_max;
+        }
+
+        return result_dy;
     }
 
     private boolean sameMaster(JMLEvent ev1, JMLEvent ev2) {
@@ -592,7 +661,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         JMLEvent ev = item.event;
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                    (double)(height - 2 * border_top);
+                    (double)(height - 2 * BORDER_TOP);
         double shift = delta_y * scale;
         double newt = start_t + shift;
         if (newt < pat.getLoopStartTime() + scale) {
@@ -625,7 +694,7 @@ public class EditLadderDiagram extends LadderDiagram implements
             }
         }
 
-        if (delta_y < 0) {  // moving to earlier time
+        if (newt < ev.getT()) {  // moving to earlier time
             ev = ev.getPrevious();
             while (ev != null && ev.getT() > newt) {
                 if (!sameMaster(ev, item.event) &&
@@ -670,7 +739,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 }
                 ev = ev.getPrevious();
             }
-        } else if (delta_y > 0) {  // moving to later time
+        } else if (newt > ev.getT()) {  // moving to later time
             ev = ev.getNext();
             while (ev != null && ev.getT() < newt) {
                 if (!sameMaster(ev, item.event) &&
@@ -737,9 +806,13 @@ public class EditLadderDiagram extends LadderDiagram implements
                 } else {
                     JMLTransition tr = ev.getPathTransition(pp.getMapping(j+1),
                                                     JMLTransition.TRANS_HOLDING);
-                    if (tr == null)
+                    if (tr == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null transition in removing hold"));
+                        if (parent != null)
+                            parent.dispose();
+                        return;
+                    }
                     ev.removeTransition(tr);
                 }
             }
@@ -754,17 +827,82 @@ public class EditLadderDiagram extends LadderDiagram implements
         double tmin = pat.getLoopStartTime();
         double tmax = pat.getLoopEndTime();
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                    (double)(height - 2 * border_top);
+                    (double)(height - 2 * BORDER_TOP);
 
         delta_y_min = (int)((tmin - item.position.getT()) / scale);
         delta_y_max = (int)((tmax - item.position.getT()) / scale);
+    }
+
+    // Return value of `delta_y` during mouse drag of an event, clipping it to
+    // enforce proximity limits between various event types, as well as hard
+    // limits `delta_y_min` and `delta_y_max`.
+    protected int getClippedPositionTime(MouseEvent me, JMLPosition position) {
+        int dy = me.getY() - start_y;
+
+        dy = Math.min(Math.max(dy, delta_y_min), delta_y_max);
+
+        double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                    (double)(height - 2 * BORDER_TOP);
+        double shift = dy * scale;
+        double newt = start_t + shift;  // unclipped new event time
+
+        // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
+        // proximity to other events, where `newt` is contained within the window.
+
+        double t_excl_min = newt;
+        double t_excl_max = newt;
+        boolean changed;
+
+        do {
+            changed = false;
+            JMLPosition pos = pat.getPositionList();
+            double sep;
+
+            while (pos != null) {
+                if (pos != position && pos.getJuggler() == position.getJuggler()) {
+                    double pos_excl_min = pos.getT() - MIN_POSITION_SEP_TIME;
+                    double pos_excl_max = pos.getT() + MIN_POSITION_SEP_TIME;
+
+                    if (pos_excl_max > t_excl_max && pos_excl_min <= t_excl_max) {
+                        t_excl_max = pos_excl_max;
+                        changed = true;
+                    }
+
+                    if (pos_excl_min < t_excl_min && pos_excl_max >= t_excl_min) {
+                        t_excl_min = pos_excl_min;
+                        changed = true;
+                    }
+                }
+                pos = pos.getNext();
+            }
+        } while (changed);
+
+        // Clip the position time `newt` to whichever end of the exclusion window
+        // is closest. First check if each end is feasible.
+        int excl_dy_min = (int)Math.floor((t_excl_min - start_t) / scale);
+        int excl_dy_max = (int)Math.ceil((t_excl_max - start_t) / scale);
+        boolean feasible_min = (excl_dy_min >= delta_y_min && excl_dy_min <= delta_y_max);
+        boolean feasible_max = (excl_dy_max >= delta_y_min && excl_dy_max <= delta_y_max);
+
+        int result_dy = dy;
+
+        if (feasible_min && feasible_max) {
+            double t_midpoint = 0.5 * (t_excl_min + t_excl_max);
+            result_dy = (newt <= t_midpoint ? excl_dy_min : excl_dy_max);
+        } else if (feasible_min && !feasible_max) {
+            result_dy = excl_dy_min;
+        } else if (!feasible_min && feasible_max) {
+            result_dy = excl_dy_max;
+        }
+
+        return result_dy;
     }
 
     protected void movePositionInPattern(LadderPositionItem item) {
         JMLPosition pos = item.position;
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                    (double)(height - 2 * border_top);
+                    (double)(height - 2 * BORDER_TOP);
 
         double newt = start_t + delta_y * scale;
         if (newt < pat.getLoopStartTime() + scale) {
@@ -1122,14 +1260,17 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                    (double)(height - 2 * border_top);
-        double evtime = (double)(popup_y - border_top) * scale;
+                                    (double)(height - 2 * BORDER_TOP);
+        double evtime = (double)(popup_y - BORDER_TOP) * scale;
 
         Coordinate evpos = new Coordinate();
         try {
             pat.getHandCoordinate(juggler, hand, evtime, evpos);
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
+            if (parent != null)
+                parent.dispose();
+            return null;
         }
 
         JMLEvent ev = new JMLEvent();
@@ -1215,8 +1356,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                    (double)(height - 2 * border_top);
-        double postime = (double)(popup_y - border_top) * scale;
+                                    (double)(height - 2 * BORDER_TOP);
+        double postime = (double)(popup_y - BORDER_TOP) * scale;
 
         JMLPosition pos = new JMLPosition();
         Coordinate loc = new Coordinate();
@@ -1855,7 +1996,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         // draw positions
         gr.setColor(Color.black);
         for (LadderPositionItem item : ladderpositionitems) {
-            if (item.ylow >= border_top || item.yhigh <= height + border_top) {
+            if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
                 gr.setColor(getBackground());
                 gr.fillRect(item.xlow, item.ylow,
                             item.xhigh - item.xlow, item.yhigh - item.ylow);
@@ -1886,7 +2027,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                             item.xhigh - item.xlow, item.yhigh - item.ylow);
             else {
                 // This condition could probably be applied to all event drawing.
-                if (item.ylow >= border_top || item.yhigh <= height + border_top) {
+                if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
                     // Color ball representation with the prop's color.
                     JMLTransition tr = item.event.getTransition(item.transnum);
                     int pathnum = tr.getPath();

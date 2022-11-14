@@ -221,7 +221,30 @@ public class JMLEvent {
         return null;
     }
 
-    // Returns true if the event contains a throw transition to another juggler.
+    public boolean hasThrow() {
+        for (int i = 0; i < getNumberOfTransitions(); ++i) {
+            JMLTransition tr = getTransition(i);
+
+            if (tr.getType() == JMLTransition.TRANS_THROW)
+                return true;
+        }
+        return false;
+    }
+
+    public boolean hasThrowOrCatch() {
+        for (int i = 0; i < getNumberOfTransitions(); ++i) {
+            int type = getTransition(i).getType();
+
+            if (type == JMLTransition.TRANS_THROW ||
+                        type == JMLTransition.TRANS_CATCH ||
+                        type == JMLTransition.TRANS_SOFTCATCH ||
+                        type == JMLTransition.TRANS_GRABCATCH)
+                return true;
+        }
+        return false;
+    }
+
+    // Return true if the event contains a throw transition to another juggler.
     //
     // Note this will only work after pattern layout.
     public boolean hasPassingThrow() {
@@ -240,7 +263,7 @@ public class JMLEvent {
         return false;
     }
 
-    // Returns true if the event contains a catch transition from another juggler.
+    // Return true if the event contains a catch transition from another juggler.
     //
     // Note this will only work after pattern layout.
     public boolean hasPassingCatch() {
