@@ -13,7 +13,7 @@ import jugglinglab.util.*;
 
 
 public class SiteswapTransitioner extends Transitioner {
-    protected final static int loop_counter_max = 20000;
+    protected final static int LOOP_COUNTER_MAX = 20000;
 
     // configuration variables
     protected int n;
@@ -362,7 +362,7 @@ public class SiteswapTransitioner extends Transitioner {
 
         // do a time check
         if (max_time > 0) {
-            if (++loop_counter > loop_counter_max) {
+            if (++loop_counter > LOOP_COUNTER_MAX) {
                 loop_counter = 0;
                 if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
                     String template = guistrings.getString("Generator_timeout");
@@ -1044,8 +1044,8 @@ public class SiteswapTransitioner extends Transitioner {
     //--------------------------------------------------------------------------
 
     // Execution limits
-    protected static final int trans_max_patterns = 1000;
-    protected static final double trans_max_time = 15.0;
+    protected static final int TRANS_MAX_PATTERNS = 1000;
+    protected static final double TRANS_MAX_TIME = 15;
 
     public static void runTransitionerCLI(String[] args, GeneratorTarget target) {
         if (args.length < 2) {
@@ -1056,7 +1056,7 @@ public class SiteswapTransitioner extends Transitioner {
 
             template = guistrings.getString("Copyright_message");
             Object[] arg2 = { Constants.year };
-            output += MessageFormat.format(template, arg2) + "\n\n";
+            output += MessageFormat.format(template, arg2) + "\n";
 
             output += guistrings.getString("GPL_message") + "\n\n";
 
@@ -1081,7 +1081,7 @@ public class SiteswapTransitioner extends Transitioner {
             if (sst.no_limits)
                 sst.runTransitioner(target);
             else
-                sst.runTransitioner(target, trans_max_patterns, trans_max_time);
+                sst.runTransitioner(target, TRANS_MAX_PATTERNS, TRANS_MAX_TIME);
         } catch (JuggleExceptionDone e) {
             System.out.println(e.getMessage());
         } catch (Exception e) {
