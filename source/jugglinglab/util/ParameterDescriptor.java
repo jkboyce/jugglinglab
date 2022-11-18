@@ -5,7 +5,6 @@
 package jugglinglab.util;
 
 import java.util.*;
-import javax.swing.*;
 
 
 public class ParameterDescriptor {

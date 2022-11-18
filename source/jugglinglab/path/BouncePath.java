@@ -9,23 +9,23 @@ import jugglinglab.util.*;
 
 
 public class BouncePath extends Path {
-    protected static final int bounces_def = 1;  // number of bounces
-    protected static final boolean forced_def = false;
-    protected static final boolean hyper_def = false;
-    protected static final double bounceplane_def = 0.0;  // floor level
-    protected static final double bouncefrac_def = 0.9;
-    protected static final double g_def = 980.0;  // using CGS units
+    protected static final int BOUNCES_DEF = 1;  // number of bounces
+    protected static final boolean FORCED_DEF = false;
+    protected static final boolean HYPER_DEF = false;
+    protected static final double BOUNCEPLANE_DEF = 0;  // floor level
+    protected static final double BOUNCEFRAC_DEF = 0.9;
+    protected static final double G_DEF = 980;  // using CGS units
 
     protected double bx, cx;
     protected double by, cy;
     protected double az[], bz[], cz[];
     protected double endtime[];
-    protected int bounces = bounces_def;
-    protected boolean forced = forced_def;  // true -> forced throw
-    protected boolean hyper = hyper_def;  // true -> same type of catch (lift/forced) as throw
-    protected double bounceplane = bounceplane_def;
-    protected double bouncefrac = bouncefrac_def;
-    protected double g = g_def;
+    protected int bounces = BOUNCES_DEF;
+    protected boolean forced = FORCED_DEF;  // true -> forced throw
+    protected boolean hyper = HYPER_DEF;  // true -> same type of catch (lift/forced) as throw
+    protected double bounceplane = BOUNCEPLANE_DEF;
+    protected double bouncefrac = BOUNCEFRAC_DEF;
+    protected double g = G_DEF;
     protected double bouncefracsqrt;
     protected double bouncetime;
     protected int numbounces;  // actual number of bounces (<= this.bounces)
@@ -39,17 +39,17 @@ public class BouncePath extends Path {
         ParameterDescriptor[] result = new ParameterDescriptor[6];
 
         result[0] = new ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT,
-                            null, Integer.valueOf(bounces_def), Integer.valueOf(bounces));
+                            null, Integer.valueOf(BOUNCES_DEF), Integer.valueOf(bounces));
         result[1] = new ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN,
-                            null, Boolean.valueOf(forced_def), Boolean.valueOf(forced));
+                            null, Boolean.valueOf(FORCED_DEF), Boolean.valueOf(forced));
         result[2] = new ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN,
-                            null, Boolean.valueOf(hyper_def), Boolean.valueOf(hyper));
+                            null, Boolean.valueOf(HYPER_DEF), Boolean.valueOf(hyper));
         result[3] = new ParameterDescriptor("bounceplane", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(bounceplane_def), Double.valueOf(bounceplane));
+                            null, Double.valueOf(BOUNCEPLANE_DEF), Double.valueOf(bounceplane));
         result[4] = new ParameterDescriptor("bouncefrac", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(bouncefrac_def), Double.valueOf(bouncefrac));
+                            null, Double.valueOf(BOUNCEFRAC_DEF), Double.valueOf(bouncefrac));
         result[5] = new ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(g_def), Double.valueOf(g));
+                            null, Double.valueOf(G_DEF), Double.valueOf(g));
 
         return result;
     }
@@ -57,12 +57,12 @@ public class BouncePath extends Path {
     @Override
     public void initPath(String st) throws JuggleExceptionUser {
         // default bounce characteristics
-        int bounces = bounces_def;
-        boolean forced = forced_def;
-        boolean hyper = hyper_def;
-        double bounceplane = bounceplane_def;
-        double bouncefrac = bouncefrac_def;
-        double g = g_def;
+        int bounces = BOUNCES_DEF;
+        boolean forced = FORCED_DEF;
+        boolean hyper = HYPER_DEF;
+        double bounceplane = BOUNCEPLANE_DEF;
+        double bouncefrac = BOUNCEFRAC_DEF;
+        double g = G_DEF;
 
         // now parse for edits to the above variables
         ParameterList pl = new ParameterList(st);
@@ -154,7 +154,7 @@ public class BouncePath extends Path {
             boolean choseroot = false;
             double v0 = root[0];   // default
             for (int i = 0; i < numroots; i++) {
-                if (forced ^ (root[i] < 0.0))
+                if (forced ^ (root[i] < 0))
                     continue;
                 if (hyper ^ liftcatch[i] ^ forced)
                     continue;
@@ -164,7 +164,7 @@ public class BouncePath extends Path {
             }
             if (!choseroot) {
                 for (int i = 0; i < numroots; i++) {
-                    if (forced ^ (root[i] < 0.0))
+                    if (forced ^ (root[i] < 0))
                         continue;
                     v0 = root[i];
                     choseroot = true;
@@ -173,7 +173,7 @@ public class BouncePath extends Path {
             }
             if (!choseroot) {
                 for (int i = 0; i < numroots; i++) {
-                    if (hyper ^ liftcatch[i] ^ (root[i] < 0.0))
+                    if (hyper ^ liftcatch[i] ^ (root[i] < 0))
                         continue;
                     v0 = root[i];
                     choseroot = true;
@@ -187,14 +187,14 @@ public class BouncePath extends Path {
             // `numbounces` and `v0`
             bz[0] = v0;
             cz[0] = start_coord.z;
-            if (az[0] < 0.0)
-                endtime[0] = (-v0 - Math.sqrt(v0*v0 - 4.0*az[0]*(cz[0]-bounceplane))) / (2.0*az[0]);
+            if (az[0] < 0)
+                endtime[0] = (-v0 - Math.sqrt(v0*v0 - 4*az[0]*(cz[0]-bounceplane))) / (2*az[0]);
             else
-                endtime[0] = (-v0 + Math.sqrt(v0*v0 - 4.0*az[0]*(cz[0]-bounceplane))) / (2.0*az[0]);
-            double vrebound = (-v0 - 2.0*az[0]*endtime[0])*bouncefracsqrt;
+                endtime[0] = (-v0 + Math.sqrt(v0*v0 - 4*az[0]*(cz[0]-bounceplane))) / (2*az[0]);
+            double vrebound = (-v0 - 2*az[0]*endtime[0])*bouncefracsqrt;
 
             for (int i = 1; i <= n; i++) {
-                bz[i] = vrebound - 2.0*az[i]*endtime[i-1];
+                bz[i] = vrebound - 2*az[i]*endtime[i-1];
                 cz[i] = bounceplane - az[i]*endtime[i-1]*endtime[i-1] - bz[i]*endtime[i-1];
                 endtime[i] = endtime[i-1] - vrebound / az[i];
                 vrebound = bouncefracsqrt * vrebound;
@@ -229,10 +229,10 @@ public class BouncePath extends Path {
         double f1 = bouncefracsqrt;
         for (int i = 1; i < n; i++)
             f1 *= bouncefracsqrt;
-        double k = ((bouncefracsqrt == 1.0) ? 2.0*(double)n :
-                    1.0 + f1 + 2.0*bouncefracsqrt*(1.0-f1/bouncefracsqrt)/(1.0-bouncefracsqrt));
-        double u = 2.0 * g * (start_coord.z - bounceplane);
-        double l = 2.0 * g * (end_coord.z - bounceplane);
+        double k = ((bouncefracsqrt == 1) ? 2*(double)n :
+                    1 + f1 + 2*bouncefracsqrt*(1-f1/bouncefracsqrt)/(1-bouncefracsqrt));
+        double u = 2 * g * (start_coord.z - bounceplane);
+        double l = 2 * g * (end_coord.z - bounceplane);
         double f2 = f1 * f1;
         double c = u - l / f2;
         double kk = k * k;
@@ -252,13 +252,13 @@ public class BouncePath extends Path {
         // When there is only one bounce, c4=0 always and we reduce to a cubic.
 
         double[] coef = new double[5];
-        coef[4] = 1.0 + kk*kk + f2*f2 - 2.0*kk - 2.0*f2 - 2.0*kk*f2;
-        coef[3] = -4.0*gt + 4.0*f2*gt + 4.0*kk*gt;
-        coef[2] = 6.0*gt*gt + 2.0*kk*kk*u + 2.0*f2*f2*c - 2.0*f2*c - 2.0*f2*gt*gt -
-            2.0*kk*gt*gt - 2.0*kk*u - 2.0*kk*f2*c - 2.0*kk*f2*u;
-        coef[1] = -4.0*gt*gt*gt + 4.0*f2*gt*c + 4.0*kk*gt*u;
-        coef[0] = gt*gt*gt*gt + kk*kk*u*u + f2*f2*c*c - 2.0*gt*gt*f2*c -
-            2.0*kk*gt*gt*u - 2.0*kk*f2*u*c;
+        coef[4] = 1 + kk*kk + f2*f2 - 2*kk - 2*f2 - 2*kk*f2;
+        coef[3] = -4*gt + 4*f2*gt + 4*kk*gt;
+        coef[2] = 6*gt*gt + 2*kk*kk*u + 2*f2*f2*c - 2*f2*c - 2*f2*gt*gt -
+            2*kk*gt*gt - 2*kk*u - 2*kk*f2*c - 2*kk*f2*u;
+        coef[1] = -4*gt*gt*gt + 4*f2*gt*c + 4*kk*gt*u;
+        coef[0] = gt*gt*gt*gt + kk*kk*u*u + f2*f2*c*c - 2*gt*gt*f2*c -
+            2*kk*gt*gt*u - 2*kk*f2*u*c;
 
         double[] realroot = new double[4];
         int numrealroots = 0;
@@ -284,9 +284,9 @@ public class BouncePath extends Path {
 
         for (int i = 0; i < numrealroots; i++) {
             double v0 = realroot[i];
-            if (v0 * v0 + c >= 0.0) {
+            if (v0 * v0 + c >= 0) {
                 root[numroots] = v0;
-                liftcatch[numroots] = ((gt - v0 - k * Math.sqrt(v0 * v0 + u)) > 0.0);
+                liftcatch[numroots] = ((gt - v0 - k * Math.sqrt(v0 * v0 + u)) > 0);
                 numroots++;
                 /*
                 double lhs = gt - v0 - k*Math.sqrt(v0*v0+u);
@@ -305,7 +305,7 @@ public class BouncePath extends Path {
         int numroots = solveBounceEquation(bounces, duration, root, liftcatch);
 
         for (int i = 0; i < numroots; i++) {
-            if (forced ^ (root[i] < 0.0))
+            if (forced ^ (root[i] < 0))
                 continue;
             if (hyper ^ liftcatch[i] ^ forced)
                 continue;
@@ -319,13 +319,13 @@ public class BouncePath extends Path {
     public double getMinDuration() {
         // single hyperforce bounce is the only one with zero minimum duration
         if (bounces == 1 && hyper && forced)
-            return 0.0;
+            return 0;
 
-        double dlower = 0.0;
-        double dupper = 1.0;
+        double dlower = 0;
+        double dupper = 1;
         while (!isFeasibleDuration(dupper)) {
             dlower = dupper;
-            dupper *= 2.0;
+            dupper *= 2;
         }
 
         while (dupper - dlower > 0.0001) {
@@ -347,7 +347,7 @@ public class BouncePath extends Path {
     @Override
     public Coordinate getEndVelocity() {
         return new Coordinate(bx, by, bz[numbounces] +
-                              2.0*az[numbounces]*(end_time-start_time));
+                              2*az[numbounces]*(end_time-start_time));
     }
 
     @Override
@@ -356,7 +356,7 @@ public class BouncePath extends Path {
             return;
         time -= start_time;
 
-        double zpos = 0.0;
+        double zpos = 0;
         for (int i = 0; i <= numbounces; i++) {
             if (time < endtime[i] || i == numbounces) {
                 zpos = cz[i] + time*(bz[i] + az[i]*time);
@@ -374,23 +374,23 @@ public class BouncePath extends Path {
 
         result = check(result, tlow, true);
         result = check(result, thigh, true);
-        if (az[0] < 0.0) {
-            double te = -bz[0] / (2.0*az[0]) + start_time;
-            if ((tlow < te) && (te < Math.min(thigh, start_time+endtime[0])))
+        if (az[0] < 0) {
+            double te = -bz[0] / (2*az[0]) + start_time;
+            if (tlow < te && te < Math.min(thigh, start_time+endtime[0]))
                 result = check(result, te, true);
         }
-        if (az[numbounces] < 0.0) {
-            double te = -bz[numbounces] / (2.0*az[numbounces]) + start_time;
-            if ((Math.max(tlow,start_time+endtime[numbounces-1]) < te) && (te < thigh))
+        if (az[numbounces] < 0) {
+            double te = -bz[numbounces] / (2*az[numbounces]) + start_time;
+            if (Math.max(tlow, start_time+endtime[numbounces-1]) < te && te < thigh)
                 result = check(result, te, true);
         }
-        if ((tlow < (start_time+endtime[0])) && ((start_time+endtime[0]) < thigh))
+        if (tlow < (start_time+endtime[0]) && (start_time+endtime[0]) < thigh)
             result = check(result, start_time+endtime[0], true);
         for (int i = 1; i < numbounces; i++) {
-            if (az[i] < 0.0) {
-                double te = -bz[i] / (2.0*az[i]) + start_time;
-                if ((Math.max(tlow,start_time+endtime[i-1]) < te) &&
-                                    (te < Math.min(thigh, start_time+endtime[i])))
+            if (az[i] < 0) {
+                double te = -bz[i] / (2*az[i]) + start_time;
+                if (Math.max(tlow, start_time+endtime[i-1]) < te &&
+                            te < Math.min(thigh, start_time+endtime[i]))
                     result = check(result, te, true);
             }
             if ((tlow < (start_time+endtime[i])) && ((start_time+endtime[i]) < thigh))
@@ -407,23 +407,23 @@ public class BouncePath extends Path {
 
         result = check(result, tlow, false);
         result = check(result, thigh, false);
-        if (az[0] > 0.0) {
-            double te = -bz[0] / (2.0*az[0]) + start_time;
-            if ((tlow < te) && (te < Math.min(thigh, start_time+endtime[0])))
+        if (az[0] > 0) {
+            double te = -bz[0] / (2*az[0]) + start_time;
+            if (tlow < te && te < Math.min(thigh, start_time+endtime[0]))
                 result = check(result, te, false);
         }
-        if (az[numbounces] > 0.0) {
-            double te = -bz[numbounces] / (2.0*az[numbounces]) + start_time;
-            if (Math.max(tlow,start_time+endtime[numbounces-1]) < te && te < thigh)
+        if (az[numbounces] > 0) {
+            double te = -bz[numbounces] / (2*az[numbounces]) + start_time;
+            if (Math.max(tlow, start_time+endtime[numbounces-1]) < te && te < thigh)
                 result = check(result, te, false);
         }
         if (tlow < (start_time+endtime[0]) && (start_time+endtime[0]) < thigh)
             result = check(result, start_time+endtime[0], false);
         for (int i = 1; i < numbounces; i++) {
-            if (az[i] > 0.0) {
-                double te = -bz[i] / (2.0*az[i]) + start_time;
-                if ((Math.max(tlow,start_time+endtime[i-1]) < te) &&
-                    (te < Math.min(thigh, start_time+endtime[i])))
+            if (az[i] > 0) {
+                double te = -bz[i] / (2*az[i]) + start_time;
+                if (Math.max(tlow, start_time+endtime[i-1]) < te &&
+                            te < Math.min(thigh, start_time+endtime[i]))
                     result = check(result, te, false);
             }
             if (tlow < (start_time+endtime[i]) && (start_time+endtime[i]) < thigh)

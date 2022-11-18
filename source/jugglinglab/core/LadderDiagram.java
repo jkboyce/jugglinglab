@@ -5,17 +5,12 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
-import jugglinglab.path.*;
-import jugglinglab.prop.*;
 
 
 // This class draws the vertical ladder diagram on the right side of Edit view.

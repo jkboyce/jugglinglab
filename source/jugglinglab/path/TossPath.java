@@ -9,13 +9,13 @@ import jugglinglab.util.*;
 
 
 public class TossPath extends Path {
-    protected static final double g_def = 980;  // using CGS units
+    protected static final double G_DEF = 980;  // using CGS units
 
     protected double bx, cx;
     protected double by, cy;
     protected double az, bz, cz;
 
-    protected double g = g_def;
+    protected double g = G_DEF;
 
 
     @Override
@@ -26,13 +26,13 @@ public class TossPath extends Path {
         ParameterDescriptor[] result = new ParameterDescriptor[1];
 
         result[0] = new ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT,
-                                            null, Double.valueOf(g_def), Double.valueOf(g));
+                                            null, Double.valueOf(G_DEF), Double.valueOf(g));
         return result;
     }
 
     @Override
     public void initPath(String st) throws JuggleExceptionUser {
-        double g = g_def;
+        double g = G_DEF;
 
         // now parse for edits to the above variables
         ParameterList pl = new ParameterList(st);
@@ -76,7 +76,7 @@ public class TossPath extends Path {
 
     @Override
     public Coordinate getEndVelocity() {
-        return new Coordinate(bx, by, bz+2.0*az*getDuration());
+        return new Coordinate(bx, by, bz+2*az*getDuration());
     }
 
     @Override
@@ -96,8 +96,8 @@ public class TossPath extends Path {
         result = check(result, tlow, true);
         result = check(result, thigh, true);
 
-        if (az < 0.0) {
-            double te = -bz / (2.0*az) + start_time;
+        if (az < 0) {
+            double te = -bz / (2*az) + start_time;
             if (tlow < te && te < thigh)
                 result = check(result, te, true);
         }
@@ -113,8 +113,8 @@ public class TossPath extends Path {
         result = check(result, tlow, false);
         result = check(result, thigh, false);
 
-        if (az > 0.0) {
-            double te = -by / (2.0*az) + start_time;
+        if (az > 0) {
+            double te = -by / (2*az) + start_time;
             if (tlow < te && te < thigh)
                 result = check(result, te, false);
         }

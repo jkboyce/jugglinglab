@@ -1574,7 +1574,7 @@ public class JMLPattern {
         Coordinate origin = new Coordinate();
         getJugglerPosition(juggler, time, origin);
         double angle = Math.toRadians(getJugglerAngle(juggler, time));
-        lc.y += Juggler.pattern_y;
+        lc.y += Juggler.PATTERN_Y;
 
         Coordinate gc = new Coordinate(origin.x + lc.x * Math.cos(angle) - lc.y * Math.sin(angle),
                                        origin.y + lc.x * Math.sin(angle) + lc.y * Math.cos(angle),
@@ -1593,7 +1593,7 @@ public class JMLPattern {
         Coordinate lc = new Coordinate(c2.x * Math.cos(angle) + c2.y * Math.sin(angle),
                                        -c2.x * Math.sin(angle) + c2.y * Math.cos(angle),
                                        c2.z);
-        lc.y -= Juggler.pattern_y;
+        lc.y -= Juggler.PATTERN_Y;
         return lc;
     }
 

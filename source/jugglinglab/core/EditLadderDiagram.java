@@ -6,7 +6,6 @@ package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
@@ -856,7 +855,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         do {
             changed = false;
             JMLPosition pos = pat.getPositionList();
-            double sep;
 
             while (pos != null) {
                 if (pos != position && pos.getJuggler() == position.getJuggler()) {
@@ -1705,7 +1703,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         JMLEvent ev = ((LadderEventItem)popupitem).event;
         if (!ev.isMaster())
             ev = ev.getMaster();
-        int transnum = ((LadderEventItem)popupitem).transnum;
+        // int transnum = ((LadderEventItem)popupitem).transnum;
         JMLTransition tr = ev.getTransition(((LadderEventItem)popupitem).transnum);
         tr.setType(type);
         activeEventChanged();
@@ -1736,8 +1734,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         createView();
         repaint();
     }
-
-    private static final String[] booleanList = { "True", "False" };
 
     // Helper for defineProp() and defineThrow()
     protected void makeParametersPanel(JPanel jp, ParameterDescriptor[] pd) {
@@ -1849,7 +1845,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                             try {
                                 URL source = JLFunc.jfc().getSelectedFile().toURI().toURL();
                                 // We have to load the image to get the correct dimensions
-                                ImageIcon icon = new ImageIcon(source, source.toString());
+                                // ImageIcon icon = new ImageIcon(source, source.toString());
                                 // Rebuild the paramter descriptions
                                 fpds[0].value = source;
                                 //fpds[1].value = new Integer(icon.getIconWidth());

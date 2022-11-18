@@ -28,8 +28,6 @@ import jugglinglab.jml.JMLPatternList;
 import jugglinglab.generator.SiteswapGenerator;
 import jugglinglab.generator.SiteswapTransitioner;
 import jugglinglab.generator.GeneratorTarget;
-import jugglinglab.notation.Pattern;
-import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
 
 
@@ -501,7 +499,7 @@ public class JugglingLab {
                         if (pat != null) {
                             patterns_count++;
                             pat.layoutPattern();
-                            AnimationPrefs ap = pl.getAnimationPrefsForLine(i);
+                            pl.getAnimationPrefsForLine(i);
                             ps.println("   Pattern line " + (i+1) + ": OK");
                         }
                     } catch (JuggleException je) {

@@ -16,7 +16,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import jugglinglab.core.Constants;
-import jugglinglab.util.JLFunc;
 
 
 // Background thread that checks online for an updated version of the application.

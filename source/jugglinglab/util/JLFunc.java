@@ -4,7 +4,6 @@
 
 package jugglinglab.util;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.*;

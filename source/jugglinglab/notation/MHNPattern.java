@@ -6,12 +6,10 @@ package jugglinglab.notation;
 
 import java.text.MessageFormat;
 import java.util.*;
-import java.awt.event.*;
 
 import jugglinglab.core.*;
 import jugglinglab.util.*;
 import jugglinglab.jml.*;
-import jugglinglab.path.Path;
 
 
 // "Multi-Hand Notation" (name due to Ed Carstens) is a very general notation that
@@ -1279,10 +1277,7 @@ public abstract class MHNPattern extends Pattern {
                                 type = "bounce";
                                 mod = null;
                                 if (sst2.mod.indexOf("F") != -1) {
-                                    if (mod == null)
-                                        mod = "forced=true";
-                                    else
-                                        mod = mod + ";forced=true";
+                                    mod = "forced=true";
                                 }
                                 if (sst2.mod.indexOf("H") != -1) {
                                     if (mod == null)

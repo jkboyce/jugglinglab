@@ -26,8 +26,8 @@ import jugglinglab.util.*;
 public class Optimizer {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final protected double epsilon = 0.0000001;
-    static final protected double infinity = java.lang.Double.POSITIVE_INFINITY;
+    static final protected double EPSILON = 0.0000001;
+    static final protected double INFINITY = java.lang.Double.POSITIVE_INFINITY;
 
     static protected boolean optimizer_loaded;
     static protected boolean optimizer_available;
@@ -122,7 +122,7 @@ public class Optimizer {
                 z[i] = solver.makeBoolVar("z" + i);
         }
 
-        MPVariable err = solver.makeNumVar(-infinity, infinity, "err");
+        MPVariable err = solver.makeNumVar(-INFINITY, INFINITY, "err");
 
         // Constraints
 
@@ -134,13 +134,13 @@ public class Optimizer {
             // Calculate upper bound on abs(Ax) in order to implement the
             // constraint err < abs(Ax + b), which becomes two disjunctive
             // constraints since the feasible set is concave.
-            double maxAx = 0.0;
-            double minAx = 0.0;
+            double maxAx = 0;
+            double minAx = 0;
 
             for (int j = 0; j < me.varsNum; ++j) {
                 double coef = me.marginsEqs[i].coef(j);
 
-                if (coef > 0.0) {
+                if (coef > 0) {
                     maxAx += coef * me.varsMax[j];
                     minAx += coef * me.varsMin[j];
                 } else {
@@ -149,7 +149,7 @@ public class Optimizer {
                 }
             }
 
-            double bound = 2.0 * Math.max(Math.abs(maxAx), Math.abs(minAx)) + 1.0;
+            double bound = 2 * Math.max(Math.abs(maxAx), Math.abs(minAx)) + 1;
 
             // (-Ax) <= -err + b_i + bound * z_i
             double rhs = me.marginsEqs[i].constant();
@@ -157,14 +157,14 @@ public class Optimizer {
                 if (pinned[j])
                     rhs += me.marginsEqs[i].coef(j) * me.varsValues[j];
             }
-            c[2*i] = solver.makeConstraint(-infinity, rhs, "c" + i + "a");
+            c[2*i] = solver.makeConstraint(-INFINITY, rhs, "c" + i + "a");
             c[2*i].setCoefficient(err, 1);
             c[2*i].setCoefficient(z[i], -bound);
             for (int j = 0; j < me.varsNum; ++j) {
                 if (!pinned[j]) {
                     double coef = me.marginsEqs[i].coef(j);
 
-                    if (coef != 0.0)
+                    if (coef != 0)
                         c[2*i].setCoefficient(x[j], -coef);
                 }
             }
@@ -175,14 +175,14 @@ public class Optimizer {
                 if (pinned[j])
                     rhs -= me.marginsEqs[i].coef(j) * me.varsValues[j];
             }
-            c[2*i + 1] = solver.makeConstraint(-infinity, rhs, "c" + i + "b");
+            c[2*i + 1] = solver.makeConstraint(-INFINITY, rhs, "c" + i + "b");
             c[2*i + 1].setCoefficient(err, 1);
             c[2*i + 1].setCoefficient(z[i], bound);
             for (int j = 0; j < me.varsNum; ++j) {
                 if (!pinned[j]) {
                     double coef = me.marginsEqs[i].coef(j);
 
-                    if (coef != 0.0)
+                    if (coef != 0)
                         c[2*i + 1].setCoefficient(x[j], coef);
                 }
             }
@@ -245,7 +245,7 @@ public class Optimizer {
     // subsequent runs.
     protected void markFinished() {
         // Mark newly-pinned variables (present in minimum-margin equation(s))
-        double minmargin = infinity;
+        double minmargin = INFINITY;
         for (int i = 0; i < me.marginsNum; ++i) {
             if (!me.marginsEqs[i].done() && me.getMargin(i) < minmargin)
                 minmargin = me.getMargin(i);
@@ -262,13 +262,13 @@ public class Optimizer {
                 System.out.println("   margin[" + i + "] = " + mar);
 
             double diff = mar - minmargin;
-            if (diff < -epsilon || diff > epsilon)
+            if (diff < -EPSILON || diff > EPSILON)
                 continue;
 
             for (int j = 0; j < me.varsNum; ++j) {
                 double cj = me.marginsEqs[i].coef(j);
 
-                if (!pinned[j] && (cj > epsilon || cj < -epsilon)) {
+                if (!pinned[j] && (cj > EPSILON || cj < -EPSILON)) {
                     pinned[j] = true;
 
                     if (Constants.DEBUG_OPTIMIZE)
@@ -285,7 +285,7 @@ public class Optimizer {
             boolean eqndone = true;
             for (int i = 0; i < me.varsNum; i++) {
                 double ci = me.marginsEqs[row].coef(i);
-                if (!pinned[i] && (ci > epsilon || ci < -epsilon)) {
+                if (!pinned[i] && (ci > EPSILON || ci < -EPSILON)) {
                     eqndone = false;
                     break;
                 }

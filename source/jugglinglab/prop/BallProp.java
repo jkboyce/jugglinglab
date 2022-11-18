@@ -9,9 +9,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.text.MessageFormat;
 
-import jugglinglab.core.*;
 import jugglinglab.util.*;
-import jugglinglab.renderer.*;
 
 
 public class BallProp extends Prop {
@@ -45,14 +43,14 @@ public class BallProp extends Prop {
             Color.yellow
         };
 
-    protected static final int colornum_def = 8;  // red
-    protected static final double diam_def = 10.0;  // in cm
-    protected static final boolean highlight_def = false;
+    protected static final int COLORNUM_DEF = 8;  // red
+    protected static final double DIAM_DEF = 10.0;  // in cm
+    protected static final boolean HIGHLIGHT_DEF = false;
 
-    protected double diam = diam_def;  // diameter, in cm
-    protected int colornum = colornum_def;
+    protected double diam = DIAM_DEF;  // diameter, in cm
+    protected int colornum = COLORNUM_DEF;
     protected Color color;
-    protected boolean highlight = highlight_def;
+    protected boolean highlight = HIGHLIGHT_DEF;
 
     protected BufferedImage ballimage;
     protected double lastzoom;
@@ -82,11 +80,11 @@ public class BallProp extends Prop {
             range.add(colornames[i]);
 
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
-                            range, colornames[colornum_def], colornames[colornum]);
+                            range, colornames[COLORNUM_DEF], colornames[colornum]);
         result[1] = new ParameterDescriptor("diam", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(diam_def), Double.valueOf(diam));
+                            null, Double.valueOf(DIAM_DEF), Double.valueOf(diam));
         result[2] = new ParameterDescriptor("highlight", ParameterDescriptor.TYPE_BOOLEAN,
-                            null, Boolean.valueOf(highlight_def), Boolean.valueOf(highlight));
+                            null, Boolean.valueOf(HIGHLIGHT_DEF), Boolean.valueOf(highlight));
 
         return result;
     }
@@ -219,10 +217,7 @@ public class BallProp extends Prop {
 
     protected void recalc2D(double zoom) {
         int ball_pixel_size = (int)(0.5 + zoom * diam);
-        if (ball_pixel_size < 1)
-            ball_pixel_size = 1;
-        int offsetx = -ball_pixel_size / 2;
-        int offsety = -ball_pixel_size;
+        ball_pixel_size = Math.max(ball_pixel_size, 1);
 
         // Create a ball image of diameter ball_pixel_size, and transparent background
 

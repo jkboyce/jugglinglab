@@ -12,7 +12,6 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ResourceBundle;
 
 import javax.imageio.*;
 import javax.imageio.metadata.*;
@@ -90,11 +89,11 @@ public class Animator {
             ca[1] = Math.toRadians(theta);
         } else {
             if (pat.getNumberOfJugglers() == 1) {
-                ca[0] = Math.toRadians(0.0);
-                ca[1] = Math.toRadians(90.0);
+                ca[0] = Math.toRadians(0);
+                ca[1] = Math.toRadians(90);
             } else {
-                ca[0] = Math.toRadians(340.0);
-                ca[1] = Math.toRadians(70.0);
+                ca[0] = Math.toRadians(340);
+                ca[1] = Math.toRadians(70);
             }
         }
         setCameraAngle(ca);
@@ -121,10 +120,10 @@ public class Animator {
     }
 
     protected void setCameraAngle(double[] ca) {
-        while (ca[0] < 0.0)
-            ca[0] += 2.0 * Math.PI;
-        while (ca[0] >= 2.0 * Math.PI)
-            ca[0] -= 2.0 * Math.PI;
+        while (ca[0] < 0)
+            ca[0] += 2 * Math.PI;
+        while (ca[0] >= 2 * Math.PI)
+            ca[0] -= 2 * Math.PI;
 
         camangle[0] = ca[0];
         camangle[1] = ca[1];

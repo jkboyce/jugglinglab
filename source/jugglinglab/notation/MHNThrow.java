@@ -4,7 +4,6 @@
 
 package jugglinglab.notation;
 
-import jugglinglab.util.*;
 
 // This class represents an element in the juggling matrix. Often this represents
 // the throw of a specific object to some later element in the matrix. It can

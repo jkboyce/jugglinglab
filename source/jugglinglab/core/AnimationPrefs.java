@@ -9,7 +9,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
 
@@ -23,28 +22,28 @@ public class AnimationPrefs {
     public static final int GROUND_OFF = 2;
 
     // default values of all items
-    public static final int width_def = 400;
-    public static final int height_def = 450;
-    public static final double fps_def;
-    public static final double slowdown_def = 2.0;
-    public static final int border_def = 0;
-    public static final int showGround_def = GROUND_AUTO;
-    public static final boolean stereo_def = false;
-    public static final boolean startPause_def = false;
-    public static final boolean mousePause_def = false;
-    public static final boolean catchSound_def = false;
-    public static final boolean bounceSound_def;
-    public static final int view_def = View.VIEW_NONE;
+    public static final int WIDTH_DEF = 400;
+    public static final int HEIGHT_DEF = 450;
+    public static final double FPS_DEF;
+    public static final double SLOWDOWN_DEF = 2;
+    public static final int BORDER_DEF = 0;
+    public static final int SHOWGROUND_DEF = GROUND_AUTO;
+    public static final boolean STEREO_DEF = false;
+    public static final boolean STARTPAUSE_DEF = false;
+    public static final boolean MOUSEPAUSE_DEF = false;
+    public static final boolean CATCHSOUND_DEF = false;
+    public static final boolean BOUNCESOUND_DEF;
+    public static final int VIEW_DEF = View.VIEW_NONE;
 
     static {
         // audio clip playback seems to block on Linux
         if (jugglinglab.JugglingLab.isLinux)
-            bounceSound_def = false;
+            BOUNCESOUND_DEF = false;
         else
-            bounceSound_def = false;
+            BOUNCESOUND_DEF = false;
 
         // set default `fps` to screen refresh rate, if possible
-        double fps_screen = 0.0;
+        double fps_screen = 0;
 
         try {
             GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -56,22 +55,22 @@ public class AnimationPrefs {
             // HeadlessException when running headless (from CLI)
         }
 
-        fps_def = (fps_screen < 20.0 ? 60.0 : fps_screen);
+        FPS_DEF = (fps_screen < 20 ? 60 : fps_screen);
     }
 
-    public int width = width_def;
-    public int height = height_def;
-    public double fps = fps_def;
-    public double slowdown = slowdown_def;
-    public int border = border_def;
-    public int showGround = showGround_def;
-    public boolean stereo = stereo_def;
-    public boolean startPause = startPause_def;
-    public boolean mousePause = mousePause_def;
-    public boolean catchSound = catchSound_def;
-    public boolean bounceSound = bounceSound_def;
+    public int width = WIDTH_DEF;
+    public int height = HEIGHT_DEF;
+    public double fps = FPS_DEF;
+    public double slowdown = SLOWDOWN_DEF;
+    public int border = BORDER_DEF;
+    public int showGround = SHOWGROUND_DEF;
+    public boolean stereo = STEREO_DEF;
+    public boolean startPause = STARTPAUSE_DEF;
+    public boolean mousePause = MOUSEPAUSE_DEF;
+    public boolean catchSound = CATCHSOUND_DEF;
+    public boolean bounceSound = BOUNCESOUND_DEF;
     public double[] camangle;  // in degrees! null means use default
-    public int view = view_def;  // one of the values in View
+    public int view = VIEW_DEF;  // one of the values in View
     public int[] hideJugglers;
 
 
@@ -84,9 +83,9 @@ public class AnimationPrefs {
             width = jc.width;
         if (jc.height > 0)
             height = jc.height;
-        if (jc.slowdown >= 0.0)
+        if (jc.slowdown >= 0)
             slowdown = jc.slowdown;
-        if (jc.fps >= 0.0)
+        if (jc.fps >= 0)
             fps = jc.fps;
         if (jc.border >= 0)
             border = jc.border;
@@ -261,17 +260,17 @@ public class AnimationPrefs {
     public String toString() {
         String result = "";
 
-        if (width != width_def)
+        if (width != WIDTH_DEF)
             result += "width=" + width + ";";
-        if (height != height_def)
+        if (height != HEIGHT_DEF)
             result += "height=" + height + ";";
-        if (fps != fps_def)
+        if (fps != FPS_DEF)
             result += "fps=" + JLFunc.toStringRounded(fps, 2) + ";";
-        if (slowdown != slowdown_def)
+        if (slowdown != SLOWDOWN_DEF)
             result += "slowdown=" + JLFunc.toStringRounded(slowdown, 2) + ";";
-        if (border != border_def)
+        if (border != BORDER_DEF)
             result += "border=" + border + ";";
-        if (showGround != showGround_def) {
+        if (showGround != SHOWGROUND_DEF) {
             switch (showGround) {
                 case GROUND_AUTO:
                     result += "showground=auto;";
@@ -284,19 +283,19 @@ public class AnimationPrefs {
                     break;
             }
         }
-        if (stereo != stereo_def)
+        if (stereo != STEREO_DEF)
             result += "stereo=" + stereo + ";";
-        if (startPause != startPause_def)
+        if (startPause != STARTPAUSE_DEF)
             result += "startpaused=" + startPause + ";";
-        if (mousePause != mousePause_def)
+        if (mousePause != MOUSEPAUSE_DEF)
             result += "mousepause=" + mousePause + ";";
-        if (catchSound != catchSound_def)
+        if (catchSound != CATCHSOUND_DEF)
             result += "catchsound=" + catchSound + ";";
-        if (bounceSound != bounceSound_def)
+        if (bounceSound != BOUNCESOUND_DEF)
             result += "bouncesound=" + bounceSound + ";";
         if (camangle != null)
             result += "camangle=(" + camangle[0] + "," + camangle[1] + ");";
-        if (view != view_def)
+        if (view != VIEW_DEF)
             result += "view=" + View.viewNames[view - 1] + ";";
         if (hideJugglers != null) {
             result += "hidejugglers=(";

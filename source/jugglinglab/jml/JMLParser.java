@@ -5,8 +5,6 @@
 package jugglinglab.jml;
 
 import java.io.*;
-import java.net.*;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.*;

@@ -85,12 +85,12 @@ public class JMLPosition {
 
     public void readJML(JMLNode current, String jmlvers) throws JuggleExceptionUser {
         JMLAttributes at = current.getAttributes();
-        double tempx=0.0, tempy=0.0, tempz=0.0, tempt=0.0, tempangle=0.0;
+        double tempx = 0, tempy = 0, tempz = 0, tempt = 0, tempangle = 0;
         String jugglerstr = "1";
 
         try {
             for (int i = 0; i < at.getNumberOfAttributes(); i++) {
-                //          System.out.println("att. "+i+" = "+at.getAttributeValue(i));
+                // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equalsIgnoreCase("x"))
                     tempx = JLFunc.parseDouble(at.getAttributeValue(i));
                 else if (at.getAttributeName(i).equalsIgnoreCase("y"))
@@ -108,7 +108,7 @@ public class JMLPosition {
             throw new JuggleExceptionUser(errorstrings.getString("Error_position_coordinate"));
         }
 
-        setCoordinate(new Coordinate(tempx,tempy,tempz));
+        setCoordinate(new Coordinate(tempx, tempy, tempz));
         setT(tempt);
         setAngle(tempangle);
         if (jugglerstr == null)

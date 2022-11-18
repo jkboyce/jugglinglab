@@ -198,8 +198,6 @@ class Connection extends Thread {
     @Override
     public void run() {
         String line;
-        StringBuffer revline;
-        int len;
 
         if (Constants.DEBUG_OPEN_SERVER)
             System.out.println("Server started connection thread");

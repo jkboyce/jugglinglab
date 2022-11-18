@@ -12,11 +12,11 @@ public class Coordinate {
 
 
     public Coordinate() {
-        this(0.0, 0.0, 0.0);
+        this(0, 0, 0);
     }
 
     public Coordinate(double x, double y) {
-        this(x, y, 0.0);
+        this(x, y, 0);
     }
 
     public Coordinate(double x, double y, double z) {
@@ -99,11 +99,11 @@ public class Coordinate {
         Coordinate result = new Coordinate(coord);
 
         if (Math.abs(result.x) < epsilon)
-            result.x = 0.0;
+            result.x = 0;
         if (Math.abs(result.y) < epsilon)
-            result.y = 0.0;
+            result.y = 0;
         if (Math.abs(result.z) < epsilon)
-            result.z = 0.0;
+            result.z = 0;
         return result;
     }
 

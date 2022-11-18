@@ -9,7 +9,6 @@ import javax.swing.SwingUtilities;
 
 import jugglinglab.core.Constants;
 import jugglinglab.core.PatternListPanel;
-import jugglinglab.core.PatternListWindow;
 import jugglinglab.notation.SiteswapPattern;
 import jugglinglab.util.*;
 

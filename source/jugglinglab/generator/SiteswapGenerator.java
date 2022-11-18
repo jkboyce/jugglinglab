@@ -56,7 +56,7 @@ public class SiteswapGenerator extends Generator {
 
     protected final static int async_rhythm_repunit[][] = { { 1 } };
     protected final static int sync_rhythm_repunit[][] = { { 1, 0 }, { 1, 0 } };
-    private final static int loop_counter_max = 20000;
+    private final static int LOOP_COUNTER_MAX = 20000;
 
     // configuration variables
     protected int n;
@@ -705,7 +705,7 @@ public class SiteswapGenerator extends Generator {
 
         // do a time check
         if (max_time > 0) {
-            if (loop_counter++ > loop_counter_max) {
+            if (loop_counter++ > LOOP_COUNTER_MAX) {
                 loop_counter = 0;
                 if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
                     String template = guistrings.getString("Generator_timeout");

@@ -7,7 +7,6 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -39,8 +38,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     protected JLabel gen_busy;
 
     // Execution limits for generator
-    protected static final int max_patterns = 1000;
-    protected static final double max_time = 15.0;
+    protected static final int MAX_PATTERNS = 1000;
+    protected static final double MAX_TIME = 15;
 
 
     public ApplicationPanel(JFrame parent) {
@@ -177,8 +176,6 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     else
                         jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
                 } catch (JuggleExceptionUser je) {
-                    if (jaw2 != null)
-                        jaw2.dispose();
                     new ErrorDialog(ApplicationPanel.this, je.getMessage());
                 } catch (Exception e) {
                     if (jaw2 != null)
@@ -234,7 +231,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pw = new PatternListWindow(title, this);
                                 pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
-                            trans.runTransitioner(pwot, max_patterns, max_time);
+                            trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME);
                             if (plp != null)
                                 jtp.setSelectedComponent(plp);
                         } catch (JuggleExceptionDone ex) {
@@ -315,7 +312,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                                 pw = new PatternListWindow(title, this);
                                 pwot = new GeneratorTarget(pw.getPatternListPanel());
                             }
-                            gen.runGenerator(pwot, max_patterns, max_time);
+                            gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME);
                             if (plp != null)
                                 jtp.setSelectedComponent(plp);
                         } catch (JuggleExceptionDone ex) {

@@ -15,7 +15,6 @@ import javax.swing.event.*;
 import jugglinglab.core.AnimationPanel;
 import jugglinglab.core.AnimationPrefs;
 import jugglinglab.jml.JMLPattern;
-import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 
 

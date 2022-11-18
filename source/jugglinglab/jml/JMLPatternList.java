@@ -9,7 +9,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 
 import jugglinglab.core.AnimationPrefs;
 import jugglinglab.util.*;

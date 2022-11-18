@@ -13,36 +13,36 @@ import jugglinglab.jml.HandLink;
 
 public class Juggler {
         // juggler dimensions, in centimeters
-    public final static double shoulder_hw = 23.0;  // shoulder half-width (cm)
-    public final static double shoulder_h = 40.0;  // throw pos. to shoulder
-    public final static double waist_hw = 17.0;  // waist half-width
-    public final static double waist_h = -5.0;
-    public final static double elbow_hw = 30.0;  // elbow "home"
-    public final static double elbow_h = 6.0;
-    public final static double elbow_slop = 12.0;
-    public final static double hand_out = 5.0;  // outside width of hand
-    public final static double hand_in = 5.0;
-    public final static double head_hw = 10.0;  // head half-width
-    public final static double head_h = 26.0;  // head height
-    public final static double neck_h = 5.0;  // neck height
-    public final static double shoulder_y = 0.0;
-    public final static double pattern_y = 30.0;
-    public final static double upper_length = 41.0;
-    public final static double lower_length = 40.0;
+    public final static double SHOULDER_HW = 23;  // shoulder half-width (cm)
+    public final static double SHOULDER_H = 40;  // throw pos. to shoulder
+    public final static double WAIST_HW = 17;  // waist half-width
+    public final static double WAIST_H = -5;
+    // public final static double ELBOW_HW = 30;  // elbow "home"
+    // public final static double ELBOW_H = 6;
+    // public final static double ELBOW_SLOP = 12;
+    public final static double HAND_OUT = 5;  // outside width of hand
+    public final static double HAND_IN = 5;
+    public final static double HEAD_HW = 10;  // head half-width
+    public final static double HEAD_H = 26;  // head height
+    public final static double NECK_H = 5;  // neck height
+    public final static double SHOULDER_Y = 0;
+    public final static double PATTERN_Y = 30;
+    public final static double UPPER_LENGTH = 41;
+    public final static double LOWER_LENGTH = 40;
 
-    public final static double lower_gap_wrist = 1.0;
-    public final static double lower_gap_elbow = 0.0;
-    public final static double lower_hand_height = 0.0;
-    public final static double upper_gap_elbow = 0.0;
-    public final static double upper_gap_shoulder = 0.0;
+    public final static double LOWER_GAP_WRIST = 1;
+    public final static double LOWER_GAP_ELBOW = 0;
+    public final static double LOWER_HAND_HEIGHT = 0;
+    public final static double UPPER_GAP_ELBOW = 0;
+    public final static double UPPER_GAP_SHOULDER = 0;
 
-    protected final static double lower_total = lower_length + lower_gap_wrist + lower_gap_elbow;
-    protected final static double upper_total = upper_length + upper_gap_elbow + upper_gap_shoulder;
+    protected final static double LOWER_TOTAL = LOWER_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW;
+    protected final static double UPPER_TOTAL = UPPER_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER;
 
-        // the remaining are used only for the 3d display
-    public final static double shoulder_radius = 6;
-    public final static double elbow_radius = 4;
-    public final static double wrist_radius = 2;
+    // the remaining are used only for the 3d display
+    // public final static double SHOULDER_RADIUS = 6;
+    // public final static double ELBOW_RADIUS = 4;
+    // public final static double WRIST_RADIUS = 2;
 
 
     public static void findJugglerCoordinates(JMLPattern pat, double time, JLVector[][] result)
@@ -61,9 +61,9 @@ public class Juggler {
             pat.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0);
             pat.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1);
             lefthand = new JLVector(coord0.x,
-                        coord0.z + lower_hand_height, coord0.y);
+                        coord0.z + LOWER_HAND_HEIGHT, coord0.y);
             righthand = new JLVector(coord1.x,
-                        coord1.z + lower_hand_height, coord1.y);
+                        coord1.z + LOWER_HAND_HEIGHT, coord1.y);
 
             pat.getJugglerPosition(juggler, time, coord2);
             double angle = Math.toRadians(pat.getJugglerAngle(juggler, time));
@@ -71,40 +71,40 @@ public class Juggler {
             double c = Math.cos(angle);
 
             leftshoulder = new JLVector(
-                coord2.x - shoulder_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h,
-                coord2.y - shoulder_hw * s + shoulder_y * c);
+                coord2.x - SHOULDER_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H,
+                coord2.y - SHOULDER_HW * s + SHOULDER_Y * c);
             rightshoulder = new JLVector(
-                coord2.x + shoulder_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h,
-                coord2.y + shoulder_hw * s + shoulder_y * c);
+                coord2.x + SHOULDER_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H,
+                coord2.y + SHOULDER_HW * s + SHOULDER_Y * c);
             leftwaist = new JLVector(
-                coord2.x - waist_hw * c - shoulder_y * s,
-                coord2.z + waist_h,
-                coord2.y - waist_hw * s + shoulder_y * c);
+                coord2.x - WAIST_HW * c - SHOULDER_Y * s,
+                coord2.z + WAIST_H,
+                coord2.y - WAIST_HW * s + SHOULDER_Y * c);
             rightwaist = new JLVector(
-                coord2.x + waist_hw * c - shoulder_y * s,
-                coord2.z + waist_h,
-                coord2.y + waist_hw * s + shoulder_y * c);
+                coord2.x + WAIST_HW * c - SHOULDER_Y * s,
+                coord2.z + WAIST_H,
+                coord2.y + WAIST_HW * s + SHOULDER_Y * c);
             leftheadbottom = new JLVector(
-                coord2.x - head_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h + neck_h,
-                coord2.y - head_hw * s + shoulder_y * c);
+                coord2.x - HEAD_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H + NECK_H,
+                coord2.y - HEAD_HW * s + SHOULDER_Y * c);
             leftheadtop = new JLVector(
-                coord2.x - head_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h + neck_h + head_h,
-                coord2.y - head_hw * s + shoulder_y * c);
+                coord2.x - HEAD_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H + NECK_H + HEAD_H,
+                coord2.y - HEAD_HW * s + SHOULDER_Y * c);
             rightheadbottom = new JLVector(
-                coord2.x + head_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h + neck_h,
-                coord2.y + head_hw * s + shoulder_y * c);
+                coord2.x + HEAD_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H + NECK_H,
+                coord2.y + HEAD_HW * s + SHOULDER_Y * c);
             rightheadtop = new JLVector(
-                coord2.x + head_hw * c - shoulder_y * s,
-                coord2.z + shoulder_h + neck_h + head_h,
-                coord2.y + head_hw * s + shoulder_y * c);
+                coord2.x + HEAD_HW * c - SHOULDER_Y * s,
+                coord2.z + SHOULDER_H + NECK_H + HEAD_H,
+                coord2.y + HEAD_HW * s + SHOULDER_Y * c);
 
-            double L = lower_total;
-            double U = upper_total;
+            double L = LOWER_TOTAL;
+            double U = UPPER_TOTAL;
             JLVector deltaL = JLVector.sub(lefthand, leftshoulder);
             double D = deltaL.length();
             if (D <= (L+U)) {

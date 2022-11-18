@@ -7,7 +7,6 @@ package jugglinglab.notation;
 import java.util.*;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import jugglinglab.util.*;
 

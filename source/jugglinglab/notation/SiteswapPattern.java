@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.text.MessageFormat;
 
 import jugglinglab.core.Constants;
-import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 import jugglinglab.notation.ssparser.*;
 

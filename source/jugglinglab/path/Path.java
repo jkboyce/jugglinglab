@@ -93,7 +93,7 @@ public abstract class Path {
 
     // utility for getMax/getMin
     protected Coordinate check(Coordinate result, double t, boolean findmax) {
-        Coordinate loc = new Coordinate(0.0, 0.0, 0.0);
+        Coordinate loc = new Coordinate(0, 0, 0);
         getCoordinate(t, loc);
         if (findmax)
             result = Coordinate.max(result, loc);

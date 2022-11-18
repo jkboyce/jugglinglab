@@ -9,16 +9,12 @@ import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.JMLPattern;
-import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 
 
@@ -212,12 +208,12 @@ public abstract class View extends JPanel {
 
                 @Override
                 public boolean isCanceled() {
-                    return (pm.isCanceled() || GIFWriter.this.interrupted());
+                    return (pm.isCanceled() || GIFWriter.interrupted());
                 }
             };
 
             AnimationPrefs jc = ap.getAnimationPrefs();
-            fps = (jc.fps == jc.fps_def) ? 33.3 : jc.fps;
+            fps = (jc.fps == AnimationPrefs.FPS_DEF) ? 33.3 : jc.fps;
             // Note the GIF header specifies inter-frame delay in terms of
             // hundredths of a second, so only `fps` values like 50, 33 1/3,
             // 25, 20, ... are precisely achieveable.

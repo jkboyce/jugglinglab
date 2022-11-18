@@ -6,7 +6,6 @@ package jugglinglab.view;
 
 import java.awt.*;
 import java.io.File;
-import javax.swing.*;
 
 import jugglinglab.core.*;
 import jugglinglab.jml.*;

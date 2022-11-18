@@ -47,8 +47,6 @@ public class HSS {
     public static ModParms processHSS(String p, String h, boolean hld, boolean dwlmax,
                                       String hndspc, double dwl) throws JuggleExceptionUser {
         int ossPer, hssPer, hssOrb, numHnd, numJug;
-        String convPat;
-        double[] dwellArr;
         ModParms modinf = new ModParms();
 
         ArrayList<ArrayList<Character>> ossPat = new ArrayList<ArrayList<Character>>();

@@ -44,14 +44,14 @@ public class RingProp extends Prop {
             Color.yellow
         };
 
-    protected static final int colornum_def = 8;  // red
-    protected static final double outside_diam_def = 25.0;  // in cm
-    protected static final double inside_diam_def = 20.0;  // in cm
-    protected static final int polysides = 200;
+    protected static final int COLORNUM_DEF = 8;  // red
+    protected static final double OUTSIDE_DIAM_DEF = 25.0;  // in cm
+    protected static final double INSIDE_DIAM_DEF = 20.0;  // in cm
+    protected static final int POLYSIDES = 200;
 
-    protected double outside_diam = outside_diam_def;
-    protected double inside_diam = inside_diam_def;
-    protected int colornum = colornum_def;
+    protected double outside_diam = OUTSIDE_DIAM_DEF;
+    protected double inside_diam = INSIDE_DIAM_DEF;
+    protected int colornum = COLORNUM_DEF;
     protected Color color;
 
     protected BufferedImage image;
@@ -87,19 +87,19 @@ public class RingProp extends Prop {
             range.add(colornames[i]);
 
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
-                            range, colornames[colornum_def], colornames[colornum]);
+                            range, colornames[COLORNUM_DEF], colornames[colornum]);
         result[1] = new ParameterDescriptor("outside", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(outside_diam_def), Double.valueOf(outside_diam));
+                            null, Double.valueOf(OUTSIDE_DIAM_DEF), Double.valueOf(outside_diam));
         result[2] = new ParameterDescriptor("inside", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(inside_diam_def), Double.valueOf(inside_diam));
+                            null, Double.valueOf(INSIDE_DIAM_DEF), Double.valueOf(inside_diam));
 
         return result;
     }
 
     @Override
     protected void init(String st) throws JuggleExceptionUser {
-        px = new int[polysides];
-        py = new int[polysides];
+        px = new int[POLYSIDES];
+        py = new int[POLYSIDES];
 
         color = Color.red;
 
@@ -151,7 +151,7 @@ public class RingProp extends Prop {
         if (outsidestr != null) {
             try {
                 double temp = JLFunc.parseDouble(outsidestr);
-                if (temp > 0.0)
+                if (temp > 0)
                     outside_diam = temp;
                 else
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
@@ -166,7 +166,7 @@ public class RingProp extends Prop {
         if (insidestr != null) {
             try {
                 double temp = JLFunc.parseDouble(insidestr);
-                if (temp > 0.0)
+                if (temp > 0)
                     inside_diam = temp;
                 else
                     throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
@@ -180,12 +180,12 @@ public class RingProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(outside_diam / 2.0, 0.0, outside_diam / 2.0);
+        return new Coordinate(outside_diam / 2, 0, outside_diam / 2);
     }
 
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-outside_diam / 2.0, 0.0, -outside_diam / 2.0);
+        return new Coordinate(-outside_diam / 2, 0, -outside_diam / 2);
     }
 
     @Override
@@ -195,15 +195,17 @@ public class RingProp extends Prop {
 
     @Override
     public Image getProp2DImage(double zoom, double[] camangle) {
-        if ((image == null) || (zoom != lastzoom) ||
-            (camangle[0] != lastcamangle[0]) || (camangle[1] != lastcamangle[1]))  // first call or display resized?
+        if (image == null || zoom != lastzoom ||
+                    camangle[0] != lastcamangle[0] || camangle[1] != lastcamangle[1]) {
+            // first call or display resized?
             redrawImage(zoom, camangle);
+        }
         return image;
     }
 
     @Override
     public Dimension getProp2DSize(double zoom) {
-        if ((size == null) || (zoom != lastzoom))  // first call or display resized?
+        if (size == null || zoom != lastzoom)  // first call or display resized?
             redrawImage(zoom, lastcamangle);
         return size;
     }
@@ -246,27 +248,27 @@ public class RingProp extends Prop {
             inside_height -= 2;
 
         // The angle of rotation of the ring.
-        double term1 = Math.sqrt(c0*c0 / (1.0 - s0*s0*s1*s1));
-        double angle = (term1 < 1.0) ? Math.acos(term1) : 0.0;
-        if (c0*s0 > 0.0)
+        double term1 = Math.sqrt(c0*c0 / (1 - s0*s0*s1*s1));
+        double angle = (term1 < 1) ? Math.acos(term1) : 0;
+        if (c0*s0 > 0)
             angle = -angle;
         double sa = Math.sin(angle);
         double ca = Math.cos(angle);
 
-        int pxmin=0, pxmax=0, pymin=0, pymax=0;
-        for (int i = 0; i < polysides; i++) {
-            double theta = (double)i * 2.0 * Math.PI / (double)polysides;
+        int pxmin = 0, pxmax = 0, pymin = 0, pymax = 0;
+        for (int i = 0; i < POLYSIDES; i++) {
+            double theta = (double)i * 2 * Math.PI / (double)POLYSIDES;
             double x = (double)width * Math.cos(theta) * 0.5;
             double y = (double)height * Math.sin(theta) * 0.5;
             px[i] = (int)(ca*x - sa*y + 0.5);
             py[i] = (int)(ca*y + sa*x + 0.5);
-            if ((i == 0) || (px[i] < pxmin))
+            if (i == 0 || px[i] < pxmin)
                 pxmin = px[i];
-            if ((i == 0) || (px[i] > pxmax))
+            if (i == 0 || px[i] > pxmax)
                 pxmax = px[i];
-            if ((i == 0) || (py[i] < pymin))
+            if (i == 0 || py[i] < pymin)
                 pymin = py[i];
-            if ((i == 0) || (py[i] > pymax))
+            if (i == 0 || py[i] > pymax)
                 pymax = py[i];
         }
 
@@ -282,34 +284,34 @@ public class RingProp extends Prop {
                            RenderingHints.VALUE_ANTIALIAS_ON);
         */
         g.setColor(color);
-        for (int i = 0; i < polysides; i++) {
+        for (int i = 0; i < POLYSIDES; i++) {
             px[i] -= pxmin;
             py[i] -= pymin;
         }
-        g.fillPolygon(px, py, polysides);
+        g.fillPolygon(px, py, POLYSIDES);
 
         // make the transparent hole in the center
         g.setComposite(AlphaComposite.Src);
         g.setColor(new Color(1f, 1f, 1f, 0f));
 
-        for (int i = 0; i < polysides; i++) {
-            double theta = (double)i * 2.0 * Math.PI / (double)polysides;
+        for (int i = 0; i < POLYSIDES; i++) {
+            double theta = (double)i * 2.0 * Math.PI / (double)POLYSIDES;
             double x = (double)inside_width * Math.cos(theta) * 0.5;
             double y = (double)inside_height * Math.sin(theta) * 0.5;
             px[i] = (int)(ca*x - sa*y + 0.5) - pxmin;
             py[i] = (int)(ca*y + sa*x + 0.5) - pymin;
         }
-        g.fillPolygon(px, py, polysides);
+        g.fillPolygon(px, py, POLYSIDES);
 
-        center = new Dimension(bbwidth/2, bbheight/2);
+        center = new Dimension(bbwidth / 2, bbheight / 2);
 
         int gripx = (s0 < 0) ? (bbwidth - 1) : 0;
         double bbw = sa*sa + ca*ca*Math.abs(s0*s1);
         double dsq = s0*s0*s1*s1*ca*ca + sa*sa - bbw*bbw;
-        double d = (dsq > 0.0) ? Math.sqrt(dsq) : 0.0;
+        double d = (dsq > 0) ? Math.sqrt(dsq) : 0;
         if (c0 > 0)
             d = -d;
-        int gripy = (int)((double)outside_pixel_diam * d) + bbheight/2;
+        int gripy = (int)((double)outside_pixel_diam * d) + bbheight / 2;
         grip = new Dimension(gripx, gripy);
 
         lastzoom = zoom;

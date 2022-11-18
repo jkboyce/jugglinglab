@@ -13,7 +13,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import jugglinglab.core.Constants;
-import jugglinglab.util.JLFunc;
 
 
 // Utility class for displaying error dialogs to the user. Note these methods

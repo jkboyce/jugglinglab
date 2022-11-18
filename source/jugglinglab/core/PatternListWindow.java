@@ -10,7 +10,6 @@ import java.io.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jugglinglab.jml.JMLNode;
@@ -193,7 +192,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     protected JMenu createFileMenu() {
         JMenu filemenu = new JMenu(guistrings.getString("File"));
-        JMenuItem[] fileitems = new JMenuItem[fileItems.length];
         for (int i = 0; i < fileItems.length; i++) {
             if (fileItems[i] == null) {
                 filemenu.addSeparator();

@@ -20,7 +20,7 @@ import jugglinglab.util.*;
 public class AnimationPrefsDialog extends JDialog {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    protected static final int border = 10;
+    protected static final int BORDER = 10;
 
     protected JTextField tf_width;
     protected JTextField tf_height;
@@ -212,33 +212,33 @@ public class AnimationPrefsDialog extends JDialog {
         // now make the whole window
         getContentPane().add(p1);
         gb.setConstraints(p1, make_constraints(GridBagConstraints.LINE_START,0,0,
-                                               new Insets(3,border,0,border)));
+                                               new Insets(3,BORDER,0,BORDER)));
 
         getContentPane().add(cb_paused);
         gb.setConstraints(cb_paused, make_constraints(GridBagConstraints.LINE_START,0,1,
-                                                new Insets(0,border,0,border)));
+                                                new Insets(0,BORDER,0,BORDER)));
         getContentPane().add(cb_mousepause);
         gb.setConstraints(cb_mousepause, make_constraints(GridBagConstraints.LINE_START,0,2,
-                                                new Insets(0,border,0,border)));
+                                                new Insets(0,BORDER,0,BORDER)));
         getContentPane().add(cb_stereo);
         gb.setConstraints(cb_stereo, make_constraints(GridBagConstraints.LINE_START,0,3,
-                                                new Insets(0,border,0,border)));
+                                                new Insets(0,BORDER,0,BORDER)));
         getContentPane().add(cb_catchsounds);
         gb.setConstraints(cb_catchsounds, make_constraints(GridBagConstraints.LINE_START,0,4,
-                                                new Insets(0,border,0,border)));
+                                                new Insets(0,BORDER,0,BORDER)));
         getContentPane().add(cb_bouncesounds);
         gb.setConstraints(cb_bouncesounds, make_constraints(GridBagConstraints.LINE_START,0,5,
-                                                new Insets(0,border,8,border)));
+                                                new Insets(0,BORDER,8,BORDER)));
         getContentPane().add(lab_other);
         gb.setConstraints(lab_other, make_constraints(GridBagConstraints.LINE_START,0,6,
-                                                new Insets(0,border,0,border)));
+                                                new Insets(0,BORDER,0,BORDER)));
         getContentPane().add(tf_other);
         gb.setConstraints(tf_other, make_constraints(GridBagConstraints.LINE_START,0,7,
-                                                new Insets(0,border,3,border)));
+                                                new Insets(0,BORDER,3,BORDER)));
 
         getContentPane().add(p2);
         gb.setConstraints(p2, make_constraints(GridBagConstraints.LINE_END,0,8,
-                                               new Insets(0,border,border,border)));
+                                               new Insets(0,BORDER,BORDER,BORDER)));
 
         getRootPane().setDefaultButton(but_ok);  // OK button is default
 

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import jugglinglab.core.Constants;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.Coordinate;
-import jugglinglab.util.JLFunc;
 import jugglinglab.util.JuggleExceptionInternal;
 import jugglinglab.prop.Prop;
 
@@ -195,13 +194,13 @@ public class Renderer2D extends Renderer {
 
     protected void calculateCameraMatrix() {
         m = JLMatrix.shiftMatrix(-cameracenter.x, -cameracenter.y, -cameracenter.z);
-        m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraangle[0], 0.0));
-        m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0.0, 0.0));
+        m.transform(JLMatrix.rotateMatrix(0, Math.PI - cameraangle[0], 0));
+        m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0, 0));
         m.transform(JLMatrix.shiftMatrix(cameracenter.x, cameracenter.y, cameracenter.z));
 
-        m.transform(JLMatrix.scaleMatrix(1.0, -1.0, 1.0));  // larger y values -> smaller y pixel coord
+        m.transform(JLMatrix.scaleMatrix(1, -1, 1));  // larger y values -> smaller y pixel coord
         m.transform(JLMatrix.scaleMatrix(zoom));
-        m.transform(JLMatrix.shiftMatrix(originx, originz, 0.0));
+        m.transform(JLMatrix.shiftMatrix(originx, originz, 0));
     }
 
     @Override
@@ -236,7 +235,7 @@ public class Renderer2D extends Renderer {
     public Coordinate getScreenTranslatedCoordinate(Coordinate c, int dx, int dy) {
         JLVector v = new JLVector(c.x, c.z, c.y);
         JLVector s = v.transform(m);
-        JLVector news = JLVector.add(s, new JLVector(dx, dy, 0.0));
+        JLVector news = JLVector.add(s, new JLVector(dx, dy, 0));
         JLVector newv = news.transform(m.inverse());
         return new Coordinate(newv.x, newv.z, newv.y);
     }
@@ -254,13 +253,13 @@ public class Renderer2D extends Renderer {
         int index = 0;
 
         // props
-        double propmin = 0.0;
+        double propmin = 0;
         for (int i = 1; i <= pat.getNumberOfPaths(); i++) {
             obj[index].type = DrawObject2D.TYPE_PROP;
             obj[index].number = i;
             pat.getPathCoordinate(i, time, tempc);
             if (!tempc.isValid())
-                tempc.setCoordinate(0.0, 0.0, 0.0);
+                tempc.setCoordinate(0, 0, 0);
             getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0]);
             int x = (int)Math.round(obj[index].coord[0].x);
             int y = (int)Math.round(obj[index].coord[0].y);
@@ -513,12 +512,12 @@ public class Renderer2D extends Renderer {
 
                     double LheadBx = ob.coord[4].x;
                     double LheadBy = ob.coord[4].y;
-                    double LheadTx = ob.coord[5].x;
+                    // double LheadTx = ob.coord[5].x;
                     double LheadTy = ob.coord[5].y;
                     double RheadBx = ob.coord[6].x;
                     double RheadBy = ob.coord[6].y;
-                    double RheadTx = ob.coord[7].x;
-                    double RheadTy = ob.coord[7].y;
+                    // double RheadTx = ob.coord[7].x;
+                    // double RheadTy = ob.coord[7].y;
 
                     if (Math.abs(RheadBx - LheadBx) > 2.0) {
                         // head is at least 2 pixels wide; draw it as a polygon
@@ -570,12 +569,12 @@ public class Renderer2D extends Renderer {
 
     @Override
     public Coordinate getHandWindowMax() {
-        return new Coordinate(Juggler.hand_out, 0, 1);
+        return new Coordinate(Juggler.HAND_OUT, 0, 1);
     }
 
     @Override
     public Coordinate getHandWindowMin() {
-        return new Coordinate(-Juggler.hand_in, 0, -1);
+        return new Coordinate(-Juggler.HAND_IN, 0, -1);
     }
 
     @Override
@@ -584,8 +583,8 @@ public class Renderer2D extends Renderer {
         for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
             max = Coordinate.max(max, pat.getJugglerMax(i));
 
-        max = Coordinate.add(max, new Coordinate(Juggler.shoulder_hw, Juggler.shoulder_hw,  // Juggler.head_hw,
-                                                 Juggler.shoulder_h + Juggler.neck_h + Juggler.head_h));
+        max = Coordinate.add(max, new Coordinate(Juggler.SHOULDER_HW, Juggler.SHOULDER_HW,  // Juggler.HEAD_HW,
+                                                 Juggler.SHOULDER_H + Juggler.NECK_H + Juggler.HEAD_H));
         return max;
     }
 
@@ -595,7 +594,7 @@ public class Renderer2D extends Renderer {
         for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
             min = Coordinate.min(min, pat.getJugglerMin(i));
 
-        min = Coordinate.add(min, new Coordinate(-Juggler.shoulder_hw, -Juggler.shoulder_hw, 0));
+        min = Coordinate.add(min, new Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0));
         return min;
     }
 
@@ -605,7 +604,7 @@ public class Renderer2D extends Renderer {
         public static final int TYPE_BODY = 2;
         public static final int TYPE_LINE = 3;
 
-        protected static final double slop = 3.0;
+        protected static final double SLOP = 3;
 
         public int type;
         public int number;  // either path number or juggler number
@@ -698,12 +697,12 @@ public class Renderer2D extends Renderer {
             if (box.type == TYPE_BODY)
                 vectorProduct(box.coord[0], box.coord[1], box.coord[2], tempv);
             else {
-                tempv.x = 0.0;
-                tempv.y = 0.0;
-                tempv.z = 1.0;
+                tempv.x = 0;
+                tempv.y = 0;
+                tempv.z = 1;
             }
 
-            if (tempv.z == 0.0)
+            if (tempv.z == 0)
                 return 0;       // box is exactly sideways
 
             boolean endinbb = false;
@@ -714,7 +713,7 @@ public class Renderer2D extends Renderer {
                 if (box.boundingbox.contains((int)(x + 0.5), (int)(y + 0.5))) {
                     double zb = box.coord[0].z - (tempv.x * (x - box.coord[0].x) +
                                                  tempv.y * (y - box.coord[0].y)) / tempv.z;
-                    if (line.coord[i].z < (zb-slop)) {
+                    if (line.coord[i].z < (zb-SLOP)) {
                         // System.out.println("   exit 1");
                         return -1;
                     }
@@ -743,7 +742,7 @@ public class Renderer2D extends Renderer {
                                              tempv.y * (y - box.coord[0].y)) / tempv.z;
                 double zl = line.coord[0].z + (line.coord[1].z-line.coord[0].z)*((double)x-line.coord[0].x) /
                     (line.coord[1].x - line.coord[0].x);
-                if (zl < (zb-slop)) {
+                if (zl < (zb-SLOP)) {
                     // System.out.println("   exit 3, i = "+i);
                     return -1;
                 }
@@ -764,7 +763,7 @@ public class Renderer2D extends Renderer {
                                              tempv.y * ((double)y - box.coord[0].y)) / tempv.z;
                 double zl = line.coord[0].z + (line.coord[1].z-line.coord[0].z)*(x-line.coord[0].x) /
                     (line.coord[1].x - line.coord[0].x);
-                if (zl < (zb-slop)) {
+                if (zl < (zb-SLOP)) {
                     // System.out.println("   exit 4, i = "+i);
                     return -1;
                 }

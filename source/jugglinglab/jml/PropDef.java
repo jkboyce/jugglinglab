@@ -4,7 +4,6 @@
 
 package jugglinglab.jml;
 
-import java.util.*;
 import java.io.*;
 
 import jugglinglab.prop.*;

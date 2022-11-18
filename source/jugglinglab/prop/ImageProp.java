@@ -24,7 +24,7 @@ public class ImageProp extends Prop {
     protected URL url;
     protected BufferedImage image;
     protected BufferedImage scaled_image;
-    protected final double width_def = 10.0f;  // in centimeters
+    protected final double WIDTH_DEF = 10;  // in centimeters
     protected double width;
     protected double height;
     protected Dimension size;
@@ -39,7 +39,7 @@ public class ImageProp extends Prop {
             throw new JuggleExceptionUser("ImageProp error: Default image not set");
         url = image_url_default;
         loadImage();
-        rescaleImage(1.0);
+        rescaleImage(1);
     }
 
     private void loadImage() throws JuggleExceptionUser {
@@ -59,8 +59,8 @@ public class ImageProp extends Prop {
             }
 
             double aspectRatio = ((double)image.getHeight()) / ((double)image.getWidth());
-            width = width_def;
-            height = width_def * aspectRatio;
+            width = WIDTH_DEF;
+            height = WIDTH_DEF * aspectRatio;
         } catch (IOException e) {
             throw new JuggleExceptionUser(errorstrings.getString("Error_bad_file"));
         } catch (SecurityException se) {
@@ -76,7 +76,7 @@ public class ImageProp extends Prop {
         if (image_pixel_height < 1)
             image_pixel_height = 1;
         size = new Dimension(image_pixel_width, image_pixel_height);
-        center = new Dimension(image_pixel_width/2, image_pixel_height/2);
+        center = new Dimension(image_pixel_width / 2, image_pixel_height / 2);
 
         int offsetx = image_pixel_width / 2;
         int offsety = image_pixel_height;
@@ -114,7 +114,7 @@ public class ImageProp extends Prop {
         result[0] = new ParameterDescriptor("image", ParameterDescriptor.TYPE_ICON,
                             null, image_url_default, url);
         result[1] = new ParameterDescriptor("width", ParameterDescriptor.TYPE_FLOAT,
-                            null, Double.valueOf(width_def), Double.valueOf(width));
+                            null, Double.valueOf(WIDTH_DEF), Double.valueOf(width));
 
         return result;
     }
@@ -163,12 +163,12 @@ public class ImageProp extends Prop {
 
     @Override
     public Coordinate getMax() {
-        return new Coordinate(width / 2.0, 0.0, width);
+        return new Coordinate(width / 2, 0, width);
     }
 
     @Override
     public Coordinate getMin() {
-        return new Coordinate(-width / 2.0, 0.0, 0.0);
+        return new Coordinate(-width / 2, 0, 0);
     }
 
     @Override

@@ -340,20 +340,20 @@ public class AnimationEditPanel extends AnimationPanel
 
                 // snap the angle to the four cardinal directions
                 double new_angle = startangle + deltaangle;
-                if (anglediff(new_angle) < snapangle / 2)
+                if (anglediff(new_angle) < SNAPANGLE / 2)
                     deltaangle = -startangle;
-                else if (anglediff(new_angle + 0.5 * Math.PI) < snapangle / 2)
+                else if (anglediff(new_angle + 0.5 * Math.PI) < SNAPANGLE / 2)
                     deltaangle = -startangle - 0.5 * Math.PI;
-                else if (anglediff(new_angle + Math.PI) < snapangle / 2)
+                else if (anglediff(new_angle + Math.PI) < SNAPANGLE / 2)
                     deltaangle = -startangle + Math.PI;
-                else if (anglediff(new_angle + 1.5 * Math.PI) < snapangle / 2)
+                else if (anglediff(new_angle + 1.5 * Math.PI) < SNAPANGLE / 2)
                     deltaangle = -startangle + 0.5 * Math.PI;
 
                 double final_angle = Math.toDegrees(startangle + deltaangle);
-                while (final_angle > 360.0)
-                    final_angle -= 360.0;
-                while (final_angle < 0.0)
-                    final_angle += 360.0;
+                while (final_angle > 360)
+                    final_angle -= 360;
+                while (final_angle < 0)
+                    final_angle += 360;
                 position.setAngle(final_angle);
 
                 dolayout = true;
@@ -424,10 +424,10 @@ public class AnimationEditPanel extends AnimationPanel
                 ca[1] = Math.toRadians(0.0001);
             if (ca[1] > Math.toRadians(179.9999))
                 ca[1] = Math.toRadians(179.9999);
-            while (ca[0] < 0.0)
-                ca[0] += Math.toRadians(360.0);
-            while (ca[0] >= Math.toRadians(360.0))
-                ca[0] -= Math.toRadians(360.0);
+            while (ca[0] < 0)
+                ca[0] += Math.toRadians(360);
+            while (ca[0] >= Math.toRadians(360))
+                ca[0] -= Math.toRadians(360);
 
             anim.setCameraAngle(snapCamera(ca));
         }
@@ -492,11 +492,11 @@ public class AnimationEditPanel extends AnimationPanel
         result[1] = ca[1];
 
         // vertical snap to equator and north/south poles
-        if (result[1] < snapangle)
+        if (result[1] < SNAPANGLE)
             result[1] = Math.toRadians(0.0001);  // avoid gimbal lock
-        else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
-            result[1] = Math.toRadians(90.0);
-        else if (result[1] > (Math.toRadians(180.0) - snapangle))
+        else if (anglediff(Math.toRadians(90) - result[1]) < SNAPANGLE)
+            result[1] = Math.toRadians(90);
+        else if (result[1] > (Math.toRadians(180) - SNAPANGLE))
             result[1] = Math.toRadians(179.9999);
 
         double a = 0;
@@ -518,13 +518,13 @@ public class AnimationEditPanel extends AnimationPanel
             while (a >= Math.toRadians(360.0))
                 a -= Math.toRadians(360.0);
 
-            if (anglediff(a - result[0]) < snapangle)
+            if (anglediff(a - result[0]) < SNAPANGLE)
                 result[0] = a;
-            else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + 0.5 * Math.PI;
-            else if (anglediff(a + Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + Math.PI;
-            else if (anglediff(a + 1.5 * Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + 1.5 * Math.PI;
         }
         return result;
@@ -657,7 +657,7 @@ public class AnimationEditPanel extends AnimationPanel
         Graphics g2 = g;
 
         for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+            // Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
             if (jc.stereo && i == 0)
                 g2 = g.create(0, 0, d.width / 2, d.height);

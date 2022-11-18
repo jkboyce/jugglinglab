@@ -14,7 +14,7 @@ import jugglinglab.util.*;
 public class MarginEquations {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final protected double epsilon = 0.000001;
+    static final protected double EPSILON = 0.000001;
 
     public int varsNum;  // number of variables in margin equations
     public JMLEvent[] varsEvents;  // corresponding JMLEvents, one per variable
@@ -47,7 +47,7 @@ public class MarginEquations {
     // returns current value of a given margin equation
 
     public double getMargin(int eqn) {
-        double m = 0.0;
+        double m = 0;
         for (int i = 0; i < varsNum; i++)
             m += marginsEqs[eqn].coef(i) * varsValues[i];
 
@@ -58,7 +58,7 @@ public class MarginEquations {
 
     public double getMargin() {
         if (marginsNum == 0)
-            return -100.0;
+            return -100;
 
         double minmargin = getMargin(0);
         for (int i = 1; i < marginsNum; i++) {
@@ -92,8 +92,8 @@ public class MarginEquations {
 
         ArrayList<JMLEvent> variableEvents = new ArrayList<JMLEvent>();
 
-        double maxValue = 0.0;
-        double g = 980.0;  // cm per second^2
+        double maxValue = 0;
+        double g = 980;  // cm per second^2
 
         JMLEvent ev = events;
         while (ev != null) {
@@ -147,7 +147,7 @@ public class MarginEquations {
             varsEvents[i] = ev;
             varsValues[i] = coord.x;
             // optimization won't move events to the other side of the body
-            if (varsValues[i] > 0.0) {
+            if (varsValues[i] > 0) {
                 varsMin[i] = 0.1 * maxValue;
                 varsMax[i] = maxValue;
 
@@ -167,7 +167,7 @@ public class MarginEquations {
         // Step 4: Find the maximum radius of props in the pattern, used in the margin
         // calculation below
 
-        double propradius = 0.0;
+        double propradius = 0;
         for (int i = 0; i < pat.getNumberOfProps(); i++) {
             double thisprop = 0.5 * pat.getProp(i + 1).getWidth();
             if (thisprop > propradius)
@@ -215,7 +215,7 @@ public class MarginEquations {
         // * if P1 and P2 start and end at the same time, and are from the same juggler, then P1 is from the right hand
         // * P1 and P2 can collide (t_same is defined and occurs when both are in the air)
 
-        double sym_delay = -1.0;
+        double sym_delay = -1;
         boolean sym_switchdelay = false;
         for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
             JMLSymmetry sym = pat.getSymmetry(i);
@@ -245,7 +245,7 @@ public class MarginEquations {
                 double mpl1_end = mpl1.getEndEvent().getT();
                 double mpl2_start = mpl2.getStartEvent().getT();
                 double mpl2_end = mpl2.getEndEvent().getT();
-                double delay = 0.0;
+                double delay = 0;
                 boolean invert_mpl2 = false;
 
                 do {
@@ -269,9 +269,9 @@ public class MarginEquations {
                         }
                     }
 
-                    double tsame = -1.0;
+                    double tsame = -1;
                     double tsame_denom = (mpl2_start + mpl2_end + 2*delay) - (mpl1_start + mpl1_end);
-                    if (tsame_denom == 0.0)
+                    if (tsame_denom == 0)
                         can_collide = false;
 
                     if (can_collide) {
@@ -316,14 +316,14 @@ public class MarginEquations {
                         double v_y2 = 0.5 * g * (t_c2 - t_t2);
                         double denom = v_y1 * (tsame - t_t1) + v_y2 * (tsame - t_t2);
 
-                        if (denom > epsilon) {
-                            denom *= Math.PI / 180.0;   // so margin will be in degrees
+                        if (denom > EPSILON) {
+                            denom *= Math.PI / 180;   // so margin will be in degrees
 
                             double coef_t1 = (t_c1 - tsame) / ((t_c1 - t_t1) * denom);
                             double coef_c1 = (tsame - t_t1) / ((t_c1 - t_t1) * denom);
                             double coef_t2 = -(t_c2 - tsame) / ((t_c2 - t_t2) * denom);
                             double coef_c2 = -(tsame - t_t2) / ((t_c2 - t_t2) * denom);
-                            double coef_0 = -2.0 * propradius / denom;
+                            double coef_0 = -2 * propradius / denom;
 
                             int t1_varnum, c1_varnum, t2_varnum, c2_varnum;
 
@@ -371,12 +371,12 @@ public class MarginEquations {
                             coefs[varsNum] = coef_0;
 
                             // define coefficients so distance (ignoring prop dimension) is nonnegative
-                            double dist = 0.0;
+                            double dist = 0;
                             for (int k = 0; k < varsNum; k++)
                                 dist += coefs[k] * varsValues[k];
-                            if (dist < 0.0) {
+                            if (dist < 0) {
                                 for (int k = 0; k < varsNum; k++) {
-                                    if (coefs[k] != 0.0)
+                                    if (coefs[k] != 0)
                                         coefs[k] = -coefs[k];
                                 }
                             }
@@ -436,7 +436,7 @@ public class MarginEquations {
                 double[] rowj = eqns.get(j);
                 boolean duprow = true;
                 for (int k = 0; duprow && k <= varsNum; k++) {
-                    if (rowi[k] < (rowj[k] - epsilon) || rowi[k] > (rowj[k] + epsilon))
+                    if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON))
                         duprow = false;
                 }
                 dupoverall |= duprow;
@@ -510,6 +510,7 @@ public class MarginEquations {
 
     public void sort() {
         Comparator<LinearEquation> comp = new Comparator<LinearEquation>() {
+            @Override
             public int compare(LinearEquation eq1, LinearEquation eq2) {
                 if (eq1.done() && !eq2.done())
                     return -1;
@@ -529,7 +530,8 @@ public class MarginEquations {
                 return 0;
             }
 
-            public boolean equals(LinearEquation eq) { return false; }
+            @Override
+            public boolean equals(Object eq) { return false; }
         };
 
         Arrays.sort(marginsEqs, comp);

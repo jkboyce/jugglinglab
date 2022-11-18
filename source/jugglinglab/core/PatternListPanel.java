@@ -15,7 +15,6 @@ import javax.swing.event.*;
 
 import jugglinglab.jml.*;
 import jugglinglab.jml.JMLPatternList.PatternRecord;
-import jugglinglab.notation.Pattern;
 import jugglinglab.util.*;
 import jugglinglab.view.View;
 
@@ -115,8 +114,6 @@ public class PatternListPanel extends JPanel {
     // Try to launch an animation window for the currently-selected item in the
     // list. If there is no pattern associated with the line, do nothing.
     protected void launchAnimation() {
-        PatternWindow pw = null;
-
         try {
             int row = list.getSelectedIndex();
             if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1))
@@ -134,14 +131,10 @@ public class PatternListPanel extends JPanel {
             if (animtarget != null)
                 animtarget.restartView(pat, ap);
             else
-                pw = new PatternWindow(pat.getTitle(), pat, ap);
+                new PatternWindow(pat.getTitle(), pat, ap);
         } catch (JuggleExceptionUser jeu) {
-            if (pw != null)
-                pw.dispose();
             new ErrorDialog(PatternListPanel.this, jeu.getMessage());
         } catch (JuggleExceptionInternal jei) {
-            if (pw != null)
-                pw.dispose();
             ErrorDialog.handleFatalException(jei);
         }
     }

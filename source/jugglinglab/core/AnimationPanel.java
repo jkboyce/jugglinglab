@@ -6,7 +6,6 @@ package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javax.sound.sampled.AudioInputStream;
@@ -16,9 +15,7 @@ import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import jugglinglab.core.PatternWindow;
 import jugglinglab.jml.*;
-import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 
 
@@ -29,7 +26,7 @@ import jugglinglab.util.*;
 public class AnimationPanel extends JPanel implements Runnable {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-    static final double snapangle = Math.toRadians(8.0);
+    static final double SNAPANGLE = Math.toRadians(8);
 
     protected Animator anim;
     protected AnimationPrefs jc;
@@ -180,9 +177,9 @@ public class AnimationPanel extends JPanel implements Runnable {
                 if (ca[1] > Math.toRadians(179.9999))
                     ca[1] = Math.toRadians(179.9999);
                 while (ca[0] < 0.0)
-                    ca[0] += Math.toRadians(360.0);
-                while (ca[0] >= Math.toRadians(360.0))
-                    ca[0] -= Math.toRadians(360.0);
+                    ca[0] += Math.toRadians(360);
+                while (ca[0] >= Math.toRadians(360))
+                    ca[0] -= Math.toRadians(360);
 
                 double[] snappedcamangle = snapCamera(ca);
                 setCameraAngle(snappedcamangle);
@@ -228,28 +225,28 @@ public class AnimationPanel extends JPanel implements Runnable {
         result[0] = ca[0];
         result[1] = ca[1];
 
-        if (result[1] < snapangle)
+        if (result[1] < SNAPANGLE)
             result[1] = Math.toRadians(0.0001);
-        else if (anglediff(Math.toRadians(90.0) - result[1]) < snapangle)
-            result[1] = Math.toRadians(90.0);
-        else if (result[1] > (Math.toRadians(180.0) - snapangle))
+        else if (anglediff(Math.toRadians(90) - result[1]) < SNAPANGLE)
+            result[1] = Math.toRadians(90);
+        else if (result[1] > (Math.toRadians(180) - SNAPANGLE))
             result[1] = Math.toRadians(179.9999);
 
         if (anim.pat.getNumberOfJugglers() == 1) {
             double a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
 
             while (a < 0)
-                a += Math.toRadians(360.0);
-            while (a >= Math.toRadians(360.0))
-                a -= Math.toRadians(360.0);
+                a += Math.toRadians(360);
+            while (a >= Math.toRadians(360))
+                a -= Math.toRadians(360);
 
-            if (anglediff(a - result[0]) < snapangle)
+            if (anglediff(a - result[0]) < SNAPANGLE)
                 result[0] = a;
-            else if (anglediff(a + 0.5 * Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + 0.5 * Math.PI;
-            else if (anglediff(a + Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + Math.PI;
-            else if (anglediff(a + 1.5 * Math.PI - result[0]) < snapangle)
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < SNAPANGLE)
                 result[0] = a + 1.5 * Math.PI;
         }
         return result;
@@ -257,9 +254,9 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     protected static double anglediff(double delta) {
         while (delta > Math.PI)
-            delta -= 2.0 * Math.PI;
+            delta -= 2 * Math.PI;
         while (delta <= -Math.PI)
-            delta += 2.0 * Math.PI;
+            delta += 2 * Math.PI;
         return Math.abs(delta);
     }
 
@@ -330,15 +327,15 @@ public class AnimationPanel extends JPanel implements Runnable {
             while (true)  {
                 setTime(anim.pat.getLoopStartTime());
 
-                for (int i = 0; getTime() < (anim.pat.getLoopEndTime() -
-                                    0.5 * anim.sim_interval_secs); i++) {
+                while (getTime() < (anim.pat.getLoopEndTime() -
+                                    0.5 * anim.sim_interval_secs)) {
                     repaint();
                     real_time_wait = anim.real_interval_millis -
                                 (System.currentTimeMillis() - real_time_start);
 
                     if (real_time_wait > 0)
                         Thread.sleep(real_time_wait);
-                    else if (engine == null || engine.interrupted())
+                    else if (engine == null || Thread.interrupted())
                         throw new InterruptedException();
 
                     real_time_start = System.currentTimeMillis();

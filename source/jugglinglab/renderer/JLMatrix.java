@@ -6,10 +6,10 @@ package jugglinglab.renderer;
 
 
 public class JLMatrix {
-    public double m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0;
-    public double m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0;
-    public double m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0;
-    public double m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0;
+    public double m00 = 1, m01 = 0, m02 = 0, m03 = 0;
+    public double m10 = 0, m11 = 1, m12 = 0, m13 = 0;
+    public double m20 = 0, m21 = 0, m22 = 1, m23 = 0;
+    public double m30 = 0, m31 = 0, m32 = 0, m33 = 1;
 
 
     public JLMatrix() {
