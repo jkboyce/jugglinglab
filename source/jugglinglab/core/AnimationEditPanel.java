@@ -590,7 +590,7 @@ public class AnimationEditPanel extends AnimationPanel
             { 0, -10,  0 },  // end 2 of y-axis control
             { 0,   7,  2 },  // arrow at end 1 of y-axis control
             { 0,   7, -2 },
-            { 0,  -7,  2 },  // array at end 2 of y-axis control
+            { 0,  -7,  2 },  // arrow at end 2 of y-axis control
             { 0,  -7, -2 },
 
             // used for moving the event
@@ -872,10 +872,11 @@ public class AnimationEditPanel extends AnimationPanel
 
     // In position editing mode, draw an xy grid at ground level (z = 0)
     protected void drawGrid(Graphics g) {
-        if (!(g instanceof Graphics2D))
+        if (!position_active)
             return;
 
-        if (!position_active)
+        // need a Graphics2D object for setStroke() below
+        if (!(g instanceof Graphics2D))
             return;
 
         // only draw grid when looking down from above
@@ -1166,7 +1167,9 @@ public class AnimationEditPanel extends AnimationPanel
         return inside;
     }
 
+    //-------------------------------------------------------------------------
     // javax.swing.JComponent methods
+    //-------------------------------------------------------------------------
 
     @Override
     public void paintComponent(Graphics g) {

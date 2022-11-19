@@ -6,6 +6,7 @@ package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
 
@@ -18,8 +19,14 @@ import jugglinglab.jml.*;
 // those are added in EditLadderDiagram.
 
 public class LadderDiagram extends JPanel {
-    protected static final Color background = Color.white;
-    protected static final int IMAGE_DRAW_WAIT = 5;  // frames
+    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
+    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
+    // overall sizing
+    public static final int MAX_JUGGLERS = 8;
+    protected static final int LADDER_WIDTH_PER_JUGGLER = 150;  // pixels
+    protected static final int LADDER_MIN_WIDTH_PER_JUGGLER = 60;
+    protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
 
     // geometric constants in pixels
     protected static final int BORDER_TOP = 25;
@@ -32,7 +39,12 @@ public class LadderDiagram extends JPanel {
     protected static final double JUGGLER_SEPARATION = 0.45;
     protected static final double SELFTHROW_WIDTH = 0.25;
 
+    protected static final Color COLOR_BACKGROUND = Color.white;
+    protected static final Color COLOR_TRACKER = Color.red;
+    protected static final int IMAGE_DRAW_WAIT = 5;  // frames
+
     protected JMLPattern pat;
+    protected Animator anim;  // optional, for drawing prop colors in events
 
     protected int width;  // pixel dimensions of entire panel
     protected int height;
@@ -41,6 +53,7 @@ public class LadderDiagram extends JPanel {
     protected int juggler_delta_x;  // horizontal offset between jugglers (px)
 
     protected double sim_time;
+    // protected int[] animpropnum = animator.anim.getAnimPropNum();
     protected int tracker_y = BORDER_TOP;
     protected boolean has_switch_symmetry;
     protected boolean has_switchdelay_symmetry;
@@ -58,11 +71,44 @@ public class LadderDiagram extends JPanel {
 
     public LadderDiagram(JMLPattern p) throws
                     JuggleExceptionUser, JuggleExceptionInternal {
-        setBackground(background);
+        setBackground(COLOR_BACKGROUND);
         setOpaque(false);
         pat = p;
+
+        int jugglers = pat.getNumberOfJugglers();
+        if (jugglers > MAX_JUGGLERS) {
+            // allocate enough space for a "too many jugglers" message; see
+            // paintLadder()
+            String template = guistrings.getString("Too_many_jugglers");
+            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
+            String message = MessageFormat.format(template, arguments);
+            int mwidth = 20 + getFontMetrics(msgfont).stringWidth(message);
+            setPreferredSize(new Dimension(mwidth, 1));
+            setMinimumSize(new Dimension(mwidth, 1));
+            return;
+        }
+
+        int pref_width = LADDER_WIDTH_PER_JUGGLER * jugglers;
+        int min_width = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers;
+        double[] width_mult = new double[] {
+            1.0,
+            1.0,
+            0.85,
+            0.72,
+            0.65,
+            0.55,
+        };
+        pref_width *= (jugglers >= width_mult.length ? 0.5 : width_mult[jugglers]);
+        pref_width = Math.max(pref_width, min_width);
+        setPreferredSize(new Dimension(pref_width, 1));
+        setMinimumSize(new Dimension(min_width, 1));
+
         pat.layoutPattern();  // ensures we have event list
         createView();
+    }
+
+    public void setAnimator(Animator a) {
+        anim = a;
     }
 
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
@@ -356,7 +402,25 @@ public class LadderDiagram extends JPanel {
         updateTrackerPosition();
     }
 
-    protected void paintBackground(Graphics gr) {
+    // Return true if ladder was drawn successfully, false otherwise
+    protected boolean paintLadder(Graphics gr) {
+        if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
+            Dimension dim = getSize();
+            gr.setFont(msgfont);
+            FontMetrics fm = gr.getFontMetrics();
+            String template = guistrings.getString("Too_many_jugglers");
+            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
+            String message = MessageFormat.format(template, arguments);
+            int mwidth = fm.stringWidth(message);
+            int x = Math.max((dim.width - mwidth) / 2, 0);
+            int y = (dim.height + fm.getHeight()) / 2;
+            gr.setColor(COLOR_BACKGROUND);
+            gr.fillRect(0, 0, dim.width, dim.height);
+            gr.setColor(Color.black);
+            gr.drawString(message, x, y);
+            return false;
+        }
+
         Graphics g = gr;
 
         // check if ladder was resized
@@ -466,54 +530,53 @@ public class LadderDiagram extends JPanel {
 
         if (ladder_image_valid)
             gr.drawImage(ladderimage, 0, 0, this);
-    }
 
-    /*
-    protected void createEventImages() {
-        int circle_diam = 0;
-        int dot_diam = 0;
+        // draw positions
+        gr.setColor(Color.black);
+        for (LadderPositionItem item : ladderpositionitems) {
+            if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
+                gr.setColor(getBackground());
+                gr.fillRect(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
+                gr.setColor(Color.black);
+                gr.drawRect(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
+            }
+        }
 
-        for (int i = 0; i < laddereventitems.size(); i++) {
-            LadderEventItem item = laddereventitems.get(i);
-
+        // draw events
+        int[] animpropnum = (anim != null ? anim.getAnimPropNum() : null);
+        gr.setColor(Color.black);
+        for (LadderEventItem item : laddereventitems) {
             if (item.type == LadderItem.TYPE_EVENT)
-                circle_diam = item.xhigh - item.xlow;
-            else
-                dot_diam = item.xhigh - item.xlow;
+                gr.fillOval(item.xlow, item.ylow,
+                            item.xhigh - item.xlow, item.yhigh - item.ylow);
+            else {
+                if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
+                    if (animpropnum == null) {
+                        gr.setColor(COLOR_BACKGROUND);
+                    } else {
+                        // color ball representation with the prop's color
+                        JMLTransition tr = item.event.getTransition(item.transnum);
+                        int propnum = animpropnum[tr.getPath() - 1];
+                        gr.setColor(pat.getProp(propnum).getEditorColor());
+                    }
+                    gr.fillOval(item.xlow, item.ylow,
+                                item.xhigh - item.xlow, item.yhigh - item.ylow);
+
+                    gr.setColor(Color.black);
+                    gr.drawOval(item.xlow, item.ylow,
+                                item.xhigh-item.xlow, item.yhigh-item.ylow);
+                }
+            }
         }
+        
+        // draw the tracker line showing the time
+        gr.setColor(COLOR_TRACKER);
+        gr.drawLine(0, tracker_y, width, tracker_y);
 
-        GraphicsConfiguration gc = GraphicsEnvironment
-                                    .getLocalGraphicsEnvironment()
-                                    .getDefaultScreenDevice()
-                                    .getDefaultConfiguration();
-
-        circleimage = gc.createCompatibleImage(circle_diam + 2, circle_diam + 2, Transparency.BITMASK);
-        Graphics g = circleimage.getGraphics();
-
-        if (g instanceof Graphics2D) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-
-        g.setColor(getBackground());
-        g.fillOval(0, 0, circle_diam, circle_diam);
-        g.setColor(Color.black);
-        g.drawOval(0, 0, circle_diam, circle_diam);
-
-        dotimage = gc.createCompatibleImage(dot_diam + 2, dot_diam + 2, Transparency.BITMASK);
-        g = dotimage.getGraphics();
-
-        if (g instanceof Graphics2D) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-
-        g.setColor(Color.black);
-        g.fillOval(0, 0, dot_diam, dot_diam);
+        return true;
     }
-    */
 
     //-------------------------------------------------------------------------
     // javax.swing.JComponent methods
@@ -527,38 +590,7 @@ public class LadderDiagram extends JPanel {
                                  RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-        paintBackground(gr);
-
-        // draw positions
-        gr.setColor(Color.black);
-        for (LadderPositionItem item : ladderpositionitems) {
-            gr.setColor(this.getBackground());
-            gr.fillRect(item.xlow, item.ylow,
-                        item.xhigh - item.xlow, item.yhigh - item.ylow);
-            gr.setColor(Color.black);
-            gr.drawRect(item.xlow, item.ylow,
-                        item.xhigh - item.xlow, item.yhigh - item.ylow);
-        }
-
-        // draw events
-        gr.setColor(Color.black);
-        for (LadderEventItem item : laddereventitems) {
-            if (item.type == LadderItem.TYPE_EVENT)
-                gr.fillOval(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-            else {
-                gr.setColor(this.getBackground());
-                gr.fillOval(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-                gr.setColor(Color.black);
-                gr.drawOval(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-            }
-        }
-
-        // draw the tracker line showing the time
-        gr.setColor(Color.red);
-        gr.drawLine(0, tracker_y, width, tracker_y);
+        paintLadder(gr);
     }
 }
 

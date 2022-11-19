@@ -26,14 +26,6 @@ import jugglinglab.view.View;
 
 public class EditLadderDiagram extends LadderDiagram implements
                 ActionListener, MouseListener, MouseMotionListener {
-    static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-    static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-
-    public static final int LADDER_WIDTH_PER_JUGGLER = 150;  // pixels
-    public static final int LADDER_MIN_WIDTH_PER_JUGGLER = 60;
-    public static final int MAX_JUGGLERS = 8;
-    protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
-
     // minimum time (seconds) between a throw and another event with transitions
     protected static final double MIN_THROW_SEP_TIME = 0.05;
 
@@ -42,6 +34,8 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     // minimum time (seconds) between positions for a juggler
     protected static final double MIN_POSITION_SEP_TIME = 0.02;
+
+    protected static final Color COLOR_SELECTION = Color.green;
 
     protected static final int STATE_INACTIVE = 0;
     protected static final int STATE_MOVING_EVENT = 1;
@@ -78,40 +72,13 @@ public class EditLadderDiagram extends LadderDiagram implements
         parent = pframe;
         parentview = pview;
 
-        int jugglers = pat.getNumberOfJugglers();
-        if (jugglers > MAX_JUGGLERS) {
-            // allocate enough space for a "too many jugglers" message; see
-            // paintComponent()
-            String template = guistrings.getString("Too_many_jugglers");
-            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
-            String message = MessageFormat.format(template, arguments);
-            int mwidth = 20 + getFontMetrics(msgfont).stringWidth(message);
-            setPreferredSize(new Dimension(mwidth, 1));
-            setMinimumSize(new Dimension(mwidth, 1));
-            return;
-        }
-
-        int pref_width = LADDER_WIDTH_PER_JUGGLER * jugglers;
-        int min_width = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers;
-        double[] width_mult = new double[] {
-            1.0,
-            1.0,
-            0.85,
-            0.72,
-            0.65,
-            0.55,
-        };
-        pref_width *= (jugglers >= width_mult.length ? 0.5 : width_mult[jugglers]);
-        pref_width = Math.max(pref_width, min_width);
-        setPreferredSize(new Dimension(pref_width, 1));
-        setMinimumSize(new Dimension(min_width, 1));
-
         addMouseListener(this);
         addMouseMotionListener(this);
     }
 
-    public void setAnimationPanel(AnimationEditPanel anim) {
-        animator = anim;
+    public void setAnimationPanel(AnimationEditPanel a) {
+        animator = a;
+        setAnimator(animator.getAnimator());
     }
 
     // Called whenever the active event in the ladder diagram is changed in
@@ -1967,44 +1934,12 @@ public class EditLadderDiagram extends LadderDiagram implements
                                  RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-        if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
-            Dimension dim = getSize();
-            gr.setFont(msgfont);
-            FontMetrics fm = gr.getFontMetrics();
-            String template = guistrings.getString("Too_many_jugglers");
-            Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
-            String message = MessageFormat.format(template, arguments);
-            int mwidth = fm.stringWidth(message);
-            int x = Math.max((dim.width - mwidth) / 2, 0);
-            int y = (dim.height + fm.getHeight()) / 2;
-            gr.setColor(Color.white);
-            gr.fillRect(0, 0, dim.width, dim.height);
-            gr.setColor(Color.black);
-            gr.drawString(message, x, y);
+        if (!paintLadder(gr))
             return;
-        }
-
-        paintBackground(gr);
-
-        // Could probably get this permutation from the pattern instead of the animator.
-        int[] animpropnum = animator.anim.getAnimPropNum();
-
-        // draw positions
-        gr.setColor(Color.black);
-        for (LadderPositionItem item : ladderpositionitems) {
-            if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
-                gr.setColor(getBackground());
-                gr.fillRect(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-                gr.setColor(Color.black);
-                gr.drawRect(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-            }
-        }
 
         // draw the box around the selected position
         if (active_positionitem != null) {
-            gr.setColor(Color.green);
+            gr.setColor(COLOR_SELECTION);
             gr.drawLine(active_positionitem.xlow - 1, active_positionitem.ylow - 1,
                         active_positionitem.xhigh + 1, active_positionitem.ylow - 1);
             gr.drawLine(active_positionitem.xhigh + 1, active_positionitem.ylow - 1,
@@ -2015,34 +1950,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                         active_positionitem.xlow - 1, active_positionitem.ylow - 1);
         }
 
-        // draw events
-        gr.setColor(Color.black);
-        for (LadderEventItem item : laddereventitems) {
-            if (item.type == LadderItem.TYPE_EVENT)
-                gr.fillOval(item.xlow, item.ylow,
-                            item.xhigh - item.xlow, item.yhigh - item.ylow);
-            else {
-                // This condition could probably be applied to all event drawing.
-                if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
-                    // Color ball representation with the prop's color.
-                    JMLTransition tr = item.event.getTransition(item.transnum);
-                    int pathnum = tr.getPath();
-                    int propnum = animpropnum[pathnum - 1];
-
-                    gr.setColor(pat.getProp(propnum).getEditorColor());
-                    gr.fillOval(item.xlow, item.ylow,
-                                item.xhigh - item.xlow, item.yhigh - item.ylow);
-
-                    gr.setColor(Color.black);
-                    gr.drawOval(item.xlow, item.ylow,
-                                item.xhigh-item.xlow, item.yhigh-item.ylow);
-                }
-            }
-        }
-
         // draw the box around the selected event
         if (active_eventitem != null) {
-            gr.setColor(Color.green);
+            gr.setColor(COLOR_SELECTION);
             gr.drawLine(active_eventitem.xlow - 1, active_eventitem.ylow - 1,
                         active_eventitem.xhigh + 1, active_eventitem.ylow - 1);
             gr.drawLine(active_eventitem.xhigh + 1, active_eventitem.ylow - 1,
@@ -2053,157 +1963,11 @@ public class EditLadderDiagram extends LadderDiagram implements
                         active_eventitem.xlow - 1, active_eventitem.ylow - 1);
         }
 
-        // draw the tracker line showing the time
-        gr.setColor(Color.red);
-        gr.drawLine(0, tracker_y, width, tracker_y);
+        // label the tracker line with the time
         if (gui_state == STATE_MOVING_TRACKER) {
+            gr.setColor(COLOR_TRACKER);
             gr.drawString(JLFunc.toStringRounded(sim_time, 2) + " s",
                         width / 2 - 18, tracker_y - 5);
         }
     }
-
-/*
-    private int orbits[][] = null;
-    private Color orbitColor[] = null;
-
-    public void restartView(JMLPattern pat, AnimationPrefs jc) throws
-                    JuggleExceptionUser, JuggleExceptionInternal {
-        if (pat != null)
-            this.pat = pat;
-        if (jc != null)
-            this.jc = jc;
-
-        if (pat != null) {
-            OrbitLadderDiagram new_ladder = new OrbitLadderDiagram(pat, parent);
-            new_ladder.setAnimation(jae);
-            jae.setLadderDiagram(new_ladder);
-            jae.deactivateEvent();
-            new_ladder.setPreferredSize(new Dimension(ladder_width, 1));
-            new_ladder.setMinimumSize(new Dimension(ladder_min_width, 1));
-            this.ladder.removeAll();
-            this.ladder.add(new_ladder, BorderLayout.CENTER);
-            this.ladder.validate();
-
-            findOrbits();
-            // Color the paths of the ladder diagram
-            for (int i = 0; i < orbits.length; i++) {
-                for (int j = 0; j < orbits[i].length; j++) {
-                    new_ladder.setPathColor(orbits[i][j]+1, orbitColor[i]);
-                }
-            }
-        }
-
-        jae.restartJuggle(pat, jc);
-    }
-
-    private void findOrbits() {
-        if (this.pat == null)
-            return;
-
-        int pathorb[] = new int[this.pat.getNumberOfPaths()];
-        int orbids[] = new int[this.pat.getNumberOfPaths()];
-        int orbitCount = 0;
-
-        for (int i = 0; i < pathorb.length ; i++) {
-            pathorb[i] = -1;
-        }
-
-        // Go through all the symetries and work out which path belongs
-        // to which orbit.
-        for (int i = 0; i < this.pat.getNumberOfSymmetries(); i++) {
-            Permutation perm = this.pat.getSymmetry(i).getPathPerm();
-            for (int j = 0; j < perm.getSize(); j++) {
-                int elem = perm.getMapping(j+1)-1; // Not zero based !
-                if (pathorb[elem] == -1) {
-                    if (pathorb[j] == -1) {
-                        pathorb[j] = orbitCount;
-                        orbids[orbitCount] = orbitCount;
-                        orbitCount++;
-                    }
-                    pathorb[elem] = pathorb[j];
-                } else {
-                    if (pathorb[j] == -1) {
-                        pathorb[j] = pathorb[elem];
-                    } else if (pathorb[j] != pathorb[elem]) {
-                        // These were separate orbits, now should be merged
-                        orbids[pathorb[elem]] = orbids[pathorb[j]];
-                    }
-                }
-            }
-        }
-
-        // Clean up to have a sequential list
-        int oc = 0;
-        for (int i = 0; i < orbitCount; i++) {
-            if (orbids[i]>=oc) {
-                int v = orbids[i];
-                for (int j = i; j < orbitCount; j++)
-                    if (orbids[j] == v) orbids[j] = oc;
-                oc++;
-            }
-        }
-
-        // Now store which orbit is made out of which paths
-        this.orbits = new int[oc][];
-        for (int i = 0; i < oc; i++) {
-            int ocp = 0;
-            for (int j = 0; j < 2; j++) {
-                for (int k = 0; k < pathorb.length; k++) {
-                    if (orbids[pathorb[k]] == i) {
-                        if (j == 1) this.orbits[i][ocp] = k;
-                        ocp++;
-                    }
-                }
-                if (j == 0) this.orbits[i] = new int[ocp];
-                ocp = 0;
-            }
-        }
-
-        // Now create the colors. We will never need more colors
-        // than orbits. We want to exclude gray colors, as that
-        // will be used for 'deselected'.
-        this.orbitColor = new Color[oc];
-        int cols[] = {255,0,0};
-        int phase = 0;
-        for (int i = 0; i < oc; i++) {
-            this.orbitColor[i] = new Color(cols[0], cols[1], cols[2]);
-
-            if ((phase == 0 && cols[2] < 255) ||
-                (phase == 1 && cols[2] == 255)) {
-                int d = cols[0];
-                cols[0] = cols[2];
-                cols[2] = cols[1];
-                cols[1] = d;
-            } else if (phase == 0) {
-                cols[1] = 255;
-                phase++;
-            } else if (phase == 1) {
-                if (cols[2]>0)
-                    cols[1] = cols[2]/2;
-                else
-                    cols[1] = cols[1]/2;
-                cols[2] = cols[1];
-                phase = 0;
-            }
-        }
-*/
-
-        /*
-        System.out.println("there are " + oc + " orbits");
-        String blabel = "";
-        for (int j = 0; j < this.orbits.length; j++) {
-            blabel += "(";
-            for (int k = 0; k < this.orbits[j].length; k++) {
-            blabel += (this.orbits[j][k]+1);
-            if (k < this.orbits[j].length-1)
-                blabel += ",";
-            }
-            blabel += ")";
-        }
-        System.out.println("orbit decomposition : " + blabel);
-        */
-/*
-    }
-*/
-
 }
