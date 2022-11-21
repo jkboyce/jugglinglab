@@ -43,9 +43,9 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected static final int STATE_MOVING_POSITION = 3;
     protected static final int STATE_POPUP = 4;
 
-    protected JFrame parent;
+    protected JFrame parentframe;
     protected View parentview;
-    protected AnimationEditPanel animator;
+    protected AnimationEditPanel aep;
 
     protected int gui_state = STATE_INACTIVE;  // one of STATE_x values above
     protected LadderEventItem active_eventitem;
@@ -69,7 +69,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     public EditLadderDiagram(JMLPattern pat, JFrame pframe, View pview) throws
                     JuggleExceptionUser, JuggleExceptionInternal {
         super(pat);
-        parent = pframe;
+        parentframe = pframe;
         parentview = pview;
 
         addMouseListener(this);
@@ -77,8 +77,8 @@ public class EditLadderDiagram extends LadderDiagram implements
     }
 
     public void setAnimationPanel(AnimationEditPanel a) {
-        animator = a;
-        setAnimator(animator.getAnimator());
+        aep = a;
+        setAnimator(aep.getAnimator());
     }
 
     // Called whenever the active event in the ladder diagram is changed in
@@ -116,8 +116,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             */
             ErrorDialog.handleFatalException(
                         new JuggleExceptionInternal("ELD: event not found"));
-        } else if (animator != null) {
-            animator.activateEvent(active_eventitem.event);
+        } else if (aep != null) {
+            aep.activateEvent(active_eventitem.event);
         }
     }
 
@@ -147,8 +147,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         if (active_positionitem == null) {
             ErrorDialog.handleFatalException(
                         new JuggleExceptionInternal("ELD: position not found"));
-        } else if (animator != null) {
-            animator.activatePosition(active_positionitem.position);
+        } else if (aep != null) {
+            aep.activatePosition(active_positionitem.position);
         }
     }
 
@@ -160,9 +160,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                 pat.setNeedsLayout();
                 pat.layoutPattern();
 
-                if (animator != null) {
-                    animator.anim.initAnimator();
-                    animator.repaint();
+                if (aep != null) {
+                    anim.initAnimator();
+                    aep.repaint();
                 }
             }
 
@@ -174,12 +174,12 @@ public class EditLadderDiagram extends LadderDiagram implements
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
             ErrorDialog.handleFatalException(jeu);
-            if (parent != null)
-                parent.dispose();
+            if (parentframe != null)
+                parentframe.dispose();
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
-            if (parent != null)
-                parent.dispose();
+            if (parentframe != null)
+                parentframe.dispose();
         }
     }
 
@@ -193,7 +193,7 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     @Override
     public void mousePressed(final MouseEvent me) {
-        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
+        if (aep != null && (aep.writingGIF || !aep.engineAnimating))
             return;
 
         int my = me.getY();
@@ -211,20 +211,20 @@ public class EditLadderDiagram extends LadderDiagram implements
 
             popup_x = me.getX();
             popup_y = me.getY();
-            if (animator != null) {
+            if (aep != null) {
                 double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                 (double)(height - 2 * BORDER_TOP);
                 double newtime = (double)(my - BORDER_TOP) * scale;
-                anim_paused = animator.isPaused();
-                animator.setPaused(true);
-                animator.setTime(newtime);
-                animator.deactivateEvent();
-                animator.deactivatePosition();
+                anim_paused = aep.isPaused();
+                aep.setPaused(true);
+                aep.setTime(newtime);
+                aep.deactivateEvent();
+                aep.deactivatePosition();
                 if (active_eventitem != null)
-                    animator.activateEvent(active_eventitem.event);
+                    aep.activateEvent(active_eventitem.event);
                 if (active_positionitem != null)
-                    animator.activatePosition(active_positionitem.position);
-                animator.repaint();
+                    aep.activatePosition(active_positionitem.position);
+                aep.repaint();
             }
 
             makePopupMenu(popupitem).show(EditLadderDiagram.this, me.getX(), me.getY());
@@ -246,8 +246,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                         start_yhigh = active_eventitem.yhigh;
                         start_t = active_eventitem.event.getT();
                         findEventLimits(active_eventitem);
-                        if (animator != null)
-                            animator.activateEvent(active_eventitem.event);
+                        if (aep != null)
+                            aep.activateEvent(active_eventitem.event);
                         break;
                     }
 
@@ -264,22 +264,22 @@ public class EditLadderDiagram extends LadderDiagram implements
                         start_yhigh = active_positionitem.yhigh;
                         start_t = active_positionitem.position.getT();
                         findPositionLimits(active_positionitem);
-                        if (animator != null)
-                            animator.activatePosition(active_positionitem.position);
+                        if (aep != null)
+                            aep.activatePosition(active_positionitem.position);
                         break;
                     }
 
                     gui_state = STATE_MOVING_TRACKER;
                     tracker_y = my;
-                    if (animator != null) {
+                    if (aep != null) {
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                         (double)(height - 2 * BORDER_TOP);
                         double newtime = (double)(my - BORDER_TOP) * scale;
-                        anim_paused = animator.isPaused();
-                        animator.setPaused(true);
-                        animator.setTime(newtime);
-                        animator.deactivateEvent();
-                        animator.deactivatePosition();
+                        anim_paused = aep.isPaused();
+                        aep.setPaused(true);
+                        aep.setTime(newtime);
+                        aep.deactivateEvent();
+                        aep.deactivatePosition();
                     }
                     break;
                 case STATE_MOVING_EVENT:
@@ -301,14 +301,14 @@ public class EditLadderDiagram extends LadderDiagram implements
             }
 
             repaint();
-            if (animator != null)
-                animator.repaint();
+            if (aep != null)
+                aep.repaint();
         }
     }
 
     @Override
     public void mouseReleased(final MouseEvent me) {
-        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
+        if (aep != null && (aep.writingGIF || !aep.engineAnimating))
             return;
 
         // on Windows the popup triggers here
@@ -320,23 +320,23 @@ public class EditLadderDiagram extends LadderDiagram implements
                 case STATE_MOVING_TRACKER:
                     // skip this code for MOVING_TRACKER state, since already
                     // executed in mousePressed() above
-                    if (gui_state != STATE_MOVING_TRACKER && animator != null) {
+                    if (gui_state != STATE_MOVING_TRACKER && aep != null) {
                         int my = me.getY();
                         my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
 
                         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                                             (double)(height - 2 * BORDER_TOP);
                         double newtime = (double)(my - BORDER_TOP) * scale;
-                        anim_paused = animator.isPaused();
-                        animator.setPaused(true);
-                        animator.setTime(newtime);
-                        animator.deactivateEvent();
-                        animator.deactivatePosition();
+                        anim_paused = aep.isPaused();
+                        aep.setPaused(true);
+                        aep.setTime(newtime);
+                        aep.deactivateEvent();
+                        aep.deactivatePosition();
                         if (active_eventitem != null)
-                            animator.activateEvent(active_eventitem.event);
+                            aep.activateEvent(active_eventitem.event);
                         if (active_positionitem != null)
-                            animator.activatePosition(active_positionitem.position);
-                        animator.repaint();
+                            aep.activatePosition(active_positionitem.position);
+                        aep.repaint();
                     }
 
                     gui_state = STATE_POPUP;
@@ -371,9 +371,9 @@ public class EditLadderDiagram extends LadderDiagram implements
                     } else if (item_was_selected) {
                         // clicked without moving --> deselect
                         active_eventitem = null;
-                        if (animator != null) {
-                            animator.deactivateEvent();
-                            animator.repaint();
+                        if (aep != null) {
+                            aep.deactivateEvent();
+                            aep.repaint();
                         }
                         repaint();
                     }
@@ -385,17 +385,17 @@ public class EditLadderDiagram extends LadderDiagram implements
                         addToUndoList();
                     } else if (item_was_selected) {
                         active_positionitem = null;
-                        if (animator != null) {
-                            animator.deactivatePosition();
-                            animator.repaint();
+                        if (aep != null) {
+                            aep.deactivatePosition();
+                            aep.repaint();
                         }
                         repaint();
                     }
                     break;
                 case STATE_MOVING_TRACKER:
                     gui_state = STATE_INACTIVE;
-                    if (animator != null)
-                        animator.setPaused(anim_paused);
+                    if (aep != null)
+                        aep.setPaused(anim_paused);
                     repaint();
                     break;
                 case STATE_POPUP:
@@ -419,7 +419,7 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     @Override
     public void mouseDragged(MouseEvent me) {
-        if (animator != null && (animator.writingGIF || !animator.engineAnimating))
+        if (aep != null && (aep.writingGIF || !aep.engineAnimating))
             return;
 
         int my = me.getY();
@@ -455,12 +455,12 @@ public class EditLadderDiagram extends LadderDiagram implements
             case STATE_MOVING_TRACKER:
                 tracker_y = my;
                 EditLadderDiagram.this.repaint();
-                if (animator != null) {
+                if (aep != null) {
                     double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                             (double)(height - 2 * BORDER_TOP);
                     double newtime = (double)(my - BORDER_TOP) * scale;
-                    animator.setTime(newtime);
-                    animator.repaint();
+                    aep.setTime(newtime);
+                    aep.repaint();
                 }
                 break;
             case STATE_POPUP:
@@ -498,8 +498,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 1 in mousePressed()"));
-                        if (parent != null)
-                            parent.dispose();
+                        if (parentframe != null)
+                            parentframe.dispose();
                         return;
                     }
                     tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
@@ -529,8 +529,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 2 in mousePressed()"));
-                        if (parent != null)
-                            parent.dispose();
+                        if (parentframe != null)
+                            parentframe.dispose();
                         return;
                     }
                     tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
@@ -775,8 +775,8 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (tr == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null transition in removing hold"));
-                        if (parent != null)
-                            parent.dispose();
+                        if (parentframe != null)
+                            parentframe.dispose();
                         return;
                     }
                     ev.removeTransition(tr);
@@ -1123,7 +1123,7 @@ public class EditLadderDiagram extends LadderDiagram implements
     }
 
     protected void changeTitle() {
-        final JDialog jd = new JDialog(parent, guistrings.getString("Change_title"), true);
+        final JDialog jd = new JDialog(parentframe, guistrings.getString("Change_title"), true);
         GridBagLayout gb = new GridBagLayout();
         jd.getContentPane().setLayout(gb);
 
@@ -1153,11 +1153,11 @@ public class EditLadderDiagram extends LadderDiagram implements
         jd.setResizable(false);
         jd.setLocationRelativeTo(this);
         jd.setVisible(true);
-        parent.setTitle(pat.getTitle());
+        parentframe.setTitle(pat.getTitle());
     }
 
     protected void changeTiming() {
-        final JDialog jd = new JDialog(parent, guistrings.getString("Change_timing"), true);
+        final JDialog jd = new JDialog(parentframe, guistrings.getString("Change_timing"), true);
         GridBagLayout gb = new GridBagLayout();
         jd.getContentPane().setLayout(gb);
 
@@ -1187,7 +1187,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 }
                 if (scale > 0.0) {
                     pat.scaleTime(scale);
-                    animator.setTime(0.0);
+                    aep.setTime(0.0);
                     layoutPattern(true);
                     createView();
                 }
@@ -1233,8 +1233,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             pat.getHandCoordinate(juggler, hand, evtime, evpos);
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
-            if (parent != null)
-                parent.dispose();
+            if (parentframe != null)
+                parentframe.dispose();
             return null;
         }
 
@@ -1275,8 +1275,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         active_eventitem = null;
-        if (animator != null)
-            animator.deactivateEvent();
+        if (aep != null)
+            aep.deactivateEvent();
         layoutPattern(true);
         createView();
         repaint();
@@ -1296,8 +1296,8 @@ public class EditLadderDiagram extends LadderDiagram implements
             ev = ev.getMaster();
         pat.removeEvent(ev);
         active_eventitem = null;
-        if (animator != null)
-            animator.deactivateEvent();
+        if (aep != null)
+            aep.deactivateEvent();
         layoutPattern(true);
         createView();
         repaint();
@@ -1334,8 +1334,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         pat.addPosition(pos);
 
         active_eventitem = null;
-        if (animator != null)
-            animator.deactivateEvent();
+        if (aep != null)
+            aep.deactivateEvent();
         layoutPattern(true);
         createView();
         repaint();
@@ -1352,8 +1352,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         JMLPosition pos = ((LadderPositionItem)popupitem).position;
         pat.removePosition(pos);
         active_positionitem = null;
-        if (animator != null)
-            animator.deactivatePosition();
+        if (aep != null)
+            aep.deactivatePosition();
         layoutPattern(true);
         createView();
         repaint();
@@ -1384,14 +1384,14 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         final int pathnum = pn;
-        final int[] animpropnum = animator.anim.getAnimPropNum();
+        final int[] animpropnum = anim.getAnimPropNum();
         final int propnum = animpropnum[pathnum - 1];
         //final int propnum = pat.getPropAssignment(pathnum);
         //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         final Prop startprop = pat.getProp(propnum);
         String[] prtypes = Prop.builtinProps;
 
-        final JDialog jd = new JDialog(parent, guistrings.getString("Define_prop"), true);
+        final JDialog jd = new JDialog(parentframe, guistrings.getString("Define_prop"), true);
         GridBagLayout gb = new GridBagLayout();
         jd.getContentPane().setLayout(gb);
 
@@ -1465,7 +1465,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     // pattern
                     (new PropDef(type.toLowerCase(), mod)).layoutProp();
                 } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(parent, jeu.getMessage());
+                    new ErrorDialog(parentframe, jeu.getMessage());
                     return;
                 }
 
@@ -1557,7 +1557,7 @@ public class EditLadderDiagram extends LadderDiagram implements
 
         String[] pptypes = Path.builtinPaths;
 
-        final JDialog jd = new JDialog(parent, guistrings.getString("Define_throw"), true);
+        final JDialog jd = new JDialog(parentframe, guistrings.getString("Define_throw"), true);
         GridBagLayout gb = new GridBagLayout();
         jd.getContentPane().setLayout(gb);
 
@@ -1627,7 +1627,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 try {
                     mod = getParameterList();
                 } catch (JuggleExceptionUser jeu) {
-                    new ErrorDialog(parent, jeu.getMessage());
+                    new ErrorDialog(parentframe, jeu.getMessage());
                     return;
                 }
 
@@ -1695,8 +1695,8 @@ public class EditLadderDiagram extends LadderDiagram implements
         ev.removeTransition(tr);
         ev.addTransition(tr);   // will add at end
         active_eventitem = null;  // deselect event since it's moving
-        if (animator != null)
-            animator.deactivateEvent();
+        if (aep != null)
+            aep.deactivateEvent();
         layoutPattern(true);
         createView();
         repaint();
@@ -1712,13 +1712,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         dialog_pd = pd;
 
         if (pd.length != 0) {
-            /*
-             JLabel lab1 = new JLabel("Properties");
-
-             jp.add(lab1);
-             gb.setConstraints(lab1, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
-                                                      new Insets(10,10,0,10)));
-             */
             JPanel pdp = new JPanel();
             pdp.setLayout(gb);
 
@@ -1752,6 +1745,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                     pd[i].range.toArray(choices);
 
                     JComboBox<String> jcb = new JComboBox<String>(choices);
+                    jcb.setMaximumRowCount(15);
                     pdp.add(jcb);
                     gb.setConstraints(jcb, JLFunc.constraints(GridBagConstraints.LINE_START,
                                             1,i,new Insets(0,5,0,0)));
@@ -1911,14 +1905,14 @@ public class EditLadderDiagram extends LadderDiagram implements
         return result;
     }
 
-    // Be sure to call this at the very end of every popup interaction.
+    // Call this at the very end of every popup interaction.
     protected void finishPopup() {
         popupitem = null;
 
         if (gui_state == STATE_POPUP) {
             gui_state = STATE_INACTIVE;
-            if (animator != null)
-                animator.setPaused(anim_paused);
+            if (aep != null)
+                aep.setPaused(anim_paused);
         }
     }
 
