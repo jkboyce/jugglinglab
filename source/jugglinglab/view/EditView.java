@@ -19,16 +19,16 @@ import jugglinglab.util.*;
 // ladder diagram on the right and an animator on the left.
 
 public class EditView extends View {
-    protected AnimationEditPanel jae;
+    protected AnimationEditPanel aep;
     protected JPanel ladder;
     protected JSplitPane jsp;
 
 
     public EditView(Dimension dim, JMLPattern pat) throws
                             JuggleExceptionUser, JuggleExceptionInternal {
-        jae = new AnimationEditPanel();
-        jae.setPreferredSize(dim);
-        jae.setMinimumSize(new Dimension(10, 10));
+        aep = new AnimationEditPanel();
+        aep.setPreferredSize(dim);
+        aep.setMinimumSize(new Dimension(10, 10));
 
         ladder = new JPanel();
         ladder.setLayout(new BorderLayout());
@@ -36,14 +36,14 @@ public class EditView extends View {
 
         // add ladder diagram now to get dimensions correct; will be replaced
         // in restartView()
-        ladder.add(new EditLadderDiagram(pat, parent, this), BorderLayout.CENTER);
+        ladder.add(new LadderDiagram(pat), BorderLayout.CENTER);
 
         Locale loc = JLLocale.getLocale();
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jae, ladder);
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, aep, ladder);
             jsp.setResizeWeight(1.0);
         } else {
-            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, jae);
+            jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, aep);
             jsp.setResizeWeight(0.0);
         }
         jsp.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -62,18 +62,18 @@ public class EditView extends View {
         boolean changing_jugglers = (p != null && getPattern() != null &&
                   p.getNumberOfJugglers() != getPattern().getNumberOfJugglers());
 
-        jae.restartJuggle(p, c);
+        aep.restartJuggle(p, c);
         setAnimationPanelPreferredSize(getAnimationPrefs().getSize());
 
         if (p != null) {
             EditLadderDiagram new_ladder = new EditLadderDiagram(p, parent, this);
-            new_ladder.setAnimationPanel(jae);
+            new_ladder.setAnimationPanel(aep);
             // LadderDiagram new_ladder = new LadderDiagram(p);
-            // new_ladder.setAnimator(jae.getAnimator());
+            // new_ladder.setAnimator(aep.getAnimator());
 
-            jae.setLadderDiagram(new_ladder);
-            jae.deactivateEvent();
-            jae.deactivatePosition();
+            aep.setLadderDiagram(new_ladder);
+            aep.deactivateEvent();
+            aep.deactivatePosition();
 
             ladder.removeAll();
             ladder.add(new_ladder, BorderLayout.CENTER);
@@ -97,59 +97,59 @@ public class EditView extends View {
 
     @Override
     public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-        jae.restartJuggle();
+        aep.restartJuggle();
     }
 
     @Override
     public Dimension getAnimationPanelSize() {
-        return jae.getSize(new Dimension());
+        return aep.getSize(new Dimension());
     }
 
     @Override
     public void setAnimationPanelPreferredSize(Dimension d) {
-        jae.setPreferredSize(d);
+        aep.setPreferredSize(d);
         jsp.resetToPreferredSizes();
     }
 
     @Override
     public JMLPattern getPattern() {
-        return jae.getPattern();
+        return aep.getPattern();
     }
 
     @Override
     public AnimationPrefs getAnimationPrefs() {
-        return jae.getAnimationPrefs();
+        return aep.getAnimationPrefs();
     }
 
     @Override
     public double getZoomLevel() {
-        return jae.getZoomLevel();
+        return aep.getZoomLevel();
     }
 
     @Override
     public void setZoomLevel(double z) {
-        jae.setZoomLevel(z);
+        aep.setZoomLevel(z);
     }
 
     @Override
     public boolean isPaused() {
-        return jae.isPaused();
+        return aep.isPaused();
     }
 
     @Override
     public void setPaused(boolean pause) {
-        if (jae.message == null)
-            jae.setPaused(pause);
+        if (aep.message == null)
+            aep.setPaused(pause);
     }
 
     @Override
     public void disposeView() {
-        jae.disposeAnimation();
+        aep.disposeAnimation();
     }
 
     @Override
     public void writeGIF(File f) {
-        jae.writingGIF = true;
+        aep.writingGIF = true;
         boolean origpause = isPaused();
         setPaused(true);
         jsp.setEnabled(false);
@@ -159,7 +159,7 @@ public class EditView extends View {
         Runnable cleanup = new Runnable() {
             @Override
             public void run() {
-                jae.writingGIF = false;
+                aep.writingGIF = false;
                 setPaused(origpause);
                 jsp.setEnabled(true);
                 if (parent != null)
@@ -167,6 +167,6 @@ public class EditView extends View {
             }
         };
 
-        new View.GIFWriter(jae, f, cleanup);
+        new View.GIFWriter(aep, f, cleanup);
     }
 }

@@ -26,7 +26,7 @@ public class LadderDiagram extends JPanel {
     public static final int MAX_JUGGLERS = 8;
     protected static final int LADDER_WIDTH_PER_JUGGLER = 150;  // pixels
     protected static final int LADDER_MIN_WIDTH_PER_JUGGLER = 60;
-    protected static final Font msgfont = new Font("SansSerif", Font.PLAIN, 12);
+    protected static final Font MSGFONT = new Font("SansSerif", Font.PLAIN, 12);
 
     // geometric constants in pixels
     protected static final int BORDER_TOP = 25;
@@ -53,7 +53,6 @@ public class LadderDiagram extends JPanel {
     protected int juggler_delta_x;  // horizontal offset between jugglers (px)
 
     protected double sim_time;
-    // protected int[] animpropnum = animator.anim.getAnimPropNum();
     protected int tracker_y = BORDER_TOP;
     protected boolean has_switch_symmetry;
     protected boolean has_switchdelay_symmetry;
@@ -82,7 +81,7 @@ public class LadderDiagram extends JPanel {
             String template = guistrings.getString("Too_many_jugglers");
             Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
             String message = MessageFormat.format(template, arguments);
-            int mwidth = 20 + getFontMetrics(msgfont).stringWidth(message);
+            int mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message);
             setPreferredSize(new Dimension(mwidth, 1));
             setMinimumSize(new Dimension(mwidth, 1));
             return;
@@ -406,7 +405,7 @@ public class LadderDiagram extends JPanel {
     protected boolean paintLadder(Graphics gr) {
         if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
             Dimension dim = getSize();
-            gr.setFont(msgfont);
+            gr.setFont(MSGFONT);
             FontMetrics fm = gr.getFontMetrics();
             String template = guistrings.getString("Too_many_jugglers");
             Object[] arguments = { Integer.valueOf(MAX_JUGGLERS) };
