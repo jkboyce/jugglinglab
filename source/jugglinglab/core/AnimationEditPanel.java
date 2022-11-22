@@ -6,6 +6,7 @@ package jugglinglab.core;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Path2D;
 import javax.swing.SwingUtilities;
 
 import jugglinglab.util.*;
@@ -26,6 +27,11 @@ public class AnimationEditPanel extends AnimationPanel
     protected static final double YZ_EVENT_SNAP_CM = 3;
     protected static final double XZ_CONTROL_SHOW_DEG = 60;
     protected static final double Y_CONTROL_SHOW_DEG = 30;
+    protected static final Color COLOR_EVENTS = Color.green;
+
+    // constants for rendering hand path
+    protected static final double HANDPATH_POINT_SEP_TIME = 0.01;  // secs
+    protected static final Color COLOR_HANDPATH = Color.lightGray;
 
     // constants for rendering positions
     protected static final double POSITION_BOX_HW_CM = 10;
@@ -36,6 +42,8 @@ public class AnimationEditPanel extends AnimationPanel
     protected static final double ANGLE_CONTROL_SHOW_DEG = 70;
     protected static final double XY_CONTROL_SHOW_DEG = 70;
     protected static final double Z_CONTROL_SHOW_DEG = 30;
+    protected static final Color COLOR_POSITIONS = Color.green;
+    protected static final Color COLOR_GRID = Color.lightGray;
 
     protected LadderDiagram ladder;
 
@@ -49,6 +57,7 @@ public class AnimationEditPanel extends AnimationPanel
     protected boolean show_y_drag_control;
     protected Coordinate event_start;
     protected Coordinate event_master_start;
+    protected double[][][] handpath_points;
 
     // for when a position is activated/dragged
     protected boolean position_active;
@@ -394,6 +403,8 @@ public class AnimationEditPanel extends AnimationPanel
                         anim.pat.setNeedsLayout();
                         anim.pat.layoutPattern();
                     }
+                    if (event_active)
+                        createHandpathView();
                 } catch (JuggleExceptionUser jeu) {
                     // The editing operations here should never put the
                     // pattern into an invalid state, so we shouldn't ever
@@ -432,8 +443,13 @@ public class AnimationEditPanel extends AnimationPanel
             anim.setCameraAngle(snapCamera(ca));
         }
 
-        if (event_active && dragging_camera)
-            createEventView();
+        if (event_active && dragging_camera) {
+            try {
+                createEventView();
+            }catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
+            }
+        }
         if (position_active && (dragging_camera || dragging_angle))
             createPositionView();
         if (isPaused())
@@ -463,8 +479,13 @@ public class AnimationEditPanel extends AnimationPanel
                     return;
 
                 anim.setDimension(getSize());
-                if (event_active)
-                    createEventView();
+                if (event_active) {
+                    try {
+                        createEventView();
+                    }catch (JuggleExceptionInternal jei) {
+                        ErrorDialog.handleFatalException(jei);
+                    }
+                }
                 if (position_active)
                     createPositionView();
                 if (isPaused())
@@ -552,7 +573,11 @@ public class AnimationEditPanel extends AnimationPanel
     public void setZoomLevel(double z) {
         if (!writingGIF) {
             getAnimator().setZoomLevel(z);
-            createEventView();
+            try {
+                createEventView();
+            }catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
+            }
             createPositionView();
             repaint();
         }
@@ -566,7 +591,11 @@ public class AnimationEditPanel extends AnimationPanel
         deactivatePosition();
         event = ev;
         event_active = true;
-        createEventView();
+        try {
+            createEventView();
+        }catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
+        }
     }
 
     public void deactivateEvent() {
@@ -602,13 +631,14 @@ public class AnimationEditPanel extends AnimationPanel
     // faces in terms of indices in event_control_points[]
     protected static final int[] face_xz = { 0, 1, 2, 3 };
 
-    protected void createEventView() {
+    protected void createEventView() throws JuggleExceptionInternal {
         if (!event_active)
             return;
 
-        event_points = new double[2][event_control_points.length][2];
+        int renderer_count = (jc.stereo ? 2 : 1);
+        event_points = new double[renderer_count][event_control_points.length][2];
 
-        for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
+        for (int i = 0; i < renderer_count; ++i) {
             Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
             // translate by one pixel and see how far it is in juggler space
@@ -631,7 +661,7 @@ public class AnimationEditPanel extends AnimationPanel
             double dzy = -dls;
 
             int[] center = ren.getXY(c);
-            for (int j = 0; j < event_control_points.length; j++) {
+            for (int j = 0; j < event_control_points.length; ++j) {
                 event_points[i][j][0] = (double)center[0] +
                                         dxx * event_control_points[j][0] +
                                         dyx * event_control_points[j][1] +
@@ -647,9 +677,35 @@ public class AnimationEditPanel extends AnimationPanel
             show_xz_drag_control = (anglediff(phi - Math.PI/2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
                     anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG));
         }
+
+        createHandpathView();
     }
 
-    protected void drawEvent(Graphics g) throws JuggleExceptionInternal {
+    protected void createHandpathView() throws JuggleExceptionInternal {
+        if (!event_active)
+            return;
+
+        JMLPattern pat = getPattern();
+        int renderer_count = (jc.stereo ? 2 : 1);
+        int num_handpath_points = (int)Math.ceil((pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                                                 HANDPATH_POINT_SEP_TIME);
+        handpath_points = new double[renderer_count][num_handpath_points][2];
+
+        for (int i = 0; i < renderer_count; ++i) {
+            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+            Coordinate c = new Coordinate();
+
+            for (int j = 0; j < num_handpath_points; ++j) {
+                double t = pat.getLoopStartTime() + j * HANDPATH_POINT_SEP_TIME;
+                pat.getHandCoordinate(event.getJuggler(), event.getHand(), t, c);
+                int[] point = ren.getXY(c);
+                handpath_points[i][j][0] = (double)point[0];
+                handpath_points[i][j][1] = (double)point[1];
+            }
+        }
+    }
+
+    protected void drawEvents(Graphics g) throws JuggleExceptionInternal {
         if (!event_active)
             return;
 
@@ -669,7 +725,27 @@ public class AnimationEditPanel extends AnimationPanel
                                         RenderingHints.VALUE_ANTIALIAS_ON);
             }
 
-            g2.setColor(Color.green);
+            // draw hand path
+            Graphics2D gdash = (Graphics2D)g2.create();
+            Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                      1f, new float[] {5f, 3f}, 0);
+            gdash.setStroke(dashed);
+            gdash.setColor(COLOR_HANDPATH);
+
+            int num_handpath_points = (int)Math.ceil((getPattern().getLoopEndTime() -
+                                                      getPattern().getLoopStartTime()) /
+                                                     HANDPATH_POINT_SEP_TIME);
+            Path2D.Double path = new Path2D.Double();
+            path.moveTo(handpath_points[i][0][0], handpath_points[i][0][1]);
+            for (int j = 1; j < num_handpath_points; ++j) {
+                path.lineTo(handpath_points[i][j][0], handpath_points[i][j][1]);
+            }
+            path.closePath();
+            gdash.draw(path);
+            gdash.dispose();
+
+            // draw event
+            g2.setColor(COLOR_EVENTS);
 
             // dot at center
             g2.fillOval((int)Math.round(event_points[i][4][0]) + deltax - 2,
@@ -788,7 +864,7 @@ public class AnimationEditPanel extends AnimationPanel
         }
     }
 
-    protected void drawPosition(Graphics g) throws JuggleExceptionInternal {
+    protected void drawPositions(Graphics g) throws JuggleExceptionInternal {
         if (!position_active)
             return;
 
@@ -808,7 +884,7 @@ public class AnimationEditPanel extends AnimationPanel
                                         RenderingHints.VALUE_ANTIALIAS_ON);
             }
 
-            g2.setColor(Color.green);
+            g2.setColor(COLOR_POSITIONS);
 
             // dot at center
             g2.fillOval((int)Math.round(pos_points[i][4][0]) + deltax - 2,
@@ -884,7 +960,7 @@ public class AnimationEditPanel extends AnimationPanel
             return;
 
         Graphics2D g2 = (Graphics2D)g;
-        g2.setColor(Color.lightGray);
+        g2.setColor(COLOR_GRID);
         Dimension d = getSize();
 
         int width = (jc.stereo ? d.width / 2 : d.width);
@@ -1185,8 +1261,8 @@ public class AnimationEditPanel extends AnimationPanel
                 anim.drawBackground(g);
                 drawGrid(g);
                 anim.drawFrame(getTime(), g, dragging_camera, false);
-                drawEvent(g);
-                drawPosition(g);
+                drawEvents(g);
+                drawPositions(g);
             } catch (JuggleExceptionInternal jei) {
                 killAnimationThread();
                 ErrorDialog.handleFatalException(jei);
