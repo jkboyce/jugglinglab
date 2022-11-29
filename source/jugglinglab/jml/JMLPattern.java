@@ -1532,6 +1532,15 @@ public class JMLPattern {
         return false;
     }
 
+    // returns true if a given hand is holding any path at the given time
+    public boolean isHandHolding(int juggler, int hand, double time) {
+        for (int path = 1; path <= getNumberOfPaths(); ++path) {
+            if (isHandHoldingPath(juggler, hand, time, path))
+                return true;
+        }
+        return false;
+    }
+
     // returns orientation of prop on given path, in global frame
     // result is {pitch, yaw, roll}
     public double getPathOrientation(int path, double time, Coordinate axis) {
@@ -1546,9 +1555,9 @@ public class JMLPattern {
         Curve p = jugglercurve[juggler - 1];
 
         while (time < p.getStartTime())
-            time += (getLoopEndTime() - getLoopStartTime());
+            time += getLoopEndTime() - getLoopStartTime();
         while (time > p.getEndTime())
-            time -= (getLoopEndTime() - getLoopStartTime());
+            time -= getLoopEndTime() - getLoopStartTime();
 
         p.getCoordinate(time, newPosition);
     }
@@ -1559,9 +1568,9 @@ public class JMLPattern {
         Curve p = jugglerangle[juggler - 1];
 
         while (time < p.getStartTime())
-            time += (getLoopEndTime() - getLoopStartTime());
+            time += getLoopEndTime() - getLoopStartTime();
         while (time > p.getEndTime())
-            time -= (getLoopEndTime() - getLoopStartTime());
+            time -= getLoopEndTime() - getLoopStartTime();
 
         Coordinate coord = new Coordinate();
         p.getCoordinate(time, coord);
@@ -1602,12 +1611,17 @@ public class JMLPattern {
                         throws JuggleExceptionInternal {
         int handindex = (hand == HandLink.LEFT_HAND) ? 0 : 1;
 
+        while (time < getLoopStartTime())
+            time += getLoopEndTime() - getLoopStartTime();
+        while (time >= getLoopEndTime())
+            time -= getLoopEndTime() - getLoopStartTime();
+
         for (HandLink hl : handlinks.get(juggler - 1).get(handindex)) {
             if (time >= hl.getStartEvent().getT() && time < hl.getEndEvent().getT()) {
                 Curve hp = hl.getHandCurve();
                 if (hp == null)
-                    throw new JuggleExceptionInternal("getHandCoordinate() null pointer");
-                hl.getHandCurve().getCoordinate(time, newPosition);
+                    throw new JuggleExceptionInternal("getHandCoordinate() null pointer at t=" + time);
+                hp.getCoordinate(time, newPosition);
                 return;
             }
         }

@@ -168,18 +168,16 @@ public class EditLadderDiagram extends LadderDiagram implements
 
             if (undo)
                 addToUndoList();
-        } catch (JuggleExceptionUser jeu) {
+        } catch (JuggleException je) {
             // The various editing functions below (e.g., from the popup menu)
             // should never put the pattern into an invalid state -- it is their
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
-            ErrorDialog.handleFatalException(jeu);
-            if (parentframe != null)
+            ErrorDialog.handleFatalException(je);
+            if (parentframe != null) {
                 parentframe.dispose();
-        } catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleFatalException(jei);
-            if (parentframe != null)
-                parentframe.dispose();
+                parentframe = null;
+            }
         }
     }
 
@@ -498,8 +496,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 1 in mousePressed()"));
-                        if (parentframe != null)
+                        if (parentframe != null) {
                             parentframe.dispose();
+                            parentframe = null;
+                        }
                         return;
                     }
                     tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
@@ -529,8 +529,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (ev == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null event 2 in mousePressed()"));
-                        if (parentframe != null)
+                        if (parentframe != null) {
                             parentframe.dispose();
+                            parentframe = null;
+                        }
                         return;
                     }
                     tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
@@ -775,8 +777,10 @@ public class EditLadderDiagram extends LadderDiagram implements
                     if (tr == null) {
                         ErrorDialog.handleFatalException(new JuggleExceptionInternal(
                                                 "Null transition in removing hold"));
-                        if (parentframe != null)
+                        if (parentframe != null) {
                             parentframe.dispose();
+                            parentframe = null;
+                        }
                         return;
                     }
                     ev.removeTransition(tr);
@@ -1233,8 +1237,10 @@ public class EditLadderDiagram extends LadderDiagram implements
             pat.getHandCoordinate(juggler, hand, evtime, evpos);
         } catch (JuggleExceptionInternal jei) {
             ErrorDialog.handleFatalException(jei);
-            if (parentframe != null)
+            if (parentframe != null) {
                 parentframe.dispose();
+                parentframe = null;
+            }
             return null;
         }
 

@@ -7,6 +7,7 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
+import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 
 import jugglinglab.util.*;
@@ -24,6 +25,7 @@ public class AnimationEditPanel extends AnimationPanel
                                 implements MouseListener, MouseMotionListener {
     // constants for rendering events
     protected static final double EVENT_BOX_HW_CM = 5;
+    protected static final double UNSELECTED_BOX_HW_CM = 2;
     protected static final double YZ_EVENT_SNAP_CM = 3;
     protected static final double XZ_CONTROL_SHOW_DEG = 60;
     protected static final double Y_CONTROL_SHOW_DEG = 30;
@@ -50,14 +52,18 @@ public class AnimationEditPanel extends AnimationPanel
     // for when an event is activated/dragged
     protected boolean event_active;
     protected JMLEvent event;
-    protected double[][][] event_points;
     protected boolean dragging_xz;
     protected boolean dragging_y;
     protected boolean show_xz_drag_control;
     protected boolean show_y_drag_control;
     protected Coordinate event_start;
     protected Coordinate event_master_start;
+    protected ArrayList<JMLEvent> visible_events;
+    protected double[][][][] event_points;
     protected double[][][] handpath_points;
+    protected double handpath_start_time;
+    protected double handpath_end_time;
+    protected boolean[] handpath_hold;
 
     // for when a position is activated/dragged
     protected boolean position_active;
@@ -127,10 +133,10 @@ public class AnimationEditPanel extends AnimationPanel
 
                 if (show_y_drag_control) {
                     dragging_y = JLFunc.isNearLine(mx - t, my,
-                                        (int)Math.round(event_points[i][5][0]),
-                                        (int)Math.round(event_points[i][5][1]),
-                                        (int)Math.round(event_points[i][6][0]),
-                                        (int)Math.round(event_points[i][6][1]),
+                                        (int)Math.round(event_points[0][i][5][0]),
+                                        (int)Math.round(event_points[0][i][5][1]),
+                                        (int)Math.round(event_points[0][i][6][0]),
+                                        (int)Math.round(event_points[0][i][6][1]),
                                         4);
 
                     if (dragging_y) {
@@ -146,9 +152,14 @@ public class AnimationEditPanel extends AnimationPanel
                 }
 
                 if (show_xz_drag_control) {
-                    dragging_xz = isInsidePolygon(mx - t, my, event_points, i, face_xz);
+                    for (int j = 0; j < event_points.length; ++j) {
+                        if (!isInsidePolygon(mx - t, my, event_points[j], i, face_xz))
+                            continue;
 
-                    if (dragging_xz) {
+                        if (j > 0)
+                            activateEvent(visible_events.get(j));
+
+                        dragging_xz = true;
                         dragging = true;
                         dragging_left = (i == 0);
                         deltax = deltay = 0;
@@ -602,6 +613,9 @@ public class AnimationEditPanel extends AnimationPanel
         event = null;
         event_active = false;
         dragging_xz = dragging_y = false;
+        event_points = null;
+        visible_events = null;
+        handpath_points = null;
     }
 
     // Points in the juggler's coordinate system that are used for drawing the
@@ -631,51 +645,133 @@ public class AnimationEditPanel extends AnimationPanel
     // faces in terms of indices in event_control_points[]
     protected static final int[] face_xz = { 0, 1, 2, 3 };
 
+    // points for an event that is not selected (active)
+    protected static final double[][] unselected_event_points =
+        {
+            { -UNSELECTED_BOX_HW_CM, 0, -UNSELECTED_BOX_HW_CM },
+            { -UNSELECTED_BOX_HW_CM, 0,  UNSELECTED_BOX_HW_CM },
+            {  UNSELECTED_BOX_HW_CM, 0,  UNSELECTED_BOX_HW_CM },
+            {  UNSELECTED_BOX_HW_CM, 0, -UNSELECTED_BOX_HW_CM },
+            {                     0, 0,                     0 },
+        };
+
     protected void createEventView() throws JuggleExceptionInternal {
         if (!event_active)
             return;
 
+        // determine which events to display on-screen
+        visible_events = new ArrayList<JMLEvent>();
+        visible_events.add(event);
+        handpath_start_time = event.getT();
+        handpath_end_time = event.getT();
+
+        JMLEvent ev2 = event.getPrevious();
+        while (ev2 != null) {
+            if (ev2.getJuggler() == event.getJuggler() &&
+                        ev2.getHand() == event.getHand()) {
+                handpath_start_time = Math.min(handpath_start_time, ev2.getT());
+
+                boolean new_master = true;
+                for (JMLEvent ev3 : visible_events) {
+                    if (ev3.isSameMasterAs(ev2))
+                        new_master = false;
+                }
+                if (new_master)
+                    visible_events.add(ev2);
+                else
+                    break;
+                if (ev2.hasThrowOrCatch())
+                    break;
+            }
+            ev2 = ev2.getPrevious();
+        }
+
+        ev2 = event.getNext();
+        while (ev2 != null) {
+            if (ev2.getJuggler() == event.getJuggler() &&
+                        ev2.getHand() == event.getHand()) {
+                handpath_end_time = Math.max(handpath_end_time, ev2.getT());
+
+                boolean new_master = true;
+                for (JMLEvent ev3 : visible_events) {
+                    if (ev3.isSameMasterAs(ev2))
+                        new_master = false;
+                }
+                if (new_master)
+                    visible_events.add(ev2);
+                else
+                    break;
+                if (ev2.hasThrowOrCatch())
+                    break;
+            }
+            ev2 = ev2.getNext();
+        }
+
+        // Determine screen coordinates of visual representations for events.
+        // Note the first event in `visible_events` is the selected one.
         int renderer_count = (jc.stereo ? 2 : 1);
-        event_points = new double[renderer_count][event_control_points.length][2];
+        event_points = new double[visible_events.size()]
+                                 [renderer_count]
+                                 [event_control_points.length]
+                                 [2];
 
-        for (int i = 0; i < renderer_count; ++i) {
-            Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+        int ev_num = 0;
+        for (JMLEvent ev : visible_events) {
+            for (int i = 0; i < renderer_count; ++i) {
+                Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
-            // translate by one pixel and see how far it is in juggler space
-            Coordinate c = event.getGlobalCoordinate();
-            Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
-            double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
+                // translate by one pixel and see how far it is in juggler space
+                Coordinate c = ev.getGlobalCoordinate();
+                Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
+                double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
-            double[] ca = ren.getCameraAngle();
-            double theta = ca[0] + Math.toRadians(
-                    getPattern().getJugglerAngle(event.getJuggler(), event.getT()));
-            double phi = ca[1];
+                double[] ca = ren.getCameraAngle();
+                double theta = ca[0] + Math.toRadians(
+                        getPattern().getJugglerAngle(ev.getJuggler(), ev.getT()));
+                double phi = ca[1];
 
-            double dlc = dl * Math.cos(phi);
-            double dls = dl * Math.sin(phi);
-            double dxx = -dl * Math.cos(theta);
-            double dxy = dlc * Math.sin(theta);
-            double dyx = dl * Math.sin(theta);
-            double dyy = dlc * Math.cos(theta);
-            double dzx = 0.0;
-            double dzy = -dls;
+                double dlc = dl * Math.cos(phi);
+                double dls = dl * Math.sin(phi);
+                double dxx = -dl * Math.cos(theta);
+                double dxy = dlc * Math.sin(theta);
+                double dyx = dl * Math.sin(theta);
+                double dyy = dlc * Math.cos(theta);
+                double dzx = 0.0;
+                double dzy = -dls;
 
-            int[] center = ren.getXY(c);
-            for (int j = 0; j < event_control_points.length; ++j) {
-                event_points[i][j][0] = (double)center[0] +
-                                        dxx * event_control_points[j][0] +
-                                        dyx * event_control_points[j][1] +
-                                        dzx * event_control_points[j][2];
-                event_points[i][j][1] = (double)center[1] +
-                                        dxy * event_control_points[j][0] +
-                                        dyy * event_control_points[j][1] +
-                                        dzy * event_control_points[j][2];
+                int[] center = ren.getXY(c);
+
+                if (ev == event) {
+                    for (int j = 0; j < event_control_points.length; ++j) {
+                        event_points[0][i][j][0] = (double)center[0] +
+                                                dxx * event_control_points[j][0] +
+                                                dyx * event_control_points[j][1] +
+                                                dzx * event_control_points[j][2];
+                        event_points[0][i][j][1] = (double)center[1] +
+                                                dxy * event_control_points[j][0] +
+                                                dyy * event_control_points[j][1] +
+                                                dzy * event_control_points[j][2];
+                    }
+
+                    show_y_drag_control = (anglediff(theta) > Math.toRadians(Y_CONTROL_SHOW_DEG) ||
+                            anglediff(phi - Math.PI/2) > Math.toRadians(Y_CONTROL_SHOW_DEG));
+                    show_xz_drag_control = (anglediff(phi - Math.PI/2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
+                            anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG));
+                } else {
+                    for (int j = 0; j < unselected_event_points.length; ++j) {
+                        event_points[ev_num][i][j][0] = (double)center[0] +
+                                                dxx * unselected_event_points[j][0] +
+                                                dyx * unselected_event_points[j][1] +
+                                                dzx * unselected_event_points[j][2];
+                        event_points[ev_num][i][j][1] = (double)center[1] +
+                                                dxy * unselected_event_points[j][0] +
+                                                dyy * unselected_event_points[j][1] +
+                                                dzy * unselected_event_points[j][2];
+                    }
+                }
             }
 
-            show_y_drag_control = (anglediff(theta) > Math.toRadians(Y_CONTROL_SHOW_DEG) ||
-                    anglediff(phi - Math.PI/2) > Math.toRadians(Y_CONTROL_SHOW_DEG));
-            show_xz_drag_control = (anglediff(phi - Math.PI/2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
-                    anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG));
+            ++ev_num;
         }
 
         createHandpathView();
@@ -687,20 +783,22 @@ public class AnimationEditPanel extends AnimationPanel
 
         JMLPattern pat = getPattern();
         int renderer_count = (jc.stereo ? 2 : 1);
-        int num_handpath_points = (int)Math.ceil((pat.getLoopEndTime() - pat.getLoopStartTime()) /
-                                                 HANDPATH_POINT_SEP_TIME);
+        int num_handpath_points = (int)Math.ceil((handpath_end_time - handpath_start_time) /
+                                                 HANDPATH_POINT_SEP_TIME) + 1;
         handpath_points = new double[renderer_count][num_handpath_points][2];
+        handpath_hold = new boolean[num_handpath_points];
 
         for (int i = 0; i < renderer_count; ++i) {
             Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
             Coordinate c = new Coordinate();
 
             for (int j = 0; j < num_handpath_points; ++j) {
-                double t = pat.getLoopStartTime() + j * HANDPATH_POINT_SEP_TIME;
+                double t = handpath_start_time + j * HANDPATH_POINT_SEP_TIME;
                 pat.getHandCoordinate(event.getJuggler(), event.getHand(), t, c);
                 int[] point = ren.getXY(c);
                 handpath_points[i][j][0] = (double)point[0];
                 handpath_points[i][j][1] = (double)point[1];
+                handpath_hold[j] = pat.isHandHolding(event.getJuggler(), event.getHand(), t + 0.0001);
             }
         }
     }
@@ -726,46 +824,69 @@ public class AnimationEditPanel extends AnimationPanel
             }
 
             // draw hand path
-            Graphics2D gdash = (Graphics2D)g2.create();
-            Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
-                                      1f, new float[] {5f, 3f}, 0);
-            gdash.setStroke(dashed);
-            gdash.setColor(COLOR_HANDPATH);
+            int num_handpath_points = handpath_points[0].length;
 
-            int num_handpath_points = (int)Math.ceil((getPattern().getLoopEndTime() -
-                                                      getPattern().getLoopStartTime()) /
-                                                     HANDPATH_POINT_SEP_TIME);
-            Path2D.Double path = new Path2D.Double();
-            path.moveTo(handpath_points[i][0][0], handpath_points[i][0][1]);
-            for (int j = 1; j < num_handpath_points; ++j) {
-                path.lineTo(handpath_points[i][j][0], handpath_points[i][j][1]);
+            Path2D.Double path_solid = new Path2D.Double();
+            Path2D.Double path_dashed = new Path2D.Double();
+            for (int j = 0; j < num_handpath_points - 1; ++j) {
+                Path2D.Double path = (handpath_hold[j] ? path_solid : path_dashed);
+
+                if (path.getCurrentPoint() == null) {
+                    path.moveTo(handpath_points[i][j][0], handpath_points[i][j][1]);
+                    path.lineTo(handpath_points[i][j + 1][0], handpath_points[i][j + 1][1]);
+                } else {
+                    path.lineTo(handpath_points[i][j + 1][0], handpath_points[i][j + 1][1]);
+                }
             }
-            path.closePath();
-            gdash.draw(path);
-            gdash.dispose();
+
+            if (path_dashed.getCurrentPoint() != null) {
+                Graphics2D gdash = (Graphics2D)g2.create();
+                Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                          1f, new float[] {5f, 3f}, 0);
+                gdash.setStroke(dashed);
+                gdash.setColor(COLOR_HANDPATH);
+                gdash.draw(path_dashed);
+                gdash.dispose();
+            }
+
+            if (path_solid.getCurrentPoint() != null) {
+                Graphics2D gsolid = (Graphics2D)g2.create();
+                gsolid.setColor(COLOR_HANDPATH);
+                gsolid.draw(path_solid);
+                gsolid.dispose();
+            }
 
             // draw event
             g2.setColor(COLOR_EVENTS);
 
             // dot at center
-            g2.fillOval((int)Math.round(event_points[i][4][0]) + deltax - 2,
-                        (int)Math.round(event_points[i][4][1]) + deltay - 2, 5, 5);
+            g2.fillOval((int)Math.round(event_points[0][i][4][0]) + deltax - 2,
+                        (int)Math.round(event_points[0][i][4][1]) + deltay - 2, 5, 5);
 
             if (show_xz_drag_control || dragging) {
                 // edges of xz plane control
-                drawLine(g2, event_points, i, 0, 1);
-                drawLine(g2, event_points, i, 1, 2);
-                drawLine(g2, event_points, i, 2, 3);
-                drawLine(g2, event_points, i, 3, 0);
+                drawLine(g2, event_points[0], i, 0, 1, true);
+                drawLine(g2, event_points[0], i, 1, 2, true);
+                drawLine(g2, event_points[0], i, 2, 3, true);
+                drawLine(g2, event_points[0], i, 3, 0, true);
+
+                for (int j = 1; j < event_points.length; ++j) {
+                    drawLine(g2, event_points[j], i, 0, 1, false);
+                    drawLine(g2, event_points[j], i, 1, 2, false);
+                    drawLine(g2, event_points[j], i, 2, 3, false);
+                    drawLine(g2, event_points[j], i, 3, 0, false);
+                    g2.fillOval((int)Math.round(event_points[j][i][4][0]) - 1,
+                                (int)Math.round(event_points[j][i][4][1]) - 1, 3, 3);
+                }
             }
 
             if (show_y_drag_control && (!dragging || dragging_y)) {
                 // y-axis control pointing forward/backward
-                drawLine(g2, event_points, i, 5, 6);
-                drawLine(g2, event_points, i, 5, 7);
-                drawLine(g2, event_points, i, 5, 8);
-                drawLine(g2, event_points, i, 6, 9);
-                drawLine(g2, event_points, i, 6, 10);
+                drawLine(g2, event_points[0], i, 5, 6, true);
+                drawLine(g2, event_points[0], i, 5, 7, true);
+                drawLine(g2, event_points[0], i, 5, 8, true);
+                drawLine(g2, event_points[0], i, 6, 9, true);
+                drawLine(g2, event_points[0], i, 6, 10, true);
             }
         }
     }
@@ -892,29 +1013,29 @@ public class AnimationEditPanel extends AnimationPanel
 
             if (show_xy_drag_control || dragging) {
                 // edges of xy plane control
-                drawLine(g2, pos_points, i, 0, 1);
-                drawLine(g2, pos_points, i, 1, 2);
-                drawLine(g2, pos_points, i, 2, 3);
-                drawLine(g2, pos_points, i, 3, 0);
+                drawLine(g2, pos_points, i, 0, 1, true);
+                drawLine(g2, pos_points, i, 1, 2, true);
+                drawLine(g2, pos_points, i, 2, 3, true);
+                drawLine(g2, pos_points, i, 3, 0, true);
             }
 
             if (show_z_drag_control && (!dragging || dragging_z)) {
                 // z-axis control pointing upward
-                drawLine(g2, pos_points, i, 4, 6);
-                drawLine(g2, pos_points, i, 6, 7);
-                drawLine(g2, pos_points, i, 6, 8);
+                drawLine(g2, pos_points, i, 4, 6, true);
+                drawLine(g2, pos_points, i, 6, 7, true);
+                drawLine(g2, pos_points, i, 6, 8, true);
             }
 
             if (show_angle_drag_control && (!dragging || dragging_angle)) {
                 // angle-changing control pointing backward
-                drawLine(g2, pos_points, i, 4, 5);
+                drawLine(g2, pos_points, i, 4, 5, true);
                 g2.fillOval((int)Math.round(pos_points[i][5][0]) - 4 + deltax,
                             (int)Math.round(pos_points[i][5][1]) - 4 + deltay, 10, 10);
             }
 
             if (dragging_angle) {
                 // sighting line during angle rotation
-                drawLine(g2, pos_points, i, 9, 10);
+                drawLine(g2, pos_points, i, 9, 10, true);
             }
 
             if (!dragging_angle) {
@@ -1071,12 +1192,12 @@ public class AnimationEditPanel extends AnimationPanel
             double f = (jc.stereo ? 0.5 : 1.0);
 
             for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-                dx[0] += f * (event_points[i][11][0] - event_points[i][4][0]);
-                dx[1] += f * (event_points[i][11][1] - event_points[i][4][1]);
-                dy[0] += f * (event_points[i][12][0] - event_points[i][4][0]);
-                dy[1] += f * (event_points[i][12][1] - event_points[i][4][1]);
-                dz[0] += f * (event_points[i][13][0] - event_points[i][4][0]);
-                dz[1] += f * (event_points[i][13][1] - event_points[i][4][1]);
+                dx[0] += f * (event_points[0][i][11][0] - event_points[0][i][4][0]);
+                dx[1] += f * (event_points[0][i][11][1] - event_points[0][i][4][1]);
+                dy[0] += f * (event_points[0][i][12][0] - event_points[0][i][4][0]);
+                dy[1] += f * (event_points[0][i][12][1] - event_points[0][i][4][1]);
+                dz[0] += f * (event_points[0][i][13][0] - event_points[0][i][4][0]);
+                dz[1] += f * (event_points[0][i][13][1] - event_points[0][i][4][1]);
             }
 
             if (dragging_xz) {
@@ -1216,11 +1337,17 @@ public class AnimationEditPanel extends AnimationPanel
         return null;
     }
 
-    protected void drawLine(Graphics g, double[][][] array, int index, int p1, int p2) {
-        g.drawLine((int)Math.round(array[index][p1][0]) + deltax,
-                   (int)Math.round(array[index][p1][1]) + deltay,
-                   (int)Math.round(array[index][p2][0]) + deltax,
-                   (int)Math.round(array[index][p2][1]) + deltay);
+    protected void drawLine(Graphics g, double[][][] array, int index, int p1, int p2, boolean mouse) {
+        if (mouse)
+            g.drawLine((int)Math.round(array[index][p1][0]) + deltax,
+                       (int)Math.round(array[index][p1][1]) + deltay,
+                       (int)Math.round(array[index][p2][0]) + deltax,
+                       (int)Math.round(array[index][p2][1]) + deltay);
+        else
+            g.drawLine((int)Math.round(array[index][p1][0]),
+                       (int)Math.round(array[index][p1][1]),
+                       (int)Math.round(array[index][p2][0]),
+                       (int)Math.round(array[index][p2][1]));
     }
 
     // Test whether a point (x, y) lies inside a polygon.
