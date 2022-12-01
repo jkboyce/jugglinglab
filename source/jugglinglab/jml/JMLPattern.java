@@ -308,6 +308,21 @@ public class JMLPattern {
         return eventlist;
     }
 
+    public JMLEvent getEventImageInLoop(JMLEvent ev) {
+        JMLEvent current = eventlist;
+        while (current != null) {
+            if (current.getT() >= getLoopStartTime() &&
+                        current.getT() < getLoopEndTime() &&
+                        current.getJuggler() == ev.getJuggler() &&
+                        current.getHand() == ev.getHand() &&
+                        current.hasSameMasterAs(ev)) {
+                return current;
+            }
+            current = current.getNext();
+        }
+        return null;
+    }
+
     // used for debugging
     protected void printEventList() {
         JMLEvent current = eventlist;
@@ -673,7 +688,7 @@ public class JMLPattern {
                 if (ev.getTransition(i).getType() != JMLTransition.TRANS_HOLDING)
                     holding_only = false;
             }
-            boolean different_masters = (prev == null || !ev.isSameMasterAs(prev));
+            boolean different_masters = (prev == null || !ev.hasSameMasterAs(prev));
             boolean inside_window = (prev != null && (ev.getT() - prev.getT()) < twindow);
             boolean not_pass_adjacent = (prev != null && next != null &&
                         !prev.hasPassingTransition() && !next.hasPassingTransition());
@@ -1153,10 +1168,8 @@ public class JMLPattern {
 
         while (ev != null) {
             Coordinate lc = ev.getLocalCoordinate();
-            int juggler = ev.getJuggler();
-            double t = ev.getT();
-
-            ev.setGlobalCoordinate(convertLocalToGlobal(lc, juggler, t));
+            Coordinate gc = convertLocalToGlobal(lc, ev.getJuggler(), ev.getT());
+            ev.setGlobalCoordinate(gc);
             ev = ev.getNext();
         }
     }

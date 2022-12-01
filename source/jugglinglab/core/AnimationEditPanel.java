@@ -156,8 +156,18 @@ public class AnimationEditPanel extends AnimationPanel
                         if (!isInsidePolygon(mx - t, my, event_points[j], i, face_xz))
                             continue;
 
-                        if (j > 0)
-                            activateEvent(visible_events.get(j));
+                        if (j > 0) {
+                            try {
+                                activateEvent(getPattern().getEventImageInLoop(visible_events.get(j)));
+
+                                if (ladder instanceof EditLadderDiagram) {
+                                    EditLadderDiagram eld = (EditLadderDiagram)ladder;
+                                    eld.activateEvent(event);
+                                }
+                            } catch (JuggleExceptionInternal jei) {
+                                ErrorDialog.handleFatalException(jei);
+                            }
+                        }
 
                         dragging_xz = true;
                         dragging = true;
@@ -260,29 +270,36 @@ public class AnimationEditPanel extends AnimationPanel
         if (event_active && dragging && mouse_moved) {
             dragging_xz = dragging_y = false;
 
-            // Does layout, then re-selects the event so that `event`
-            // references the newly laid out pattern. This also calls
-            // activateEvent() so the event box displays properly. It also
-            // adds the new pattern to the undo list.
-            //
-            // This does an extra layout that we don't need, which we could
-            // avoid at the cost of some code complexity.
-            if (ladder instanceof EditLadderDiagram) {
-                EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                eld.activeEventChanged();
-                eld.addToUndoList();
+            try {
+                if (ladder instanceof EditLadderDiagram) {
+                    // reactivate the event in ladder diagram, since we've
+                    // called layoutPattern() and events may have changed
+                    EditLadderDiagram eld = (EditLadderDiagram)ladder;
+                    event = eld.reactivateEvent();
+                    eld.addToUndoList();
+                } else {
+                    // should do something here to update `event`
+                    throw new JuggleExceptionInternal("mouseReleased(): no ladder diagram");
+                }
+
+                getAnimator().initAnimator();
+                activateEvent(event);
+            } catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
             }
         }
 
         if (position_active && dragging && mouse_moved) {
             dragging_xy = dragging_z = dragging_angle = false;
-            deltaangle = 0.0;
+            deltaangle = 0;
 
             if (ladder instanceof EditLadderDiagram) {
                 EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                eld.activePositionChanged();
                 eld.addToUndoList();
             }
+
+            getAnimator().initAnimator();
+            activatePosition(position);
         }
 
         if (!mouse_moved && !dragging && engine != null && engine.isAlive())
@@ -293,7 +310,7 @@ public class AnimationEditPanel extends AnimationPanel
         dragging_xz = dragging_y = false;
         dragging_xy = dragging_z = dragging_angle = false;
         deltax = deltay = 0;
-        deltaangle = 0.0;
+        deltaangle = 0;
         event_start = event_master_start = null;
         position_start = null;
         repaint();
@@ -416,13 +433,10 @@ public class AnimationEditPanel extends AnimationPanel
                     }
                     if (event_active)
                         createHandpathView();
-                } catch (JuggleExceptionUser jeu) {
-                    // The editing operations here should never put the
-                    // pattern into an invalid state, so we shouldn't ever
-                    // get here.
-                    ErrorDialog.handleFatalException(jeu);
-                } catch (JuggleExceptionInternal jei) {
-                    ErrorDialog.handleFatalException(jei);
+                } catch (JuggleException je) {
+                    // The editing operations here should never put the pattern
+                    // into an invalid state, so we shouldn't ever get here
+                    ErrorDialog.handleFatalException(je);
                 }
 
                 repaint();
@@ -457,12 +471,14 @@ public class AnimationEditPanel extends AnimationPanel
         if (event_active && dragging_camera) {
             try {
                 createEventView();
-            }catch (JuggleExceptionInternal jei) {
+            } catch (JuggleExceptionInternal jei) {
                 ErrorDialog.handleFatalException(jei);
             }
         }
+
         if (position_active && (dragging_camera || dragging_angle))
             createPositionView();
+
         if (isPaused())
             repaint();
     }
@@ -546,9 +562,9 @@ public class AnimationEditPanel extends AnimationPanel
 
         if (snap_horizontal) {
             while (a < 0)
-                a += Math.toRadians(360.0);
-            while (a >= Math.toRadians(360.0))
-                a -= Math.toRadians(360.0);
+                a += Math.toRadians(360);
+            while (a >= Math.toRadians(360))
+                a -= Math.toRadians(360);
 
             if (anglediff(a - result[0]) < SNAPANGLE)
                 result[0] = a;
@@ -598,15 +614,11 @@ public class AnimationEditPanel extends AnimationPanel
     // Helper functions related to event editing
     //-------------------------------------------------------------------------
 
-    public void activateEvent(JMLEvent ev) {
+    public void activateEvent(JMLEvent ev) throws JuggleExceptionInternal {
         deactivatePosition();
         event = ev;
         event_active = true;
-        try {
-            createEventView();
-        }catch (JuggleExceptionInternal jei) {
-            ErrorDialog.handleFatalException(jei);
-        }
+        createEventView();
     }
 
     public void deactivateEvent() {
@@ -673,7 +685,7 @@ public class AnimationEditPanel extends AnimationPanel
 
                 boolean new_master = true;
                 for (JMLEvent ev3 : visible_events) {
-                    if (ev3.isSameMasterAs(ev2))
+                    if (ev3.hasSameMasterAs(ev2))
                         new_master = false;
                 }
                 if (new_master)
@@ -694,7 +706,7 @@ public class AnimationEditPanel extends AnimationPanel
 
                 boolean new_master = true;
                 for (JMLEvent ev3 : visible_events) {
-                    if (ev3.isSameMasterAs(ev2))
+                    if (ev3.hasSameMasterAs(ev2))
                         new_master = false;
                 }
                 if (new_master)
@@ -722,6 +734,10 @@ public class AnimationEditPanel extends AnimationPanel
 
                 // translate by one pixel and see how far it is in juggler space
                 Coordinate c = ev.getGlobalCoordinate();
+                if (c == null) {
+                    System.out.println(ev.toString());
+                    return;
+                } // JKB Fix this
                 Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
                 double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
@@ -736,7 +752,7 @@ public class AnimationEditPanel extends AnimationPanel
                 double dxy = dlc * Math.sin(theta);
                 double dyx = dl * Math.sin(theta);
                 double dyy = dlc * Math.cos(theta);
-                double dzx = 0.0;
+                double dzx = 0;
                 double dzy = -dls;
 
                 int[] center = ren.getXY(c);
@@ -961,7 +977,7 @@ public class AnimationEditPanel extends AnimationPanel
             double dxy = dlc * Math.sin(theta);
             double dyx = dl * Math.sin(theta);
             double dyy = dlc * Math.cos(theta);
-            double dzx = 0.0;
+            double dzx = 0;
             double dzy = -dls;
 
             int[] center = ren.getXY(c);

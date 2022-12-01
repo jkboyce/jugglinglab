@@ -204,7 +204,7 @@ public class JMLEvent {
         return false;
     }
 
-    public boolean isSameMasterAs(JMLEvent ev2) {
+    public boolean hasSameMasterAs(JMLEvent ev2) {
         JMLEvent mast1 = (getMaster() == null ? this : getMaster());
         JMLEvent mast2 = (ev2.getMaster() == null ? ev2 : ev2.getMaster());
 
