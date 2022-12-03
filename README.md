@@ -8,9 +8,9 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is written in Java and uses standard Swing components, and it should run on any platform supported by Java 11 or later. The ``build.xml`` file defines Ant build targets to compile and run the code.
+Juggling Lab is written in Java and uses standard Swing components, and it should run on any platform supported by Java 11 or later. The ``pom.xml`` file is used by [Maven](https://maven.apache.org/) to build the code, and scripts in ``/bin`` run the compiled jar.
 
-Please feel free to clone the repository and play around with it. Even better, contribute a bug report, bug fix, pattern file, or a new feature!
+Clone the repository and play around with it! I always appreciate bug reports (file under "Issues" above), and am always open to pull requests (bug fixes, new/updated pattern files, new features).
 
 ## Contributors
 
