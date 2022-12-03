@@ -46,7 +46,13 @@ public class Optimizer {
         try {
             System.loadLibrary("jniortools");
             optimizer_available = true;
-        } catch (java.lang.UnsatisfiedLinkError e) {}
+        } catch (java.lang.UnsatisfiedLinkError e) {
+            // The following is helpful to debug issues loading the OR-Tools
+            // libraries on Linux. A common issue is a system version of glibc
+            // that is older than the library requires.
+            if (jugglinglab.JugglingLab.isLinux)
+                System.out.println(e);
+        }
         optimizer_loaded = true;
     }
 
