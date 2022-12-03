@@ -3,6 +3,9 @@
 <!-- Build file for Juggling Lab. -->
 <!-- For use with the Maven build tool (http://maven.apache.org) -->
 
+<!-- `mvn package` to compile and build jar -->
+<!-- `mvn clean` to remove temp build directory -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -13,6 +16,7 @@
     <version>1.6.3</version>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
@@ -39,7 +43,29 @@
     <build>
         <plugins>
 
-            <!-- build jar with all dependencies except OR-Tools libraries -->
+            <!-- remove existing `bin/JugglingLab.jar` -->
+            <!-- otherwise on overwrite Maven creates `bin/original-JugglingLab.jar` -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete file="${project.basedir}/bin/JugglingLab.jar"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- build shaded jar with all dependencies except OR-Tools libraries -->
             <!-- output is `bin/JugglingLab.jar` -->
 
             <plugin>
@@ -53,6 +79,18 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/AL2.0</exclude>
+                                        <exclude>META-INF/LGPL2.1</exclude>
+                                        <exclude>META-INF/LICENSE</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+
                             <artifactSet>
                                 <excludes>
                                     <exclude>com.google.ortools:ortools-darwin*</exclude>
@@ -70,6 +108,8 @@
 
                             <finalName>JugglingLab</finalName>
                             <outputDirectory>${project.basedir}/bin</outputDirectory>
+                            <overWrite>true</overWrite>
+
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
