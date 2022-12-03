@@ -734,10 +734,8 @@ public class AnimationEditPanel extends AnimationPanel
 
                 // translate by one pixel and see how far it is in juggler space
                 Coordinate c = ev.getGlobalCoordinate();
-                if (c == null) {
-                    System.out.println(ev.toString());
-                    return;
-                } // JKB Fix this
+                if (c == null)
+                    throw new JuggleExceptionInternal("AEP: No coord on event " + ev.toString());
                 Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
                 double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
