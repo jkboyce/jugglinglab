@@ -21,7 +21,7 @@
         <maven.compiler.target>11</maven.compiler.target>
 
         <commons-math3.version>3.6.1</commons-math3.version>
-        <ortools.version>9.5.2237</ortools.version>
+        <ortools.version>9.4.1874</ortools.version>
     </properties>
 
     <dependencies>
