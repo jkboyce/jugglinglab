@@ -25,7 +25,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
             if [ "$version1" -ge "011000" ]; then
                 if [[ $# -ne 0 ]]; then
-                    "$_java" -cp "${JL_JAR}:commons-math3-3.6.1.jar:protobuf.jar:com.google.ortools.jar" -Xss2048k -Djava.library.path=ortools-lib jugglinglab.JugglingLab ${1+"$@"}
+                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-darwin-x86-64 jugglinglab.JugglingLab ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
@@ -75,7 +75,7 @@ else
 
     if [ -a "${JL_JAR}" ]; then
         if [[ $# -ne 0 ]]; then
-            "$_java" -cp "${JL_JAR}:commons-math3-3.6.1.jar:protobuf.jar:com.google.ortools.jar" -Xss2048k -Djava.library.path=ortools-lib jugglinglab.JugglingLab ${1+"$@"}
+            "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab ${1+"$@"}
             exit 1
         else
             # print a help message if no command line args
