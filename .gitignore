@@ -1,5 +1,3 @@
 .DS_Store
 admin/
-build/
-packages/
-source/resources/package/windows/*.properties
+target/
