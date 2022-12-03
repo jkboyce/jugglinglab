@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #
 # Juggling Lab macOS application packager
@@ -27,13 +26,11 @@
 
 # Step 1: Build the application bundle "Juggling Lab.app"
 
+cd ..
 rm -rf "Juggling Lab.app"
 mkdir target
 cp JugglingLab.jar target
-cp commons-math3-3.6.1.jar target
-cp com.google.ortools.jar target
-cp protobuf.jar target
-cp -r ortools-lib/* target
+cp -r ortools-lib/ortools-darwin-x86-64/* target
 
 jpackage --type app-image \
    --input target/ \
@@ -41,7 +38,7 @@ jpackage --type app-image \
    --app-version "1.6.3" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
-   --resource-dir "../source/resources/package/macos/" \
+   --resource-dir "packaging/macos/" \
    --java-options -Xss2048k \
    --java-options -DJL_run_as_bundle=true \
    --java-options -Xdock:name=JugglingLab \
@@ -51,10 +48,8 @@ rm -r target
 
 # Step 2: Edit the application bundle in ways that jpackage doesn't support
 
-cp "../source/resources/package/macos/JML_document.icns" \
-   "Juggling Lab.app/Contents/Resources/"
-cp "../source/resources/package/macos/Juggling Lab.cfg" \
-   "Juggling Lab.app/Contents/app/"
+cp "packaging/macos/JML_document.icns" "Juggling Lab.app/Contents/Resources/"
+cp "packaging/macos/Juggling Lab.cfg" "Juggling Lab.app/Contents/app/"
 
 # Remove the Oracle signature on the application, which causes Gatekeeper to
 # refuse to launch the app since it isn't notarized. With no signature the user

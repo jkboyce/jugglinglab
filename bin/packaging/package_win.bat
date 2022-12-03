@@ -25,19 +25,17 @@ REM Note: the "-Xss2048k" JVM argument is needed for Google OR-Tools to work
 
 REM Step 1: Build the application bundle directory "Juggling Lab\"
 
+cd ..
 mkdir target
 copy JugglingLab.jar target
-copy commons-math3-3.6.1.jar target
-copy com.google.ortools.jar target
-copy protobuf.jar target
-copy ortools-lib\* target
+copy ortools-lib\ortools-win32-x86-64\* target
 
 jpackage --type app-image ^
    --input target ^
    --name "Juggling Lab" ^
    --app-version "1.6.3" ^
    --main-jar JugglingLab.jar ^
-   --resource-dir "../source/resources/package/windows/" ^
+   --resource-dir "packaging/windows/" ^
    --java-options -Xss2048k ^
    --java-options -DJL_run_as_bundle=true ^
    --verbose
@@ -46,13 +44,13 @@ rmdir /S /Q target
 
 REM Step 2: Edit the application bundle in ways that jpackage doesn't support
 
-copy /Y "..\source\resources\package\windows\JML_document.ico" "Juggling Lab\"
-copy /Y "..\source\resources\package\windows\Juggling Lab.cfg" "Juggling Lab\app\"
+copy /Y "packaging\windows\JML_document.ico" "Juggling Lab\"
+copy /Y "packaging\windows\Juggling Lab.cfg" "Juggling Lab\app\"
 
 REM Step 3: Create the installer .exe and clean up
 
-copy /Y "..\source\resources\package\windows\Juggling Lab.iss" .
-copy /Y "..\source\resources\package\windows\Juggling Lab-setup-icon.bmp" .
+copy /Y "packaging\windows\Juggling Lab.iss" .
+copy /Y "packaging\windows\Juggling Lab-setup-icon.bmp" .
 
 iscc "Juggling Lab.iss"
 
@@ -67,6 +65,6 @@ REM To have jpackage create the installer instead of Inno Setup:
 REM jpackage --type exe ^
 REM    --app-image "Juggling Lab" ^
 REM    --app-version "1.6.3" ^
-REM    --file-associations "..\source\resources\package\windows\FAjml.properties" ^
+REM    --file-associations "packaging\windows\FAjml.properties" ^
 REM    --win-menu ^
 REM    --verbose
