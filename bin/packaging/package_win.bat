@@ -14,7 +14,7 @@ REM    - Builds the Windows application bundle "Juggling Lab\" in the bin\ direc
 REM    - Packages this into an installer .exe file using Inno Setup
 REM
 REM Note:
-REM    - JugglingLab.jar needs to be built prior to running this, using Ant
+REM    - JugglingLab.jar needs to be built prior to running this, using Maven
 REM    - Need to be using JDK 16 or later for jpackage to work
 REM    - Need to have Inno Setup 5 installed
 REM

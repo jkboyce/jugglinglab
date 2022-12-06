@@ -8,7 +8,6 @@
 
 DIR=$(dirname "$0")
 JL_JAR="${DIR}/JugglingLab.jar"
-
 export JL_WORKING_DIR="`pwd`"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -25,7 +24,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
             if [ "$version1" -ge "011000" ]; then
                 if [[ $# -ne 0 ]]; then
-                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-darwin-x86-64 jugglinglab.JugglingLab ${1+"$@"}
+                    # include both x86 and Arm versions of OR-Tools; JRE will choose correct one at runtime
+                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-darwin-x86-64:ortools-lib/ortools-darwin-aarch64 jugglinglab.JugglingLab ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
@@ -75,7 +75,7 @@ else
 
     if [ -a "${JL_JAR}" ]; then
         if [[ $# -ne 0 ]]; then
-            "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab ${1+"$@"}
+            "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64:ortools-lib/ortools-linux-aarch64 jugglinglab.JugglingLab ${1+"$@"}
             exit 1
         else
             # print a help message if no command line args
