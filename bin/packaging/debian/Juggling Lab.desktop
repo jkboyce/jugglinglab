@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Juggling Lab
+Comment=Juggling Lab juggling animator
+Exec=/opt/juggling-lab/bin/Juggling\ Lab
+Icon=/opt/juggling-lab/lib/Juggling_Lab.png
+Terminal=false
+Type=Application
+Categories=Simulation;Sports;Graphics;
+StartupWMClass=jugglinglab-JugglingLab

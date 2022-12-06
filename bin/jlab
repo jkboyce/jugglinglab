@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Command line interface for Juggling Lab
+# Unix (macOS/Linux) command line interface for Juggling Lab
 #
 # Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
@@ -8,11 +8,12 @@
 
 DIR=$(dirname "$0")
 JL_JAR="${DIR}/JugglingLab.jar"
-
 export JL_WORKING_DIR="`pwd`"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Running on macOS; first try launching in JugglingLab.jar in same directory
+    # Running on macOS
+
+    # first try launching in JugglingLab.jar in same directory
     if [ -a "${JL_JAR}" ]; then
         if type java >/dev/null 2>&1; then
             _java=java
@@ -52,37 +53,45 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     echo >&2 "\"Juggling Lab.app\" not found in same directory as this script."
 else
-    # Running on other OS. Make sure an adequate version of Java is installed,
-    # then launch the jar.
-    if type java >/dev/null 2>&1; then
-        _java=java
-    elif [[ -n "${JAVA_HOME}" ]] && [[ -x "${JAVA_HOME}/bin/java" ]]; then
-        _java="${JAVA_HOME}/bin/java"
-    else
-        echo >&2 "Java not found. Be sure Java 11 or higher is installed and \$JAVA_HOME"
-        echo >&2 "environment variable is set."
-        exit 1
-    fi
+    # Running on other Unix
 
-    if [[ "$_java" ]]; then
-        version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-        version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
-        if [ "$version1" -lt "011000" ]; then
-            echo >&2 "Java installed is version ${version}; need Java 11 or higher to run."
-            exit 1
+    # first try launching in JugglingLab.jar in same directory
+    if [ -a "${JL_JAR}" ]; then
+        if type java >/dev/null 2>&1; then
+            _java=java
+        elif [[ -n "${JAVA_HOME}" ]] && [[ -x "${JAVA_HOME}/bin/java" ]]; then
+            _java="${JAVA_HOME}/bin/java"
+        fi
+
+        if [[ "$_java" ]]; then
+            version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+            version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
+            if [ "$version1" -ge "011000" ]; then
+                if [[ $# -ne 0 ]]; then
+                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab ${1+"$@"}
+                    exit 1
+                else
+                    # print a help message if no command line args
+                    "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
+                    exit 1
+                fi
+            fi
         fi
     fi
 
-    if [ -a "${JL_JAR}" ]; then
+    # Then try launching in the application bundle
+    UNIX_JL_EXEC="/opt/juggling-lab/bin/Juggling Lab"
+
+    if [[ -x "${UNIX_JL_EXEC}" ]]; then
         if [[ $# -ne 0 ]]; then
-            "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab ${1+"$@"}
+            "${UNIX_JL_EXEC}" ${1+"$@"}
             exit 1
         else
             # print a help message if no command line args
-            "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
+            "${UNIX_JL_EXEC}" help
             exit 1
         fi
     fi
 
-    echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
+    echo >&2 "\"Juggling Lab\" executable not found."
 fi
