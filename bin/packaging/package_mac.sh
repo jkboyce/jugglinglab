@@ -10,14 +10,17 @@
 # This script packages Juggling Lab into a standalone macOS application
 #
 # It:
-#    (a) builds the macOS application bundle "Juggling Lab.app" in the bin/ directory
-#    (b) packages this into a dmg file
+#    - Builds the macOS application bundle "Juggling Lab.app" in the bin/ directory
+#    - Packages this into a dmg file
 #
 # Note:
 #    - Juggling Lab.app in the bin directory will be overwritten
-#    - JugglingLab.jar needs to be built prior to running this, using Ant
+#    - JugglingLab.jar needs to be built prior to running this, using Maven
 #    - Need to be using JDK 16 or later for jpackage to work
 #    - Need to have Xcode installed for codesign to work
+#    - Need to build on an x86-based Mac to create an app that runs on any Mac
+#      (jpackage cannot create universal binaries, but builds an app targeted
+#      at the cpu type it's running on)
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html
