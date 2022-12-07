@@ -33,7 +33,7 @@ copy ortools-lib\ortools-win32-x86-64\* target
 jpackage --type app-image ^
    --input target ^
    --name "Juggling Lab" ^
-   --app-version "1.6.3" ^
+   --app-version "1.6.4" ^
    --main-jar JugglingLab.jar ^
    --resource-dir "packaging/windows/" ^
    --java-options -Xss2048k ^
@@ -64,7 +64,7 @@ del "Juggling Lab-setup-icon.bmp"
 REM To have jpackage create the installer instead of Inno Setup:
 REM jpackage --type exe ^
 REM    --app-image "Juggling Lab" ^
-REM    --app-version "1.6.3" ^
+REM    --app-version "1.6.4" ^
 REM    --file-associations "packaging\windows\FAjml.properties" ^
 REM    --win-menu ^
 REM    --verbose
