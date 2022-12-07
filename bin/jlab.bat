@@ -55,7 +55,7 @@ IF DEFINED JL_EXE (
     TYPE "%TEMP%\jugglinglab_out.txt"
     DEL "%TEMP%\jugglinglab_out.txt"
 ) ELSE (
-    ECHO "Juggling Lab.exe" not found on this computer.
+    ECHO "Juggling Lab.exe" not found.
 )
 
 SET "JL_EXE="
