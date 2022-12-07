@@ -30,7 +30,7 @@ jpackage \
    --input target/ \
    --name "Juggling Lab" \
    --linux-package-name "juggling-lab" \
-   --app-version "1.6.3" \
+   --app-version "1.6.4" \
    --main-jar JugglingLab.jar \
    --resource-dir "packaging/debian/" \
    --java-options -Xss2048k \
@@ -40,6 +40,7 @@ jpackage \
 
 rm -r target
 
-#find . -name "Juggling Lab*.dmg" -type f \
-#   -exec bash -c 'rm "${0/Juggling Lab/JugglingLab}"; mv "$0" "${0/Juggling Lab/JugglingLab}"' {} \;
+# Remove Debian revision number from filename
 
+find . -name "*-1_amd64.deb" -type f \
+   -exec bash -c 'rm "${0/-1_amd64.deb/_amd64.deb}"; mv "$0" "${0/-1_amd64.deb/_amd64.deb}"' {} \;
