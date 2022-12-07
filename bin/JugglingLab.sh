@@ -11,10 +11,8 @@ export JL_WORKING_DIR="`pwd`"
 
 # Make sure an adequate version of Java is installed
 if type java >/dev/null 2>&1; then
-    # echo found java executable in PATH
     _java=java
 elif [[ -n "${JAVA_HOME}" ]] && [[ -x "${JAVA_HOME}/bin/java" ]]; then
-    # echo found java executable in \$JAVA_HOME
     _java="${JAVA_HOME}/bin/java"
 else
     echo >&2 "Java not found. Be sure Java 11 or higher is installed and \$JAVA_HOME"
@@ -36,6 +34,7 @@ JL_JAR="${DIR}/JugglingLab.jar"
 
 if [ -a "${JL_JAR}" ]; then
     "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab
+    exit 1
 else
     echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
     exit 1
