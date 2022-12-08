@@ -509,7 +509,7 @@ public class AnimationEditPanel extends AnimationPanel
                 if (event_active) {
                     try {
                         createEventView();
-                    }catch (JuggleExceptionInternal jei) {
+                    } catch (JuggleExceptionInternal jei) {
                         ErrorDialog.handleFatalException(jei);
                     }
                 }
