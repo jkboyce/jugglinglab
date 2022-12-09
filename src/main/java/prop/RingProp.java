@@ -14,8 +14,9 @@ import jugglinglab.util.*;
 
 
 public class RingProp extends Prop {
-    public static final String[] colornames =
+    public static final String[] COLOR_NAMES =
         {
+            "transparent",
             "black",
             "blue",
             "cyan",
@@ -29,8 +30,9 @@ public class RingProp extends Prop {
             "yellow",
         };
 
-    public static final Color[] colorvals =
+    public static final Color[] COLOR_VALS =
         {
+            new Color(0, 0, 0, 0),
             Color.black,
             Color.blue,
             Color.cyan,
@@ -41,23 +43,24 @@ public class RingProp extends Prop {
             Color.pink,
             Color.red,
             Color.white,
-            Color.yellow
+            Color.yellow,
         };
 
-    protected static final int COLORNUM_DEF = 8;  // red
-    protected static final double OUTSIDE_DIAM_DEF = 25.0;  // in cm
-    protected static final double INSIDE_DIAM_DEF = 20.0;  // in cm
+    protected static final Color COLOR_DEF = Color.red;
+    protected static final int COLORNUM_DEF = 9;  // red
+    protected static final double OUTSIDE_DIAM_DEF = 25;  // in cm
+    protected static final double INSIDE_DIAM_DEF = 20;  // in cm
     protected static final int POLYSIDES = 200;
 
     protected double outside_diam = OUTSIDE_DIAM_DEF;
     protected double inside_diam = INSIDE_DIAM_DEF;
+    protected Color color = COLOR_DEF;
     protected int colornum = COLORNUM_DEF;
-    protected Color color;
 
     protected BufferedImage image;
 
     protected double lastzoom;
-    protected double[] lastcamangle = { 0.0, 0.0 };
+    protected double[] lastcamangle = { 0, 0 };
 
     protected Dimension size;
     protected Dimension center;
@@ -66,7 +69,7 @@ public class RingProp extends Prop {
     protected int[] py;
 
 
-    // View methods
+    // Prop methods
 
     @Override
     public String getType() {
@@ -83,11 +86,11 @@ public class RingProp extends Prop {
         ParameterDescriptor[] result = new ParameterDescriptor[3];
 
         ArrayList<String> range = new ArrayList<String>();
-        for (int i = 0; i < colornames.length; i++)
-            range.add(colornames[i]);
+        for (int i = 0; i < COLOR_NAMES.length; i++)
+            range.add(COLOR_NAMES[i]);
 
         result[0] = new ParameterDescriptor("color", ParameterDescriptor.TYPE_CHOICE,
-                            range, colornames[COLORNUM_DEF], colornames[colornum]);
+                            range, COLOR_NAMES[COLORNUM_DEF], COLOR_NAMES[colornum]);
         result[1] = new ParameterDescriptor("outside", ParameterDescriptor.TYPE_FLOAT,
                             null, Double.valueOf(OUTSIDE_DIAM_DEF), Double.valueOf(outside_diam));
         result[2] = new ParameterDescriptor("inside", ParameterDescriptor.TYPE_FLOAT,
@@ -101,41 +104,58 @@ public class RingProp extends Prop {
         px = new int[POLYSIDES];
         py = new int[POLYSIDES];
 
-        color = Color.red;
-
-        if (st == null) return;
+        if (st == null)
+            return;
         ParameterList pl = new ParameterList(st);
 
         String colorstr = pl.getParameter("color");
         if (colorstr != null) {
             Color temp = null;
+
             if (colorstr.indexOf((int)',') == -1) { // color name
-                for (int i = 0; i < colornames.length; i++) {
-                    if (colornames[i].equalsIgnoreCase(colorstr)) {
-                        temp = colorvals[i];
+                for (int i = 0; i < COLOR_NAMES.length; i++) {
+                    if (COLOR_NAMES[i].equalsIgnoreCase(colorstr)) {
+                        temp = COLOR_VALS[i];
                         colornum = i;
                         break;
                     }
                 }
-            } else {    // RGB triplet
-                     // delete the '{' and '}' characters first
+            } else {  // RGB or RGBA
+                // delete the '{' and '}' characters first
                 String str = colorstr;
                 int pos;
-                while ((pos = str.indexOf('{')) >= 0) {
-                    str = str.substring(0,pos) + str.substring(pos+1,str.length());
-                }
-                while ((pos = str.indexOf('}')) >= 0) {
-                    str = str.substring(0,pos) + str.substring(pos+1,str.length());
-                }
-                int red = 0, green = 0, blue = 0;
+                while ((pos = str.indexOf('{')) >= 0)
+                    str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+                while ((pos = str.indexOf('}')) >= 0)
+                    str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+
                 StringTokenizer st2 = new StringTokenizer(str, ",", false);
-                if (st2.hasMoreTokens())
-                    red = Integer.valueOf(st2.nextToken()).intValue();
-                if (st2.hasMoreTokens())
-                    green = Integer.valueOf(st2.nextToken()).intValue();
-                if (st2.hasMoreTokens())
-                    blue = Integer.valueOf(st2.nextToken()).intValue();
-                temp = new Color(red, green, blue);
+                int tokens = st2.countTokens();
+
+                if (tokens == 3 || tokens == 4) {
+                    int red = 0, green = 0, blue = 0, alpha = 255;
+                    String token = null;
+                    try {
+                        token = st2.nextToken().trim();
+                        red = Integer.valueOf(token).intValue();
+                        token = st2.nextToken().trim();
+                        green = Integer.valueOf(token).intValue();
+                        token = st2.nextToken().trim();
+                        blue = Integer.valueOf(token).intValue();
+                        if (tokens == 4) {
+                            token = st2.nextToken().trim();
+                            alpha = Integer.valueOf(token).intValue();
+                        }
+                    } catch (NumberFormatException nfe) {
+                        String template = errorstrings.getString("Error_number_format");
+                        Object[] arguments = { token };
+                        throw new JuggleExceptionUser("Ring prop color: " +
+                                MessageFormat.format(template, arguments));
+                    }
+                    temp = new Color(red, green, blue, alpha);
+                } else
+                    throw new JuggleExceptionUser("Ring prop color: " +
+                            errorstrings.getString("Error_token_count"));
             }
 
             if (temp != null)
