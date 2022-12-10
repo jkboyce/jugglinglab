@@ -33,7 +33,7 @@ fi
 JL_JAR="${DIR}/JugglingLab.jar"
 
 if [ -a "${JL_JAR}" ]; then
-    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path=ortools-lib/ortools-linux-x86-64 jugglinglab.JugglingLab
+    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path="${DIR}/ortools-lib/ortools-linux-x86-64" jugglinglab.JugglingLab
     exit 1
 else
     echo >&2 "\"JugglingLab.jar\" not found in same directory as this script."
