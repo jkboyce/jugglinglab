@@ -86,6 +86,7 @@ public class SiteswapGenerator extends Generator {
     protected boolean lameflag;
     protected boolean sequenceflag;
     protected boolean connected_patterns;
+    protected boolean symmetric_patterns;
     protected boolean juggler_permutations;
     protected int mode;
     protected int slot_size;
@@ -146,7 +147,7 @@ public class SiteswapGenerator extends Generator {
     @Override
     public void initGenerator() throws JuggleExceptionUser {
         if (control == null)
-            initGenerator("5 7 5");     // default settings
+            initGenerator("5 7 5");  // default settings
         else
             initGenerator(control.getParams());
     }
@@ -158,12 +159,14 @@ public class SiteswapGenerator extends Generator {
     }
 
     @Override
-    public int runGenerator(GeneratorTarget t) throws JuggleExceptionUser, JuggleExceptionInternal {
-        return runGenerator(t, -1, -1.0);  // no limits
+    public int runGenerator(GeneratorTarget t)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
+        return runGenerator(t, -1, -1);  // no limits
     }
 
     @Override
-    public int runGenerator(GeneratorTarget t, int num_limit, double secs_limit) throws JuggleExceptionUser, JuggleExceptionInternal {
+    public int runGenerator(GeneratorTarget t, int num_limit, double secs_limit)
+                    throws JuggleExceptionUser, JuggleExceptionInternal {
         if (groundflag == 1 && ground_state_length > ht)
             return 0;
 
@@ -229,6 +232,7 @@ public class SiteswapGenerator extends Generator {
         delaytime = 0;
         lameflag = false;
         connected_patterns = false;
+        symmetric_patterns = false;
         juggler_permutations = false;
         sequenceflag = true;
         mode = ASYNC;  // default mode
@@ -273,6 +277,8 @@ public class SiteswapGenerator extends Generator {
             }*/
             else if (args[i].equals("-cp"))
                 connected_patterns = true;
+            else if (args[i].equals("-sym"))
+                symmetric_patterns = true;
             else if (args[i].equals("-mf"))
                 mpflag = 0;
             else if (args[i].equals("-mc"))
@@ -576,7 +582,8 @@ public class SiteswapGenerator extends Generator {
     //
     // Do this by generating all possible starting states recursively, then
     // calling findCycles() to find the loops for each one.
-    protected int findPatterns(int balls_placed, int min_value, int min_to) throws JuggleExceptionUser, JuggleExceptionInternal {
+    protected int findPatterns(int balls_placed, int min_value, int min_to)
+                        throws JuggleExceptionUser, JuggleExceptionInternal {
         if (Thread.interrupted())
             throw new JuggleExceptionInterrupted();
 
@@ -1008,7 +1015,7 @@ public class SiteswapGenerator extends Generator {
 
     // Test if a completed pattern is valid.
     protected boolean isPatternValid(int outputpos) {
-        // check #1: verify against inclusions
+        // check #1: verify against inclusions.
         for (Pattern regex : include) {
             if (!regex.matcher(new String(output, 0, outputpos)).matches()) {
                 if (Constants.DEBUG_GENERATOR)
@@ -1050,7 +1057,7 @@ public class SiteswapGenerator extends Generator {
         }
 
         // check #4: if passing, test whether pattern is connected if enabled.
-        if (connected_patterns) {
+        if (jugglers > 1 && connected_patterns) {
             for (int i = 0; i < jugglers; ++i)
                 connections[i] = false;
             connections[0] = true;
@@ -1148,10 +1155,54 @@ public class SiteswapGenerator extends Generator {
                         return false;
                     }
                     if (scoremp1 < scorem)
-                        break;      // go to the next pair of jugglers
+                        break;  // go to the next pair of jugglers
 
                     perm_scratch1[maxm] = perm_scratch2[maxmp1] = true;
                 }
+            }
+        }
+
+        // check #6: if passing, test whether pattern is symmetric if enabled.
+        //
+        // Example: jlab gen 6 4 3 -j 2 -f -se -sym -cp
+        if (jugglers > 1 && symmetric_patterns) {
+            js:
+            for (int j = 2; j <= jugglers; ++j) {
+                offsets:
+                for (int offset = 0; offset < l_target; ++offset) {
+                    // compare juggler `j` to juggler 1 with beat offset `offset`
+
+                    for (int i = 0; i < l_target; ++i) {
+                        int h_juggler1 = 0;
+                        int index = (i + offset) % l_target;
+
+                        for (int h = 1; h < hands; ++h) {
+                            if (person_number[h] != j)
+                                continue;
+
+                            for (int k = 0; k < max_occupancy; ++k) {
+                                int val_1 = throw_value[i][h_juggler1][k];
+                                boolean self_1 = (person_number[throw_to[i][h_juggler1][k]] == 1);
+                                boolean same_1 = (throw_to[i][h_juggler1][k] == h_juggler1);
+
+                                int val_j = throw_value[index][h][k];
+                                boolean self_j = (person_number[throw_to[index][h][k]] == j);
+                                boolean same_j = (throw_to[index][h][k] == h);
+
+                                if (val_1 == 0 && val_j == 0)
+                                    break;
+                                if (val_1 != val_j || self_1 != self_j || same_1 != same_j)
+                                    continue offsets;
+                            }
+
+                            ++h_juggler1;
+                        }
+                    }
+
+                    continue js;  // offset is a match; go to next juggler
+                }
+
+                return false;
             }
         }
 
@@ -1179,7 +1230,7 @@ public class SiteswapGenerator extends Generator {
         return 0;
     }
 
-    // Compares two generated loops.
+    // Compare two generated loops.
     protected int compareLoops(int pos1, int pos2) {
         int[][] state_start = state[pos1];
         int result = 0;
@@ -1691,7 +1742,7 @@ public class SiteswapGenerator extends Generator {
 
 
     /*
-    // Reads a custom rhythm file and parses it. If there is an error it
+    // Read a custom rhythm file and parses it. If there is an error it
     // prints a message and exits.
     void custom_initialize(char *custom_file) {
         int i, j, k, left_delim, right_delim;
