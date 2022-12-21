@@ -86,7 +86,7 @@ class SiteswapGeneratorControl extends JPanel {
         p6.add(cb3);
         gb.setConstraints(cb3, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 5,
                                                 new Insets(0, 10, 0, 0)));
-         */
+        */
 
         JPanel p7 = new JPanel();  // Compositions section
         p7.setLayout(gb);
@@ -147,14 +147,11 @@ class SiteswapGeneratorControl extends JPanel {
 
         JPanel p9 = new JPanel();  // Multiplexing section
         p9.setLayout(gb);
-        JLabel lab12 = new JLabel(guistrings.getString("Multiplexing"));
-        p9.add(lab12);
-        gb.setConstraints(lab12, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
-                                                new Insets(5, 0, 0, 0)));
-        cb12 = new JCheckBox(guistrings.getString("enable"), null);
+        cb12 = new JCheckBox(guistrings.getString("Multiplexing"), null);
+        cb12.setHorizontalTextPosition(SwingConstants.LEFT);
         p9.add(cb12);
-        gb.setConstraints(cb12, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1,
-                                                new Insets(0, 10, 0, 0)));
+        gb.setConstraints(cb12, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
+                                                new Insets(1, 0, 0, 0)));
 
         JPanel p3 = new JPanel();
         p3.setLayout(gb);
@@ -167,22 +164,22 @@ class SiteswapGeneratorControl extends JPanel {
         gb.setConstraints(tf9, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 0));
 
         p9.add(p3);
-        gb.setConstraints(p3, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2,
+        gb.setConstraints(p3, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1,
                                                 new Insets(0, 15, 0, 0)));
 
         cb13 = new JCheckBox(guistrings.getString("no_simultaneous_catches"), null);
         p9.add(cb13);
-        gb.setConstraints(cb13, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 3,
+        gb.setConstraints(cb13, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2,
                                                 new Insets(0, 10, 0, 0)));
 
         cb14 = new JCheckBox(guistrings.getString("no_clustered_throws"), null);
         p9.add(cb14);
-        gb.setConstraints(cb14, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 4,
+        gb.setConstraints(cb14, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 3,
                                                 new Insets(0, 10, 0, 0)));
 
         cb16 = new JCheckBox(guistrings.getString("true_multiplexing"), null);
         p9.add(cb16);
-        gb.setConstraints(cb16, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 5,
+        gb.setConstraints(cb16, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 4,
                                                 new Insets(0, 10, 0, 0)));
 
         JPanel p4 = new JPanel();  // entire middle section
@@ -232,22 +229,22 @@ class SiteswapGeneratorControl extends JPanel {
         lab3 = new JLabel(guistrings.getString("Exclude_these_passes"));
         p1.add(lab3);
         gb.setConstraints(lab3, JLFunc.constraints(GridBagConstraints.LINE_END, 1, 2,
-                                                 new Insets(0, 0, 0, 3)));
+                                                new Insets(0, 0, 0, 3)));
         lab5 = new JLabel("Passing leader slot number");
         p1.add(lab5);
         gb.setConstraints(lab5, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 4,
-                                                 new Insets(0, 0, 0, 3)));
+                                                new Insets(0, 0, 0, 3)));
         */
 
         add(p2);
         gb.setConstraints(p2, JLFunc.constraints(GridBagConstraints.CENTER, 0, 0,
-                                               new Insets(BORDER, BORDER, 5, BORDER)));
+                                                new Insets(BORDER, BORDER, 5, BORDER)));
         add(p4);
         gb.setConstraints(p4, JLFunc.constraints(GridBagConstraints.CENTER, 0, 1,
-                                               new Insets(5, BORDER, 5, BORDER)));
+                                                new Insets(5, BORDER, 5, BORDER)));
         add(p1);
         gb.setConstraints(p1, JLFunc.constraints(GridBagConstraints.CENTER, 0, 2,
-                                               new Insets(5, BORDER, 5, BORDER)));
+                                                new Insets(5, BORDER, 5, BORDER)));
 
         // add action listeners to enable/disable items depending on context
         c1.addItemListener(new ItemListener() {
