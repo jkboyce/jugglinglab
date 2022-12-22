@@ -51,8 +51,8 @@ public class JugglingLab {
     private static ArrayList<String> jlargs;
 
     static {
-        guistrings = JLLocale.getBundle("GUIStrings");
-        errorstrings = JLLocale.getBundle("ErrorStrings");
+        guistrings = ResourceBundle.getBundle("GUIStrings");
+        errorstrings = ResourceBundle.getBundle("ErrorStrings");
 
         String osname = System.getProperty("os.name").toLowerCase();
         isMacOS = osname.startsWith("mac os x");

@@ -242,7 +242,7 @@ public class AnimationPrefsDialog extends JDialog {
 
         getRootPane().setDefaultButton(but_ok);  // OK button is default
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         pack();

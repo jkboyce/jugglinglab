@@ -147,7 +147,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         view.setDoubleBuffered(true);
         setContentPane(view);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
         setBackground(Color.white);
         pack();

@@ -1601,7 +1601,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                                             0, 2, new Insets(10, 10, 10, 10)));
         jd.getRootPane().setDefaultButton(okbutton);// OK button is default
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         jd.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         jd.pack();

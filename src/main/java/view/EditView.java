@@ -38,7 +38,7 @@ public class EditView extends View {
         // in restartView()
         ladder.add(new LadderDiagram(pat), BorderLayout.CENTER);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
             jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, aep, ladder);
             jsp.setResizeWeight(1.0);

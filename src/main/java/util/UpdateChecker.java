@@ -166,7 +166,7 @@ public class UpdateChecker extends Thread {
         updateBox.setContentPane(updatePanel);
         updateBox.getRootPane().setDefaultButton(yesbutton);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         updateBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         updateBox.pack();

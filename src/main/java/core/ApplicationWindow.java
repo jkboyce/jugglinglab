@@ -89,7 +89,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         // does the real work of adding controls etc.
         ap.setNotation(Pattern.NOTATION_SITESWAP);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         setBackground(new Color(0.9f, 0.9f, 0.9f));
@@ -412,7 +412,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
         aboutBox.setContentPane(aboutPanel);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         aboutBox.pack();

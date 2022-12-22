@@ -136,7 +136,7 @@ public class ErrorDialog {
 
         exframe.setContentPane(exp);
 
-        Locale loc = JLLocale.getLocale();
+        Locale loc = Locale.getDefault();
         exframe.applyComponentOrientation(ComponentOrientation.getOrientation(loc));
 
         exframe.pack();
