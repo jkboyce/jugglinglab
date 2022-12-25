@@ -14,6 +14,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import java.util.ArrayList;
 
 import jugglinglab.jml.*;
 import jugglinglab.util.*;
@@ -52,10 +53,14 @@ public class AnimationPanel extends JPanel implements Runnable {
     protected int lastx, lasty;
     protected double[] dragcamangle;
 
+    // attached objects to be notified of events
+    protected ArrayList<AnimationAttachment> attachments;
+
 
     public AnimationPanel() {
         anim = new Animator();
         jc = new AnimationPrefs();
+        attachments = new ArrayList<AnimationAttachment>();
         setOpaque(true);
         loadAudioClips();
         initHandlers();
@@ -219,6 +224,11 @@ public class AnimationPanel extends JPanel implements Runnable {
             }
         });
     }
+
+    public void addAnimationAttachment(AnimationAttachment att) {
+        attachments.add(att);
+    }
+
 
     protected double[] snapCamera(double[] ca) {
         double[] result = new double[2];
@@ -481,7 +491,9 @@ public class AnimationPanel extends JPanel implements Runnable {
         killAnimationThread();
     }
 
+    //-------------------------------------------------------------------------
     // javax.swing.JComponent methods
+    //-------------------------------------------------------------------------
 
     @Override
     public void paintComponent(Graphics g) {
@@ -495,5 +507,12 @@ public class AnimationPanel extends JPanel implements Runnable {
                 ErrorDialog.handleFatalException(jei);
             }
         }
+    }
+
+    // Interface for other elements to implement, to be notified by
+    // AnimationPanel about time updates, pattern changes, and so on.
+
+    public interface AnimationAttachment {
+        public void setTime(double t);
     }
 }

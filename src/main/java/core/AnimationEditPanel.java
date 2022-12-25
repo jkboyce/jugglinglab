@@ -47,8 +47,6 @@ public class AnimationEditPanel extends AnimationPanel
     protected static final Color COLOR_POSITIONS = Color.green;
     protected static final Color COLOR_GRID = Color.lightGray;
 
-    protected LadderDiagram ladder;
-
     // for when an event is activated/dragged
     protected boolean event_active;
     protected JMLEvent event;
@@ -90,10 +88,6 @@ public class AnimationEditPanel extends AnimationPanel
 
     public AnimationEditPanel() {
         super();
-    }
-
-    public void setLadderDiagram(LadderDiagram lad) {
-        ladder = lad;
     }
 
     //-------------------------------------------------------------------------
@@ -160,9 +154,11 @@ public class AnimationEditPanel extends AnimationPanel
                             try {
                                 activateEvent(getPattern().getEventImageInLoop(visible_events.get(j)));
 
-                                if (ladder instanceof EditLadderDiagram) {
-                                    EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                                    eld.activateEvent(event);
+                                for (AnimationAttachment att : attachments) {
+                                    if (att instanceof EditLadderDiagram) {
+                                        EditLadderDiagram eld = (EditLadderDiagram)att;
+                                        eld.activateEvent(event);
+                                    }
                                 }
                             } catch (JuggleExceptionInternal jei) {
                                 ErrorDialog.handleFatalException(jei);
@@ -271,15 +267,14 @@ public class AnimationEditPanel extends AnimationPanel
             dragging_xz = dragging_y = false;
 
             try {
-                if (ladder instanceof EditLadderDiagram) {
-                    // reactivate the event in ladder diagram, since we've
-                    // called layoutPattern() and events may have changed
-                    EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                    event = eld.reactivateEvent();
-                    eld.addToUndoList();
-                } else {
-                    // should do something here to update `event`
-                    throw new JuggleExceptionInternal("mouseReleased(): no ladder diagram");
+                for (AnimationAttachment att : attachments) {
+                    if (att instanceof EditLadderDiagram) {
+                        // reactivate the event in ladder diagram, since we've
+                        // called layoutPattern() and events may have changed
+                        EditLadderDiagram eld = (EditLadderDiagram)att;
+                        event = eld.reactivateEvent();
+                        eld.addToUndoList();
+                    }
                 }
 
                 getAnimator().initAnimator();
@@ -293,9 +288,11 @@ public class AnimationEditPanel extends AnimationPanel
             dragging_xy = dragging_z = dragging_angle = false;
             deltaangle = 0;
 
-            if (ladder instanceof EditLadderDiagram) {
-                EditLadderDiagram eld = (EditLadderDiagram)ladder;
-                eld.addToUndoList();
+            for (AnimationAttachment att : attachments) {
+                if (att instanceof EditLadderDiagram) {
+                    EditLadderDiagram eld = (EditLadderDiagram)att;
+                    eld.addToUndoList();
+                }
             }
 
             getAnimator().initAnimator();
@@ -592,8 +589,9 @@ public class AnimationEditPanel extends AnimationPanel
     @Override
     public void setTime(double time) {
         super.setTime(time);
-        if (ladder != null)
-            ladder.setTime(time);
+        for (AnimationAttachment att : attachments) {
+            att.setTime(time);
+        }
     }
 
     @Override

@@ -71,7 +71,7 @@ public class EditView extends View {
             // LadderDiagram new_ladder = new LadderDiagram(p);
             // new_ladder.setAnimator(aep.getAnimator());
 
-            aep.setLadderDiagram(new_ladder);
+            aep.addAnimationAttachment(new_ladder);
             aep.deactivateEvent();
             aep.deactivatePosition();
 

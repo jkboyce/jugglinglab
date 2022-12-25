@@ -18,7 +18,7 @@ import jugglinglab.jml.*;
 // This version does not include any mouse interaction or editing functions;
 // those are added in EditLadderDiagram.
 
-public class LadderDiagram extends JPanel {
+public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAttachment {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -174,15 +174,6 @@ public class LadderDiagram extends JPanel {
             if (item.pathnum == path)
                 item.color = color;
         }
-    }
-
-    public void setTime(double time) {
-        if (sim_time == time)
-            return;
-
-        sim_time = time;
-        updateTrackerPosition();
-        repaint();
     }
 
     protected void updateTrackerPosition() {
@@ -575,6 +566,20 @@ public class LadderDiagram extends JPanel {
         gr.drawLine(0, tracker_y, width, tracker_y);
 
         return true;
+    }
+
+    //-------------------------------------------------------------------------
+    // AnimationPanel.AnimationAttachment methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void setTime(double time) {
+        if (sim_time == time)
+            return;
+
+        sim_time = time;
+        updateTrackerPosition();
+        repaint();
     }
 
     //-------------------------------------------------------------------------
