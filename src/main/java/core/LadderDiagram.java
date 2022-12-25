@@ -5,6 +5,7 @@
 package jugglinglab.core;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
 import java.util.*;
@@ -18,7 +19,8 @@ import jugglinglab.jml.*;
 // This version does not include any mouse interaction or editing functions;
 // those are added in EditLadderDiagram.
 
-public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAttachment {
+public class LadderDiagram extends JPanel implements
+            AnimationPanel.AnimationAttachment, MouseListener, MouseMotionListener {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -43,8 +45,12 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
     protected static final Color COLOR_TRACKER = Color.red;
     protected static final int IMAGE_DRAW_WAIT = 5;  // frames
 
+    // GUI states
+    protected static final int STATE_INACTIVE = 0;
+    protected static final int STATE_MOVING_TRACKER = 1;
+
+    protected AnimationPanel ap;
     protected JMLPattern pat;
-    protected Animator anim;  // optional, for drawing prop colors in events
 
     protected int width;  // pixel dimensions of entire panel
     protected int height;
@@ -52,6 +58,7 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
     protected int left_x;
     protected int juggler_delta_x;  // horizontal offset between jugglers (px)
 
+    protected int gui_state = STATE_INACTIVE;  // one of STATE_x values above
     protected double sim_time;
     protected int tracker_y = BORDER_TOP;
     protected boolean has_switch_symmetry;
@@ -104,11 +111,88 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
 
         pat.layoutPattern();  // ensures we have event list
         createView();
+
+        addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
-    public void setAnimator(Animator a) {
-        anim = a;
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseListener methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void mousePressed(final MouseEvent me) {
+        if (ap != null && (ap.writingGIF || !ap.engineAnimating))
+            return;
+
+        int my = me.getY();
+        my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
+
+        gui_state = STATE_MOVING_TRACKER;
+        tracker_y = my;
+        if (ap != null) {
+            double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                            (double)(height - 2 * BORDER_TOP);
+            double newtime = (double)(my - BORDER_TOP) * scale;
+            anim_paused = ap.isPaused();
+            ap.setPaused(true);
+            ap.setTime(newtime);
+        }
+
+        repaint();
+        if (ap != null)
+            ap.repaint();
     }
+
+    @Override
+    public void mouseReleased(final MouseEvent me) {
+        if (ap != null && (ap.writingGIF || !ap.engineAnimating))
+            return;
+
+        gui_state = STATE_INACTIVE;
+        if (ap != null)
+            ap.setPaused(anim_paused);
+        repaint();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    //-------------------------------------------------------------------------
+    // java.awt.event.MouseMotionListener methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void mouseDragged(MouseEvent me) {
+        if (ap != null && (ap.writingGIF || !ap.engineAnimating))
+            return;
+
+        int my = me.getY();
+        my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
+        tracker_y = my;
+        repaint();
+
+        if (ap != null) {
+            double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
+                    (double)(height - 2 * BORDER_TOP);
+            double newtime = (double)(my - BORDER_TOP) * scale;
+            ap.setTime(newtime);
+            ap.repaint();
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {}
+
+    //-------------------------------------------------------------------------
+    // Methods to interact with ladder items
+    //-------------------------------------------------------------------------
 
     protected LadderEventItem getSelectedLadderEvent(int x, int y) {
         for (LadderEventItem item : laddereventitems) {
@@ -182,6 +266,10 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
         tracker_y = (int)(0.5 + (double)(height-2*BORDER_TOP) * (sim_time-loop_start) /
                           (loop_end - loop_start)) + BORDER_TOP;
     }
+
+    //-------------------------------------------------------------------------
+    // Methods to create and paint the ladder view
+    //-------------------------------------------------------------------------
 
     // Create arrays of all the elements in the ladder diagram
     protected void createView() {
@@ -535,7 +623,10 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
         }
 
         // draw events
-        int[] animpropnum = (anim != null ? anim.getAnimPropNum() : null);
+        int[] animpropnum = null;
+        if (ap != null && ap.getAnimator() != null)
+            animpropnum = ap.getAnimator().getAnimPropNum();
+
         gr.setColor(Color.black);
         for (LadderEventItem item : laddereventitems) {
             if (item.type == LadderItem.TYPE_EVENT)
@@ -573,6 +664,11 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
     //-------------------------------------------------------------------------
 
     @Override
+    public void setAnimationPanel(AnimationPanel a) {
+        ap = a;
+    }
+
+    @Override
     public void setTime(double time) {
         if (sim_time == time)
             return;
@@ -595,6 +691,13 @@ public class LadderDiagram extends JPanel implements AnimationPanel.AnimationAtt
         }
 
         paintLadder(gr);
+
+        // label the tracker line with the time
+        if (gui_state == STATE_MOVING_TRACKER) {
+            gr.setColor(COLOR_TRACKER);
+            gr.drawString(JLFunc.toStringRounded(sim_time, 2) + " s",
+                        width / 2 - 18, tracker_y - 5);
+        }
     }
 }
 

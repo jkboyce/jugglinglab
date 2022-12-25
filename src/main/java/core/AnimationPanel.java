@@ -225,10 +225,13 @@ public class AnimationPanel extends JPanel implements Runnable {
         });
     }
 
+    public void removeAllAttachments() {
+        attachments.clear();
+    }
+
     public void addAnimationAttachment(AnimationAttachment att) {
         attachments.add(att);
     }
-
 
     protected double[] snapCamera(double[] ca) {
         double[] result = new double[2];
@@ -513,9 +516,13 @@ public class AnimationPanel extends JPanel implements Runnable {
     }
 
     // Interface for other elements to implement, to be notified by
-    // AnimationPanel about time updates, pattern changes, and so on.
+    // AnimationPanel about simulation time updates, etc.
 
     public interface AnimationAttachment {
+        // AnimationPanel we're attached to
+        public void setAnimationPanel(AnimationPanel ap);
+
+        // simulation time (seconds)
         public void setTime(double t);
     }
 }

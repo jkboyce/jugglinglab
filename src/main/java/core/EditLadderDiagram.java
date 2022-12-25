@@ -37,9 +37,8 @@ public class EditLadderDiagram extends LadderDiagram implements
 
     protected static final Color COLOR_SELECTION = Color.green;
 
-    protected static final int STATE_INACTIVE = 0;
-    protected static final int STATE_MOVING_EVENT = 1;
-    protected static final int STATE_MOVING_TRACKER = 2;
+    // additional GUI states
+    protected static final int STATE_MOVING_EVENT = 2;
     protected static final int STATE_MOVING_POSITION = 3;
     protected static final int STATE_POPUP = 4;
 
@@ -47,7 +46,6 @@ public class EditLadderDiagram extends LadderDiagram implements
     protected View parentview;
     protected AnimationEditPanel aep;
 
-    protected int gui_state = STATE_INACTIVE;  // one of STATE_x values above
     protected LadderEventItem active_eventitem;
     protected LadderPositionItem active_positionitem;
     protected boolean item_was_selected;  // for detecting de-selecting clicks
@@ -71,14 +69,6 @@ public class EditLadderDiagram extends LadderDiagram implements
         super(pat);
         parentframe = pframe;
         parentview = pview;
-
-        addMouseListener(this);
-        addMouseMotionListener(this);
-    }
-
-    public void setAnimationPanel(AnimationEditPanel a) {
-        aep = a;
-        setAnimator(aep.getAnimator());
     }
 
     //-------------------------------------------------------------------------
@@ -152,7 +142,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 pat.layoutPattern();
 
                 if (aep != null) {
-                    anim.initAnimator();
+                    aep.getAnimator().initAnimator();
                     aep.repaint();
                 }
             }
@@ -1148,6 +1138,10 @@ public class EditLadderDiagram extends LadderDiagram implements
         return true;
     }
 
+    //-------------------------------------------------------------------------
+    // java.awt.event.ActionListener methods
+    //-------------------------------------------------------------------------
+
     @Override
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
@@ -1451,7 +1445,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         }
 
         final int pathnum = pn;
-        final int[] animpropnum = anim.getAnimPropNum();
+        final int[] animpropnum = aep.getAnimator().getAnimPropNum();
         final int propnum = animpropnum[pathnum - 1];
         //final int propnum = pat.getPropAssignment(pathnum);
         //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
@@ -1981,6 +1975,18 @@ public class EditLadderDiagram extends LadderDiagram implements
             if (aep != null)
                 aep.setPaused(anim_paused);
         }
+    }
+
+    //-------------------------------------------------------------------------
+    // AnimationPanel.AnimationAttachment methods
+    //-------------------------------------------------------------------------
+
+    @Override
+    public void setAnimationPanel(AnimationPanel a) {
+        super.setAnimationPanel(a);
+
+        if (a instanceof AnimationEditPanel)
+            aep = (AnimationEditPanel)a;
     }
 
     //-------------------------------------------------------------------------
