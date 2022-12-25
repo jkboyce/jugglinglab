@@ -585,15 +585,6 @@ public class AnimationEditPanel extends AnimationPanel
             createPositionView();
     }
 
-    // set position of tracker bar in ladder diagram as we animate
-    @Override
-    public void setTime(double time) {
-        super.setTime(time);
-        for (AnimationAttachment att : attachments) {
-            att.setTime(time);
-        }
-    }
-
     @Override
     public void setZoomLevel(double z) {
         if (!writingGIF) {

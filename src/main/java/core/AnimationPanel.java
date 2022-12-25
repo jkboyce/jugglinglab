@@ -440,6 +440,9 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     public void setTime(double time) {
         sim_time = time;
+        for (AnimationAttachment att : attachments) {
+            att.setTime(time);
+        }
     }
 
     public double[] getCameraAngle() {
