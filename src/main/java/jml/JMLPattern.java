@@ -7,6 +7,7 @@ package jugglinglab.jml;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.ResourceBundle;
 import org.xml.sax.*;
@@ -251,12 +252,11 @@ public class JMLPattern {
                 // ...then move all the transitions from `current` to `ev`,
                 // except those for a path number that already has a transition
                 // in `ev`.
-                for (int i = 0; i < current.getNumberOfTransitions(); ++i) {
-                    JMLTransition tr_current = current.getTransition(i);
+                for (JMLTransition tr_current : current.transitions()) {
                     boolean add_transition = true;
 
-                    for (int j = 0; j < ev.getNumberOfTransitions(); ++j) {
-                        if (ev.getTransition(j).getPath() == tr_current.getPath())
+                    for (JMLTransition tr : ev.transitions()) {
+                        if (tr.getPath() == tr_current.getPath())
                             add_transition = false;
                     }
 
@@ -481,8 +481,7 @@ public class JMLPattern {
             pos = pos.getNext();
         }
 
-        for (int i = 0; i < getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = getSymmetry(i);
+        for (JMLSymmetry sym : symmetries()) {
             double delay = sym.getDelay();
             if (delay > 0)
                 sym.setDelay(delay * scale);
@@ -589,9 +588,7 @@ public class JMLPattern {
 
             // For each symmetry (besides type SWITCH):
             //     - invert pperm
-            for (int i = 0; i < getNumberOfSymmetries(); ++i) {
-                JMLSymmetry sym = getSymmetry(i);
-
+            for (JMLSymmetry sym : symmetries()) {
                 if (sym.getType() == JMLSymmetry.TYPE_SWITCH)
                     continue;
 
@@ -612,17 +609,17 @@ public class JMLPattern {
                     JMLEvent end = pl.getEndEvent();
 
                     JMLTransition start_tr = null;
-                    for (int i = 0; i < start.getNumberOfTransitions(); ++i) {
-                        if (start.getTransition(i).getPath() == path) {
-                            start_tr = start.getTransition(i);
+                    for (JMLTransition tr : start.transitions()) {
+                        if (tr.getPath() == path) {
+                            start_tr = tr;
                             break;
                         }
                     }
 
                     JMLTransition end_tr = null;
-                    for (int i = 0; i < end.getNumberOfTransitions(); ++i) {
-                        if (end.getTransition(i).getPath() == path) {
-                            end_tr = end.getTransition(i);
+                    for (JMLTransition tr : end.transitions()) {
+                        if (tr.getPath() == path) {
+                            end_tr = tr;
                             break;
                         }
                     }
@@ -684,8 +681,8 @@ public class JMLPattern {
             JMLEvent next = ev.getNextForHand();
 
             boolean holding_only = true;
-            for (int i = 0; i < ev.getNumberOfTransitions(); ++i) {
-                if (ev.getTransition(i).getType() != JMLTransition.TRANS_HOLDING)
+            for (JMLTransition tr : ev.transitions()) {
+                if (tr.getType() != JMLTransition.TRANS_HOLDING)
                     holding_only = false;
             }
             boolean different_masters = (prev == null || !ev.hasSameMasterAs(prev));
@@ -891,8 +888,7 @@ public class JMLPattern {
                 if (hasVDHandJMLTransition[jug][han] == false)
                     needHandEvent[jug][han] = false;
 
-                for (int i = 0; i < maxevent.getNumberOfTransitions(); i++) {
-                    JMLTransition tr = maxevent.getTransition(i);
+                for (JMLTransition tr : maxevent.transitions()) {
                     int path = tr.getPath() - 1;
 
                     switch (tr.getType()) {
@@ -975,8 +971,7 @@ public class JMLPattern {
                             (mintime > (2 * getLoopEndTime() - getLoopStartTime())))
                     needHandEvent[jug][han] = false;
 
-                for (int i = 0; i < minevent.getNumberOfTransitions(); i++) {
-                    JMLTransition tr = minevent.getTransition(i);
+                for (JMLTransition tr : minevent.transitions()) {
                     int path = tr.getPath() - 1;
 
                     switch (tr.getType()) {
@@ -1290,8 +1285,7 @@ public class JMLPattern {
                     // find velocity of hand path ending
                     vr = null;
                     if (ev.getJuggler() == (i+1) && ev.getHand() == handnum) {
-                        for (k = 0; k < ev.getNumberOfTransitions(); k++) {
-                            JMLTransition tr = ev.getTransition(k);
+                        for (JMLTransition tr : ev.transitions()) {
                             if (tr.getType() == JMLTransition.TRANS_THROW) {
                                 PathLink pl = tr.getOutgoingPathLink();
                                 if (pl != null)
@@ -1492,12 +1486,8 @@ public class JMLPattern {
         return propassignment[path - 1];
     }
 
-    public int getNumberOfSymmetries() {
-        return symmetries.size();
-    }
-
-    public JMLSymmetry getSymmetry(int index) {
-        return symmetries.get(index);
+    public Collection<JMLSymmetry> symmetries() {
+        return symmetries;
     }
 
     public double getLoopStartTime() {
@@ -1505,9 +1495,10 @@ public class JMLPattern {
     }
 
     public double getLoopEndTime() {
-        for (int i = 0; i < getNumberOfSymmetries(); i++)
-            if (getSymmetry(i).getType() == JMLSymmetry.TYPE_DELAY)
-                return getSymmetry(i).getDelay();
+        for (JMLSymmetry sym : symmetries()) {
+            if (sym.getType() == JMLSymmetry.TYPE_DELAY)
+                return sym.getDelay();
+        }
         return -1;
     }
 
@@ -1786,9 +1777,10 @@ public class JMLPattern {
     }
 
     public Permutation getPathPermutation() {
-        for (int i = 0; i < getNumberOfSymmetries(); i++)
-            if (getSymmetry(i).getType() == JMLSymmetry.TYPE_DELAY)
-                return getSymmetry(i).getPathPerm();
+        for (JMLSymmetry sym : symmetries()) {
+            if (sym.getType() == JMLSymmetry.TYPE_DELAY)
+                return sym.getPathPerm();
+        }
         return null;
     }
 

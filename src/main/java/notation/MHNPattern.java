@@ -121,6 +121,10 @@ public abstract class MHNPattern extends Pattern {
         return symmetry.get(i);
     }
 
+    public Iterable<MHNSymmetry> symmetries() {
+        return symmetry;
+    }
+
     // Pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
     //
@@ -378,8 +382,7 @@ public abstract class MHNPattern extends Pattern {
         while (changed) {
             changed = false;
 
-            for (int s = 0; s < getNumberOfSymmetries(); ++s) {
-                MHNSymmetry sym = getSymmetry(s);
+            for (MHNSymmetry sym : symmetries()) {
                 Permutation jperm = sym.getJugglerPerm();
                 int delay = sym.getDelay();
 
@@ -1009,10 +1012,9 @@ public abstract class MHNPattern extends Pattern {
     protected void addSymmetriesToJML(JMLPattern pat) throws JuggleExceptionUser {
         int balls = getNumberOfPaths();
 
-        for (int i = 0; i < getNumberOfSymmetries(); i++) {
-            MHNSymmetry sss = getSymmetry(i);
+        for (MHNSymmetry sss : symmetries()) {
             int symtype;
-            int[] pathmap = new int[balls+1];
+            int[] pathmap = new int[balls + 1];
 
             switch (sss.getType()) {
                 case MHNSymmetry.TYPE_DELAY:
@@ -1020,7 +1022,7 @@ public abstract class MHNPattern extends Pattern {
                     // figure out the path mapping
                     {
                         MHNThrow[][][][] th = getThrows();
-                        for (int k = 0; k < (getIndexes()-sss.getDelay()); k++) {
+                        for (int k = 0; k < (getIndexes() - sss.getDelay()); k++) {
                             for (int j = 0; j < getNumberOfJugglers(); j++) {
                                 for (int h = 0; h < 2; h++) {
                                     for (int slot = 0; slot < getMaxOccupancy(); slot++) {
@@ -1632,8 +1634,8 @@ public abstract class MHNPattern extends Pattern {
 
     protected void addEventsForUntouchedPathsToJML(JMLPattern pat, boolean[] pathtouched) {
         // first, apply all pattern symmetries to figure out which paths don't get touched
-        for (int j = 0; j < pat.getNumberOfSymmetries(); j++) {
-            Permutation perm = pat.getSymmetry(j).getPathPerm();
+        for (JMLSymmetry sym : pat.symmetries()) {
+            Permutation perm = sym.getPathPerm();
             for (int k = 0; k < getNumberOfPaths(); k++) {
                 if (pathtouched[k]) {
                     for (int l = 1; l < perm.getOrder(k + 1); l++) {
@@ -1676,8 +1678,8 @@ public abstract class MHNPattern extends Pattern {
 
                     // mark related paths as touched
                     pathtouched[k] = true;
-                    for (int j = 0; j < pat.getNumberOfSymmetries(); j++) {
-                        Permutation perm = pat.getSymmetry(j).getPathPerm();
+                    for (JMLSymmetry sym : pat.symmetries()) {
+                        Permutation perm = sym.getPathPerm();
                         for (int l = 1; l < perm.getOrder(k + 1); l++) {
                             pathtouched[perm.getMapping(k + 1, l) - 1] = true;
                         }

@@ -198,37 +198,38 @@ public class EventImages {
         evtransitions = ev.getNumberOfTransitions();
         evtime = ev.getT();
 
-        int numsyms = pat.getNumberOfSymmetries() - 1;
+        int numsyms = pat.symmetries().size() - 1;
         JMLSymmetry[] sym = new JMLSymmetry[numsyms];
         int[] symperiod = new int[numsyms];
         int[] deltaentries = new int[numsyms];
         Permutation invdelayperm = null;
 
         numentries = 1;
-        for (int i = 0, j = 0; i <= numsyms; i++) {
-            JMLSymmetry temp = pat.getSymmetry(i);
+        int index = 0;
+        for (JMLSymmetry temp : pat.symmetries()) {
             switch (temp.getType()) {
                 case JMLSymmetry.TYPE_DELAY:
                     invdelayperm = temp.getPathPerm().getInverse();
                     break;
                 case JMLSymmetry.TYPE_SWITCH:
-                    sym[j] = temp;
-                    symperiod[j] = temp.getJugglerPerm().getOrder();
-                    deltaentries[j] = 0;
-                    j++;
+                    sym[index] = temp;
+                    symperiod[index] = temp.getJugglerPerm().getOrder();
+                    deltaentries[index] = 0;
+                    index++;
                     break;
                 case JMLSymmetry.TYPE_SWITCHDELAY:
-                    sym[j] = temp;
-                    symperiod[j] = temp.getJugglerPerm().getOrder();
-                    numentries = Permutation.lcm(numentries, symperiod[j]);
-                    deltaentries[j] = -1;
-                    j++;
+                    sym[index] = temp;
+                    symperiod[index] = temp.getJugglerPerm().getOrder();
+                    numentries = Permutation.lcm(numentries, symperiod[index]);
+                    deltaentries[index] = -1;
+                    index++;
                     break;
             }
         }
-        for (int i = 0; i < numsyms; i++)   // assume exactly one delay symmetry
+        for (int i = 0; i < numsyms; i++) {  // assume exactly one delay symmetry
             if (deltaentries[i] == -1)  // signals a switchdelay symmetry
                 deltaentries[i] = numentries / symperiod[i];
+        }
 
         // System.out.println("numentries = "+numentries);
 
@@ -243,7 +244,6 @@ public class EventImages {
             transitiontype[i] = tr.getType();
         }
 
-
         boolean changed;
         do {
             // System.out.println("{"+ea[0][0][0][0]+","+ea[0][0][1][0]+"},{"+ea[0][1][0][0]+","+ea[0][1][1][0]+"}");
@@ -255,33 +255,35 @@ public class EventImages {
                     for (int k = 0; k < 2; k++) {
                         for (int l = 0; l < numentries; l++) {
                             // apply symmetry to event
-                            int newj = sym[i].getJugglerPerm().getMapping(j+1);
-                            if (newj != 0) {
-                                int newk = (newj < 0 ? (1-k) : k);
-                                if (newj < 0)
-                                    newj = -newj;
-                                newj--;
+                            int newj = sym[i].getJugglerPerm().getMapping(j + 1);
+                            if (newj == 0)
+                                continue;
 
-                                Permutation p = ea[j][k][l];
-                                if (p != null) {
-                                    p = sym[i].getPathPerm().apply(p);
+                            int newk = (newj < 0 ? (1 - k) : k);
+                            if (newj < 0)
+                                newj = -newj;
+                            newj--;
 
-                                    int newl = l + deltaentries[i];
-                                    // map back into range
-                                    if (newl >= numentries) {
-                                        p = invdelayperm.apply(p);
-                                        newl -= numentries;
-                                    }
-                                    // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);
-                                    // check for consistency
-                                    if (ea[newj][newk][newl] != null) {
-                                        if (!p.equals(ea[newj][newk][newl]))
-                                            throw new JuggleExceptionUser("Symmetries inconsistent");
-                                    } else {
-                                        ea[newj][newk][newl] = p;
-                                        changed = true;
-                                    }
-                                }
+                            Permutation p = ea[j][k][l];
+                            if (p == null)
+                                continue;
+
+                            p = sym[i].getPathPerm().apply(p);
+
+                            int newl = l + deltaentries[i];
+                            // map back into range
+                            if (newl >= numentries) {
+                                p = invdelayperm.apply(p);
+                                newl -= numentries;
+                            }
+                            // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);
+                            // check for consistency
+                            if (ea[newj][newk][newl] != null) {
+                                if (!p.equals(ea[newj][newk][newl]))
+                                    throw new JuggleExceptionUser("Symmetries inconsistent");
+                            } else {
+                                ea[newj][newk][newl] = p;
+                                changed = true;
                             }
                         }
                     }

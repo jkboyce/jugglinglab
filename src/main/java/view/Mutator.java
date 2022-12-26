@@ -199,10 +199,9 @@ public class Mutator {
             pos = pos.getNext();
         }
 
-        for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = pat.getSymmetry(i);
+        for (JMLSymmetry sym : pat.symmetries()) {
             double delay = sym.getDelay();
-            if (delay > 0.0)
+            if (delay > 0)
                 sym.setDelay(delay * scale);
         }
 
@@ -308,8 +307,8 @@ public class Mutator {
         while (ev != null) {
             if (ev.isMaster()) {
                 boolean holding_only = true;
-                for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
-                    int type = ev.getTransition(i).getType();
+                for (JMLTransition tr : ev.transitions()) {
+                    int type = tr.getType();
                     if (type != JMLTransition.TRANS_NONE &&
                                 type != JMLTransition.TRANS_HOLDING) {
                         holding_only = false;
@@ -333,8 +332,8 @@ public class Mutator {
         while (ev != null) {
             if (ev.isMaster()) {
                 boolean holding_only = true;
-                for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
-                    int type = ev.getTransition(i).getType();
+                for (JMLTransition tr : ev.transitions()) {
+                    int type = tr.getType();
                     if (type != JMLTransition.TRANS_NONE &&
                                 type != JMLTransition.TRANS_HOLDING) {
                         holding_only = false;

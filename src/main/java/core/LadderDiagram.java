@@ -274,8 +274,8 @@ public class LadderDiagram extends JPanel implements
     // Create arrays of all the elements in the ladder diagram
     protected void createView() {
         has_switch_symmetry = has_switchdelay_symmetry = false;
-        for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = pat.getSymmetry(i);
+
+        for (JMLSymmetry sym : pat.symmetries()) {
             switch (sym.getType()) {
                 case JMLSymmetry.TYPE_SWITCH:
                     has_switch_symmetry = true;

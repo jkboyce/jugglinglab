@@ -98,9 +98,10 @@ public class MarginEquations {
         JMLEvent ev = events;
         while (ev != null) {
             if (ev.isMaster()) {
-                for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
-                    int type = ev.getTransition(i).getType();
-                    if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
+                for (JMLTransition tr : ev.transitions()) {
+                    int type = tr.getType();
+                    if (type == JMLTransition.TRANS_THROW ||
+                                    type == JMLTransition.TRANS_CATCH ||
                                     type == JMLTransition.TRANS_SOFTCATCH ||
                                     type == JMLTransition.TRANS_GRABCATCH) {
                         ++varsNum;
@@ -110,7 +111,7 @@ public class MarginEquations {
                             maxValue = Math.abs(coord.x);
 
                         if (type == JMLTransition.TRANS_THROW) {
-                            ParameterList pl = new ParameterList(ev.getTransition(i).getMod());
+                            ParameterList pl = new ParameterList(tr.getMod());
                             String gparam = pl.getParameter("g");
                             if (gparam != null) {
                                 try {
@@ -217,8 +218,7 @@ public class MarginEquations {
 
         double sym_delay = -1;
         boolean sym_switchdelay = false;
-        for (int i = 0; i < pat.getNumberOfSymmetries(); i++) {
-            JMLSymmetry sym = pat.getSymmetry(i);
+        for (JMLSymmetry sym : pat.symmetries()) {
             switch (sym.getType()) {
                 case JMLSymmetry.TYPE_DELAY:
                     sym_delay = sym.getDelay();

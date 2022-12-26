@@ -111,6 +111,10 @@ public class JMLEvent {
         return transitions.get(index);
     }
 
+    public Collection<JMLTransition> transitions() {
+        return transitions;
+    }
+
     public void addTransition(JMLTransition trans) {
         transitions.add(trans);
     }
@@ -120,12 +124,7 @@ public class JMLEvent {
     }
 
     public void removeTransition(JMLTransition trans) {
-        for (int i = 0; i < getNumberOfTransitions(); i++) {
-            if (getTransition(i) == trans) {
-                removeTransition(i);
-                return;
-            }
-        }
+        transitions.remove(trans);
     }
 
     public boolean isMaster() {
@@ -222,9 +221,7 @@ public class JMLEvent {
     }
 
     public boolean hasThrow() {
-        for (int i = 0; i < getNumberOfTransitions(); ++i) {
-            JMLTransition tr = getTransition(i);
-
+        for (JMLTransition tr : transitions()) {
             if (tr.getType() == JMLTransition.TRANS_THROW)
                 return true;
         }
@@ -232,8 +229,8 @@ public class JMLEvent {
     }
 
     public boolean hasThrowOrCatch() {
-        for (int i = 0; i < getNumberOfTransitions(); ++i) {
-            int type = getTransition(i).getType();
+        for (JMLTransition tr : transitions()) {
+            int type = tr.getType();
 
             if (type == JMLTransition.TRANS_THROW ||
                         type == JMLTransition.TRANS_CATCH ||
@@ -248,9 +245,7 @@ public class JMLEvent {
     //
     // Note this will only work after pattern layout.
     public boolean hasPassingThrow() {
-        for (int i = 0; i < getNumberOfTransitions(); ++i) {
-            JMLTransition tr = getTransition(i);
-
+        for (JMLTransition tr : transitions()) {
             if (tr.getType() != JMLTransition.TRANS_THROW)
                 continue;
 
@@ -267,9 +262,7 @@ public class JMLEvent {
     //
     // Note this will only work after pattern layout.
     public boolean hasPassingCatch() {
-        for (int i = 0; i < getNumberOfTransitions(); ++i) {
-            JMLTransition tr = getTransition(i);
-
+        for (JMLTransition tr : transitions()) {
             if (tr.getType() != JMLTransition.TRANS_CATCH &&
                         tr.getType() != JMLTransition.TRANS_SOFTCATCH &&
                         tr.getType() != JMLTransition.TRANS_GRABCATCH)
@@ -298,10 +291,9 @@ public class JMLEvent {
         dup.delayunits = delayunits;
         dup.calcpos = calcpos;
 
-        for (int i = 0; i < getNumberOfTransitions(); i++) {
-            JMLTransition trans = getTransition(i).duplicate();
-            dup.addTransition(trans);
-        }
+        for (JMLTransition tr : transitions())
+            dup.addTransition(tr.duplicate());
+
         dup.setMaster(isMaster() ? this : master);
         return dup;
     }
@@ -411,8 +403,8 @@ public class JMLEvent {
                    "\" hand=\"" + Integer.toString(getJuggler()) + ":" +
                    (getHand() == HandLink.LEFT_HAND ? "left" : "right") +
                    "\">");
-        for (int i = 0; i < getNumberOfTransitions(); ++i)
-            getTransition(i).writeJML(wr);
+        for (JMLTransition tr : transitions())
+            tr.writeJML(wr);
         wr.println("</event>");
     }
 

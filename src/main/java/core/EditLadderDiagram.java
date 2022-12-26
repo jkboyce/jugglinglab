@@ -536,8 +536,7 @@ public class EditLadderDiagram extends LadderDiagram implements
         double scale = (pat.getLoopEndTime() - pat.getLoopStartTime()) /
                     (double)(height - 2 * BORDER_TOP);
 
-        for (int j = 0; j < item.event.getNumberOfTransitions(); j++) {
-            JMLTransition tr = item.event.getTransition(j);
+        for (JMLTransition tr : item.event.transitions()) {
             switch (tr.getType()) {
                 case JMLTransition.TRANS_THROW:
                 {
@@ -696,19 +695,18 @@ public class EditLadderDiagram extends LadderDiagram implements
         boolean catchpath[] = new boolean[pat.getNumberOfPaths()];
         boolean holdpathorig[] = new boolean[pat.getNumberOfPaths()];
         boolean holdpathnew[] = new boolean[pat.getNumberOfPaths()];
-        for (int j = 0; j < ev.getNumberOfTransitions(); j++) {
-            JMLTransition tr = ev.getTransition(j);
+        for (JMLTransition tr : ev.transitions()) {
             switch (tr.getType()) {
                 case JMLTransition.TRANS_THROW:
-                    throwpath[tr.getPath()-1] = true;
+                    throwpath[tr.getPath() - 1] = true;
                     break;
                 case JMLTransition.TRANS_CATCH:
                 case JMLTransition.TRANS_SOFTCATCH:
                 case JMLTransition.TRANS_GRABCATCH:
-                    catchpath[tr.getPath()-1] = true;
+                    catchpath[tr.getPath() - 1] = true;
                     break;
                 case JMLTransition.TRANS_HOLDING:
-                    holdpathnew[tr.getPath()-1] = holdpathorig[tr.getPath()-1] = true;
+                    holdpathnew[tr.getPath() - 1] = holdpathorig[tr.getPath() - 1] = true;
                     break;
             }
         }
@@ -723,15 +721,15 @@ public class EditLadderDiagram extends LadderDiagram implements
                         JMLTransition tr = ev.getTransition(j);
                         switch (tr.getType()) {
                             case JMLTransition.TRANS_THROW:
-                                holdpathnew[tr.getPath()-1] = true;
+                                holdpathnew[tr.getPath() - 1] = true;
                                 break;
                             case JMLTransition.TRANS_CATCH:
                             case JMLTransition.TRANS_SOFTCATCH:
                             case JMLTransition.TRANS_GRABCATCH:
-                                holdpathnew[tr.getPath()-1] = false;
+                                holdpathnew[tr.getPath() - 1] = false;
                                 break;
                             case JMLTransition.TRANS_HOLDING:
-                                if (throwpath[tr.getPath()-1]) {
+                                if (throwpath[tr.getPath() - 1]) {
                                     ev.removeTransition(j);
                                     if (!ev.isMaster())
                                         ev.getMaster().removeTransition(j);
@@ -1051,8 +1049,7 @@ public class EditLadderDiagram extends LadderDiagram implements
                 // can't remove an event with throws or catches
                 LadderEventItem evitem = (LadderEventItem)laditem;
 
-                for (int j = 0; j < evitem.event.getNumberOfTransitions(); j++) {
-                    JMLTransition tr = evitem.event.getTransition(j);
+                for (JMLTransition tr : evitem.event.transitions()) {
                     if (tr.getType() != JMLTransition.TRANS_HOLDING)
                         return false;
                 }
