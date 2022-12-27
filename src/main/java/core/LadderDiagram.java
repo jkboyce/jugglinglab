@@ -42,6 +42,9 @@ public class LadderDiagram extends JPanel implements
     protected static final double SELFTHROW_WIDTH = 0.25;
 
     protected static final Color COLOR_BACKGROUND = Color.white;
+    protected static final Color COLOR_HANDS = Color.black;
+    protected static final Color COLOR_POSITIONS = Color.black;
+    protected static final Color COLOR_SYMMETRIES = Color.lightGray;
     protected static final Color COLOR_TRACKER = Color.red;
     protected static final int IMAGE_DRAW_WAIT = 5;  // frames
 
@@ -68,9 +71,9 @@ public class LadderDiagram extends JPanel implements
     protected ArrayList<LadderPathItem> ladderpathitems;
     protected ArrayList<LadderPositionItem> ladderpositionitems;
 
-    protected BufferedImage ladderimage;
-    protected boolean ladder_image_valid;
-    protected int frames_until_ladder_image;
+    protected BufferedImage im;
+    protected boolean image_valid;
+    protected int frames_until_image_draw;
 
     protected boolean anim_paused;
 
@@ -382,9 +385,9 @@ public class LadderDiagram extends JPanel implements
         juggler_delta_x = (int)(scale * (1.0 + JUGGLER_SEPARATION) + 0.5);
 
         // invalidate cached image of ladder diagram
-        ladder_image_valid = false;
-        ladderimage = null;
-        frames_until_ladder_image = IMAGE_DRAW_WAIT;
+        image_valid = false;
+        im = null;
+        frames_until_image_draw = IMAGE_DRAW_WAIT;
 
         double loop_start = pat.getLoopStartTime();
         double loop_end = pat.getLoopEndTime();
@@ -506,16 +509,16 @@ public class LadderDiagram extends JPanel implements
         if (dim.width != width || dim.height != height)
             updateView();
 
-        boolean rebuild_ladder_image = (!ladder_image_valid &&
-                                        --frames_until_ladder_image <= 0);
+        boolean rebuild_ladder_image = (!image_valid &&
+                                        --frames_until_image_draw <= 0);
 
         if (rebuild_ladder_image) {
-            ladderimage = GraphicsEnvironment
+            im = GraphicsEnvironment
                     .getLocalGraphicsEnvironment()
                     .getDefaultScreenDevice()
                     .getDefaultConfiguration()
                     .createCompatibleImage(width, height, Transparency.OPAQUE);
-            g = ladderimage.getGraphics();
+            g = im.getGraphics();
 
             if (g instanceof Graphics2D) {
                 Graphics2D g2 = (Graphics2D)g;
@@ -524,13 +527,13 @@ public class LadderDiagram extends JPanel implements
             }
         }
 
-        if (!ladder_image_valid) {
+        if (!image_valid) {
             // first erase the background
-            g.setColor(getBackground());
+            g.setColor(COLOR_BACKGROUND);
             g.fillRect(0, 0, width, height);
 
             // draw the lines signifying symmetries
-            g.setColor(Color.lightGray);
+            g.setColor(COLOR_SYMMETRIES);
             g.drawLine(0, BORDER_TOP, width, BORDER_TOP);
             g.drawLine(0, height - BORDER_TOP, width, height-BORDER_TOP);
             if (has_switch_symmetry) {
@@ -549,7 +552,7 @@ public class LadderDiagram extends JPanel implements
                 g.drawLine(0, height / 2, width, height / 2);
 
             // draw the lines representing the hands
-            g.setColor(Color.black);
+            g.setColor(COLOR_HANDS);
             for (int j = 0; j < pat.getNumberOfJugglers(); j++) {
                 for (int i = -1; i < 2; i++) {
                     g.drawLine(left_x + i + j * juggler_delta_x, BORDER_TOP,
@@ -604,19 +607,18 @@ public class LadderDiagram extends JPanel implements
         }
 
         if (rebuild_ladder_image)
-            ladder_image_valid = true;
+            image_valid = true;
 
-        if (ladder_image_valid)
-            gr.drawImage(ladderimage, 0, 0, this);
+        if (image_valid)
+            gr.drawImage(im, 0, 0, this);
 
         // draw positions
-        gr.setColor(Color.black);
         for (LadderPositionItem item : ladderpositionitems) {
             if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
-                gr.setColor(getBackground());
+                gr.setColor(COLOR_BACKGROUND);
                 gr.fillRect(item.xlow, item.ylow,
                             item.xhigh - item.xlow, item.yhigh - item.ylow);
-                gr.setColor(Color.black);
+                gr.setColor(COLOR_POSITIONS);
                 gr.drawRect(item.xlow, item.ylow,
                             item.xhigh - item.xlow, item.yhigh - item.ylow);
             }
@@ -627,12 +629,12 @@ public class LadderDiagram extends JPanel implements
         if (ap != null && ap.getAnimator() != null)
             animpropnum = ap.getAnimator().getAnimPropNum();
 
-        gr.setColor(Color.black);
         for (LadderEventItem item : laddereventitems) {
-            if (item.type == LadderItem.TYPE_EVENT)
+            if (item.type == LadderItem.TYPE_EVENT) {
+                gr.setColor(COLOR_HANDS);
                 gr.fillOval(item.xlow, item.ylow,
                             item.xhigh - item.xlow, item.yhigh - item.ylow);
-            else {
+            } else {
                 if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
                     if (animpropnum == null) {
                         gr.setColor(COLOR_BACKGROUND);
@@ -645,7 +647,7 @@ public class LadderDiagram extends JPanel implements
                     gr.fillOval(item.xlow, item.ylow,
                                 item.xhigh - item.xlow, item.yhigh - item.ylow);
 
-                    gr.setColor(Color.black);
+                    gr.setColor(COLOR_HANDS);
                     gr.drawOval(item.xlow, item.ylow,
                                 item.xhigh-item.xlow, item.yhigh-item.ylow);
                 }
