@@ -25,7 +25,7 @@ import jugglinglab.view.View;
 // This class draws the vertical ladder diagram on the right side of Edit view.
 
 public class EditLadderDiagram extends LadderDiagram implements
-                ActionListener, MouseListener, MouseMotionListener {
+                ActionListener {
     // minimum time (seconds) between a throw and another event with transitions
     protected static final double MIN_THROW_SEP_TIME = 0.05;
 
