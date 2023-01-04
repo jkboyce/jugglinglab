@@ -666,6 +666,7 @@ public class JMLPattern {
     //     for that hand
     // (d) event is not immediately adjacent to a throw or catch event for that
     //     hand that involves a pass to/from a different juggler
+    @SuppressWarnings("unused")
     public void streamlinePatternWithWindow(double twindow) throws
                                     JuggleExceptionUser, JuggleExceptionInternal {
         layoutPattern();  // to ensure we have PathLinks
@@ -1067,6 +1068,7 @@ public class JMLPattern {
     // through the specified locations and angles.
     //-------------------------------------------------------------------------
 
+    @SuppressWarnings("all")
     public void findPositions() throws JuggleExceptionInternal {
         jugglercurve = new SplineCurve[getNumberOfJugglers()];
         jugglerangle = ( (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE) ?
@@ -1175,7 +1177,7 @@ public class JMLPattern {
     //-------------------------------------------------------------------------
 
     protected void buildLinkLists() throws JuggleExceptionUser, JuggleExceptionInternal {
-        int i, j, k;
+        int i, j;
 
         pathlinks = new ArrayList<ArrayList<PathLink>>(getNumberOfPaths());
 

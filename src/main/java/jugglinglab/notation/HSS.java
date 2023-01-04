@@ -93,6 +93,7 @@ public class HSS {
     // ensure object pattern is a vanilla pattern (multiplex allowed)
     // also perform average test
     // convert input pattern string to ArrayList identifying throws made on each beat
+    @SuppressWarnings("unused")
     private static OssPatBnc ossSyntax(String ss) throws JuggleExceptionUser {
         boolean muxThrow = false;
         boolean muxThrowFound = false;
