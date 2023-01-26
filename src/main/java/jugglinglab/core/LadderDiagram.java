@@ -680,6 +680,11 @@ public class LadderDiagram extends JPanel implements
         repaint();
     }
 
+    @Override
+    public void repaintAttachment() {
+        repaint();
+    }
+
     //-------------------------------------------------------------------------
     // javax.swing.JComponent methods
     //-------------------------------------------------------------------------

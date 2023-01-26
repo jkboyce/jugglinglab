@@ -159,6 +159,7 @@ public class AnimationEditPanel extends AnimationPanel
                                         EditLadderDiagram eld = (EditLadderDiagram)att;
                                         eld.activateEvent(event);
                                     }
+                                    att.repaintAttachment();
                                 }
                             } catch (JuggleExceptionInternal jei) {
                                 ErrorDialog.handleFatalException(jei);

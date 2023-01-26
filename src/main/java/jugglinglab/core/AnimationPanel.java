@@ -524,5 +524,8 @@ public class AnimationPanel extends JPanel implements Runnable {
 
         // simulation time (seconds)
         public void setTime(double t);
+
+        // force a redraw
+        public void repaintAttachment();
     }
 }
