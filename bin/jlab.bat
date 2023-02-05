@@ -2,7 +2,7 @@
 
 REM Windows command line interface for Juggling Lab
 REM
-REM Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
+REM Copyright 2002-2023 Jack Boyce and the Juggling Lab contributors
 REM Released under the GNU General Public License v2
 
 SET "JL_EXE="
