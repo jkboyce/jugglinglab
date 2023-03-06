@@ -5,7 +5,7 @@
 package jugglinglab.core;
 
 public class Constants {
-    public static final String version = "1.6.4";
+    public static final String version = "1.6.5";
     public static final String year = "2023";
 
     public static final String site_URL = "http://jugglinglab.org";
