@@ -405,7 +405,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         }
     }
 
+    //-------------------------------------------------------------------------
     // java.awt.Frame methods
+    //-------------------------------------------------------------------------
 
     @Override
     public void setTitle(String title) {
@@ -416,7 +418,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
         ApplicationWindow.updateWindowMenus();
     }
 
+    //-------------------------------------------------------------------------
     // java.awt.Window methods
+    //-------------------------------------------------------------------------
 
     @Override
     public void dispose() {

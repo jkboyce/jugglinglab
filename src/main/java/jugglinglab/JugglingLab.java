@@ -66,14 +66,11 @@ public class JugglingLab {
         isCLI = (working_dir != null);
 
         if (working_dir == null) {
-            // If not found, then see if there is a base directory set in the
-            // user's preferences.
+            // Look for a directory saved during previous file operations.
             try {
-                Preferences prefs = Preferences.userRoot();
-                if (prefs.nodeExists("Juggling Lab")) {
-                    working_dir = prefs.node("Juggling Lab")
-                                       .get("base_dir", null);
-                }
+                working_dir = Preferences.userRoot()
+                                         .node("Juggling Lab")
+                                         .get("base_dir", null);
             } catch (Exception e) {}
         }
 
