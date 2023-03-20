@@ -18,9 +18,9 @@
 #    - JugglingLab.jar needs to be built prior to running this, using Maven
 #    - Need to be using JDK 16 or later for jpackage to work
 #    - Need to have Xcode installed for codesign to work
-#    - Need to build on an x86-based Mac to create an app that runs on any Mac
-#      (jpackage cannot create universal binaries, but builds an app targeted
-#      at the cpu type it's running on)
+#    - Need to run under an x86-based version of JDK in order to build a binary
+#      that runs on any Mac (jpackage builds for the CPU type the active JDK uses,
+#      and all Macs can run Intel code either natively or via Rosetta)
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html
@@ -68,5 +68,5 @@ jpackage --type dmg \
    --verbose
 
 find . -name "Juggling Lab*.dmg" -type f \
-   -exec bash -c 'rm "${0/Juggling Lab/JugglingLab}"; mv "$0" "${0/Juggling Lab/JugglingLab}"' {} \;
+   -exec bash -c 'rm -f "${0/Juggling Lab/JugglingLab}"; mv "$0" "${0/Juggling Lab/JugglingLab}"' {} \;
 

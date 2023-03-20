@@ -43,4 +43,4 @@ rm -r target
 # Remove Debian revision number from filename
 
 find . -name "*-1_amd64.deb" -type f \
-   -exec bash -c 'rm "${0/-1_amd64.deb/_amd64.deb}"; mv "$0" "${0/-1_amd64.deb/_amd64.deb}"' {} \;
+   -exec bash -c 'rm -f "${0/-1_amd64.deb/_amd64.deb}"; mv "$0" "${0/-1_amd64.deb/_amd64.deb}"' {} \;
