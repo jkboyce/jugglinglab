@@ -23,17 +23,18 @@ public class PatternListPanel extends JPanel {
     static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
     static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-    static final Font font_nopattern = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
-    static final Font font_pattern = new Font("Monospaced", Font.PLAIN, 14);
-    static final Font font_pattern_popup = new Font("Monospaced", Font.ITALIC, 14);
+    static final Font FONT_NOPATTERN = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
+    static final Font FONT_PATTERN = new Font("Monospaced", Font.PLAIN, 14);
+    static final Font FONT_PATTERN_POPUP = new Font("Monospaced", Font.ITALIC, 14);
 
-    static final DataFlavor patternFlavor = new DataFlavor(PatternRecord.class,
+    static final DataFlavor PATTERN_FLAVOR = new DataFlavor(PatternRecord.class,
                                                  "Juggling Lab pattern record");
 
     protected JMLPatternList pl;
     protected JFrame parent;
     protected View animtarget;
     protected JList<PatternRecord> list;
+    protected boolean hasUnsavedChanges;
 
     // for mouse/popup menu handling
     protected boolean didPopup;
@@ -144,6 +145,9 @@ public class PatternListPanel extends JPanel {
     }
 
     public void clearList() {
+        if (pl.getModel().size() > (JMLPatternList.BLANK_AT_END ? 1 : 0))
+            hasUnsavedChanges = true;
+
         pl.clearModel();
     }
 
@@ -247,7 +251,7 @@ public class PatternListPanel extends JPanel {
                     JMenuItem pitem = new JMenuItem("   " + pw.getTitle());
                     pitem.setActionCommand("pat" + patnum);
                     pitem.addActionListener(al);
-                    pitem.setFont(font_pattern_popup);
+                    pitem.setFont(FONT_PATTERN_POPUP);
                     popup.add(pitem);
                     ++patnum;
                 }
@@ -308,6 +312,8 @@ public class PatternListPanel extends JPanel {
                 list.setSelectedIndex(pl.getModel().size() - 1);
         } else
             list.setSelectedIndex(row);
+
+        hasUnsavedChanges = true;
     }
 
     // Open a dialog to allow the user to insert a line of text
@@ -326,6 +332,8 @@ public class PatternListPanel extends JPanel {
                     list.setSelectedIndex(pl.size() - 1);
                 else
                     list.setSelectedIndex(row);
+
+                hasUnsavedChanges = true;
             }
         });
 
@@ -344,6 +352,8 @@ public class PatternListPanel extends JPanel {
 
                 if (parent != null)
                     parent.setTitle(pl.getTitle());
+
+                hasUnsavedChanges = true;
             }
         });
 
@@ -363,6 +373,8 @@ public class PatternListPanel extends JPanel {
                 dialog.dispose();
 
                 pl.getModel().set(row, rec);
+
+                hasUnsavedChanges = true;
             }
         });
 
@@ -381,11 +393,11 @@ public class PatternListPanel extends JPanel {
         okbutton = new JButton(guistrings.getString("OK"));
 
         dialog.getContentPane().add(tf);
-        gb.setConstraints(tf, JLFunc.constraints(GridBagConstraints.LINE_START,0,0,
-                                               new Insets(10,10,0,10)));
+        gb.setConstraints(tf, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0,
+                                            new Insets(10, 10, 0, 10)));
         dialog.getContentPane().add(okbutton);
-        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END,0,1,
-                                                     new Insets(10,10,10,10)));
+        gb.setConstraints(okbutton, JLFunc.constraints(GridBagConstraints.LINE_END, 0, 1,
+                                            new Insets(10, 10, 10, 10)));
         dialog.getRootPane().setDefaultButton(okbutton);  // OK button is default
         dialog.pack();
         dialog.setResizable(false);
@@ -399,7 +411,7 @@ public class PatternListPanel extends JPanel {
         return dialog;
     }
 
-    // Be sure to call this at the very end of any mouse-related interaction
+    // Do final cleanup after any mouse-related interaction
     protected void checkSelection() {
         if (JMLPatternList.BLANK_AT_END && list.getSelectedIndex() == pl.getModel().size() - 1)
             list.clearSelection();
@@ -442,7 +454,7 @@ public class PatternListPanel extends JPanel {
             else
                 info.setDropAction(COPY);  // between lists
 
-            if (info.isDataFlavorSupported(patternFlavor))
+            if (info.isDataFlavorSupported(PATTERN_FLAVOR))
                 return true;
             if (info.isDataFlavorSupported(DataFlavor.stringFlavor))
                 return true;
@@ -464,10 +476,11 @@ public class PatternListPanel extends JPanel {
             Transferable t = info.getTransferable();
 
             try {
-                if (t.isDataFlavorSupported(patternFlavor)) {
-                    PatternRecord rec = (PatternRecord)t.getTransferData(patternFlavor);
+                if (t.isDataFlavorSupported(PATTERN_FLAVOR)) {
+                    PatternRecord rec = (PatternRecord)t.getTransferData(PATTERN_FLAVOR);
                     pl.getModel().add(index, new PatternRecord(rec));
                     list.setSelectedIndex(index);
+                    hasUnsavedChanges = true;
                     return true;
                 }
 
@@ -483,6 +496,7 @@ public class PatternListPanel extends JPanel {
                         pl.getModel().add(index, rec);
                     }
                     list.setSelectedIndex(index);
+                    hasUnsavedChanges = true;
                     return true;
                 }
             } catch (Exception e) {
@@ -501,6 +515,8 @@ public class PatternListPanel extends JPanel {
                 if (!pl.getModel().removeElement(((PatternTransferable)data).rec))
                     ErrorDialog.handleFatalException(
                             new JuggleExceptionInternal("PLP: exportDone()"));
+
+                hasUnsavedChanges = true;
             }
 
             draggingOut = false;
@@ -516,7 +532,7 @@ public class PatternListPanel extends JPanel {
 
         @Override
         public Object getTransferData(DataFlavor flavor) {
-            if (flavor.equals(patternFlavor))
+            if (flavor.equals(PATTERN_FLAVOR))
                 return rec;
 
             if (flavor.equals(DataFlavor.stringFlavor)) {
@@ -534,14 +550,14 @@ public class PatternListPanel extends JPanel {
         @Override
         public DataFlavor[] getTransferDataFlavors() {
             return new DataFlavor[] {
-                patternFlavor,
+                PATTERN_FLAVOR,
                 DataFlavor.stringFlavor,
             };
         }
 
         @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(patternFlavor) || flavor.equals(DataFlavor.stringFlavor);
+            return flavor.equals(PATTERN_FLAVOR) || flavor.equals(DataFlavor.stringFlavor);
         }
     }
 
@@ -559,7 +575,7 @@ public class PatternListPanel extends JPanel {
         {
             PatternRecord rec = value;
 
-            setFont(rec.anim == null && rec.patnode == null ? font_nopattern : font_pattern);
+            setFont(rec.anim == null && rec.patnode == null ? FONT_NOPATTERN : FONT_PATTERN);
             setText(rec.display.length() > 0 ? rec.display : " ");
 
             if (isSelected) {

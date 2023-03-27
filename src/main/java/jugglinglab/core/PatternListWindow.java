@@ -7,6 +7,7 @@ package jugglinglab.core;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
@@ -341,6 +342,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
                     FileWriter fw = new FileWriter(f);
                     plp.getPatternList().writeJML(fw);
                     fw.close();
+                    plp.hasUnsavedChanges = false;
                 } catch (FileNotFoundException fnfe) {
                     throw new JuggleExceptionInternal("File not found on save: " +
                             fnfe.getMessage());
@@ -424,6 +426,34 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
     @Override
     public void dispose() {
+        if (plp != null && plp.hasUnsavedChanges) {
+            String template = guistrings.getString("PLWINDOW_Unsaved_changes_message");
+            Object[] arguments = { getTitle() };
+            String message = MessageFormat.format(template, arguments);
+            String title = guistrings.getString("PLWINDOW_Unsaved_changes_title");
+
+            int res = JOptionPane.showConfirmDialog(plp,
+                    message,
+                    title,
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+
+            if (res == JOptionPane.CANCEL_OPTION)
+                return;
+
+            if (res == JOptionPane.YES_OPTION) {
+                try {
+                    doMenuCommand(MenuCommand.FILE_SAVE);
+                } catch (JuggleException je) {
+                    ErrorDialog.handleFatalException(je);
+                    return;
+                }
+
+                if (plp.hasUnsavedChanges)
+                    return;  // user canceled out of save dialog
+            }
+        }
+
         super.dispose();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
