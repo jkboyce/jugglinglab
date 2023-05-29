@@ -520,6 +520,25 @@ public class JMLPattern {
         return scale_factor;
     }
 
+    // Swap the assignment of hands, leaving events in the same locations
+    public void swapHands() {
+        JMLEvent ev = getEventList();
+        while (ev != null) {
+            int hand = ev.getHand();
+
+            // flip hand assignment, invert x coordinate
+            if (hand == HandLink.LEFT_HAND)
+                hand = HandLink.RIGHT_HAND;
+            else
+                hand = HandLink.LEFT_HAND;
+
+            ev.setHand(ev.getJuggler(), hand);
+            ev = ev.getNext();
+        }
+
+        setNeedsLayout();
+    }
+
     // Flip the x-axis in the local coordinates of each juggler.
     public void invertXAxis() {
         JMLEvent ev = getEventList();

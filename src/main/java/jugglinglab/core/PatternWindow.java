@@ -355,6 +355,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "Duplicate",
             "Optimize",
+            "Swap Hands",
             "Flip Pattern in X",
             "Flip Pattern in Time",
             null,
@@ -370,6 +371,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             null,
             "duplicate",
             "optimize",
+            "swaphands",
             "invertx",
             "inverttime",
             null,
@@ -385,6 +387,7 @@ public class PatternWindow extends JFrame implements ActionListener {
             ' ',
             'D',
             'J',
+            ' ',
             'M',
             'T',
             ' ',
@@ -585,6 +588,8 @@ public class PatternWindow extends JFrame implements ActionListener {
                 doMenuCommand(MenuCommand.FILE_DUPLICATE);
             else if (command.equals("optimize"))
                 doMenuCommand(MenuCommand.FILE_OPTIMIZE);
+            else if (command.equals("swaphands"))
+                doMenuCommand(MenuCommand.FILE_SWAPHANDS);
             else if (command.equals("invertx"))
                 doMenuCommand(MenuCommand.FILE_INVERTX);
             else if (command.equals("inverttime"))
@@ -637,6 +642,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         FILE_GIFSAVE,
         FILE_DUPLICATE,
         FILE_OPTIMIZE,
+        FILE_SWAPHANDS,
         FILE_INVERTX,
         FILE_INVERTTIME,
         VIEW_RESTART,
@@ -800,6 +806,20 @@ public class PatternWindow extends JFrame implements ActionListener {
                         System.out.println("iae: " + iae.getMessage());
                     throw new JuggleExceptionInternal("optimizer iae: " +
                                         iae.getMessage());
+                }
+                break;
+
+            case FILE_SWAPHANDS:
+                if (view == null)
+                    break;
+
+                try {
+                    JMLPattern newpat = new JMLPattern(view.getPattern());
+                    newpat.swapHands();
+                    view.restartView(newpat, null);
+                    view.addToUndoList(newpat);
+                } catch (JuggleExceptionUser jeu) {
+                    throw new JuggleExceptionInternal("Error in FILE_SWAPHANDS");
                 }
                 break;
 
