@@ -106,9 +106,7 @@
                                 </transformer>
                             </transformers>
 
-                            <finalName>JugglingLab</finalName>
-                            <outputDirectory>${project.basedir}/bin</outputDirectory>
-                            <overWrite>true</overWrite>
+                            <outputFile>${project.basedir}/bin/JugglingLab.jar</outputFile>
 
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
