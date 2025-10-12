@@ -25,11 +25,17 @@ public abstract class Prop {
 
   // Creates a new prop of the given type
   public static Prop newProp(String type) throws JuggleExceptionUser {
-    if (type == null) throw new JuggleExceptionUser("Prop type not specified");
+    if (type == null) {
+      throw new JuggleExceptionUser("Prop type not specified");
+    }
 
-    if (type.equalsIgnoreCase("ball")) return new BallProp();
-    else if (type.equalsIgnoreCase("image")) return new ImageProp();
-    else if (type.equalsIgnoreCase("ring")) return new RingProp();
+    if (type.equalsIgnoreCase("ball")) {
+      return new BallProp();
+    } else if (type.equalsIgnoreCase("image")) {
+      return new ImageProp();
+    } else if (type.equalsIgnoreCase("ring")) {
+      return new RingProp();
+    }
 
     String template = errorstrings.getString("Error_prop_type");
     Object[] arguments = {type};
@@ -53,11 +59,11 @@ public abstract class Prop {
 
   protected abstract void init(String st) throws JuggleExceptionUser;
 
-  public abstract Coordinate getMax(); // in cm
+  public abstract Coordinate getMax();  // in cm
 
-  public abstract Coordinate getMin(); // in cm
+  public abstract Coordinate getMin();  // in cm
 
-  public abstract double getWidth(); // prop width in cm
+  public abstract double getWidth();  // prop width in cm
 
   public abstract Image getProp2DImage(double zoom, double[] camangle);
 

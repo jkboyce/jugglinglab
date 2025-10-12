@@ -27,7 +27,9 @@ public class SelectionView extends View {
 
   public SelectionView(Dimension dim) {
     ja = new AnimationPanel[COUNT];
-    for (int i = 0; i < COUNT; i++) ja[i] = new AnimationPanel();
+    for (int i = 0; i < COUNT; i++) {
+      ja[i] = new AnimationPanel();
+    }
 
     // JLayeredPane on the left so we can show a grid of animations with
     // an overlay drawn on top
@@ -63,7 +65,9 @@ public class SelectionView extends View {
   protected JPanel makeAnimationGrid() {
     JPanel grid = new JPanel(new GridLayout(ROWS, COLUMNS));
 
-    for (int i = 0; i < COUNT; i++) grid.add(ja[i]);
+    for (int i = 0; i < COUNT; i++) {
+      grid.add(ja[i]);
+    }
 
     grid.addMouseListener(
         new MouseAdapter() {
@@ -73,14 +77,21 @@ public class SelectionView extends View {
           @Override
           public void mouseReleased(MouseEvent me) {
             Component c = me.getComponent();
-            int num;
-            for (num = 0; num < COUNT; num++) {
-              if (c == SelectionView.this.ja[num]) break;
+            int num = 0;
+            while (num < COUNT) {
+              if (c == SelectionView.this.ja[num]) {
+                break;
+              }
+              ++num;
             }
-            if (num == COUNT) return;
+            if (num == COUNT) {
+              return;
+            }
             try {
               SelectionView.this.restartView(ja[num].getPattern(), null);
-              if (num != CENTER) addToUndoList(ja[CENTER].getPattern());
+              if (num != CENTER) {
+                addToUndoList(ja[CENTER].getPattern());
+              }
             } catch (JuggleExceptionUser jeu) {
               new ErrorDialog(parent, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
@@ -97,14 +108,21 @@ public class SelectionView extends View {
           @Override
           public void mouseDragged(MouseEvent me) {
             Component c = me.getComponent();
-            int num;
-            for (num = 0; num < COUNT; num++) {
-              if (c == SelectionView.this.ja[num]) break;
+            int num = 0;
+            while (num < COUNT) {
+              if (c == SelectionView.this.ja[num]) {
+                break;
+              }
+              ++num;
             }
-            if (num == COUNT) return;
+            if (num == COUNT) {
+              return;
+            }
             double[] ca = ja[num].getCameraAngle();
             for (int i = 0; i < COUNT; i++) {
-              if (i != num) ja[i].setCameraAngle(ca);
+              if (i != num) {
+                ja[i].setCameraAngle(ca);
+              }
             }
           }
         });
@@ -164,8 +182,7 @@ public class SelectionView extends View {
     int max_height = screenSize.height - 120;
 
     if (pref_width > max_width || pref_height > max_height) {
-      double scale =
-          Math.min(
+      double scale = Math.min(
               (double) max_width / (double) pref_width, (double) max_height / (double) pref_height);
       pref_width = (int) (scale * pref_width);
       pref_height = (int) (scale * pref_height);
@@ -201,12 +218,16 @@ public class SelectionView extends View {
 
     setAnimationPanelPreferredSize(getAnimationPrefs().getSize());
 
-    if (p != null) parent.setTitle(p.getTitle());
+    if (p != null) {
+      parent.setTitle(p.getTitle());
+    }
   }
 
   @Override
   public void restartView() throws JuggleExceptionUser, JuggleExceptionInternal {
-    for (int i = 0; i < COUNT; i++) ja[i].restartJuggle();
+    for (int i = 0; i < COUNT; i++) {
+      ja[i].restartJuggle();
+    }
   }
 
   @Override
@@ -243,7 +264,9 @@ public class SelectionView extends View {
 
   @Override
   public void setZoomLevel(double z) {
-    for (int i = 0; i < COUNT; i++) ja[i].setZoomLevel(z);
+    for (int i = 0; i < COUNT; i++) {
+      ja[i].setZoomLevel(z);
+    }
   }
 
   @Override
@@ -253,28 +276,42 @@ public class SelectionView extends View {
 
   @Override
   public void setPaused(boolean pause) {
-    if (ja[CENTER].message == null) for (int i = 0; i < COUNT; i++) ja[i].setPaused(pause);
+    if (ja[CENTER].message == null) {
+      for (int i = 0; i < COUNT; i++) {
+        ja[i].setPaused(pause);
+      }
+    }
   }
 
   @Override
   public void disposeView() {
-    for (int i = 0; i < COUNT; i++) ja[i].disposeAnimation();
+    for (int i = 0; i < COUNT; i++) {
+      ja[i].disposeAnimation();
+    }
   }
 
   @Override
   public void writeGIF(File f) {
-    for (int i = 0; i < COUNT; i++) ja[i].writingGIF = true;
+    for (int i = 0; i < COUNT; i++) {
+      ja[i].writingGIF = true;
+    }
     boolean origpause = isPaused();
     setPaused(true);
-    if (parent != null) parent.setResizable(false);
+    if (parent != null) {
+      parent.setResizable(false);
+    }
 
     Runnable cleanup =
         new Runnable() {
           @Override
           public void run() {
-            for (int i = 0; i < COUNT; i++) ja[i].writingGIF = false;
+            for (int i = 0; i < COUNT; i++) {
+              ja[i].writingGIF = false;
+            }
             setPaused(origpause);
-            if (parent != null) parent.setResizable(true);
+            if (parent != null) {
+              parent.setResizable(true);
+            }
           }
         };
 

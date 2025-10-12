@@ -69,8 +69,10 @@ public class Mutator {
     this.controls = makeControlPanel();
   }
 
-  // return a mutated version of the input pattern.
-  // Important: This should not change the input pattern in any way
+  // Return a mutated version of the input pattern.
+  //
+  // Important: This should not change the input pattern in any way.
+
   public JMLPattern mutatePattern(JMLPattern pat) throws JuggleExceptionInternal {
     double[] cdf = new double[5];
     double freq_sum = 0.0;
@@ -80,7 +82,9 @@ public class Mutator {
     }
 
     try {
-      if (freq_sum == 0.0) return new JMLPattern(pat);
+      if (freq_sum == 0.0) {
+        return new JMLPattern(pat);
+      }
 
       this.rate = (slider_rate == null ? 1.0 : slider_rates[slider_rate.getValue()]);
 
@@ -92,11 +96,17 @@ public class Mutator {
         double r = freq_sum * Math.random();
         tries++;
 
-        if (r < cdf[0]) mutant = mutateEventPosition(clone);
-        else if (r < cdf[1]) mutant = mutateEventTime(clone);
-        else if (r < cdf[2]) mutant = mutatePatternTiming(clone);
-        else if (r < cdf[3]) mutant = mutateAddEvent(clone);
-        else mutant = mutateRemoveEvent(clone);
+        if (r < cdf[0]) {
+          mutant = mutateEventPosition(clone);
+        } else if (r < cdf[1]) {
+          mutant = mutateEventTime(clone);
+        } else if (r < cdf[2]) {
+          mutant = mutatePatternTiming(clone);
+        } else if (r < cdf[3]) {
+          mutant = mutateAddEvent(clone);
+        } else {
+          mutant = mutateRemoveEvent(clone);
+        }
       } while (mutant == null && tries < 5);
 
       return (mutant == null) ? new JMLPattern(pat) : mutant;
@@ -111,8 +121,11 @@ public class Mutator {
   }
 
   //----------------------------------------------------------------------------
+  // Mutation functions
+  //----------------------------------------------------------------------------
 
-  // Pick a random event and tweak its position
+  // Pick a random event and tweak its position.
+
   protected JMLPattern mutateEventPosition(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     JMLEvent ev = pickMasterEvent(pat);
@@ -123,14 +136,17 @@ public class Mutator {
     return pat;
   }
 
-  // Pick a random event and tweak its time
+  // Pick a random event and tweak its time.
+
   protected JMLPattern mutateEventTime(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     JMLEvent ev = pickMasterEvent(pat);
 
     JMLEvent ev_prev = ev.getPrevious();
     while (ev_prev != null) {
-      if (ev_prev.getJuggler() == ev.getJuggler() && ev_prev.getHand() == ev.getHand()) break;
+      if (ev_prev.getJuggler() == ev.getJuggler() && ev_prev.getHand() == ev.getHand()) {
+        break;
+      }
       ev_prev = ev_prev.getPrevious();
     }
     double tmin =
@@ -140,7 +156,9 @@ public class Mutator {
 
     JMLEvent ev_next = ev.getNext();
     while (ev_next != null) {
-      if (ev_next.getJuggler() == ev.getJuggler() && ev_next.getHand() == ev.getHand()) break;
+      if (ev_next.getJuggler() == ev.getJuggler() && ev_next.getHand() == ev.getHand()) {
+        break;
+      }
       ev_next = ev_next.getNext();
     }
     double tmax =
@@ -148,22 +166,28 @@ public class Mutator {
             ? pat.getLoopEndTime()
             : Math.min(pat.getLoopEndTime(), ev_next.getT()) - mutationMinEventDeltaSec);
 
-    if (tmax <= tmin) return null;
+    if (tmax <= tmin) {
+      return null;
+    }
 
     // Sample t from two one-sided triangular distributions: Event time has
     // equal probability of going down or up.
     double r = Math.random();
     double tnow = ev.getT();
     double t = 0.0;
-    if (r < 0.5) t = tmin + (tnow - tmin) * Math.sqrt(2 * r);
-    else t = tmax - (tmax - tnow) * Math.sqrt(2 * (1 - r));
+    if (r < 0.5) {
+      t = tmin + (tnow - tmin) * Math.sqrt(2 * r);
+    } else {
+      t = tmax - (tmax - tnow) * Math.sqrt(2 * (1 - r));
+    }
 
     ev.setT(t);
     pat.setNeedsLayout();
     return pat;
   }
 
-  // rescale overall pattern timing faster or slower
+  // Rescale overall pattern timing faster or slower.
+
   protected JMLPattern mutatePatternTiming(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     // sample new scale from two one-sided triangular distributions: Scale has
@@ -172,12 +196,17 @@ public class Mutator {
     double scalemin = 1.0 / (1.0 + rate * mutationTimingScale);
     double scalemax = 1.0 + rate * mutationTimingScale;
     double scale = 0.0;
-    if (r < 0.5) scale = scalemin + (1.0 - scalemin) * Math.sqrt(2 * r);
-    else scale = scalemax - (scalemax - 1.0) * Math.sqrt(2 * (1 - r));
+    if (r < 0.5) {
+      scale = scalemin + (1.0 - scalemin) * Math.sqrt(2 * r);
+    } else {
+      scale = scalemax - (scalemax - 1.0) * Math.sqrt(2 * (1 - r));
+    }
 
     JMLEvent ev = pat.getEventList();
     while (ev != null) {
-      if (ev.isMaster()) ev.setT(ev.getT() * scale);
+      if (ev.isMaster()) {
+        ev.setT(ev.getT() * scale);
+      }
       ev = ev.getNext();
     }
     JMLPosition pos = pat.getPositionList();
@@ -188,15 +217,18 @@ public class Mutator {
 
     for (JMLSymmetry sym : pat.symmetries()) {
       double delay = sym.getDelay();
-      if (delay > 0) sym.setDelay(delay * scale);
+      if (delay > 0) {
+        sym.setDelay(delay * scale);
+      }
     }
 
     pat.setNeedsLayout();
     return pat;
   }
 
-  // add an event with no transitions to a randomly-selected juggler/hand,
-  // with a tweaked position
+  // Add an event with no transitions to a randomly-selected juggler/hand,
+  // with a tweaked position.
+
   protected JMLPattern mutateAddEvent(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     pat.layoutPattern();
@@ -220,36 +252,53 @@ public class Mutator {
 
       ev = pat.getEventList();
       while (ev != null) {
-        if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t) break;
+        if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t) {
+          break;
+        }
         ev = ev.getNext();
       }
-      if (ev == null) return null;
+      if (ev == null) {
+        return null;
+      }
       tmax = ev.getT() - mutationMinEventDeltaSec;
 
       while (ev != null) {
-        if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t) break;
+        if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t) {
+          break;
+        }
         ev = ev.getPrevious();
       }
-      if (ev == null) return null;
+      if (ev == null) {
+        return null;
+      }
       tmin = ev.getT() + mutationMinEventDeltaSec;
 
       tries++;
     } while (tmin > tmax && tries < 5);
 
-    if (tries == 5) return null;
+    if (tries == 5) {
+      return null;
+    }
 
     double r = Math.random();
-    if (r < 0.5) t = tmin + (tmax - tmin) * Math.sqrt(0.5 * r);
-    else t = tmax - (tmax - tmin) * Math.sqrt(0.5 * (1 - r));
+    if (r < 0.5) {
+      t = tmin + (tmax - tmin) * Math.sqrt(0.5 * r);
+    } else {
+      t = tmax - (tmax - tmin) * Math.sqrt(0.5 * (1 - r));
+    }
 
     // want its time to be within this range since it's a master event
-    while (t < pat.getLoopStartTime()) t += (pat.getLoopEndTime() - pat.getLoopStartTime());
-    while (t > pat.getLoopEndTime()) t -= (pat.getLoopEndTime() - pat.getLoopStartTime());
+    while (t < pat.getLoopStartTime()) {
+      t += (pat.getLoopEndTime() - pat.getLoopStartTime());
+    }
+    while (t > pat.getLoopEndTime()) {
+      t -= (pat.getLoopEndTime() - pat.getLoopStartTime());
+    }
 
     ev = new JMLEvent();
     ev.setHand(juggler, hand);
     ev.setT(t);
-    ev.setMaster(null); // null signifies a master event
+    ev.setMaster(null);  // null signifies a master event
 
     // Now choose a spatial location for the event. Figure out where the
     // hand is currently and adjust it.
@@ -273,7 +322,8 @@ public class Mutator {
     return pat;
   }
 
-  // remove a randomly-selected master event with only holding transitions
+  // Remove a randomly-selected master event with only holding transitions.
+
   protected JMLPattern mutateRemoveEvent(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     // first count the number of such events
@@ -290,12 +340,16 @@ public class Mutator {
             break;
           }
         }
-        if (holding_only) count++;
+        if (holding_only) {
+          ++count;
+        }
       }
       ev = ev.getNext();
     }
 
-    if (count == 0) return null;
+    if (count == 0) {
+      return null;
+    }
 
     // pick one to remove, then go back through event list and find it
     count = (int) (count * Math.random());
@@ -318,7 +372,7 @@ public class Mutator {
             pat.setNeedsLayout();
             return pat;
           }
-          count--;
+          --count;
         }
       }
       ev = ev.getNext();
@@ -328,8 +382,11 @@ public class Mutator {
   }
 
   //----------------------------------------------------------------------------
+  // Helpers
+  //----------------------------------------------------------------------------
 
-  // return a random master event from the pattern
+  // Return a random master event from the pattern.
+
   protected JMLEvent pickMasterEvent(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     pat.layoutPattern();
@@ -339,7 +396,9 @@ public class Mutator {
 
     JMLEvent current = eventlist;
     do {
-      if (current.isMaster()) master_count++;
+      if (current.isMaster()) {
+        ++master_count;
+      }
       current = current.getNext();
     } while (current != null);
 
@@ -349,8 +408,10 @@ public class Mutator {
     current = eventlist;
     do {
       if (current.isMaster()) {
-        if (event_num == 0) return current;
-        event_num--;
+        if (event_num == 0) {
+          return current;
+        }
+        --event_num;
       }
       current = current.getNext();
     } while (current != null);
@@ -380,9 +441,11 @@ public class Mutator {
       result.x += 2.0 * scaleDistance * (Math.random() - 0.5);
       result.z += 2.0 * scaleDistance * (Math.random() - 0.5);
 
-      if (hand == HandLink.LEFT_HAND)
+      if (hand == HandLink.LEFT_HAND) {
         outside_box = (result.x < -75 || result.x > 40 || result.z < -20 || result.z > 80);
-      else outside_box = (result.x < -40 || result.x > 75 || result.z < -20 || result.z > 80);
+      } else {
+        outside_box = (result.x < -40 || result.x > 75 || result.z < -20 || result.z > 80);
+      }
     } while (outside_box && Math.random() < 0.5);
 
     return result;

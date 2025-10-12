@@ -145,7 +145,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
     Point loc = tile_locations[next_tile_num];
-    if (++next_tile_num == NUM_TILES) next_tile_num = 0;
+    if (++next_tile_num == NUM_TILES) {
+      next_tile_num = 0;
+    }
     return loc;
   }
 
@@ -188,10 +190,11 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
       JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
 
-      if (fileShortcuts[i] != ' ')
+      if (fileShortcuts[i] != ' ') {
         fileitem.setAccelerator(
             KeyStroke.getKeyStroke(
                 fileShortcuts[i], Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+      }
 
       fileitem.setActionCommand(fileCommands[i]);
       fileitem.addActionListener(this);
@@ -221,12 +224,15 @@ public class PatternListWindow extends JFrame implements ActionListener {
     String menuname = guistrings.getString("Help");
     // Menus titled "Help" are handled differently by macOS; only want to
     // have one of them across the entire app.
-    if (jugglinglab.JugglingLab.isMacOS) menuname += ' ';
+    if (jugglinglab.JugglingLab.isMacOS) {
+      menuname += ' ';
+    }
     JMenu helpmenu = new JMenu(menuname);
 
     for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
-      if (helpItems[i] == null) helpmenu.addSeparator();
-      else {
+      if (helpItems[i] == null) {
+        helpmenu.addSeparator();
+      } else {
         JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
         helpitem.setActionCommand(helpCommands[i]);
         helpitem.addActionListener(this);
@@ -241,14 +247,23 @@ public class PatternListWindow extends JFrame implements ActionListener {
     String command = ae.getActionCommand();
 
     try {
-      if (command.equals("newpat")) doMenuCommand(MenuCommand.FILE_NEWPAT);
-      else if (command.equals("newpl")) doMenuCommand(MenuCommand.FILE_NEWPL);
-      else if (command.equals("open")) doMenuCommand(MenuCommand.FILE_OPEN);
-      else if (command.equals("close")) doMenuCommand(MenuCommand.FILE_CLOSE);
-      else if (command.equals("saveas")) doMenuCommand(MenuCommand.FILE_SAVE);
-      else if (command.equals("savetext")) doMenuCommand(MenuCommand.FILE_SAVETEXT);
-      else if (command.equals("about")) doMenuCommand(MenuCommand.HELP_ABOUT);
-      else if (command.equals("online")) doMenuCommand(MenuCommand.HELP_ONLINE);
+      if (command.equals("newpat")) {
+        doMenuCommand(MenuCommand.FILE_NEWPAT);
+      } else if (command.equals("newpl")) {
+        doMenuCommand(MenuCommand.FILE_NEWPL);
+      } else if (command.equals("open")) {
+        doMenuCommand(MenuCommand.FILE_OPEN);
+      } else if (command.equals("close")) {
+        doMenuCommand(MenuCommand.FILE_CLOSE);
+      } else if (command.equals("saveas")) {
+        doMenuCommand(MenuCommand.FILE_SAVE);
+      } else if (command.equals("savetext")) {
+        doMenuCommand(MenuCommand.FILE_SAVETEXT);
+      } else if (command.equals("about")) {
+        doMenuCommand(MenuCommand.HELP_ABOUT);
+      } else if (command.equals("online")) {
+        doMenuCommand(MenuCommand.HELP_ONLINE);
+      }
 
     } catch (JuggleExceptionUser je) {
       new ErrorDialog(this, je.getMessage());
@@ -294,16 +309,24 @@ public class PatternListWindow extends JFrame implements ActionListener {
       case FILE_SAVE:
         try {
           String fname = last_jml_filename;
-          if (fname == null) fname = getTitle() + ".jml"; // default filename
+          if (fname == null) {
+            fname = getTitle() + ".jml";  // default filename
+          }
           fname = JLFunc.sanitizeFilename(fname);
           JLFunc.jfc().setSelectedFile(new File(fname));
           JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) break;
+          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            break;
+          }
 
           File f = JLFunc.jfc().getSelectedFile();
-          if (f == null) break;
-          if (!f.getAbsolutePath().endsWith(".jml")) f = new File(f.getAbsolutePath() + ".jml");
+          if (f == null) {
+            break;
+          }
+          if (!f.getAbsolutePath().endsWith(".jml")) {
+            f = new File(f.getAbsolutePath() + ".jml");
+          }
           JLFunc.errorIfNotSanitized(f.getName());
           last_jml_filename = f.getName();
 
@@ -336,11 +359,17 @@ public class PatternListWindow extends JFrame implements ActionListener {
           JLFunc.jfc().setSelectedFile(new File(fname));
           JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) break;
+          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            break;
+          }
 
           File f = JLFunc.jfc().getSelectedFile();
-          if (f == null) break;
-          if (!f.getAbsolutePath().endsWith(".txt")) f = new File(f.getAbsolutePath() + ".txt");
+          if (f == null) {
+            break;
+          }
+          if (!f.getAbsolutePath().endsWith(".txt")) {
+            f = new File(f.getAbsolutePath() + ".txt");
+          }
           JLFunc.errorIfNotSanitized(f.getName());
           int index = f.getName().lastIndexOf(".");
           String base = index >= 0 ? f.getName().substring(0, index) : f.getName();
@@ -375,8 +404,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
   @Override
   public void setTitle(String title) {
-    if (title == null || title.length() == 0)
+    if (title == null || title.length() == 0) {
       title = guistrings.getString("PLWINDOW_Default_window_title");
+    }
 
     super.setTitle(title);
     ApplicationWindow.updateWindowMenus();
@@ -394,11 +424,12 @@ public class PatternListWindow extends JFrame implements ActionListener {
       String message = MessageFormat.format(template, arguments);
       String title = guistrings.getString("PLWINDOW_Unsaved_changes_title");
 
-      int res =
-          JOptionPane.showConfirmDialog(
-              plp, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+      int res = JOptionPane.showConfirmDialog(
+          plp, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-      if (res == JOptionPane.CANCEL_OPTION) return;
+      if (res == JOptionPane.CANCEL_OPTION) {
+        return;
+      }
 
       if (res == JOptionPane.YES_OPTION) {
         try {
@@ -408,7 +439,9 @@ public class PatternListWindow extends JFrame implements ActionListener {
           return;
         }
 
-        if (plp.hasUnsavedChanges) return; // user canceled out of save dialog
+        if (plp.hasUnsavedChanges) {
+          return;  // user canceled out of save dialog
+        }
       }
     }
 

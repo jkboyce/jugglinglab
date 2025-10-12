@@ -167,6 +167,7 @@ public class PatternView extends View implements DocumentListener {
 
   // Update the button configs when a radio button is pressed, the base
   // pattern or JML pattern changes, or we start/stop writing an animated GIF.
+
   protected void updateButtons() {
     if (ja != null && ja.writingGIF) {
       // writing a GIF
@@ -181,17 +182,23 @@ public class PatternView extends View implements DocumentListener {
 
     if (pat == null) {
       rb_bp.setEnabled(false);
-      if (bp_edited_icon != null) bp_edited_icon.setVisible(false);
+      if (bp_edited_icon != null) {
+        bp_edited_icon.setVisible(false);
+      }
       rb_jml.setEnabled(false);
     } else if (pat.getBasePatternNotation() == null || pat.getBasePatternConfig() == null) {
       // no base pattern set
       rb_bp.setEnabled(false);
-      if (bp_edited_icon != null) bp_edited_icon.setVisible(false);
+      if (bp_edited_icon != null) {
+        bp_edited_icon.setVisible(false);
+      }
       rb_jml.setEnabled(true);
       rb_jml.setSelected(true);
     } else {
       rb_bp.setEnabled(true);
-      if (bp_edited_icon != null) bp_edited_icon.setVisible(pat.isBasePatternEdited());
+      if (bp_edited_icon != null) {
+        bp_edited_icon.setVisible(pat.isBasePatternEdited());
+      }
       rb_jml.setEnabled(true);
     }
 
@@ -204,8 +211,9 @@ public class PatternView extends View implements DocumentListener {
     }
   }
 
-  // (Re)load the text in the JTextArea from the pattern, overwriting
-  // anything that was there.
+  // (Re)load the text in the JTextArea from the pattern, overwriting anything
+  // that was there.
+
   protected void reloadTextArea() {
     if (rb_bp.isSelected()) ta.setText(getPattern().getBasePatternConfig().replace(";", ";\n"));
     else if (rb_jml.isSelected()) ta.setText(getPattern().toString());
@@ -266,8 +274,11 @@ public class PatternView extends View implements DocumentListener {
       rb_bp.setText(MessageFormat.format(template, arg));
 
       if (!(rb_bp.isSelected() || rb_jml.isSelected())) {
-        if (notation == null) rb_jml.setSelected(true);
-        else rb_bp.setSelected(true);
+        if (notation == null) {
+          rb_jml.setSelected(true);
+        } else {
+          rb_bp.setSelected(true);
+        }
       }
 
       updateButtons();
@@ -319,7 +330,9 @@ public class PatternView extends View implements DocumentListener {
 
   @Override
   public void setPaused(boolean pause) {
-    if (ja.message == null) ja.setPaused(pause);
+    if (ja.message == null) {
+      ja.setPaused(pause);
+    }
   }
 
   @Override
@@ -334,7 +347,9 @@ public class PatternView extends View implements DocumentListener {
     boolean origpause = isPaused();
     setPaused(true);
     jsp.setEnabled(false);
-    if (parent != null) parent.setResizable(false);
+    if (parent != null) {
+      parent.setResizable(false);
+    }
 
     Runnable cleanup =
         new Runnable() {
@@ -344,7 +359,9 @@ public class PatternView extends View implements DocumentListener {
             setPaused(origpause);
             updateButtons();
             jsp.setEnabled(true);
-            if (parent != null) parent.setResizable(true);
+            if (parent != null) {
+              parent.setResizable(true);
+            }
           }
         };
 

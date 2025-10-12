@@ -122,16 +122,27 @@ public class EventImages {
     return false;
   }
 
-  // Does this event have any velocity-defining transitions (e.g., throws)
-  // for the specified hand, after symmetries are applied?
-  public boolean hasVDJMLTransitionForHand(int jug, int han) {
-    int i;
-    for (i = 0; i < numentries; i++) if (ea[jug - 1][HandLink.index(han)][i] != null) break;
-    if (i == numentries) return false;
+  // Determine if this event has any velocity-defining transitions (e.g., throws)
+  // for the specified hand, after symmetries are applied.
 
-    for (int j = 0; j < evtransitions; j++)
+  public boolean hasVDJMLTransitionForHand(int jug, int han) {
+    int i = 0;
+    while (i < numentries) {
+      if (ea[jug - 1][HandLink.index(han)][i] != null) {
+        break;
+      }
+      ++i;
+    }
+    if (i == numentries) {
+      return false;
+    }
+
+    for (int j = 0; j < evtransitions; j++) {
       if (transitiontype[j] == JMLTransition.TRANS_THROW
-          || transitiontype[j] == JMLTransition.TRANS_SOFTCATCH) return true;
+          || transitiontype[j] == JMLTransition.TRANS_SOFTCATCH) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -145,7 +156,9 @@ public class EventImages {
             if (ea[i][h][j] != null) {
               int newp = ea[i][h][j].getMapping(ev.getTransition(k).getPath());
               for (int l = 0; l < cycle.length; l++) {
-                if (newp == cycle[l]) return true;
+                if (newp == cycle[l]) {
+                  return true;
+                }
               }
             }
           }
@@ -167,7 +180,9 @@ public class EventImages {
               if (ea[i][h][j] != null) {
                 int newp = ea[i][h][j].getMapping(ev.getTransition(k).getPath());
                 for (int l = 0; l < cycle.length; l++) {
-                  if (newp == cycle[l]) return true;
+                  if (newp == cycle[l]) {
+                    return true;
+                  }
                 }
               }
             }
@@ -219,8 +234,10 @@ public class EventImages {
       }
     }
     for (int i = 0; i < numsyms; i++) { // assume exactly one delay symmetry
-      if (deltaentries[i] == -1) // signals a switchdelay symmetry
-      deltaentries[i] = numentries / symperiod[i];
+      if (deltaentries[i] == -1) {
+        // signals a switchdelay symmetry
+        deltaentries[i] = numentries / symperiod[i];
+      }
     }
 
     // System.out.println("numentries = "+numentries);
@@ -248,14 +265,20 @@ public class EventImages {
             for (int l = 0; l < numentries; l++) {
               // apply symmetry to event
               int newj = sym[i].getJugglerPerm().getMapping(j + 1);
-              if (newj == 0) continue;
+              if (newj == 0) {
+                continue;
+              }
 
               int newk = (newj < 0 ? (1 - k) : k);
-              if (newj < 0) newj = -newj;
+              if (newj < 0) {
+                newj = -newj;
+              }
               newj--;
 
               Permutation p = ea[j][k][l];
-              if (p == null) continue;
+              if (p == null) {
+                continue;
+              }
 
               p = sym[i].getPathPerm().apply(p);
 
@@ -268,8 +291,9 @@ public class EventImages {
               // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);
               // check for consistency
               if (ea[newj][newk][newl] != null) {
-                if (!p.equals(ea[newj][newk][newl]))
+                if (!p.equals(ea[newj][newk][newl])) {
                   throw new JuggleExceptionUser("Symmetries inconsistent");
+                }
               } else {
                 ea[newj][newk][newl] = p;
                 changed = true;

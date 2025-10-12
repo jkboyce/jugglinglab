@@ -61,21 +61,27 @@ public abstract class View extends JPanel {
   // embed the View in something other than a PatternWindow in the future.
   //----------------------------------------------------------------------------
 
-  // For the PatternWindow to pass into a newly-initialized view
+  // For the PatternWindow to pass into a newly-initialized view.
+
   public void setUndoList(ArrayList<JMLPattern> u, int u_index) {
     undo = u;
     undo_index = u_index;
   }
 
-  // Add a pattern to the undo list
+  // Add a pattern to the undo list.
+
   public void addToUndoList(JMLPattern p) {
     try {
       JMLPattern pcopy = new JMLPattern(p); // add copy so it won't change
-      undo_index++;
+      ++undo_index;
       undo.add(undo_index, pcopy);
-      while (undo_index + 1 < undo.size()) undo.remove(undo_index + 1);
+      while (undo_index + 1 < undo.size()) {
+        undo.remove(undo_index + 1);
+      }
 
-      if (parent != null) parent.updateUndoMenu();
+      if (parent != null) {
+        parent.updateUndoMenu();
+      }
     } catch (JuggleExceptionUser jeu) {
       ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
     } catch (JuggleExceptionInternal jei) {
@@ -83,16 +89,19 @@ public abstract class View extends JPanel {
     }
   }
 
-  // Undo to the previous save state
+  // Undo to the previous save state.
+
   public void undoEdit() throws JuggleExceptionInternal {
     if (undo_index > 0) {
       try {
-        undo_index--;
+        --undo_index;
         JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
         restartView(pcopy, null);
 
         if (undo_index == 0 || undo_index == undo.size() - 2) {
-          if (parent != null) parent.updateUndoMenu();
+          if (parent != null) {
+            parent.updateUndoMenu();
+          }
         }
       } catch (JuggleExceptionUser jeu) {
         // errors here aren't user errors since pattern was successfully
@@ -102,16 +111,19 @@ public abstract class View extends JPanel {
     }
   }
 
-  // Redo to the next save state
+  // Redo to the next save state.
+
   public void redoEdit() throws JuggleExceptionInternal {
     if (undo_index < undo.size() - 1) {
       try {
-        undo_index++;
+        ++undo_index;
         JMLPattern pcopy = new JMLPattern(undo.get(undo_index));
         restartView(pcopy, null);
 
         if (undo_index == 1 || undo_index == undo.size() - 1) {
-          if (parent != null) parent.updateUndoMenu();
+          if (parent != null) {
+            parent.updateUndoMenu();
+          }
         }
       } catch (JuggleExceptionUser jeu) {
         throw new JuggleExceptionInternal(jeu.getMessage());
@@ -119,7 +131,8 @@ public abstract class View extends JPanel {
     }
   }
 
-  // For the PatternWindow to retain state when the view changes
+  // For the PatternWindow to retain state when the view changes.
+
   public int getUndoIndex() {
     return undo_index;
   }
@@ -182,8 +195,7 @@ public abstract class View extends JPanel {
       pm = new ProgressMonitor(parent, guistrings.getString("Saving_animated_GIF"), "", 0, 1);
       pm.setMillisToPopup(200);
 
-      wgm =
-          new Animator.WriteGIFMonitor() {
+      wgm = new Animator.WriteGIFMonitor() {
             @Override
             public void update(int step, int steps_total) {
               SwingUtilities.invokeLater(
@@ -221,11 +233,15 @@ public abstract class View extends JPanel {
           String template = errorstrings.getString("Error_writing_file");
           Object[] arg = {file.toString()};
           new ErrorDialog(parent, MessageFormat.format(template, arg));
-        } else ErrorDialog.handleFatalException(ioe);
+        } else {
+          ErrorDialog.handleFatalException(ioe);
+        }
       } catch (JuggleExceptionInternal jei) {
         ErrorDialog.handleFatalException(jei);
       } finally {
-        if (cleanup != null) SwingUtilities.invokeLater(cleanup);
+        if (cleanup != null) {
+          SwingUtilities.invokeLater(cleanup);
+        }
       }
     }
   }

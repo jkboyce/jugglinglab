@@ -35,8 +35,9 @@ public class ImageProp extends Prop {
   private double last_zoom;
 
   public ImageProp() throws JuggleExceptionUser {
-    if (image_url_default == null)
+    if (image_url_default == null) {
       throw new JuggleExceptionUser("ImageProp error: Default image not set");
+    }
     url = image_url_default;
     loadImage();
     rescaleImage(1);
@@ -71,9 +72,13 @@ public class ImageProp extends Prop {
 
   private void rescaleImage(double zoom) {
     int image_pixel_width = (int) (0.5 + zoom * width);
-    if (image_pixel_width < 1) image_pixel_width = 1;
+    if (image_pixel_width < 1) {
+      image_pixel_width = 1;
+    }
     int image_pixel_height = (int) (0.5 + zoom * height);
-    if (image_pixel_height < 1) image_pixel_height = 1;
+    if (image_pixel_height < 1) {
+      image_pixel_height = 1;
+    }
     size = new Dimension(image_pixel_width, image_pixel_height);
     center = new Dimension(image_pixel_width / 2, image_pixel_height / 2);
 
@@ -119,11 +124,9 @@ public class ImageProp extends Prop {
   public ParameterDescriptor[] getParameterDescriptors() {
     ParameterDescriptor[] result = new ParameterDescriptor[2];
 
-    result[0] =
-        new ParameterDescriptor(
+    result[0] = new ParameterDescriptor(
             "image", ParameterDescriptor.TYPE_ICON, null, image_url_default, url);
-    result[1] =
-        new ParameterDescriptor(
+    result[1] = new ParameterDescriptor(
             "width",
             ParameterDescriptor.TYPE_FLOAT,
             null,
@@ -135,7 +138,9 @@ public class ImageProp extends Prop {
 
   @Override
   protected void init(String st) throws JuggleExceptionUser {
-    if (st == null) return;
+    if (st == null) {
+      return;
+    }
 
     ParameterList pl = new ParameterList(st);
 
@@ -157,7 +162,9 @@ public class ImageProp extends Prop {
           width = temp;
           double aspectRatio = ((double) image.getHeight(null)) / ((double) image.getWidth(null));
           height = width * aspectRatio;
-        } else throw new NumberFormatException();
+        } else {
+          throw new NumberFormatException();
+        }
       } catch (NumberFormatException nfe) {
         String template = errorstrings.getString("Error_number_format");
         Object[] arguments = {"width"};
@@ -168,7 +175,9 @@ public class ImageProp extends Prop {
 
   @Override
   public Image getProp2DImage(double zoom, double[] camangle) {
-    if (zoom != last_zoom) rescaleImage(zoom);
+    if (zoom != last_zoom) {
+      rescaleImage(zoom);
+    }
     return scaled_image;
   }
 
@@ -189,19 +198,25 @@ public class ImageProp extends Prop {
 
   @Override
   public Dimension getProp2DSize(double zoom) {
-    if (size == null || zoom != last_zoom) rescaleImage(zoom);
+    if (size == null || zoom != last_zoom) {
+      rescaleImage(zoom);
+    }
     return size;
   }
 
   @Override
   public Dimension getProp2DCenter(double zoom) {
-    if (center == null || zoom != last_zoom) rescaleImage(zoom);
+    if (center == null || zoom != last_zoom) {
+      rescaleImage(zoom);
+    }
     return center;
   }
 
   @Override
   public Dimension getProp2DGrip(double zoom) {
-    if (grip == null || zoom != last_zoom) rescaleImage(zoom);
+    if (grip == null || zoom != last_zoom) {
+      rescaleImage(zoom);
+    }
     return grip;
   }
 }

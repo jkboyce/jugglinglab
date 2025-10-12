@@ -60,8 +60,11 @@ public class PropDef {
 
   public void writeJML(PrintWriter wr) throws IOException {
     String out = "<prop type=\"" + proptype + "\"";
-    if (mod != null) out += " mod=\"" + mod + "\"/>";
-    else out += "/>";
+    if (mod != null) {
+      out += " mod=\"" + mod + "\"/>";
+    } else {
+      out += "/>";
+    }
     wr.println(out);
   }
 }

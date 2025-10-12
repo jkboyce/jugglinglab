@@ -59,7 +59,9 @@ public class JMLNode {
 
   public JMLNode getLastChild() {
     int n = childNodes.size();
-    if (n > 0) return childNodes.get(n - 1);
+    if (n > 0) {
+      return childNodes.get(n - 1);
+    }
     return null;
   }
 
@@ -95,7 +97,9 @@ public class JMLNode {
       // now fix references
       newChild.setParentNode(this);
       JMLNode prevsibling = refChild.getPreviousSibling();
-      if (prevsibling != null) prevsibling.setNextSibling(newChild);
+      if (prevsibling != null) {
+        prevsibling.setNextSibling(newChild);
+      }
       newChild.setPreviousSibling(prevsibling);
       newChild.setNextSibling(refChild);
       refChild.setPreviousSibling(newChild);
@@ -115,7 +119,9 @@ public class JMLNode {
       newChild.setPreviousSibling(prev);
       newChild.setNextSibling(next);
       newChild.setParentNode(this);
-    } else throw new JuggleExceptionInternal("Node to replace doesn't exist");
+    } else {
+      throw new JuggleExceptionInternal("Node to replace doesn't exist");
+    }
   }
 
   // Removes the child node indicated by oldChild from the list of children.
@@ -123,9 +129,15 @@ public class JMLNode {
     if (childNodes.remove(oldChild)) {
       JMLNode prev = oldChild.getPreviousSibling();
       JMLNode next = oldChild.getNextSibling();
-      if (prev != null) prev.setNextSibling(next);
-      if (next != null) next.setPreviousSibling(prev);
-    } else throw new JuggleExceptionInternal("Node to remove doesn't exist");
+      if (prev != null) {
+        prev.setNextSibling(next);
+      }
+      if (next != null) {
+        next.setPreviousSibling(prev);
+      }
+    } else {
+      throw new JuggleExceptionInternal("Node to remove doesn't exist");
+    }
   }
 
   public void appendChild(JMLNode newChild) {
@@ -148,11 +160,15 @@ public class JMLNode {
   // Recursively traverse the node tree to find the first instance of a given
   // node type
   public JMLNode findNode(String type) {
-    if (getNodeType().equals(type)) return this;
+    if (getNodeType().equals(type)) {
+      return this;
+    }
 
     for (int i = 0; i < getNumberOfChildren(); ++i) {
       JMLNode match = getChildNode(i).findNode(type);
-      if (match != null) return match;
+      if (match != null) {
+        return match;
+      }
     }
 
     return null;
@@ -175,8 +191,11 @@ public class JMLNode {
     }
 
     if (getNumberOfChildren() == 0) {
-      if (nodeValue == null) result.append("/>");
-      else result.append(">" + JMLNode.xmlescape(nodeValue) + "</" + nodeType + ">");
+      if (nodeValue == null) {
+        result.append("/>");
+      } else {
+        result.append(">" + JMLNode.xmlescape(nodeValue) + "</" + nodeType + ">");
+      }
       write.println(result.toString());
       result = new StringBuffer();
     } else {
@@ -195,7 +214,9 @@ public class JMLNode {
       }
       write.flush();
 
-      for (i = 0; i < getNumberOfChildren(); i++) getChildNode(i).writeNode(write, indentlevel + 1);
+      for (i = 0; i < getNumberOfChildren(); i++) {
+        getChildNode(i).writeNode(write, indentlevel + 1);
+      }
 
       /*
       for (i = 0; i < indentlevel; i++)

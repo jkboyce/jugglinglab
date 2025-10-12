@@ -28,17 +28,24 @@ public abstract class Pattern {
   // creates a new blank pattern in the given notation
   public static Pattern newPattern(String notation)
       throws JuggleExceptionUser, JuggleExceptionInternal {
-    if (notation == null) throw new JuggleExceptionUser("Notation type not specified");
+    if (notation == null) {
+      throw new JuggleExceptionUser("Notation type not specified");
+    }
 
-    if (notation.equalsIgnoreCase("siteswap")) return new SiteswapPattern();
+    if (notation.equalsIgnoreCase("siteswap")) {
+      return new SiteswapPattern();
+    }
 
     throw new JuggleExceptionUser("Notation type '" + notation + "' not recognized");
   }
 
-  // returns the notation name with canonical capitalization
+  // Return the notation name with canonical capitalization.
+
   public static String canonicalNotation(String notation) {
     for (String n : builtinNotations) {
-      if (n.equalsIgnoreCase(notation)) return n;
+      if (n.equalsIgnoreCase(notation)) {
+        return n;
+      }
     }
     return null;
   }

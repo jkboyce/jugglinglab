@@ -88,8 +88,12 @@ public class JMLTransition {
     switch (getType()) {
       case TRANS_THROW:
         String out = "<throw path=\"" + Integer.toString(getPath()) + "\"";
-        if (getThrowType() != null) out += " type=\"" + getThrowType() + "\"";
-        if (getMod() != null) out += " mod=\"" + getMod() + "\"";
+        if (getThrowType() != null) {
+          out += " type=\"" + getThrowType() + "\"";
+        }
+        if (getMod() != null) {
+          out += " mod=\"" + getMod() + "\"";
+        }
         wr.println(out + "/>");
         break;
       case TRANS_CATCH:

@@ -59,8 +59,7 @@ public class ErrorDialog {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     sw.write(errorstrings.getString("Error_internal_msg_part1") + "\n\n");
-    sw.write(
-        errorstrings.getString("Error_internal_msg_part2")
+    sw.write(errorstrings.getString("Error_internal_msg_part2")
             + "\n"
             + errorstrings.getString("Error_internal_msg_part3")
             + "\n\n");

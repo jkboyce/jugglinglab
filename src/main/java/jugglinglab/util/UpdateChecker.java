@@ -46,21 +46,29 @@ public class UpdateChecker extends Thread {
       BufferedReader br = new BufferedReader(isr);
 
       while ((line = br.readLine()) != null) {
-        if (line.contains("versionstring")) break;
+        if (line.contains("versionstring")) {
+          break;
+        }
       }
     } catch (MalformedURLException mue) {
       // handle errors quietly; no big deal if this background operation fails
     } catch (IOException ioe) {
     } finally {
       try {
-        if (isr != null) isr.close();
-        if (is != null) is.close();
+        if (isr != null) {
+          isr.close();
+        }
+        if (is != null) {
+          is.close();
+        }
       } catch (IOException ioe) {
       }
     }
 
     // something went wrong, fail quietly
-    if (line == null) return;
+    if (line == null) {
+      return;
+    }
 
     // Use regular expression matching to find the span tag with
     // id "versionstring" surrounding the version number string we want
@@ -70,7 +78,9 @@ public class UpdateChecker extends Thread {
 
     if (current_version == null
         || current_version.length() == 0
-        || JLFunc.compareVersions(current_version, running_version) <= 0) return;
+        || JLFunc.compareVersions(current_version, running_version) <= 0) {
+      return;
+    }
 
     try {
       Thread.sleep(3000);

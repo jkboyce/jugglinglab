@@ -31,7 +31,9 @@ public class JMLParser extends DefaultHandler {
 
   public void parse(Reader read) throws SAXException, IOException {
     try {
-      if (Constants.DEBUG_JML_PARSING) System.out.println("Starting JMLParser.parse()...");
+      if (Constants.DEBUG_JML_PARSING) {
+        System.out.println("Starting JMLParser.parse()...");
+      }
 
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setValidating(true);
@@ -52,11 +54,19 @@ public class JMLParser extends DefaultHandler {
       if (rootNode.getNumberOfChildren() == 1) {
         String child = rootNode.getChildNode(0).getNodeType();
 
-        if (child.equalsIgnoreCase("pattern")) return JML_PATTERN;
-        else if (child.equalsIgnoreCase("patternlist")) return JML_LIST;
-        else return JML_INVALID;
-      } else return JML_INVALID;
-    } else return JML_INVALID;
+        if (child.equalsIgnoreCase("pattern")) {
+          return JML_PATTERN;
+        } else if (child.equalsIgnoreCase("patternlist")) {
+          return JML_LIST;
+        } else {
+          return JML_INVALID;
+        }
+      } else {
+        return JML_INVALID;
+      }
+    } else {
+      return JML_INVALID;
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -67,7 +77,9 @@ public class JMLParser extends DefaultHandler {
   public InputSource resolveEntity(String publicId, String systemId) {
     if (Constants.DEBUG_JML_PARSING) {
       System.out.print("Resolve entity:");
-      if (publicId != null) System.out.print(" publicId=\"" + publicId + '"');
+      if (publicId != null) {
+        System.out.print(" publicId=\"" + publicId + '"');
+      }
       System.out.println(" systemId=\"" + systemId + '"');
     }
 
@@ -88,8 +100,12 @@ public class JMLParser extends DefaultHandler {
   public void notationDecl(String name, String publicId, String systemId) {
     if (Constants.DEBUG_JML_PARSING) {
       System.out.print("Notation declaration: " + name);
-      if (publicId != null) System.out.print(" publicId=\"" + publicId + '"');
-      if (systemId != null) System.out.print(" systemId=\"" + systemId + '"');
+      if (publicId != null) {
+        System.out.print(" publicId=\"" + publicId + '"');
+      }
+      if (systemId != null) {
+        System.out.print(" systemId=\"" + systemId + '"');
+      }
       System.out.print('\n');
     }
   }
@@ -99,8 +115,12 @@ public class JMLParser extends DefaultHandler {
       String name, String publicId, String systemId, String notationName) {
     if (Constants.DEBUG_JML_PARSING) {
       System.out.print("Unparsed Entity Declaration: " + name);
-      if (publicId != null) System.out.print(" publicId=\"" + publicId + '"');
-      if (systemId != null) System.out.print(" systemId=\"" + systemId + '"');
+      if (publicId != null) {
+        System.out.print(" publicId=\"" + publicId + '"');
+      }
+      if (systemId != null) {
+        System.out.print(" systemId=\"" + systemId + '"');
+      }
       System.out.println(" notationName=\"" + notationName + '"');
     }
   }
@@ -110,12 +130,16 @@ public class JMLParser extends DefaultHandler {
   @Override
   public void setDocumentLocator(Locator locator) {
     super.setDocumentLocator(locator);
-    if (Constants.DEBUG_JML_PARSING) System.out.println("Document locator supplied.");
+    if (Constants.DEBUG_JML_PARSING) {
+      System.out.println("Document locator supplied.");
+    }
   }
 
   @Override
   public void startDocument() throws SAXException {
-    if (Constants.DEBUG_JML_PARSING) System.out.println("Start document");
+    if (Constants.DEBUG_JML_PARSING) {
+      System.out.println("Start document");
+    }
     try {
       startJMLPattern();
     } catch (JuggleException je) {
@@ -125,7 +149,9 @@ public class JMLParser extends DefaultHandler {
 
   @Override
   public void endDocument() throws SAXException {
-    if (Constants.DEBUG_JML_PARSING) System.out.println("End document");
+    if (Constants.DEBUG_JML_PARSING) {
+      System.out.println("End document");
+    }
     try {
       endJMLPattern();
     } catch (JuggleException je) {
@@ -151,8 +177,9 @@ public class JMLParser extends DefaultHandler {
     }
     try {
       startJMLElement(qName);
-      for (int i = 0; i < atts.getLength(); i++)
+      for (int i = 0; i < atts.getLength(); i++) {
         addJMLAttribute(atts.getQName(i), atts.getValue(i));
+      }
     } catch (JuggleException je) {
       throw new SAXException(je.getMessage());
     }
@@ -160,7 +187,9 @@ public class JMLParser extends DefaultHandler {
 
   @Override
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
-    if (Constants.DEBUG_JML_PARSING) System.out.println("End element: " + qName);
+    if (Constants.DEBUG_JML_PARSING) {
+      System.out.println("End element: " + qName);
+    }
     try {
       endJMLElement(qName);
     } catch (JuggleException je) {
@@ -191,8 +220,9 @@ public class JMLParser extends DefaultHandler {
 
   @Override
   public void processingInstruction(String target, String data) {
-    if (Constants.DEBUG_JML_PARSING)
+    if (Constants.DEBUG_JML_PARSING) {
       System.out.println("Processing instruction: " + target + ' ' + data);
+    }
   }
 
   // Display text, escaping some characters.
@@ -273,65 +303,92 @@ public class JMLParser extends DefaultHandler {
   //----------------------------------------------------------------------------
 
   protected void startJMLPattern() throws JuggleExceptionInternal {
-    if (patternStarted)
+    if (patternStarted) {
       throw new JuggleExceptionInternal("startJMLPattern(): pattern already started");
+    }
     patternStarted = true;
   }
 
   protected void startJMLElement(String name) throws JuggleExceptionInternal {
-    if (!patternStarted) throw new JuggleExceptionInternal("startJMLEleent(): pattern not started");
-    if (patternFinished)
+    if (!patternStarted) {
+      throw new JuggleExceptionInternal("startJMLEleent(): pattern not started");
+    }
+    if (patternFinished) {
       throw new JuggleExceptionInternal("startJMLElement(): pattern already finished");
-    if (currentNode == null && rootNode != null)
+    }
+    if (currentNode == null && rootNode != null) {
       throw new JuggleExceptionInternal("startJMLElement(): can only have one root element");
+    }
 
     JMLNode newNode = new JMLNode(name);
     if (currentNode != null) {
       currentNode.appendChild(newNode);
       currentNode = newNode;
-    } else rootNode = currentNode = newNode;
+    } else {
+      rootNode = currentNode = newNode;
+    }
   }
 
   protected void endJMLElement(String name) throws JuggleExceptionInternal {
-    if (!patternStarted) throw new JuggleExceptionInternal("endJMLElement(): pattern not started");
-    if (patternFinished)
+    if (!patternStarted) {
+      throw new JuggleExceptionInternal("endJMLElement(): pattern not started");
+    }
+    if (patternFinished) {
       throw new JuggleExceptionInternal("endJMLElement(): pattern already finished");
-    if (currentNode == null)
+    }
+    if (currentNode == null) {
       throw new JuggleExceptionInternal("endJMLElement(): no correspanding startElement()");
+    }
     currentNode = currentNode.getParentNode();
   }
 
   protected void addJMLAttribute(String name, String value) throws JuggleExceptionInternal {
-    if (!patternStarted)
+    if (!patternStarted) {
       throw new JuggleExceptionInternal("addJMLAttribute(): pattern not started");
-    if (patternFinished)
+    }
+    if (patternFinished) {
       throw new JuggleExceptionInternal("addJMLAttribute(): pattern already finished");
-    if (currentNode == null)
+    }
+    if (currentNode == null) {
       throw new JuggleExceptionInternal("addJMLAttribute(): no element to add to");
+    }
 
     currentNode.addAttribute(name, value);
   }
 
   protected void addJMLText(String text) throws JuggleExceptionInternal {
-    if (!patternStarted) throw new JuggleExceptionInternal("addJMLText(): pattern not started");
-    if (patternFinished)
+    if (!patternStarted) {
+      throw new JuggleExceptionInternal("addJMLText(): pattern not started");
+    }
+    if (patternFinished) {
       throw new JuggleExceptionInternal("addJMLText(): pattern already finished");
-    if (currentNode == null)
+    }
+    if (currentNode == null) {
       throw new JuggleExceptionInternal("addJMLText(): no element to add to");
+    }
 
     String newvalue = null;
-    if (currentNode.getNodeValue() == null) newvalue = text;
-    else newvalue = currentNode.getNodeValue() + text;
+    if (currentNode.getNodeValue() == null) {
+      newvalue = text;
+    } else {
+      newvalue = currentNode.getNodeValue() + text;
+    }
     currentNode.setNodeValue(newvalue);
   }
 
   protected void endJMLPattern() throws JuggleExceptionInternal {
-    if (!patternStarted) throw new JuggleExceptionInternal("endJMLPattern(): pattern not started");
-    if (patternFinished)
+    if (!patternStarted) {
+      throw new JuggleExceptionInternal("endJMLPattern(): pattern not started");
+    }
+    if (patternFinished) {
       throw new JuggleExceptionInternal("endJMLPattern(): pattern already finished");
-    if (rootNode == null) throw new JuggleExceptionInternal("endJMLPattern(): empty pattern");
-    if (currentNode != null)
+    }
+    if (rootNode == null) {
+      throw new JuggleExceptionInternal("endJMLPattern(): empty pattern");
+    }
+    if (currentNode != null) {
       throw new JuggleExceptionInternal("endJMLPattern(): missing endElement()");
+    }
 
     patternFinished = true;
   }

@@ -28,7 +28,8 @@ public class JLFunc {
   static final ResourceBundle guistrings = JugglingLab.guistrings;
   static final ResourceBundle errorstrings = JugglingLab.errorstrings;
 
-  // Binomial coefficient (a choose b)
+  // Binomial coefficient (a choose b).
+
   public static int binomial(int a, int b) {
     int result = 1;
 
@@ -83,7 +84,9 @@ public class JLFunc {
           // snip out the string to be repeated:
           String str2 = str.substring(pos + 1, repeat_end);
 
-          for (int i = 0; i < repeats; i++) addExpansionToBuffer(str2, sb);
+          for (int i = 0; i < repeats; i++) {
+            addExpansionToBuffer(str2, sb);
+          }
 
           pos = resume_start;
         }
@@ -114,8 +117,9 @@ public class JLFunc {
     for (int pos = fromPos; pos < str.length(); pos++) {
       char ch = str.charAt(pos);
 
-      if (ch == '(') depth++;
-      else if (ch == ')') {
+      if (ch == '(') {
+        depth++;
+      } else if (ch == ')') {
         depth--;
         if (depth == 0) {
           // see if we match the form '^(int)...' after the closing
@@ -123,7 +127,9 @@ public class JLFunc {
           Pattern pat = Pattern.compile("^\\s*\\^\\s*(\\d+).*");
           Matcher m = pat.matcher(str.substring(pos + 1, str.length()));
 
-          if (!m.matches()) return null;
+          if (!m.matches()) {
+            return null;
+          }
 
           int repeat_end = pos;
           int repeats = Integer.parseInt(m.group(1));
@@ -150,7 +156,9 @@ public class JLFunc {
     int length = Math.min(components1.length, components2.length);
     for (int i = 0; i < length; i++) {
       int result = Integer.valueOf(components1[i]).compareTo(Integer.parseInt(components2[i]));
-      if (result != 0) return result;
+      if (result != 0) {
+        return result;
+      }
     }
     return Integer.compare(components1.length, components2.length);
   }
@@ -159,8 +167,12 @@ public class JLFunc {
   // (x2, y2). "Near" means shortest distance is less than `slop`.
 
   public static boolean isNearLine(int x, int y, int x1, int y1, int x2, int y2, int slop) {
-    if (x < (Math.min(x1, x2) - slop) || x > (Math.max(x1, x2) + slop)) return false;
-    if (y < (Math.min(y1, y2) - slop) || y > (Math.max(y1, y2) + slop)) return false;
+    if (x < (Math.min(x1, x2) - slop) || x > (Math.max(x1, x2) + slop)) {
+      return false;
+    }
+    if (y < (Math.min(y1, y2) - slop) || y > (Math.max(y1, y2) + slop)) {
+      return false;
+    }
 
     double d = (x2 - x1) * (y - y1) - (x - x1) * (y2 - y1);
     d = Math.abs(d) / Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -199,8 +211,10 @@ public class JLFunc {
     DecimalFormat formatter = new DecimalFormat(fmt, new DecimalFormatSymbols(Locale.US));
     String result = formatter.format(val);
 
-    if (result.equals("-0")) // strange quirk
-    result = "0";
+    if (result.equals("-0")) {
+      // strange quirk
+      result = "0";
+    }
 
     return result;
   }
@@ -235,8 +249,7 @@ public class JLFunc {
 
   public static JFileChooser jfc() {
     if (jfc == null) {
-      jfc =
-          new JFileChooser() {
+      jfc = new JFileChooser() {
             @Override
             public void approveSelection() {
               File f = getSelectedFile();
@@ -247,8 +260,7 @@ public class JLFunc {
                 String msg = MessageFormat.format(template, arguments);
                 String title = guistrings.getString("JFC_File_exists_title");
 
-                int result =
-                    JOptionPane.showConfirmDialog(
+                int result = JOptionPane.showConfirmDialog(
                         this, msg, title, JOptionPane.YES_NO_CANCEL_OPTION);
                 switch (result) {
                   case JOptionPane.YES_OPTION:

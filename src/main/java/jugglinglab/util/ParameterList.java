@@ -28,7 +28,8 @@ public class ParameterList {
     readParameters(source);
   }
 
-  // Returns true if parameter already existed, false if it was new
+  // Return true if parameter already existed, false if it was new.
+
   public boolean addParameter(String name, String value) {
     if (size == 0) {
       names = new ArrayList<String>();
@@ -49,8 +50,11 @@ public class ParameterList {
   }
 
   public String getParameter(String name) {
-    for (int i = size - 1; i >= 0; i--)
-      if (name.equalsIgnoreCase(getParameterName(i))) return getParameterValue(i);
+    for (int i = size - 1; i >= 0; i--) {
+      if (name.equalsIgnoreCase(getParameterName(i))) {
+        return getParameterValue(i);
+      }
+    }
     return null;
   }
 
@@ -78,7 +82,9 @@ public class ParameterList {
   }
 
   public void readParameters(String source) throws JuggleExceptionUser {
-    if (source == null) return;
+    if (source == null) {
+      return;
+    }
 
     source = source.replaceAll("\n", "").replaceAll("\r", "");
     StringTokenizer st1 = new StringTokenizer(source, ";");
@@ -89,7 +95,9 @@ public class ParameterList {
       if (index > 0) {
         String name = str.substring(0, index).trim();
         String value = str.substring(index + 1).trim();
-        if (name.length() != 0) addParameter(name, value);
+        if (name.length() != 0) {
+          addParameter(name, value);
+        }
       } else {
         str = str.trim();
         if (str.length() > 0) {
@@ -106,27 +114,32 @@ public class ParameterList {
     String result = "";
 
     for (int i = 0; i < size; i++) {
-      if (i != 0) result += ";";
+      if (i != 0) {
+        result += ";";
+      }
       result += getParameterName(i) + "=" + getParameterValue(i);
     }
 
     return result;
   }
 
-  // Utility function to throw an appropriate error if there are parameters
-  // left over after parsing.
+  // Throw an appropriate error if there are parameters left over after parsing.
+
   public void errorIfParametersLeft() throws JuggleExceptionUser {
     int count = getNumberOfParameters();
 
-    if (count == 0) return;
-    else if (count == 1) {
+    if (count == 0) {
+      return;
+    } else if (count == 1) {
       String template = errorstrings.getString("Error_unused_param");
       Object[] arguments = {"\"" + getParameterName(0) + "\""};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     } else {
       String template = errorstrings.getString("Error_unused_params");
       ArrayList<String> names = new ArrayList<String>();
-      for (int i = 0; i < count; i++) names.add("\"" + getParameterName(i) + "\"");
+      for (int i = 0; i < count; i++) {
+        names.add("\"" + getParameterName(i) + "\"");
+      }
       Object[] arguments = {String.join(", ", names)};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }

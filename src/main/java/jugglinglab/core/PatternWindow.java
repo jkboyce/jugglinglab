@@ -50,7 +50,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     super(title);
-    loadOptimizer(); // Do this before creating menus
+    loadOptimizer();  // do this before creating menus
     createMenus();
     createInitialView(pat, jc);
     view.addToUndoList(pat);
@@ -112,11 +112,16 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   protected void createInitialView(JMLPattern pat, AnimationPrefs jc)
       throws JuggleExceptionUser, JuggleExceptionInternal {
-    if (jc == null) jc = new AnimationPrefs();
+    if (jc == null) {
+      jc = new AnimationPrefs();
+    }
 
     int mode = View.VIEW_EDIT;
-    if (jc.view != View.VIEW_NONE) mode = jc.view;
-    else if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS) mode = View.VIEW_SIMPLE;
+    if (jc.view != View.VIEW_NONE) {
+      mode = jc.view;
+    } else if (pat.getNumberOfJugglers() > EditLadderDiagram.MAX_JUGGLERS) {
+      mode = View.VIEW_SIMPLE;
+    }
 
     viewmenu.getItem(mode - 1).setSelected(true);
 
@@ -138,7 +143,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         view = new SelectionView(animsize);
         break;
     }
-    if (view == null) throw new JuggleExceptionInternal("createInitialView: problem creating view");
+    if (view == null) {
+      throw new JuggleExceptionInternal("createInitialView: problem creating view");
+    }
 
     view.setParent(this);
     view.setOpaque(true);
@@ -155,8 +162,11 @@ public class PatternWindow extends JFrame implements ActionListener {
   }
 
   // `mode` is one of the View.VIEW_X constants
+
   protected void setViewMode(int mode) throws JuggleExceptionUser, JuggleExceptionInternal {
-    if (view == null) throw new JuggleExceptionInternal("setViewMode called with no prior view");
+    if (view == null) {
+      throw new JuggleExceptionInternal("setViewMode called with no prior view");
+    }
 
     viewmenu.getItem(mode - 1).setSelected(true);
 
@@ -185,7 +195,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         newview = new SelectionView(animsize);
         break;
     }
-    if (newview == null) throw new JuggleExceptionInternal("setViewMode: problem creating view");
+    if (newview == null) {
+      throw new JuggleExceptionInternal("setViewMode: problem creating view");
+    }
 
     newview.setParent(this);
     newview.setPaused(paused);
@@ -193,8 +205,11 @@ public class PatternWindow extends JFrame implements ActionListener {
     newview.setDoubleBuffered(true);
     setContentPane(newview);
 
-    if (isWindowMaximized()) validate();
-    else pack();
+    if (isWindowMaximized()) {
+      validate();
+    } else {
+      pack();
+    }
     newview.restartView(pat, jc);
     newview.setUndoList(undo, undo_index);
 
@@ -203,11 +218,21 @@ public class PatternWindow extends JFrame implements ActionListener {
   }
 
   public int getViewMode() {
-    if (view == null) return View.VIEW_NONE;
-    if (view instanceof SimpleView) return View.VIEW_SIMPLE;
-    if (view instanceof EditView) return View.VIEW_EDIT;
-    if (view instanceof PatternView) return View.VIEW_PATTERN;
-    if (view instanceof SelectionView) return View.VIEW_SELECTION;
+    if (view == null) {
+      return View.VIEW_NONE;
+    }
+    if (view instanceof SimpleView) {
+      return View.VIEW_SIMPLE;
+    }
+    if (view instanceof EditView) {
+      return View.VIEW_EDIT;
+    }
+    if (view instanceof PatternView) {
+      return View.VIEW_PATTERN;
+    }
+    if (view instanceof SelectionView) {
+      return View.VIEW_SELECTION;
+    }
     return View.VIEW_NONE;
   }
 
@@ -224,6 +249,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   //
   // DO NOT override java.lang.Object.hashCode() -- for some reason the
   // system calls it a lot, and menu shortcut keys stop working. Weird.
+
   protected int getHashCode() {
     return (view == null) ? 0 : view.getHashCode();
   }
@@ -234,6 +260,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   // extended state flag when it's maximized. Nor is there any other
   // replacement for com.apple.eawt.FullScreenListener. See e.g.
   // https://bugs.openjdk.java.net/browse/JDK-8228638
+
   public boolean isWindowMaximized() {
     return ((getExtendedState() & MAXIMIZED_BOTH) != 0);
   }
@@ -248,25 +275,32 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   // Load the pattern optimizer. Do this using the reflection API so we can
   // omit the feature by leaving those source files out of the compile.
+
   protected static void loadOptimizer() {
-    if (optimizer_loaded) return;
+    if (optimizer_loaded) {
+      return;
+    }
 
     try {
       optimizer = Class.forName("jugglinglab.optimizer.Optimizer");
 
       Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
       Boolean canOptimize = (Boolean) optimizerAvailable.invoke(null);
-      if (canOptimize.booleanValue() == false) optimizer = null;
+      if (canOptimize.booleanValue() == false) {
+        optimizer = null;
+      }
     } catch (Exception e) {
       optimizer = null;
-      if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+      if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
         System.out.println("Exception loading optimizer: " + e.toString());
+      }
     }
     optimizer_loaded = true;
   }
 
   // Return the location (screen pixels) of where the next animation window to
   // be created should go. This allows us to create a tiling effect.
+
   protected static Point getNextScreenLocation() {
     if (tile_locations == null) {
       tile_locations = new Point[NUM_TILES];
@@ -284,7 +318,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
 
     Point loc = tile_locations[next_tile_num];
-    if (++next_tile_num == NUM_TILES) next_tile_num = 0;
+    if (++next_tile_num == NUM_TILES) {
+      next_tile_num = 0;
+    }
     return loc;
   }
 
@@ -292,6 +328,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   // if so then bring that window to the front.
   //
   // Returns true if animation found, false if not.
+
   public static boolean bringToFront(int hash) {
     for (Frame fr : Frame.getFrames()) {
       if (fr instanceof PatternWindow && fr.isVisible()) {
@@ -312,7 +349,8 @@ public class PatternWindow extends JFrame implements ActionListener {
     return false;
   }
 
-  // Used when a single animation is created from the command line
+  // Used when a single animation is created from the command line.
+
   public static void setExitOnLastClose(boolean value) {
     exit_on_last_close = value;
   }
@@ -375,16 +413,19 @@ public class PatternWindow extends JFrame implements ActionListener {
 
       JMenuItem fileitem = new JMenuItem(guistrings.getString(fileItems[i].replace(' ', '_')));
 
-      if (fileShortcuts[i] != ' ')
+      if (fileShortcuts[i] != ' ') {
         fileitem.setAccelerator(
             KeyStroke.getKeyStroke(
                 fileShortcuts[i], Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+      }
 
       fileitem.setActionCommand(fileCommands[i]);
       fileitem.addActionListener(this);
       filemenu.add(fileitem);
 
-      if (fileCommands[i].equals("optimize") && optimizer == null) fileitem.setEnabled(false);
+      if (fileCommands[i].equals("optimize") && optimizer == null) {
+        fileitem.setEnabled(false);
+      }
     }
     return filemenu;
   }
@@ -437,10 +478,11 @@ public class PatternWindow extends JFrame implements ActionListener {
         JRadioButtonMenuItem viewitem =
             new JRadioButtonMenuItem(guistrings.getString(viewItems[i].replace(' ', '_')));
 
-        if (viewShortcuts[i] != ' ')
+        if (viewShortcuts[i] != ' ') {
           viewitem.setAccelerator(
               KeyStroke.getKeyStroke(
                   viewShortcuts[i], Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        }
 
         viewitem.setActionCommand(viewCommands[i]);
         viewitem.addActionListener(this);
@@ -449,10 +491,11 @@ public class PatternWindow extends JFrame implements ActionListener {
       } else {
         JMenuItem viewitem = new JMenuItem(guistrings.getString(viewItems[i].replace(' ', '_')));
 
-        if (viewShortcuts[i] != ' ')
+        if (viewShortcuts[i] != ' ') {
           viewitem.setAccelerator(
               KeyStroke.getKeyStroke(
                   viewShortcuts[i], Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        }
 
         viewitem.setActionCommand(viewCommands[i]);
         viewitem.addActionListener(this);
@@ -463,7 +506,9 @@ public class PatternWindow extends JFrame implements ActionListener {
   }
 
   public void updateUndoMenu() {
-    if (view == null || viewmenu == null) return;
+    if (view == null || viewmenu == null) {
+      return;
+    }
 
     int undo_index = view.getUndoIndex();
     boolean undo_enabled = (undo_index > 0);
@@ -471,10 +516,15 @@ public class PatternWindow extends JFrame implements ActionListener {
 
     for (int i = 0; i < viewmenu.getItemCount(); ++i) {
       JMenuItem jmi = viewmenu.getItem(i);
-      if (jmi == null || jmi.getActionCommand() == null) continue;
+      if (jmi == null || jmi.getActionCommand() == null) {
+        continue;
+      }
 
-      if (jmi.getActionCommand().equals("undo")) jmi.setEnabled(undo_enabled);
-      else if (jmi.getActionCommand().equals("redo")) jmi.setEnabled(redo_enabled);
+      if (jmi.getActionCommand().equals("undo")) {
+        jmi.setEnabled(undo_enabled);
+      } else if (jmi.getActionCommand().equals("redo")) {
+        jmi.setEnabled(redo_enabled);
+      }
     }
   }
 
@@ -499,12 +549,15 @@ public class PatternWindow extends JFrame implements ActionListener {
     String menuname = guistrings.getString("Help");
     // Menus titled "Help" are handled differently by macOS; only want to
     // have one of them across the entire app.
-    if (jugglinglab.JugglingLab.isMacOS) menuname += ' ';
+    if (jugglinglab.JugglingLab.isMacOS) {
+      menuname += ' ';
+    }
     JMenu helpmenu = new JMenu(menuname);
 
     for (int i = (include_about ? 0 : 1); i < helpItems.length; i++) {
-      if (helpItems[i] == null) helpmenu.addSeparator();
-      else {
+      if (helpItems[i] == null) {
+        helpmenu.addSeparator();
+      } else {
         JMenuItem helpitem = new JMenuItem(guistrings.getString(helpItems[i].replace(' ', '_')));
         helpitem.setActionCommand(helpCommands[i]);
         helpitem.addActionListener(this);
@@ -519,33 +572,61 @@ public class PatternWindow extends JFrame implements ActionListener {
     String command = ae.getActionCommand();
 
     try {
-      if (command.equals("newpat")) doMenuCommand(MenuCommand.FILE_NEWPAT);
-      else if (command.equals("newpl")) doMenuCommand(MenuCommand.FILE_NEWPL);
-      else if (command.equals("open")) doMenuCommand(MenuCommand.FILE_OPEN);
-      else if (command.equals("close")) doMenuCommand(MenuCommand.FILE_CLOSE);
-      else if (command.equals("saveas")) doMenuCommand(MenuCommand.FILE_SAVE);
-      else if (command.equals("savegifanim")) doMenuCommand(MenuCommand.FILE_GIFSAVE);
-      else if (command.equals("duplicate")) doMenuCommand(MenuCommand.FILE_DUPLICATE);
-      else if (command.equals("optimize")) doMenuCommand(MenuCommand.FILE_OPTIMIZE);
-      else if (command.equals("swaphands")) doMenuCommand(MenuCommand.FILE_SWAPHANDS);
-      else if (command.equals("invertx")) doMenuCommand(MenuCommand.FILE_INVERTX);
-      else if (command.equals("inverttime")) doMenuCommand(MenuCommand.FILE_INVERTTIME);
-      else if (command.equals("restart")) doMenuCommand(MenuCommand.VIEW_RESTART);
-      else if (command.equals("prefs")) doMenuCommand(MenuCommand.VIEW_ANIMPREFS);
-      else if (command.equals("undo")) doMenuCommand(MenuCommand.VIEW_UNDO);
-      else if (command.equals("redo")) doMenuCommand(MenuCommand.VIEW_REDO);
-      else if (command.equals("zoomin")) doMenuCommand(MenuCommand.VIEW_ZOOMIN);
-      else if (command.equals("zoomout")) doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
-      else if (command.equals("simple")) {
-        if (getViewMode() != View.VIEW_SIMPLE) setViewMode(View.VIEW_SIMPLE);
+      if (command.equals("newpat")) {
+        doMenuCommand(MenuCommand.FILE_NEWPAT);
+      } else if (command.equals("newpl")) {
+        doMenuCommand(MenuCommand.FILE_NEWPL);
+      } else if (command.equals("open")) {
+        doMenuCommand(MenuCommand.FILE_OPEN);
+      } else if (command.equals("close")) {
+        doMenuCommand(MenuCommand.FILE_CLOSE);
+      } else if (command.equals("saveas")) {
+        doMenuCommand(MenuCommand.FILE_SAVE);
+      } else if (command.equals("savegifanim")) {
+        doMenuCommand(MenuCommand.FILE_GIFSAVE);
+      } else if (command.equals("duplicate")) {
+        doMenuCommand(MenuCommand.FILE_DUPLICATE);
+      } else if (command.equals("optimize")) {
+        doMenuCommand(MenuCommand.FILE_OPTIMIZE);
+      } else if (command.equals("swaphands")) {
+        doMenuCommand(MenuCommand.FILE_SWAPHANDS);
+      } else if (command.equals("invertx")) {
+        doMenuCommand(MenuCommand.FILE_INVERTX);
+      } else if (command.equals("inverttime")) {
+        doMenuCommand(MenuCommand.FILE_INVERTTIME);
+      } else if (command.equals("restart")) {
+        doMenuCommand(MenuCommand.VIEW_RESTART);
+      } else if (command.equals("prefs")) {
+        doMenuCommand(MenuCommand.VIEW_ANIMPREFS);
+      } else if (command.equals("undo")) {
+        doMenuCommand(MenuCommand.VIEW_UNDO);
+      } else if (command.equals("redo")) {
+        doMenuCommand(MenuCommand.VIEW_REDO);
+      } else if (command.equals("zoomin")) {
+        doMenuCommand(MenuCommand.VIEW_ZOOMIN);
+      } else if (command.equals("zoomout")) {
+        doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
+      } else if (command.equals("simple")) {
+        if (getViewMode() != View.VIEW_SIMPLE) {
+          setViewMode(View.VIEW_SIMPLE);
+        }
       } else if (command.equals("visual_edit")) {
-        if (getViewMode() != View.VIEW_EDIT) setViewMode(View.VIEW_EDIT);
+        if (getViewMode() != View.VIEW_EDIT) {
+          setViewMode(View.VIEW_EDIT);
+        }
       } else if (command.equals("pattern_edit")) {
-        if (getViewMode() != View.VIEW_PATTERN) setViewMode(View.VIEW_PATTERN);
+        if (getViewMode() != View.VIEW_PATTERN) {
+          setViewMode(View.VIEW_PATTERN);
+        }
       } else if (command.equals("selection_edit")) {
-        if (getViewMode() != View.VIEW_SELECTION) setViewMode(View.VIEW_SELECTION);
-      } else if (command.equals("about")) doMenuCommand(MenuCommand.HELP_ABOUT);
-      else if (command.equals("online")) doMenuCommand(MenuCommand.HELP_ONLINE);
+        if (getViewMode() != View.VIEW_SELECTION) {
+          setViewMode(View.VIEW_SELECTION);
+        }
+      } else if (command.equals("about")) {
+        doMenuCommand(MenuCommand.HELP_ABOUT);
+      } else if (command.equals("online")) {
+        doMenuCommand(MenuCommand.HELP_ONLINE);
+      }
     } catch (JuggleExceptionUser je) {
       new ErrorDialog(this, je.getMessage());
     } catch (JuggleExceptionInternal jei) {
@@ -600,29 +681,44 @@ public class PatternWindow extends JFrame implements ActionListener {
         if (PatternWindow.exit_on_last_close) {
           int window_count = 0;
           for (Frame fr : Frame.getFrames()) {
-            if (fr instanceof PatternWindow && fr.isVisible()) ++window_count;
+            if (fr instanceof PatternWindow && fr.isVisible()) {
+              ++window_count;
+            }
           }
-          if (window_count == 0) System.exit(0);
+          if (window_count == 0) {
+            System.exit(0);
+          }
         }
         break;
 
       case FILE_SAVE:
-        if (view == null) break;
-        if (!view.getPattern().isValid())
+        if (view == null) {
+          break;
+        }
+        if (!view.getPattern().isValid()) {
           throw new JuggleExceptionUser(errorstrings.getString("Error_saving_invalid_pattern"));
+        }
 
         {
           String fname = last_jml_filename;
-          if (fname == null) fname = getTitle() + ".jml"; // default filename
+          if (fname == null) {
+            fname = getTitle() + ".jml";  // default filename
+          }
           fname = JLFunc.sanitizeFilename(fname);
           JLFunc.jfc().setSelectedFile(new File(fname));
           JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) break;
+          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            break;
+          }
 
           File f = JLFunc.jfc().getSelectedFile();
-          if (f == null) break;
-          if (!f.getAbsolutePath().endsWith(".jml")) f = new File(f.getAbsolutePath() + ".jml");
+          if (f == null) {
+            break;
+          }
+          if (!f.getAbsolutePath().endsWith(".jml")) {
+            f = new File(f.getAbsolutePath() + ".jml");
+          }
           JLFunc.errorIfNotSanitized(f.getName());
           last_jml_filename = f.getName();
 
@@ -639,7 +735,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         break;
 
       case FILE_GIFSAVE:
-        if (view == null) break;
+        if (view == null) {
+          break;
+        }
 
         {
           String fname = last_jml_filename;
@@ -655,11 +753,17 @@ public class PatternWindow extends JFrame implements ActionListener {
           JLFunc.jfc().setSelectedFile(new File(fname));
           JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) break;
+          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            break;
+          }
 
           File f = JLFunc.jfc().getSelectedFile();
-          if (f == null) break;
-          if (!f.getAbsolutePath().endsWith(".gif")) f = new File(f.getAbsolutePath() + ".gif");
+          if (f == null) {
+            break;
+          }
+          if (!f.getAbsolutePath().endsWith(".gif")) {
+            f = new File(f.getAbsolutePath() + ".gif");
+          }
           JLFunc.errorIfNotSanitized(f.getName());
           int index = f.getName().lastIndexOf(".");
           String base = index >= 0 ? f.getName().substring(0, index) : f.getName();
@@ -679,7 +783,9 @@ public class PatternWindow extends JFrame implements ActionListener {
           System.out.println("optimizing in PatternWindow.doMenuCommand()");
         }
 
-        if (optimizer == null || view == null) break;
+        if (optimizer == null || view == null) {
+          break;
+        }
 
         try {
           Method optimize = optimizer.getMethod("optimize", JMLPattern.class);
@@ -692,24 +798,33 @@ public class PatternWindow extends JFrame implements ActionListener {
         } catch (InvocationTargetException ite) {
           // exceptions thrown by Optimizer.optimize() land here
           Throwable ex = ite.getCause();
-          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
             System.out.println("ite: " + ex.getMessage());
-          if (ex instanceof JuggleExceptionUser) throw (JuggleExceptionUser) ex;
-          else if (ex instanceof JuggleExceptionInternal) throw (JuggleExceptionInternal) ex;
-          else throw new JuggleExceptionInternal("optimizer unknown ite: " + ex.getMessage());
+          }
+          if (ex instanceof JuggleExceptionUser) {
+            throw (JuggleExceptionUser) ex;
+          } else if (ex instanceof JuggleExceptionInternal) {
+            throw (JuggleExceptionInternal) ex;
+          } else {
+            throw new JuggleExceptionInternal("optimizer unknown ite: " + ex.getMessage());
+          }
         } catch (NoSuchMethodException nsme) {
-          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
             System.out.println("nsme: " + nsme.getMessage());
+          }
           throw new JuggleExceptionInternal("optimizer nsme: " + nsme.getMessage());
         } catch (IllegalAccessException iae) {
-          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE)
+          if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
             System.out.println("iae: " + iae.getMessage());
+          }
           throw new JuggleExceptionInternal("optimizer iae: " + iae.getMessage());
         }
         break;
 
       case FILE_SWAPHANDS:
-        if (view == null) break;
+        if (view == null) {
+          break;
+        }
 
         try {
           JMLPattern newpat = new JMLPattern(view.getPattern());
@@ -722,7 +837,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         break;
 
       case FILE_INVERTX:
-        if (view == null) break;
+        if (view == null) {
+          break;
+        }
 
         try {
           JMLPattern newpat = new JMLPattern(view.getPattern());
@@ -735,7 +852,9 @@ public class PatternWindow extends JFrame implements ActionListener {
         break;
 
       case FILE_INVERTTIME:
-        if (view == null) break;
+        if (view == null) {
+          break;
+        }
 
         try {
           JMLPattern newpat = new JMLPattern(view.getPattern());
@@ -748,11 +867,15 @@ public class PatternWindow extends JFrame implements ActionListener {
         break;
 
       case VIEW_RESTART:
-        if (view != null) view.restartView();
+        if (view != null) {
+          view.restartView();
+        }
         break;
 
       case VIEW_ANIMPREFS:
-        if (view == null) break;
+        if (view == null) {
+          break;
+        }
 
         AnimationPrefs jc = view.getAnimationPrefs();
         AnimationPrefsDialog japd = new AnimationPrefsDialog(this);
@@ -762,28 +885,37 @@ public class PatternWindow extends JFrame implements ActionListener {
           view.restartView(null, newjc);
 
           if (newjc.width != jc.width || newjc.height != jc.height) {
-            if (isWindowMaximized()) validate();
-            else pack();
+            if (isWindowMaximized()) {
+              validate();
+            } else {
+              pack();
+            }
           }
         }
         break;
 
       case VIEW_UNDO:
-        if (view != null) view.undoEdit();
+        if (view != null) {
+          view.undoEdit();
+        }
         break;
 
       case VIEW_REDO:
-        if (view != null) view.redoEdit();
+        if (view != null) {
+          view.redoEdit();
+        }
         break;
 
       case VIEW_ZOOMIN:
-        if (view != null && view.getZoomLevel() < (MAX_ZOOM / ZOOM_PER_STEP))
+        if (view != null && view.getZoomLevel() < (MAX_ZOOM / ZOOM_PER_STEP)) {
           view.setZoomLevel(ZOOM_PER_STEP * view.getZoomLevel());
+        }
         break;
 
       case VIEW_ZOOMOUT:
-        if (view != null && view.getZoomLevel() > (MIN_ZOOM * ZOOM_PER_STEP))
+        if (view != null && view.getZoomLevel() > (MIN_ZOOM * ZOOM_PER_STEP)) {
           view.setZoomLevel(view.getZoomLevel() / ZOOM_PER_STEP);
+        }
         break;
 
       case HELP_ABOUT:
@@ -800,8 +932,9 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   @Override
   public void setTitle(String title) {
-    if (title == null || title.length() == 0)
+    if (title == null || title.length() == 0) {
       title = guistrings.getString("PWINDOW_Default_window_title");
+    }
 
     super.setTitle(title);
     ApplicationWindow.updateWindowMenus();

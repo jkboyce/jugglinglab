@@ -27,9 +27,8 @@ public class TossPath extends Path {
   public ParameterDescriptor[] getParameterDescriptors() {
     ParameterDescriptor[] result = new ParameterDescriptor[1];
 
-    result[0] =
-        new ParameterDescriptor(
-            "g", ParameterDescriptor.TYPE_FLOAT, null, Double.valueOf(G_DEF), Double.valueOf(g));
+    result[0] = new ParameterDescriptor(
+        "g", ParameterDescriptor.TYPE_FLOAT, null, Double.valueOf(G_DEF), Double.valueOf(g));
     return result;
   }
 
@@ -51,9 +50,10 @@ public class TossPath extends Path {
           Object[] arguments = {"g"};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
-      } else
+      } else {
         throw new JuggleExceptionUser(
             errorstrings.getString("Error_path_badmod") + ": '" + pname + "'");
+      }
     }
     this.g = g;
     az = -0.5 * g;
@@ -61,8 +61,9 @@ public class TossPath extends Path {
 
   @Override
   public void calcPath() throws JuggleExceptionInternal {
-    if (start_coord == null || end_coord == null)
+    if (start_coord == null || end_coord == null) {
       throw new JuggleExceptionInternal("Error in parabolic path: endpoints not set");
+    }
 
     double t = getDuration();
     cx = start_coord.x;
@@ -85,7 +86,9 @@ public class TossPath extends Path {
 
   @Override
   public void getCoordinate(double time, Coordinate newPosition) {
-    if ((time < start_time) || (time > end_time)) return;
+    if (time < start_time || time > end_time) {
+      return;
+    }
     time -= start_time;
     newPosition.setCoordinate(cx + bx * time, cy + by * time, cz + time * (bz + az * time));
   }
@@ -101,7 +104,9 @@ public class TossPath extends Path {
 
     if (az < 0) {
       double te = -bz / (2 * az) + start_time;
-      if (tlow < te && te < thigh) result = check(result, te, true);
+      if (tlow < te && te < thigh) {
+        result = check(result, te, true);
+      }
     }
     return result;
   }
@@ -117,7 +122,9 @@ public class TossPath extends Path {
 
     if (az > 0) {
       double te = -by / (2 * az) + start_time;
-      if (tlow < te && te < thigh) result = check(result, te, false);
+      if (tlow < te && te < thigh) {
+        result = check(result, te, false);
+      }
     }
     return result;
   }

@@ -76,7 +76,9 @@ public class BallProp extends Prop {
     ParameterDescriptor[] result = new ParameterDescriptor[3];
 
     ArrayList<String> range = new ArrayList<String>();
-    for (int i = 0; i < COLOR_NAMES.length; i++) range.add(COLOR_NAMES[i]);
+    for (int i = 0; i < COLOR_NAMES.length; i++) {
+      range.add(COLOR_NAMES[i]);
+    }
 
     result[0] =
         new ParameterDescriptor(
@@ -105,14 +107,16 @@ public class BallProp extends Prop {
 
   @Override
   protected void init(String st) throws JuggleExceptionUser {
-    if (st == null) return;
+    if (st == null) {
+      return;
+    }
     ParameterList pl = new ParameterList(st);
 
     String colorstr = pl.getParameter("color");
     if (colorstr != null) {
       Color temp = null;
 
-      if (colorstr.indexOf((int) ',') == -1) { // color name
+      if (colorstr.indexOf((int) ',') == -1) {  // color name
         for (int i = 0; i < COLOR_NAMES.length; i++) {
           if (COLOR_NAMES[i].equalsIgnoreCase(colorstr)) {
             temp = COLOR_VALS[i];
@@ -120,14 +124,16 @@ public class BallProp extends Prop {
             break;
           }
         }
-      } else { // RGB or RGBA
+      } else {  // RGB or RGBA
         // delete the '{' and '}' characters first
         String str = colorstr;
         int pos;
-        while ((pos = str.indexOf('{')) >= 0)
+        while ((pos = str.indexOf('{')) >= 0) {
           str = str.substring(0, pos) + str.substring(pos + 1, str.length());
-        while ((pos = str.indexOf('}')) >= 0)
+        }
+        while ((pos = str.indexOf('}')) >= 0) {
           str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+        }
 
         StringTokenizer st2 = new StringTokenizer(str, ",", false);
         int tokens = st2.countTokens();
@@ -153,13 +159,15 @@ public class BallProp extends Prop {
                 "Ball prop color: " + MessageFormat.format(template, arguments));
           }
           temp = new Color(red, green, blue, alpha);
-        } else
+        } else {
           throw new JuggleExceptionUser(
               "Ball prop color: " + errorstrings.getString("Error_token_count"));
+        }
       }
 
-      if (temp != null) color = temp;
-      else {
+      if (temp != null) {
+        color = temp;
+      } else {
         String template = errorstrings.getString("Error_prop_color");
         Object[] arguments = {colorstr};
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -170,8 +178,11 @@ public class BallProp extends Prop {
     if (diamstr != null) {
       try {
         double temp = JLFunc.parseDouble(diamstr.trim());
-        if (temp > 0) diam = temp;
-        else throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        if (temp > 0) {
+          diam = temp;
+        } else {
+          throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        }
       } catch (NumberFormatException nfe) {
         String template = errorstrings.getString("Error_number_format");
         Object[] arguments = {"diam"};
@@ -204,28 +215,36 @@ public class BallProp extends Prop {
 
   @Override
   public Image getProp2DImage(double zoom, double[] camangle) {
-    if (ballimage == null || zoom != lastzoom) // first call or display resized?
-    recalc2D(zoom);
+    if (ballimage == null || zoom != lastzoom) {
+      // first call or display resized?
+      recalc2D(zoom);
+    }
     return ballimage;
   }
 
   @Override
   public Dimension getProp2DSize(double zoom) {
-    if (size == null || zoom != lastzoom) // first call or display resized?
-    recalc2D(zoom);
+    if (size == null || zoom != lastzoom) {
+      // first call or display resized?
+      recalc2D(zoom);
+    }
     return size;
   }
 
   @Override
   public Dimension getProp2DCenter(double zoom) {
-    if (center == null || zoom != lastzoom) recalc2D(zoom);
+    if (center == null || zoom != lastzoom) {
+      recalc2D(zoom);
+    }
     return center;
   }
 
   @Override
   public Dimension getProp2DGrip(double zoom) {
-    if (grip == null || zoom != lastzoom) // first call or display resized?
-    recalc2D(zoom);
+    if (grip == null || zoom != lastzoom) {
+      // first call or display resized?
+      recalc2D(zoom);
+    }
     return grip;
   }
 
@@ -235,9 +254,8 @@ public class BallProp extends Prop {
 
     // Create a ball image of diameter ball_pixel_size, and transparent background
 
-    ballimage =
-        new BufferedImage(
-            ball_pixel_size + 1, ball_pixel_size + 1, BufferedImage.TYPE_INT_ARGB_PRE);
+    ballimage = new BufferedImage(
+        ball_pixel_size + 1, ball_pixel_size + 1, BufferedImage.TYPE_INT_ARGB_PRE);
     Graphics2D ballg = ballimage.createGraphics();
 
     /*
@@ -269,10 +287,10 @@ public class BallProp extends Prop {
         ballg.setColor(new Color(rgb[0], rgb[1], rgb[2], rgb[3]));
         ballg.fillOval(
             (int) (i / 1.1),
-            (int) (i / 2.5), // Literals control how fast highlight
+            (int) (i / 2.5),  // Literals control how fast highlight
             // moves right and down respectively.
-            ball_pixel_size - (int) (i * 1.3), // These control how fast the
-            ball_pixel_size - (int) (i * 1.3)); // highlight converges to a point.
+            ball_pixel_size - (int) (i * 1.3),  // These control how fast the
+            ball_pixel_size - (int) (i * 1.3));  // highlight converges to a point.
       }
     } else {
       ballg.setColor(color);

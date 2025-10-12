@@ -81,7 +81,9 @@ public class PatternListPanel extends JPanel {
           @Override
           public void mousePressed(final MouseEvent me) {
             int row = list.locationToIndex(me.getPoint());
-            if (row >= 0) list.setSelectedIndex(row);
+            if (row >= 0) {
+              list.setSelectedIndex(row);
+            }
 
             didPopup = false;
 
@@ -116,17 +118,26 @@ public class PatternListPanel extends JPanel {
   protected void launchAnimation() {
     try {
       int row = list.getSelectedIndex();
-      if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1)) return;
+      if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1)) {
+        return;
+      }
 
       JMLPattern pat = pl.getPatternForLine(row);
-      if (pat == null) return;
+      if (pat == null) {
+        return;
+      }
       pat.layoutPattern(); // do this before getting hash code
-      if (PatternWindow.bringToFront(pat.getHashCode())) return;
+      if (PatternWindow.bringToFront(pat.getHashCode())) {
+        return;
+      }
 
       AnimationPrefs ap = pl.getAnimationPrefsForLine(row);
 
-      if (animtarget != null) animtarget.restartView(pat, ap);
-      else new PatternWindow(pat.getTitle(), pat, ap);
+      if (animtarget != null) {
+        animtarget.restartView(pat, ap);
+      } else {
+        new PatternWindow(pat.getTitle(), pat, ap);
+      }
     } catch (JuggleExceptionUser jeu) {
       new ErrorDialog(PatternListPanel.this, jeu.getMessage());
     } catch (JuggleExceptionInternal jei) {
@@ -139,7 +150,9 @@ public class PatternListPanel extends JPanel {
   }
 
   public void clearList() {
-    if (pl.getModel().size() > (JMLPatternList.BLANK_AT_END ? 1 : 0)) hasUnsavedChanges = true;
+    if (pl.getModel().size() > (JMLPatternList.BLANK_AT_END ? 1 : 0)) {
+      hasUnsavedChanges = true;
+    }
 
     pl.clearModel();
   }
@@ -178,7 +191,9 @@ public class PatternListPanel extends JPanel {
 
     popupPatterns = new ArrayList<PatternWindow>();
     for (Frame fr : Frame.getFrames()) {
-      if (fr.isVisible() && fr instanceof PatternWindow) popupPatterns.add((PatternWindow) fr);
+      if (fr.isVisible() && fr instanceof PatternWindow) {
+        popupPatterns.add((PatternWindow) fr);
+      }
     }
 
     ActionListener al =
@@ -219,13 +234,16 @@ public class PatternListPanel extends JPanel {
       item.setActionCommand(popupCommands[i]);
       item.addActionListener(al);
 
-      if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0)
+      if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove")) && row < 0) {
         item.setEnabled(false);
+      }
       if ((popupCommands[i].equals("displaytext") || popupCommands[i].equals("remove"))
-          && JMLPatternList.BLANK_AT_END
-          && row == pl.getModel().size() - 1) item.setEnabled(false);
-      if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0)
+          && JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1) {
         item.setEnabled(false);
+      }
+      if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0) {
+        item.setEnabled(false);
+      }
 
       popup.add(item);
 
@@ -261,11 +279,14 @@ public class PatternListPanel extends JPanel {
     return popup;
   }
 
-  // Insert the pattern in the given PatternWindow into the given row
+  // Insert the pattern in the given PatternWindow into the given row.
+
   protected void insertPattern(int row, PatternWindow pw) {
     String display = pw.getTitle();
     String animprefs = pw.getAnimationPrefs().toString();
-    if (animprefs.length() == 0) animprefs = null;
+    if (animprefs.length() == 0) {
+      animprefs = null;
+    }
 
     String notation = "jml";
     String anim = null;
@@ -292,14 +313,20 @@ public class PatternListPanel extends JPanel {
     pl.addLine(row, display, animprefs, notation, anim, patnode, infonode);
 
     if (row < 0) {
-      if (JMLPatternList.BLANK_AT_END) list.setSelectedIndex(pl.getModel().size() - 2);
-      else list.setSelectedIndex(pl.getModel().size() - 1);
-    } else list.setSelectedIndex(row);
+      if (JMLPatternList.BLANK_AT_END) {
+        list.setSelectedIndex(pl.getModel().size() - 2);
+      } else {
+        list.setSelectedIndex(pl.getModel().size() - 1);
+      }
+    } else {
+      list.setSelectedIndex(row);
+    }
 
     hasUnsavedChanges = true;
   }
 
-  // Open a dialog to allow the user to insert a line of text
+  // Open a dialog to allow the user to insert a line of text.
+
   protected void insertText(int row) {
     makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "");
 
@@ -312,8 +339,11 @@ public class PatternListPanel extends JPanel {
 
             pl.addLine(row, display, null, null, null, null, null);
 
-            if (row < 0) list.setSelectedIndex(pl.size() - 1);
-            else list.setSelectedIndex(row);
+            if (row < 0) {
+              list.setSelectedIndex(pl.size() - 1);
+            } else {
+              list.setSelectedIndex(row);
+            }
 
             hasUnsavedChanges = true;
           }
@@ -322,7 +352,8 @@ public class PatternListPanel extends JPanel {
     dialog.setVisible(true);
   }
 
-  // Open a dialog to allow the user to change the pattern list's title
+  // Open a dialog to allow the user to change the pattern list's title.
+
   protected void changeTitle() {
     makeDialog(guistrings.getString("PLDIALOG_Change_title"), pl.getTitle());
 
@@ -333,7 +364,9 @@ public class PatternListPanel extends JPanel {
             pl.setTitle(tf.getText());
             dialog.dispose();
 
-            if (parent != null) parent.setTitle(pl.getTitle());
+            if (parent != null) {
+              parent.setTitle(pl.getTitle());
+            }
 
             hasUnsavedChanges = true;
           }
@@ -343,7 +376,8 @@ public class PatternListPanel extends JPanel {
     list.clearSelection();
   }
 
-  // Open a dialog to allow the user to change the display text of a line
+  // Open a dialog to allow the user to change the display text of a line.
+
   protected void changeDisplayText(int row) {
     PatternRecord rec = pl.getModel().get(row);
     makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display);
@@ -364,7 +398,8 @@ public class PatternListPanel extends JPanel {
     dialog.setVisible(true);
   }
 
-  // Helper to make popup dialog boxes
+  // Helper to make popup dialog boxes.
+
   protected JDialog makeDialog(String title, String default_text) {
     dialog = new JDialog(parent, title, true);
     GridBagLayout gb = new GridBagLayout();
@@ -398,10 +433,12 @@ public class PatternListPanel extends JPanel {
     return dialog;
   }
 
-  // Do final cleanup after any mouse-related interaction
+  // Do final cleanup after any mouse-related interaction.
+
   protected void checkSelection() {
-    if (JMLPatternList.BLANK_AT_END && list.getSelectedIndex() == pl.getModel().size() - 1)
+    if (JMLPatternList.BLANK_AT_END && list.getSelectedIndex() == pl.getModel().size() - 1) {
       list.clearSelection();
+    }
 
     popupPatterns = null;
     dialog = null;
@@ -422,7 +459,9 @@ public class PatternListPanel extends JPanel {
     @Override
     public Transferable createTransferable(JComponent c) {
       int row = list.getSelectedIndex();
-      if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1)) return null;
+      if (row < 0 || (JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1)) {
+        return null;
+      }
 
       draggingOut = true;
       PatternRecord rec = pl.getModel().get(row);
@@ -432,25 +471,37 @@ public class PatternListPanel extends JPanel {
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
       // support only drop (not clipboard paste)
-      if (!info.isDrop()) return false;
+      if (!info.isDrop()) {
+        return false;
+      }
 
-      if (draggingOut) info.setDropAction(MOVE); // within same list
-      else info.setDropAction(COPY); // between lists
+      if (draggingOut) {
+        info.setDropAction(MOVE);  // within same list
+      } else {
+        info.setDropAction(COPY);  // between lists
+      }
 
-      if (info.isDataFlavorSupported(PATTERN_FLAVOR)) return true;
-      if (info.isDataFlavorSupported(DataFlavor.stringFlavor)) return true;
+      if (info.isDataFlavorSupported(PATTERN_FLAVOR)) {
+        return true;
+      }
+      if (info.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+        return true;
+      }
 
       return false;
     }
 
     @Override
     public boolean importData(TransferHandler.TransferSupport info) {
-      if (!info.isDrop()) return false;
+      if (!info.isDrop()) {
+        return false;
+      }
 
       JList.DropLocation dl = (JList.DropLocation) info.getDropLocation();
       int index = dl.getIndex();
-      if (index < 0)
+      if (index < 0) {
         index = (JMLPatternList.BLANK_AT_END ? pl.getModel().size() - 1 : pl.getModel().size());
+      }
 
       // Get the record that is being dropped
       Transferable t = info.getTransferable();
@@ -488,10 +539,13 @@ public class PatternListPanel extends JPanel {
     @Override
     protected void exportDone(JComponent c, Transferable data, int action) {
       if (action == TransferHandler.MOVE) {
-        if (!(data instanceof PatternTransferable)) return;
+        if (!(data instanceof PatternTransferable)) {
+          return;
+        }
 
-        if (!pl.getModel().removeElement(((PatternTransferable) data).rec))
+        if (!pl.getModel().removeElement(((PatternTransferable) data).rec)) {
           ErrorDialog.handleFatalException(new JuggleExceptionInternal("PLP: exportDone()"));
+        }
 
         hasUnsavedChanges = true;
       }
@@ -509,12 +563,17 @@ public class PatternListPanel extends JPanel {
 
     @Override
     public Object getTransferData(DataFlavor flavor) {
-      if (flavor.equals(PATTERN_FLAVOR)) return rec;
+      if (flavor.equals(PATTERN_FLAVOR)) {
+        return rec;
+      }
 
       if (flavor.equals(DataFlavor.stringFlavor)) {
         String s;
-        if (rec.anim == null || rec.anim.equals("")) s = rec.display;
-        else s = rec.anim;
+        if (rec.anim == null || rec.anim.equals("")) {
+          s = rec.display;
+        } else {
+          s = rec.anim;
+        }
         return s;
       }
 

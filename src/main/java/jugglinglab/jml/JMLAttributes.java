@@ -43,7 +43,9 @@ public class JMLAttributes {
 
   public String getAttribute(String name) {
     for (int i = 0; i < size; i++)
-      if (name.equalsIgnoreCase(getAttributeName(i))) return getAttributeValue(i);
+      if (name.equalsIgnoreCase(getAttributeName(i))) {
+        return getAttributeValue(i);
+      }
     return null;
   }
 }

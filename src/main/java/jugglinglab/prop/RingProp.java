@@ -45,9 +45,9 @@ public class RingProp extends Prop {
   };
 
   protected static final Color COLOR_DEF = Color.red;
-  protected static final int COLORNUM_DEF = 9; // red
-  protected static final double OUTSIDE_DIAM_DEF = 25; // in cm
-  protected static final double INSIDE_DIAM_DEF = 20; // in cm
+  protected static final int COLORNUM_DEF = 9;  // red
+  protected static final double OUTSIDE_DIAM_DEF = 25;  // in cm
+  protected static final double INSIDE_DIAM_DEF = 20;  // in cm
   protected static final int POLYSIDES = 200;
 
   protected double outside_diam = OUTSIDE_DIAM_DEF;
@@ -83,24 +83,23 @@ public class RingProp extends Prop {
     ParameterDescriptor[] result = new ParameterDescriptor[3];
 
     ArrayList<String> range = new ArrayList<String>();
-    for (int i = 0; i < COLOR_NAMES.length; i++) range.add(COLOR_NAMES[i]);
+    for (int i = 0; i < COLOR_NAMES.length; i++) {
+      range.add(COLOR_NAMES[i]);
+    }
 
-    result[0] =
-        new ParameterDescriptor(
+    result[0] = new ParameterDescriptor(
             "color",
             ParameterDescriptor.TYPE_CHOICE,
             range,
             COLOR_NAMES[COLORNUM_DEF],
             COLOR_NAMES[colornum]);
-    result[1] =
-        new ParameterDescriptor(
+    result[1] = new ParameterDescriptor(
             "outside",
             ParameterDescriptor.TYPE_FLOAT,
             null,
             Double.valueOf(OUTSIDE_DIAM_DEF),
             Double.valueOf(outside_diam));
-    result[2] =
-        new ParameterDescriptor(
+    result[2] = new ParameterDescriptor(
             "inside",
             ParameterDescriptor.TYPE_FLOAT,
             null,
@@ -115,7 +114,9 @@ public class RingProp extends Prop {
     px = new int[POLYSIDES];
     py = new int[POLYSIDES];
 
-    if (st == null) return;
+    if (st == null) {
+      return;
+    }
     ParameterList pl = new ParameterList(st);
 
     String colorstr = pl.getParameter("color");
@@ -130,14 +131,16 @@ public class RingProp extends Prop {
             break;
           }
         }
-      } else { // RGB or RGBA
+      } else {  // RGB or RGBA
         // delete the '{' and '}' characters first
         String str = colorstr;
         int pos;
-        while ((pos = str.indexOf('{')) >= 0)
+        while ((pos = str.indexOf('{')) >= 0) {
           str = str.substring(0, pos) + str.substring(pos + 1, str.length());
-        while ((pos = str.indexOf('}')) >= 0)
+        }
+        while ((pos = str.indexOf('}')) >= 0) {
           str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+        }
 
         StringTokenizer st2 = new StringTokenizer(str, ",", false);
         int tokens = st2.countTokens();
@@ -163,13 +166,15 @@ public class RingProp extends Prop {
                 "Ring prop color: " + MessageFormat.format(template, arguments));
           }
           temp = new Color(red, green, blue, alpha);
-        } else
+        } else {
           throw new JuggleExceptionUser(
               "Ring prop color: " + errorstrings.getString("Error_token_count"));
+        }
       }
 
-      if (temp != null) color = temp;
-      else {
+      if (temp != null) {
+        color = temp;
+      } else {
         String template = errorstrings.getString("Error_prop_color");
         Object[] arguments = {colorstr};
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
@@ -180,8 +185,11 @@ public class RingProp extends Prop {
     if (outsidestr != null) {
       try {
         double temp = JLFunc.parseDouble(outsidestr);
-        if (temp > 0) outside_diam = temp;
-        else throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        if (temp > 0) {
+          outside_diam = temp;
+        } else {
+          throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        }
       } catch (NumberFormatException nfe) {
         String template = errorstrings.getString("Error_number_format");
         Object[] arguments = {"diam"};
@@ -193,8 +201,11 @@ public class RingProp extends Prop {
     if (insidestr != null) {
       try {
         double temp = JLFunc.parseDouble(insidestr);
-        if (temp > 0) inside_diam = temp;
-        else throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        if (temp > 0) {
+          inside_diam = temp;
+        } else {
+          throw new JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"));
+        }
       } catch (NumberFormatException nfe) {
         String template = errorstrings.getString("Error_number_format");
         Object[] arguments = {"diam"};
@@ -220,10 +231,8 @@ public class RingProp extends Prop {
 
   @Override
   public Image getProp2DImage(double zoom, double[] camangle) {
-    if (image == null
-        || zoom != lastzoom
-        || camangle[0] != lastcamangle[0]
-        || camangle[1] != lastcamangle[1]) {
+    if (image == null || zoom != lastzoom || camangle[0] != lastcamangle[0] ||
+        camangle[1] != lastcamangle[1]) {
       // first call or display resized?
       redrawImage(zoom, camangle);
     }
@@ -232,22 +241,28 @@ public class RingProp extends Prop {
 
   @Override
   public Dimension getProp2DSize(double zoom) {
-    if (size == null || zoom != lastzoom) // first call or display resized?
-    redrawImage(zoom, lastcamangle);
+    if (size == null || zoom != lastzoom) {
+      // first call or display resized?
+      redrawImage(zoom, lastcamangle);
+    }
     return size;
   }
 
   @Override
   public Dimension getProp2DCenter(double zoom) {
-    if (center == null || zoom != lastzoom) // first call or display resized?
-    redrawImage(zoom, lastcamangle);
+    if (center == null || zoom != lastzoom) {
+      // first call or display resized?
+      redrawImage(zoom, lastcamangle);
+    }
     return center;
   }
 
   @Override
   public Dimension getProp2DGrip(double zoom) {
-    if (grip == null || zoom != lastzoom) // first call or display resized?
-    redrawImage(zoom, lastcamangle);
+    if (grip == null || zoom != lastzoom) {
+      // first call or display resized?
+      redrawImage(zoom, lastcamangle);
+    }
     return grip;
   }
 
@@ -259,21 +274,25 @@ public class RingProp extends Prop {
     double s0 = Math.sin(camangle[0]);
     double s1 = Math.sin(camangle[1]);
 
-    int width = (int) (outside_pixel_diam * Math.abs(s0 * s1));
-    if (width < 2) width = 2;
-    int height = outside_pixel_diam;
-    if (height < 2) height = 2;
+    int width = Math.max(2, (int) (outside_pixel_diam * Math.abs(s0 * s1)));
+    int height = Math.max(2, outside_pixel_diam);
 
     int inside_width = (int) (inside_pixel_diam * Math.abs(s0 * s1));
-    if (inside_width == width) inside_width -= 2;
+    if (inside_width == width) {
+      inside_width -= 2;
+    }
 
     int inside_height = inside_pixel_diam;
-    if (inside_height == height) inside_height -= 2;
+    if (inside_height == height) {
+      inside_height -= 2;
+    }
 
     // The angle of rotation of the ring.
     double term1 = Math.sqrt(c0 * c0 / (1 - s0 * s0 * s1 * s1));
     double angle = (term1 < 1) ? Math.acos(term1) : 0;
-    if (c0 * s0 > 0) angle = -angle;
+    if (c0 * s0 > 0) {
+      angle = -angle;
+    }
     double sa = Math.sin(angle);
     double ca = Math.cos(angle);
 
@@ -284,10 +303,18 @@ public class RingProp extends Prop {
       double y = (double) height * Math.sin(theta) * 0.5;
       px[i] = (int) (ca * x - sa * y + 0.5);
       py[i] = (int) (ca * y + sa * x + 0.5);
-      if (i == 0 || px[i] < pxmin) pxmin = px[i];
-      if (i == 0 || px[i] > pxmax) pxmax = px[i];
-      if (i == 0 || py[i] < pymin) pymin = py[i];
-      if (i == 0 || py[i] > pymax) pymax = py[i];
+      if (i == 0 || px[i] < pxmin) {
+        pxmin = px[i];
+      }
+      if (i == 0 || px[i] > pxmax) {
+        pxmax = px[i];
+      }
+      if (i == 0 || py[i] < pymin) {
+        pymin = py[i];
+      }
+      if (i == 0 || py[i] > pymax) {
+        pymax = py[i];
+      }
     }
 
     int bbwidth = pxmax - pxmin + 1;
@@ -327,7 +354,9 @@ public class RingProp extends Prop {
     double bbw = sa * sa + ca * ca * Math.abs(s0 * s1);
     double dsq = s0 * s0 * s1 * s1 * ca * ca + sa * sa - bbw * bbw;
     double d = (dsq > 0) ? Math.sqrt(dsq) : 0;
-    if (c0 > 0) d = -d;
+    if (c0 > 0) {
+      d = -d;
+    }
     int gripy = (int) ((double) outside_pixel_diam * d) + bbheight / 2;
     grip = new Dimension(gripx, gripy);
 

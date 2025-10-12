@@ -37,22 +37,26 @@ public class OpenFilesServerMMF extends Thread {
   }
 
   public OpenFilesServerMMF() {
-    if (server_thread != null) return;
+    if (server_thread != null) {
+      return;
+    }
 
     server_thread = this;
     start();
   }
 
-  // Server thread loops forever, listening for messages
+  // Run main server thread, which listens for messages.
+
   @Override
   public void run() {
-    if (Constants.DEBUG_OPEN_SERVER) System.out.println("server thread starting");
+    if (Constants.DEBUG_OPEN_SERVER) {
+      System.out.println("server thread starting");
+    }
 
     File fipc = new File(ipc_filename);
     FileChannel chan = null;
     try {
-      chan =
-          FileChannel.open(
+      chan = FileChannel.open(
               fipc.toPath(),
               StandardOpenOption.READ,
               StandardOpenOption.WRITE,
@@ -68,12 +72,16 @@ public class OpenFilesServerMMF extends Thread {
       while (!interrupted()) {
         clearBuffer(buf_toserver);
 
-        if (Constants.DEBUG_OPEN_SERVER) System.out.println("Server waiting for message");
-        while (!waitUntilMessage(buf_toserver, 1000))
-          ;
+        if (Constants.DEBUG_OPEN_SERVER) {
+          System.out.println("Server waiting for message");
+        }
+        while (!waitUntilMessage(buf_toserver, 1000)) {
+        }
 
         line = readMessage(buf_toserver);
-        if (Constants.DEBUG_OPEN_SERVER) System.out.println("Got a message: " + line);
+        if (Constants.DEBUG_OPEN_SERVER) {
+          System.out.println("Got a message: " + line);
+        }
 
         if (line.startsWith("open ")) {
           String filepath = line.substring(5, line.length());
@@ -86,8 +94,9 @@ public class OpenFilesServerMMF extends Thread {
                 @Override
                 public void run() {
                   if (Desktop.isDesktopSupported()
-                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
                     Desktop.getDesktop().requestForeground(true);
+                  }
 
                   try {
                     ApplicationWindow.openJMLFile(file);
@@ -106,7 +115,9 @@ public class OpenFilesServerMMF extends Thread {
           writeMessage(buf_fromserver, "Juggling Lab version " + Constants.version + '\0');
         } else if (line.startsWith("done")) {
           writeMessage(buf_fromserver, "goodbye\0");
-        } else writeMessage(buf_fromserver, line + '\0');
+        } else {
+          writeMessage(buf_fromserver, line + '\0');
+        }
       }
     } catch (IOException ioe) {
       ErrorDialog.handleFatalException(ioe);
@@ -114,7 +125,9 @@ public class OpenFilesServerMMF extends Thread {
       if (Constants.DEBUG_OPEN_SERVER) System.out.println("thread interrupted, deleting temp file");
     } finally {
       try {
-        if (chan != null) chan.close();
+        if (chan != null) {
+          chan.close();
+        }
         Files.delete(fipc.toPath());
       } catch (Exception e) {
         if (Constants.DEBUG_OPEN_SERVER) System.out.println(e);
@@ -126,15 +139,15 @@ public class OpenFilesServerMMF extends Thread {
     File fipc = new File(ipc_filename);
 
     if (!fipc.exists()) {
-      if (Constants.DEBUG_OPEN_SERVER)
+      if (Constants.DEBUG_OPEN_SERVER) {
         System.out.println("temp file doesn't exist, cannot hand off");
+      }
       return false;
     }
 
     FileChannel chan = null;
     try {
-      chan =
-          FileChannel.open(
+      chan = FileChannel.open(
               fipc.toPath(),
               StandardOpenOption.READ,
               StandardOpenOption.WRITE,
@@ -150,7 +163,9 @@ public class OpenFilesServerMMF extends Thread {
       clearBuffer(buf_fromserver);
       writeMessage(buf_toserver, "identify\0");
       if (!waitUntilMessage(buf_fromserver, 200)) {
-        if (Constants.DEBUG_OPEN_SERVER) System.out.println("no ID response from server; exiting");
+        if (Constants.DEBUG_OPEN_SERVER) {
+          System.out.println("no ID response from server; exiting");
+        }
         return false;
       }
       line = readMessage(buf_fromserver);
@@ -165,8 +180,9 @@ public class OpenFilesServerMMF extends Thread {
       clearBuffer(buf_fromserver);
       writeMessage(buf_toserver, "open " + f + '\0');
       if (!waitUntilMessage(buf_fromserver, 500)) {
-        if (Constants.DEBUG_OPEN_SERVER)
+        if (Constants.DEBUG_OPEN_SERVER) {
           System.out.println("no open response from server; exiting");
+        }
         return false;
       }
       line = readMessage(buf_fromserver);
@@ -180,7 +196,6 @@ public class OpenFilesServerMMF extends Thread {
 
       writeMessage(buf_toserver, "done\0");
       return true;
-
     } catch (IOException ioe) {
       ErrorDialog.handleFatalException(ioe);
     } catch (InterruptedException ie) {
@@ -201,7 +216,7 @@ public class OpenFilesServerMMF extends Thread {
     }
   }
 
-  // convenience methods to handle messaging through our memory mapped file
+  // Convenience methods to handle messaging through our memory mapped file.
 
   private static void clearBuffer(CharBuffer cb) {
     cb.put(0, '\0');
@@ -211,14 +226,18 @@ public class OpenFilesServerMMF extends Thread {
     StringBuffer msg_sb = new StringBuffer(BUFFER_LENGTH);
     for (int i = 0; i < BUFFER_LENGTH; ++i) {
       char c = cb.get(i);
-      if (c == '\0') break;
+      if (c == '\0') {
+        break;
+      }
       msg_sb.append(c);
     }
     return msg_sb.toString();
   }
 
   private static void writeMessage(CharBuffer cb, String str) {
-    for (int i = 1; i < str.length(); ++i) cb.put(i, str.charAt(i));
+    for (int i = 1; i < str.length(); ++i) {
+      cb.put(i, str.charAt(i));
+    }
     cb.put(0, str.charAt(0));
   }
 
@@ -226,7 +245,9 @@ public class OpenFilesServerMMF extends Thread {
     int tries = timeout / 20;
 
     for (int i = 0; i < tries; ++i) {
-      if (cb.get(0) != '\0') return true;
+      if (cb.get(0) != '\0') {
+        return true;
+      }
       Thread.sleep(20);
     }
     return false;

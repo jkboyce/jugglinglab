@@ -11,8 +11,8 @@ import jugglinglab.util.*;
 import org.apache.commons.math3.linear.*;
 
 public class SplineCurve extends Curve {
-  protected int n; // number of spline segments
-  protected double[][] a, b, c, d; // spline coefficients
+  protected int n;  // number of spline segments
+  protected double[][] a, b, c, d;  // spline coefficients
 
   // Calculate the coefficients a, b, c, d for each portion of the spline path.
   // To solve for these four unknowns, we use four boundary conditions: the
@@ -28,7 +28,9 @@ public class SplineCurve extends Curve {
   @Override
   public void calcCurve() throws JuggleExceptionInternal {
     n = numpoints - 1;
-    if (n < 1) throw new JuggleExceptionInternal("SplineCurve error 1");
+    if (n < 1) {
+      throw new JuggleExceptionInternal("SplineCurve error 1");
+    }
 
     a = new double[n][3];
     b = new double[n][3];
@@ -37,16 +39,22 @@ public class SplineCurve extends Curve {
     double[] durations = new double[n];
     for (int i = 0; i < n; i++) {
       durations[i] = times[i + 1] - times[i];
-      if (durations[i] <= 0) throw new JuggleExceptionInternal("SplineCurve error 2");
+      if (durations[i] <= 0) {
+        throw new JuggleExceptionInternal("SplineCurve error 2");
+      }
     }
 
     // copy the velocity array so we can modify it
     Coordinate[] vel = new Coordinate[n + 1];
-    for (int i = 0; i < n + 1; i++)
+    for (int i = 0; i < n + 1; i++) {
       vel[i] = (velocities[i] == null ? null : new Coordinate(velocities[i]));
+    }
 
-    if (vel[0] != null && vel[n] != null) findvels_edges_known(n, durations, positions, vel);
-    else findvels_edges_unknown(n, durations, positions, vel);
+    if (vel[0] != null && vel[n] != null) {
+      findvels_edges_known(n, durations, positions, vel);
+    } else {
+      findvels_edges_unknown(n, durations, positions, vel);
+    }
 
     // now that we have all velocities, solve for spline coefficients
     for (int i = 0; i < n; i++) {
@@ -101,11 +109,15 @@ public class SplineCurve extends Curve {
 
   protected static void findvels_edges_known(int n, double[] t, Coordinate[] x, Coordinate[] v)
       throws JuggleExceptionInternal {
-    if (n < 2) return;
+    if (n < 2) {
+      return;
+    }
 
     int numcatches = 0;
     for (int i = 1; i < n; i++) {
-      if (v[i] != null) numcatches++;
+      if (v[i] != null) {
+        numcatches++;
+      }
     }
 
     // In this case we put all three axes into one big matrix, and solve once.
@@ -140,8 +152,12 @@ public class SplineCurve extends Curve {
             }
 
             b[index] = 3 * (xi2 - xi1) / (t[i + 1] * t[i + 1]) + 3 * (xi1 - xi0) / (t[i] * t[i]);
-            if (i == 0) b[index] -= v0 / t[0];
-            if (i == (n - 2)) b[index] -= vn / t[n - 1];
+            if (i == 0) {
+              b[index] -= v0 / t[0];
+            }
+            if (i == (n - 2)) {
+              b[index] -= vn / t[n - 1];
+            }
             break;
           case MINIMIZE_RMSVEL:
             m[index][index] = 4 * (t[i] + t[i + 1]);
@@ -152,8 +168,12 @@ public class SplineCurve extends Curve {
             }
 
             b[index] = 3 * (xi2 - xi0);
-            if (i == 0) b[index] += v0 * t[0];
-            if (i == (n - 2)) b[index] += vn * t[n - 1];
+            if (i == 0) {
+              b[index] += v0 * t[0];
+            }
+            if (i == (n - 2)) {
+              b[index] += vn * t[n - 1];
+            }
             break;
         }
       }
@@ -171,18 +191,23 @@ public class SplineCurve extends Curve {
     // specified catch velocity.
 
     for (int i = 0, catchnum = 0; i < n - 1; i++) {
-      if (v[i + 1] == null) continue;
+      if (v[i + 1] == null) {
+        continue;
+      }
 
       int index = 3 * (n - 1) + 2 * catchnum;
-      double ci0 = v[i + 1].getIndex(0); // components of catch velocity
+      double ci0 = v[i + 1].getIndex(0);  // components of catch velocity
       double ci1 = v[i + 1].getIndex(1);
       double ci2 = v[i + 1].getIndex(2);
 
       // System.out.println("catch velocity (i=" + (i+1) + ") = " + v[i+1]);
 
       int largeaxis = 0;
-      if (Math.abs(ci1) >= Math.max(Math.abs(ci0), Math.abs(ci2))) largeaxis = 1;
-      else if (Math.abs(ci2) >= Math.max(Math.abs(ci0), Math.abs(ci1))) largeaxis = 2;
+      if (Math.abs(ci1) >= Math.max(Math.abs(ci0), Math.abs(ci2))) {
+        largeaxis = 1;
+      } else if (Math.abs(ci2) >= Math.max(Math.abs(ci0), Math.abs(ci1))) {
+        largeaxis = 2;
+      }
 
       switch (largeaxis) {
         case 0:
@@ -213,8 +238,7 @@ public class SplineCurve extends Curve {
       RealVector solution = solver.solve(new ArrayRealVector(b));
 
       for (int i = 0; i < n - 1; i++) {
-        v[i + 1] =
-            new Coordinate(
+        v[i + 1] = new Coordinate(
                 solution.getEntry(i),
                 solution.getEntry(i + (n - 1)),
                 solution.getEntry(i + 2 * (n - 1)));
@@ -241,14 +265,18 @@ public class SplineCurve extends Curve {
 
   protected static void findvels_edges_unknown(int n, double[] t, Coordinate[] x, Coordinate[] v)
       throws JuggleExceptionInternal {
-    if (n < 1) return;
+    if (n < 1) {
+      return;
+    }
 
     double[] Adiag = new double[n]; // v[0]...v[n-1]
     double[] Aoffd = new double[n]; // A is symmetric
     double Acorner = 0; // nonzero element in UR/LL corners of A
     double[] b = new double[n];
 
-    for (int i = 0; i < n; i++) v[i] = new Coordinate(0, 0, 0);
+    for (int i = 0; i < n; i++) {
+      v[i] = new Coordinate(0, 0, 0);
+    }
 
     // Here we can solve each axis independently, and combine the results
 
@@ -293,7 +321,9 @@ public class SplineCurve extends Curve {
       //     System.out.println("  b["+i+"] = "+b[i]);
 
       double[] vel = new double[n];
-      for (int i = 0; i < n; i++) vel[i] = v[i].getIndex(axis);
+      for (int i = 0; i < n; i++) {
+        vel[i] = v[i].getIndex(axis);
+      }
 
       // Woodbury's formula: First solve the problem ignoring A's nonzero corners
       tridag(Aoffd, Adiag, Aoffd, b, vel, n);
@@ -302,12 +332,16 @@ public class SplineCurve extends Curve {
         // solve a few auxiliary problems
         double[] z1 = new double[n];
         b[0] = Acorner;
-        for (int i = 1; i < n; i++) b[i] = 0;
+        for (int i = 1; i < n; i++) {
+          b[i] = 0;
+        }
         tridag(Aoffd, Adiag, Aoffd, b, z1, n);
 
         double[] z2 = new double[n];
         b[n - 1] = Acorner;
-        for (int i = 0; i < n - 1; i++) b[i] = 0;
+        for (int i = 0; i < n - 1; i++) {
+          b[i] = 0;
+        }
         tridag(Aoffd, Adiag, Aoffd, b, z2, n);
 
         // calculate a 2x2 matrix H
@@ -325,10 +359,14 @@ public class SplineCurve extends Curve {
         // use Woodbury's formula to adjust the velocities
         double m0 = H00 * vel[n - 1] + H01 * vel[0];
         double m1 = H10 * vel[n - 1] + H11 * vel[0];
-        for (int i = 0; i < n; i++) vel[i] -= (z1[i] * m0 + z2[i] * m1);
+        for (int i = 0; i < n; i++) {
+          vel[i] -= (z1[i] * m0 + z2[i] * m1);
+        }
       }
 
-      for (int i = 0; i < n; i++) v[i].setIndex(axis, vel[i]);
+      for (int i = 0; i < n; i++) {
+        v[i].setIndex(axis, vel[i]);
+      }
 
       /*
       // do the matrix multiply to check the answer
@@ -348,7 +386,7 @@ public class SplineCurve extends Curve {
       */
     }
 
-    v[n] = new Coordinate(v[0]); // v[n] = v[0]
+    v[n] = new Coordinate(v[0]);  // v[n] = v[0]
   }
 
   // The following method is adapted from Numerical Recipes. It solves the
@@ -358,7 +396,9 @@ public class SplineCurve extends Curve {
 
   protected static void tridag(double[] a, double[] b, double[] c, double[] r, double[] u, int n)
       throws JuggleExceptionInternal {
-    if (b[0] == 0) throw new JuggleExceptionInternal("Error 1 in TRIDAG");
+    if (b[0] == 0) {
+      throw new JuggleExceptionInternal("Error 1 in TRIDAG");
+    }
 
     double bet = b[0];
     double[] gam = new double[n];
@@ -367,19 +407,32 @@ public class SplineCurve extends Curve {
     for (int j = 1; j < n; j++) {
       gam[j] = c[j - 1] / bet;
       bet = b[j] - a[j - 1] * gam[j];
-      if (bet == 0) throw new JuggleExceptionInternal("Error 2 in TRIDAG");
+      if (bet == 0) {
+        throw new JuggleExceptionInternal("Error 2 in TRIDAG");
+      }
       u[j] = (r[j] - a[j - 1] * u[j - 1]) / bet;
     }
-    for (int j = (n - 1); j > 0; j--) u[j - 1] -= gam[j] * u[j];
+    for (int j = (n - 1); j > 0; j--) {
+      u[j - 1] -= gam[j] * u[j];
+    }
   }
 
   @Override
   public void getCoordinate(double time, Coordinate newPosition) {
-    if (time < times[0] || time > times[n]) return;
+    if (time < times[0] || time > times[n]) {
+      return;
+    }
 
-    int i;
-    for (i = 0; i < n; i++) if (time <= times[i + 1]) break;
-    if (i == n) i = n - 1;
+    int i = 0;
+    while (i < n) {
+      if (time <= times[i + 1]) {
+        break;
+      }
+      ++i;
+    }
+    if (i == n) {
+      i = n - 1;
+    }
 
     time -= times[i];
     newPosition.setCoordinate(
@@ -390,7 +443,9 @@ public class SplineCurve extends Curve {
 
   @Override
   protected Coordinate getMax2(double begin, double end) {
-    if (end < times[0] || begin > times[n]) return null;
+    if (end < times[0] || begin > times[n]) {
+      return null;
+    }
 
     Coordinate result = null;
     double tlow = Math.max(times[0], begin);
@@ -399,7 +454,9 @@ public class SplineCurve extends Curve {
     result = check(result, thigh, true);
 
     for (int i = 0; i <= n; i++) {
-      if (tlow <= times[i] && times[i] <= thigh) result = check(result, times[i], true);
+      if (tlow <= times[i] && times[i] <= thigh) {
+        result = check(result, times[i], true);
+      }
       if (i != n) {
         double tlowtemp = Math.max(tlow, times[i]);
         double thightemp = Math.min(thigh, times[i + 1]);
@@ -413,12 +470,16 @@ public class SplineCurve extends Curve {
               double k = c[i][index] * c[i][index] - 3 * b[i][index] * d[i][index];
               if (k > 0) {
                 double te = times[i] + (-c[i][index] - Math.sqrt(k)) / (3 * d[i][index]);
-                if (tlowtemp < te && te < thightemp) result = check(result, te, true);
+                if (tlowtemp < te && te < thightemp) {
+                  result = check(result, te, true);
+                }
               }
             } else if (c[i][index] < 0) {
               double te = -b[i][index] / (2 * c[i][index]);
               te += times[i];
-              if (tlowtemp < te && te < thightemp) result = check(result, te, true);
+              if (tlowtemp < te && te < thightemp) {
+                result = check(result, te, true);
+              }
             }
           }
         }
@@ -430,7 +491,9 @@ public class SplineCurve extends Curve {
 
   @Override
   protected Coordinate getMin2(double begin, double end) {
-    if (end < times[0] || begin > times[n]) return null;
+    if (end < times[0] || begin > times[n]) {
+      return null;
+    }
 
     Coordinate result = null;
     double tlow = Math.max(times[0], begin);
@@ -439,7 +502,9 @@ public class SplineCurve extends Curve {
     result = check(result, thigh, false);
 
     for (int i = 0; i <= n; i++) {
-      if (tlow <= times[i] && times[i] <= thigh) result = check(result, times[i], false);
+      if (tlow <= times[i] && times[i] <= thigh) {
+        result = check(result, times[i], false);
+      }
       if (i != n) {
         double tlowtemp = Math.max(tlow, times[i]);
         double thightemp = Math.min(thigh, times[i + 1]);
@@ -453,12 +518,16 @@ public class SplineCurve extends Curve {
               double k = c[i][index] * c[i][index] - 3 * b[i][index] * d[i][index];
               if (k > 0) {
                 double te = times[i] + (-c[i][index] + Math.sqrt(k)) / (3 * d[i][index]);
-                if (tlowtemp < te && te < thightemp) result = check(result, te, false);
+                if (tlowtemp < te && te < thightemp) {
+                  result = check(result, te, false);
+                }
               }
             } else if (c[i][index] > 0) {
               double te = -b[i][index] / (2 * c[i][index]);
               te += times[i];
-              if (tlowtemp < te && te < thightemp) result = check(result, te, false);
+              if (tlowtemp < te && te < thightemp) {
+                result = check(result, te, false);
+              }
             }
           }
         }

@@ -47,31 +47,41 @@ public class MarginEquations {
 
   public double getMargin(int eqn) {
     double m = 0;
-    for (int i = 0; i < varsNum; i++) m += marginsEqs[eqn].coef(i) * varsValues[i];
+    for (int i = 0; i < varsNum; i++) {
+      m += marginsEqs[eqn].coef(i) * varsValues[i];
+    }
 
     return Math.abs(m) + marginsEqs[eqn].constant();
   }
 
-  // returns minimum value of all margins together
+  // Find minimum value of all margins together.
 
   public double getMargin() {
-    if (marginsNum == 0) return -100;
+    if (marginsNum == 0) {
+      return -100;
+    }
 
     double minmargin = getMargin(0);
     for (int i = 1; i < marginsNum; i++) {
       double m = getMargin(i);
-      if (m < minmargin) minmargin = m;
+      if (m < minmargin) {
+        minmargin = m;
+      }
     }
     return minmargin;
   }
 
   protected void findeqs(JMLPattern pat) throws JuggleExceptionInternal, JuggleExceptionUser {
-    if (Constants.DEBUG_OPTIMIZE) System.out.println("finding margin equations");
+    if (Constants.DEBUG_OPTIMIZE) {
+      System.out.println("finding margin equations");
+    }
 
-    if (pat.getNumberOfJugglers() > 1)
+    if (pat.getNumberOfJugglers() > 1) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_passing"));
-    if (pat.isBouncePattern())
+    }
+    if (pat.isBouncePattern()) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_bouncing"));
+    }
 
     // Step 1: Lay out the pattern. This generates two things we need, the pattern event
     // list and the pattern pathlink list.
@@ -145,15 +155,20 @@ public class MarginEquations {
         varsMin[i] = 0.1 * maxValue;
         varsMax[i] = maxValue;
 
-        if (type == JMLTransition.TRANS_THROW) varsMax[i] *= 0.9;
+        if (type == JMLTransition.TRANS_THROW) {
+          varsMax[i] *= 0.9;
+        }
       } else {
         varsMin[i] = -maxValue;
         varsMax[i] = -0.1 * maxValue;
 
-        if (type == JMLTransition.TRANS_THROW) varsMin[i] *= 0.9;
+        if (type == JMLTransition.TRANS_THROW) {
+          varsMin[i] *= 0.9;
+        }
       }
-      if (Constants.DEBUG_OPTIMIZE)
+      if (Constants.DEBUG_OPTIMIZE) {
         System.out.println("   variable " + i + " min = " + varsMin[i] + ", max = " + varsMax[i]);
+      }
     }
 
     // Step 4: Find the maximum radius of props in the pattern, used in the margin
@@ -162,9 +177,13 @@ public class MarginEquations {
     double propradius = 0;
     for (int i = 0; i < pat.getNumberOfProps(); i++) {
       double thisprop = 0.5 * pat.getProp(i + 1).getWidth();
-      if (thisprop > propradius) propradius = thisprop;
+      if (thisprop > propradius) {
+        propradius = thisprop;
+      }
     }
-    if (Constants.DEBUG_OPTIMIZE) System.out.println("   propradius = " + propradius);
+    if (Constants.DEBUG_OPTIMIZE) {
+      System.out.println("   propradius = " + propradius);
+    }
 
     // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting on
     // master events. Put them into a linear array for convenience
@@ -177,15 +196,21 @@ public class MarginEquations {
         for (int j = 0; j < pathlinks.get(i).size(); j++) {
           PathLink pl = pathlinks.get(i).get(j);
           if (!pl.isInHand() && pl.getStartEvent().isMaster()) {
-            if (pass == 1) masterplNum++;
-            else masterpl[k++] = pl;
+            if (pass == 1) {
+              masterplNum++;
+            } else {
+              masterpl[k++] = pl;
+            }
           }
         }
       }
-      if (pass == 1) masterpl = new PathLink[masterplNum];
+      if (pass == 1) {
+        masterpl = new PathLink[masterplNum];
+      }
     }
-    if (Constants.DEBUG_OPTIMIZE)
+    if (Constants.DEBUG_OPTIMIZE) {
       System.out.println("   number of master pathlinks = " + masterplNum);
+    }
 
     // Step 6: Figure out all distinct potential collisions in the pattern, and the
     // equation determining throw error margin for each one.
@@ -220,7 +245,9 @@ public class MarginEquations {
 
     ArrayList<double[]> eqns = new ArrayList<double[]>();
 
-    if (Constants.DEBUG_OPTIMIZE) System.out.println("potential collisions:");
+    if (Constants.DEBUG_OPTIMIZE) {
+      System.out.println("potential collisions:");
+    }
     for (int i = 0; i < masterplNum; i++) {
       for (int j = 0; j < masterplNum; j++) {
         PathLink mpl1 = masterpl[i];
@@ -238,31 +265,38 @@ public class MarginEquations {
           boolean can_collide = true;
 
           // implement the criteria described above
-          if (delay == 0.0 && mpl1.getStartEvent() == mpl2.getStartEvent()) can_collide = false;
-          if (mpl1_start > (mpl2_start + delay)) can_collide = false;
-          else if (mpl1_start == (mpl2_start + delay)) {
-            if (mpl1_end > (mpl2_end + delay)) can_collide = false;
-            else if (mpl1_end == (mpl2_end + delay)) {
-              if (mpl1.getStartEvent().getJuggler() > mpl2.getStartEvent().getJuggler())
+          if (delay == 0.0 && mpl1.getStartEvent() == mpl2.getStartEvent()) {
+            can_collide = false;
+          }
+          if (mpl1_start > (mpl2_start + delay)) {
+            can_collide = false;
+          } else if (mpl1_start == (mpl2_start + delay)) {
+            if (mpl1_end > (mpl2_end + delay)) {
+              can_collide = false;
+            } else if (mpl1_end == (mpl2_end + delay)) {
+              if (mpl1.getStartEvent().getJuggler() > mpl2.getStartEvent().getJuggler()) {
                 can_collide = false;
-              else if (mpl1.getStartEvent().getJuggler() == mpl2.getStartEvent().getJuggler()) {
-                if (mpl1.getStartEvent().getHand() == HandLink.LEFT_HAND) can_collide = false;
+              } else if (mpl1.getStartEvent().getJuggler() == mpl2.getStartEvent().getJuggler()) {
+                if (mpl1.getStartEvent().getHand() == HandLink.LEFT_HAND) {
+                  can_collide = false;
+                }
               }
             }
           }
 
           double tsame = -1;
           double tsame_denom = (mpl2_start + mpl2_end + 2 * delay) - (mpl1_start + mpl1_end);
-          if (tsame_denom == 0) can_collide = false;
+          if (tsame_denom == 0) {
+            can_collide = false;
+          }
 
           if (can_collide) {
-            tsame =
-                ((mpl2_start + delay) * (mpl2_end + delay) - mpl1_start * mpl1_end) / tsame_denom;
+            tsame = ((mpl2_start + delay) * (mpl2_end + delay) - mpl1_start * mpl1_end) / tsame_denom;
 
-            if (tsame < mpl1_start
-                || tsame > mpl1_end
-                || tsame < (mpl2_start + delay)
-                || tsame > (mpl2_end + delay)) can_collide = false;
+            if (tsame < mpl1_start || tsame > mpl1_end || tsame < (mpl2_start + delay) ||
+                tsame > (mpl2_end + delay)) {
+              can_collide = false;
+            }
           }
 
           if (can_collide) {
@@ -313,31 +347,40 @@ public class MarginEquations {
 
               JMLEvent mplev = mpl1.getStartEvent();
               if (!mplev.isMaster()) {
-                if (mplev.getHand() != mplev.getMaster().getHand()) coef_t1 = -coef_t1;
+                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                  coef_t1 = -coef_t1;
+                }
                 mplev = mplev.getMaster();
               }
               t1_varnum = variableEvents.indexOf(mplev);
               mplev = mpl1.getEndEvent();
               if (!mplev.isMaster()) {
-                if (mplev.getHand() != mplev.getMaster().getHand()) coef_c1 = -coef_c1;
+                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                  coef_c1 = -coef_c1;
+                }
                 mplev = mplev.getMaster();
               }
               c1_varnum = variableEvents.indexOf(mplev);
               mplev = mpl2.getStartEvent();
               if (!mplev.isMaster()) {
-                if (mplev.getHand() != mplev.getMaster().getHand()) coef_t2 = -coef_t2;
+                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                  coef_t2 = -coef_t2;
+                }
                 mplev = mplev.getMaster();
               }
               t2_varnum = variableEvents.indexOf(mplev);
               mplev = mpl2.getEndEvent();
               if (!mplev.isMaster()) {
-                if (mplev.getHand() != mplev.getMaster().getHand()) coef_c2 = -coef_c2;
+                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                  coef_c2 = -coef_c2;
+                }
                 mplev = mplev.getMaster();
               }
               c2_varnum = variableEvents.indexOf(mplev);
 
-              if (t1_varnum < 0 || c1_varnum < 0 || t2_varnum < 0 || c2_varnum < 0)
+              if (t1_varnum < 0 || c1_varnum < 0 || t2_varnum < 0 || c2_varnum < 0) {
                 throw new JuggleExceptionInternal("Could not find master event in variableEvents");
+              }
 
               if (invert_mpl2) {
                 coef_t2 = -coef_t2;
@@ -355,15 +398,18 @@ public class MarginEquations {
               for (int k = 0; k < varsNum; k++) dist += coefs[k] * varsValues[k];
               if (dist < 0) {
                 for (int k = 0; k < varsNum; k++) {
-                  if (coefs[k] != 0) coefs[k] = -coefs[k];
+                  if (coefs[k] != 0) {
+                    coefs[k] = -coefs[k];
+                  }
                 }
               }
 
               eqns.add(coefs);
               ++marginsNum;
 
-              if (Constants.DEBUG_OPTIMIZE)
+              if (Constants.DEBUG_OPTIMIZE) {
                 System.out.println("   mpl[" + i + "] and mpl[" + j + "] at tsame = " + tsame);
+              }
             }
           }
 
@@ -389,11 +435,16 @@ public class MarginEquations {
         double[] temp = eqns.get(i);
         for (int j = 0; j <= varsNum; j++) {
           sb.append(JLFunc.toStringRounded(temp[j], 4));
-          if (j == (varsNum - 1)) sb.append(" : ");
-          else if (j != varsNum) sb.append(", ");
+          if (j == (varsNum - 1)) {
+            sb.append(" : ");
+          } else if (j != varsNum) {
+            sb.append(", ");
+          }
         }
         double dtemp = temp[varsNum];
-        for (int j = 0; j < varsNum; j++) dtemp += temp[j] * varsValues[j];
+        for (int j = 0; j < varsNum; j++) {
+          dtemp += temp[j] * varsValues[j];
+        }
         sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
         System.out.println("   eq[" + i + "] = " + sb.toString());
@@ -411,19 +462,24 @@ public class MarginEquations {
         double[] rowj = eqns.get(j);
         boolean duprow = true;
         for (int k = 0; duprow && k <= varsNum; k++) {
-          if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON)) duprow = false;
+          if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON)) {
+            duprow = false;
+          }
         }
         dupoverall |= duprow;
       }
 
       if (dupoverall) {
-        if (Constants.DEBUG_OPTIMIZE)
+        if (Constants.DEBUG_OPTIMIZE) {
           System.out.println("   removed duplicate equation " + orig_row);
+        }
         eqns.remove(i);
         --i;
         --marginsNum;
       }
-      if (Constants.DEBUG_OPTIMIZE) ++orig_row;
+      if (Constants.DEBUG_OPTIMIZE) {
+        ++orig_row;
+      }
     }
 
     // Step 8: Move the equations into an array, and sort it based on margins at the
@@ -442,11 +498,16 @@ public class MarginEquations {
         sb.append("{ ");
         for (int j = 0; j <= varsNum; j++) {
           sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
-          if (j == (varsNum - 1)) sb.append(" : ");
-          else if (j != varsNum) sb.append(", ");
+          if (j == (varsNum - 1)) {
+            sb.append(" : ");
+          } else if (j != varsNum) {
+            sb.append(", ");
+          }
         }
         double dtemp = marginsEqs[i].constant();
-        for (int j = 0; j < varsNum; j++) dtemp += marginsEqs[i].coef(j) * varsValues[j];
+        for (int j = 0; j < varsNum; j++) {
+          dtemp += marginsEqs[i].coef(j) * varsValues[j];
+        }
         sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
         System.out.println("   eq[" + i + "] = " + sb.toString());
@@ -462,11 +523,16 @@ public class MarginEquations {
         sb.append("{ ");
         for (int j = 0; j <= varsNum; j++) {
           sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
-          if (j == (varsNum - 1)) sb.append(" : ");
-          else if (j != varsNum) sb.append(", ");
+          if (j == (varsNum - 1)) {
+            sb.append(" : ");
+          } else if (j != varsNum) {
+            sb.append(", ");
+          }
         }
         double dtemp = marginsEqs[i].constant();
-        for (int j = 0; j < varsNum; j++) dtemp += marginsEqs[i].coef(j) * varsValues[j];
+        for (int j = 0; j < varsNum; j++) {
+          dtemp += marginsEqs[i].coef(j) * varsValues[j];
+        }
         sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
 
         System.out.println("   eq[" + i + "] = " + sb.toString());
@@ -479,8 +545,12 @@ public class MarginEquations {
         new Comparator<LinearEquation>() {
           @Override
           public int compare(LinearEquation eq1, LinearEquation eq2) {
-            if (eq1.done() && !eq2.done()) return -1;
-            if (!eq1.done() && eq2.done()) return 1;
+            if (eq1.done() && !eq2.done()) {
+              return -1;
+            }
+            if (!eq1.done() && eq2.done()) {
+              return 1;
+            }
 
             double m1 = eq1.constant();
             double m2 = eq2.constant();
@@ -488,8 +558,11 @@ public class MarginEquations {
               m1 += eq1.coef(i) * varsValues[i];
               m2 += eq2.coef(i) * varsValues[i];
             }
-            if (m1 < m2) return -1;
-            else if (m1 > m2) return 1;
+            if (m1 < m2) {
+              return -1;
+            } else if (m1 > m2) {
+              return 1;
+            }
             return 0;
           }
 

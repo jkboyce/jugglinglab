@@ -20,11 +20,15 @@ public class Permutation {
     if (reverses) {
       mapping = new int[size * 2 + 1];
 
-      for (int i = 0; i < (size * 2 + 1); i++) mapping[i] = i - size;
+      for (int i = 0; i < (size * 2 + 1); i++) {
+        mapping[i] = i - size;
+      }
     } else {
       mapping = new int[size];
 
-      for (int i = 0; i < n; i++) mapping[i] = i + 1;
+      for (int i = 0; i < n; i++) {
+        mapping[i] = i + 1;
+      }
     }
   }
 
@@ -35,7 +39,6 @@ public class Permutation {
   }
 
   public Permutation(int n, String perm, boolean reverses) throws JuggleException {
-    int i;
     boolean[] used;
 
     size = n;
@@ -45,7 +48,7 @@ public class Permutation {
       mapping = new int[size * 2 + 1];
       used = new boolean[size * 2 + 1];
 
-      for (i = 0; i < (size * 2 + 1); i++) {
+      for (int i = 0; i < (size * 2 + 1); i++) {
         mapping[i] = 0;
         used[i] = false;
       }
@@ -53,7 +56,7 @@ public class Permutation {
       mapping = new int[size];
       used = new boolean[size];
 
-      for (i = 0; i < n; i++) {
+      for (int i = 0; i < n; i++) {
         mapping[i] = 0;
         used[i] = false;
       }
@@ -67,20 +70,24 @@ public class Permutation {
       int num;
       StringTokenizer st = new StringTokenizer(perm, ",");
 
-      if (st.countTokens() != size)
+      if (st.countTokens() != size) {
         throw new JuggleException(
             "Permutation init error: must have " + n + " elements in mapping");
-      for (i = 0; i < size; i++) {
+      }
+      for (int i = 0; i < size; i++) {
         String s = st.nextToken().trim();
         try {
           num = Integer.parseInt(s);
         } catch (NumberFormatException nfe) {
           throw new JuggleException("Permutation init error: number format");
         }
-        if ((num < 1) || (num > size))
+        if (num < 1 || num > size) {
           throw new JuggleException("Permutation init error: out of range");
+        }
 
-        if (used[num - 1]) throw new JuggleException("Permutation init error: not one-to-one");
+        if (used[num - 1]) {
+          throw new JuggleException("Permutation init error: not one-to-one");
+        }
 
         used[num - 1] = true;
         mapping[i] = num;
@@ -91,8 +98,9 @@ public class Permutation {
 
       while (st1.hasMoreTokens()) {
         String s1 = st1.nextToken().trim();
-        if (s1.charAt(0) != '(')
+        if (s1.charAt(0) != '(') {
           throw new JuggleException("Permutation init error: parenthesis not grouped");
+        }
         s1 = s1.substring(1);
         int num = 0, lastnum = -(size + 1);
         StringTokenizer st2 = new StringTokenizer(s1, ",");
@@ -106,36 +114,47 @@ public class Permutation {
                 s2 = s2.replace('*', ' ').trim();
               }
               num = Integer.parseInt(s2);
-              if (negate) num = -num;
-            } else num = Integer.parseInt(s2);
+              if (negate) {
+                num = -num;
+              }
+            } else {
+              num = Integer.parseInt(s2);
+            }
           } catch (NumberFormatException nfe) {
             throw new JuggleException("Permutation init error: number format");
           }
 
           if (reverses) {
-            if ((num < -size) || (num > size) || (num == 0))
+            if (num < -size || num > size || num == 0) {
               throw new JuggleException("Permutation init error: out of range");
+            }
 
-            if (used[num + size])
+            if (used[num + size]) {
               throw new JuggleException("Permutation init error: not one-to-one");
+            }
             used[num + size] = true;
 
-            if (lastnum == -(size + 1)) mapping[num + size] = num;
-            else {
+            if (lastnum == -(size + 1)) {
+              mapping[num + size] = num;
+            } else {
               mapping[num + size] = mapping[lastnum + size];
               mapping[lastnum + size] = num;
               if (used[-lastnum + size] && (mapping[-lastnum + size] != -num))
                 throw new JuggleException("Permutation init error: input not reversible");
             }
           } else {
-            if ((num < 1) || (num > size))
+            if (num < 1 || num > size) {
               throw new JuggleException("Permutation init error: out of range");
+            }
 
-            if (used[num - 1]) throw new JuggleException("Permutation init error: not one-to-one");
+            if (used[num - 1]) {
+              throw new JuggleException("Permutation init error: not one-to-one");
+            }
             used[num - 1] = true;
 
-            if (lastnum == -(size + 1)) mapping[num - 1] = num;
-            else {
+            if (lastnum == -(size + 1)) {
+              mapping[num - 1] = num;
+            } else {
               mapping[num - 1] = mapping[lastnum - 1];
               mapping[lastnum - 1] = num;
             }
@@ -146,16 +165,20 @@ public class Permutation {
     }
 
     if (reverses) {
-      for (i = 1; i <= size; i++) {
-        if (used[i + size] && !used[-i + size]) mapping[-i + size] = -mapping[i + size];
-        else if (!used[i + size] && used[-i + size]) mapping[i + size] = -mapping[-i + size];
-        else if (!used[i + size] && !used[-i + size]) {
+      for (int i = 1; i <= size; i++) {
+        if (used[i + size] && !used[-i + size]) {
+          mapping[-i + size] = -mapping[i + size];
+        } else if (!used[i + size] && used[-i + size]) {
+          mapping[i + size] = -mapping[-i + size];
+        } else if (!used[i + size] && !used[-i + size]) {
           mapping[-i + size] = 0;
           mapping[i + size] = 0;
         }
       }
     } else {
-      for (i = 0; i < size; i++) if (!used[i]) mapping[i] = i + 1;
+      for (int i = 0; i < size; i++) if (!used[i]) {
+        mapping[i] = i + 1;
+      }
     }
 
     //      if (reverses) {
@@ -170,17 +193,18 @@ public class Permutation {
   }
 
   public String toString(boolean cyclenotation) {
-    int i;
     String s;
 
     if (cyclenotation) {
       if (reverses) {
         int start, current;
         boolean[] printed = new boolean[size];
-        for (i = 0; i < size; i++) printed[i] = false;
+        for (int i = 0; i < size; i++) {
+          printed[i] = false;
+        }
         s = "";
 
-        for (i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
           if (printed[i] == false) {
             start = i + 1;
             printed[i] = true;
@@ -188,8 +212,11 @@ public class Permutation {
             if (current != 0) {
               s += "(" + convertReverse(start);
               while (current != start) {
-                if (current > 0) printed[current - 1] = true;
-                else if (current < 0) printed[-current - 1] = true;
+                if (current > 0) {
+                  printed[current - 1] = true;
+                } else if (current < 0) {
+                  printed[-current - 1] = true;
+                }
                 s += "," + convertReverse(current);
                 current = mapping[current + size];
               }
@@ -200,11 +227,19 @@ public class Permutation {
       } else {
         int start, current, left = size;
         boolean[] printed = new boolean[size];
-        for (i = 0; i < size; i++) printed[i] = false;
+        for (int i = 0; i < size; i++) {
+          printed[i] = false;
+        }
         s = "";
 
         while (left > 0) {
-          for (i = 0; i < size; i++) if (printed[i] == false) break;
+          int i = 0;
+          while (i < size) {
+            if (printed[i] == false) {
+              break;
+            }
+            ++i;
+          }
           start = i + 1;
           printed[i] = true;
           s = s + "(" + start;
@@ -222,18 +257,25 @@ public class Permutation {
     } else {
       if (reverses) {
         s = convertReverse(mapping[size + 1]);
-        for (i = 1; i < size; i++) s = s + "," + convertReverse(mapping[size + 1 + i]);
+        for (int i = 1; i < size; i++) {
+          s = s + "," + convertReverse(mapping[size + 1 + i]);
+        }
       } else {
         s = "" + mapping[0];
-        for (i = 1; i < size; i++) s = s + "," + mapping[i];
+        for (int i = 1; i < size; i++) {
+          s = s + "," + mapping[i];
+        }
       }
     }
     return s;
   }
 
   protected String convertReverse(int num) {
-    if (num >= 0) return ("" + num);
-    else return ((-num) + "*");
+    if (num >= 0) {
+      return ("" + num);
+    } else {
+      return ((-num) + "*");
+    }
   }
 
   public int getSize() {
@@ -245,43 +287,72 @@ public class Permutation {
   }
 
   public boolean equals(Permutation p) {
-    if (p == null) return false;
-    if (reverses != p.hasReverses()) return false;
-    if (getSize() != p.getSize()) return false;
-    for (int i = 0; i < getSize(); i++) if (getMapping(i + 1) != p.getMapping(i + 1)) return false;
+    if (p == null) {
+      return false;
+    }
+    if (reverses != p.hasReverses()) {
+      return false;
+    }
+    if (getSize() != p.getSize()) {
+      return false;
+    }
+    for (int i = 0; i < getSize(); i++) {
+      if (getMapping(i + 1) != p.getMapping(i + 1)) {
+        return false;
+      }
+    }
     return true;
   }
 
   public int getMapping(int elem) {
-    if (reverses) return mapping[elem + size];
-    else return mapping[elem - 1];
+    if (reverses) {
+      return mapping[elem + size];
+    } else {
+      return mapping[elem - 1];
+    }
   }
 
   public int getMapping(int elem, int power) {
     if (power > 0) {
-      for (int i = 0; i < power; i++) elem = getMapping(elem);
+      for (int i = 0; i < power; i++) {
+        elem = getMapping(elem);
+      }
     } else if (power < 0) {
-      for (int i = power; i < 0; i++) elem = getInverseMapping(elem);
+      for (int i = power; i < 0; i++) {
+        elem = getInverseMapping(elem);
+      }
     }
     return elem;
   }
 
   public Permutation apply(Permutation firstp) {
-    if (this.getSize() != firstp.getSize()) return null;
-    if (this.hasReverses() || firstp.hasReverses()) return null;
+    if (this.getSize() != firstp.getSize()) {
+      return null;
+    }
+    if (this.hasReverses() || firstp.hasReverses()) {
+      return null;
+    }
 
     int[] res = new int[this.getSize()];
-    for (int i = 0; i < this.getSize(); i++) res[i] = this.getMapping(firstp.getMapping(i + 1));
+    for (int i = 0; i < this.getSize(); i++) {
+      res[i] = this.getMapping(firstp.getMapping(i + 1));
+    }
 
     return new Permutation(this.getSize(), res, false);
   }
 
   public int getInverseMapping(int elem) {
     if (reverses) {
-      for (int i = 0; i < (2 * size + 1); i++) if (mapping[i] == elem) return (i - size);
+      for (int i = 0; i < (2 * size + 1); i++) {
+        if (mapping[i] == elem) {
+          return (i - size);
+        }
+      }
     } else {
       for (int i = 0; i < size; i++) {
-        if (mapping[i] == elem) return (i + 1);
+        if (mapping[i] == elem) {
+          return (i + 1);
+        }
       }
     }
     return 0;
@@ -293,11 +364,15 @@ public class Permutation {
     if (reverses) {
       invmapping = new int[size * 2 + 1];
 
-      for (int i = 0; i < (size * 2 + 1); i++) invmapping[mapping[i] + size] = i - size;
+      for (int i = 0; i < (size * 2 + 1); i++) {
+        invmapping[mapping[i] + size] = i - size;
+      }
     } else {
       invmapping = new int[size];
 
-      for (int i = 0; i < size; i++) invmapping[mapping[i] - 1] = i + 1;
+      for (int i = 0; i < size; i++) {
+        invmapping[mapping[i] - 1] = i + 1;
+      }
     }
 
     return new Permutation(size, invmapping, reverses);
@@ -319,17 +394,19 @@ public class Permutation {
   public int getOrder() {
     int ord = 1;
 
-    for (int elem = 1; elem <= size; elem++)
-      if (getMapping(elem) != 0) ord = lcm(ord, getOrder(elem));
+    for (int elem = 1; elem <= size; elem++) {
+      if (getMapping(elem) != 0) {
+        ord = lcm(ord, getOrder(elem));
+      }
+    }
 
     return ord;
   }
 
   public int getOrder(int elem) {
-    int index;
     int ord = 1;
+    int index = (reverses ? elem + size : elem - 1);
 
-    index = (reverses ? elem + size : elem - 1);
     while (mapping[index] != elem) {
       ord++;
       index = mapping[index] + (reverses ? size : -1);

@@ -143,8 +143,8 @@ public class JugglingLab {
       return;
     }
 
-    // The remaining modes are only accessible from the command line
     if (!isCLI) {
+      // the remaining modes are only accessible from the command line
       return;
     }
 
@@ -364,7 +364,7 @@ public class JugglingLab {
   // record it and trim out of `jlargs`. Otherwise return null.
 
   private static Path parse_outpath() {
-    for (int i = 0; i < jlargs.size(); i++) {
+    for (int i = 0; i < jlargs.size(); ++i) {
       if (jlargs.get(i).equalsIgnoreCase("-out")) {
         jlargs.remove(i);
 
@@ -390,7 +390,7 @@ public class JugglingLab {
   // error) return null.
 
   private static AnimationPrefs parse_animprefs() {
-    for (int i = 0; i < jlargs.size(); i++) {
+    for (int i = 0; i < jlargs.size(); ++i) {
       if (jlargs.get(i).equalsIgnoreCase("-prefs")) {
         jlargs.remove(i);
 
@@ -486,7 +486,7 @@ public class JugglingLab {
 
     for (File file : files) {
       ps.println("Verifying " + file.getAbsolutePath());
-      files_count++;
+      ++files_count;
 
       int error_count_current_file = 0;
 
@@ -495,27 +495,27 @@ public class JugglingLab {
         parser.parse(new FileReader(file));
       } catch (SAXException se) {
         ps.println("   Error: Formatting error in JML file");
-        error_count_current_file++;
+        ++error_count_current_file;
       } catch (IOException ioe) {
         ps.println("   Error: Problem reading JML file");
-        error_count_current_file++;
+        ++error_count_current_file;
       }
 
       if (error_count_current_file > 0) {
         error_count += error_count_current_file;
-        files_with_errors_count++;
+        ++files_with_errors_count;
         continue;
       }
 
       if (parser.getFileType() == JMLParser.JML_PATTERN) {
         try {
-          patterns_count++;
+          ++patterns_count;
           JMLPattern pat = new JMLPattern(parser.getTree());
           pat.layoutPattern();
           ps.println("   OK");
         } catch (JuggleException je) {
           ps.println("   Error creating pattern: " + je.getMessage());
-          error_count_current_file++;
+          ++error_count_current_file;
         }
       } else if (parser.getFileType() == JMLParser.JML_LIST) {
         JMLPatternList pl = null;
@@ -523,38 +523,38 @@ public class JugglingLab {
           pl = new JMLPatternList(parser.getTree());
         } catch (JuggleExceptionUser jeu) {
           ps.println("   Error creating pattern list: " + jeu.getMessage());
-          error_count_current_file++;
+          ++error_count_current_file;
         }
 
         if (error_count_current_file > 0) {
           error_count += error_count_current_file;
-          files_with_errors_count++;
+          ++files_with_errors_count;
           continue;
         }
 
-        for (int i = 0; i < pl.size(); i++) {
+        for (int i = 0; i < pl.size(); ++i) {
           // Verify pattern and animprefs for each line
           try {
             JMLPattern pat = pl.getPatternForLine(i);
             if (pat != null) {
-              patterns_count++;
+              ++patterns_count;
               pat.layoutPattern();
               pl.getAnimationPrefsForLine(i);
               ps.println("   Pattern line " + (i + 1) + ": OK");
             }
           } catch (JuggleException je) {
             ps.println("   Pattern line " + (i + 1) + ": Error: " + je.getMessage());
-            error_count_current_file++;
+            ++error_count_current_file;
           }
         }
       } else {
         ps.println("   Error: File is not valid JML");
-        error_count_current_file++;
+        ++error_count_current_file;
       }
 
       if (error_count_current_file > 0) {
         error_count += error_count_current_file;
-        files_with_errors_count++;
+        ++files_with_errors_count;
       }
     }
 

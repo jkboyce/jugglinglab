@@ -31,7 +31,9 @@ public class SimpleView extends View {
     ja.restartJuggle(p, c);
     setAnimationPanelPreferredSize(getAnimationPrefs().getSize());
 
-    if (p != null && parent != null) parent.setTitle(p.getTitle());
+    if (p != null && parent != null) {
+      parent.setTitle(p.getTitle());
+    }
   }
 
   @Override
@@ -76,7 +78,9 @@ public class SimpleView extends View {
 
   @Override
   public void setPaused(boolean pause) {
-    if (ja.message == null) ja.setPaused(pause);
+    if (ja.message == null) {
+      ja.setPaused(pause);
+    }
   }
 
   @Override
@@ -89,7 +93,9 @@ public class SimpleView extends View {
     ja.writingGIF = true;
     boolean origpause = isPaused();
     setPaused(true);
-    if (parent != null) parent.setResizable(false);
+    if (parent != null) {
+      parent.setResizable(false);
+    }
 
     Runnable cleanup =
         new Runnable() {
@@ -97,7 +103,9 @@ public class SimpleView extends View {
           public void run() {
             ja.writingGIF = false;
             setPaused(origpause);
-            if (parent != null) parent.setResizable(true);
+            if (parent != null) {
+              parent.setResizable(true);
+            }
           }
         };
 

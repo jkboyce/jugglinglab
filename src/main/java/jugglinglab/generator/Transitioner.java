@@ -29,13 +29,12 @@ public abstract class Transitioner {
   }
 
   public void initTransitioner(String arg) throws JuggleExceptionUser, JuggleExceptionInternal {
-    int i, numargs;
     StringTokenizer st = new StringTokenizer(arg, " \n");
 
-    numargs = st.countTokens();
+    int numargs = st.countTokens();
     String args[] = new String[numargs];
 
-    for (i = 0; i < numargs; i++) {
+    for (int i = 0; i < numargs; i++) {
       args[i] = st.nextToken();
     }
 

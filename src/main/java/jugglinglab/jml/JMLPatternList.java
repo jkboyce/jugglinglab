@@ -52,7 +52,9 @@ public class JMLPatternList {
   public void clearModel() {
     model.clear();
 
-    if (BLANK_AT_END) model.addElement(new PatternRecord(" ", null, null, null, null, null, null));
+    if (BLANK_AT_END) {
+      model.addElement(new PatternRecord(" ", null, null, null, null, null, null));
+    }
   }
 
   public int size() {
@@ -69,10 +71,18 @@ public class JMLPatternList {
       String anim,
       JMLNode patnode,
       JMLNode infonode) {
-    if (display == null) display = "";
-    if (animprefs != null) animprefs = animprefs.strip();
-    if (notation != null) notation = notation.strip();
-    if (anim != null) anim = anim.strip();
+    if (display == null) {
+      display = "";
+    }
+    if (animprefs != null) {
+      animprefs = animprefs.strip();
+    }
+    if (notation != null) {
+      notation = notation.strip();
+    }
+    if (anim != null) {
+      anim = anim.strip();
+    }
 
     String info = null;
     ArrayList<String> tags = null;
@@ -90,10 +100,14 @@ public class JMLPatternList {
           boolean is_new = true;
 
           for (String t2 : tags) {
-            if (t2.equalsIgnoreCase(t)) is_new = false;
+            if (t2.equalsIgnoreCase(t)) {
+              is_new = false;
+            }
           }
 
-          if (is_new) tags.add(t);
+          if (is_new) {
+            tags.add(t);
+          }
         }
       }
     }
@@ -101,9 +115,14 @@ public class JMLPatternList {
     PatternRecord rec = new PatternRecord(display, animprefs, notation, anim, patnode, info, tags);
 
     if (row < 0) {
-      if (BLANK_AT_END) model.add(model.size() - 1, rec);
-      else model.addElement(rec); // adds at end
-    } else model.add(row, rec);
+      if (BLANK_AT_END) {
+        model.add(model.size() - 1, rec);
+      } else {
+        model.addElement(rec);  // adds at end
+      }
+    } else {
+      model.add(row, rec);
+    }
   }
 
   public PatternRecord getLine(int row) {
@@ -112,7 +131,9 @@ public class JMLPatternList {
 
   public JMLPattern getPatternForLine(int row) throws JuggleExceptionUser, JuggleExceptionInternal {
     PatternRecord rec = model.get(row);
-    if (rec.notation == null) return null;
+    if (rec.notation == null) {
+      return null;
+    }
 
     JMLPattern pat = null;
     if (rec.notation.equalsIgnoreCase("jml") && rec.patnode != null) {
@@ -120,18 +141,26 @@ public class JMLPatternList {
     } else if (rec.anim != null) {
       pat = JMLPattern.fromBasePattern(rec.notation, rec.anim);
 
-      if (rec.info != null) pat.setInfo(rec.info);
-      if (rec.tags != null) {
-        for (String tag : rec.tags) pat.addTag(tag);
+      if (rec.info != null) {
+        pat.setInfo(rec.info);
       }
-    } else return null;
+      if (rec.tags != null) {
+        for (String tag : rec.tags) {
+          pat.addTag(tag);
+        }
+      }
+    } else {
+      return null;
+    }
 
     return pat;
   }
 
   public AnimationPrefs getAnimationPrefsForLine(int row) throws JuggleExceptionUser {
     PatternRecord rec = model.get(row);
-    if (rec.animprefs == null) return null;
+    if (rec.animprefs == null) {
+      return null;
+    }
 
     AnimationPrefs ap = new AnimationPrefs();
     ParameterList params = new ParameterList(rec.animprefs);
@@ -155,19 +184,22 @@ public class JMLPatternList {
   //----------------------------------------------------------------------------
 
   public void readJML(JMLNode root) throws JuggleExceptionUser {
-    if (!root.getNodeType().equalsIgnoreCase("jml"))
+    if (!root.getNodeType().equalsIgnoreCase("jml")) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"));
+    }
 
     String vers = root.getAttributes().getAttribute("version");
     if (vers != null) {
-      if (JLFunc.compareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0)
+      if (JLFunc.compareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
         throw new JuggleExceptionUser(errorstrings.getString("Error_JML_version"));
+      }
       loadingversion = vers;
     }
 
     JMLNode listnode = root.getChildNode(0);
-    if (!listnode.getNodeType().equalsIgnoreCase("patternlist"))
+    if (!listnode.getNodeType().equalsIgnoreCase("patternlist")) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"));
+    }
 
     int linenumber = 0;
 
@@ -210,17 +242,23 @@ public class JMLPatternList {
 
   public void writeJML(Writer wr) throws IOException {
     PrintWriter write = new PrintWriter(wr);
-    for (int i = 0; i < JMLDefs.jmlprefix.length; i++) write.println(JMLDefs.jmlprefix[i]);
+    for (int i = 0; i < JMLDefs.jmlprefix.length; i++) {
+      write.println(JMLDefs.jmlprefix[i]);
+    }
 
     write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
     write.println("<patternlist>");
-    if (title != null && title.length() > 0)
+    if (title != null && title.length() > 0) {
       write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
-    if (info != null && info.length() > 0)
+    }
+    if (info != null && info.length() > 0) {
       write.println("<info>" + JMLNode.xmlescape(info) + "</info>");
+    }
 
     boolean empty = (model.size() == (BLANK_AT_END ? 1 : 0));
-    if (!empty) write.println();
+    if (!empty) {
+      write.println();
+    }
 
     boolean previousLineWasAnimation = false;
 
@@ -240,26 +278,29 @@ public class JMLPatternList {
 
       if (hasAnimation) {
         line += ">";
-        if (i > 0) write.println();
+        if (i > 0) {
+          write.println();
+        }
         write.println(line);
 
-        if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.patnode != null)
+        if (rec.notation != null && rec.notation.equalsIgnoreCase("jml") && rec.patnode != null) {
           rec.patnode.writeNode(write, 0);
-        else if (rec.anim != null) {
+        } else if (rec.anim != null) {
           write.println(JMLNode.xmlescape(rec.anim));
           if (rec.info != null || (rec.tags != null && rec.tags.size() > 0)) {
             String tagstr = (rec.tags != null ? String.join(",", rec.tags) : "");
 
             if (rec.info != null) {
-              if (tagstr.length() == 0)
+              if (tagstr.length() == 0) {
                 write.println("<info>" + JMLNode.xmlescape(rec.info) + "</info>");
-              else
+              } else {
                 write.println(
                     "<info tags=\""
                         + JMLNode.xmlescape(tagstr)
                         + "\">"
                         + JMLNode.xmlescape(rec.info)
                         + "</info>");
+              }
             } else {
               write.println("<info tags=\"" + JMLNode.xmlescape(tagstr) + "\"/>");
             }
@@ -269,18 +310,24 @@ public class JMLPatternList {
         write.println("</line>");
       } else {
         line += "/>";
-        if (previousLineWasAnimation && i > 0) write.println();
+        if (previousLineWasAnimation && i > 0) {
+          write.println();
+        }
         write.println(line);
       }
 
       previousLineWasAnimation = hasAnimation;
     }
 
-    if (!empty) write.println();
+    if (!empty) {
+      write.println();
+    }
 
     write.println("</patternlist>");
     write.println("</jml>");
-    for (int i = 0; i < JMLDefs.jmlsuffix.length; i++) write.println(JMLDefs.jmlsuffix[i]);
+    for (int i = 0; i < JMLDefs.jmlsuffix.length; i++) {
+      write.println(JMLDefs.jmlsuffix[i]);
+    }
     write.flush();
   }
 
@@ -334,8 +381,12 @@ public class JMLPatternList {
 
       if (pr.tags != null) {
         tags = new ArrayList<String>();
-        for (String tag : pr.tags) tags.add(tag);
-      } else tags = null;
+        for (String tag : pr.tags) {
+          tags.add(tag);
+        }
+      } else {
+        tags = null;
+      }
     }
   }
 }

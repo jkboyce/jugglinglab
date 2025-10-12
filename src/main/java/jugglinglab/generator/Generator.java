@@ -27,13 +27,14 @@ public abstract class Generator {
   }
 
   public void initGenerator(String arg) throws JuggleExceptionUser {
-    int i, numargs;
     StringTokenizer st = new StringTokenizer(arg, " \n");
 
-    numargs = st.countTokens();
+    int numargs = st.countTokens();
     String args[] = new String[numargs];
 
-    for (i = 0; i < numargs; i++) args[i] = st.nextToken();
+    for (int i = 0; i < numargs; i++) {
+      args[i] = st.nextToken();
+    }
 
     initGenerator(args);
   }

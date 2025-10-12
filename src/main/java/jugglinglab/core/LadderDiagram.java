@@ -119,7 +119,9 @@ public class LadderDiagram extends JPanel
 
   @Override
   public void mousePressed(final MouseEvent me) {
-    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) return;
+    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) {
+      return;
+    }
 
     int my = me.getY();
     my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
@@ -136,15 +138,21 @@ public class LadderDiagram extends JPanel
     }
 
     repaint();
-    if (ap != null) ap.repaint();
+    if (ap != null) {
+      ap.repaint();
+    }
   }
 
   @Override
   public void mouseReleased(final MouseEvent me) {
-    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) return;
+    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) {
+      return;
+    }
 
     gui_state = STATE_INACTIVE;
-    if (ap != null) ap.setPaused(anim_paused);
+    if (ap != null) {
+      ap.setPaused(anim_paused);
+    }
     repaint();
   }
 
@@ -163,7 +171,9 @@ public class LadderDiagram extends JPanel
 
   @Override
   public void mouseDragged(MouseEvent me) {
-    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) return;
+    if (ap != null && (ap.writingGIF || !ap.engineAnimating)) {
+      return;
+    }
 
     int my = me.getY();
     my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
@@ -188,14 +198,18 @@ public class LadderDiagram extends JPanel
 
   protected LadderEventItem getSelectedLadderEvent(int x, int y) {
     for (LadderEventItem item : laddereventitems) {
-      if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) return item;
+      if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) {
+        return item;
+      }
     }
     return null;
   }
 
   protected LadderPositionItem getSelectedLadderPosition(int x, int y) {
     for (LadderPositionItem item : ladderpositionitems) {
-      if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) return item;
+      if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) {
+        return item;
+      }
     }
     return null;
   }
@@ -204,26 +218,32 @@ public class LadderDiagram extends JPanel
     LadderPathItem result = null;
     double dmin = 0.0;
 
-    if (y < (BORDER_TOP - slop) || y > (height - BORDER_TOP + slop)) return null;
+    if (y < (BORDER_TOP - slop) || y > (height - BORDER_TOP + slop)) {
+      return null;
+    }
 
     for (LadderPathItem item : ladderpathitems) {
       double d;
 
       if (item.type == LadderPathItem.TYPE_SELF) {
-        if (y < (item.ystart - slop) || y > (item.yend + slop)) continue;
+        if (y < (item.ystart - slop) || y > (item.yend + slop)) {
+          continue;
+        }
         d = (x - item.xcenter) * (x - item.xcenter) + (y - item.ycenter) * (y - item.ycenter);
         d = Math.abs(Math.sqrt(d) - item.radius);
       } else {
         int xmin = (item.xstart < item.xend) ? item.xstart : item.xend;
         int xmax = (item.xstart < item.xend) ? item.xend : item.xstart;
 
-        if (x < (xmin - slop) || x > (xmax + slop)) continue;
-        if (y < (item.ystart - slop) || y > (item.yend + slop)) continue;
-        d =
-            (item.xend - item.xstart) * (y - item.ystart)
+        if (x < (xmin - slop) || x > (xmax + slop)) {
+          continue;
+        }
+        if (y < (item.ystart - slop) || y > (item.yend + slop)) {
+          continue;
+        }
+        d = (item.xend - item.xstart) * (y - item.ystart)
                 - (x - item.xstart) * (item.yend - item.ystart);
-        d =
-            Math.abs(d)
+        d = Math.abs(d)
                 / Math.sqrt(
                     (item.xend - item.xstart) * (item.xend - item.xstart)
                         + (item.yend - item.ystart) * (item.yend - item.ystart));
@@ -241,7 +261,9 @@ public class LadderDiagram extends JPanel
 
   public void setPathColor(int path, Color color) {
     for (LadderPathItem item : ladderpathitems) {
-      if (item.pathnum == path) item.color = color;
+      if (item.pathnum == path) {
+        item.color = color;
+      }
     }
   }
 
@@ -261,7 +283,8 @@ public class LadderDiagram extends JPanel
   // Methods to create and paint the ladder view
   //----------------------------------------------------------------------------
 
-  // Create arrays of all the elements in the ladder diagram
+  // Create arrays of all the elements in the ladder diagram.
+
   protected void createView() {
     has_switch_symmetry = has_switchdelay_symmetry = false;
 
@@ -284,7 +307,9 @@ public class LadderDiagram extends JPanel
     JMLEvent eventlist = pat.getEventList();
     JMLEvent ev = eventlist;
 
-    while (ev.getT() < loop_start) ev = ev.getNext();
+    while (ev.getT() < loop_start) {
+      ev = ev.getNext();
+    }
 
     while (ev.getT() < loop_end) {
       LadderEventItem item = new LadderEventItem();
@@ -319,14 +344,16 @@ public class LadderDiagram extends JPanel
           item.startevent = opl.getStartEvent();
           item.endevent = opl.getEndEvent();
 
-          if (opl.isInHand()) item.type = LadderPathItem.TYPE_HOLD;
-          else if (item.startevent.getJuggler() != item.endevent.getJuggler())
+          if (opl.isInHand()) {
+            item.type = LadderPathItem.TYPE_HOLD;
+          } else if (item.startevent.getJuggler() != item.endevent.getJuggler()) {
             item.type = LadderPathItem.TYPE_PASS;
-          else
+          } else {
             item.type =
                 (item.startevent.getHand() == item.endevent.getHand())
                     ? LadderPathItem.TYPE_SELF
                     : LadderPathItem.TYPE_CROSS;
+          }
 
           item.pathnum = opl.getPathNum();
           item.color = Color.black;
@@ -342,7 +369,9 @@ public class LadderDiagram extends JPanel
     JMLPosition positionlist = pat.getPositionList();
     JMLPosition pos = positionlist;
 
-    while (pos != null && pos.getT() < loop_start) pos = pos.getNext();
+    while (pos != null && pos.getT() < loop_start) {
+      pos = pos.getNext();
+    }
 
     while (pos != null && pos.getT() < loop_end) {
       LadderPositionItem item = new LadderPositionItem();
@@ -356,7 +385,8 @@ public class LadderDiagram extends JPanel
     updateView();
   }
 
-  // Assign physical locations to all the elements in the ladder diagram
+  // Assign physical locations to all the elements in the ladder diagram.
+
   protected void updateView() {
     Dimension dim = getSize();
     width = dim.width;
@@ -403,9 +433,11 @@ public class LadderDiagram extends JPanel
         item.ylow = event_y;
         item.yhigh = event_y + 2 * TRANSITION_RADIUS;
       } else {
-        if (ev.getHand() == HandLink.LEFT_HAND)
+        if (ev.getHand() == HandLink.LEFT_HAND) {
           event_x += 2 * TRANSITION_RADIUS * (item.transnum + 1);
-        else event_x -= 2 * TRANSITION_RADIUS * (item.transnum + 1);
+        } else {
+          event_x -= 2 * TRANSITION_RADIUS * (item.transnum + 1);
+        }
         item.xlow = event_x;
         item.xhigh = event_x + 2 * TRANSITION_RADIUS;
         item.ylow = event_y;
@@ -459,7 +491,9 @@ public class LadderDiagram extends JPanel
         double yt = 0.5 * (double) (item.ystart + item.yend);
         double b = SELFTHROW_WIDTH * ((double) width / pat.getNumberOfJugglers());
         double d = 0.5 * (a * a / b - b);
-        if (d < (0.5 * b)) d = 0.5 * b;
+        if (d < (0.5 * b)) {
+          d = 0.5 * b;
+        }
         double mult = (item.endevent.getHand() == HandLink.LEFT_HAND) ? -1.0 : 1.0;
         double xc = xt + mult * d * (yt - (double) item.ystart) / a;
         double yc = yt + mult * d * ((double) item.xstart - xt) / a;
@@ -498,7 +532,8 @@ public class LadderDiagram extends JPanel
     updateTrackerPosition();
   }
 
-  // Return true if ladder was drawn successfully, false otherwise
+  // Return true if ladder was drawn successfully, false otherwise.
+
   protected boolean paintLadder(Graphics gr) {
     if (pat.getNumberOfJugglers() > MAX_JUGGLERS) {
       Dimension dim = getSize();
@@ -521,13 +556,14 @@ public class LadderDiagram extends JPanel
 
     // check if ladder was resized
     Dimension dim = getSize();
-    if (dim.width != width || dim.height != height) updateView();
+    if (dim.width != width || dim.height != height) {
+      updateView();
+    }
 
     boolean rebuild_ladder_image = (!image_valid && --frames_until_image_draw <= 0);
 
     if (rebuild_ladder_image) {
-      im =
-          GraphicsEnvironment.getLocalGraphicsEnvironment()
+      im = GraphicsEnvironment.getLocalGraphicsEnvironment()
               .getDefaultScreenDevice()
               .getDefaultConfiguration()
               .createCompatibleImage(width, height, Transparency.OPAQUE);
@@ -627,9 +663,13 @@ public class LadderDiagram extends JPanel
       }
     }
 
-    if (rebuild_ladder_image) image_valid = true;
+    if (rebuild_ladder_image) {
+      image_valid = true;
+    }
 
-    if (image_valid) gr.drawImage(im, 0, 0, this);
+    if (image_valid) {
+      gr.drawImage(im, 0, 0, this);
+    }
 
     // draw positions
     for (LadderPositionItem item : ladderpositionitems) {
@@ -643,7 +683,9 @@ public class LadderDiagram extends JPanel
 
     // draw events
     int[] animpropnum = null;
-    if (ap != null && ap.getAnimator() != null) animpropnum = ap.getAnimator().getAnimPropNum();
+    if (ap != null && ap.getAnimator() != null) {
+      animpropnum = ap.getAnimator().getAnimPropNum();
+    }
 
     for (LadderEventItem item : laddereventitems) {
       if (item.type == LadderItem.TYPE_EVENT) {
@@ -685,7 +727,9 @@ public class LadderDiagram extends JPanel
 
   @Override
   public void setTime(double time) {
-    if (sim_time == time) return;
+    if (sim_time == time) {
+      return;
+    }
 
     sim_time = time;
     updateTrackerPosition();
@@ -733,8 +777,7 @@ class LadderItem {
 class LadderEventItem extends LadderItem {
   public int xlow, xhigh, ylow, yhigh;
 
-  // for transitions within an event, the next two point to the containing
-  // event:
+  // for transitions within an event, the next two point to the containing event:
   public LadderEventItem eventitem;
   public JMLEvent event;
 

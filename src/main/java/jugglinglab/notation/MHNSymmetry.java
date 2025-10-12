@@ -44,8 +44,11 @@ public class MHNSymmetry {
   protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionInternal {
     numjugglers = nj;
     try {
-      if (jp == null) jugglerperm = new Permutation(numjugglers, true);
-      else jugglerperm = new Permutation(numjugglers, jp, true);
+      if (jp == null) {
+        jugglerperm = new Permutation(numjugglers, true);
+      } else {
+        jugglerperm = new Permutation(numjugglers, jp, true);
+      }
     } catch (JuggleException je) {
       throw new JuggleExceptionInternal(je.getMessage());
     }

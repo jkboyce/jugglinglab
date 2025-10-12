@@ -371,48 +371,81 @@ class SiteswapGeneratorControl extends JPanel {
     StringBuffer sb = new StringBuffer(256);
 
     String maxthrow = tf2.getText();
-    if (maxthrow.trim().length() == 0) maxthrow = "-";
+    if (maxthrow.trim().length() == 0) {
+      maxthrow = "-";
+    }
 
     String period = tf3.getText();
-    if (period.trim().length() == 0) period = "-";
+    if (period.trim().length() == 0) {
+      period = "-";
+    }
 
     sb.append(tf1.getText() + " " + maxthrow + " " + period);
 
-    if (cb2.isSelected()) sb.append(" -s");
+    if (cb2.isSelected()) {
+      sb.append(" -s");
+    }
 
     int jugglers = c1.getSelectedIndex() + 1;
     if (jugglers > 1) {
       sb.append(" -j " + jugglers);
-      if (tf7.isEnabled() && tf7.getText().length() > 0)
+      if (tf7.isEnabled() && tf7.getText().length() > 0) {
         sb.append(" -d " + tf7.getText() + " -l 1");
+      }
 
       if (cb17.isEnabled()) {
-        if (cb17.isSelected()) sb.append(" -jp");
+        if (cb17.isSelected()) {
+          sb.append(" -jp");
+        }
       } else sb.append(" -jp");
 
-      if (cb15.isSelected()) sb.append(" -cp");
-      if (cb18.isSelected()) sb.append(" -sym");
+      if (cb15.isSelected()) {
+        sb.append(" -cp");
+      }
+      if (cb18.isSelected()) {
+        sb.append(" -sym");
+      }
     }
 
-    if (cb5.isSelected()) sb.append(" -f");
-    else if (cb6.isSelected()) sb.append(" -prime");
+    if (cb5.isSelected()) {
+      sb.append(" -f");
+    } else if (cb6.isSelected()) {
+      sb.append(" -prime");
+    }
 
-    if (cb7.isSelected() && !cb8.isSelected()) sb.append(" -g");
-    else if (!cb7.isSelected() && cb8.isSelected()) sb.append(" -ng");
+    if (cb7.isSelected() && !cb8.isSelected()) {
+      sb.append(" -g");
+    } else if (!cb7.isSelected() && cb8.isSelected()) {
+      sb.append(" -ng");
+    }
 
-    if (!cb9.isEnabled() || !cb9.isSelected()) sb.append(" -se");
+    if (!cb9.isEnabled() || !cb9.isSelected()) {
+      sb.append(" -se");
+    }
 
-    if (cb10.isSelected()) sb.append(" -rot");
+    if (cb10.isSelected()) {
+      sb.append(" -rot");
+    }
 
     if (cb12.isSelected() && tf9.getText().length() > 0) {
       sb.append(" -m " + tf9.getText());
-      if (!cb13.isSelected()) sb.append(" -mf");
-      if (cb14.isSelected()) sb.append(" -mc");
-      if (cb16.isSelected()) sb.append(" -mt");
+      if (!cb13.isSelected()) {
+        sb.append(" -mf");
+      }
+      if (cb14.isSelected()) {
+        sb.append(" -mc");
+      }
+      if (cb16.isSelected()) {
+        sb.append(" -mt");
+      }
     }
 
-    if (tf4.getText().length() > 0) sb.append(" -x " + tf4.getText());
-    if (tf5.getText().length() > 0) sb.append(" -i " + tf5.getText());
+    if (tf4.getText().length() > 0) {
+      sb.append(" -x " + tf4.getText());
+    }
+    if (tf5.getText().length() > 0) {
+      sb.append(" -i " + tf5.getText());
+    }
 
     sb.append(" -n");
 

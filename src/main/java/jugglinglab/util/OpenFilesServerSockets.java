@@ -31,14 +31,17 @@ public class OpenFilesServerSockets extends Thread {
   protected ServerSocket listen_socket;
 
   public OpenFilesServerSockets() {
-    if (server_thread != null) return;
+    if (server_thread != null) {
+      return;
+    }
 
     try {
       listen_socket = new ServerSocket(OPEN_FILES_PORT);
       listen_socket.setSoTimeout(POLLING_TIMEOUT_MS);
     } catch (IOException e) {
-      if (Constants.DEBUG_OPEN_SERVER)
+      if (Constants.DEBUG_OPEN_SERVER) {
         System.out.println("Server already running on machine; thread is not starting");
+      }
       // ErrorDialog.handleFatalException(e);
       return;
     }
@@ -49,8 +52,9 @@ public class OpenFilesServerSockets extends Thread {
   // Server thread loops forever, listening for connections on our port
   @Override
   public void run() {
-    if (Constants.DEBUG_OPEN_SERVER)
+    if (Constants.DEBUG_OPEN_SERVER) {
       System.out.println("Server: listening on port " + OPEN_FILES_PORT);
+    }
 
     try {
       while (!interrupted()) {
@@ -65,10 +69,11 @@ public class OpenFilesServerSockets extends Thread {
                     + client_socket.getPort());
           }
 
-          if (client_socket.getInetAddress().toString().contains("127.0.0.1"))
+          if (client_socket.getInetAddress().toString().contains("127.0.0.1")) {
             new Connection(client_socket);
-          else if (Constants.DEBUG_OPEN_SERVER)
+          } else if (Constants.DEBUG_OPEN_SERVER) {
             System.out.println("Ignoring connection request; not from 127.0.0.1");
+          }
         } catch (SocketTimeoutException ste) {
         }
       }
@@ -147,12 +152,15 @@ public class OpenFilesServerSockets extends Thread {
       return true;
       */
     } catch (IOException e) {
-      if (Constants.DEBUG_OPEN_SERVER)
+      if (Constants.DEBUG_OPEN_SERVER) {
         System.out.println("No server detected on port " + OPEN_FILES_PORT);
+      }
       return false;
     } finally {
       try {
-        if (s != null) s.close();
+        if (s != null) {
+          s.close();
+        }
       } catch (IOException e2) {
       }
     }
@@ -199,12 +207,16 @@ class Connection extends Thread {
   public void run() {
     String line;
 
-    if (Constants.DEBUG_OPEN_SERVER) System.out.println("Server started connection thread");
+    if (Constants.DEBUG_OPEN_SERVER) {
+      System.out.println("Server started connection thread");
+    }
 
     try {
       while (true) {
         line = in.readLine();
-        if (line == null) return;
+        if (line == null) {
+          return;
+        }
 
         if (line.startsWith("open ")) {
           String filepath = line.substring(5, line.length());
@@ -217,8 +229,9 @@ class Connection extends Thread {
                 @Override
                 public void run() {
                   if (Desktop.isDesktopSupported()
-                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
                     Desktop.getDesktop().requestForeground(true);
+                  }
 
                   try {
                     ApplicationWindow.openJMLFile(file);
@@ -238,7 +251,9 @@ class Connection extends Thread {
         } else if (line.startsWith("done")) {
           out.println("goodbye");
           return;
-        } else out.println(line);
+        } else {
+          out.println(line);
+        }
       }
     } catch (IOException ioe) {
     } finally {

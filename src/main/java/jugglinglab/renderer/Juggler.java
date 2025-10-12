@@ -115,20 +115,24 @@ public class Juggler {
       double D = deltaL.length();
       if (D <= (L + U)) {
         // Calculate the coordinates of the elbows
-        double Lr =
-            Math.sqrt(
+        double Lr = Math.sqrt(
                 (4.0 * U * U * L * L - (U * U + L * L - D * D) * (U * U + L * L - D * D))
                     / (4.0 * D * D));
-        if (Double.isNaN(Lr)) throw new JuggleExceptionInternal("NaN in renderer 1");
+        if (Double.isNaN(Lr)) {
+          throw new JuggleExceptionInternal("NaN in renderer 1");
+        }
 
         double factor = Math.sqrt(U * U - Lr * Lr) / D;
-        if (Double.isNaN(factor)) throw new JuggleExceptionInternal("NaN in renderer 2");
+        if (Double.isNaN(factor)) {
+          throw new JuggleExceptionInternal("NaN in renderer 2");
+        }
         JLVector Lxsc = JLVector.scale(factor, deltaL);
         double Lalpha = Math.asin(deltaL.y / D);
-        if (Double.isNaN(Lalpha)) throw new JuggleExceptionInternal("NaN in renderer 3");
+        if (Double.isNaN(Lalpha)) {
+          throw new JuggleExceptionInternal("NaN in renderer 3");
+        }
         factor = 1.0 + Lr * Math.tan(Lalpha) / (factor * D);
-        leftelbow =
-            new JLVector(
+        leftelbow = new JLVector(
                 leftshoulder.x + Lxsc.x * factor,
                 leftshoulder.y + Lxsc.y - Lr * Math.cos(Lalpha),
                 leftshoulder.z + Lxsc.z * factor);
@@ -140,20 +144,24 @@ public class Juggler {
       D = deltaR.length();
       if (D <= (L + U)) {
         // Calculate the coordinates of the elbows
-        double Rr =
-            Math.sqrt(
+        double Rr = Math.sqrt(
                 (4.0 * U * U * L * L - (U * U + L * L - D * D) * (U * U + L * L - D * D))
                     / (4.0 * D * D));
-        if (Double.isNaN(Rr)) throw new JuggleExceptionInternal("NaN in renderer 4");
+        if (Double.isNaN(Rr)) {
+          throw new JuggleExceptionInternal("NaN in renderer 4");
+        }
 
         double factor = Math.sqrt(U * U - Rr * Rr) / D;
-        if (Double.isNaN(factor)) throw new JuggleExceptionInternal("NaN in renderer 5");
+        if (Double.isNaN(factor)) {
+          throw new JuggleExceptionInternal("NaN in renderer 5");
+        }
         JLVector Rxsc = JLVector.scale(factor, deltaR);
         double Ralpha = Math.asin(deltaR.y / D);
-        if (Double.isNaN(Ralpha)) throw new JuggleExceptionInternal("NaN in renderer 6");
+        if (Double.isNaN(Ralpha)) {
+          throw new JuggleExceptionInternal("NaN in renderer 6");
+        }
         factor = 1.0 + Rr * Math.tan(Ralpha) / (factor * D);
-        rightelbow =
-            new JLVector(
+        rightelbow = new JLVector(
                 rightshoulder.x + Rxsc.x * factor,
                 rightshoulder.y + Rxsc.y - Rr * Math.cos(Ralpha),
                 rightshoulder.z + Rxsc.z * factor);

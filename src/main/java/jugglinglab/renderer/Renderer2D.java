@@ -82,7 +82,9 @@ public class Renderer2D extends Renderer {
     pat = p;
     int maxobjects = 5 * pat.getNumberOfJugglers() + pat.getNumberOfPaths() + 18;
     obj = new DrawObject2D[maxobjects];
-    for (int i = 0; i < maxobjects; i++) obj[i] = new DrawObject2D(maxobjects);
+    for (int i = 0; i < maxobjects; i++) {
+      obj[i] = new DrawObject2D(maxobjects);
+    }
     obj2 = new DrawObject2D[maxobjects];
     jugglervec = new JLVector[pat.getNumberOfJugglers()][12];
   }
@@ -125,8 +127,7 @@ public class Renderer2D extends Renderer {
       adjusted_min.x = -maxabsx;
       adjusted_max.x = maxabsx;
 
-      zoom_orig =
-          Math.min(
+      zoom_orig = Math.min(
               (double) viewport.width / (adjusted_max.x - adjusted_min.x),
               (double) viewport.height / (adjusted_max.z - adjusted_min.z));
     } else {
@@ -144,15 +145,13 @@ public class Renderer2D extends Renderer {
 
       // Find `zoom` value that keeps the adjusted bounding box visible in
       // the viewport
-      zoom_orig =
-          Math.min(
+      zoom_orig = Math.min(
               (double) viewport.width / Math.sqrt(dx * dx + dy * dy),
               (double) viewport.height / Math.sqrt(dxy * dxy + dz * dz));
     }
 
     // Pattern center vis-a-vis camera rotation
-    cameracenter =
-        new JLVector(
+    cameracenter = new JLVector(
             0.5 * (adjusted_max.x + adjusted_min.x),
             0.5 * (adjusted_max.z + adjusted_min.z),
             0.5 * (adjusted_max.y + adjusted_min.y));
@@ -189,7 +188,9 @@ public class Renderer2D extends Renderer {
     cameraangle[0] = camangle[0];
     cameraangle[1] = camangle[1];
 
-    if (cameracenter == null) return;
+    if (cameracenter == null) {
+      return;
+    }
 
     calculateCameraMatrix();
   }
@@ -248,7 +249,9 @@ public class Renderer2D extends Renderer {
     int numobjects = 5 * pat.getNumberOfJugglers() + pat.getNumberOfPaths() + 18;
 
     // first reset the objects in the object pool
-    for (int i = 0; i < numobjects; i++) obj[i].covering.clear();
+    for (int i = 0; i < numobjects; i++) {
+      obj[i].covering.clear();
+    }
 
     // first create a list of objects in the display
     int index = 0;
@@ -259,7 +262,9 @@ public class Renderer2D extends Renderer {
       obj[index].type = DrawObject2D.TYPE_PROP;
       obj[index].number = i;
       pat.getPathCoordinate(i, time, tempc);
-      if (!tempc.isValid()) tempc.setCoordinate(0, 0, 0);
+      if (!tempc.isValid()) {
+        tempc.setCoordinate(0, 0, 0);
+      }
       getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0]);
       int x = (int) Math.round(obj[index].coord[0].x);
       int y = (int) Math.round(obj[index].coord[0].y);
@@ -303,22 +308,16 @@ public class Renderer2D extends Renderer {
 
         getXYZ(tempv1, obj[index].coord[0]);
         getXYZ(tempv2, obj[index].coord[1]);
-        int x =
-            Math.min(
+        int x = Math.min(
                 (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-        int y =
-            Math.min(
+        int y = Math.min(
                 (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-        int width =
-            Math.abs(
+        int width = Math.abs(
                     (int) Math.round(obj[index].coord[0].x)
-                        - (int) Math.round(obj[index].coord[1].x))
-                + 1;
-        int height =
-            Math.abs(
+                        - (int) Math.round(obj[index].coord[1].x)) + 1;
+        int height = Math.abs(
                     (int) Math.round(obj[index].coord[0].y)
-                        - (int) Math.round(obj[index].coord[1].y))
-                + 1;
+                        - (int) Math.round(obj[index].coord[1].y)) + 1;
         obj[index].boundingbox.x = x;
         obj[index].boundingbox.y = y;
         obj[index].boundingbox.width = width;
@@ -333,8 +332,14 @@ public class Renderer2D extends Renderer {
     for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
       if (hideJugglers != null) {
         boolean hide = false;
-        for (int j = 0; j < hideJugglers.length; j++) if (hideJugglers[j] == i) hide = true;
-        if (hide) continue;
+        for (int j = 0; j < hideJugglers.length; j++) {
+          if (hideJugglers[j] == i) {
+            hide = true;
+          }
+        }
+        if (hide) {
+          continue;
+        }
       }
 
       obj[index].type = DrawObject2D.TYPE_BODY;
@@ -353,10 +358,18 @@ public class Renderer2D extends Renderer {
       for (int j = 1; j < 8; j++) {
         int x = (int) Math.round(obj[index].coord[j].x);
         int y = (int) Math.round(obj[index].coord[j].y);
-        if (x < xmin) xmin = x;
-        if (x > xmax) xmax = x;
-        if (y < ymin) ymin = y;
-        if (y > ymax) ymax = y;
+        if (x < xmin) {
+          xmin = x;
+        }
+        if (x > xmax) {
+          xmax = x;
+        }
+        if (y < ymin) {
+          ymin = y;
+        }
+        if (y > ymax) {
+          ymax = y;
+        }
       }
       // inset bb by one pixel to avoid intersection at shoulder:
       obj[index].boundingbox.x = xmin + 1;
@@ -372,22 +385,16 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][2 + j], obj[index].coord[0]); // entire arm
           getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
-          int x =
-              Math.min(
+          int x = Math.min(
                   (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          int y =
-              Math.min(
+          int y = Math.min(
                   (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          int width =
-              Math.abs(
+          int width = Math.abs(
                       (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x))
-                  + 1;
-          int height =
-              Math.abs(
+                          - (int) Math.round(obj[index].coord[1].x)) + 1;
+          int height = Math.abs(
                       (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y))
-                  + 1;
+                          - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -398,22 +405,16 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][2 + j], obj[index].coord[0]); // upper arm
           getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[1]);
-          int x =
-              Math.min(
+          int x = Math.min(
                   (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          int y =
-              Math.min(
+          int y = Math.min(
                   (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          int width =
-              Math.abs(
+          int width = Math.abs(
                       (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x))
-                  + 1;
-          int height =
-              Math.abs(
+                          - (int) Math.round(obj[index].coord[1].x)) + 1;
+          int height = Math.abs(
                       (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y))
-                  + 1;
+                          - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -424,22 +425,16 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[0]); // lower arm
           getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
-          x =
-              Math.min(
+          x = Math.min(
                   (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          y =
-              Math.min(
+          y = Math.min(
                   (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          width =
-              Math.abs(
+          width = Math.abs(
                       (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x))
-                  + 1;
-          height =
-              Math.abs(
+                          - (int) Math.round(obj[index].coord[1].x)) + 1;
+          height = Math.abs(
                       (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y))
-                  + 1;
+                          - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -453,8 +448,12 @@ public class Renderer2D extends Renderer {
     // figure out which display elements are covering which other elements
     for (int i = 0; i < numobjects; i++) {
       for (int j = 0; j < numobjects; j++) {
-        if (j == i) continue;
-        if (obj[i].isCovering(obj[j])) obj[i].covering.add(obj[j]);
+        if (j == i) {
+          continue;
+        }
+        if (obj[i].isCovering(obj[j])) {
+          obj[i].covering.add(obj[j]);
+        }
       }
       obj[i].drawn = false;
     }
@@ -466,7 +465,9 @@ public class Renderer2D extends Renderer {
       changed = false;
 
       for (int i = 0; i < numobjects; i++) {
-        if (obj[i].drawn) continue;
+        if (obj[i].drawn) {
+          continue;
+        }
 
         boolean candraw = true;
         for (int j = 0; j < obj[i].covering.size(); j++) {
@@ -486,7 +487,9 @@ public class Renderer2D extends Renderer {
     }
     // just in case there were some that couldn't be drawn:
     for (int i = 0; i < numobjects; i++) {
-      if (obj[i].drawn) continue;
+      if (obj[i].drawn) {
+        continue;
+      }
       obj2[index] = obj[i];
       obj[i].drawn = true;
       index++;
@@ -562,8 +565,7 @@ public class Renderer2D extends Renderer {
             g.drawPolygon(headx, heady, polysides);
           } else {
             // head is edge-on; draw it as a line
-            double h =
-                Math.sqrt(
+            double h = Math.sqrt(
                     (LheadBy - LheadTy) * (LheadBy - LheadTy)
                         + (RheadBy - LheadBy) * (RheadBy - LheadBy));
             int headx = (int) Math.round(0.5 * (LheadBx + RheadBx));
@@ -611,11 +613,11 @@ public class Renderer2D extends Renderer {
   @Override
   public Coordinate getJugglerWindowMax() {
     Coordinate max = pat.getJugglerMax(1);
-    for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
+    for (int i = 2; i <= pat.getNumberOfJugglers(); i++) {
       max = Coordinate.max(max, pat.getJugglerMax(i));
+    }
 
-    max =
-        Coordinate.add(
+    max = Coordinate.add(
             max,
             new Coordinate(
                 Juggler.SHOULDER_HW,
@@ -627,8 +629,9 @@ public class Renderer2D extends Renderer {
   @Override
   public Coordinate getJugglerWindowMin() {
     Coordinate min = pat.getJugglerMin(1);
-    for (int i = 2; i <= pat.getNumberOfJugglers(); i++)
+    for (int i = 2; i <= pat.getNumberOfJugglers(); i++) {
       min = Coordinate.min(min, pat.getJugglerMin(i));
+    }
 
     min = Coordinate.add(min, new Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0));
     return min;
@@ -651,14 +654,18 @@ public class Renderer2D extends Renderer {
 
     public DrawObject2D(int numobjects) {
       coord = new JLVector[8];
-      for (int i = 0; i < 8; i++) coord[i] = new JLVector();
+      for (int i = 0; i < 8; i++) {
+        coord[i] = new JLVector();
+      }
       boundingbox = new Rectangle();
       covering = new ArrayList<DrawObject2D>(numobjects);
       tempv = new JLVector();
     }
 
     public boolean isCovering(DrawObject2D obj) {
-      if (!boundingbox.intersects(obj.boundingbox)) return false;
+      if (!boundingbox.intersects(obj.boundingbox)) {
+        return false;
+      }
 
       switch (type) {
         case TYPE_PROP:
@@ -668,12 +675,11 @@ public class Renderer2D extends Renderer {
             case TYPE_BODY:
               {
                 vectorProduct(obj.coord[0], obj.coord[1], obj.coord[2], tempv);
-                if (tempv.z == 0.0) return false;
-                double z =
-                    obj.coord[0].z
-                        - (tempv.x * (coord[0].x - obj.coord[0].x)
-                                + tempv.y * (coord[0].y - obj.coord[0].y))
-                            / tempv.z;
+                if (tempv.z == 0.0) {
+                  return false;
+                }
+                double z = obj.coord[0].z - (tempv.x * (coord[0].x - obj.coord[0].x)
+                      + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z;
                 return (coord[0].z < z);
               }
             case TYPE_LINE:
@@ -685,18 +691,19 @@ public class Renderer2D extends Renderer {
             case TYPE_PROP:
               {
                 vectorProduct(coord[0], coord[1], coord[2], tempv);
-                if (tempv.z == 0.0) return false;
-                double z =
-                    coord[0].z
-                        - (tempv.x * (obj.coord[0].x - coord[0].x)
-                                + tempv.y * (obj.coord[0].y - coord[0].y))
-                            / tempv.z;
+                if (tempv.z == 0.0) {
+                  return false;
+                }
+                double z = coord[0].z - (tempv.x * (obj.coord[0].x - coord[0].x)
+                      + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z;
                 return (z < obj.coord[0].z);
               }
             case TYPE_BODY:
               {
                 double d = 0.0;
-                for (int i = 0; i < 4; i++) d += (coord[i].z - obj.coord[i].z);
+                for (int i = 0; i < 4; i++) {
+                  d += (coord[i].z - obj.coord[i].z);
+                }
                 return (d < 0.0);
               }
             case TYPE_LINE:
@@ -717,7 +724,8 @@ public class Renderer2D extends Renderer {
       return false;
     }
 
-    // returns 1 if box covers line, -1 if line covers box, 0 otherwise
+    // Returns 1 if box covers line, -1 if line covers box, 0 otherwise.
+
     protected int isBoxCoveringLine(DrawObject2D box, DrawObject2D line) {
       // If at least one end of the line is inside the box's boundingbox, then return
       // 1 if all such ends are behind the box, and -1 otherwise.
@@ -727,14 +735,17 @@ public class Renderer2D extends Renderer {
       // return -1;
 
       // System.out.println("starting...");
-      if (box.type == TYPE_BODY) vectorProduct(box.coord[0], box.coord[1], box.coord[2], tempv);
-      else {
+      if (box.type == TYPE_BODY) {
+        vectorProduct(box.coord[0], box.coord[1], box.coord[2], tempv);
+      } else {
         tempv.x = 0;
         tempv.y = 0;
         tempv.z = 1;
       }
 
-      if (tempv.z == 0) return 0; // box is exactly sideways
+      if (tempv.z == 0) {
+        return 0;  // box is exactly sideways
+      }
 
       boolean endinbb = false;
       for (int i = 0; i < 2; i++) {
@@ -742,8 +753,7 @@ public class Renderer2D extends Renderer {
         double y = line.coord[i].y;
 
         if (box.boundingbox.contains((int) (x + 0.5), (int) (y + 0.5))) {
-          double zb =
-              box.coord[0].z
+          double zb = box.coord[0].z
                   - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z;
           if (line.coord[i].z < (zb - SLOP)) {
             // System.out.println("   exit 1");
@@ -761,21 +771,21 @@ public class Renderer2D extends Renderer {
       for (int i = 0; i < 2; i++) {
         int x = ((i == 0) ? box.boundingbox.x : (box.boundingbox.x + box.boundingbox.width - 1));
         if ((x < Math.min(line.coord[0].x, line.coord[1].x))
-            || (x > Math.max(line.coord[0].x, line.coord[1].x))) continue;
-        if (line.coord[1].x == line.coord[0].x) continue;
-        double y =
-            line.coord[0].y
-                + (line.coord[1].y - line.coord[0].y)
-                    * ((double) x - line.coord[0].x)
-                    / (line.coord[1].x - line.coord[0].x);
-        if ((y < box.boundingbox.y) || (y > (box.boundingbox.y + box.boundingbox.height - 1)))
+            || (x > Math.max(line.coord[0].x, line.coord[1].x))) {
           continue;
+        }
+        if (line.coord[1].x == line.coord[0].x) {
+          continue;
+        }
+        double y = line.coord[0].y + (line.coord[1].y - line.coord[0].y)
+              * ((double) x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x);
+        if (y < box.boundingbox.y || y > (box.boundingbox.y + box.boundingbox.height - 1)) {
+          continue;
+        }
         intersection = true;
-        double zb =
-            box.coord[0].z
+        double zb = box.coord[0].z
                 - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z;
-        double zl =
-            line.coord[0].z
+        double zl = line.coord[0].z
                 + (line.coord[1].z - line.coord[0].z)
                     * ((double) x - line.coord[0].x)
                     / (line.coord[1].x - line.coord[0].x);
@@ -787,25 +797,24 @@ public class Renderer2D extends Renderer {
       for (int i = 0; i < 2; i++) {
         int y = ((i == 0) ? box.boundingbox.y : (box.boundingbox.y + box.boundingbox.height - 1));
         if ((y < Math.min(line.coord[0].y, line.coord[1].y))
-            || (y > Math.max(line.coord[0].y, line.coord[1].y))) continue;
-        if (line.coord[1].y == line.coord[0].y) continue;
-        double x =
-            line.coord[0].x
-                + (line.coord[1].x - line.coord[0].x)
-                    * ((double) y - line.coord[0].y)
-                    / (line.coord[1].y - line.coord[0].y);
-        if ((x < box.boundingbox.x) || (x > (box.boundingbox.x + box.boundingbox.width - 1)))
+            || (y > Math.max(line.coord[0].y, line.coord[1].y))) {
           continue;
+        }
+        if (line.coord[1].y == line.coord[0].y) {
+          continue;
+        }
+        double x = line.coord[0].x + (line.coord[1].x - line.coord[0].x)
+                    * ((double) y - line.coord[0].y) / (line.coord[1].y - line.coord[0].y);
+        if (x < box.boundingbox.x || x > (box.boundingbox.x + box.boundingbox.width - 1)) {
+          continue;
+        }
         intersection = true;
-        double zb =
-            box.coord[0].z
+        double zb = box.coord[0].z
                 - (tempv.x * (x - box.coord[0].x) + tempv.y * ((double) y - box.coord[0].y))
-                    / tempv.z;
-        double zl =
-            line.coord[0].z
-                + (line.coord[1].z - line.coord[0].z)
-                    * (x - line.coord[0].x)
-                    / (line.coord[1].x - line.coord[0].x);
+                / tempv.z;
+        double zl = line.coord[0].z
+                + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x)
+                / (line.coord[1].x - line.coord[0].x);
         if (zl < (zb - SLOP)) {
           // System.out.println("   exit 4, i = "+i);
           return -1;

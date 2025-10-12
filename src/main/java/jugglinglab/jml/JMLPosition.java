@@ -90,18 +90,19 @@ public class JMLPosition {
     try {
       for (int i = 0; i < at.getNumberOfAttributes(); i++) {
         // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
-        if (at.getAttributeName(i).equalsIgnoreCase("x"))
+        if (at.getAttributeName(i).equalsIgnoreCase("x")) {
           tempx = JLFunc.parseDouble(at.getAttributeValue(i));
-        else if (at.getAttributeName(i).equalsIgnoreCase("y"))
+        } else if (at.getAttributeName(i).equalsIgnoreCase("y")) {
           tempy = JLFunc.parseDouble(at.getAttributeValue(i));
-        else if (at.getAttributeName(i).equalsIgnoreCase("z"))
+        } else if (at.getAttributeName(i).equalsIgnoreCase("z")) {
           tempz = JLFunc.parseDouble(at.getAttributeValue(i));
-        else if (at.getAttributeName(i).equalsIgnoreCase("t"))
+        } else if (at.getAttributeName(i).equalsIgnoreCase("t")) {
           tempt = JLFunc.parseDouble(at.getAttributeValue(i));
-        else if (at.getAttributeName(i).equalsIgnoreCase("angle"))
+        } else if (at.getAttributeName(i).equalsIgnoreCase("angle")) {
           tempangle = JLFunc.parseDouble(at.getAttributeValue(i));
-        else if (at.getAttributeName(i).equalsIgnoreCase("juggler"))
+        } else if (at.getAttributeName(i).equalsIgnoreCase("juggler")) {
           jugglerstr = at.getAttributeValue(i);
+        }
       }
     } catch (NumberFormatException nfe) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_position_coordinate"));
@@ -110,12 +111,14 @@ public class JMLPosition {
     setCoordinate(new Coordinate(tempx, tempy, tempz));
     setT(tempt);
     setAngle(tempangle);
-    if (jugglerstr == null)
+    if (jugglerstr == null) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_position_nojuggler"));
+    }
     setJuggler(jugglerstr);
 
-    if (current.getNumberOfChildren() != 0)
+    if (current.getNumberOfChildren() != 0) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_position_subtag"));
+    }
   }
 
   public void writeJML(PrintWriter wr) throws IOException {

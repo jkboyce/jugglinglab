@@ -119,7 +119,9 @@ public class HandLink {
       Coordinate mincoord = hp.getMin(startevent.getT(), endevent.getT());
       result += "\n      minimum (x=" + mincoord.x + ",y=" + mincoord.y + ",z=" + mincoord.z + ")";
       result += "\n      maximum (x=" + maxcoord.x + ",y=" + maxcoord.y + ",z=" + maxcoord.z + ")";
-    } else result += "\n      no handpath";
+    } else {
+      result += "\n      no handpath";
+    }
 
     return result;
   }

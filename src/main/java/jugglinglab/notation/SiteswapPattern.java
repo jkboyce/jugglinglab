@@ -207,15 +207,10 @@ public class SiteswapPattern extends MHNPattern {
     th = new MHNThrow[numjugglers][2][indexes][max_occupancy];
 
     if (Constants.DEBUG_SITESWAP_PARSING) {
-      System.out.println(
-          "period = "
-              + period
-              + ", numpaths = "
-              + numpaths
-              + ", max_throw = "
-              + max_throw
-              + ", max_occupancy = "
-              + max_occupancy);
+      System.out.println("period = " + period
+              + ", numpaths = " + numpaths
+              + ", max_throw = " + max_throw
+              + ", max_occupancy = " + max_occupancy);
       System.out.println("Starting second pass...");
     }
 
@@ -227,7 +222,9 @@ public class SiteswapPattern extends MHNPattern {
     addSymmetry(new MHNSymmetry(MHNSymmetry.TYPE_DELAY, numjugglers, null, period));
     if (tree.switchrepeat) { // know that tree is of type Pattern
       StringBuffer sb = new StringBuffer();
-      for (int i = 1; i <= numjugglers; i++) sb.append("(" + i + "," + i + "*)");
+      for (int i = 1; i <= numjugglers; i++) {
+        sb.append("(" + i + "," + i + "*)");
+      }
       addSymmetry(
           new MHNSymmetry(MHNSymmetry.TYPE_SWITCHDELAY, numjugglers, sb.toString(), period / 2));
     }
@@ -509,7 +506,9 @@ public class SiteswapPattern extends MHNPattern {
           sti.throw_sum = sti.transition.throw_sum;
           sti.vanilla_async = sti.transition.vanilla_async;
           sti.beats = sti.transition.beats;
-        } else throw new JuggleExceptionInternal("Wildcard not resolved");
+        } else {
+          throw new JuggleExceptionInternal("Wildcard not resolved");
+        }
         break;
       case SiteswapTreeItem.TYPE_HAND_SPEC:
         if (sti.beatnum % 2 == 0) {
@@ -602,8 +601,7 @@ public class SiteswapPattern extends MHNPattern {
             // Note we want to add an MHNThrow for 0 throws as well, to
             // serve as a placeholder in case of patterns like 24[504],
 
-            MHNThrow t =
-                new MHNThrow(
+            MHNThrow t = new MHNThrow(
                     child.source_juggler,
                     source_hand,
                     index,

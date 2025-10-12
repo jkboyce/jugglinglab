@@ -63,8 +63,9 @@ public abstract class Curve {
     this.positions = positions;
     this.velocities = velocities;
 
-    if (numpoints != positions.length || numpoints != velocities.length)
+    if (numpoints != positions.length || numpoints != velocities.length) {
       throw new JuggleExceptionInternal("Curve error 1");
+    }
   }
 
   public double getStartTime() {
@@ -80,10 +81,13 @@ public abstract class Curve {
   }
 
   public void translateTime(double deltat) {
-    for (int i = 0; i < numpoints; i++) times[i] += deltat;
+    for (int i = 0; i < numpoints; i++) {
+      times[i] += deltat;
+    }
   }
 
   // for screen layout purposes
+
   public Coordinate getMax() {
     return getMax2(times[0], times[numpoints - 1]);
   }
@@ -93,21 +97,29 @@ public abstract class Curve {
   }
 
   public Coordinate getMax(double begin, double end) {
-    if (end < getStartTime() || begin > getEndTime()) return null;
+    if (end < getStartTime() || begin > getEndTime()) {
+      return null;
+    }
     return getMax2(begin, end);
   }
 
   public Coordinate getMin(double begin, double end) {
-    if (end < getStartTime() || begin > getEndTime()) return null;
+    if (end < getStartTime() || begin > getEndTime()) {
+      return null;
+    }
     return getMin2(begin, end);
   }
 
   // utility for getMax2/getMin2
+
   protected Coordinate check(Coordinate result, double t, boolean findmax) {
     Coordinate loc = new Coordinate();
     getCoordinate(t, loc);
-    if (findmax) result = Coordinate.max(result, loc);
-    else result = Coordinate.min(result, loc);
+    if (findmax) {
+      result = Coordinate.max(result, loc);
+    } else {
+      result = Coordinate.min(result, loc);
+    }
     return result;
   }
 }

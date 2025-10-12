@@ -74,17 +74,23 @@ public class GeneratorTarget {
             }
           });
     }
-    if (ptarget != null) ptarget.println(fdisplay);
-    if (btarget != null) btarget.append(fdisplay + '\n');
+    if (ptarget != null) {
+      ptarget.println(fdisplay);
+    }
+    if (btarget != null) {
+      btarget.append(fdisplay + '\n');
+    }
   }
 
-  // Sets a prefix and suffix for both the displayed string and animation string
+  // Set a prefix and suffix for both the displayed string and animation string.
+
   public void setPrefixSuffix(String pr, String su) {
     prefix = pr;
     suffix = su;
   }
 
-  // Messages like "# of patterns found" come through here
+  // Messages like "# of patterns found" come through here.
+
   public void setStatus(String display) {
     if (ltarget != null) {
       SwingUtilities.invokeLater(
@@ -96,6 +102,8 @@ public class GeneratorTarget {
           });
     }
 
-    if (ptarget != null) ptarget.println(display);
+    if (ptarget != null) {
+      ptarget.println(display);
+    }
   }
 }

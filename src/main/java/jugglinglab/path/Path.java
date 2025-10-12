@@ -26,10 +26,15 @@ public abstract class Path {
 
   // Creates a new path of the given type
   public static Path newPath(String type) throws JuggleExceptionUser {
-    if (type == null) throw new JuggleExceptionUser("Path type not specified");
+    if (type == null) {
+      throw new JuggleExceptionUser("Path type not specified");
+    }
 
-    if (type.equalsIgnoreCase("toss")) return new TossPath();
-    else if (type.equalsIgnoreCase("bounce")) return new BouncePath();
+    if (type.equalsIgnoreCase("toss")) {
+      return new TossPath();
+    } else if (type.equalsIgnoreCase("bounce")) {
+      return new BouncePath();
+    }
 
     throw new JuggleExceptionUser("Path type '" + type + "' not recognized");
   }
@@ -56,8 +61,9 @@ public abstract class Path {
     return (end_time - start_time);
   }
 
-  // minimum duration is nonzero for certain throw types, e.g., a double
+  // Minimum duration is nonzero for certain throw types, e.g., a double
   // bounce throw
+
   public double getMinDuration() {
     return 0.0;
   }
@@ -82,16 +88,22 @@ public abstract class Path {
   }
 
   public Coordinate getMin(double begin, double end) {
-    if (end < start_time || begin > end_time) return null;
+    if (end < start_time || begin > end_time) {
+      return null;
+    }
     return getMin2(begin, end);
   }
 
-  // utility for getMax/getMin
+  // Utility for getMax/getMin.
+
   protected Coordinate check(Coordinate result, double t, boolean findmax) {
     Coordinate loc = new Coordinate(0, 0, 0);
     getCoordinate(t, loc);
-    if (findmax) result = Coordinate.max(result, loc);
-    else result = Coordinate.min(result, loc);
+    if (findmax) {
+      result = Coordinate.max(result, loc);
+    } else {
+      result = Coordinate.min(result, loc);
+    }
     return result;
   }
 

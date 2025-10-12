@@ -55,8 +55,11 @@ public class JMLSymmetry {
   protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionUser {
     numjugglers = nj;
     try {
-      if (jp == null) jugglerperm = new Permutation(numjugglers, true);
-      else jugglerperm = new Permutation(numjugglers, jp, true);
+      if (jp == null) {
+        jugglerperm = new Permutation(numjugglers, true);
+      } else {
+        jugglerperm = new Permutation(numjugglers, jp, true);
+      }
     } catch (JuggleException je) {
       throw new JuggleExceptionUser(je.getMessage());
     }
@@ -73,8 +76,11 @@ public class JMLSymmetry {
   protected void setPathPerm(int np, String pp) throws JuggleExceptionUser {
     numpaths = np;
     try {
-      if (pp == null) pathperm = new Permutation(numpaths, false);
-      else pathperm = new Permutation(numpaths, pp, false);
+      if (pp == null) {
+        pathperm = new Permutation(numpaths, false);
+      } else {
+        pathperm = new Permutation(numpaths, pp, false);
+      }
     } catch (JuggleException je) {
       throw new JuggleExceptionUser(je.getMessage());
     }
@@ -111,12 +117,18 @@ public class JMLSymmetry {
       }
     }
 
-    if (symtype == null)
+    if (symtype == null) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_symmetry_notype"));
-    if (symtype.equalsIgnoreCase("delay")) symtypenum = TYPE_DELAY;
-    else if (symtype.equalsIgnoreCase("switch")) symtypenum = TYPE_SWITCH;
-    else if (symtype.equalsIgnoreCase("switchdelay")) symtypenum = TYPE_SWITCHDELAY;
-    else throw new JuggleExceptionUser(errorstrings.getString("Error_symmetry_type"));
+    }
+    if (symtype.equalsIgnoreCase("delay")) {
+      symtypenum = TYPE_DELAY;
+    } else if (symtype.equalsIgnoreCase("switch")) {
+      symtypenum = TYPE_SWITCH;
+    } else if (symtype.equalsIgnoreCase("switchdelay")) {
+      symtypenum = TYPE_SWITCHDELAY;
+    } else {
+      throw new JuggleExceptionUser(errorstrings.getString("Error_symmetry_type"));
+    }
 
     setType(symtypenum);
     setJugglerPerm(numjug, jugglerperm);

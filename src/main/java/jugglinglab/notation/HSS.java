@@ -44,6 +44,7 @@ public class HSS {
   // pattern for the Siteswap component to animate.
   //
   // See SiteswapPattern.fromParameters().
+
   public static ModParms processHSS(
       String p, String h, boolean hld, boolean dwlmax, String hndspc, double dwl)
       throws JuggleExceptionUser {
@@ -91,9 +92,11 @@ public class HSS {
     return modinf;
   }
 
-  // ensure object pattern is a vanilla pattern (multiplex allowed)
-  // also perform average test
+  // Ensure object pattern is a vanilla pattern (multiplex allowed), and also
+  // perform average test.
+  //
   // convert input pattern string to ArrayList identifying throws made on each beat
+
   @SuppressWarnings("unused")
   private static OssPatBnc ossSyntax(String ss) throws JuggleExceptionUser {
     boolean muxThrow = false;
@@ -252,8 +255,8 @@ public class HSS {
           Object[] arguments = {Integer.valueOf(i + 1)};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
-      } // if-else muxThrow
-    } // for
+      }  // if-else muxThrow
+    }  // for
     if (!muxThrow && minOneThrow) {
       if (throwSum % numBeats == 0) {
         numObj = throwSum / numBeats;
@@ -286,12 +289,14 @@ public class HSS {
     ossinf.bnc = bncinfo;
 
     return ossinf;
-  } // OssSyntax
+  }  // OssSyntax
 
-  // ensure hand pattern is a vanilla pattern (multiplex NOT allowed)
-  // also perform average test
+  // Ensure hand pattern is a vanilla pattern (multiplex NOT allowed), and also
+  // perform average test.
+  //
   // convert input pattern string to ArrayList identifying throws made on each beat
   // also return number of hands, used later to build handmap
+
   private static HssParms hssSyntax(String ss) throws JuggleExceptionUser {
     int throwSum = 0;
     int numBeats = 0;
@@ -325,7 +330,8 @@ public class HSS {
     return hssinf;
   }
 
-  // permutation test for object pattern
+  // Do permutation test for object pattern.
+
   private static void ossPermTest(ArrayList<ArrayList<Character>> os, int op)
       throws JuggleExceptionUser {
     ArrayList<ArrayList<Integer>> mods = new ArrayList<ArrayList<Integer>>();
@@ -347,8 +353,10 @@ public class HSS {
     }
   }
 
-  // permutation test for hand pattern
-  // return overall hand orbit period which is lcm of individual hand orbit periods
+  // Do permutation test for hand pattern.
+  //
+  // Return overall hand orbit period which is lcm of individual hand orbit periods.
+
   private static int hssPermTest(ArrayList<Character> hs, int hp) throws JuggleExceptionUser {
     int modulo, ho;
     int[] mods = new int[hp];
@@ -386,31 +394,30 @@ public class HSS {
     return ho;
   }
 
-  // read and validate user defined handspec
-  // if valid, convert to handmap assigning juggler number and that juggler's left or right hand to
-  // each hand
+  // Read and validate user defined handspec. If valid, convert to handmap assigning
+  // juggler number and that juggler's left or right hand to each hand.
+
   private static int[][] parseHandspec(String hspec, int nh) throws JuggleExceptionUser {
-    int[][] hmap =
-        new int[nh]
-            [2]; // handmap: map hand number to juggler number (first index) and left/right hand
-                 // (second index)
-    boolean assignLH = false; // assignLeftHand
-    boolean assignRH = false; // assignRightHand
-    boolean jugAct = false; // jugglerActive
+    // handmap: map hand number to juggler number (first index) and left/right hand
+    // (second index)
+    int[][] hmap = new int[nh][2];
+    boolean assignLH = false;  // assignLeftHand
+    boolean assignRH = false;  // assignRightHand
+    boolean jugAct = false;  // jugglerActive
     boolean pass = false;
     boolean handPresent = false;
-    boolean numFormStart = false; // numberformationStarted
-    boolean matchFnd = false; // matchFound
-    int jugNum = 0; // jugglerNumber
-    String buildHndNum = null; // buildHandNumber
+    boolean numFormStart = false;  // numberformationStarted
+    boolean matchFnd = false;  // matchFound
+    int jugNum = 0;  // jugglerNumber
+    String buildHndNum = null;  // buildHandNumber
 
     for (int i = 0; i < hspec.length(); i++) {
       char c = hspec.charAt(i);
-      if (!jugAct) { // if not in the middle of processing a () pair
+      if (!jugAct) {  // if not in the middle of processing a () pair
         if (c == '(') {
-          jugAct = true; // juggler assignment for the current hand is now active
-          assignLH = true; // at opening "(" assign left hand
-          numFormStart = true; // hand number might be a multiple digit number
+          jugAct = true;  // juggler assignment for the current hand is now active
+          assignLH = true;  // at opening "(" assign left hand
+          numFormStart = true;  // hand number might be a multiple digit number
           buildHndNum = null;
           pass = false;
           handPresent = false;
@@ -446,14 +453,14 @@ public class HSS {
               continue;
             }
           } else if (c == ',') {
-            assignLH = false; // at "," left hand assignment complete
+            assignLH = false;  // at "," left hand assignment complete
             assignRH = true;
             numFormStart = true;
 
             if (buildHndNum != null) {
               if ((Integer.parseInt(buildHndNum) >= 1) && (Integer.parseInt(buildHndNum) <= nh)) {
-                if (hmap[Integer.parseInt(buildHndNum) - 1][0]
-                    == 0) { // if juggler not already assigned to this hand
+                if (hmap[Integer.parseInt(buildHndNum) - 1][0] == 0) {
+                  // if juggler not already assigned to this hand
                   hmap[Integer.parseInt(buildHndNum) - 1][0] = jugNum;
                   hmap[Integer.parseInt(buildHndNum) - 1][1] = 0;
                   handPresent = true;
@@ -501,7 +508,7 @@ public class HSS {
             }
           } else if (c == ')') {
             assignRH = false;
-            jugAct = false; // juggler assignment is inactive after ")"
+            jugAct = false;  // juggler assignment is inactive after ")"
 
             if (buildHndNum != null) {
               if ((Integer.parseInt(buildHndNum) >= 1) && (Integer.parseInt(buildHndNum) <= nh)) {
@@ -512,11 +519,11 @@ public class HSS {
                 Object[] arguments = {Integer.valueOf(buildHndNum)};
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
               }
-            } else if (!handPresent) { // if left hand was also not present
+            } else if (!handPresent) {  // if left hand was also not present
               throw new JuggleExceptionUser(
                   errorstrings.getString("Error_hss_at_least_one_hand_per_juggler"));
             }
-            buildHndNum = null; // reset bhn string
+            buildHndNum = null;  // reset bhn string
             pass = true;
             continue;
           } else {
@@ -527,13 +534,13 @@ public class HSS {
         }
       }
     }
-    if (jugNum > nh) { // will this ever happen?
+    if (jugNum > nh) {  // will this ever happen?
       String template = errorstrings.getString("Error_hss_handspec_too_many_jugglers");
       Object[] arguments = {Integer.valueOf(nh)};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
     if (pass) {
-      for (int i = 0; i < nh; i++) { // what is this for?
+      for (int i = 0; i < nh; i++) {  // what is this for?
         if (hmap[i][0] != 0) {
           matchFnd = true;
           break;
@@ -558,10 +565,12 @@ public class HSS {
     return hmap;
   }
 
-  // in the absence of user defined handspec, build a default handmap
+  // Build a default handmap in the absence of user defined handspec.
+  //
   // assume numHnd/2 jugglers if numHnd even, else (numHnd+1)/2 jugglers
   // assign hand 1 to J1 right hand, hand 2 to J2 right hand and so on
-  // once all right hands assigned, come back to J1 and start assigning left hand
+  // once all right hands assigned, come back to J1 and start assigning left hand.
+
   private static int[][] defHandspec(int nh) {
     int[][] hmap = new int[nh][2];
     int nJugs; // numberofJugglers
@@ -585,8 +594,9 @@ public class HSS {
     return hmap;
   }
 
-  // convert oss hss format to Juggling Lab synchronous passing notation with suppressed
-  // empty beats so that odd synchronous throws are also allowed
+  // Convert oss hss format to Juggling Lab synchronous passing notation with suppressed
+  // empty beats so that odd synchronous throws are also allowed.
+
   private static PatParms convNotation(
       ArrayList<ArrayList<Character>> os,
       ArrayList<Character> hs,
@@ -663,16 +673,16 @@ public class HSS {
             next = (next + Character.getNumericValue(hs.get(next))) % patPer;
           }
         }
-        ji[i][0] = hm[ah[i] - 1][0]; // juggler number at beat i based on handmap
-        ji[i][1] = hm[ah[i] - 1][1]; // throwing hand at beat i based on handmap
+        ji[i][0] = hm[ah[i] - 1][0];  // juggler number at beat i based on handmap
+        ji[i][1] = hm[ah[i] - 1][1];  // throwing hand at beat i based on handmap
       }
     }
 
     // determine dwellbeats array
     flag = false;
     int[] mincaught = new int[patPer];
-    int tgtIdx = 0; // target index
-    int curThrow; // current throw
+    int tgtIdx = 0;  // target index
+    int curThrow;  // current throw
 
     // find minimum throw being caught at each beat: more than one throw could be
     // getting caught in case of multiplex throw. Dwell time on that beat will be
@@ -694,7 +704,7 @@ public class HSS {
     if (!dwlMaxOpt) {
       for (int i = 0; i < patPer; i++) {
         if ((ji[i][0] == ji[(i + 1) % patPer][0]) && (ji[i][1] == ji[(i + 1) % patPer][1])) {
-          flag = true; // if same hand throws on successive beats
+          flag = true;  // if same hand throws on successive beats
           break;
         }
       }
@@ -704,7 +714,7 @@ public class HSS {
         }
       } else {
         for (int i = 0; i < patPer; i++) {
-          dwlBts[i] = defDwl; // user defined default dwell in front panel
+          dwlBts[i] = defDwl;  // user defined default dwell in front panel
         }
       }
       for (int i = 0; i < patPer; i++) {
@@ -712,7 +722,7 @@ public class HSS {
           dwlBts[i] = (double) mincaught[i] - (1 - hss_dwell_default);
         }
       }
-    } else { // if dwellmax is true
+    } else {  // if dwellmax is true
       for (int i = 0; i < patPer; i++) {
         int j = (i + 1) % patPer;
         int diff = 1;
@@ -731,8 +741,8 @@ public class HSS {
       }
     }
 
-    // remove clashes in db array in case dwell times from different beats get optimized
-    // to same time instant
+    // remove clashes in db array in case dwell times from different beats get
+    // optimized to same time instant
     boolean[] clash = new boolean[patPer];
     int clashcnt = 0;
     for (int i = 0; i < patPer; i++) {
@@ -768,9 +778,9 @@ public class HSS {
         int targetHnd = ji[(i + throwVal) % patPer][1];
 
         if (throwVal % 2 == 0 && sourceHnd != targetHnd) {
-          iph.get(i).set(j, "x"); // put x for even throws to other hand
+          iph.get(i).set(j, "x");  // put x for even throws to other hand
         } else if (throwVal % 2 != 0 && sourceHnd == targetHnd) {
-          iph.get(i).set(j, "x"); // put x for odd throws to same hand
+          iph.get(i).set(j, "x");  // put x for odd throws to same hand
         }
         if (sourceJug != targetJug) {
           if (iph.get(i).get(j) != "x") {
@@ -781,9 +791,9 @@ public class HSS {
         } else if (hldOpt) {
           if (throwVal == Character.getNumericValue(hs.get(i))) {
             if (iph.get(i).get(j) != "x") {
-              iph.get(i).set(j, "H"); // enable hold for even throw to same hand
+              iph.get(i).set(j, "H");  // enable hold for even throw to same hand
             } else {
-              iph.get(i).set(j, "xH"); // enable hold for odd throw to same hand
+              iph.get(i).set(j, "xH");  // enable hold for odd throw to same hand
             }
           }
         }
@@ -804,15 +814,15 @@ public class HSS {
     for (int i = 0; i < patPer; i++) {
       currJug = 0;
       while (currJug < nj) {
-        if (modPat == null) { // at the start of building the converted pattern
+        if (modPat == null) {  // at the start of building the converted pattern
           modPat = "<";
-        } else if (currJug == 0) { // at the start of a new beat
+        } else if (currJug == 0) {  // at the start of a new beat
           modPat = modPat + "<";
         }
-        if (ji[i][1] == 0) { // if left hand is throwing at current beat
+        if (ji[i][1] == 0) {  // if left hand is throwing at current beat
           modPat = modPat + "(";
-          if (ji[i][0] == currJug + 1) { // if currentjuggler is throwing at current beat
-            if (os.get(i).size() > 1) { // if it is a multiplex throw
+          if (ji[i][0] == currJug + 1) {  // if currentjuggler is throwing at current beat
+            if (os.get(i).size() > 1) {  // if it is a multiplex throw
               modPat = modPat + "[";
               for (int j = 0; j < os.get(i).size(); j++) {
                 modPat = modPat + Character.toString(os.get(i).get(j));
@@ -827,14 +837,14 @@ public class HSS {
                 modPat = modPat + iph.get(i).get(0);
               }
             }
-            modPat = modPat + ",0)!"; // no sync throws allowed, put 0 for right hand
+            modPat = modPat + ",0)!";  // no sync throws allowed, put 0 for right hand
             if (currJug == nj - 1) {
               modPat = modPat + ">";
             } else {
               modPat = modPat + "|";
             }
             currJug++;
-          } else { // if current juggler is not throwing at this beat
+          } else {  // if current juggler is not throwing at this beat
             modPat = modPat + "0,0)!";
             if (currJug == nj - 1) {
               modPat = modPat + ">";
@@ -843,10 +853,10 @@ public class HSS {
             }
             currJug++;
           }
-        } else { // if right hand is throwing at this beat
-          modPat = modPat + "(0,"; // no sync throws allowed, put 0 for left hand
-          if (ji[i][0] == currJug + 1) { // if currentjuggler is throwing at current beat
-            if (os.get(i).size() > 1) { // if it is a multiplex throw
+        } else {  // if right hand is throwing at this beat
+          modPat = modPat + "(0,";  // no sync throws allowed, put 0 for left hand
+          if (ji[i][0] == currJug + 1) {  // if currentjuggler is throwing at current beat
+            if (os.get(i).size() > 1) {  // if it is a multiplex throw
               modPat = modPat + "[";
               for (int j = 0; j < os.get(i).size(); j++) {
                 modPat = modPat + Character.toString(os.get(i).get(j));
@@ -855,7 +865,7 @@ public class HSS {
                 }
               }
               modPat = modPat + "]";
-            } else { // if not multiplex throw
+            } else {  // if not multiplex throw
               modPat = modPat + Character.toString(os.get(i).get(0));
               if (iph.get(i).get(0) != null) {
                 modPat = modPat + iph.get(i).get(0);
@@ -868,7 +878,7 @@ public class HSS {
               modPat = modPat + "|";
             }
             currJug++;
-          } else { // if current juggler is not throwing at this beat
+          } else {  // if current juggler is not throwing at this beat
             modPat = modPat + "0)!";
             if (currJug == nj - 1) {
               modPat = modPat + ">";
@@ -877,11 +887,11 @@ public class HSS {
             }
             currJug++;
           }
-        } // if-else left-right hand
-      } // while currJug < nj
-    } // for all beats
+        }  // if-else left-right hand
+      }  // while currJug < nj
+    }  // for all beats
 
     patinf.newPat = modPat;
     return patinf;
-  } // convNotation
+  }  // convNotation
 }

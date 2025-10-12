@@ -69,11 +69,16 @@ public class EditView extends View {
     ap.restartJuggle(p, c);
     setAnimationPanelPreferredSize(getAnimationPrefs().getSize());
 
-    if (p == null) return;
+    if (p == null) {
+      return;
+    }
 
     LadderDiagram new_ladder = null;
-    if (ap instanceof AnimationEditPanel) new_ladder = new EditLadderDiagram(p, parent, this);
-    else new_ladder = new LadderDiagram(p);
+    if (ap instanceof AnimationEditPanel) {
+      new_ladder = new EditLadderDiagram(p, parent, this);
+    } else {
+      new_ladder = new LadderDiagram(p);
+    }
 
     new_ladder.setAnimationPanel(ap);
 
@@ -94,11 +99,18 @@ public class EditView extends View {
       // reset during layout
       jsp.resetToPreferredSizes();
 
-      if (parent.isWindowMaximized()) parent.validate();
-      else parent.pack();
-    } else ladder.validate(); // to make ladder redraw
+      if (parent.isWindowMaximized()) {
+        parent.validate();
+      } else {
+        parent.pack();
+      }
+    } else {
+      ladder.validate(); // to make ladder redraw
+    }
 
-    if (parent != null) parent.setTitle(p.getTitle());
+    if (parent != null) {
+      parent.setTitle(p.getTitle());
+    }
   }
 
   @Override
@@ -144,7 +156,9 @@ public class EditView extends View {
 
   @Override
   public void setPaused(boolean pause) {
-    if (ap.message == null) ap.setPaused(pause);
+    if (ap.message == null) {
+      ap.setPaused(pause);
+    }
   }
 
   @Override
@@ -158,7 +172,9 @@ public class EditView extends View {
     boolean origpause = isPaused();
     setPaused(true);
     jsp.setEnabled(false);
-    if (parent != null) parent.setResizable(false);
+    if (parent != null) {
+      parent.setResizable(false);
+    }
 
     Runnable cleanup =
         new Runnable() {
@@ -167,7 +183,9 @@ public class EditView extends View {
             ap.writingGIF = false;
             setPaused(origpause);
             jsp.setEnabled(true);
-            if (parent != null) parent.setResizable(true);
+            if (parent != null) {
+              parent.setResizable(true);
+            }
           }
         };
 

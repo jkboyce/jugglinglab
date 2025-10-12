@@ -16,20 +16,26 @@ public class LineCurve extends Curve {
   @Override
   public void calcCurve() throws JuggleExceptionInternal {
     n = numpoints - 1;
-    if (n < 1) throw new JuggleExceptionInternal("LineCurve error 1");
+    if (n < 1) {
+      throw new JuggleExceptionInternal("LineCurve error 1");
+    }
 
     a = new double[n][3];
     b = new double[n][3];
     durations = new double[n];
     for (int i = 0; i < n; i++) {
       durations[i] = times[i + 1] - times[i];
-      if (durations[i] <= 0.0) throw new JuggleExceptionInternal("LineCurve error 2");
+      if (durations[i] <= 0.0) {
+        throw new JuggleExceptionInternal("LineCurve error 2");
+      }
     }
 
     double[] x = new double[n + 1];
 
     for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < (n + 1); j++) x[j] = positions[j].getIndex(i);
+      for (int j = 0; j < (n + 1); j++) {
+        x[j] = positions[j].getIndex(i);
+      }
 
       // now solve for line coefficients
       for (int j = 0; j < n; j++) {
@@ -41,11 +47,19 @@ public class LineCurve extends Curve {
 
   @Override
   public void getCoordinate(double time, Coordinate newPosition) {
-    if (time < times[0] || time > times[n]) return;
+    if (time < times[0] || time > times[n]) {
+      return;
+    }
 
     int i;
-    for (i = 0; i < n; i++) if (time <= times[i + 1]) break;
-    if (i == n) i = n - 1;
+    for (i = 0; i < n; i++) {
+      if (time <= times[i + 1]) {
+        break;
+      }
+    }
+    if (i == n) {
+      i = n - 1;
+    }
 
     time -= times[i];
     newPosition.setCoordinate(
@@ -54,7 +68,9 @@ public class LineCurve extends Curve {
 
   @Override
   protected Coordinate getMax2(double begin, double end) {
-    if (end < times[0] || begin > times[n]) return null;
+    if (end < times[0] || begin > times[n]) {
+      return null;
+    }
 
     Coordinate result = null;
     double tlow = Math.max(times[0], begin);
@@ -63,7 +79,9 @@ public class LineCurve extends Curve {
     result = check(result, thigh, true);
 
     for (int i = 0; i <= n; i++) {
-      if (tlow <= times[i] && times[i] <= thigh) result = check(result, times[i], true);
+      if (tlow <= times[i] && times[i] <= thigh) {
+        result = check(result, times[i], true);
+      }
       if (i != n) {
         double tlowtemp = Math.max(tlow, times[i]);
         double thightemp = Math.min(thigh, times[i + 1]);
@@ -80,7 +98,9 @@ public class LineCurve extends Curve {
 
   @Override
   protected Coordinate getMin2(double begin, double end) {
-    if ((end < times[0]) || (begin > times[n])) return null;
+    if ((end < times[0]) || (begin > times[n])) {
+      return null;
+    }
 
     Coordinate result = null;
     double tlow = Math.max(times[0], begin);
@@ -89,7 +109,9 @@ public class LineCurve extends Curve {
     result = check(result, thigh, false);
 
     for (int i = 0; i <= n; i++) {
-      if (tlow <= times[i] && times[i] <= thigh) result = check(result, times[i], false);
+      if (tlow <= times[i] && times[i] <= thigh) {
+        result = check(result, times[i], false);
+      }
       if (i != n) {
         double tlowtemp = Math.max(tlow, times[i]);
         double thightemp = Math.min(thigh, times[i + 1]);

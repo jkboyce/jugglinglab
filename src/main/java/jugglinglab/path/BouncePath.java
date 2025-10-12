@@ -10,26 +10,26 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 
 public class BouncePath extends Path {
-  protected static final int BOUNCES_DEF = 1; // number of bounces
+  protected static final int BOUNCES_DEF = 1;  // number of bounces
   protected static final boolean FORCED_DEF = false;
   protected static final boolean HYPER_DEF = false;
-  protected static final double BOUNCEPLANE_DEF = 0; // floor level
+  protected static final double BOUNCEPLANE_DEF = 0;  // floor level
   protected static final double BOUNCEFRAC_DEF = 0.9;
-  protected static final double G_DEF = 980; // using CGS units
+  protected static final double G_DEF = 980;  // using CGS units
 
   protected double bx, cx;
   protected double by, cy;
   protected double az[], bz[], cz[];
   protected double endtime[];
   protected int bounces = BOUNCES_DEF;
-  protected boolean forced = FORCED_DEF; // true -> forced throw
-  protected boolean hyper = HYPER_DEF; // true -> same type of catch (lift/forced) as throw
+  protected boolean forced = FORCED_DEF;  // true -> forced throw
+  protected boolean hyper = HYPER_DEF;  // true -> same type of catch (lift/forced) as throw
   protected double bounceplane = BOUNCEPLANE_DEF;
   protected double bouncefrac = BOUNCEFRAC_DEF;
   protected double g = G_DEF;
   protected double bouncefracsqrt;
   protected double bouncetime;
-  protected int numbounces; // actual number of bounces (<= this.bounces)
+  protected int numbounces;  // actual number of bounces (<= this.bounces)
 
   @Override
   public String getType() {
@@ -134,9 +134,10 @@ public class BouncePath extends Path {
           Object[] arguments = {"g"};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
-      } else
+      } else {
         throw new JuggleExceptionUser(
             errorstrings.getString("Error_path_badmod") + ": '" + pname + "'");
+      }
     }
 
     this.bounces = bounces;
@@ -155,12 +156,16 @@ public class BouncePath extends Path {
     this.bz = new double[bounces + 1];
     this.cz = new double[bounces + 1];
     this.endtime = new double[bounces + 1];
-    for (int i = 0; i <= bounces; i++) az[i] = -0.5 * g;
+    for (int i = 0; i <= bounces; i++) {
+      az[i] = -0.5 * g;
+    }
   }
 
   @Override
   public void calcPath() throws JuggleExceptionInternal {
-    if (start_coord == null || end_coord == null) return;
+    if (start_coord == null || end_coord == null) {
+      return;
+    }
 
     for (int n = bounces; n > 0; n--) {
       double[] root = new double[4];
@@ -172,7 +177,9 @@ public class BouncePath extends Path {
           System.out.println("   v0["+i+"] = "+root[i]+" -- "+(liftcatch[i]?"lift catch":"forced catch"));
       */
 
-      if (numroots == 0) continue; // no solution -> go to the next fewer number of bounces
+      if (numroots == 0) {
+        continue;  // no solution -> go to the next fewer number of bounces
+      }
 
       // Select which root to use. First try to get the forced and hyper values as
       // desired. If no solution, try to get forced, then try to get hyper as desired.
@@ -180,15 +187,21 @@ public class BouncePath extends Path {
       boolean choseroot = false;
       double v0 = root[0]; // default
       for (int i = 0; i < numroots; i++) {
-        if (forced ^ (root[i] < 0)) continue;
-        if (hyper ^ liftcatch[i] ^ forced) continue;
+        if (forced ^ (root[i] < 0)) {
+          continue;
+        }
+        if (hyper ^ liftcatch[i] ^ forced) {
+          continue;
+        }
         v0 = root[i];
         choseroot = true;
         break;
       }
       if (!choseroot) {
         for (int i = 0; i < numroots; i++) {
-          if (forced ^ (root[i] < 0)) continue;
+          if (forced ^ (root[i] < 0)) {
+            continue;
+          }
           v0 = root[i];
           choseroot = true;
           break;
@@ -196,7 +209,9 @@ public class BouncePath extends Path {
       }
       if (!choseroot) {
         for (int i = 0; i < numroots; i++) {
-          if (hyper ^ liftcatch[i] ^ (root[i] < 0)) continue;
+          if (hyper ^ liftcatch[i] ^ (root[i] < 0)) {
+            continue;
+          }
           v0 = root[i];
           choseroot = true;
           break;
@@ -209,10 +224,11 @@ public class BouncePath extends Path {
       // `numbounces` and `v0`
       bz[0] = v0;
       cz[0] = start_coord.z;
-      if (az[0] < 0)
+      if (az[0] < 0) {
         endtime[0] = (-v0 - Math.sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0]);
-      else
+      } else {
         endtime[0] = (-v0 + Math.sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0]);
+      }
       double vrebound = (-v0 - 2 * az[0] * endtime[0]) * bouncefracsqrt;
 
       for (int i = 1; i <= n; i++) {
@@ -221,7 +237,7 @@ public class BouncePath extends Path {
         endtime[i] = endtime[i - 1] - vrebound / az[i];
         vrebound = bouncefracsqrt * vrebound;
       }
-      endtime[n] = getDuration(); // fix this assignment from the above loop
+      endtime[n] = getDuration();  // fix this assignment from the above loop
 
       // Finally do the x and y coordinates -- these are simple
       cx = start_coord.x;
@@ -247,11 +263,13 @@ public class BouncePath extends Path {
   //     numroots -- function return value, number of valid solutions found
   //     root[] -- solution(s) for v0
   //     liftcatch[] -- whether the solution corresponds to a "lift" catch
+
   protected int solveBounceEquation(int n, double duration, double[] root, boolean[] liftcatch) {
     double f1 = bouncefracsqrt;
-    for (int i = 1; i < n; i++) f1 *= bouncefracsqrt;
-    double k =
-        ((bouncefracsqrt == 1)
+    for (int i = 1; i < n; i++) {
+      f1 *= bouncefracsqrt;
+    }
+    double k = ((bouncefracsqrt == 1)
             ? 2 * (double) n
             : 1 + f1 + 2 * bouncefracsqrt * (1 - f1 / bouncefracsqrt) / (1 - bouncefracsqrt));
     double u = 2 * g * (start_coord.z - bounceplane);
@@ -301,12 +319,16 @@ public class BouncePath extends Path {
 
     if (n > 1) {
       // More than one bounce, need to solve the quartic case
-      for (int i = 0; i < 4; i++) coef[i] /= coef[4];
+      for (int i = 0; i < 4; i++) {
+        coef[i] /= coef[4];
+      }
       numrealroots = findRealRootsPolynomial(coef, 4, realroot);
       // numrealroots = findRealRootsQuartic(coef[0], coef[1], coef[2], coef[3], realroot);
     } else {
       // A single bounce, which reduces to a cubic polynomial (coef[4]=0)
-      for (int i = 0; i < 3; i++) coef[i] /= coef[3];
+      for (int i = 0; i < 3; i++) {
+        coef[i] /= coef[3];
+      }
       numrealroots = findRealRootsPolynomial(coef, 3, realroot);
       // numrealroots = findRealRootsCubic(coef[0], coef[1], coef[2], realroot);
     }
@@ -339,8 +361,12 @@ public class BouncePath extends Path {
     int numroots = solveBounceEquation(bounces, duration, root, liftcatch);
 
     for (int i = 0; i < numroots; i++) {
-      if (forced ^ (root[i] < 0)) continue;
-      if (hyper ^ liftcatch[i] ^ forced) continue;
+      if (forced ^ (root[i] < 0)) {
+        continue;
+      }
+      if (hyper ^ liftcatch[i] ^ forced) {
+        continue;
+      }
 
       return true;
     }
@@ -350,7 +376,9 @@ public class BouncePath extends Path {
   @Override
   public double getMinDuration() {
     // single hyperforce bounce is the only one with zero minimum duration
-    if (bounces == 1 && hyper && forced) return 0;
+    if (bounces == 1 && hyper && forced) {
+      return 0;
+    }
 
     double dlower = 0;
     double dupper = 1;
@@ -361,8 +389,11 @@ public class BouncePath extends Path {
 
     while (dupper - dlower > 0.0001) {
       double davg = 0.5 * (dlower + dupper);
-      if (isFeasibleDuration(davg)) dupper = davg;
-      else dlower = davg;
+      if (isFeasibleDuration(davg)) {
+        dupper = davg;
+      } else {
+        dlower = davg;
+      }
     }
 
     return dupper;
@@ -380,7 +411,9 @@ public class BouncePath extends Path {
 
   @Override
   public void getCoordinate(double time, Coordinate newPosition) {
-    if (time < start_time || time > end_time) return;
+    if (time < start_time || time > end_time) {
+      return;
+    }
     time -= start_time;
 
     double zpos = 0;
@@ -403,24 +436,30 @@ public class BouncePath extends Path {
     result = check(result, thigh, true);
     if (az[0] < 0) {
       double te = -bz[0] / (2 * az[0]) + start_time;
-      if (tlow < te && te < Math.min(thigh, start_time + endtime[0]))
+      if (tlow < te && te < Math.min(thigh, start_time + endtime[0])) {
         result = check(result, te, true);
+      }
     }
     if (az[numbounces] < 0) {
       double te = -bz[numbounces] / (2 * az[numbounces]) + start_time;
-      if (Math.max(tlow, start_time + endtime[numbounces - 1]) < te && te < thigh)
+      if (Math.max(tlow, start_time + endtime[numbounces - 1]) < te && te < thigh) {
         result = check(result, te, true);
+      }
     }
-    if (tlow < (start_time + endtime[0]) && (start_time + endtime[0]) < thigh)
+    if (tlow < (start_time + endtime[0]) && (start_time + endtime[0]) < thigh) {
       result = check(result, start_time + endtime[0], true);
+    }
     for (int i = 1; i < numbounces; i++) {
       if (az[i] < 0) {
         double te = -bz[i] / (2 * az[i]) + start_time;
-        if (Math.max(tlow, start_time + endtime[i - 1]) < te
-            && te < Math.min(thigh, start_time + endtime[i])) result = check(result, te, true);
+        if (Math.max(tlow, start_time + endtime[i - 1]) < te &&
+            te < Math.min(thigh, start_time + endtime[i])) {
+          result = check(result, te, true);
+        }
       }
-      if ((tlow < (start_time + endtime[i])) && ((start_time + endtime[i]) < thigh))
+      if ((tlow < (start_time + endtime[i])) && ((start_time + endtime[i]) < thigh)) {
         result = check(result, start_time + endtime[i], true);
+      }
     }
     return result;
   }
@@ -435,24 +474,30 @@ public class BouncePath extends Path {
     result = check(result, thigh, false);
     if (az[0] > 0) {
       double te = -bz[0] / (2 * az[0]) + start_time;
-      if (tlow < te && te < Math.min(thigh, start_time + endtime[0]))
+      if (tlow < te && te < Math.min(thigh, start_time + endtime[0])) {
         result = check(result, te, false);
+      }
     }
     if (az[numbounces] > 0) {
       double te = -bz[numbounces] / (2 * az[numbounces]) + start_time;
-      if (Math.max(tlow, start_time + endtime[numbounces - 1]) < te && te < thigh)
+      if (Math.max(tlow, start_time + endtime[numbounces - 1]) < te && te < thigh) {
         result = check(result, te, false);
+      }
     }
-    if (tlow < (start_time + endtime[0]) && (start_time + endtime[0]) < thigh)
+    if (tlow < (start_time + endtime[0]) && (start_time + endtime[0]) < thigh) {
       result = check(result, start_time + endtime[0], false);
+    }
     for (int i = 1; i < numbounces; i++) {
       if (az[i] > 0) {
         double te = -bz[i] / (2 * az[i]) + start_time;
-        if (Math.max(tlow, start_time + endtime[i - 1]) < te
-            && te < Math.min(thigh, start_time + endtime[i])) result = check(result, te, false);
+        if (Math.max(tlow, start_time + endtime[i - 1]) < te &&
+            te < Math.min(thigh, start_time + endtime[i])) {
+          result = check(result, te, false);
+        }
       }
-      if (tlow < (start_time + endtime[i]) && (start_time + endtime[i]) < thigh)
+      if (tlow < (start_time + endtime[i]) && (start_time + endtime[i]) < thigh) {
         result = check(result, start_time + endtime[i], false);
+      }
     }
     return result;
   }
@@ -461,6 +506,7 @@ public class BouncePath extends Path {
   // Find the real roots of the polynomial equation x^3 + k2*x^2 + k1*x + k0 = 0
   //
   // Algorithm adapted from Numerical Recipes in C (1st edition), page 157
+
   static protected int findRealRootsCubic(double k0, double k1, double k2, double[] roots) {
       double q = k2*k2/9.0 - k1/3.0;
       double r = k2*k2*k2/27.0 - k1*k2/6.0 + k0/2.0;
@@ -527,7 +573,8 @@ public class BouncePath extends Path {
     return (result + term); // add on x^n term
   }
 
-  // returns other endpoint of interval
+  // Returns other endpoint of interval.
+
   protected static double bracketOpenInterval(
       double[] coef, int degree, double endpoint, boolean pinf) {
     boolean endpointpositive = (evalPolynomial(coef, degree, endpoint) > 0.0);
@@ -542,14 +589,17 @@ public class BouncePath extends Path {
     return result;
   }
 
-  // Find roots of polynomial by successive bisection
+  // Find roots of polynomial by successive bisection.
+
   protected static double findRoot(double[] coef, int degree, double xlow, double xhigh) {
     double val1, val2, valtemp, t;
 
     val1 = evalPolynomial(coef, degree, xlow);
     val2 = evalPolynomial(coef, degree, xhigh);
 
-    if (val1 * val2 > 0.0) return 0.5 * (xlow + xhigh); // should never happen!
+    if (val1 * val2 > 0.0) {
+      return 0.5 * (xlow + xhigh);  // should never happen!
+    }
 
     while (Math.abs(xlow - xhigh) > 1e-6) {
       t = 0.5 * (xlow + xhigh);
@@ -570,6 +620,7 @@ public class BouncePath extends Path {
   //
   // where 'n' is the degree of the polynomial, and the x^n coefficient is always 1.0.
   // The c's are passed in as the 'coef' array
+
   protected static int findRealRootsPolynomial(double[] coef, int degree, double[] result) {
     // First a few special cases:
     if (degree == 0) {
@@ -619,7 +670,9 @@ public class BouncePath extends Path {
     // the extrema of our polynomial, and using these to bracket each zero.
     double[] dcoef = new double[degree - 1];
     double[] extremum = new double[degree - 1];
-    for (int i = 0; i < (degree - 1); i++) dcoef[i] = (i + 1) * coef[i + 1] / (double) degree;
+    for (int i = 0; i < (degree - 1); i++) {
+      dcoef[i] = (i + 1) * coef[i + 1] / (double) degree;
+    }
     int numextrema = findRealRootsPolynomial(dcoef, degree - 1, extremum);
 
     boolean pinfpositive = true;
@@ -653,8 +706,9 @@ public class BouncePath extends Path {
     }
 
     boolean[] extremumpositive = new boolean[numextrema];
-    for (int i = 0; i < numextrema; i++)
+    for (int i = 0; i < numextrema; i++) {
       extremumpositive[i] = (evalPolynomial(coef, degree, extremum[i]) > 0.0);
+    }
 
     if (minfpositive != extremumpositive[0]) {
       // there is a zero left of the first extremum; bracket it and find it
@@ -677,15 +731,20 @@ public class BouncePath extends Path {
     return numroots;
   }
 
-  // The returned quantity isn't actually used for volume, so just treat it as yes/no
+  // The returned quantity isn't actually used for volume, so just treat it as yes/no.
+
   public double getBounceVolume(double time1, double time2) {
-    if ((time2 < start_time) || (time1 > end_time)) return 0.0;
+    if (time2 < start_time || time1 > end_time) {
+      return 0.0;
+    }
     time1 -= start_time;
     time2 -= start_time;
 
     for (int i = 0; i < numbounces; i++) {
       if (time1 < endtime[i]) {
-        if (time2 > endtime[i]) return 1.0;
+        if (time2 > endtime[i]) {
+          return 1.0;
+        }
         return 0.0;
       }
     }
