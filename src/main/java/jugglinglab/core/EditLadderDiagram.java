@@ -296,6 +296,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
           }
 
           if (active_eventitem != null) {
+            if (active_eventitem.type == LadderEventItem.TYPE_TRANSITION) {
+              // only allow dragging of TYPE_EVENT
+              break;
+            }
+
             gui_state = STATE_MOVING_EVENT;
             active_positionitem = null;
             start_y = me.getY();
