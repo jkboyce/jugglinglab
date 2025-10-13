@@ -98,11 +98,12 @@ public class AnimationPanel extends JPanel implements Runnable {
           public void mousePressed(MouseEvent me) {
             lastpress = me.getWhen();
 
-            // The following (and the equivalent in mouseReleased()) is a hack to swallow
-            // a mouseclick when the browser stops reporting enter/exit events because the
-            // user has clicked on something else.  The system reports simultaneous enter/press
-            // events when the user mouses down in the component; we want to swallow this as a
-            // click, and just use it to get focus back.
+            // The following (and the equivalent in mouseReleased()) is a hack to
+            // swallow a mouseclick when the browser stops reporting enter/exit
+            // events because the user has clicked on something else.  The system
+            // reports simultaneous enter/press events when the user mouses down
+            // in the component; we want to swallow this as a click, and just use
+            // it to get focus back.
             if (jc.mousePause && lastpress == lastenter) {
               return;
             }
@@ -465,7 +466,9 @@ public class AnimationPanel extends JPanel implements Runnable {
   }
 
   public synchronized void setPaused(boolean wanttopause) {
-    if (enginePaused == true && wanttopause == false) notify(); // wake up wait() in run() method
+    if (enginePaused == true && wanttopause == false) {
+      notify();  // wake up wait() in run() method
+    }
     enginePaused = wanttopause;
   }
 

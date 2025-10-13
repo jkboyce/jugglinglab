@@ -47,16 +47,16 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
   protected LadderEventItem active_eventitem;
   protected LadderPositionItem active_positionitem;
-  protected boolean item_was_selected; // for detecting de-selecting clicks
+  protected boolean item_was_selected;  // for detecting de-selecting clicks
   protected int start_y;
-  protected int start_ylow, start_yhigh; // initial box y-coordinates
-  protected double start_t; // initial time
+  protected int start_ylow, start_yhigh;  // initial box y-coordinates
+  protected double start_t;  // initial time
   protected int delta_y;
-  protected int delta_y_min, delta_y_max; // limits for dragging up/down
+  protected int delta_y_min, delta_y_max;  // limits for dragging up/down
 
   protected JPopupMenu popup;
   protected LadderItem popupitem;
-  protected int popup_x; // screen coordinates where popup was raised
+  protected int popup_x;  // screen coordinates where popup was raised
   protected int popup_y;
 
   protected ArrayList<JComponent> dialog_controls;
@@ -174,7 +174,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
   //----------------------------------------------------------------------------
 
   public void activateEvent(JMLEvent ev) throws JuggleExceptionInternal {
-    createView(); // rebuild ladder diagram (LadderItem arrays)
+    createView();  // rebuild ladder diagram (LadderItem arrays)
 
     active_eventitem = null;
     JMLEvent ev_inloop = pat.getEventImageInLoop(ev);
@@ -201,7 +201,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     int hash = active_eventitem.getHashCode();
 
-    createView(); // rebuild ladder diagram (LadderItem arrays)
+    createView();  // rebuild ladder diagram (LadderItem arrays)
 
     // re-locate the event we're editing in the newly laid out pattern
     active_eventitem = null;
@@ -385,14 +385,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         case STATE_MOVING_EVENT:
         case STATE_MOVING_POSITION:
         case STATE_MOVING_TRACKER:
-          // skip this code for MOVING_TRACKER state, since already
-          // executed in mousePressed() above
+          // skip this code for MOVING_TRACKER state, since already executed in
+          // mousePressed() above
           if (gui_state != STATE_MOVING_TRACKER && aep != null) {
             int my = me.getY();
             my = Math.min(Math.max(my, BORDER_TOP), height - BORDER_TOP);
 
-            double scale =
-                (pat.getLoopEndTime() - pat.getLoopStartTime())
+            double scale = (pat.getLoopEndTime() - pat.getLoopStartTime())
                     / (double) (height - 2 * BORDER_TOP);
             double newtime = (double) (my - BORDER_TOP) * scale;
             anim_paused = aep.isPaused();
@@ -1493,7 +1492,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     final int[] animpropnum = aep.getAnimator().getAnimPropNum();
     final int propnum = animpropnum[pathnum - 1];
     // final int propnum = pat.getPropAssignment(pathnum);
-    //      System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
+    // System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
     final Prop startprop = pat.getProp(propnum);
     String[] prtypes = Prop.builtinProps;
 
@@ -1522,8 +1521,11 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             String type = cb1.getItemAt(cb1.getSelectedIndex());
             try {
               Prop pt;
-              if (type.equalsIgnoreCase(startprop.getType())) pt = startprop;
-              else pt = Prop.newProp(type);
+              if (type.equalsIgnoreCase(startprop.getType())) {
+                pt = startprop;
+              } else {
+                pt = Prop.newProp(type);
+              }
               makeParametersPanel(p2, pt.getParameterDescriptors());
             } catch (JuggleExceptionUser jeu) {
               new ErrorDialog(jd, jeu.getMessage());
@@ -1569,15 +1571,14 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               mod = getParameterList();
               // System.out.println("type = " + type + ", mod = " + mod);
 
-              // fail if prop definition is invalid, before we change the
-              // pattern
+              // fail if prop definition is invalid, before we change the pattern
               (new PropDef(type.toLowerCase(), mod)).layoutProp();
             } catch (JuggleExceptionUser jeu) {
               new ErrorDialog(parentframe, jeu.getMessage());
               return;
             }
 
-            // Sync paths with current prop list
+            // sync paths with current prop list
             for (int i = 0; i < pat.getNumberOfPaths(); i++) {
               pat.setPropAssignment(i + 1, animpropnum[i]);
             }
@@ -1914,7 +1915,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                       .setFileFilter(
                           new FileNameExtensionFilter("Image file", "jpg", "jpeg", "gif", "png"));
                   int result = JLFunc.jfc().showOpenDialog(EditLadderDiagram.this);
-                  if (result != JFileChooser.APPROVE_OPTION) return;
+                  if (result != JFileChooser.APPROVE_OPTION) {
+                    return;
+                  }
 
                   try {
                     URL source = JLFunc.jfc().getSelectedFile().toURI().toURL();
