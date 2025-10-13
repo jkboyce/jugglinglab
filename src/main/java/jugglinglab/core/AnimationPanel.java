@@ -1,9 +1,9 @@
 //
 // AnimationPanel.java
 //
-// This class creates the juggling animation on screen. It spawns a thread
-// that loops over time and draws frames. It also interprets some mouse
-// interactions such as camera drag and click to pause.
+// This class creates the juggling animation on screen. It spawns a thread that
+// loops over time and draws frames. It also interprets some mouse interactions
+// such as camera drag and click to pause.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -186,10 +186,18 @@ public class AnimationPanel extends JPanel implements Runnable {
             double[] ca = dragcamangle;
             ca[0] += (double) (xdelta) * 0.02;
             ca[1] -= (double) (ydelta) * 0.02;
-            if (ca[1] < Math.toRadians(0.0001)) ca[1] = Math.toRadians(0.0001);
-            if (ca[1] > Math.toRadians(179.9999)) ca[1] = Math.toRadians(179.9999);
-            while (ca[0] < 0.0) ca[0] += Math.toRadians(360);
-            while (ca[0] >= Math.toRadians(360)) ca[0] -= Math.toRadians(360);
+            if (ca[1] < Math.toRadians(0.0001)) {
+              ca[1] = Math.toRadians(0.0001);
+            }
+            if (ca[1] > Math.toRadians(179.9999)) {
+              ca[1] = Math.toRadians(179.9999);
+            }
+            while (ca[0] < 0.0) {
+              ca[0] += Math.toRadians(360);
+            }
+            while (ca[0] >= Math.toRadians(360)) {
+              ca[0] -= Math.toRadians(360);
+            }
 
             double[] snappedcamangle = snapCamera(ca);
             setCameraAngle(snappedcamangle);

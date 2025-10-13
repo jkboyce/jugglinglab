@@ -298,7 +298,7 @@ public class JugglingLab {
         });
   }
 
-  // Read a list of file paths from jlargs and return an array of File objects.
+  // Read a list of file paths from `jlargs` and return an array of File objects.
   // Relative file paths are converted to absolute paths.
   //
   // In the event of an error, print an error message and return null.
@@ -311,8 +311,7 @@ public class JugglingLab {
         System.setProperty("java.awt.headless", "true");
         System.out.println(output);
       } else {
-        // shouldn't ever happen
-        new ErrorDialog(null, output);
+        new ErrorDialog(null, output);  // should never happen
       }
       return null;
     }
@@ -663,7 +662,7 @@ public class JugglingLab {
       Animator anim = new Animator();
       if (jc == null) {
         jc = anim.getAnimationPrefs();
-        jc.fps = 33.3; // default frames per sec for GIFs
+        jc.fps = 33.3;  // default frames per sec for GIFs
         // Note the GIF header specifies inter-frame delay in terms of
         // hundredths of a second, so only `fps` values like 50, 33 1/3,
         // 25, 20, ... are precisely achieveable.

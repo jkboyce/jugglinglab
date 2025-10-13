@@ -63,7 +63,8 @@ public class AnimationPrefsDialog extends JDialog {
         });
   }
 
-  // Show dialog box and return the new preferences
+  // Show dialog box and return the new preferences.
+
   public AnimationPrefs getPrefs(AnimationPrefs oldjc) {
     // Fill in UI elements with current prefs
     tf_width.setText(Integer.toString(oldjc.width));
@@ -275,7 +276,8 @@ public class AnimationPrefsDialog extends JDialog {
     return gbc;
   }
 
-  // Read prefs out of UI elements
+  // Read prefs out of UI elements.
+
   protected AnimationPrefs readDialogBox(AnimationPrefs oldjc) {
     int tempint;
     double tempdouble;

@@ -2,8 +2,8 @@
 // Animator.java
 //
 // This class draws individual frames of juggling. It is independent of JPanel
-// or other GUI elements so that it can be used in headless mode, e.g., as
-// when creating an animated GIF from the command line.
+// or other GUI elements so that it can be used in headless mode, e.g., as when
+// creating an animated GIF from the command line.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -78,7 +78,9 @@ public class Animator {
     if (jc.stereo) {
       ren2 = new Renderer2D();
       ren2.setPattern(pat);
-    } else ren2 = null;
+    } else {
+      ren2 = null;
+    }
 
     initAnimator();
 
@@ -228,9 +230,8 @@ public class Animator {
   // are visible. Call this whenever the pattern changes.
 
   public void initAnimator() {
-    boolean sg =
-        (jc.showGround == AnimationPrefs.GROUND_ON
-            || (jc.showGround == AnimationPrefs.GROUND_AUTO && pat.isBouncePattern()));
+    boolean sg = (jc.showGround == AnimationPrefs.GROUND_ON ||
+        (jc.showGround == AnimationPrefs.GROUND_AUTO && pat.isBouncePattern()));
     ren1.setGround(sg);
     if (jc.stereo) {
       ren2.setGround(sg);
@@ -317,8 +318,7 @@ public class Animator {
     // regardless of rotation angle.
     Coordinate hwmax = ren1.getHandWindowMax();
     Coordinate hwmin = ren1.getHandWindowMin();
-    hwmax.x =
-        Math.max(
+    hwmax.x = Math.max(
             Math.max(Math.abs(hwmax.x), Math.abs(hwmin.x)),
             Math.max(Math.abs(hwmax.y), Math.abs(hwmin.y)));
     hwmin.x = -hwmax.x;

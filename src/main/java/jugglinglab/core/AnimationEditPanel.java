@@ -313,7 +313,9 @@ public class AnimationEditPanel extends AnimationPanel
       activatePosition(position);
     }
 
-    if (!mouse_moved && !dragging && engine != null && engine.isAlive()) setPaused(!enginePaused);
+    if (!mouse_moved && !dragging && engine != null && engine.isAlive()) {
+      setPaused(!enginePaused);
+    }
 
     dragging_camera = false;
     dragging = false;
@@ -537,8 +539,12 @@ public class AnimationEditPanel extends AnimationPanel
                 ErrorDialog.handleFatalException(jei);
               }
             }
-            if (position_active) createPositionView();
-            if (isPaused()) repaint();
+            if (position_active) {
+              createPositionView();
+            }
+            if (isPaused()) {
+              repaint();
+            }
 
             // Don't update the preferred animation size if the enclosing
             // window is maximized
@@ -582,7 +588,9 @@ public class AnimationEditPanel extends AnimationPanel
       a = 0;
     } else if (anim.pat.getNumberOfJugglers() == 1) {
       a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
-    } else snap_horizontal = false;
+    } else {
+      snap_horizontal = false;
+    }
 
     if (snap_horizontal) {
       while (a < 0) {
@@ -703,7 +711,9 @@ public class AnimationEditPanel extends AnimationPanel
 
         boolean new_master = true;
         for (JMLEvent ev3 : visible_events) {
-          if (ev3.hasSameMasterAs(ev2)) new_master = false;
+          if (ev3.hasSameMasterAs(ev2)) {
+            new_master = false;
+          }
         }
         if (new_master) {
           visible_events.add(ev2);
@@ -724,7 +734,9 @@ public class AnimationEditPanel extends AnimationPanel
 
         boolean new_master = true;
         for (JMLEvent ev3 : visible_events) {
-          if (ev3.hasSameMasterAs(ev2)) new_master = false;
+          if (ev3.hasSameMasterAs(ev2)) {
+            new_master = false;
+          }
         }
         if (new_master) {
           visible_events.add(ev2);
@@ -755,7 +767,7 @@ public class AnimationEditPanel extends AnimationPanel
           throw new JuggleExceptionInternal("AEP: No coord on event " + ev.toString());
         }
         Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
-        double dl = 1.0 / Coordinate.distance(c, c2); // pixels/cm
+        double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
 
         double[] ca = ren.getCameraAngle();
         double theta =
@@ -1242,6 +1254,7 @@ public class AnimationEditPanel extends AnimationPanel
   // adjusts the returned Coordinate accordingly. When a grid snap occurs,
   // `deltax` and `deltay` are adjusted so that the item displays in its
   // snapped position.
+
   protected Coordinate getCurrentCoordinate() {
     if (event_active) {
       if (!dragging) {
@@ -1302,7 +1315,9 @@ public class AnimationEditPanel extends AnimationPanel
         c.y += a;
 
         // Snap to y = 0 in local coordinates ("normal" throwing depth)
-        if (Math.abs(c.y) < YZ_EVENT_SNAP_CM) c.y = 0;
+        if (Math.abs(c.y) < YZ_EVENT_SNAP_CM) {
+          c.y = 0;
+        }
 
         // Calculate `deltax`, `deltay` that put the event closest to
         // its final location.
@@ -1420,6 +1435,7 @@ public class AnimationEditPanel extends AnimationPanel
   }
 
   // Test whether a point (x, y) lies inside a polygon.
+
   protected static boolean isInsidePolygon(
       int x, int y, double[][][] array, int index, int[] points) {
     boolean inside = false;

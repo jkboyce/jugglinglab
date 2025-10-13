@@ -653,10 +653,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       double sep;
 
       while (ev != null) {
-        if (ev != event
-            && ev.getJuggler() == event.getJuggler()
+        if (ev != event && ev.getJuggler() == event.getJuggler()
             && ev.getHand() == event.getHand()) {
-          if (ev.hasThrow() && event.hasThrowOrCatch() || ev.hasThrowOrCatch() && event.hasThrow()) {
+          if (ev.hasThrow() && event.hasThrowOrCatch()
+              || ev.hasThrowOrCatch() && event.hasThrow()) {
             sep = MIN_THROW_SEP_TIME;
           } else {
             sep = MIN_EVENT_SEP_TIME;
@@ -738,7 +738,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       }
     }
 
-    if (newt < ev.getT()) { // moving to earlier time
+    if (newt < ev.getT()) {  // moving to earlier time
       ev = ev.getPrevious();
       while (ev != null && ev.getT() > newt) {
         if (!ev.hasSameMasterAs(item.event)
@@ -761,7 +761,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                   if (!ev.isMaster()) {
                     ev.getMaster().removeTransition(j);
                   }
-                  j--; // next trans moved into slot
+                  j--;  // next trans moved into slot
                 }
                 break;
             }
@@ -774,8 +774,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               ev.addTransition(tr);
               if (!ev.isMaster()) {
                 Permutation pp = ev.getPathPermFromMaster().getInverse();
-                tr =
-                    new JMLTransition(
+                tr = new JMLTransition(
                         JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null);
                 ev.getMaster().addTransition(tr);
               }
@@ -820,8 +819,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               ev.addTransition(tr);
               if (!ev.isMaster()) {
                 Permutation pp = ev.getPathPermFromMaster().getInverse();
-                tr =
-                    new JMLTransition(
+                tr = new JMLTransition(
                         JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null);
                 ev.getMaster().addTransition(tr);
               }
