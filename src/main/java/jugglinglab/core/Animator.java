@@ -272,7 +272,6 @@ public class Animator {
   // and `overallmax`, which determine a bounding box.
 
   protected void findMaxMin() {
-
     // Step 1: Work out a bounding box that contains all paths through space
     // for the pattern, including the props
 

@@ -330,7 +330,7 @@ public class AnimationPanel extends JPanel implements Runnable {
   public void run() {
     Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
-    engineRunning = true; // ok to start painting
+    engineRunning = true;  // ok to start painting
     engineAnimating = false;
 
     if (jc.mousePause) {
@@ -404,7 +404,9 @@ public class AnimationPanel extends JPanel implements Runnable {
                       new Runnable() {
                         @Override
                         public void run() {
-                          if (catchclip.isActive()) catchclip.stop();
+                          if (catchclip.isActive()) {
+                            catchclip.stop();
+                          }
                           catchclip.setFramePosition(0);
                           catchclip.start();
                         }
