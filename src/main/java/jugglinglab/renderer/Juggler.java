@@ -14,18 +14,18 @@ import jugglinglab.util.*;
 
 public class Juggler {
   // juggler dimensions, in centimeters
-  public static final double SHOULDER_HW = 23; // shoulder half-width (cm)
-  public static final double SHOULDER_H = 40; // throw pos. to shoulder
-  public static final double WAIST_HW = 17; // waist half-width
+  public static final double SHOULDER_HW = 23;  // shoulder half-width (cm)
+  public static final double SHOULDER_H = 40;  // throw pos. to shoulder
+  public static final double WAIST_HW = 17;  // waist half-width
   public static final double WAIST_H = -5;
   // public final static double ELBOW_HW = 30;  // elbow "home"
   // public final static double ELBOW_H = 6;
   // public final static double ELBOW_SLOP = 12;
-  public static final double HAND_OUT = 5; // outside width of hand
+  public static final double HAND_OUT = 5;  // outside width of hand
   public static final double HAND_IN = 5;
-  public static final double HEAD_HW = 10; // head half-width
-  public static final double HEAD_H = 26; // head height
-  public static final double NECK_H = 5; // neck height
+  public static final double HEAD_HW = 10;  // head half-width
+  public static final double HEAD_H = 26;  // head height
+  public static final double NECK_H = 5;  // neck height
   public static final double SHOULDER_Y = 0;
   public static final double PATTERN_Y = 30;
   public static final double UPPER_LENGTH = 41;

@@ -122,7 +122,9 @@ public class OpenFilesServerMMF extends Thread {
     } catch (IOException ioe) {
       ErrorDialog.handleFatalException(ioe);
     } catch (InterruptedException ie) {
-      if (Constants.DEBUG_OPEN_SERVER) System.out.println("thread interrupted, deleting temp file");
+      if (Constants.DEBUG_OPEN_SERVER) {
+        System.out.println("thread interrupted, deleting temp file");
+      }
     } finally {
       try {
         if (chan != null) {
@@ -130,7 +132,9 @@ public class OpenFilesServerMMF extends Thread {
         }
         Files.delete(fipc.toPath());
       } catch (Exception e) {
-        if (Constants.DEBUG_OPEN_SERVER) System.out.println(e);
+        if (Constants.DEBUG_OPEN_SERVER) {
+          System.out.println(e);
+        }
       }
     }
   }

@@ -26,7 +26,7 @@ public class Renderer2D extends Renderer {
   public static final int RENDER_POINT_FIELD = 0;
   public static final int RENDER_WIRE_FRAME = 1;
   public static final int RENDER_FLAT_SOLID = 2;
-  protected int render_type = RENDER_FLAT_SOLID; // One of the above
+  protected int render_type = RENDER_FLAT_SOLID;  // one of the above
 
   protected Color background;
   protected Coordinate left;
@@ -40,12 +40,12 @@ public class Renderer2D extends Renderer {
   protected Rectangle viewport;
   protected JMLPattern pat;
 
-  protected double zoom; // pixels/cm
-  protected double zoom_orig; // pixels/cm at zoomfactor=1
-  protected double zoomfactor; // multiplier of `zoom`
+  protected double zoom;  // pixels/cm
+  protected double zoom_orig;  // pixels/cm at zoomfactor=1
+  protected double zoomfactor;  // multiplier of `zoom`
   protected int originx;
   protected int originz;
-  protected int polysides; // # sides in polygon for head
+  protected int polysides;  // # sides in polygon for head
   protected double[] headcos;
   protected double[] headsin;
   protected int[] headx;
@@ -156,7 +156,7 @@ public class Renderer2D extends Renderer {
             0.5 * (adjusted_max.z + adjusted_min.z),
             0.5 * (adjusted_max.y + adjusted_min.y));
 
-    setZoomLevel(getZoomLevel()); // calculate camera matrix etc.
+    setZoomLevel(getZoomLevel());  // calculate camera matrix etc.
 
     if (Constants.DEBUG_LAYOUT) {
       System.out.println("overallmax = " + overallmax);
@@ -308,16 +308,14 @@ public class Renderer2D extends Renderer {
 
         getXYZ(tempv1, obj[index].coord[0]);
         getXYZ(tempv2, obj[index].coord[1]);
-        int x = Math.min(
-                (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-        int y = Math.min(
-                (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-        int width = Math.abs(
-                    (int) Math.round(obj[index].coord[0].x)
-                        - (int) Math.round(obj[index].coord[1].x)) + 1;
-        int height = Math.abs(
-                    (int) Math.round(obj[index].coord[0].y)
-                        - (int) Math.round(obj[index].coord[1].y)) + 1;
+        int x = Math.min((int) Math.round(obj[index].coord[0].x),
+            (int) Math.round(obj[index].coord[1].x));
+        int y = Math.min((int) Math.round(obj[index].coord[0].y),
+            (int) Math.round(obj[index].coord[1].y));
+        int width = Math.abs((int) Math.round(obj[index].coord[0].x)
+            - (int) Math.round(obj[index].coord[1].x)) + 1;
+        int height = Math.abs((int) Math.round(obj[index].coord[0].y)
+            - (int) Math.round(obj[index].coord[1].y)) + 1;
         obj[index].boundingbox.x = x;
         obj[index].boundingbox.y = y;
         obj[index].boundingbox.width = width;
@@ -385,16 +383,14 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][2 + j], obj[index].coord[0]); // entire arm
           getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
-          int x = Math.min(
-                  (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          int y = Math.min(
-                  (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          int width = Math.abs(
-                      (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x)) + 1;
-          int height = Math.abs(
-                      (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y)) + 1;
+          int x = Math.min((int) Math.round(obj[index].coord[0].x),
+              (int) Math.round(obj[index].coord[1].x));
+          int y = Math.min((int) Math.round(obj[index].coord[0].y),
+              (int) Math.round(obj[index].coord[1].y));
+          int width = Math.abs((int) Math.round(obj[index].coord[0].x)
+              - (int) Math.round(obj[index].coord[1].x)) + 1;
+          int height = Math.abs((int) Math.round(obj[index].coord[0].y)
+              - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -405,16 +401,14 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][2 + j], obj[index].coord[0]); // upper arm
           getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[1]);
-          int x = Math.min(
-                  (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          int y = Math.min(
-                  (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          int width = Math.abs(
-                      (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x)) + 1;
-          int height = Math.abs(
-                      (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y)) + 1;
+          int x = Math.min((int) Math.round(obj[index].coord[0].x),
+              (int) Math.round(obj[index].coord[1].x));
+          int y = Math.min((int) Math.round(obj[index].coord[0].y),
+              (int) Math.round(obj[index].coord[1].y));
+          int width = Math.abs((int) Math.round(obj[index].coord[0].x)
+              - (int) Math.round(obj[index].coord[1].x)) + 1;
+          int height = Math.abs((int) Math.round(obj[index].coord[0].y)
+              - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -425,16 +419,14 @@ public class Renderer2D extends Renderer {
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[0]); // lower arm
           getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
-          x = Math.min(
-                  (int) Math.round(obj[index].coord[0].x), (int) Math.round(obj[index].coord[1].x));
-          y = Math.min(
-                  (int) Math.round(obj[index].coord[0].y), (int) Math.round(obj[index].coord[1].y));
-          width = Math.abs(
-                      (int) Math.round(obj[index].coord[0].x)
-                          - (int) Math.round(obj[index].coord[1].x)) + 1;
-          height = Math.abs(
-                      (int) Math.round(obj[index].coord[0].y)
-                          - (int) Math.round(obj[index].coord[1].y)) + 1;
+          x = Math.min((int) Math.round(obj[index].coord[0].x),
+              (int) Math.round(obj[index].coord[1].x));
+          y = Math.min((int) Math.round(obj[index].coord[0].y),
+              (int) Math.round(obj[index].coord[1].y));
+          width = Math.abs((int) Math.round(obj[index].coord[0].x)
+              - (int) Math.round(obj[index].coord[1].x)) + 1;
+          height = Math.abs((int) Math.round(obj[index].coord[0].y)
+              - (int) Math.round(obj[index].coord[1].y)) + 1;
           obj[index].boundingbox.x = x;
           obj[index].boundingbox.y = y;
           obj[index].boundingbox.width = width;
@@ -550,13 +542,11 @@ public class Renderer2D extends Renderer {
           if (Math.abs(RheadBx - LheadBx) > 2.0) {
             // head is at least 2 pixels wide; draw it as a polygon
             for (int j = 0; j < polysides; j++) {
-              headx[j] =
-                  (int) Math.round(0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
-              heady[j] =
-                  (int)
-                      Math.round(
-                          0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy))
-                              + (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx - LheadBx));
+              headx[j] = (int) Math.round(
+                  0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx)));
+              heady[j] = (int) Math.round(
+                  0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy))
+                  + (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx - LheadBx));
             }
 
             g.setColor(background);
@@ -566,8 +556,8 @@ public class Renderer2D extends Renderer {
           } else {
             // head is edge-on; draw it as a line
             double h = Math.sqrt(
-                    (LheadBy - LheadTy) * (LheadBy - LheadTy)
-                        + (RheadBy - LheadBy) * (RheadBy - LheadBy));
+                (LheadBy - LheadTy) * (LheadBy - LheadTy)
+                + (RheadBy - LheadBy) * (RheadBy - LheadBy));
             int headx = (int) Math.round(0.5 * (LheadBx + RheadBx));
             int heady1 = (int) Math.round(0.5 * (LheadTy + RheadBy + h));
             int heady2 = (int) Math.round(0.5 * (LheadTy + RheadBy - h));
@@ -734,7 +724,6 @@ public class Renderer2D extends Renderer {
       // line is behind the bb at all points of intersection, return 1.  Otherwise
       // return -1;
 
-      // System.out.println("starting...");
       if (box.type == TYPE_BODY) {
         vectorProduct(box.coord[0], box.coord[1], box.coord[2], tempv);
       } else {
@@ -756,22 +745,20 @@ public class Renderer2D extends Renderer {
           double zb = box.coord[0].z
                   - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z;
           if (line.coord[i].z < (zb - SLOP)) {
-            // System.out.println("   exit 1");
             return -1;
           }
           endinbb = true;
         }
       }
       if (endinbb) {
-        // System.out.println("   exit 2");
-        return 1; // know that end wasn't in front of body
+        return 1;  // know that end wasn't in front of body
       }
 
       boolean intersection = false;
       for (int i = 0; i < 2; i++) {
         int x = ((i == 0) ? box.boundingbox.x : (box.boundingbox.x + box.boundingbox.width - 1));
-        if ((x < Math.min(line.coord[0].x, line.coord[1].x))
-            || (x > Math.max(line.coord[0].x, line.coord[1].x))) {
+        if (x < Math.min(line.coord[0].x, line.coord[1].x)
+            || x > Math.max(line.coord[0].x, line.coord[1].x)) {
           continue;
         }
         if (line.coord[1].x == line.coord[0].x) {
@@ -790,14 +777,13 @@ public class Renderer2D extends Renderer {
                     * ((double) x - line.coord[0].x)
                     / (line.coord[1].x - line.coord[0].x);
         if (zl < (zb - SLOP)) {
-          // System.out.println("   exit 3, i = "+i);
           return -1;
         }
       }
       for (int i = 0; i < 2; i++) {
         int y = ((i == 0) ? box.boundingbox.y : (box.boundingbox.y + box.boundingbox.height - 1));
-        if ((y < Math.min(line.coord[0].y, line.coord[1].y))
-            || (y > Math.max(line.coord[0].y, line.coord[1].y))) {
+        if (y < Math.min(line.coord[0].y, line.coord[1].y)
+            || y > Math.max(line.coord[0].y, line.coord[1].y)) {
           continue;
         }
         if (line.coord[1].y == line.coord[0].y) {
@@ -816,12 +802,10 @@ public class Renderer2D extends Renderer {
                 + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x)
                 / (line.coord[1].x - line.coord[0].x);
         if (zl < (zb - SLOP)) {
-          // System.out.println("   exit 4, i = "+i);
           return -1;
         }
       }
 
-      // System.out.println("   exit 5");
       return (intersection ? 1 : 0);
     }
 

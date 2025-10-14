@@ -49,7 +49,8 @@ public class OpenFilesServerSockets extends Thread {
     start();
   }
 
-  // Server thread loops forever, listening for connections on our port
+  // Server thread loops forever, listening for connections on our port.
+
   @Override
   public void run() {
     if (Constants.DEBUG_OPEN_SERVER) {

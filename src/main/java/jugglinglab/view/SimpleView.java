@@ -23,7 +23,9 @@ public class SimpleView extends View {
     add(ja, BorderLayout.CENTER);
   }
 
+  //----------------------------------------------------------------------------
   // View methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void restartView(JMLPattern p, AnimationPrefs c)

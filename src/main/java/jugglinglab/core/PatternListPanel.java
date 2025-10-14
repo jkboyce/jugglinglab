@@ -115,6 +115,7 @@ public class PatternListPanel extends JPanel {
 
   // Try to launch an animation window for the currently-selected item in the
   // list. If there is no pattern associated with the line, do nothing.
+
   protected void launchAnimation() {
     try {
       int row = list.getSelectedIndex();
@@ -161,7 +162,8 @@ public class PatternListPanel extends JPanel {
     animtarget = target;
   }
 
-  // Used by GeneratorTarget
+  // Used by GeneratorTarget.
+
   public void addPattern(String display, String animprefs, String notation, String anim) {
     pl.addLine(-1, display, animprefs, notation, anim, null, null);
   }
@@ -599,11 +601,11 @@ public class PatternListPanel extends JPanel {
 
   class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
     public Component getListCellRendererComponent(
-        JList<? extends PatternRecord> list, // the list
-        PatternRecord value, // value to display
-        int index, // cell index
-        boolean isSelected, // is the cell selected
-        boolean cellHasFocus) // does the cell have focus
+        JList<? extends PatternRecord> list,  // the list
+        PatternRecord value,  // value to display
+        int index,  // cell index
+        boolean isSelected,  // is the cell selected
+        boolean cellHasFocus)  // does the cell have focus
         {
       PatternRecord rec = value;
 

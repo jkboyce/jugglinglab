@@ -1,7 +1,7 @@
 //
 // JLFunc.java
 //
-// Some useful functions
+// Some useful functions.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -75,7 +75,7 @@ public class JLFunc {
         if (result == null) {
           // no repeat found, treat like a normal character
           sb.append(ch);
-          pos++;
+          ++pos;
         } else {
           int repeat_end = result[0];
           int repeats = result[1];
@@ -92,7 +92,7 @@ public class JLFunc {
         }
       } else {
         sb.append(ch);
-        pos++;
+        ++pos;
       }
     }
   }
@@ -118,9 +118,9 @@ public class JLFunc {
       char ch = str.charAt(pos);
 
       if (ch == '(') {
-        depth++;
+        ++depth;
       } else if (ch == ')') {
-        depth--;
+        --depth;
         if (depth == 0) {
           // see if we match the form '^(int)...' after the closing
           // parenthesis
@@ -248,46 +248,48 @@ public class JLFunc {
   protected static JFileChooser jfc;
 
   public static JFileChooser jfc() {
-    if (jfc == null) {
-      jfc = new JFileChooser() {
-            @Override
-            public void approveSelection() {
-              File f = getSelectedFile();
+    if (jfc != null) {
+      return jfc;
+    }
 
-              if (f.exists() && getDialogType() == SAVE_DIALOG) {
-                String template = guistrings.getString("JFC_File_exists_message");
-                Object[] arguments = {f.getName()};
-                String msg = MessageFormat.format(template, arguments);
-                String title = guistrings.getString("JFC_File_exists_title");
+    jfc = new JFileChooser() {
+          @Override
+          public void approveSelection() {
+            File f = getSelectedFile();
 
-                int result = JOptionPane.showConfirmDialog(
-                        this, msg, title, JOptionPane.YES_NO_CANCEL_OPTION);
-                switch (result) {
-                  case JOptionPane.YES_OPTION:
-                    super.approveSelection();
-                    return;
-                  case JOptionPane.NO_OPTION:
-                    return;
-                  case JOptionPane.CLOSED_OPTION:
-                    return;
-                  case JOptionPane.CANCEL_OPTION:
-                    cancelSelection();
-                    return;
-                }
+            if (f.exists() && getDialogType() == SAVE_DIALOG) {
+              String template = guistrings.getString("JFC_File_exists_message");
+              Object[] arguments = {f.getName()};
+              String msg = MessageFormat.format(template, arguments);
+              String title = guistrings.getString("JFC_File_exists_title");
+
+              int result = JOptionPane.showConfirmDialog(
+                      this, msg, title, JOptionPane.YES_NO_CANCEL_OPTION);
+              switch (result) {
+                case JOptionPane.YES_OPTION:
+                  super.approveSelection();
+                  return;
+                case JOptionPane.NO_OPTION:
+                  return;
+                case JOptionPane.CLOSED_OPTION:
+                  return;
+                case JOptionPane.CANCEL_OPTION:
+                  cancelSelection();
+                  return;
               }
-
-              try {
-                Preferences.userRoot().node("Juggling Lab").put("base_dir", f.getParent());
-              } catch (Exception e) {
-              }
-
-              super.approveSelection();
             }
-          };
 
-      if (JugglingLab.base_dir != null) {
-        jfc.setCurrentDirectory(JugglingLab.base_dir.toFile());
-      }
+            try {
+              Preferences.userRoot().node("Juggling Lab").put("base_dir", f.getParent());
+            } catch (Exception e) {
+            }
+
+            super.approveSelection();
+          }
+        };
+
+    if (JugglingLab.base_dir != null) {
+      jfc.setCurrentDirectory(JugglingLab.base_dir.toFile());
     }
     return jfc;
   }

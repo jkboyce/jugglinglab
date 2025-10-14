@@ -83,7 +83,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
   protected void createContents() throws JuggleExceptionUser, JuggleExceptionInternal {
     ApplicationPanel ap = new ApplicationPanel(this);
     ap.setDoubleBuffered(true);
-    setContentPane(ap); // entire contents of window
+    setContentPane(ap);  // entire contents of window
 
     // does the real work of adding controls etc.
     ap.setNotation(Pattern.NOTATION_SITESWAP);

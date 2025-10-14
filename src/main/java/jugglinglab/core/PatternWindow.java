@@ -99,6 +99,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   }
 
   // Create a new PatternWindow with the same JMLPattern and default View.
+
   protected PatternWindow(PatternWindow pw) throws JuggleExceptionUser, JuggleExceptionInternal {
     this(
         pw.getTitle(),
@@ -161,7 +162,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     view.setUndoList(undo, -1);
   }
 
-  // `mode` is one of the View.VIEW_X constants
+  // `mode` is one of the View.VIEW_X constants.
 
   protected void setViewMode(int mode) throws JuggleExceptionUser, JuggleExceptionInternal {
     if (view == null) {
@@ -256,7 +257,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   // For determining if the current window is maximized in the UI.
   //
-  // Note this does not work on macOS, where java does not set a Frame's
+  // Note this does not work on macOS, where Java does not set a Frame's
   // extended state flag when it's maximized. Nor is there any other
   // replacement for com.apple.eawt.FullScreenListener. See e.g.
   // https://bugs.openjdk.java.net/browse/JDK-8228638
@@ -928,7 +929,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
   }
 
+  //----------------------------------------------------------------------------
   // java.awt.Frame methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void setTitle(String title) {
@@ -940,7 +943,9 @@ public class PatternWindow extends JFrame implements ActionListener {
     ApplicationWindow.updateWindowMenus();
   }
 
+  //----------------------------------------------------------------------------
   // java.awt.Window methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void dispose() {

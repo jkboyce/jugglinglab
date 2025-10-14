@@ -1,7 +1,7 @@
 //
 // PatternView.java
 //
-// This view provides the ability to edit the textual representation of a pattern.
+// This view provides the ability to edit the text representation of a pattern.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -41,13 +41,11 @@ public class PatternView extends View implements DocumentListener {
     setLayout(new BorderLayout());
 
     // animator on the left
-
     ja = new AnimationPanel();
     ja.setPreferredSize(dim);
     ja.setMinimumSize(new Dimension(10, 10));
 
     // controls panel on the right
-
     JPanel controls = new JPanel();
     GridBagLayout gb = new GridBagLayout();
     controls.setLayout(gb);
@@ -100,14 +98,12 @@ public class PatternView extends View implements DocumentListener {
     gb.setConstraints(jscroll, gbc);
 
     // split pane dividing the two
-
     jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls);
     jsp.setResizeWeight(0.75); // % extra space allocated to left (animation) side
 
     add(jsp, BorderLayout.CENTER);
 
     // button + error message label across the bottom
-
     JPanel lower = new JPanel();
     GridBagLayout gb2 = new GridBagLayout();
     lower.setLayout(gb2);
@@ -129,7 +125,6 @@ public class PatternView extends View implements DocumentListener {
     add(lower, BorderLayout.PAGE_END);
 
     // add actions to the various items
-
     ta.getDocument().addDocumentListener(this);
 
     rb_bp.addActionListener(
@@ -215,8 +210,11 @@ public class PatternView extends View implements DocumentListener {
   // that was there.
 
   protected void reloadTextArea() {
-    if (rb_bp.isSelected()) ta.setText(getPattern().getBasePatternConfig().replace(";", ";\n"));
-    else if (rb_jml.isSelected()) ta.setText(getPattern().toString());
+    if (rb_bp.isSelected()) {
+      ta.setText(getPattern().getBasePatternConfig().replace(";", ";\n"));
+    } else if (rb_jml.isSelected()) {
+      ta.setText(getPattern().toString());
+    }
 
     ta.setCaretPosition(0);
     lab.setText(" ");
@@ -259,7 +257,9 @@ public class PatternView extends View implements DocumentListener {
     reloadTextArea();
   }
 
+  //----------------------------------------------------------------------------
   // View methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void restartView(JMLPattern p, AnimationPrefs c)
@@ -368,7 +368,9 @@ public class PatternView extends View implements DocumentListener {
     new View.GIFWriter(ja, f, cleanup);
   }
 
+  //----------------------------------------------------------------------------
   // javax.swing.event.DocumentListener methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void insertUpdate(DocumentEvent e) {

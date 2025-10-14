@@ -34,10 +34,14 @@ public class OpenFilesServer {
   public OpenFilesServer() {
     switch (Constants.OPEN_FILES_METHOD) {
       case SERVER_MMF:
-        if (ofs_mmf == null) ofs_mmf = new OpenFilesServerMMF();
+        if (ofs_mmf == null) {
+          ofs_mmf = new OpenFilesServerMMF();
+        }
         break;
       case SERVER_SOCKETS:
-        if (ofs_sockets == null) ofs_sockets = new OpenFilesServerSockets();
+        if (ofs_sockets == null) {
+          ofs_sockets = new OpenFilesServerSockets();
+        }
         break;
     }
   }
@@ -45,6 +49,7 @@ public class OpenFilesServer {
   // Try to signal another instance of Juggling Lab on this machine to open
   // the file. If the open command is successfully handed off, return true.
   // Otherwise return false.
+
   public static boolean tryOpenFile(File f) {
     switch (Constants.OPEN_FILES_METHOD) {
       case SERVER_MMF:
@@ -55,7 +60,8 @@ public class OpenFilesServer {
     return false;
   }
 
-  // Do any needed cleanup when things are closing down
+  // Do any needed cleanup when things are closing down.
+
   public static void cleanup() {
     if (ofs_mmf != null) {
       OpenFilesServerMMF.cleanup();

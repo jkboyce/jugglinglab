@@ -26,7 +26,6 @@ public class EditView extends View {
   public EditView(Dimension dim, JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
     ap = new AnimationEditPanel();
-    // ap = new AnimationPanel();
     ap.setPreferredSize(dim);
     ap.setMinimumSize(new Dimension(10, 10));
 
@@ -34,8 +33,8 @@ public class EditView extends View {
     ladder.setLayout(new BorderLayout());
     ladder.setBackground(Color.white);
 
-    // add ladder diagram now to get dimensions correct; will be replaced
-    // in restartView()
+    // add a ladder diagram now to get dimensions correct; will be replaced in
+    // restartView()
     ladder.add(new LadderDiagram(pat), BorderLayout.CENTER);
 
     Locale loc = Locale.getDefault();
@@ -95,8 +94,7 @@ public class EditView extends View {
     ladder.add(new_ladder, BorderLayout.CENTER);
 
     if (changing_jugglers && parent != null) {
-      // the next line is needed to get the JSplitPane divider to
-      // reset during layout
+      // the next line gets the JSplitPane divider to reset during layout
       jsp.resetToPreferredSizes();
 
       if (parent.isWindowMaximized()) {
@@ -105,7 +103,7 @@ public class EditView extends View {
         parent.pack();
       }
     } else {
-      ladder.validate(); // to make ladder redraw
+      ladder.validate();  // to make ladder redraw
     }
 
     if (parent != null) {

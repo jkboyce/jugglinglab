@@ -27,7 +27,6 @@ import jugglinglab.renderer.Renderer;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 import org.w3c.dom.Node;
-
 // import gifwriter.GIFAnimWriter;
 
 public class Animator {
@@ -43,8 +42,8 @@ public class Animator {
   protected Permutation invpathperm;
 
   // camera angles for viewing
-  protected double[] camangle; // in radians
-  protected double[] camangle1; // for stereo display
+  protected double[] camangle;  // in radians
+  protected double[] camangle1;  // for stereo display
   protected double[] camangle2;
 
   protected Dimension dim;

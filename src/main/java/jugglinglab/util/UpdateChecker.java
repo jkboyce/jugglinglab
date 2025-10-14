@@ -76,8 +76,7 @@ public class UpdateChecker extends Thread {
     final String current_version = line.replaceAll(pattern, "$1");
     String running_version = Constants.version;
 
-    if (current_version == null
-        || current_version.length() == 0
+    if (current_version == null || current_version.length() == 0
         || JLFunc.compareVersions(current_version, running_version) <= 0) {
       return;
     }

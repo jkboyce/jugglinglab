@@ -31,8 +31,8 @@ public class SelectionView extends View {
       ja[i] = new AnimationPanel();
     }
 
-    // JLayeredPane on the left so we can show a grid of animations with
-    // an overlay drawn on top
+    // JLayeredPane on the left so we can show a grid of animations with an
+    // overlay drawn on top
     layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay());
     mutator = new Mutator();
 
@@ -195,7 +195,9 @@ public class SelectionView extends View {
     return layered;
   }
 
+  //----------------------------------------------------------------------------
   // View methods
+  //----------------------------------------------------------------------------
 
   @Override
   public void restartView(JMLPattern p, AnimationPrefs c)

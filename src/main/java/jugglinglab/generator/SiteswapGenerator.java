@@ -570,12 +570,11 @@ public class SiteswapGenerator extends Generator {
   // other incidental variables.
 
   protected void allocateWorkspace() {
-    state =
-        new int[l_max + 1][hands]
-            [ground_state_length]; // last index not ht because of findStartEnd()
+    // last index below is not `ht` because of findStartEnd()
+    state = new int[l_max + 1][hands][ground_state_length];
     holes = new int[hands][l_max + ht];
-    throw_to =
-        new int[slot_size][hands][max_occupancy]; // first index not l because of findStartEnd()
+    // first index below is not `l` because of findStartEnd()
+    throw_to = new int[slot_size][hands][max_occupancy];
     throw_value = new int[slot_size][hands][max_occupancy];
 
     rhythm = new int[slot_size + 1][hands][ht];
@@ -588,13 +587,14 @@ public class SiteswapGenerator extends Generator {
     }
 
     if (mpflag != 0) {
-      // allocate space for filter variables
+      // space for filter variables
       mp_filter = new int[l_max + 1][hands][slot_size][3];
     }
 
     throws_left = new int[l_max][hands];
 
-    if (jugglers > 1) {  // passing communication delay variables
+    if (jugglers > 1) {
+      // passing communication delay variables
       scratch1 = new int[hands];
       scratch2 = new int[hands];
     }
@@ -622,14 +622,16 @@ public class SiteswapGenerator extends Generator {
 
     // check if we're done making the state
     if (balls_placed == n || groundflag == 1) {
-      if (groundflag == 1) { // find only ground state patterns?
+      if (groundflag == 1) {
+        // find only ground state patterns
         for (int i = 0; i < hands; ++i) {
           for (int j = 0; j < ht; ++j) {
             state[0][i][j] = ground_state[i][j];
           }
         }
       } else if (groundflag == 2 && compareStates(state[0], ground_state) == 0) {
-        return 0;  // don't find ground state patterns
+        // don't find ground state patterns
+        return 0;
       }
 
       // At this point our state is completed.  Check to see if it's
@@ -708,7 +710,7 @@ public class SiteswapGenerator extends Generator {
       }
 
       startBeat(0);
-      return findCycles(0, 1, 0, 0); // find patterns thru state
+      return findCycles(0, 1, 0, 0);  // find patterns thru state
     }
 
     if (balls_placed == 0) {  // startup, clear state
@@ -1686,7 +1688,7 @@ public class SiteswapGenerator extends Generator {
               dest_slot[FROM] = from;
               return 0;
             }
-            break; // kill recursion
+            break;  // kill recursion
           case MP_THROW:
             if (dest_slot[FROM] == from && dest_slot[VALUE] == value) {
               return 0;  // throws from same place (cluster)
@@ -1800,7 +1802,9 @@ public class SiteswapGenerator extends Generator {
           throw_to[i][j][k] = j;
         }
 
-        if (i >= ht) continue;
+        if (i >= ht) {
+          continue;
+        }
 
         for (int q = 0; q < state[0][j][i]; ++q) {
           findending2:
@@ -1872,7 +1876,9 @@ public class SiteswapGenerator extends Generator {
     int last_index = 0;
     for (int i = 0; i < ground_state_length; ++i) {
       for (int j = 0; j < hands; ++j) {
-        if (st[j][i] != 0) last_index = i;
+        if (st[j][i] != 0) {
+          last_index = i;
+        }
       }
     }
     for (int i = 0; i <= last_index; ++i) {

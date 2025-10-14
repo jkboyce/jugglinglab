@@ -981,12 +981,12 @@ public class AnimationEditPanel extends AnimationPanel
     {-POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0},
     {POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0},
     {POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0},
-    {0, 0, 0}, // center
-    {0, -20, 0}, // angle control point
-    {0, 0, 20}, // end of z-vector control
-    {2, 0, 17}, // arrow at end of z-vector control
+    {0, 0, 0},  // center
+    {0, -20, 0},  // angle control point
+    {0, 0, 20},  // end of z-vector control
+    {2, 0, 17},  // arrow at end of z-vector control
     {-2, 0, 17},
-    {0, -250, 0}, // direction-sighting line when dragging angle
+    {0, -250, 0},  // direction-sighting line when dragging angle
     {0, 250, 0},
 
     // used for moving the position
@@ -1323,8 +1323,8 @@ public class AnimationEditPanel extends AnimationPanel
           c.y = 0;
         }
 
-        // Calculate `deltax`, `deltay` that put the event closest to
-        // its final location.
+        // Calculate `deltax`, `deltay` that put the event closest to its final
+        // location
         deltax = (int) Math.round((c.y - event_start.y) * dy[0]);
         deltay = (int) Math.round((c.y - event_start.y) * dy[1]);
       }
@@ -1391,8 +1391,8 @@ public class AnimationEditPanel extends AnimationPanel
         }
 
         if (snapped) {
-          // Calculate `deltax` and `deltay` that get us closest to the
-          // snapped position.
+          // calculate `deltax` and `deltay` that get us closest to the snapped
+          // position
           double deltacx = c.x - oldcx;
           double deltacy = c.y - oldcy;
           double deltaa = deltacx * Math.cos(angle) + deltacy * Math.sin(angle);

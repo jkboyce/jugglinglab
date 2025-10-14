@@ -22,7 +22,7 @@ public class ErrorDialog {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
-  // Shows a message dialog for a recoverable user error
+  // Show a message dialog for a recoverable user error.
 
   public ErrorDialog(Component parent, String msg) {
     SwingUtilities.invokeLater(
@@ -34,10 +34,10 @@ public class ErrorDialog {
         });
   }
 
-  // Handles a fatal exception by presenting a window to the user with
-  // detailed debugging information. The intent is that these exceptions
-  // should only happen in the event of a bug in Juggling Lab, and so we
-  // invite users to email us this information.
+  // Handle a fatal exception by presenting a window to the user with detailed
+  // debugging information. The intent is that these exceptions only happen in
+  // the event of a bug in Juggling Lab, and so we invite users to email us this
+  // information.
 
   public static void handleFatalException(Exception e) {
     SwingUtilities.invokeLater(
@@ -66,7 +66,6 @@ public class ErrorDialog {
     sw.write("Juggling Lab version: " + Constants.version + "\n\n");
     e.printStackTrace(pw);
     sw.write("\n");
-    // System.getProperties().list(pw);
 
     final JFrame exframe = new JFrame(errorstrings.getString("Error_internal_title"));
     exframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);

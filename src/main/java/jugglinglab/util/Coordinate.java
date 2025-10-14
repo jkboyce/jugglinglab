@@ -1,7 +1,7 @@
 //
 // Coordinate.java
 //
-// Simple container class
+// Defines an (x, y, z) spatial coordinate.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
