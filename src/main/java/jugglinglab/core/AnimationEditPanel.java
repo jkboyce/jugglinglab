@@ -799,12 +799,16 @@ public class AnimationEditPanel extends AnimationPanel
                     + dzy * event_control_points[j][2];
           }
 
-          show_y_drag_control =
-              (anglediff(theta) > Math.toRadians(Y_CONTROL_SHOW_DEG)
-                  || anglediff(phi - Math.PI / 2) > Math.toRadians(Y_CONTROL_SHOW_DEG));
-          show_xz_drag_control =
-              (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
-                  && anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG));
+          show_xz_drag_control = (
+              anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
+              && (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
+                  || anglediff(theta - Math.PI) < Math.toRadians(XZ_CONTROL_SHOW_DEG))
+              );
+          show_y_drag_control = !(
+              anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
+              && (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG)
+                  || anglediff(theta - Math.PI) < Math.toRadians(Y_CONTROL_SHOW_DEG))
+              );
         } else {
           for (int j = 0; j < unselected_event_points.length; ++j) {
             event_points[ev_num][i][j][0] =
