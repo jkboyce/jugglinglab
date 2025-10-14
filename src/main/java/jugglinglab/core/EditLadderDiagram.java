@@ -296,6 +296,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
           }
 
           if (active_eventitem != null) {
+            if (aep != null) {
+              try {
+                aep.activateEvent(active_eventitem.event);
+              } catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
+              }
+            }
             if (active_eventitem.type == LadderEventItem.TYPE_TRANSITION) {
               // only allow dragging of TYPE_EVENT
               break;
@@ -308,13 +315,6 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             start_yhigh = active_eventitem.yhigh;
             start_t = active_eventitem.event.getT();
             findEventLimits(active_eventitem);
-            if (aep != null) {
-              try {
-                aep.activateEvent(active_eventitem.event);
-              } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-              }
-            }
             break;
           }
 
