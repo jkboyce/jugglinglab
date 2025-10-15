@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
-<jml version="1.2">
+<jml version="3">
 <patternlist>
-<title>Jack's list</title>
+<title>Jack&apos;s list</title>
 
 <line display="Around the pair" notation="jml">
 <pattern>
@@ -18,18 +18,17 @@
 <throw path="1" type="toss"/>
 </event>
 <event x="-23.4861" y="0" z="13.8723" t="0.1594" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
-<event x="-1.838" y="0" z="27.4746" t="0.2666" hand="1:right">
-</event>
+<event x="-1.838" y="0" z="27.4746" t="0.2666" hand="1:right"/>
 <event x="22.9619" y="0" z="13.9041" t="0.4555" hand="1:left">
 <throw path="3" type="toss"/>
 </event>
 <event x="3.2776" y="0" z="15.7626" t="0.6278" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 <event x="-15.337" y="0" z="15.2459" t="0.6383" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="3.0439" y="0" z="14.0953" t="0.9083" hand="1:left">
 <throw path="1" type="toss"/>
@@ -38,18 +37,17 @@
 <throw path="2" type="toss"/>
 </event>
 <event x="23.1095" y="0" z="14.6752" t="1.0704" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
-<event x="0.3593" y="0" z="27.8615" t="1.2246" hand="1:right">
-</event>
+<event x="0.3593" y="0" z="27.8615" t="1.2246" hand="1:right"/>
 <event x="-23.661" y="0" z="13.5372" t="1.373" hand="1:left">
 <throw path="3" type="toss"/>
 </event>
 <event x="3.704" y="0" z="11.4759" t="1.526" hand="1:left">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="23.6946" y="0" z="9.5614" t="1.5338" hand="1:right">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -68,7 +66,7 @@
 <holding path="2"/>
 </event>
 <event x="-18.5196" y="0" z="18.3529" t="0.2143" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="33.9434" y="0" z="51.0847" t="0.3763" hand="1:right">
 <holding path="2"/>
@@ -77,7 +75,7 @@
 <throw path="3" type="toss"/>
 </event>
 <event x="16.9726" y="0" z="44.0451" t="0.5586" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -95,29 +93,26 @@
 <event x="30.4619" y="0" z="8.2594" t="0.0337" hand="1:right">
 <throw path="2" type="toss"/>
 </event>
-<event x="-7.7351" y="0" z="37.5423" t="0.0609" hand="1:left">
-</event>
+<event x="-7.7351" y="0" z="37.5423" t="0.0609" hand="1:left"/>
 <event x="-2.8931" y="0" z="13.7418" t="0.1311" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
-<event x="29.8933" y="0" z="31.165" t="0.1512" hand="1:right">
-</event>
+<event x="29.8933" y="0" z="31.165" t="0.1512" hand="1:right"/>
 <event x="2.435" y="0" z="-3.0337" t="0.2198" hand="1:left">
 <holding path="3"/>
 </event>
 <event x="29.6423" y="0" z="9.9037" t="0.2693" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="-0.9889" y="0" z="10.3532" t="0.3243" hand="1:left">
 <throw path="3" type="toss"/>
 </event>
-<event x="-28.561" y="0" z="39.0449" t="0.4005" hand="1:left">
-</event>
+<event x="-28.561" y="0" z="39.0449" t="0.4005" hand="1:left"/>
 <event x="28.6682" y="0" z="-11.63" t="0.4136" hand="1:right">
 <holding path="2"/>
 </event>
 <event x="-26.6359" y="0" z="6.8382" t="0.4859" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -133,7 +128,7 @@
 <throw path="2" type="toss"/>
 </event>
 <event x="19.7515" y="0" z="2.8004" t="0.3057" hand="1:right">
-<catch path="4"/>
+<catch path="4" type="natural"/>
 </event>
 <event x="-25.4994" y="0" z="4.3494" t="0.3485" hand="1:left">
 <throw path="1" type="toss"/>
@@ -141,10 +136,10 @@
 </event>
 <event x="50" y="0" z="0" t="0.6443" hand="1:right">
 <holding path="4"/>
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="5.8244" y="0" z="6.4712" t="0.667" hand="1:left">
-<catch path="5"/>
+<catch path="5" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -161,10 +156,10 @@
 <throw path="3" type="toss"/>
 </event>
 <event x="-16.0256" y="0" z="8.4935" t="0.2781" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 <event x="5.0527" y="0" z="36.9542" t="0.4618" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="29.2968" y="0" z="3.7241" t="0.5092" hand="1:left">
 <throw path="1" type="toss"/>
@@ -173,13 +168,13 @@
 <holding path="3"/>
 </event>
 <event x="20.4452" y="0" z="14.7677" t="0.6527" hand="1:left">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="48.1474" y="0" z="39.1488" t="0.7582" hand="1:right">
 <holding path="3"/>
 </event>
 <event x="29.214" y="0" z="3.2547" t="0.9143" hand="1:right">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 <holding path="3"/>
 </event>
 <event x="-3.6988" y="0" z="5.82" t="1.0042" hand="1:left">
@@ -190,19 +185,19 @@
 <throw path="3" type="toss"/>
 </event>
 <event x="9.7394" y="0" z="37.863" t="1.2703" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="-9.9206" y="0" z="51.5832" t="1.396" hand="1:left">
 <holding path="3"/>
 </event>
 <event x="35.5863" y="0" z="3.867" t="1.4519" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="-35.703" y="0" z="17.5049" t="1.5164" hand="1:left">
 <holding path="3"/>
 </event>
 <event x="-21.1425" y="0" z="3.5677" t="1.6569" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 <holding path="3"/>
 </event>
 <event x="16.003" y="0" z="7.9939" t="1.7184" hand="1:right">
@@ -229,7 +224,7 @@
 <holding path="2"/>
 </event>
 <event x="-28.7457" y="0" z="21.5084" t="0.1874" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="-37.1632" y="0" z="36.1346" t="0.2874" hand="1:left">
 <holding path="3"/>
@@ -247,13 +242,13 @@
 <holding path="3"/>
 </event>
 <event x="25.4101" y="0" z="0.8294" t="0.5862" hand="1:right">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 <event x="-20.3483" y="0" z="31.0158" t="0.6368" hand="1:left">
 <throw path="3" type="toss"/>
 </event>
 <event x="-2.9849" y="0" z="24.1707" t="0.7758" hand="1:left">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="11.5531" y="0" z="8.0518" t="0.8881" hand="1:left">
 <holding path="2"/>
@@ -273,35 +268,35 @@
 <prop type="ball"/>
 <setup jugglers="1" paths="3" props="1,1,1"/>
 <symmetry type="delay" pperm="(1)(2)(3)" delay="0.8235"/>
-<event x="15.3498" y="0" z="20.4827" t="0.0482" hand="1:left">
+<event x="12.067" y="0" z="18.513" t="0.0482" hand="1:left">
 <holding path="1"/>
 </event>
-<event x="27.5129" y="0" z="33.2315" t="0.1482" hand="1:left">
+<event x="28.6072" y="0" z="34.7634" t="0.1482" hand="1:left">
 <holding path="1"/>
 </event>
 <event x="-11.2799" y="0" z="6.8181" t="0.2058" hand="1:right">
 <throw path="2" type="toss"/>
 </event>
-<event x="12.7986" y="0" z="57.7991" t="0.2737" hand="1:left">
+<event x="13.2363" y="0" z="54.2975" t="0.2737" hand="1:left">
 <holding path="1"/>
 </event>
 <event x="14.2471" y="0" z="8.2453" t="0.35" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
-<event x="-8.498" y="0" z="20.0299" t="0.4836" hand="1:left">
+<event x="-11.7808" y="0" z="18.7168" t="0.4836" hand="1:left">
 <holding path="1"/>
 </event>
-<event x="-25.5665" y="0" z="34.9004" t="0.5794" hand="1:left">
+<event x="-27.3173" y="0" z="34.9004" t="0.5794" hand="1:left">
 <holding path="1"/>
 </event>
 <event x="15.3884" y="0" z="7.3044" t="0.6176" hand="1:right">
 <throw path="3" type="toss"/>
 </event>
-<event x="-12.896" y="0" z="53.8182" t="0.682" hand="1:left">
+<event x="-11.1452" y="0" z="53.8182" t="0.682" hand="1:left">
 <holding path="1"/>
 </event>
 <event x="-10.8186" y="0" z="7.5471" t="0.7617" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -320,7 +315,7 @@
 <holding path="2"/>
 </event>
 <event x="14.4428" y="0" z="1.5301" t="0.1974" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="25.2921" y="0" z="47.4995" t="0.2214" hand="1:left">
 <holding path="2"/>
@@ -335,7 +330,7 @@
 <holding path="2"/>
 </event>
 <event x="29.2541" y="0" z="14.0048" t="0.5925" hand="1:right">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 <event x="-19.2033" y="0" z="15.6813" t="0.5961" hand="1:left">
 <holding path="2"/>
@@ -357,7 +352,7 @@
 <holding path="2"/>
 </event>
 <event x="27.1002" y="0" z="0" t="0.1126" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="25.3795" y="0" z="0" t="0.3218" hand="1:right">
 <throw path="3" type="toss"/>
@@ -366,10 +361,10 @@
 <throw path="2" type="toss"/>
 </event>
 <event x="25" y="0" z="0" t="0.4344" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="-27.5318" y="0" z="0" t="0.4344" hand="1:left">
-<catch path="4"/>
+<catch path="4" type="natural"/>
 </event>
 <event x="-29.2173" y="0" z="0" t="0.6437" hand="1:left">
 <throw path="4" type="toss"/>
@@ -378,7 +373,7 @@
 <holding path="2"/>
 </event>
 <event x="-45" y="0" z="0" t="0.7563" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 <event x="26.1969" y="0" z="0" t="0.9656" hand="1:right">
 <throw path="2" type="toss"/>
@@ -387,7 +382,7 @@
 <holding path="1"/>
 </event>
 <event x="29.4727" y="0" z="0" t="1.0782" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -397,6 +392,7 @@ pattern=(8B,2x)(4,2x)(2x,8B)(2x,4);
 hands=(40)(20).(7.5)(20).(20)(20).(7.5)(40).(7.5)(20).(40)(20).(7.5)(40).(20)(20).;
 title=4 Ball Box Bounced
 </line>
+
 <line display="744 Bounced" notation="siteswap">
 pattern=7B44;title=4 Ball Box Bounced
 </line>
@@ -415,16 +411,16 @@ pattern=7B44;title=4 Ball Box Bounced
 <throw path="2" type="toss"/>
 </event>
 <event x="6.389" y="0" z="1.0606" t="0.2258" hand="1:right">
-<catch path="2"/>
+<catch path="2" type="natural"/>
 </event>
 <event x="2.5" y="0" z="0" t="0.3999" hand="1:left">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="-21.8009" y="0" z="0.7129" t="0.4705" hand="1:right">
 <throw path="2" type="toss"/>
 </event>
 <event x="0" y="0" z="0" t="0.6352" hand="1:right">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 </pattern>
 </line>
@@ -442,15 +438,13 @@ pattern=7B44;title=4 Ball Box Bounced
 <event x="-26.6021" y="0" z="0.4882" t="0" hand="1:left">
 <throw path="2" type="toss"/>
 </event>
-<event x="13.2649" y="0" z="34.383" t="0.0918" hand="1:right">
-</event>
-<event x="-13.2879" y="0" z="34.1535" t="0.0949" hand="1:left">
-</event>
+<event x="13.2649" y="0" z="34.383" t="0.0918" hand="1:right"/>
+<event x="-13.2879" y="0" z="34.1535" t="0.0949" hand="1:left"/>
 <event x="26.5383" y="0" z="0" t="0.1914" hand="1:right">
-<catch path="3"/>
+<catch path="3" type="natural"/>
 </event>
 <event x="-1.2972" y="0" z="0.5043" t="0.2343" hand="1:left">
-<catch path="1"/>
+<catch path="1" type="natural"/>
 </event>
 </pattern>
 </line>
