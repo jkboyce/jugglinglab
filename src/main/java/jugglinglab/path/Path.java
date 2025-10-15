@@ -21,10 +21,11 @@ public abstract class Path {
   protected Coordinate start_coord;
   protected Coordinate end_coord;
 
-  // The built-in path types
+  // the built-in path types
   public static final String[] builtinPaths = {"Toss", "Bounce"};
 
-  // Creates a new path of the given type
+  // Create a new path of the given type.
+
   public static Path newPath(String type) throws JuggleExceptionUser {
     if (type == null) {
       throw new JuggleExceptionUser("Path type not specified");
@@ -62,7 +63,7 @@ public abstract class Path {
   }
 
   // Minimum duration is nonzero for certain throw types, e.g., a double
-  // bounce throw
+  // bounce throw.
 
   public double getMinDuration() {
     return 0.0;
@@ -73,7 +74,8 @@ public abstract class Path {
     end_time += deltat;
   }
 
-  // for screen layout
+  // For screen layout.
+
   public Coordinate getMax() {
     return getMax2(start_time, end_time);
   }

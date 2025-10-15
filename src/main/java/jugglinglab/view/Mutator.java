@@ -1,34 +1,32 @@
 //
 // Mutator.java
 //
-/* ----------------------------------------------------------------------------
-This class is used by SelectionView to create random variations of a pattern.
-It does this by selecting from the following list of operations:
-
-small mutations:
-- change position of a randomly-selected event (but keep in-plane)
-- change time of a randomly-selected event
-- change overall timing of pattern (uniform speedup/slowdown)
-
-moderate mutations:
-- add a new event with no transitions to a hand, at a random time and
-  changed position
-- remove a randomly-selected event with only holding transitions
-
-large mutations (NOT IMPLEMENTED):
-- add throw/catch pair
-- delete a throw/catch pair (turn into a hold)
-- move a catch/throw pair to the opposite hand
-
-not for consideration:
-- remove symmetries
-- change throw types
-- change positions of events out of plane
-- change # of objects
-- change # of jugglers
-- change positions or angles of jugglers
-- change props
----------------------------------------------------------------------------- */
+// This class is used by SelectionView to create random variations of a pattern.
+// It does this by selecting from the following list of operations:
+//
+//   small mutations:
+//   - change position of a randomly-selected event (but keep in-plane)
+//   - change time of a randomly-selected event
+//   - change overall timing of pattern (uniform speedup/slowdown)
+//
+//   moderate mutations:
+//   - add a new event with no transitions to a hand, at a random time and
+//     changed position
+//   - remove a randomly-selected event with only holding transitions
+//
+//   large mutations (NOT IMPLEMENTED):
+//   - add throw/catch pair
+//   - delete a throw/catch pair (turn into a hold)
+//   - move a catch/throw pair to the opposite hand
+//
+//   not for consideration:
+//   - remove symmetries
+//   - change throw types
+//   - change positions of events out of plane
+//   - change # of objects
+//   - change # of jugglers
+//   - change positions or angles of jugglers
+//   - change props
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -124,7 +122,7 @@ public class Mutator {
   // Mutation functions
   //----------------------------------------------------------------------------
 
-  // Pick a random event and tweak its position.
+  // Pick a random event and mutate its position.
 
   protected JMLPattern mutateEventPosition(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -136,7 +134,7 @@ public class Mutator {
     return pat;
   }
 
-  // Pick a random event and tweak its time.
+  // Pick a random event and mutate its time.
 
   protected JMLPattern mutateEventTime(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {
@@ -226,8 +224,8 @@ public class Mutator {
     return pat;
   }
 
-  // Add an event with no transitions to a randomly-selected juggler/hand,
-  // with a tweaked position.
+  // Add an event with no transitions to a randomly-selected juggler/hand, with
+  // a mutated position.
 
   protected JMLPattern mutateAddEvent(JMLPattern pat)
       throws JuggleExceptionUser, JuggleExceptionInternal {

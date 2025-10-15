@@ -44,11 +44,11 @@ public class BallProp extends Prop {
   };
 
   protected static final Color COLOR_DEF = Color.red;
-  protected static final int COLORNUM_DEF = 9; // red
-  protected static final double DIAM_DEF = 10; // in cm
+  protected static final int COLORNUM_DEF = 9;  // red
+  protected static final double DIAM_DEF = 10;  // in cm
   protected static final boolean HIGHLIGHT_DEF = false;
 
-  protected double diam = DIAM_DEF; // diameter, in cm
+  protected double diam = DIAM_DEF;  // diameter, in cm
   protected Color color = COLOR_DEF;
   protected int colornum = COLORNUM_DEF;
   protected boolean highlight = HIGHLIGHT_DEF;
@@ -59,7 +59,9 @@ public class BallProp extends Prop {
   protected Dimension center;
   protected Dimension grip;
 
+  //----------------------------------------------------------------------------
   // Prop methods
+  //----------------------------------------------------------------------------
 
   @Override
   public String getType() {
@@ -252,7 +254,7 @@ public class BallProp extends Prop {
     int ball_pixel_size = (int) (0.5 + zoom * diam);
     ball_pixel_size = Math.max(ball_pixel_size, 1);
 
-    // Create a ball image of diameter ball_pixel_size, and transparent background
+    // create a ball image of diameter ball_pixel_size, and transparent background
 
     ballimage = new BufferedImage(
         ball_pixel_size + 1, ball_pixel_size + 1, BufferedImage.TYPE_INT_ARGB_PRE);
@@ -270,7 +272,7 @@ public class BallProp extends Prop {
       rgb[2] = (float) color.getBlue() / 255f;
       rgb[3] = (float) color.getAlpha() / 255f;
 
-      // Make the color a little darker so that there is some contrast.
+      // make the color a little darker so that there is some contrast
       for (int i = 0; i < 3; i++) {
         rgb[i] = rgb[i] / 2.5f;
       }
@@ -278,7 +280,7 @@ public class BallProp extends Prop {
       ballg.setColor(new Color(rgb[0], rgb[1], rgb[2], rgb[3]));
       ballg.fillOval(0, 0, ball_pixel_size, ball_pixel_size); // Full sized ellipse.
 
-      // Now draw the highlight on the ball.
+      // draw the highlight on the ball
       for (int i = 0; i < highlightOvals; i++) {
         // Calculate the new color
         for (int j = 0; j < 3; j++) {
@@ -287,9 +289,9 @@ public class BallProp extends Prop {
         ballg.setColor(new Color(rgb[0], rgb[1], rgb[2], rgb[3]));
         ballg.fillOval(
             (int) (i / 1.1),
-            (int) (i / 2.5),  // Literals control how fast highlight
+            (int) (i / 2.5),  // literals control how fast highlight
             // moves right and down respectively.
-            ball_pixel_size - (int) (i * 1.3),  // These control how fast the
+            ball_pixel_size - (int) (i * 1.3),  // these control how fast the
             ball_pixel_size - (int) (i * 1.3));  // highlight converges to a point.
       }
     } else {

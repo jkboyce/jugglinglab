@@ -220,7 +220,7 @@ public class BouncePath extends Path {
 
       numbounces = n;
 
-      // Set the remaining path variables based on our solution for
+      // set the remaining path variables based on our solution for
       // `numbounces` and `v0`
       bz[0] = v0;
       cz[0] = start_coord.z;
@@ -239,7 +239,7 @@ public class BouncePath extends Path {
       }
       endtime[n] = getDuration();  // fix this assignment from the above loop
 
-      // Finally do the x and y coordinates -- these are simple
+      // finally do the x and y coordinates -- these are simple
       cx = start_coord.x;
       bx = (end_coord.x - start_coord.x) / getDuration();
       cy = start_coord.y;
@@ -318,7 +318,7 @@ public class BouncePath extends Path {
     int numrealroots = 0;
 
     if (n > 1) {
-      // More than one bounce, need to solve the quartic case
+      // more than one bounce, need to solve the quartic case
       for (int i = 0; i < 4; i++) {
         coef[i] /= coef[4];
       }
@@ -457,7 +457,7 @@ public class BouncePath extends Path {
           result = check(result, te, true);
         }
       }
-      if ((tlow < (start_time + endtime[i])) && ((start_time + endtime[i]) < thigh)) {
+      if (tlow < (start_time + endtime[i]) && (start_time + endtime[i]) < thigh) {
         result = check(result, start_time + endtime[i], true);
       }
     }
@@ -573,7 +573,7 @@ public class BouncePath extends Path {
     return (result + term); // add on x^n term
   }
 
-  // Returns other endpoint of interval.
+  // Return other endpoint of interval.
 
   protected static double bracketOpenInterval(
       double[] coef, int degree, double endpoint, boolean pinf) {
@@ -731,7 +731,7 @@ public class BouncePath extends Path {
     return numroots;
   }
 
-  // The returned quantity isn't actually used for volume, so just treat it as yes/no.
+  // The returned quantity isn't actually used for volume, so treat it as yes/no.
 
   public double getBounceVolume(double time1, double time2) {
     if (time2 < start_time || time1 > end_time) {

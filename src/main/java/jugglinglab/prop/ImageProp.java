@@ -106,7 +106,9 @@ public class ImageProp extends Prop {
     g.dispose();
   }
 
-  // View methods
+  //----------------------------------------------------------------------------
+  // Prop methods
+  //----------------------------------------------------------------------------
 
   @Override
   public String getType() {

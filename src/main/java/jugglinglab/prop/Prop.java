@@ -23,7 +23,8 @@ public abstract class Prop {
     "Ball", "Image", "Ring",
   };
 
-  // Creates a new prop of the given type
+  // Create a new prop of the given type.
+
   public static Prop newProp(String type) throws JuggleExceptionUser {
     if (type == null) {
       throw new JuggleExceptionUser("Prop type not specified");

@@ -10,6 +10,7 @@
 
 package jugglinglab.core;
 
+// import gifwriter.GIFAnimWriter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -27,7 +28,6 @@ import jugglinglab.renderer.Renderer;
 import jugglinglab.renderer.Renderer2D;
 import jugglinglab.util.*;
 import org.w3c.dom.Node;
-// import gifwriter.GIFAnimWriter;
 
 public class Animator {
   protected JMLPattern pat;
@@ -225,7 +225,7 @@ public class Animator {
     }
   }
 
-  // Rescales the animator so that the pattern and key parts of the juggler
+  // Rescale the animator so that the pattern and key parts of the juggler
   // are visible. Call this whenever the pattern changes.
 
   public void initAnimator() {
@@ -462,7 +462,7 @@ public class Animator {
     os.close();
   }
 
-  // Helper method for writeGIF() above
+  // Helper method for writeGIF() above.
   // Adapted from https://community.oracle.com/thread/1264385
 
   private static void configureGIFMetadata(IIOMetadata meta, String delayTime, int imageIndex) {

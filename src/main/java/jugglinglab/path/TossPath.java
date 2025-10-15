@@ -10,7 +10,7 @@ import java.text.MessageFormat;
 import jugglinglab.util.*;
 
 public class TossPath extends Path {
-  protected static final double G_DEF = 980; // using CGS units
+  protected static final double G_DEF = 980;  // using CGS units
 
   protected double bx, cx;
   protected double by, cy;
@@ -36,7 +36,7 @@ public class TossPath extends Path {
   public void initPath(String st) throws JuggleExceptionUser {
     double g = G_DEF;
 
-    // now parse for edits to the above variables
+    // parse for edits to the above variables
     ParameterList pl = new ParameterList(st);
     for (int i = 0; i < pl.getNumberOfParameters(); i++) {
       String pname = pl.getParameterName(i);

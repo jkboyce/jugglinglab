@@ -79,7 +79,8 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     }
   }
 
-  // input is for example Pattern.NOTATION_SITESWAP
+  // Input is for example Pattern.NOTATION_SITESWAP.
+
   public void setNotation(int num) throws JuggleExceptionUser, JuggleExceptionInternal {
     if (num > Pattern.builtinNotations.length) {
       return;
@@ -118,7 +119,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
       }
     }
 
-    // Change the default button when the tab changes
+    // change the default button when the tab changes
     jtp.addChangeListener(
         new ChangeListener() {
           @Override

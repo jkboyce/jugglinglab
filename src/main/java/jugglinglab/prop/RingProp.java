@@ -66,7 +66,9 @@ public class RingProp extends Prop {
   protected int[] px;
   protected int[] py;
 
+  //----------------------------------------------------------------------------
   // Prop methods
+  //----------------------------------------------------------------------------
 
   @Override
   public String getType() {
