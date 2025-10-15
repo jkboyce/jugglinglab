@@ -97,7 +97,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     try {
       if (active_eventitem == null) {
-        throw new JuggleExceptionInternal("activeEventChanged(): event not found");
+        throw new JuggleExceptionInternal("activeEventChanged(): event not found", pat);
       } else if (aep != null) {
         aep.activateEvent(active_eventitem.event);
       }
@@ -129,7 +129,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     if (active_positionitem == null) {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("ELD: position not found"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("ELD: position not found", pat));
     } else if (aep != null) {
       aep.activatePosition(active_positionitem.position);
     }
@@ -179,7 +179,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     active_eventitem = null;
     JMLEvent ev_inloop = pat.getEventImageInLoop(ev);
     if (ev_inloop == null) {
-      throw new JuggleExceptionInternal("activateEvent(): null event");
+      throw new JuggleExceptionInternal("activateEvent(): null event", pat);
     }
 
     for (LadderEventItem item : laddereventitems) {
@@ -190,13 +190,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     if (active_eventitem == null) {
-      throw new JuggleExceptionInternal("activateEvent(): event not found");
+      throw new JuggleExceptionInternal("activateEvent(): event not found", pat);
     }
   }
 
   public JMLEvent reactivateEvent() throws JuggleExceptionInternal {
     if (active_eventitem == null) {
-      throw new JuggleExceptionInternal("reactivateEvent(): null eventitem");
+      throw new JuggleExceptionInternal("reactivateEvent(): null eventitem", pat);
     }
 
     int hash = active_eventitem.getHashCode();
@@ -213,7 +213,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     if (active_eventitem == null) {
-      throw new JuggleExceptionInternal("reactivateEvent(): event not found");
+      throw new JuggleExceptionInternal("reactivateEvent(): event not found", pat);
     }
 
     return active_eventitem.event;
@@ -231,7 +231,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     if (active_positionitem == null) {
-      throw new JuggleExceptionInternal("activatePosition(): position not found");
+      throw new JuggleExceptionInternal("activatePosition(): position not found", pat);
     }
   }
 
@@ -274,6 +274,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
           try {
             aep.activateEvent(active_eventitem.event);
           } catch (JuggleExceptionInternal jei) {
+            jei.attachPattern(pat);
             ErrorDialog.handleFatalException(jei);
           }
         }
@@ -300,6 +301,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               try {
                 aep.activateEvent(active_eventitem.event);
               } catch (JuggleExceptionInternal jei) {
+                jei.attachPattern(pat);
                 ErrorDialog.handleFatalException(jei);
               }
             }
@@ -354,15 +356,15 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
           break;
         case STATE_MOVING_EVENT:
           // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-          //          "mouse pressed in MOVING_EVENT state"));
+          //          "mouse pressed in MOVING_EVENT state", pat));
           break;
         case STATE_MOVING_POSITION:
           // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-          //          "mouse pressed in MOVING_POSITION state"));
+          //          "mouse pressed in MOVING_POSITION state", pat));
           break;
         case STATE_MOVING_TRACKER:
           // ErrorDialog.handleFatalException(new JuggleExceptionInternal(
-          //          "mouse pressed in MOVING_TRACKER state"));
+          //          "mouse pressed in MOVING_TRACKER state", pat));
           break;
         case STATE_POPUP:
           // shouldn't ever get here
@@ -408,6 +410,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               try {
                 aep.activateEvent(active_eventitem.event);
               } catch (JuggleExceptionInternal jei) {
+                jei.attachPattern(pat);
                 ErrorDialog.handleFatalException(jei);
               }
             }
@@ -434,7 +437,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
           break;
         case STATE_POPUP:
           ErrorDialog.handleFatalException(
-              new JuggleExceptionInternal("tried to enter POPUP state while already in it"));
+              new JuggleExceptionInternal("tried to enter POPUP state while already in it", pat));
           break;
       }
     } else {
@@ -566,7 +569,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       switch (tr.getType()) {
         case JMLTransition.TRANS_THROW:
           {
-            // Find out when the ball being thrown was last caught
+            // find out when the ball being thrown was last caught
             JMLEvent ev = item.event.getPrevious();
             while (ev != null) {
               if (ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_CATCH) != null
@@ -578,7 +581,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             }
             if (ev == null) {
               ErrorDialog.handleFatalException(
-                  new JuggleExceptionInternal("Null event 1 in mousePressed()"));
+                  new JuggleExceptionInternal("Null event 1 in mousePressed()", pat));
               if (parentframe != null) {
                 parentframe.dispose();
                 parentframe = null;
@@ -604,7 +607,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
             }
 
-            // Find out when the ball being caught is next thrown
+            // find out when the ball being caught is next thrown
             ev = item.event.getNext();
             while (ev != null) {
               if (ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_THROW) != null) {
@@ -614,7 +617,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             }
             if (ev == null) {
               ErrorDialog.handleFatalException(
-                  new JuggleExceptionInternal("Null event 2 in mousePressed()"));
+                  new JuggleExceptionInternal("Null event 2 in mousePressed()", pat));
               if (parentframe != null) {
                 parentframe.dispose();
                 parentframe = null;
@@ -856,7 +859,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               ev.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING);
           if (tr == null) {
             ErrorDialog.handleFatalException(
-                new JuggleExceptionInternal("Null transition in removing hold"));
+                new JuggleExceptionInternal("Null transition in removing hold", pat));
             if (parentframe != null) {
               parentframe.dispose();
               parentframe = null;
@@ -1215,7 +1218,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     } else if (command.equals("makelast")) {
       makeLastInEvent();
     } else {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("unknown item in ELD popup"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("unknown item in ELD popup", pat));
     }
 
     finishPopup();
@@ -1393,7 +1396,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     // makePopupMenu() ensures that the event only has hold transitions
     if (!(popupitem instanceof LadderEventItem)) {
       ErrorDialog.handleFatalException(
-          new JuggleExceptionInternal("LadderDiagram illegal remove event"));
+          new JuggleExceptionInternal("LadderDiagram illegal remove event", pat));
       return;
     }
     JMLEvent ev = ((LadderEventItem) popupitem).event;
@@ -1456,7 +1459,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
   protected void removePosition() {
     if (!(popupitem instanceof LadderPositionItem)) {
       ErrorDialog.handleFatalException(
-          new JuggleExceptionInternal("LadderDiagram illegal remove position"));
+          new JuggleExceptionInternal("LadderDiagram illegal remove position", pat));
       return;
     }
     JMLPosition pos = ((LadderPositionItem) popupitem).position;
@@ -1472,7 +1475,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
   protected void defineProp() {
     if (popupitem == null) {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineProp() null popupitem"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineProp() null popupitem", pat));
       return;
     }
 
@@ -1481,7 +1484,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     if (popupitem instanceof LadderEventItem) {
       if (popupitem.type != LadderItem.TYPE_TRANSITION) {
         ErrorDialog.handleFatalException(
-            new JuggleExceptionInternal("defineProp() bad LadderItem type"));
+            new JuggleExceptionInternal("defineProp() bad LadderItem type", pat));
         return;
       }
 
@@ -1661,7 +1664,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
   protected void defineThrow() {
     if (!(popupitem instanceof LadderEventItem)) {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineThrow() class format"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("defineThrow() class format", pat));
       return;
     }
     JMLEvent ev = ((LadderEventItem) popupitem).event;
@@ -1778,12 +1781,12 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
   protected void changeCatchStyleTo(int type) {
     if (popupitem == null) {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 10"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 10", pat));
       return;
     }
     if (!(popupitem instanceof LadderEventItem)) {
       ErrorDialog.handleFatalException(
-          new JuggleExceptionInternal("LadderDiagram change to catch class format"));
+          new JuggleExceptionInternal("LadderDiagram change to catch class format", pat));
       return;
     }
     JMLEvent ev = ((LadderEventItem) popupitem).event;
@@ -1799,12 +1802,12 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
   protected void makeLastInEvent() {
     if (popupitem == null) {
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 8"));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal("No popupitem in case 8", pat));
       return;
     }
     if (!(popupitem instanceof LadderEventItem)) {
       ErrorDialog.handleFatalException(
-          new JuggleExceptionInternal("LadderDiagram make last transition class format"));
+          new JuggleExceptionInternal("LadderDiagram make last transition class format", pat));
       return;
     }
     JMLEvent ev = ((LadderEventItem) popupitem).event;

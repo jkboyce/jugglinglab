@@ -167,6 +167,7 @@ public class AnimationEditPanel extends AnimationPanel
                   att.repaintAttachment();
                 }
               } catch (JuggleExceptionInternal jei) {
+                jei.attachPattern(getPattern());
                 ErrorDialog.handleFatalException(jei);
               }
             }
@@ -294,6 +295,7 @@ public class AnimationEditPanel extends AnimationPanel
         getAnimator().initAnimator();
         activateEvent(event);
       } catch (JuggleExceptionInternal jei) {
+        jei.attachPattern(getPattern());
         ErrorDialog.handleFatalException(jei);
       }
     }
@@ -493,6 +495,7 @@ public class AnimationEditPanel extends AnimationPanel
       try {
         createEventView();
       } catch (JuggleExceptionInternal jei) {
+        jei.attachPattern(getPattern());
         ErrorDialog.handleFatalException(jei);
       }
     }
@@ -536,6 +539,7 @@ public class AnimationEditPanel extends AnimationPanel
               try {
                 createEventView();
               } catch (JuggleExceptionInternal jei) {
+                jei.attachPattern(getPattern());
                 ErrorDialog.handleFatalException(jei);
               }
             }
@@ -632,6 +636,7 @@ public class AnimationEditPanel extends AnimationPanel
       try {
         createEventView();
       } catch (JuggleExceptionInternal jei) {
+        jei.attachPattern(getPattern());
         ErrorDialog.handleFatalException(jei);
       }
       createPositionView();
@@ -764,7 +769,7 @@ public class AnimationEditPanel extends AnimationPanel
         // translate by one pixel and see how far it is in juggler space
         Coordinate c = ev.getGlobalCoordinate();
         if (c == null) {
-          throw new JuggleExceptionInternal("AEP: No coord on event " + ev.toString());
+          throw new JuggleExceptionInternal("AEP: No coord on event " + ev.toString(), getPattern());
         }
         Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
         double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
@@ -1481,6 +1486,7 @@ public class AnimationEditPanel extends AnimationPanel
         drawPositions(g);
       } catch (JuggleExceptionInternal jei) {
         killAnimationThread();
+        jei.attachPattern(getPattern());
         ErrorDialog.handleFatalException(jei);
       }
     }

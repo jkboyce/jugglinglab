@@ -10,12 +10,28 @@
 
 package jugglinglab.util;
 
+import jugglinglab.jml.JMLPattern;
+
 public class JuggleExceptionInternal extends JuggleException {
+  public JMLPattern pat;
+
   public JuggleExceptionInternal() {
     super();
   }
 
   public JuggleExceptionInternal(String s) {
     super(s);
+  }
+
+  // Constructor that includes a reference to the JMLPattern where the error
+  // occurred. See ErrorDialog::handleFatalException().
+
+  public JuggleExceptionInternal(String s, JMLPattern pat) {
+    super(s);
+    this.pat = pat;
+  }
+
+  public void attachPattern(JMLPattern pat) {
+    this.pat = pat;
   }
 }

@@ -151,7 +151,7 @@ public class JMLPattern {
     } catch (JuggleExceptionUser jeu) {
       // can't be a user error since base pattern has already successfully
       // compiled
-      ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage()));
+      ErrorDialog.handleFatalException(new JuggleExceptionInternal(jeu.getMessage(), this));
     }
   }
 
@@ -595,7 +595,7 @@ public class JMLPattern {
 
   public void invertTime() throws JuggleExceptionInternal {
     try {
-      layoutPattern(); // to ensure we have PathLinks
+      layoutPattern();  // to ensure we have PathLinks
 
       // For each JMLEvent:
       //     - set t = looptime - t
@@ -636,7 +636,7 @@ public class JMLPattern {
         pos = next;
       }
 
-      // For each symmetry (besides type SWITCH):
+      // for each symmetry (besides type SWITCH):
       //     - invert pperm
       for (JMLSymmetry sym : symmetries()) {
         if (sym.getType() == JMLSymmetry.TYPE_SWITCH) {
@@ -647,7 +647,7 @@ public class JMLPattern {
         sym.setPathPerm(sym.getNumberOfPaths(), newpathperm.toString());
       }
 
-      // For each PathLink:
+      // for each PathLink:
       //     - find corresponding throw-type JMLTransition in startevent
       //     - find corresponding catch-type JMLTransition in endevent
       //     - swap {type, throw type, throw mod} for the two transitions
@@ -677,13 +677,13 @@ public class JMLPattern {
           }
 
           if (start_tr == null || end_tr == null) {
-            throw new JuggleExceptionInternal("invertTime() error 1");
+            throw new JuggleExceptionInternal("invertTime() error 1", this);
           }
           if (start_tr.getOutgoingPathLink() != pl) {
-            throw new JuggleExceptionInternal("invertTime() error 2");
+            throw new JuggleExceptionInternal("invertTime() error 2", this);
           }
           if (end_tr.getIncomingPathLink() != pl) {
-            throw new JuggleExceptionInternal("invertTime() error 3");
+            throw new JuggleExceptionInternal("invertTime() error 3", this);
           }
 
           int start_tr_type = start_tr.getType();
@@ -703,7 +703,7 @@ public class JMLPattern {
       }
     } catch (JuggleExceptionUser jeu) {
       // No user errors here because the pattern has already been animated
-      throw new JuggleExceptionInternal("invertTime() error 4: " + jeu.getMessage());
+      throw new JuggleExceptionInternal("invertTime() error 4: " + jeu.getMessage(), this);
     } finally {
       setNeedsLayout();
     }
@@ -725,7 +725,7 @@ public class JMLPattern {
   @SuppressWarnings("unused")
   public void streamlinePatternWithWindow(double twindow)
       throws JuggleExceptionUser, JuggleExceptionInternal {
-    layoutPattern(); // to ensure we have PathLinks
+    layoutPattern();  // to ensure we have PathLinks
 
     int n_events = 0; // for reporting stats
     int n_holds = 0;
@@ -792,7 +792,7 @@ public class JMLPattern {
     }
 
     if (!valid) {
-      throw new JuggleExceptionInternal("Cannot do layout of invalid pattern");
+      throw new JuggleExceptionInternal("Cannot do layout of invalid pattern", this);
     }
 
     try {
@@ -838,6 +838,7 @@ public class JMLPattern {
       throw jeu;
     } catch (JuggleExceptionInternal jei) {
       valid = false;
+      jei.attachPattern(this);
       throw jei;
     }
 
@@ -1002,7 +1003,7 @@ public class JMLPattern {
               }
               break;
             default:
-              throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()");
+              throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()", this);
           }
         }
       }
@@ -1092,7 +1093,7 @@ public class JMLPattern {
               }
               break;
             default:
-              throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()");
+              throw new JuggleExceptionInternal("Unrecognized transition type in buildEventList()", this);
           }
         }
       }
@@ -1343,7 +1344,7 @@ public class JMLPattern {
               pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
               break;
             default:
-              throw new JuggleExceptionInternal("unrecognized transition type in buildLinkLists()");
+              throw new JuggleExceptionInternal("unrecognized transition type in buildLinkLists()", this);
           }
 
           pathlinks.get(i).add(pl);
@@ -1362,7 +1363,7 @@ public class JMLPattern {
       }
 
       if (pathlinks.get(i).size() == 0) {
-        throw new JuggleExceptionInternal("No event found for path " + (i + 1));
+        throw new JuggleExceptionInternal("No event found for path " + (i + 1), this);
       }
     }
 
@@ -1646,7 +1647,7 @@ public class JMLPattern {
         }
       }
     }
-    throw new JuggleExceptionInternal("time t=" + time + " is out of path range");
+    throw new JuggleExceptionInternal("time t=" + time + " is out of path range", this);
   }
 
   // Check if a given hand is holding the path at a given time.
@@ -1768,13 +1769,13 @@ public class JMLPattern {
       if (time >= hl.getStartEvent().getT() && time < hl.getEndEvent().getT()) {
         Curve hp = hl.getHandCurve();
         if (hp == null)
-          throw new JuggleExceptionInternal("getHandCoordinate() null pointer at t=" + time);
+          throw new JuggleExceptionInternal("getHandCoordinate() null pointer at t=" + time, this);
         hp.getCoordinate(time, newPosition);
         return;
       }
     }
     throw new JuggleExceptionInternal(
-        "time t=" + time + " (j=" + juggler + ",h=" + handindex + ") is out of handpath range");
+        "time t=" + time + " (j=" + juggler + ",h=" + handindex + ") is out of handpath range", this);
   }
 
   // Get volume of any catch made between time1 and time2.
@@ -2183,13 +2184,15 @@ public class JMLPattern {
       parser.parse(new StringReader(toString()));
       return parser.getTree();
     } catch (SAXException se) {
-      throw new JuggleExceptionInternal(se.getMessage());
+      throw new JuggleExceptionInternal(se.getMessage(), this);
     } catch (IOException ioe) {
-      throw new JuggleExceptionInternal(ioe.getMessage());
+      throw new JuggleExceptionInternal(ioe.getMessage(), this);
     }
   }
 
+  //----------------------------------------------------------------------------
   // java.lang.Object methods
+  //----------------------------------------------------------------------------
 
   @Override
   public String toString() {

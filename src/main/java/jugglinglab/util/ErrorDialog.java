@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import jugglinglab.core.Constants;
+import jugglinglab.jml.JMLPattern;
 
 public class ErrorDialog {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
@@ -56,6 +57,7 @@ public class ErrorDialog {
     String exmsg4 = errorstrings.getString("Error_internal_part4");
     String exmsg5 = errorstrings.getString("Error_internal_part5");
 
+    // diagnostic information displayed in the window
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     sw.write(errorstrings.getString("Error_internal_msg_part1") + "\n\n");
@@ -65,6 +67,13 @@ public class ErrorDialog {
             + "\n\n");
     sw.write("Juggling Lab version: " + Constants.version + "\n\n");
     e.printStackTrace(pw);
+    if (e instanceof JuggleExceptionInternal) {
+      JMLPattern pat = ((JuggleExceptionInternal) e).pat;
+      if (pat != null) {
+        sw.write("\nJML pattern:\n");
+        sw.write(pat.toString());
+      }
+    }
     sw.write("\n");
 
     final JFrame exframe = new JFrame(errorstrings.getString("Error_internal_title"));
@@ -146,7 +155,7 @@ public class ErrorDialog {
 
     exframe.pack();
     exframe.setResizable(false);
-    exframe.setLocationRelativeTo(null); // center frame on screen
+    exframe.setLocationRelativeTo(null);  // center frame on screen
     exframe.setVisible(true);
   }
 }
