@@ -17,9 +17,13 @@
 #    - Need to be using JDK 16 or later for jpackage to work
 #
 # Documentation at:
-#    https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html
-#    https://docs.oracle.com/en/java/javase/17/docs/specs/man/jpackage.html
-# Note: the "-Xss2048k" JVM argument is needed for Google OR-Tools to work
+#    https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html
+#    https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html
+#
+# Notes:
+#    - The "-Xss2048k" JVM argument is needed for Google OR-Tools to work
+#    - The "--enable-native-access" JVM argument is needed so optimizer can load
+#      the OR-Tools native library
 
 cd ..
 mkdir target
@@ -36,6 +40,7 @@ jpackage \
    --java-options -Xss2048k \
    --java-options -DJL_run_as_bundle=true \
    --java-options -Djava.library.path=\$APPDIR \
+   --java-options --enable-native-access=ALL-UNNAMED \
    --verbose
 
 rm -r target
