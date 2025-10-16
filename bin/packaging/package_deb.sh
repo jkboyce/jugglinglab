@@ -2,7 +2,7 @@
 #
 # Juggling Lab Debian Linux application packager
 #
-# Copyright 2022-2023 by Jack Boyce and the Juggling Lab contributors
+# Copyright 2022-2025 by Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
 #
 # -----------------------------------------------------------------------------
@@ -30,7 +30,7 @@ jpackage \
    --input target/ \
    --name "Juggling Lab" \
    --linux-package-name "juggling-lab" \
-   --app-version "1.6.5" \
+   --app-version "1.6.6" \
    --main-jar JugglingLab.jar \
    --resource-dir "packaging/debian/" \
    --java-options -Xss2048k \
