@@ -17,9 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-
+        <maven.compiler.release>25</maven.compiler.release>
         <commons-math3.version>3.6.1</commons-math3.version>
         <ortools.version>9.4.1874</ortools.version>
     </properties>
@@ -42,10 +40,20 @@
 
     <build>
         <plugins>
+            <!-- configure compiler to show deprecation warnings -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-Xlint:deprecation</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
 
             <!-- remove existing `bin/JugglingLab.jar` -->
             <!-- otherwise on overwrite Maven creates `bin/original-JugglingLab.jar` -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -67,7 +75,6 @@
 
             <!-- build shaded jar with all dependencies except OR-Tools libraries -->
             <!-- output is `bin/JugglingLab.jar` -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -115,7 +122,6 @@
             </plugin>
 
             <!-- copy OR-Tools libraries to bin/ortools-lib/ -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
