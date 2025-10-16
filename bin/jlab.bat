@@ -2,7 +2,7 @@
 
 REM Windows command line interface for Juggling Lab
 REM
-REM Copyright 2002-2023 Jack Boyce and the Juggling Lab contributors
+REM Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 REM Released under the GNU General Public License v2
 
 SET "JL_EXE="
@@ -18,7 +18,9 @@ IF EXIST "%JL_BAT_DIR%\JugglingLab.jar" (
             "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" jugglinglab.JugglingLab help
         ) ELSE (
             REM otherwise pass the args to Juggling Lab
-            "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" -Xss2048k -Djava.library.path="%JL_BAT_DIR%\ortools-lib\ortools-win32-x86-64" jugglinglab.JugglingLab %*
+            "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" -Xss2048k ^
+                -Djava.library.path="%JL_BAT_DIR%\ortools-lib\ortools-win32-x86-64" ^
+                --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab %*
         )
 
         SET "JL_EXE="
