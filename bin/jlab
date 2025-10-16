@@ -26,8 +26,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
             if [ "$version1" -ge "011000" ]; then
                 if [[ $# -ne 0 ]]; then
-                    # include both x86 and Arm versions of OR-Tools; JRE will choose correct one at runtime
-                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path="${DIR}/ortools-lib/ortools-darwin-aarch64" --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
+                    "$_java" -cp "${JL_JAR}" -Xss2048k \
+                        -Djava.library.path="${DIR}/ortools-lib/ortools-darwin-aarch64" \
+                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
@@ -72,7 +73,11 @@ else
             version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
             if [ "$version1" -ge "011000" ]; then
                 if [[ $# -ne 0 ]]; then
-                    "$_java" -cp "${JL_JAR}" -Xss2048k -Djava.library.path="${DIR}/ortools-lib/ortools-linux-x86-64:${DIR}/ortools-lib/ortools-linux-aarch64" --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
+                    # include both x86 and Arm versions of OR-Tools
+                    # JRE will choose correct one at runtime
+                    "$_java" -cp "${JL_JAR}" -Xss2048k \
+                        -Djava.library.path="${DIR}/ortools-lib/ortools-linux-x86-64:${DIR}/ortools-lib/ortools-linux-aarch64" \
+                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
