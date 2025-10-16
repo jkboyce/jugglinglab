@@ -2,7 +2,7 @@
 #
 # Juggling Lab macOS application packager
 #
-# Copyright 2022-2023 by Jack Boyce and the Juggling Lab contributors
+# Copyright 2022-2025 by Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
 #
 # -----------------------------------------------------------------------------
@@ -23,9 +23,13 @@
 #      and all Macs can run Intel code either natively or via Rosetta)
 #
 # Documentation at:
-#    https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html
-#    https://docs.oracle.com/en/java/javase/17/docs/specs/man/jpackage.html
-# Note: the "-Xss2048k" JVM argument is needed for Google OR-Tools to work
+#    https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html
+#    https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html
+#
+# Notes:
+#    - The "-Xss2048k" JVM argument is needed for Google OR-Tools to work
+#    - The "--enable-native-access" JVM argument is needed so optimizer can load
+#      the OR-Tools native library
 
 # Step 1: Build the application bundle "Juggling Lab.app"
 
@@ -33,18 +37,19 @@ cd ..
 rm -rf "Juggling Lab.app"
 mkdir target
 cp JugglingLab.jar target
-cp -r ortools-lib/ortools-darwin-x86-64/* target
+cp -r ortools-lib/ortools-darwin-aarch64/* target
 
 jpackage --type app-image \
    --input target/ \
    --name "Juggling Lab" \
-   --app-version "1.6.5" \
+   --app-version "1.6.6" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
    --resource-dir "packaging/macos/" \
    --java-options -Xss2048k \
    --java-options -DJL_run_as_bundle=true \
    --java-options -Xdock:name=JugglingLab \
+   --java-options --enable-native-access=ALL-UNNAMED \
    --verbose
 
 rm -r target
@@ -57,14 +62,17 @@ cp "packaging/macos/Juggling Lab.cfg" "Juggling Lab.app/Contents/app/"
 # Remove the Oracle signature on the application, which causes Gatekeeper to
 # refuse to launch the app since it isn't notarized. With no signature the user
 # gets the "Developer cannot be verified" warning but they can launch.
-codesign --remove-signature "Juggling Lab.app"
+#
+# Note: this step no longer seems necessary with Java 25
+#
+# codesign --remove-signature "Juggling Lab.app"
 
 # Step 3: Create the target dmg
 
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
    --name "Juggling Lab" \
-   --app-version "1.6.5" \
+   --app-version "1.6.6" \
    --verbose
 
 find . -name "Juggling Lab*.dmg" -type f \
