@@ -33,11 +33,11 @@ JL_JAR="${DIR}/JugglingLab.jar"
 
 if [ -a "${JL_JAR}" ]; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # include both Arm and x86 versions of OR-Tools; JRE will choose correct one at runtime
         "$_java" -cp "${JL_JAR}" -Xss2048k \
             -Djava.library.path="${DIR}/ortools-lib/ortools-darwin-aarch64" \
             --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab
     else
+        # include both Arm and x86 versions of OR-Tools; JRE will choose correct one at runtime
         "$_java" -cp "${JL_JAR}" -Xss2048k \
             -Djava.library.path="${DIR}/ortools-lib/ortools-linux-x86-64:${DIR}/ortools-lib/ortools-linux-aarch64" \
             --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab
