@@ -3,14 +3,15 @@
 
 #define MyAppName "Juggling Lab"
 #define MyOutputFileName "JugglingLab"
-#define MyAppVersion "1.6.5"
-#define MyAppYear "2023"
+#define MyAppVersion "1.6.6"
+#define MyAppYear "2025"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
 #define MyAppDocIconsName "JML_document.ico"
 #define MyWizardImageFileName "Juggling Lab-setup-icon.bmp"
 
 [Setup]
+SourceDir=.
 AppId={{JugglingLab}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -21,7 +22,7 @@ AppCopyright=Copyright (C) 2002-{#MyAppYear} Jack Boyce and the Juggling Lab con
 ChangesAssociations=yes
 ;First option installs per-user, second system-wide
 ;DefaultDirName={localappdata}\{#MyAppName}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableStartupPrompt=No
 DisableDirPage=Yes
@@ -31,8 +32,8 @@ DisableFinishedPage=Yes
 DisableWelcomePage=No
 ;Optional License
 LicenseFile=
-;require Windows 7 SP1 or above
-MinVersion=0,6.1.7601
+;require Windows 10 or above
+MinVersion=10.0
 OutputBaseFilename={#MyOutputFileName}-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
@@ -45,7 +46,6 @@ UninstallDisplayName={#MyAppName}
 WizardImageStretch=No
 WizardSmallImageFile={#MyWizardImageFileName}
 ArchitecturesInstallIn64BitMode=x64
-
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
