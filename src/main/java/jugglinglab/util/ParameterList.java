@@ -12,7 +12,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 public class ParameterList {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected int size;
@@ -32,8 +31,8 @@ public class ParameterList {
 
   public boolean addParameter(String name, String value) {
     if (size == 0) {
-      names = new ArrayList<String>();
-      values = new ArrayList<String>();
+      names = new ArrayList<>();
+      values = new ArrayList<>();
     }
 
     for (int i = size - 1; i >= 0; i--) {
@@ -95,12 +94,12 @@ public class ParameterList {
       if (index > 0) {
         String name = str.substring(0, index).trim();
         String value = str.substring(index + 1).trim();
-        if (name.length() != 0) {
+        if (!name.isEmpty()) {
           addParameter(name, value);
         }
       } else {
         str = str.trim();
-        if (str.length() > 0) {
+        if (!str.isEmpty()) {
           String template = errorstrings.getString("Error_param_has_no_value");
           Object[] arg = {str};
           throw new JuggleExceptionUser(MessageFormat.format(template, arg));
@@ -128,15 +127,13 @@ public class ParameterList {
   public void errorIfParametersLeft() throws JuggleExceptionUser {
     int count = getNumberOfParameters();
 
-    if (count == 0) {
-      return;
-    } else if (count == 1) {
+    if (count == 1) {
       String template = errorstrings.getString("Error_unused_param");
       Object[] arguments = {"\"" + getParameterName(0) + "\""};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-    } else {
+    } else if (count > 1) {
       String template = errorstrings.getString("Error_unused_params");
-      ArrayList<String> names = new ArrayList<String>();
+      ArrayList<String> names = new ArrayList<>();
       for (int i = 0; i < count; i++) {
         names.add("\"" + getParameterName(i) + "\"");
       }

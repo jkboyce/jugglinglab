@@ -134,8 +134,8 @@ public class ImageProp extends Prop {
             "width",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(WIDTH_DEF),
-            Double.valueOf(width));
+            WIDTH_DEF,
+            width);
 
     return result;
   }
@@ -153,9 +153,7 @@ public class ImageProp extends Prop {
       try {
         url = new URI(sourcestr).toURL();
         loadImage();
-      } catch (URISyntaxException ex) {
-        throw new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"));
-      } catch (MalformedURLException ex) {
+      } catch (URISyntaxException | MalformedURLException ex) {
         throw new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"));
       }
     }

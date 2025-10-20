@@ -180,12 +180,12 @@ public abstract class View extends JPanel {
   //----------------------------------------------------------------------------
 
   protected class GIFWriter extends Thread {
-    private AnimationPanel ap;
-    private Runnable cleanup;
-    private File file;
-    private ProgressMonitor pm;
-    private Animator.WriteGIFMonitor wgm;
-    private double fps;
+    private final AnimationPanel ap;
+    private final Runnable cleanup;
+    private final File file;
+    private final ProgressMonitor pm;
+    private final Animator.WriteGIFMonitor wgm;
+    private final double fps;
 
     public GIFWriter(AnimationPanel animpanel, File f, Runnable cleanup_routine) {
       ap = animpanel;
@@ -199,12 +199,9 @@ public abstract class View extends JPanel {
             @Override
             public void update(int step, int steps_total) {
               SwingUtilities.invokeLater(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      pm.setMaximum(steps_total);
-                      pm.setProgress(step);
-                    }
+                  () -> {
+                    pm.setMaximum(steps_total);
+                    pm.setProgress(step);
                   });
             }
 

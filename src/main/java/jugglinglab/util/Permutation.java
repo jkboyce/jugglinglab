@@ -102,7 +102,8 @@ public class Permutation {
           throw new JuggleException("Permutation init error: parenthesis not grouped");
         }
         s1 = s1.substring(1);
-        int num = 0, lastnum = -(size + 1);
+        int num;
+        int lastnum = -(size + 1);
         StringTokenizer st2 = new StringTokenizer(s1, ",");
         while (st2.hasMoreTokens()) {
           String s2 = st2.nextToken().trim();
@@ -180,11 +181,6 @@ public class Permutation {
         mapping[i] = i + 1;
       }
     }
-
-    //      if (reverses) {
-    //          for (i = -size; i <= size; i++)
-    //              System.out.println("mapping["+i+"] = "+mapping[i+size]);
-    //      }
   }
 
   @Override
@@ -205,7 +201,7 @@ public class Permutation {
         s = "";
 
         for (int i = 0; i < size; i++) {
-          if (printed[i] == false) {
+          if (!printed[i]) {
             start = i + 1;
             printed[i] = true;
             current = mapping[start + size];
@@ -235,7 +231,7 @@ public class Permutation {
         while (left > 0) {
           int i = 0;
           while (i < size) {
-            if (printed[i] == false) {
+            if (!printed[i]) {
               break;
             }
             ++i;
@@ -359,7 +355,7 @@ public class Permutation {
   }
 
   public Permutation getInverse() {
-    int[] invmapping = null;
+    int[] invmapping;
 
     if (reverses) {
       invmapping = new int[size * 2 + 1];

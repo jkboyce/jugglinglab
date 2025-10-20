@@ -125,7 +125,7 @@ public class JLFunc {
           // see if we match the form '^(int)...' after the closing
           // parenthesis
           Pattern pat = Pattern.compile("^\\s*\\^\\s*(\\d+).*");
-          Matcher m = pat.matcher(str.substring(pos + 1, str.length()));
+          Matcher m = pat.matcher(str.substring(pos + 1));
 
           if (!m.matches()) {
             return null;
@@ -269,9 +269,7 @@ public class JLFunc {
                 case JOptionPane.YES_OPTION:
                   super.approveSelection();
                   return;
-                case JOptionPane.NO_OPTION:
-                  return;
-                case JOptionPane.CLOSED_OPTION:
+                case JOptionPane.NO_OPTION, JOptionPane.CLOSED_OPTION:
                   return;
                 case JOptionPane.CANCEL_OPTION:
                   cancelSelection();
@@ -315,7 +313,7 @@ public class JLFunc {
         b = b.substring(1);
       }
 
-      if (b.length() == 0) {
+      if (b.isEmpty()) {
         b = "Pattern";
       }
 
@@ -325,11 +323,11 @@ public class JLFunc {
       String b = base.replaceAll("[\\/?:*\"]", "");
 
       // disallow strings with `><|`
-      boolean forbidden = (b.indexOf(">") >= 0);
-      forbidden = forbidden || (b.indexOf("<") >= 0);
-      forbidden = forbidden || (b.indexOf("|") >= 0);
+      boolean forbidden = (b.contains(">"));
+      forbidden = forbidden || (b.contains("<"));
+      forbidden = forbidden || (b.contains("|"));
 
-      if (forbidden || b.length() == 0) {
+      if (forbidden || b.isEmpty()) {
         b = "Pattern";
       }
 
@@ -343,7 +341,7 @@ public class JLFunc {
         b = b.substring(1);
       }
 
-      if (b.length() == 0) {
+      if (b.isEmpty()) {
         b = "Pattern";
       }
 

@@ -44,7 +44,6 @@ import jugglinglab.util.*;
 
 public class Mutator {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   // baseline amounts that various mutations can adjust events
   static final double mutationPositionCm = 40.0;
@@ -86,7 +85,7 @@ public class Mutator {
 
       this.rate = (slider_rate == null ? 1.0 : slider_rates[slider_rate.getValue()]);
 
-      JMLPattern mutant = null;
+      JMLPattern mutant;
       int tries = 0;
 
       do {
@@ -172,7 +171,7 @@ public class Mutator {
     // equal probability of going down or up.
     double r = Math.random();
     double tnow = ev.getT();
-    double t = 0.0;
+    double t;
     if (r < 0.5) {
       t = tmin + (tnow - tmin) * Math.sqrt(2 * r);
     } else {
@@ -187,13 +186,13 @@ public class Mutator {
   // Rescale overall pattern timing faster or slower.
 
   protected JMLPattern mutatePatternTiming(JMLPattern pat)
-      throws JuggleExceptionUser, JuggleExceptionInternal {
+      throws JuggleExceptionUser {
     // sample new scale from two one-sided triangular distributions: Scale has
     // equal probability of going up or down
     double r = Math.random();
     double scalemin = 1.0 / (1.0 + rate * mutationTimingScale);
     double scalemax = 1.0 + rate * mutationTimingScale;
-    double scale = 0.0;
+    double scale;
     if (r < 0.5) {
       scale = scalemin + (1.0 - scalemin) * Math.sqrt(2 * r);
     } else {
@@ -231,7 +230,7 @@ public class Mutator {
       throws JuggleExceptionUser, JuggleExceptionInternal {
     pat.layoutPattern();
 
-    JMLEvent ev = null;
+    JMLEvent ev;
     double tmin, tmax, t;
     int juggler, hand;
     int tries = 0;
@@ -430,7 +429,7 @@ public class Mutator {
     2. if the new position falls outside the bounding box, with probability
        50% accept it as-is. Otherwise goto 1.
     */
-    Coordinate result = null;
+    Coordinate result;
     boolean outside_box;
 
     do {
@@ -495,10 +494,10 @@ public class Mutator {
     slider_rate.setMajorTickSpacing(1);
     slider_rate.setPaintTicks(true);
     slider_rate.setSnapToTicks(true);
-    Hashtable<Integer, JComponent> labels = new Hashtable<Integer, JComponent>();
-    labels.put(Integer.valueOf(0), new JLabel(guistrings.getString("Mutation_rate_low")));
-    labels.put(Integer.valueOf(3), new JLabel(guistrings.getString("Mutation_rate_medium")));
-    labels.put(Integer.valueOf(6), new JLabel(guistrings.getString("Mutation_rate_high")));
+    Hashtable<Integer, JComponent> labels = new Hashtable<>();
+    labels.put(0, new JLabel(guistrings.getString("Mutation_rate_low")));
+    labels.put(3, new JLabel(guistrings.getString("Mutation_rate_medium")));
+    labels.put(6, new JLabel(guistrings.getString("Mutation_rate_high")));
     slider_rate.setLabelTable(labels);
     slider_rate.setPaintLabels(true);
     controls.add(slider_rate);

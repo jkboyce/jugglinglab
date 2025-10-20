@@ -21,9 +21,6 @@ import jugglinglab.core.ApplicationWindow;
 import jugglinglab.core.Constants;
 
 public class OpenFilesServerSockets extends Thread {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
-
   static Thread server_thread;
   protected static final int OPEN_FILES_PORT = 8686;
   protected static final int POLLING_TIMEOUT_MS = 30;
@@ -91,8 +88,8 @@ public class OpenFilesServerSockets extends Thread {
 
   public static boolean tryOpenFile(File f) {
     Socket s = null;
-    BufferedReader sin = null;
-    PrintStream sout = null;
+    BufferedReader sin;
+    PrintStream sout;
 
     try {
       s = new Socket("localhost", OPEN_FILES_PORT);
@@ -126,7 +123,7 @@ public class OpenFilesServerSockets extends Thread {
       }
 
       sout.println("done");
-      line = sin.readLine();
+      sin.readLine();
 
       return true;
 
@@ -180,7 +177,6 @@ public class OpenFilesServerSockets extends Thread {
 }
 
 class Connection extends Thread {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected Socket client;
@@ -220,31 +216,27 @@ class Connection extends Thread {
         }
 
         if (line.startsWith("open ")) {
-          String filepath = line.substring(5, line.length());
+          String filepath = line.substring(5);
           File file = new File(filepath);
 
           out.println("opening " + filepath);
 
           SwingUtilities.invokeLater(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (Desktop.isDesktopSupported()
-                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
-                    Desktop.getDesktop().requestForeground(true);
-                  }
+              () -> {
+                if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+                  Desktop.getDesktop().requestForeground(true);
+                }
 
-                  try {
-                    ApplicationWindow.openJMLFile(file);
-                  } catch (JuggleExceptionUser jeu) {
-                    String template = errorstrings.getString("Error_reading_file");
-                    Object[] arguments = {file.getName()};
-                    String msg =
-                        MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                    ErrorDialog.handleUserException(null, msg);
-                  } catch (JuggleExceptionInternal jei) {
-                    ErrorDialog.handleFatalException(jei);
-                  }
+                try {
+                  ApplicationWindow.openJMLFile(file);
+                } catch (JuggleExceptionUser jeu) {
+                  String template = errorstrings.getString("Error_reading_file");
+                  Object[] arguments = {file.getName()};
+                  String msg = MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
+                  ErrorDialog.handleUserException(null, msg);
+                } catch (JuggleExceptionInternal jei) {
+                  ErrorDialog.handleFatalException(jei);
                 }
               });
         } else if (line.startsWith("identify")) {

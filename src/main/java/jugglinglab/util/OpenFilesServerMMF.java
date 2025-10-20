@@ -25,7 +25,6 @@ import jugglinglab.core.ApplicationWindow;
 import jugglinglab.core.Constants;
 
 public class OpenFilesServerMMF extends Thread {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   static Thread server_thread;
@@ -84,31 +83,27 @@ public class OpenFilesServerMMF extends Thread {
         }
 
         if (line.startsWith("open ")) {
-          String filepath = line.substring(5, line.length());
+          String filepath = line.substring(5);
           File file = new File(filepath);
 
           writeMessage(buf_fromserver, "opening " + filepath + '\0');
 
           SwingUtilities.invokeLater(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (Desktop.isDesktopSupported()
-                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
-                    Desktop.getDesktop().requestForeground(true);
-                  }
+              () -> {
+                if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+                  Desktop.getDesktop().requestForeground(true);
+                }
 
-                  try {
-                    ApplicationWindow.openJMLFile(file);
-                  } catch (JuggleExceptionUser jeu) {
-                    String template = errorstrings.getString("Error_reading_file");
-                    Object[] arguments = {file.getName()};
-                    String msg =
-                        MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                    ErrorDialog.handleUserException(null, msg);
-                  } catch (JuggleExceptionInternal jei) {
-                    ErrorDialog.handleFatalException(jei);
-                  }
+                try {
+                  ApplicationWindow.openJMLFile(file);
+                } catch (JuggleExceptionUser jeu) {
+                  String template = errorstrings.getString("Error_reading_file");
+                  Object[] arguments = {file.getName()};
+                  String msg = MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
+                  ErrorDialog.handleUserException(null, msg);
+                } catch (JuggleExceptionInternal jei) {
+                  ErrorDialog.handleFatalException(jei);
                 }
               });
         } else if (line.startsWith("identify")) {
@@ -149,7 +144,7 @@ public class OpenFilesServerMMF extends Thread {
       return false;
     }
 
-    FileChannel chan = null;
+    FileChannel chan;
     try {
       chan = FileChannel.open(
               fipc.toPath(),
@@ -200,10 +195,8 @@ public class OpenFilesServerMMF extends Thread {
 
       writeMessage(buf_toserver, "done\0");
       return true;
-    } catch (IOException ioe) {
+    } catch (IOException | InterruptedException ioe) {
       ErrorDialog.handleFatalException(ioe);
-    } catch (InterruptedException ie) {
-      ErrorDialog.handleFatalException(ie);
     }
 
     return false;
@@ -227,7 +220,7 @@ public class OpenFilesServerMMF extends Thread {
   }
 
   private static String readMessage(CharBuffer cb) {
-    StringBuffer msg_sb = new StringBuffer(BUFFER_LENGTH);
+    StringBuilder msg_sb = new StringBuilder(BUFFER_LENGTH);
     for (int i = 0; i < BUFFER_LENGTH; ++i) {
       char c = cb.get(i);
       if (c == '\0') {

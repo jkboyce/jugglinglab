@@ -330,9 +330,10 @@ public class Renderer2D extends Renderer {
     for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
       if (hideJugglers != null) {
         boolean hide = false;
-        for (int j = 0; j < hideJugglers.length; j++) {
-          if (hideJugglers[j] == i) {
+        for (int hideJuggler : hideJugglers) {
+          if (hideJuggler == i) {
             hide = true;
+            break;
           }
         }
         if (hide) {
@@ -382,7 +383,7 @@ public class Renderer2D extends Renderer {
           obj[index].type = DrawObject2D.TYPE_LINE;
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][2 + j], obj[index].coord[0]); // entire arm
-          getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
+          getXYZ(jugglervec[i - 1][j], obj[index].coord[1]);
           int x = Math.min((int) Math.round(obj[index].coord[0].x),
               (int) Math.round(obj[index].coord[1].x));
           int y = Math.min((int) Math.round(obj[index].coord[0].y),
@@ -418,7 +419,7 @@ public class Renderer2D extends Renderer {
           obj[index].type = DrawObject2D.TYPE_LINE;
           obj[index].number = i;
           getXYZ(jugglervec[i - 1][4 + j], obj[index].coord[0]); // lower arm
-          getXYZ(jugglervec[i - 1][0 + j], obj[index].coord[1]);
+          getXYZ(jugglervec[i - 1][j], obj[index].coord[1]);
           x = Math.min((int) Math.round(obj[index].coord[0].x),
               (int) Math.round(obj[index].coord[1].x));
           y = Math.min((int) Math.round(obj[index].coord[0].y),
@@ -627,7 +628,7 @@ public class Renderer2D extends Renderer {
     return min;
   }
 
-  class DrawObject2D {
+  static class DrawObject2D {
     public static final int TYPE_PROP = 1;
     public static final int TYPE_BODY = 2;
     public static final int TYPE_LINE = 3;
@@ -648,7 +649,7 @@ public class Renderer2D extends Renderer {
         coord[i] = new JLVector();
       }
       boundingbox = new Rectangle();
-      covering = new ArrayList<DrawObject2D>(numobjects);
+      covering = new ArrayList<>(numobjects);
       tempv = new JLVector();
     }
 

@@ -14,7 +14,6 @@ import java.util.ResourceBundle;
 import jugglinglab.util.*;
 
 public abstract class Prop {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected String initString;

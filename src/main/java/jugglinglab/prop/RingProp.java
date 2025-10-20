@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.StringTokenizer;
 import jugglinglab.util.*;
 
@@ -84,10 +85,8 @@ public class RingProp extends Prop {
   public ParameterDescriptor[] getParameterDescriptors() {
     ParameterDescriptor[] result = new ParameterDescriptor[3];
 
-    ArrayList<String> range = new ArrayList<String>();
-    for (int i = 0; i < COLOR_NAMES.length; i++) {
-      range.add(COLOR_NAMES[i]);
-    }
+    ArrayList<String> range = new ArrayList<>();
+    Collections.addAll(range, COLOR_NAMES);
 
     result[0] = new ParameterDescriptor(
             "color",
@@ -99,14 +98,14 @@ public class RingProp extends Prop {
             "outside",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(OUTSIDE_DIAM_DEF),
-            Double.valueOf(outside_diam));
+            OUTSIDE_DIAM_DEF,
+            outside_diam);
     result[2] = new ParameterDescriptor(
             "inside",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(INSIDE_DIAM_DEF),
-            Double.valueOf(inside_diam));
+            INSIDE_DIAM_DEF,
+            inside_diam);
 
     return result;
   }
@@ -125,7 +124,7 @@ public class RingProp extends Prop {
     if (colorstr != null) {
       Color temp = null;
 
-      if (colorstr.indexOf((int) ',') == -1) { // color name
+      if (colorstr.indexOf(',') == -1) {  // color name
         for (int i = 0; i < COLOR_NAMES.length; i++) {
           if (COLOR_NAMES[i].equalsIgnoreCase(colorstr)) {
             temp = COLOR_VALS[i];
@@ -138,28 +137,31 @@ public class RingProp extends Prop {
         String str = colorstr;
         int pos;
         while ((pos = str.indexOf('{')) >= 0) {
-          str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+          str = str.substring(0, pos) + str.substring(pos + 1);
         }
         while ((pos = str.indexOf('}')) >= 0) {
-          str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+          str = str.substring(0, pos) + str.substring(pos + 1);
         }
 
         StringTokenizer st2 = new StringTokenizer(str, ",", false);
         int tokens = st2.countTokens();
 
         if (tokens == 3 || tokens == 4) {
-          int red = 0, green = 0, blue = 0, alpha = 255;
+          int red;
+          int green;
+          int blue;
+          int alpha = 255;
           String token = null;
           try {
             token = st2.nextToken().trim();
-            red = Integer.valueOf(token).intValue();
+            red = Integer.parseInt(token);
             token = st2.nextToken().trim();
-            green = Integer.valueOf(token).intValue();
+            green = Integer.parseInt(token);
             token = st2.nextToken().trim();
-            blue = Integer.valueOf(token).intValue();
+            blue = Integer.parseInt(token);
             if (tokens == 4) {
               token = st2.nextToken().trim();
-              alpha = Integer.valueOf(token).intValue();
+              alpha = Integer.parseInt(token);
             }
           } catch (NumberFormatException nfe) {
             String template = errorstrings.getString("Error_number_format");

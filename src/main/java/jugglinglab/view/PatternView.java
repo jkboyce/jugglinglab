@@ -9,7 +9,6 @@
 package jugglinglab.view;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.io.File;
 import java.io.StringReader;
 import java.text.MessageFormat;
@@ -65,15 +64,13 @@ public class PatternView extends View implements DocumentListener {
     java.net.URL url = PatternView.class.getResource("/alert.png");
     if (url != null) {
       ImageIcon edited_icon = new ImageIcon(url);
-      if (edited_icon != null) {
-        ImageIcon edited_icon_scaled =
-            new ImageIcon(
-                edited_icon.getImage().getScaledInstance(22, 22, java.awt.Image.SCALE_SMOOTH));
-        bp_edited_icon = new JLabel(edited_icon_scaled);
-        bp_edited_icon.setToolTipText(guistrings.getString("PatternView_alert"));
-        bppanel.add(Box.createHorizontalStrut(10));
-        bppanel.add(bp_edited_icon);
-      }
+      ImageIcon edited_icon_scaled =
+          new ImageIcon(
+              edited_icon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH));
+      bp_edited_icon = new JLabel(edited_icon_scaled);
+      bp_edited_icon.setToolTipText(guistrings.getString("PatternView_alert"));
+      bppanel.add(Box.createHorizontalStrut(10));
+      bppanel.add(bp_edited_icon);
     }
     controls.add(bppanel);
     gb.setConstraints(
@@ -126,38 +123,10 @@ public class PatternView extends View implements DocumentListener {
 
     // add actions to the various items
     ta.getDocument().addDocumentListener(this);
-
-    rb_bp.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            reloadTextArea();
-          }
-        });
-
-    rb_jml.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            reloadTextArea();
-          }
-        });
-
-    compile.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            compilePattern();
-          }
-        });
-
-    revert.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            revertPattern();
-          }
-        });
+    rb_bp.addActionListener(ae -> reloadTextArea());
+    rb_jml.addActionListener(ae -> reloadTextArea());
+    compile.addActionListener(ae -> compilePattern());
+    revert.addActionListener(ae -> revertPattern());
   }
 
   // Update the button configs when a radio button is pressed, the base
@@ -352,16 +321,13 @@ public class PatternView extends View implements DocumentListener {
     }
 
     Runnable cleanup =
-        new Runnable() {
-          @Override
-          public void run() {
-            ja.writingGIF = false;
-            setPaused(origpause);
-            updateButtons();
-            jsp.setEnabled(true);
-            if (parent != null) {
-              parent.setResizable(true);
-            }
+        () -> {
+          ja.writingGIF = false;
+          setPaused(origpause);
+          updateButtons();
+          jsp.setEnabled(true);
+          if (parent != null) {
+            parent.setResizable(true);
           }
         };
 

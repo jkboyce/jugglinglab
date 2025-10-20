@@ -77,10 +77,8 @@ public class BallProp extends Prop {
   public ParameterDescriptor[] getParameterDescriptors() {
     ParameterDescriptor[] result = new ParameterDescriptor[3];
 
-    ArrayList<String> range = new ArrayList<String>();
-    for (int i = 0; i < COLOR_NAMES.length; i++) {
-      range.add(COLOR_NAMES[i]);
-    }
+    ArrayList<String> range = new ArrayList<>();
+    Collections.addAll(range, COLOR_NAMES);
 
     result[0] =
         new ParameterDescriptor(
@@ -94,15 +92,15 @@ public class BallProp extends Prop {
             "diam",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(DIAM_DEF),
-            Double.valueOf(diam));
+            DIAM_DEF,
+            diam);
     result[2] =
         new ParameterDescriptor(
             "highlight",
             ParameterDescriptor.TYPE_BOOLEAN,
             null,
-            Boolean.valueOf(HIGHLIGHT_DEF),
-            Boolean.valueOf(highlight));
+            HIGHLIGHT_DEF,
+            highlight);
 
     return result;
   }
@@ -118,7 +116,7 @@ public class BallProp extends Prop {
     if (colorstr != null) {
       Color temp = null;
 
-      if (colorstr.indexOf((int) ',') == -1) {  // color name
+      if (colorstr.indexOf(',') == -1) {  // color name
         for (int i = 0; i < COLOR_NAMES.length; i++) {
           if (COLOR_NAMES[i].equalsIgnoreCase(colorstr)) {
             temp = COLOR_VALS[i];
@@ -131,28 +129,31 @@ public class BallProp extends Prop {
         String str = colorstr;
         int pos;
         while ((pos = str.indexOf('{')) >= 0) {
-          str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+          str = str.substring(0, pos) + str.substring(pos + 1);
         }
         while ((pos = str.indexOf('}')) >= 0) {
-          str = str.substring(0, pos) + str.substring(pos + 1, str.length());
+          str = str.substring(0, pos) + str.substring(pos + 1);
         }
 
         StringTokenizer st2 = new StringTokenizer(str, ",", false);
         int tokens = st2.countTokens();
 
         if (tokens == 3 || tokens == 4) {
-          int red = 0, green = 0, blue = 0, alpha = 255;
+          int red;
+          int green;
+          int blue;
+          int alpha = 255;
           String token = null;
           try {
             token = st2.nextToken().trim();
-            red = Integer.valueOf(token).intValue();
+            red = Integer.parseInt(token);
             token = st2.nextToken().trim();
-            green = Integer.valueOf(token).intValue();
+            green = Integer.parseInt(token);
             token = st2.nextToken().trim();
-            blue = Integer.valueOf(token).intValue();
+            blue = Integer.parseInt(token);
             if (tokens == 4) {
               token = st2.nextToken().trim();
-              alpha = Integer.valueOf(token).intValue();
+              alpha = Integer.parseInt(token);
             }
           } catch (NumberFormatException nfe) {
             String template = errorstrings.getString("Error_number_format");
@@ -195,8 +196,7 @@ public class BallProp extends Prop {
 
     String highlightstr = pl.getParameter("highlight");
     if (highlightstr != null) {
-      Boolean bhighlight = Boolean.valueOf(highlightstr);
-      highlight = bhighlight.booleanValue();
+      highlight = Boolean.parseBoolean(highlightstr);
     }
   }
 

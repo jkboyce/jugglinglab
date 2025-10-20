@@ -11,7 +11,6 @@
 package jugglinglab.util;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,7 +23,6 @@ import jugglinglab.core.Constants;
 
 public class UpdateChecker extends Thread {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   public UpdateChecker() {
     setPriority(Thread.MIN_PRIORITY);
@@ -35,6 +33,34 @@ public class UpdateChecker extends Thread {
   public void run() {
     // first download the Juggling Lab home page, looking for the line
     // containing version information
+    String line = getLine();
+    if (line == null) {
+      // something went wrong, fail quietly
+      return;
+    }
+
+    // Use regular expression matching to find the span tag with
+    // id "versionstring" surrounding the version number string we want
+    String pattern = ".*versionstring.*?>(.*?)<.*";
+    final String current_version = line.replaceAll(pattern, "$1");
+    String running_version = Constants.version;
+
+    if (current_version.isEmpty()
+        || JLFunc.compareVersions(current_version, running_version) <= 0) {
+      return;
+    }
+
+    try {
+      Thread.sleep(3000);
+      SwingUtilities.invokeLater(() -> showUpdateBox(current_version));
+    } catch (InterruptedException e) {
+    }
+  }
+
+  // Download the Juggling Lab home page and return the line with version
+  // number information.
+
+  private static String getLine() {
     InputStream is = null;
     InputStreamReader isr = null;
     String line = null;
@@ -64,35 +90,7 @@ public class UpdateChecker extends Thread {
       } catch (IOException ioe) {
       }
     }
-
-    // something went wrong, fail quietly
-    if (line == null) {
-      return;
-    }
-
-    // Use regular expression matching to find the span tag with
-    // id "versionstring" surrounding the version number string we want
-    String pattern = ".*versionstring.*?>(.*?)<.*";
-    final String current_version = line.replaceAll(pattern, "$1");
-    String running_version = Constants.version;
-
-    if (current_version == null || current_version.length() == 0
-        || JLFunc.compareVersions(current_version, running_version) <= 0) {
-      return;
-    }
-
-    try {
-      Thread.sleep(3000);
-
-      SwingUtilities.invokeLater(
-          new Runnable() {
-            @Override
-            public void run() {
-              showUpdateBox(current_version);
-            }
-          });
-    } catch (InterruptedException e) {
-    }
+    return line;
   }
 
   protected static void showUpdateBox(String version) {
@@ -129,42 +127,33 @@ public class UpdateChecker extends Thread {
     JPanel butp = new JPanel();
     butp.setLayout(new FlowLayout(FlowLayout.LEADING));
     JButton cancelbutton = new JButton(guistrings.getString("Update_cancel"));
-    cancelbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            updateBox.dispose();
-          }
-        });
+    cancelbutton.addActionListener(e -> updateBox.dispose());
     butp.add(cancelbutton);
 
     JButton yesbutton = new JButton(guistrings.getString("Update_yes"));
     yesbutton.setDefaultCapable(true);
     yesbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            boolean browse_supported =
-                (Desktop.isDesktopSupported()
-                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
-            boolean browse_problem = false;
+        e -> {
+          boolean browse_supported =
+              (Desktop.isDesktopSupported()
+                  && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+          boolean browse_problem = false;
 
-            if (browse_supported) {
-              try {
-                Desktop.getDesktop().browse(new URI(Constants.download_URL));
-              } catch (Exception excep) {
-                browse_problem = true;
-              }
+          if (browse_supported) {
+            try {
+              Desktop.getDesktop().browse(new URI(Constants.download_URL));
+            } catch (Exception excep) {
+              browse_problem = true;
             }
-
-            if (!browse_supported || browse_problem) {
-              String template3 = guistrings.getString("Download_message");
-              Object[] arguments3 = {Constants.download_URL};
-              String message = MessageFormat.format(template3, arguments3);
-              new LabelDialog(updateBox, title, message);
-            }
-            updateBox.dispose();
           }
+
+          if (!browse_supported || browse_problem) {
+            String template3 = guistrings.getString("Download_message");
+            Object[] arguments3 = {Constants.download_URL};
+            String message = MessageFormat.format(template3, arguments3);
+            new LabelDialog(updateBox, title, message);
+          }
+          updateBox.dispose();
         });
     butp.add(yesbutton);
 

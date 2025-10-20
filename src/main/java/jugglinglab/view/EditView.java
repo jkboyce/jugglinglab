@@ -72,7 +72,7 @@ public class EditView extends View {
       return;
     }
 
-    LadderDiagram new_ladder = null;
+    LadderDiagram new_ladder;
     if (ap instanceof AnimationEditPanel) {
       new_ladder = new EditLadderDiagram(p, parent, this);
     } else {
@@ -84,8 +84,7 @@ public class EditView extends View {
     ap.removeAllAttachments();
     ap.addAnimationAttachment(new_ladder);
 
-    if (ap instanceof AnimationEditPanel) {
-      AnimationEditPanel aep = (AnimationEditPanel) ap;
+    if (ap instanceof AnimationEditPanel aep) {
       aep.deactivateEvent();
       aep.deactivatePosition();
     }
@@ -175,15 +174,12 @@ public class EditView extends View {
     }
 
     Runnable cleanup =
-        new Runnable() {
-          @Override
-          public void run() {
-            ap.writingGIF = false;
-            setPaused(origpause);
-            jsp.setEnabled(true);
-            if (parent != null) {
-              parent.setResizable(true);
-            }
+        () -> {
+          ap.writingGIF = false;
+          setPaused(origpause);
+          jsp.setEnabled(true);
+          if (parent != null) {
+            parent.setResizable(true);
           }
         };
 
