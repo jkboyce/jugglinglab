@@ -14,15 +14,12 @@ package jugglinglab;
 
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.desktop.AboutEvent;
-import java.awt.desktop.AboutHandler;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -114,24 +111,21 @@ public class JugglingLab {
     String firstarg = null;
 
     if (args.length > 0) {
-      jlargs = new ArrayList<String>(Arrays.asList(args));
-      firstarg = jlargs.remove(0).toLowerCase();
+      jlargs = new ArrayList<>(Arrays.asList(args));
+      firstarg = jlargs.removeFirst().toLowerCase();
       run_application = firstarg.equals("start");
     }
 
     if (run_application) {
       SwingUtilities.invokeLater(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                registerAboutHandler();
-                new ApplicationWindow("Juggling Lab");
-              } catch (JuggleExceptionUser jeu) {
-                new ErrorDialog(null, jeu.getMessage());
-              } catch (JuggleExceptionInternal jei) {
-                ErrorDialog.handleFatalException(jei);
-              }
+          () -> {
+            try {
+              registerAboutHandler();
+              new ApplicationWindow("Juggling Lab");
+            } catch (JuggleExceptionUser jeu) {
+              ErrorDialog.handleUserException(null, jeu.getMessage());
+            } catch (JuggleExceptionInternal jei) {
+              ErrorDialog.handleFatalException(jei);
             }
           });
       return;
@@ -182,7 +176,7 @@ public class JugglingLab {
     }
 
     // Any remaining arguments that parsing didn't consume?
-    if (jlargs.size() > 0) {
+    if (!jlargs.isEmpty()) {
       System.setProperty("java.awt.headless", "true");
       String arglist = String.join(", ", jlargs);
       System.out.println("Error: Unrecognized input: " + arglist);
@@ -224,13 +218,7 @@ public class JugglingLab {
     }
 
     Desktop.getDesktop()
-        .setAboutHandler(
-            new AboutHandler() {
-              @Override
-              public void handleAbout(AboutEvent e) {
-                ApplicationWindow.showAboutBox();
-              }
-            });
+        .setAboutHandler(e -> ApplicationWindow.showAboutBox());
   }
 
   // Open the JML file(s) whose paths are given as command-line arguments.
@@ -254,13 +242,9 @@ public class JugglingLab {
     if (noOpenFilesHandler) {
       // use a different mechanism to try to hand off the open requests to
       // another instance of Juggling Lab that may be running
-      for (Iterator<File> iterator = files.iterator(); iterator.hasNext(); ) {
-        if (OpenFilesServer.tryOpenFile(iterator.next())) {
-          iterator.remove();
-        }
-      }
+      files.removeIf(OpenFilesServer::tryOpenFile);
 
-      if (files.size() == 0) {
+      if (files.isEmpty()) {
         System.setProperty("java.awt.headless", "true");
         if (Constants.DEBUG_OPEN_SERVER) {
           System.out.println("Open file command handed off; quitting");
@@ -272,28 +256,25 @@ public class JugglingLab {
     // no other instance of Juggling Lab is running, so launch the full app and
     // have it load the files
     SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              registerAboutHandler();
-              new ApplicationWindow("Juggling Lab");
+        () -> {
+          try {
+            registerAboutHandler();
+            new ApplicationWindow("Juggling Lab");
 
-              for (File file : files) {
-                try {
-                  ApplicationWindow.openJMLFile(file);
-                } catch (JuggleExceptionUser jeu) {
-                  String template = errorstrings.getString("Error_reading_file");
-                  Object[] arguments = {file.getName()};
-                  String msg = MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                  new ErrorDialog(null, msg);
-                }
+            for (File file : files) {
+              try {
+                ApplicationWindow.openJMLFile(file);
+              } catch (JuggleExceptionUser jeu) {
+                String template = errorstrings.getString("Error_reading_file");
+                Object[] arguments = {file.getName()};
+                String msg = MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
+                ErrorDialog.handleUserException(null, msg);
               }
-            } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(null, jeu.getMessage());
-            } catch (JuggleExceptionInternal jei) {
-              ErrorDialog.handleFatalException(jei);
             }
+          } catch (JuggleExceptionUser jeu) {
+            ErrorDialog.handleUserException(null, jeu.getMessage());
+          } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
           }
         });
   }
@@ -304,19 +285,19 @@ public class JugglingLab {
   // In the event of an error, print an error message and return null.
 
   private static ArrayList<File> parse_filelist() {
-    if (jlargs.size() == 0) {
+    if (jlargs.isEmpty()) {
       String output = "Error: Expected file path(s), none provided";
 
       if (isCLI) {
         System.setProperty("java.awt.headless", "true");
         System.out.println(output);
       } else {
-        new ErrorDialog(null, output);  // should never happen
+        ErrorDialog.handleUserException(null, output);  // should never happen
       }
       return null;
     }
 
-    ArrayList<File> files = new ArrayList<File>();
+    ArrayList<File> files = new ArrayList<>();
 
     for (String filestr : jlargs) {
       if (filestr.startsWith("\"")) {
@@ -349,7 +330,7 @@ public class JugglingLab {
     String examples = guistrings.getString("CLI_help2");
     if (isWindows) {
       // replace single quotes with double quotes in Windows examples
-      examples = examples.replaceAll("\'", "\"");
+      examples = examples.replaceAll("'", "\"");
     }
     output += examples;
     System.out.println(output);
@@ -416,7 +397,7 @@ public class JugglingLab {
 
   private static void doGen(Path outpath, AnimationPrefs jc) {
     System.setProperty("java.awt.headless", "true");
-    String[] genargs = jlargs.toArray(new String[jlargs.size()]);
+    String[] genargs = jlargs.toArray(new String[0]);
 
     try {
       PrintStream ps = System.out;
@@ -425,7 +406,7 @@ public class JugglingLab {
       }
       SiteswapGenerator.runGeneratorCLI(genargs, new GeneratorTarget(ps));
     } catch (FileNotFoundException fnfe) {
-      System.out.println("Error: Problem writing to file path " + outpath.toString());
+      System.out.println("Error: Problem writing to file path " + outpath);
     }
 
     if (jc != null) {
@@ -437,7 +418,7 @@ public class JugglingLab {
 
   private static void doTrans(Path outpath, AnimationPrefs jc) {
     System.setProperty("java.awt.headless", "true");
-    String[] transargs = jlargs.toArray(new String[jlargs.size()]);
+    String[] transargs = jlargs.toArray(new String[0]);
 
     try {
       PrintStream ps = System.out;
@@ -446,7 +427,7 @@ public class JugglingLab {
       }
       SiteswapTransitioner.runTransitionerCLI(transargs, new GeneratorTarget(ps));
     } catch (FileNotFoundException fnfe) {
-      System.out.println("Error: Problem writing to file path " + outpath.toString());
+      System.out.println("Error: Problem writing to file path " + outpath);
     }
 
     if (jc != null) {
@@ -474,7 +455,7 @@ public class JugglingLab {
         ps = new PrintStream(outpath.toFile());
       }
     } catch (FileNotFoundException fnfe) {
-      System.out.println("Error: Problem writing to file path " + outpath.toString());
+      System.out.println("Error: Problem writing to file path " + outpath);
       return;
     }
 
@@ -572,20 +553,20 @@ public class JugglingLab {
   // parse and return it. Otherwise print an error message and return null.
 
   private static JMLPattern parse_pattern() {
-    if (jlargs.size() == 0) {
+    if (jlargs.isEmpty()) {
       System.out.println("Error: Expected pattern input, none found");
       return null;
     }
 
     // first case is a JML-formatted pattern in a file
-    if (jlargs.get(0).equalsIgnoreCase("-jml")) {
-      jlargs.remove(0);
-      if (jlargs.size() == 0) {
+    if (jlargs.getFirst().equalsIgnoreCase("-jml")) {
+      jlargs.removeFirst();
+      if (jlargs.isEmpty()) {
         System.out.println("Error: No input path specified after -jml flag");
         return null;
       }
 
-      String inpath_string = jlargs.remove(0);
+      String inpath_string = jlargs.removeFirst();
       Path inpath = Paths.get(inpath_string);
       if (!inpath.isAbsolute() && base_dir != null) {
         inpath = Paths.get(base_dir.toString(), inpath_string);
@@ -610,14 +591,14 @@ public class JugglingLab {
       } catch (SAXException se) {
         System.out.println("Error: Formatting error in JML file");
       } catch (IOException ioe) {
-        System.out.println("Error: Problem reading JML file from path " + inpath.toString());
+        System.out.println("Error: Problem reading JML file from path " + inpath);
       }
       return null;
     }
 
     // otherwise assume pattern is in siteswap notation
     try {
-      String config = jlargs.remove(0);
+      String config = jlargs.removeFirst();
       return JMLPattern.fromBasePattern("siteswap", config);
     } catch (JuggleExceptionUser jeu) {
       System.out.println("Error: " + jeu.getMessage());
@@ -634,18 +615,15 @@ public class JugglingLab {
     final AnimationPrefs fjc = jc;
 
     SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              registerAboutHandler();
-              new PatternWindow(fpat.getTitle(), fpat, fjc);
-              PatternWindow.setExitOnLastClose(true);
-            } catch (JuggleExceptionUser jeu) {
-              System.out.println("Error: " + jeu.getMessage());
-            } catch (JuggleExceptionInternal jei) {
-              ErrorDialog.handleFatalException(jei);
-            }
+        () -> {
+          try {
+            registerAboutHandler();
+            new PatternWindow(fpat.getTitle(), fpat, fjc);
+            PatternWindow.setExitOnLastClose(true);
+          } catch (JuggleExceptionUser jeu) {
+            System.out.println("Error: " + jeu.getMessage());
+          } catch (JuggleExceptionInternal jei) {
+            ErrorDialog.handleFatalException(jei);
           }
         });
   }
@@ -675,7 +653,7 @@ public class JugglingLab {
     } catch (JuggleExceptionInternal jei) {
       System.out.println("Internal Error: " + jei.getMessage());
     } catch (IOException ioe) {
-      System.out.println("Error: Problem writing GIF to path " + outpath.toString());
+      System.out.println("Error: Problem writing GIF to path " + outpath);
     }
   }
 
@@ -690,7 +668,7 @@ public class JugglingLab {
         pat.writeJML(fw, true, true);
         fw.close();
       } catch (IOException ioe) {
-        System.out.println("Error: Problem writing JML to path " + outpath.toString());
+        System.out.println("Error: Problem writing JML to path " + outpath);
       }
     }
 

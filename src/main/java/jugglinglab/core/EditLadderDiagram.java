@@ -1286,7 +1286,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             try {
               scale = JLFunc.parseDouble(tf.getText()) / 100.0;
             } catch (NumberFormatException nfe) {
-              new ErrorDialog(EditLadderDiagram.this, "Number format error in rescale percentage");
+              ErrorDialog.handleUserException(EditLadderDiagram.this, "Number format error in rescale percentage");
               return;
             }
             if (scale > 0.0) {
@@ -1536,7 +1536,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               }
               makeParametersPanel(p2, pt.getParameterDescriptors());
             } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(jd, jeu.getMessage());
+              ErrorDialog.handleUserException(jd, jeu.getMessage());
               return;
             }
             jd.pack();
@@ -1582,7 +1582,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               // fail if prop definition is invalid, before we change the pattern
               (new PropDef(type.toLowerCase(), mod)).layoutProp();
             } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(parentframe, jeu.getMessage());
+              ErrorDialog.handleUserException(parentframe, jeu.getMessage());
               return;
             }
 
@@ -1707,7 +1707,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               }
               makeParametersPanel(p2, ppt.getParameterDescriptors());
             } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(jd, jeu.getMessage());
+              ErrorDialog.handleUserException(jd, jeu.getMessage());
               return;
             }
             jd.pack();
@@ -1750,7 +1750,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             try {
               mod = getParameterList();
             } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(parentframe, jeu.getMessage());
+              ErrorDialog.handleUserException(parentframe, jeu.getMessage());
               return;
             }
 

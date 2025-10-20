@@ -232,7 +232,7 @@ public abstract class View extends JPanel {
         if (file != null) {
           String template = errorstrings.getString("Error_writing_file");
           Object[] arg = {file.toString()};
-          new ErrorDialog(parent, MessageFormat.format(template, arg));
+          ErrorDialog.handleUserException(parent, MessageFormat.format(template, arg));
         } else {
           ErrorDialog.handleFatalException(ioe);
         }

@@ -10,7 +10,6 @@
 package jugglinglab.util;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
@@ -23,16 +22,13 @@ public class ErrorDialog {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
+  private ErrorDialog() {}
+
   // Show a message dialog for a recoverable user error.
 
-  public ErrorDialog(Component parent, String msg) {
+  public static void handleUserException(Component parent, String msg) {
     SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            JOptionPane.showMessageDialog(parent, msg, "Error", JOptionPane.ERROR_MESSAGE);
-          }
-        });
+        () -> JOptionPane.showMessageDialog(parent, msg, "Error", JOptionPane.ERROR_MESSAGE));
   }
 
   // Handle a fatal exception by presenting a window to the user with detailed
@@ -41,13 +37,7 @@ public class ErrorDialog {
   // information.
 
   public static void handleFatalException(Exception e) {
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            showInternalErrorWindow(e);
-          }
-        });
+    SwingUtilities.invokeLater(() -> showInternalErrorWindow(e));
   }
 
   private static void showInternalErrorWindow(Exception e) {
@@ -126,22 +116,13 @@ public class ErrorDialog {
     JPanel butp = new JPanel();
     butp.setLayout(new FlowLayout(FlowLayout.LEADING));
     JButton quitbutton = new JButton(guistrings.getString("Quit"));
-    quitbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            System.exit(0);
-          }
-        });
+    quitbutton.addActionListener(ae -> System.exit(0));
     butp.add(quitbutton);
     JButton okbutton = new JButton(guistrings.getString("Continue"));
     okbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            exframe.setVisible(false);
-            exframe.dispose();
-          }
+        ae -> {
+          exframe.setVisible(false);
+          exframe.dispose();
         });
     butp.add(okbutton);
     exp.add(butp);

@@ -105,7 +105,7 @@ public class OpenFilesServerMMF extends Thread {
                     Object[] arguments = {file.getName()};
                     String msg =
                         MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                    new ErrorDialog(null, msg);
+                    ErrorDialog.handleUserException(null, msg);
                   } catch (JuggleExceptionInternal jei) {
                     ErrorDialog.handleFatalException(jei);
                   }

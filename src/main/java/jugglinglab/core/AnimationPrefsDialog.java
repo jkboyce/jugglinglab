@@ -294,7 +294,7 @@ public class AnimationPrefsDialog extends JDialog {
     } catch (NumberFormatException e) {
       String template = errorstrings.getString("Error_number_format");
       Object[] arguments = {"width"};
-      new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
+      ErrorDialog.handleUserException(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
     }
     try {
       tempint = Integer.parseInt(tf_height.getText());
@@ -304,7 +304,7 @@ public class AnimationPrefsDialog extends JDialog {
     } catch (NumberFormatException e) {
       String template = errorstrings.getString("Error_number_format");
       Object[] arguments = {"height"};
-      new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
+      ErrorDialog.handleUserException(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
     }
     try {
       tempdouble = Double.parseDouble(tf_fps.getText());
@@ -314,7 +314,7 @@ public class AnimationPrefsDialog extends JDialog {
     } catch (NumberFormatException e) {
       String template = errorstrings.getString("Error_number_format");
       Object[] arguments = {"fps"};
-      new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
+      ErrorDialog.handleUserException(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
     }
     try {
       tempdouble = Double.parseDouble(tf_slowdown.getText());
@@ -324,7 +324,7 @@ public class AnimationPrefsDialog extends JDialog {
     } catch (NumberFormatException e) {
       String template = errorstrings.getString("Error_number_format");
       Object[] arguments = {"slowdown"};
-      new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
+      ErrorDialog.handleUserException(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
     }
     try {
       tempint = Integer.parseInt(tf_border.getText());
@@ -334,7 +334,7 @@ public class AnimationPrefsDialog extends JDialog {
     } catch (NumberFormatException e) {
       String template = errorstrings.getString("Error_number_format");
       Object[] arguments = {"border"};
-      new ErrorDialog(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
+      ErrorDialog.handleUserException(AnimationPrefsDialog.this, MessageFormat.format(template, arguments));
     }
 
     newjc.showGround = combo_showground.getSelectedIndex();
@@ -348,7 +348,7 @@ public class AnimationPrefsDialog extends JDialog {
       try {
         newjc = new AnimationPrefs().fromString(newjc.toString() + ";" + tf_other.getText());
       } catch (JuggleExceptionUser jeu) {
-        new ErrorDialog(AnimationPrefsDialog.this, jeu.getMessage());
+        ErrorDialog.handleUserException(AnimationPrefsDialog.this, jeu.getMessage());
       }
     }
 

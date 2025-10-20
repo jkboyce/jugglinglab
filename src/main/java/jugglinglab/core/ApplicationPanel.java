@@ -188,7 +188,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                 jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
               }
             } catch (JuggleExceptionUser je) {
-              new ErrorDialog(ApplicationPanel.this, je.getMessage());
+              ErrorDialog.handleUserException(ApplicationPanel.this, je.getMessage());
             } catch (Exception e) {
               if (jaw2 != null) {
                 jaw2.dispose();
@@ -267,7 +267,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                       if (pw != null) {
                         pw.dispose();
                       }
-                      new ErrorDialog(ApplicationPanel.this, ex.getMessage());
+                      ErrorDialog.handleUserException(ApplicationPanel.this, ex.getMessage());
                     } catch (Exception e) {
                       if (pw != null) {
                         pw.dispose();
@@ -356,7 +356,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                       if (pw != null) {
                         pw.dispose();
                       }
-                      new ErrorDialog(ApplicationPanel.this, ex.getMessage());
+                      ErrorDialog.handleUserException(ApplicationPanel.this, ex.getMessage());
                     } catch (Exception e) {
                       if (pw != null) {
                         pw.dispose();

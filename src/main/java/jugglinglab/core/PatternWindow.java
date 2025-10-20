@@ -629,7 +629,7 @@ public class PatternWindow extends JFrame implements ActionListener {
         doMenuCommand(MenuCommand.HELP_ONLINE);
       }
     } catch (JuggleExceptionUser je) {
-      new ErrorDialog(this, je.getMessage());
+      ErrorDialog.handleUserException(this, je.getMessage());
     } catch (JuggleExceptionInternal jei) {
       ErrorDialog.handleFatalException(jei);
     }

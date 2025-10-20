@@ -131,7 +131,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
                       Object[] arguments = {file.getName()};
                       String msg =
                           MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                      new ErrorDialog(null, msg);
+                      ErrorDialog.handleUserException(null, msg);
                     }
                   }
                 } catch (JuggleExceptionInternal jei) {
@@ -283,7 +283,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         String template = errorstrings.getString("Error_reading_file");
         Object[] arguments = {file.getName()};
         String msg = MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-        new ErrorDialog(null, msg);
+        ErrorDialog.handleUserException(null, msg);
       }
     }
   }

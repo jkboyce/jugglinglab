@@ -266,7 +266,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
       }
 
     } catch (JuggleExceptionUser je) {
-      new ErrorDialog(this, je.getMessage());
+      ErrorDialog.handleUserException(this, je.getMessage());
     } catch (JuggleExceptionInternal jei) {
       ErrorDialog.handleFatalException(jei);
     }

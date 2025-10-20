@@ -93,7 +93,7 @@ public class SelectionView extends View {
                 addToUndoList(ja[CENTER].getPattern());
               }
             } catch (JuggleExceptionUser jeu) {
-              new ErrorDialog(parent, jeu.getMessage());
+              ErrorDialog.handleUserException(parent, jeu.getMessage());
             } catch (JuggleExceptionInternal jei) {
               ErrorDialog.handleFatalException(jei);
             }

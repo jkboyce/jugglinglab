@@ -140,7 +140,7 @@ public class PatternListPanel extends JPanel {
         new PatternWindow(pat.getTitle(), pat, ap);
       }
     } catch (JuggleExceptionUser jeu) {
-      new ErrorDialog(PatternListPanel.this, jeu.getMessage());
+      ErrorDialog.handleUserException(PatternListPanel.this, jeu.getMessage());
     } catch (JuggleExceptionInternal jei) {
       ErrorDialog.handleFatalException(jei);
     }
