@@ -18,7 +18,7 @@
 # Note:
 #    - Juggling Lab.app in the bin directory will be overwritten
 #    - JugglingLab.jar needs to be built prior to running this, using Maven
-#    - Need to be using JDK 16 or later for jpackage to work
+#    - Need to be using JDK 16 or later for `jpackage` to work
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html
@@ -80,7 +80,7 @@ jpackage --type dmg \
 if [[ "$architecture" == "arm64" ]]; then
    find . -name "Juggling Lab-*.dmg" \
       -exec bash -c 'no_space="${1// /}"; mv -f "$1" "$no_space"' _ {} \;
-else [[ "$architecture" == "x86_64" ]]; then
+elif [[ "$architecture" == "x86_64" ]]; then
    find . \( -name "Juggling Lab-*.dmg" -o -name "JugglingLab-*.dmg" \) \
       -not -name "*-x86.dmg" \
       -exec bash -c 'no_space="${1// /}"; mv -f "$1" "${no_space%.dmg}-x86.dmg"' _ {} \;
