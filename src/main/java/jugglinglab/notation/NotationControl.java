@@ -17,7 +17,6 @@ import jugglinglab.util.ParameterList;
 
 public abstract class NotationControl extends JPanel {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   // Return a new (uninitialized) pattern in the target notation
   public abstract Pattern newPattern();

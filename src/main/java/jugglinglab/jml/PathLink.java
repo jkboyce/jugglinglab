@@ -22,7 +22,6 @@ public class PathLink {
   protected int hand;
 
   protected boolean ismaster;
-  protected PathLink[] duplicates; // if master
   protected PathLink master; // if duplicate
 
   public PathLink(int pathnum, JMLEvent startevent, JMLEvent endevent) {
@@ -95,7 +94,7 @@ public class PathLink {
 
   @Override
   public String toString() {
-    String result = null;
+    String result;
 
     if (inhand) {
       result = "In hand, ";

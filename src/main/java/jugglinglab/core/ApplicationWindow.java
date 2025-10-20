@@ -14,7 +14,6 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.awt.desktop.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
@@ -61,26 +60,20 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     // There are two ways we can handle requests from the OS to open files:
     // with a OpenFilesHandler (macOS) and with our own OpenFilesServer (Windows)
     if (!registerOpenFilesHandler()) {
-      new OpenFilesServer();
+      OpenFilesServer.startOpenFilesServer();
     }
 
     // launch a background thread to check for updates online
     new UpdateChecker();
 
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            ApplicationWindow.updateWindowMenus();
-          }
-        });
+    SwingUtilities.invokeLater(ApplicationWindow::updateWindowMenus);
   }
 
   //----------------------------------------------------------------------------
   // Create window contents
   //----------------------------------------------------------------------------
 
-  protected void createContents() throws JuggleExceptionUser, JuggleExceptionInternal {
+  protected void createContents() {
     ApplicationPanel ap = new ApplicationPanel(this);
     ap.setDoubleBuffered(true);
     setContentPane(ap);  // entire contents of window
@@ -114,29 +107,26 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     Desktop.getDesktop()
         .setOpenFileHandler(
-            new OpenFilesHandler() {
-              @Override
-              public void openFiles(OpenFilesEvent ofe) {
-                if (Desktop.isDesktopSupported()
-                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
-                  Desktop.getDesktop().requestForeground(true);
-                }
+            ofe -> {
+              if (Desktop.isDesktopSupported()
+                  && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+                Desktop.getDesktop().requestForeground(true);
+              }
 
-                try {
-                  for (File file : ofe.getFiles()) {
-                    try {
-                      openJMLFile(file);
-                    } catch (JuggleExceptionUser jeu) {
-                      String template = errorstrings.getString("Error_reading_file");
-                      Object[] arguments = {file.getName()};
-                      String msg =
-                          MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
-                      ErrorDialog.handleUserException(null, msg);
-                    }
+              try {
+                for (File file : ofe.getFiles()) {
+                  try {
+                    openJMLFile(file);
+                  } catch (JuggleExceptionUser jeu) {
+                    String template = errorstrings.getString("Error_reading_file");
+                    Object[] arguments = {file.getName()};
+                    String msg =
+                        MessageFormat.format(template, arguments) + ":\n" + jeu.getMessage();
+                    ErrorDialog.handleUserException(null, msg);
                   }
-                } catch (JuggleExceptionInternal jei) {
-                  ErrorDialog.handleFatalException(jei);
                 }
+              } catch (JuggleExceptionInternal jei) {
+                ErrorDialog.handleFatalException(jei);
               }
             });
     return true;
@@ -147,10 +137,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
   // Call this whenever a window is added, removed, or retitled.
 
   public static void updateWindowMenus() {
-    ArrayList<ApplicationWindow> apps = new ArrayList<ApplicationWindow>();
-    ArrayList<PatternListWindow> pls = new ArrayList<PatternListWindow>();
-    ArrayList<PatternWindow> anims = new ArrayList<PatternWindow>();
-    ArrayList<JMenu> menus = new ArrayList<JMenu>();
+    ArrayList<ApplicationWindow> apps = new ArrayList<>();
+    ArrayList<PatternListWindow> pls = new ArrayList<>();
+    ArrayList<PatternWindow> anims = new ArrayList<>();
+    ArrayList<JMenu> menus = new ArrayList<>();
 
     for (Frame fr : Frame.getFrames()) {
       if (!fr.isVisible()) {
@@ -170,52 +160,48 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     }
 
     ActionListener al =
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            String command = ae.getActionCommand();
+        ae -> {
+          String command = ae.getActionCommand();
 
-            if (command.equals("front")) {
-              boolean foregroundSupported =
-                  Desktop.isDesktopSupported()
-                      && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND);
+          if (command.equals("front")) {
+            boolean foregroundSupported =
+                Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND);
 
-              if (foregroundSupported) {
-                Desktop.getDesktop().requestForeground(true);
-                return;
-              } else {
-                for (Frame fr : apps) {
-                  fr.toFront();
-                }
-                for (Frame fr : pls) {
-                  fr.toFront();
-                }
-                for (Frame fr : anims) {
-                  fr.toFront();
-                }
-                return;
-              }
+            if (foregroundSupported) {
+              Desktop.getDesktop().requestForeground(true);
             } else {
-              int windownum = Integer.parseInt(command);
-
-              if (windownum < apps.size()) {
-                apps.get(windownum).toFront();
-                return;
+              for (Frame fr : apps) {
+                fr.toFront();
               }
-              windownum -= apps.size();
-              if (windownum < pls.size()) {
-                pls.get(windownum).toFront();
-                return;
+              for (Frame fr : pls) {
+                fr.toFront();
               }
-              windownum -= pls.size();
-              if (windownum < anims.size()) {
-                anims.get(windownum).toFront();
-                return;
+              for (Frame fr : anims) {
+                fr.toFront();
               }
-
-              ErrorDialog.handleFatalException(
-                  new JuggleExceptionInternal("Window number out of range: " + command));
             }
+            return;
+          } else {
+            int windownum = Integer.parseInt(command);
+
+            if (windownum < apps.size()) {
+              apps.get(windownum).toFront();
+              return;
+            }
+            windownum -= apps.size();
+            if (windownum < pls.size()) {
+              pls.get(windownum).toFront();
+              return;
+            }
+            windownum -= pls.size();
+            if (windownum < anims.size()) {
+              anims.get(windownum).toFront();
+              return;
+            }
+
+            ErrorDialog.handleFatalException(
+                new JuggleExceptionInternal("Window number out of range: " + command));
           }
         };
 
@@ -321,8 +307,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     } catch (SAXParseException spe) {
       String template = errorstrings.getString("Error_JML_parsing");
       Object[] arguments = {
-        Integer.valueOf(spe.getLineNumber()),
-        spe.getMessage().length() > 0 ? (":\n" + spe.getMessage()) : ""
+          spe.getLineNumber(),
+          !spe.getMessage().isEmpty() ? (":\n" + spe.getMessage()) : ""
       };
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     } catch (SAXException se) {
@@ -342,10 +328,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     java.net.URL url = ApplicationWindow.class.getResource("/about.png");
     if (url != null) {
       ImageIcon aboutPicture = new ImageIcon(url, "A lab");
-      if (aboutPicture != null) {
-        JLabel aboutLabel = new JLabel(aboutPicture);
-        aboutPanel.add(aboutLabel, BorderLayout.LINE_START);
-      }
+      JLabel aboutLabel = new JLabel(aboutPicture);
+      aboutPanel.add(aboutLabel, BorderLayout.LINE_START);
     }
 
     JPanel textPanel = new JPanel();
@@ -415,12 +399,9 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         okbutton,
         JLFunc.constraints(GridBagConstraints.LINE_END, 0, gridrow++, new Insets(15, 15, 15, 15)));
     okbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            aboutBox.setVisible(false);
-            aboutBox.dispose();
-          }
+        e -> {
+          aboutBox.setVisible(false);
+          aboutBox.dispose();
         });
 
     aboutBox.setContentPane(aboutPanel);
@@ -493,14 +474,11 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     if (quit_handler) {
       Desktop.getDesktop()
           .setQuitHandler(
-              new QuitHandler() {
-                @Override
-                public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
-                  try {
-                    doMenuCommand(MenuCommand.FILE_EXIT);
-                  } catch (JuggleExceptionInternal jei) {
-                    response.performQuit();
-                  }
+              (e, response) -> {
+                try {
+                  doMenuCommand(MenuCommand.FILE_EXIT);
+                } catch (JuggleExceptionInternal jei) {
+                  response.performQuit();
                 }
               });
     }
@@ -579,25 +557,20 @@ public class ApplicationWindow extends JFrame implements ActionListener {
     String command = ae.getActionCommand();
 
     try {
-      if (command.equals("newpat")) {
-        doMenuCommand(MenuCommand.FILE_NEWPAT);
-      } else if (command.equals("newpl")) {
-        doMenuCommand(MenuCommand.FILE_NEWPL);
-      } else if (command.equals("open")) {
-        doMenuCommand(MenuCommand.FILE_OPEN);
-      } else if (command.equals("exit")) {
-        doMenuCommand(MenuCommand.FILE_EXIT);
-      } else if (command.equals("about")) {
-        doMenuCommand(MenuCommand.HELP_ABOUT);
-      } else if (command.equals("online")) {
-        doMenuCommand(MenuCommand.HELP_ONLINE);
+      switch (command) {
+        case "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT);
+        case "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL);
+        case "open" -> doMenuCommand(MenuCommand.FILE_OPEN);
+        case "exit" -> doMenuCommand(MenuCommand.FILE_EXIT);
+        case "about" -> doMenuCommand(MenuCommand.HELP_ABOUT);
+        case "online" -> doMenuCommand(MenuCommand.HELP_ONLINE);
       }
     } catch (JuggleExceptionInternal jei) {
       ErrorDialog.handleFatalException(jei);
     }
   }
 
-  protected static enum MenuCommand {
+  protected enum MenuCommand {
     FILE_NONE,
     FILE_NEWPAT,
     FILE_NEWPL,

@@ -7,14 +7,12 @@
 package jugglinglab.generator;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import jugglinglab.util.JLFunc;
 
 class SiteswapTransitionerControl extends JPanel {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected JTextField tf1, tf2, tf3;
   protected JCheckBox cb1, cb2, cb3;
@@ -50,13 +48,10 @@ class SiteswapTransitionerControl extends JPanel {
 
     JButton but1 = new JButton("\u2195");
     but1.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            String temp = tf1.getText();
-            tf1.setText(tf2.getText());
-            tf2.setText(temp);
-          }
+        ae -> {
+          String temp = tf1.getText();
+          tf1.setText(tf2.getText());
+          tf2.setText(temp);
         });
     p1.add(but1);
     gb.setConstraints(but1, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 2));
@@ -110,16 +105,13 @@ class SiteswapTransitionerControl extends JPanel {
     // add action listeners to enable/disable items depending on context
 
     cb1.addItemListener(
-        new ItemListener() {
-          @Override
-          public void itemStateChanged(ItemEvent iv) {
-            boolean active = cb1.isSelected();
+        iv -> {
+          boolean active = cb1.isSelected();
 
-            cb2.setEnabled(active);
-            cb3.setEnabled(active);
-            lab4.setEnabled(active);
-            tf3.setEnabled(active);
-          }
+          cb2.setEnabled(active);
+          cb3.setEnabled(active);
+          lab4.setEnabled(active);
+          tf3.setEnabled(active);
         });
 
     resetControl(); // apply defaults
@@ -140,22 +132,22 @@ class SiteswapTransitionerControl extends JPanel {
   }
 
   public String getParams() {
-    StringBuffer sb = new StringBuffer(256);
+    StringBuilder sb = new StringBuilder(256);
 
     String from_pattern = tf1.getText();
-    if (from_pattern.trim().length() == 0) {
+    if (from_pattern.trim().isEmpty()) {
       from_pattern = "-";
     }
 
     String to_pattern = tf2.getText();
-    if (to_pattern.trim().length() == 0) {
+    if (to_pattern.trim().isEmpty()) {
       to_pattern = "-";
     }
 
-    sb.append(from_pattern + " " + to_pattern);
+    sb.append(from_pattern).append(" ").append(to_pattern);
 
-    if (cb1.isSelected() && tf3.getText().length() > 0) {
-      sb.append(" -m " + tf3.getText());
+    if (cb1.isSelected() && !tf3.getText().isEmpty()) {
+      sb.append(" -m ").append(tf3.getText());
       if (!cb2.isSelected()) {
         sb.append(" -mf");
       }

@@ -44,7 +44,7 @@ public class PatternWindow extends JFrame implements ActionListener {
   protected View view;
   protected JMenu viewmenu;
   protected JMenu windowmenu;
-  protected ArrayList<JMLPattern> undo = new ArrayList<JMLPattern>();
+  protected ArrayList<JMLPattern> undo = new ArrayList<>();
   protected String last_jml_filename;
 
   public PatternWindow(String title, JMLPattern pat, AnimationPrefs jc)
@@ -72,30 +72,21 @@ public class PatternWindow extends JFrame implements ActionListener {
         });
 
     addMouseWheelListener(
-        new MouseWheelListener() {
-          @Override
-          public void mouseWheelMoved(MouseWheelEvent mwe) {
-            mwe.consume(); // or it triggers twice
-            try {
-              if (mwe.getWheelRotation() > 0) {
-                // scrolling up -> zoom in
-                doMenuCommand(MenuCommand.VIEW_ZOOMIN);
-              } else if (mwe.getWheelRotation() < 0) {
-                doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
-              }
-            } catch (JuggleException je) {
-              ErrorDialog.handleFatalException(je);
+        mwe -> {
+          mwe.consume(); // or it triggers twice
+          try {
+            if (mwe.getWheelRotation() > 0) {
+              // scrolling up -> zoom in
+              doMenuCommand(MenuCommand.VIEW_ZOOMIN);
+            } else if (mwe.getWheelRotation() < 0) {
+              doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
             }
+          } catch (JuggleException je) {
+            ErrorDialog.handleFatalException(je);
           }
         });
 
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            ApplicationWindow.updateWindowMenus();
-          }
-        });
+    SwingUtilities.invokeLater(ApplicationWindow::updateWindowMenus);
   }
 
   // Create a new PatternWindow with the same JMLPattern and default View.
@@ -219,22 +210,13 @@ public class PatternWindow extends JFrame implements ActionListener {
   }
 
   public int getViewMode() {
-    if (view == null) {
-      return View.VIEW_NONE;
-    }
-    if (view instanceof SimpleView) {
-      return View.VIEW_SIMPLE;
-    }
-    if (view instanceof EditView) {
-      return View.VIEW_EDIT;
-    }
-    if (view instanceof PatternView) {
-      return View.VIEW_PATTERN;
-    }
-    if (view instanceof SelectionView) {
-      return View.VIEW_SELECTION;
-    }
-    return View.VIEW_NONE;
+    return switch (view) {
+      case SimpleView v -> View.VIEW_SIMPLE;
+      case EditView v -> View.VIEW_EDIT;
+      case PatternView v -> View.VIEW_PATTERN;
+      case SelectionView v -> View.VIEW_SELECTION;
+      case null, default -> View.VIEW_NONE;
+    };
   }
 
   public JMLPattern getPattern() {
@@ -287,13 +269,13 @@ public class PatternWindow extends JFrame implements ActionListener {
 
       Method optimizerAvailable = optimizer.getMethod("optimizerAvailable");
       Boolean canOptimize = (Boolean) optimizerAvailable.invoke(null);
-      if (canOptimize.booleanValue() == false) {
+      if (!canOptimize) {
         optimizer = null;
       }
     } catch (Exception e) {
       optimizer = null;
       if (jugglinglab.core.Constants.DEBUG_OPTIMIZE) {
-        System.out.println("Exception loading optimizer: " + e.toString());
+        System.out.println("Exception loading optimizer: " + e);
       }
     }
     optimizer_loaded = true;
@@ -332,17 +314,9 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   public static boolean bringToFront(int hash) {
     for (Frame fr : Frame.getFrames()) {
-      if (fr instanceof PatternWindow && fr.isVisible()) {
-        final PatternWindow pw = (PatternWindow) fr;
-
+      if (fr instanceof PatternWindow pw && fr.isVisible()) {
         if (pw.getHashCode() == hash) {
-          SwingUtilities.invokeLater(
-              new Runnable() {
-                @Override
-                public void run() {
-                  pw.toFront();
-                }
-              });
+          SwingUtilities.invokeLater(pw::toFront);
           return true;
         }
       }
@@ -573,60 +547,46 @@ public class PatternWindow extends JFrame implements ActionListener {
     String command = ae.getActionCommand();
 
     try {
-      if (command.equals("newpat")) {
-        doMenuCommand(MenuCommand.FILE_NEWPAT);
-      } else if (command.equals("newpl")) {
-        doMenuCommand(MenuCommand.FILE_NEWPL);
-      } else if (command.equals("open")) {
-        doMenuCommand(MenuCommand.FILE_OPEN);
-      } else if (command.equals("close")) {
-        doMenuCommand(MenuCommand.FILE_CLOSE);
-      } else if (command.equals("saveas")) {
-        doMenuCommand(MenuCommand.FILE_SAVE);
-      } else if (command.equals("savegifanim")) {
-        doMenuCommand(MenuCommand.FILE_GIFSAVE);
-      } else if (command.equals("duplicate")) {
-        doMenuCommand(MenuCommand.FILE_DUPLICATE);
-      } else if (command.equals("optimize")) {
-        doMenuCommand(MenuCommand.FILE_OPTIMIZE);
-      } else if (command.equals("swaphands")) {
-        doMenuCommand(MenuCommand.FILE_SWAPHANDS);
-      } else if (command.equals("invertx")) {
-        doMenuCommand(MenuCommand.FILE_INVERTX);
-      } else if (command.equals("inverttime")) {
-        doMenuCommand(MenuCommand.FILE_INVERTTIME);
-      } else if (command.equals("restart")) {
-        doMenuCommand(MenuCommand.VIEW_RESTART);
-      } else if (command.equals("prefs")) {
-        doMenuCommand(MenuCommand.VIEW_ANIMPREFS);
-      } else if (command.equals("undo")) {
-        doMenuCommand(MenuCommand.VIEW_UNDO);
-      } else if (command.equals("redo")) {
-        doMenuCommand(MenuCommand.VIEW_REDO);
-      } else if (command.equals("zoomin")) {
-        doMenuCommand(MenuCommand.VIEW_ZOOMIN);
-      } else if (command.equals("zoomout")) {
-        doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
-      } else if (command.equals("simple")) {
-        if (getViewMode() != View.VIEW_SIMPLE) {
-          setViewMode(View.VIEW_SIMPLE);
+      switch (command) {
+        case "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT);
+        case "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL);
+        case "open" -> doMenuCommand(MenuCommand.FILE_OPEN);
+        case "close" -> doMenuCommand(MenuCommand.FILE_CLOSE);
+        case "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE);
+        case "savegifanim" -> doMenuCommand(MenuCommand.FILE_GIFSAVE);
+        case "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE);
+        case "optimize" -> doMenuCommand(MenuCommand.FILE_OPTIMIZE);
+        case "swaphands" -> doMenuCommand(MenuCommand.FILE_SWAPHANDS);
+        case "invertx" -> doMenuCommand(MenuCommand.FILE_INVERTX);
+        case "inverttime" -> doMenuCommand(MenuCommand.FILE_INVERTTIME);
+        case "restart" -> doMenuCommand(MenuCommand.VIEW_RESTART);
+        case "prefs" -> doMenuCommand(MenuCommand.VIEW_ANIMPREFS);
+        case "undo" -> doMenuCommand(MenuCommand.VIEW_UNDO);
+        case "redo" -> doMenuCommand(MenuCommand.VIEW_REDO);
+        case "zoomin" -> doMenuCommand(MenuCommand.VIEW_ZOOMIN);
+        case "zoomout" -> doMenuCommand(MenuCommand.VIEW_ZOOMOUT);
+        case "simple" -> {
+          if (getViewMode() != View.VIEW_SIMPLE) {
+            setViewMode(View.VIEW_SIMPLE);
+          }
         }
-      } else if (command.equals("visual_edit")) {
-        if (getViewMode() != View.VIEW_EDIT) {
-          setViewMode(View.VIEW_EDIT);
+        case "visual_edit" -> {
+          if (getViewMode() != View.VIEW_EDIT) {
+            setViewMode(View.VIEW_EDIT);
+          }
         }
-      } else if (command.equals("pattern_edit")) {
-        if (getViewMode() != View.VIEW_PATTERN) {
-          setViewMode(View.VIEW_PATTERN);
+        case "pattern_edit" -> {
+          if (getViewMode() != View.VIEW_PATTERN) {
+            setViewMode(View.VIEW_PATTERN);
+          }
         }
-      } else if (command.equals("selection_edit")) {
-        if (getViewMode() != View.VIEW_SELECTION) {
-          setViewMode(View.VIEW_SELECTION);
+        case "selection_edit" -> {
+          if (getViewMode() != View.VIEW_SELECTION) {
+            setViewMode(View.VIEW_SELECTION);
+          }
         }
-      } else if (command.equals("about")) {
-        doMenuCommand(MenuCommand.HELP_ABOUT);
-      } else if (command.equals("online")) {
-        doMenuCommand(MenuCommand.HELP_ONLINE);
+        case "about" -> doMenuCommand(MenuCommand.HELP_ABOUT);
+        case "online" -> doMenuCommand(MenuCommand.HELP_ONLINE);
       }
     } catch (JuggleExceptionUser je) {
       ErrorDialog.handleUserException(this, je.getMessage());
@@ -635,7 +595,7 @@ public class PatternWindow extends JFrame implements ActionListener {
     }
   }
 
-  protected static enum MenuCommand {
+  protected enum MenuCommand {
     FILE_NONE,
     FILE_NEWPAT,
     FILE_NEWPL,
@@ -935,7 +895,7 @@ public class PatternWindow extends JFrame implements ActionListener {
 
   @Override
   public void setTitle(String title) {
-    if (title == null || title.length() == 0) {
+    if (title == null || title.isEmpty()) {
       title = guistrings.getString("PWINDOW_Default_window_title");
     }
 
@@ -954,12 +914,6 @@ public class PatternWindow extends JFrame implements ActionListener {
       view.disposeView();
       view = null;
     }
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            ApplicationWindow.updateWindowMenus();
-          }
-        });
+    SwingUtilities.invokeLater(ApplicationWindow::updateWindowMenus);
   }
 }

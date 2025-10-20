@@ -14,7 +14,6 @@ import jugglinglab.util.*;
 import jugglinglab.view.View;
 
 public class AnimationPrefs {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   public static final int GROUND_AUTO = 0; // must be sequential
@@ -50,7 +49,7 @@ public class AnimationPrefs {
       GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
       GraphicsDevice[] devices = env.getScreenDevices();
       if (devices.length > 0) {
-        fps_screen = (double) devices[0].getDisplayMode().getRefreshRate();
+        fps_screen = devices[0].getDisplayMode().getRefreshRate();
         // getRefreshRate() returns 0 when refresh is unknown
       }
     } catch (Exception e) {
@@ -113,7 +112,7 @@ public class AnimationPrefs {
   public AnimationPrefs fromParameters(ParameterList pl) throws JuggleExceptionUser {
     int tempint;
     double tempdouble;
-    String value = null;
+    String value;
 
     if ((value = pl.removeParameter("stereo")) != null) {
       stereo = Boolean.parseBoolean(value);
@@ -338,7 +337,7 @@ public class AnimationPrefs {
       result += ");";
     }
 
-    if (result.length() != 0) {
+    if (!result.isEmpty()) {
       result = result.substring(0, result.length() - 1);
     }
 

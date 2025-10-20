@@ -23,7 +23,6 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 public class Optimizer {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
   protected static final double EPSILON = 0.0000001;
   protected static final double INFINITY = java.lang.Double.POSITIVE_INFINITY;

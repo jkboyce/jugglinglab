@@ -17,7 +17,6 @@ import jugglinglab.jml.JMLPosition;
 import jugglinglab.util.*;
 
 public class MHNBody {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected int jugglers = 0;

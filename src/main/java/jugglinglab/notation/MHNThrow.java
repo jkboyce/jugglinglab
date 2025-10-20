@@ -69,17 +69,14 @@ public class MHNThrow {
     return s;
   }
 
-  // Indicates whether a throw will be treated as a hold, when rendered
+  // Return whether a throw will be treated as a hold, when rendered.
+
   public boolean isHold() {
     if ((targetindex - index) > 2 || hand != targethand || juggler != targetjuggler) {
       return false;
     }
 
-    if (mod != null && mod.indexOf('T') != -1) {
-      return false;
-    }
-
-    return true;
+    return mod == null || mod.indexOf('T') == -1;
   }
 
   public boolean isZero() {

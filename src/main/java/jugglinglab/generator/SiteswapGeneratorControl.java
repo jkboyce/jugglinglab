@@ -14,7 +14,6 @@ import jugglinglab.util.JLFunc;
 
 class SiteswapGeneratorControl extends JPanel {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected JTextField tf1, tf2, tf3, tf4, tf5, /*tf6,*/ tf7, /*tf8,*/ tf9;
   protected JRadioButton cb1, cb2, /*cb3,*/ cb4, cb5, cb6;
@@ -58,8 +57,8 @@ class SiteswapGeneratorControl extends JPanel {
     JLabel lab14 = new JLabel(guistrings.getString("Jugglers"));
     p6.add(lab14);
     gb.setConstraints(lab14, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0));
-    c1 = new JComboBox<String>();
-    for (int i = 1; i <= 6; i++) c1.addItem(Integer.toString(i) + "   ");
+    c1 = new JComboBox<>();
+    for (int i = 1; i <= 6; i++) c1.addItem(i + "   ");
     p6.add(c1);
     gb.setConstraints(
         c1, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1, new Insets(0, 10, 0, 0)));
@@ -247,76 +246,67 @@ class SiteswapGeneratorControl extends JPanel {
 
     // add action listeners to enable/disable items depending on context
     c1.addItemListener(
-        new ItemListener() {
-          @Override
-          public void itemStateChanged(ItemEvent ex) {
-            if (c1.getSelectedIndex() > 0) {
-              // lab3.setEnabled(true);
-              // lab5.setEnabled(true);
-              // tf6.setEnabled(true);
-              cb15.setEnabled(true);
-              cb17.setEnabled(cb7.isSelected() && cb8.isSelected());
-              cb18.setEnabled(true);
-              if (cb7.isSelected() && !cb8.isSelected()) {
-                lab4.setEnabled(true);
-                tf7.setEnabled(true);
-              } else {
-                lab4.setEnabled(false);
-                tf7.setEnabled(false);
-              }
-              // tf8.setEnabled(true);
-              // lab1.setText(guistrings.getString("Exclude_these_self_throws"));
-              // lab2.setText(guistrings.getString("Include_these_self_throws"));
+        ex -> {
+          if (c1.getSelectedIndex() > 0) {
+            // lab3.setEnabled(true);
+            // lab5.setEnabled(true);
+            // tf6.setEnabled(true);
+            cb15.setEnabled(true);
+            cb17.setEnabled(cb7.isSelected() && cb8.isSelected());
+            cb18.setEnabled(true);
+            if (cb7.isSelected() && !cb8.isSelected()) {
+              lab4.setEnabled(true);
+              tf7.setEnabled(true);
             } else {
-              // lab3.setEnabled(false);
-              // lab5.setEnabled(false);
-              // tf6.setEnabled(false);
-              cb15.setEnabled(false);
-              cb17.setEnabled(false);
-              cb18.setEnabled(false);
               lab4.setEnabled(false);
               tf7.setEnabled(false);
-              // tf8.setEnabled(false);
-              // lab1.setText(guistrings.getString("Exclude_these_throws"));
-              // lab2.setText(guistrings.getString("Include_these_throws"));
             }
-
-            // Transfer focus back up so that the run button works
-            c1.transferFocus();
+            // tf8.setEnabled(true);
+            // lab1.setText(guistrings.getString("Exclude_these_self_throws"));
+            // lab2.setText(guistrings.getString("Include_these_self_throws"));
+          } else {
+            // lab3.setEnabled(false);
+            // lab5.setEnabled(false);
+            // tf6.setEnabled(false);
+            cb15.setEnabled(false);
+            cb17.setEnabled(false);
+            cb18.setEnabled(false);
+            lab4.setEnabled(false);
+            tf7.setEnabled(false);
+            // tf8.setEnabled(false);
+            // lab1.setText(guistrings.getString("Exclude_these_throws"));
+            // lab2.setText(guistrings.getString("Include_these_throws"));
           }
+
+          // Transfer focus back up so that the run button works
+          c1.transferFocus();
         });
 
     cb12.addItemListener(
-        new ItemListener() {
-          @Override
-          public void itemStateChanged(ItemEvent iv) {
-            boolean active = cb12.isSelected();
+        iv -> {
+          boolean active = cb12.isSelected();
 
-            cb13.setEnabled(active);
-            cb14.setEnabled(active);
-            lab13.setEnabled(active);
-            tf9.setEnabled(active);
-            cb16.setEnabled(active);
-          }
+          cb13.setEnabled(active);
+          cb14.setEnabled(active);
+          lab13.setEnabled(active);
+          tf9.setEnabled(active);
+          cb16.setEnabled(active);
         });
 
     ActionListener temp =
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ev) {
-            if (!cb7.isSelected() || cb8.isSelected()) {
-              lab4.setEnabled(false);
-              tf7.setEnabled(false);
-            } else {
-              if (c1.getSelectedIndex() > 0) {
-                lab4.setEnabled(true);
-                tf7.setEnabled(true);
-              }
+        ev -> {
+          if (!cb7.isSelected() || cb8.isSelected()) {
+            lab4.setEnabled(false);
+            tf7.setEnabled(false);
+          } else {
+            if (c1.getSelectedIndex() > 0) {
+              lab4.setEnabled(true);
+              tf7.setEnabled(true);
             }
-
-            cb17.setEnabled(cb7.isSelected() && cb8.isSelected() && (c1.getSelectedIndex() > 0));
-            cb9.setEnabled(cb8.isSelected());
           }
+
+          cb17.setEnabled(cb7.isSelected() && cb8.isSelected() && (c1.getSelectedIndex() > 0));
+          cb9.setEnabled(cb8.isSelected());
         };
     cb7.addActionListener(temp);
     cb8.addActionListener(temp);
@@ -368,19 +358,19 @@ class SiteswapGeneratorControl extends JPanel {
   }
 
   public String getParams() {
-    StringBuffer sb = new StringBuffer(256);
+    StringBuilder sb = new StringBuilder(256);
 
     String maxthrow = tf2.getText();
-    if (maxthrow.trim().length() == 0) {
+    if (maxthrow.trim().isEmpty()) {
       maxthrow = "-";
     }
 
     String period = tf3.getText();
-    if (period.trim().length() == 0) {
+    if (period.trim().isEmpty()) {
       period = "-";
     }
 
-    sb.append(tf1.getText() + " " + maxthrow + " " + period);
+    sb.append(tf1.getText()).append(" ").append(maxthrow).append(" ").append(period);
 
     if (cb2.isSelected()) {
       sb.append(" -s");
@@ -388,9 +378,9 @@ class SiteswapGeneratorControl extends JPanel {
 
     int jugglers = c1.getSelectedIndex() + 1;
     if (jugglers > 1) {
-      sb.append(" -j " + jugglers);
-      if (tf7.isEnabled() && tf7.getText().length() > 0) {
-        sb.append(" -d " + tf7.getText() + " -l 1");
+      sb.append(" -j ").append(jugglers);
+      if (tf7.isEnabled() && !tf7.getText().isEmpty()) {
+        sb.append(" -d ").append(tf7.getText()).append(" -l 1");
       }
 
       if (cb17.isEnabled()) {
@@ -427,8 +417,8 @@ class SiteswapGeneratorControl extends JPanel {
       sb.append(" -rot");
     }
 
-    if (cb12.isSelected() && tf9.getText().length() > 0) {
-      sb.append(" -m " + tf9.getText());
+    if (cb12.isSelected() && !tf9.getText().isEmpty()) {
+      sb.append(" -m ").append(tf9.getText());
       if (!cb13.isSelected()) {
         sb.append(" -mf");
       }
@@ -440,11 +430,11 @@ class SiteswapGeneratorControl extends JPanel {
       }
     }
 
-    if (tf4.getText().length() > 0) {
-      sb.append(" -x " + tf4.getText());
+    if (!tf4.getText().isEmpty()) {
+      sb.append(" -x ").append(tf4.getText());
     }
-    if (tf5.getText().length() > 0) {
-      sb.append(" -i " + tf5.getText());
+    if (!tf5.getText().isEmpty()) {
+      sb.append(" -i ").append(tf5.getText());
     }
 
     sb.append(" -n");

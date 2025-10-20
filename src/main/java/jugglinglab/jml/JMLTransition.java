@@ -80,14 +80,13 @@ public class JMLTransition {
   }
 
   public JMLTransition duplicate() {
-    JMLTransition tr = new JMLTransition(transitiontype, path, type, mod);
-    return tr;
+    return new JMLTransition(transitiontype, path, type, mod);
   }
 
   public void writeJML(PrintWriter wr) throws IOException {
     switch (getType()) {
       case TRANS_THROW:
-        String out = "<throw path=\"" + Integer.toString(getPath()) + "\"";
+        String out = "<throw path=\"" + getPath() + "\"";
         if (getThrowType() != null) {
           out += " type=\"" + getThrowType() + "\"";
         }
@@ -97,16 +96,16 @@ public class JMLTransition {
         wr.println(out + "/>");
         break;
       case TRANS_CATCH:
-        wr.println("<catch path=\"" + Integer.toString(getPath()) + "\"/>");
+        wr.println("<catch path=\"" + getPath() + "\"/>");
         break;
       case TRANS_SOFTCATCH:
-        wr.println("<catch path=\"" + Integer.toString(getPath()) + "\" type=\"soft\"/>");
+        wr.println("<catch path=\"" + getPath() + "\" type=\"soft\"/>");
         break;
       case TRANS_GRABCATCH:
-        wr.println("<catch path=\"" + Integer.toString(getPath()) + "\" type=\"grab\"/>");
+        wr.println("<catch path=\"" + getPath() + "\" type=\"grab\"/>");
         break;
       case TRANS_HOLDING:
-        wr.println("<holding path=\"" + Integer.toString(getPath()) + "\"/>");
+        wr.println("<holding path=\"" + getPath() + "\"/>");
         break;
     }
   }

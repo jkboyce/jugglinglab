@@ -54,8 +54,8 @@ public class SiteswapGenerator extends Generator {
   // max. # of chars. printed per throw
   private static final int CHARS_PER_THROW = 50;
 
-  protected static final int async_rhythm_repunit[][] = {{1}};
-  protected static final int sync_rhythm_repunit[][] = {{1, 0}, {1, 0}};
+  protected static final int[][] async_rhythm_repunit = {{1}};
+  protected static final int[][] sync_rhythm_repunit = {{1, 0}, {1, 0}};
   private static final int LOOP_COUNTER_MAX = 20000;
 
   // configuration variables
@@ -193,7 +193,7 @@ public class SiteswapGenerator extends Generator {
           target.setStatus(guistrings.getString("Generator_patterns_1"));
         } else {
           String template = guistrings.getString("Generator_patterns_ne1");
-          Object[] arguments = {Integer.valueOf(num)};
+          Object[] arguments = {num};
           target.setStatus(MessageFormat.format(template, arguments));
         }
       }
@@ -202,7 +202,7 @@ public class SiteswapGenerator extends Generator {
     } finally {
       if (Constants.DEBUG_GENERATOR) {
         long millis = System.currentTimeMillis() - start_time_millis;
-        System.out.println(String.format("time elapsed: %d.%03d s", millis / 1000, millis % 1000));
+        System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000);
       }
     }
   }
@@ -217,8 +217,8 @@ public class SiteswapGenerator extends Generator {
     if (Constants.DEBUG_GENERATOR) {
       System.out.println("-----------------------------------------------------");
       System.out.println("initializing generator with args:");
-      for (int i = 0; i < args.length; ++i) {
-        System.out.print(args[i] + " ");
+      for (String arg : args) {
+        System.out.print(arg + " ");
       }
       System.out.print("\n");
     }
@@ -244,142 +244,136 @@ public class SiteswapGenerator extends Generator {
     mode = ASYNC; // default mode
     jugglers = 1;
     target = null;
-    exclude = new ArrayList<Pattern>();
-    include = new ArrayList<Pattern>();
+    exclude = new ArrayList<>();
+    include = new ArrayList<>();
 
     boolean true_multiplex = false;
 
     for (int i = 3; i < args.length; ++i) {
-      if (args[i].equals("-n")) {
-        numflag = 1;
-      } else if (args[i].equals("-no")) {
-        numflag = 2;
-      } else if (args[i].equals("-g")) {
-        groundflag = 1;
-      } else if (args[i].equals("-ng")) {
-        groundflag = 2;
-      } else if (args[i].equals("-f")) {
-        fullflag = 0;
-      } else if (args[i].equals("-prime")) {
-        fullflag = 2;
-      } else if (args[i].equals("-rot")) {
-        rotflag = 1;
-      } else if (args[i].equals("-jp")) {
-        juggler_permutations = true;
-      } else if (args[i].equals("-lame")) {
-        lameflag = true;
-      } else if (args[i].equals("-se")) {
-        sequenceflag = false;
-      } else if (args[i].equals("-s")) {
-        mode = SYNC;
-      /* } else if (!strcmp(argv[i], "-c")) {
+      switch (args[i]) {
+        case "-n" -> numflag = 1;
+        case "-no" -> numflag = 2;
+        case "-g" -> groundflag = 1;
+        case "-ng" -> groundflag = 2;
+        case "-f" -> fullflag = 0;
+        case "-prime" -> fullflag = 2;
+        case "-rot" -> rotflag = 1;
+        case "-jp" -> juggler_permutations = true;
+        case "-lame" -> lameflag = true;
+        case "-se" -> sequenceflag = false;
+        case "-s" -> mode = SYNC;
+        /*
+        case "-c" -> {
           mode = CUSTOM;
-      if (i != (argc - 1))
-          custom_initialize(argv[++i]);
-      else {
-          printf("No custom rhythm file given\n");
-          exit(0);
-      }
-      }*/
-      } else if (args[i].equals("-cp")) {
-        connected_patterns = true;
-      } else if (args[i].equals("-sym")) {
-        symmetric_patterns = true;
-      } else if (args[i].equals("-mf")) {
-        mpflag = 0;
-      } else if (args[i].equals("-mc")) {
-        mp_clustered = false;
-      } else if (args[i].equals("-mt")) {
-        true_multiplex = true;
-      } else if (args[i].equals("-m")) {
-        if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
-          try {
-            multiplex = Integer.parseInt(args[i + 1]);
-          } catch (NumberFormatException nfe) {
-            String template = errorstrings.getString("Error_number_format");
-            String str = guistrings.getString("simultaneous_throws");
-            Object[] arguments = {str};
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+          if (i != (argc - 1)) {
+            custom_initialize(argv[++i]);
+          } else {
+            printf("No custom rhythm file given\n");
+            exit(0);
           }
-          ++i;
         }
-      } else if (args[i].equals("-j")) {
-        if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
-          try {
-            jugglers = Integer.parseInt(args[i + 1]);
-          } catch (NumberFormatException nfe) {
-            String template = errorstrings.getString("Error_number_format");
-            String str = guistrings.getString("Jugglers");
-            Object[] arguments = {str};
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-          }
-          ++i;
-        }
-      } else if (args[i].equals("-d")) {
-        if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
-          try {
-            delaytime = Integer.parseInt(args[i + 1]);
-          } catch (NumberFormatException nfe) {
-            String template = errorstrings.getString("Error_number_format");
-            String str = guistrings.getString("Passing_communication_delay");
-            Object[] arguments = {str};
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-          }
-          groundflag = 1; // find only ground state tricks
-          ++i;
-        }
-      } else if (args[i].equals("-l")) {
-        if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
-          try {
-            leader_person = Integer.parseInt(args[i + 1]);
-          } catch (NumberFormatException nfe) {
-            String template = errorstrings.getString("Error_number_format");
-            String str = guistrings.getString("Error_passing_leader_number");
-            Object[] arguments = {str};
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
-          }
-          ++i;
-        }
-      } else if (args[i].equals("-x")) {
-        ++i;
-        while (i < args.length && args[i].charAt(0) != '-') {
-          try {
-            String re = makeStandardRegex(args[i]);
-            if (re.indexOf("^") < 0) {
-              re = ".*" + re + ".*";
+        */
+        case "-cp" -> connected_patterns = true;
+        case "-sym" -> symmetric_patterns = true;
+        case "-mf" -> mpflag = 0;
+        case "-mc" -> mp_clustered = false;
+        case "-mt" -> true_multiplex = true;
+        case "-m" -> {
+          if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
+            try {
+              multiplex = Integer.parseInt(args[i + 1]);
+            } catch (NumberFormatException nfe) {
+              String template = errorstrings.getString("Error_number_format");
+              String str = guistrings.getString("simultaneous_throws");
+              Object[] arguments = {str};
+              throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
-            if (Constants.DEBUG_GENERATOR) {
-              System.out.println("adding exclusion " + re);
-            }
-            exclude.add(Pattern.compile(re));
-          } catch (PatternSyntaxException pse) {
-            throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
+            ++i;
           }
-          ++i;
         }
-        --i;
-      } else if (args[i].equals("-i")) {
-        ++i;
-        while (i < args.length && args[i].charAt(0) != '-') {
-          try {
-            String re = makeStandardRegex(args[i]);
-            if (re.indexOf("^") < 0) {
-              re = ".*" + re;
+        case "-j" -> {
+          if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
+            try {
+              jugglers = Integer.parseInt(args[i + 1]);
+            } catch (NumberFormatException nfe) {
+              String template = errorstrings.getString("Error_number_format");
+              String str = guistrings.getString("Jugglers");
+              Object[] arguments = {str};
+              throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
-            if (re.indexOf("$") < 0) {
-              re = re + ".*";
-            }
-            include.add(Pattern.compile(re));
-          } catch (PatternSyntaxException ps) {
-            throw new JuggleExceptionUser(errorstrings.getString("Error_included_throws"));
+            ++i;
           }
-          ++i;
         }
-        --i;
-      } else {
-        String template = errorstrings.getString("Error_unrecognized_option");
-        Object[] arguments = {args[i]};
-        throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        case "-d" -> {
+          if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
+            try {
+              delaytime = Integer.parseInt(args[i + 1]);
+            } catch (NumberFormatException nfe) {
+              String template = errorstrings.getString("Error_number_format");
+              String str = guistrings.getString("Passing_communication_delay");
+              Object[] arguments = {str};
+              throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+            groundflag = 1; // find only ground state tricks
+            ++i;
+          }
+        }
+        case "-l" -> {
+          if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
+            try {
+              leader_person = Integer.parseInt(args[i + 1]);
+            } catch (NumberFormatException nfe) {
+              String template = errorstrings.getString("Error_number_format");
+              String str = guistrings.getString("Error_passing_leader_number");
+              Object[] arguments = {str};
+              throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+            ++i;
+          }
+        }
+        case "-x" -> {
+          ++i;
+          while (i < args.length && args[i].charAt(0) != '-') {
+            try {
+              String re = makeStandardRegex(args[i]);
+              if (!re.contains("^")) {
+                re = ".*" + re + ".*";
+              }
+              if (Constants.DEBUG_GENERATOR) {
+                System.out.println("adding exclusion " + re);
+              }
+              exclude.add(Pattern.compile(re));
+            } catch (PatternSyntaxException pse) {
+              throw new JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"));
+            }
+            ++i;
+          }
+          --i;
+        }
+        case "-i" -> {
+          ++i;
+          while (i < args.length && args[i].charAt(0) != '-') {
+            try {
+              String re = makeStandardRegex(args[i]);
+              if (!re.contains("^")) {
+                re = ".*" + re;
+              }
+              if (!re.contains("$")) {
+                re = re + ".*";
+              }
+              include.add(Pattern.compile(re));
+            } catch (PatternSyntaxException ps) {
+              throw new JuggleExceptionUser(errorstrings.getString("Error_included_throws"));
+            }
+            ++i;
+          }
+          --i;
+        }
+        default -> {
+          String template = errorstrings.getString("Error_unrecognized_option");
+          Object[] arguments = {args[i]};
+          throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        }
       }
     }
 
@@ -474,7 +468,7 @@ public class SiteswapGenerator extends Generator {
 
     if ((l_min % rhythm_period) != 0 || (l_max % rhythm_period) != 0) {
       String template = errorstrings.getString("Error_period_multiple");
-      Object[] arguments = {Integer.valueOf(rhythm_period)};
+      Object[] arguments = {rhythm_period};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
 
@@ -655,7 +649,7 @@ public class SiteswapGenerator extends Generator {
             }
 
             int m = j;
-            int q = 0;
+            int q;
 
             while ((m += l_target) < ht) {
               if ((q = state[0][i][m]) > k) {
@@ -765,7 +759,7 @@ public class SiteswapGenerator extends Generator {
         loop_counter = 0;
         if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
           String template = guistrings.getString("Generator_timeout");
-          Object[] arguments = {Integer.valueOf((int) max_time)};
+          Object[] arguments = {(int) max_time};
           throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
         }
       }
@@ -799,14 +793,12 @@ public class SiteswapGenerator extends Generator {
       }
 
       if (Constants.DEBUG_GENERATOR) {
-        StringBuffer sb = new StringBuffer();
-        for (int t = 0; t < pos; ++t) {
-          sb.append(".  ");
-        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(".  ".repeat(pos));
         for (int t = outputpos; t < outputpos_new; ++t) {
           sb.append(output[t]);
         }
-        System.out.println(sb.toString());
+        System.out.println(sb);
       }
 
       ++pos;  // move to next beat
@@ -819,11 +811,11 @@ public class SiteswapGenerator extends Generator {
       // at the target length; does the pattern work?
       if (compareStates(state[0], state[l_target]) == 0 && isPatternValid(outputpos_new)) {
         if (Constants.DEBUG_GENERATOR) {
-          StringBuffer sb = new StringBuffer();
+          StringBuilder sb = new StringBuilder();
           for (int t = 0; t < outputpos_new; ++t) {
             sb.append(output[t]);
           }
-          System.out.println("got a pattern: " + sb.toString());
+          System.out.println("got a pattern: " + sb);
         }
         if (numflag != 2) {
           outputPattern(outputpos_new);
@@ -866,7 +858,7 @@ public class SiteswapGenerator extends Generator {
 
         if (max_num >= 0 && num >= max_num) {
           String template = guistrings.getString("Generator_spacelimit");
-          Object[] arguments = {Integer.valueOf(max_num)};
+          Object[] arguments = {max_num};
           throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
         }
       }
@@ -1405,7 +1397,7 @@ public class SiteswapGenerator extends Generator {
   // Return 1 if state1 > state2, -1 if state1 < state2, and 0 iff state1
   // and state2 are identical.
 
-  protected int compareStates(int state1[][], int state2[][]) {
+  protected int compareStates(int[][] state1, int[][] state2) {
     int mo1 = 0;
     int mo2 = 0;
 
@@ -1603,17 +1595,15 @@ public class SiteswapGenerator extends Generator {
 
   protected void outputPattern(int outputpos) throws JuggleExceptionInternal {
     boolean is_excited = false;
-    StringBuffer outputline =
-        new StringBuffer(hands * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
-    StringBuffer outputline2 =
-        new StringBuffer(hands * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
+    StringBuilder outputline =
+        new StringBuilder(hands * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
+    StringBuilder outputline2 =
+        new StringBuilder(hands * (2 * ground_state_length + l_target) * CHARS_PER_THROW + 10);
 
     if (groundflag != 1) {
       if (sequenceflag) {
         if (mode == ASYNC) {
-          for (int i = n - starting_seq_length; i > 0; --i) {
-            outputline.append(" ");
-          }
+          outputline.append(" ".repeat(Math.max(0, n - starting_seq_length)));
         }
         outputline.append(starting_seq, 0, starting_seq_length);
         outputline.append("  ");
@@ -1638,9 +1628,7 @@ public class SiteswapGenerator extends Generator {
         // add proper number of trailing spaces too, so formatting is
         // aligned in RTL languages
         if (mode == ASYNC) {
-          for (int i = n - ending_seq_length; i > 0; --i) {
-            outputline.append(" ");
-          }
+          outputline.append(" ".repeat(Math.max(0, n - ending_seq_length)));
         }
       } else {
         if (is_excited) {
@@ -1659,7 +1647,7 @@ public class SiteswapGenerator extends Generator {
   //
   // Returns 1 if there is a collision, 0 otherwise.
 
-  protected int addThrowMPFilter(int dest_slot[], int slot_hand, int type, int value, int from) {
+  protected int addThrowMPFilter(int[] dest_slot, int slot_hand, int type, int value, int from) {
     switch (type) {
       case MP_EMPTY:
         return 0;

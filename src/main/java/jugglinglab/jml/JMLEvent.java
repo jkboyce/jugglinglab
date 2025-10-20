@@ -11,7 +11,6 @@ import java.util.*;
 import jugglinglab.util.*;
 
 public class JMLEvent {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected double x, y, z;  // coordinates in local frame
@@ -21,7 +20,6 @@ public class JMLEvent {
   protected int juggler;
   protected int hand;
   protected ArrayList<JMLTransition> transitions;
-  protected int[][][] eventarray;
   protected int delay;
   protected int delayunits;
   protected Permutation pathpermfrommaster;
@@ -32,7 +30,7 @@ public class JMLEvent {
 
   public JMLEvent() {
     calcpos = false;
-    transitions = new ArrayList<JMLTransition>();
+    transitions = new ArrayList<>();
   }
 
   public Coordinate getLocalCoordinate() {
@@ -83,7 +81,7 @@ public class JMLEvent {
             errorstrings.getString("Error_hand_name") + " '" + strhand + "'");
       }
     } else {
-      juggler = Integer.valueOf(strhand.substring(0, index)).intValue();
+      juggler = Integer.parseInt(strhand.substring(0, index));
       String substr = strhand.substring(index + 1);
       if (substr.equalsIgnoreCase("left")) {
         hand = HandLink.LEFT_HAND;
@@ -204,11 +202,7 @@ public class JMLEvent {
     if (totaldelay < 0) {
       totaldelay = -totaldelay;
     }
-    if ((totaldelay % delayunits) == 0) {
-      return true;
-    }
-
-    return false;
+    return (totaldelay % delayunits) == 0;
   }
 
   public boolean hasSameMasterAs(JMLEvent ev2) {
@@ -333,7 +327,7 @@ public class JMLEvent {
             + "\" t=\""
             + JLFunc.toStringRounded(getT(), 4)
             + "\" hand=\""
-            + Integer.toString(getJuggler())
+            + getJuggler()
             + ":"
             + (getHand() == HandLink.LEFT_HAND ? "left" : "right")
             + "\">";
@@ -408,7 +402,7 @@ public class JMLEvent {
         throw new JuggleExceptionUser(errorstrings.getString("Error_no_path"));
       }
 
-      int pnum = Integer.valueOf(path).intValue();
+      int pnum = Integer.parseInt(path);
       if (pnum > npaths || pnum < 1) {
         throw new JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"));
       }
@@ -443,7 +437,7 @@ public class JMLEvent {
             + "\" t=\""
             + JLFunc.toStringRounded(getT(), 4)
             + "\" hand=\""
-            + Integer.toString(getJuggler())
+            + getJuggler()
             + ":"
             + (getHand() == HandLink.LEFT_HAND ? "left" : "right")
             + "\">");

@@ -142,7 +142,7 @@ public abstract class MHNPattern extends Pattern {
       throw new JuggleExceptionUser(errorstrings.getString("Error_no_pattern"));
     }
 
-    String temp = null;
+    String temp;
     if ((temp = pl.removeParameter("bps")) != null) {
       try {
         bps_set = Double.parseDouble(temp);
@@ -211,8 +211,8 @@ public abstract class MHNPattern extends Pattern {
       }
 
       StringTokenizer st1 = new StringTokenizer(temp, "}", false);
-      StringTokenizer st2 = null;
-      String str = null;
+      StringTokenizer st2;
+      String str;
 
       int numcolors = st1.countTokens();
       color = new String[numcolors];
@@ -311,7 +311,7 @@ public abstract class MHNPattern extends Pattern {
         }
       }
 
-      if (result.length() > 0) {
+      if (!result.isEmpty()) {
         result = result.substring(0, result.length() - 1);
       }
     } catch (JuggleExceptionUser jeu) {
@@ -536,7 +536,7 @@ public abstract class MHNPattern extends Pattern {
                       ? errorstrings.getString("Error_right_hand")
                       : errorstrings.getString("Error_left_hand"));
               Object[] arguments = {
-                Integer.valueOf(sst.targetindex + 1), Integer.valueOf(sst.targetjuggler), hand
+                  sst.targetindex + 1, sst.targetjuggler, hand
               };
               throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
@@ -680,7 +680,7 @@ public abstract class MHNPattern extends Pattern {
 
   // Set the MHNThrow.catching and MHNThrow.catchnum fields.
 
-  protected void setCatchOrder() throws JuggleExceptionInternal {
+  protected void setCatchOrder() {
     // Figure out the correct catch order for master throws
     for (int k = 0; k < getIndexes(); ++k) {
       for (int j = 0; j < getNumberOfJugglers(); ++j) {
@@ -726,7 +726,7 @@ public abstract class MHNPattern extends Pattern {
                 continue;
               }
 
-              boolean switchcatches = false;
+              boolean switchcatches;
               if (sst1.catchnum < sst2.catchnum) {
                 switchcatches = isCatchOrderIncorrect(sst1, sst2);
               } else {
@@ -790,14 +790,7 @@ public abstract class MHNPattern extends Pattern {
     // look at which hand it's from; catch from same hand first
     int hdiff1 = Math.abs(t1.hand - t1.source.hand);
     int hdiff2 = Math.abs(t2.hand - t2.source.hand);
-    if (hdiff1 > hdiff2) {
-      return true;
-    }
-    if (hdiff1 < hdiff2) {
-      return false;
-    }
-
-    return false;
+    return hdiff1 > hdiff2;
   }
 
   // Determine, for each throw in the juggling matrix, how many beats prior to
@@ -841,26 +834,26 @@ public abstract class MHNPattern extends Pattern {
   // for debugging.
 
   protected String getInternalRepresentation() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
-    sb.append("numjugglers = " + getNumberOfJugglers() + "\n");
-    sb.append("numpaths = " + getNumberOfPaths() + "\n");
-    sb.append("period = " + getPeriod() + "\n");
-    sb.append("max_occupancy = " + getMaxOccupancy() + "\n");
-    sb.append("max_throw = " + getMaxThrow() + "\n");
-    sb.append("indexes = " + getIndexes() + "\n");
+    sb.append("numjugglers = ").append(getNumberOfJugglers()).append("\n");
+    sb.append("numpaths = ").append(getNumberOfPaths()).append("\n");
+    sb.append("period = ").append(getPeriod()).append("\n");
+    sb.append("max_occupancy = ").append(getMaxOccupancy()).append("\n");
+    sb.append("max_throw = ").append(getMaxThrow()).append("\n");
+    sb.append("indexes = ").append(getIndexes()).append("\n");
     sb.append("throws:\n");
 
     for (int i = 0; i < getIndexes(); ++i) {
       for (int j = 0; j < numjugglers; ++j) {
         for (int h = 0; h < 2; ++h) {
           for (int s = 0; s < getMaxOccupancy(); ++s) {
-            sb.append("  th[" + j + "][" + h + "][" + i + "][" + s + "] = ");
+            sb.append("  th[").append(j).append("][").append(h).append("][").append(i).append("][").append(s).append("] = ");
             MHNThrow mhnt = th[j][h][i][s];
             if (mhnt == null) {
               sb.append("null\n");
             } else {
-              sb.append(mhnt.toString() + "\n");
+              sb.append(mhnt).append("\n");
             }
           }
         }
@@ -1043,7 +1036,7 @@ public abstract class MHNPattern extends Pattern {
             if (sst != null) {
               int throwval = sst.targetindex - k;
               if (throwval > 2) {
-                result += throwspersec[throwval > 9 ? 9 : throwval];
+                result += throwspersec[Math.min(throwval, 9)];
                 numberaveraged++;
               }
             }
@@ -1052,7 +1045,7 @@ public abstract class MHNPattern extends Pattern {
       }
     }
     if (numberaveraged > 0) {
-      result /= (double) numberaveraged;
+      result /= numberaveraged;
     } else {
       result = 2;
     }
@@ -1373,17 +1366,17 @@ public abstract class MHNPattern extends Pattern {
               break;
             }
 
-            String type = null;
-            String mod = null;
+            String type;
+            String mod;
 
             switch (sst2.mod.charAt(0)) {
               case 'B':
                 type = "bounce";
                 mod = null;
-                if (sst2.mod.indexOf("F") != -1) {
+                if (sst2.mod.contains("F")) {
                   mod = "forced=true";
                 }
-                if (sst2.mod.indexOf("H") != -1) {
+                if (sst2.mod.contains("H")) {
                   if (mod == null) {
                     mod = "hyper=true";
                   } else {
@@ -1445,7 +1438,7 @@ public abstract class MHNPattern extends Pattern {
             if (sst2.mod.charAt(0) != 'H') {
               if (sst2.isZero()) {
                 String template = errorstrings.getString("Error_modifier_on_0");
-                Object[] arguments = {sst2.mod, Integer.valueOf(k + 1)};
+                Object[] arguments = {sst2.mod, k + 1};
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
               }
 
@@ -1512,6 +1505,7 @@ public abstract class MHNPattern extends Pattern {
                     MHNThrow sst2 = th[j2][h2][i2][slot2];
                     if (sst2 != null && sst2.master == sst) {
                       handtouched[j2][h2] = true;
+                      break;
                     }
                   }
                 }

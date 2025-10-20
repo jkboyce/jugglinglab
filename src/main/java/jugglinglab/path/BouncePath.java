@@ -19,8 +19,8 @@ public class BouncePath extends Path {
 
   protected double bx, cx;
   protected double by, cy;
-  protected double az[], bz[], cz[];
-  protected double endtime[];
+  protected double[] az, bz, cz;
+  protected double[] endtime;
   protected int bounces = BOUNCES_DEF;
   protected boolean forced = FORCED_DEF;  // true -> forced throw
   protected boolean hyper = HYPER_DEF;  // true -> same type of catch (lift/forced) as throw
@@ -45,39 +45,39 @@ public class BouncePath extends Path {
             "bounces",
             ParameterDescriptor.TYPE_INT,
             null,
-            Integer.valueOf(BOUNCES_DEF),
-            Integer.valueOf(bounces));
+            BOUNCES_DEF,
+            bounces);
     result[1] =
         new ParameterDescriptor(
             "forced",
             ParameterDescriptor.TYPE_BOOLEAN,
             null,
-            Boolean.valueOf(FORCED_DEF),
-            Boolean.valueOf(forced));
+            FORCED_DEF,
+            forced);
     result[2] =
         new ParameterDescriptor(
             "hyper",
             ParameterDescriptor.TYPE_BOOLEAN,
             null,
-            Boolean.valueOf(HYPER_DEF),
-            Boolean.valueOf(hyper));
+            HYPER_DEF,
+            hyper);
     result[3] =
         new ParameterDescriptor(
             "bounceplane",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(BOUNCEPLANE_DEF),
-            Double.valueOf(bounceplane));
+            BOUNCEPLANE_DEF,
+            bounceplane);
     result[4] =
         new ParameterDescriptor(
             "bouncefrac",
             ParameterDescriptor.TYPE_FLOAT,
             null,
-            Double.valueOf(BOUNCEFRAC_DEF),
-            Double.valueOf(bouncefrac));
+            BOUNCEFRAC_DEF,
+            bouncefrac);
     result[5] =
         new ParameterDescriptor(
-            "g", ParameterDescriptor.TYPE_FLOAT, null, Double.valueOf(G_DEF), Double.valueOf(g));
+            "g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g);
 
     return result;
   }
@@ -100,16 +100,16 @@ public class BouncePath extends Path {
 
       if (pname.equalsIgnoreCase("bounces")) {
         try {
-          bounces = Integer.valueOf(pvalue).intValue();
+          bounces = Integer.parseInt(pvalue);
         } catch (NumberFormatException nfe) {
           String template = errorstrings.getString("Error_number_format");
           Object[] arguments = {"bounces"};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
       } else if (pname.equalsIgnoreCase("forced")) {
-        forced = Boolean.valueOf(pvalue).booleanValue();
+        forced = Boolean.parseBoolean(pvalue);
       } else if (pname.equalsIgnoreCase("hyper")) {
-        hyper = Boolean.valueOf(pvalue).booleanValue();
+        hyper = Boolean.parseBoolean(pvalue);
       } else if (pname.equalsIgnoreCase("bounceplane")) {
         try {
           bounceplane = JLFunc.parseDouble(pvalue);
@@ -315,7 +315,7 @@ public class BouncePath extends Path {
             - 2 * kk * f2 * u * c;
 
     double[] realroot = new double[4];
-    int numrealroots = 0;
+    int numrealroots;
 
     if (n > 1) {
       // more than one bounce, need to solve the quartic case

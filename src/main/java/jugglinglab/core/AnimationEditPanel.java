@@ -160,8 +160,7 @@ public class AnimationEditPanel extends AnimationPanel
                 activateEvent(getPattern().getEventImageInLoop(visible_events.get(j)));
 
                 for (AnimationAttachment att : attachments) {
-                  if (att instanceof EditLadderDiagram) {
-                    EditLadderDiagram eld = (EditLadderDiagram) att;
+                  if (att instanceof EditLadderDiagram eld) {
                     eld.activateEvent(event);
                   }
                   att.repaintAttachment();
@@ -283,10 +282,9 @@ public class AnimationEditPanel extends AnimationPanel
 
       try {
         for (AnimationAttachment att : attachments) {
-          if (att instanceof EditLadderDiagram) {
+          if (att instanceof EditLadderDiagram eld) {
             // reactivate the event in ladder diagram, since we've
             // called layoutPattern() and events may have changed
-            EditLadderDiagram eld = (EditLadderDiagram) att;
             event = eld.reactivateEvent();
             eld.addToUndoList();
           }
@@ -305,8 +303,7 @@ public class AnimationEditPanel extends AnimationPanel
       deltaangle = 0;
 
       for (AnimationAttachment att : attachments) {
-        if (att instanceof EditLadderDiagram) {
-          EditLadderDiagram eld = (EditLadderDiagram) att;
+        if (att instanceof EditLadderDiagram eld) {
           eld.addToUndoList();
         }
       }
@@ -373,7 +370,7 @@ public class AnimationEditPanel extends AnimationPanel
 
       if (dragging_angle) {
         // shift pixel coords of control point by mouse drag
-        double dcontrol[] = {start_control[0] + mx - startx, start_control[1] + my - starty};
+        double[] dcontrol = {start_control[0] + mx - startx, start_control[1] + my - starty};
 
         // re-express control point location in coordinate
         // system of juggler:
@@ -704,7 +701,7 @@ public class AnimationEditPanel extends AnimationPanel
     }
 
     // determine which events to display on-screen
-    visible_events = new ArrayList<JMLEvent>();
+    visible_events = new ArrayList<>();
     visible_events.add(event);
     handpath_start_time = event.getT();
     handpath_end_time = event.getT();
@@ -769,7 +766,7 @@ public class AnimationEditPanel extends AnimationPanel
         // translate by one pixel and see how far it is in juggler space
         Coordinate c = ev.getGlobalCoordinate();
         if (c == null) {
-          throw new JuggleExceptionInternal("AEP: No coord on event " + ev.toString(), getPattern());
+          throw new JuggleExceptionInternal("AEP: No coord on event " + ev, getPattern());
         }
         Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
         double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
@@ -856,8 +853,8 @@ public class AnimationEditPanel extends AnimationPanel
         double t = handpath_start_time + j * HANDPATH_POINT_SEP_TIME;
         pat.getHandCoordinate(event.getJuggler(), event.getHand(), t, c);
         int[] point = ren.getXY(c);
-        handpath_points[i][j][0] = (double) point[0];
-        handpath_points[i][j][1] = (double) point[1];
+        handpath_points[i][j][0] = point[0];
+        handpath_points[i][j][1] = point[1];
         handpath_hold[j] = pat.isHandHolding(event.getJuggler(), event.getHand(), t + 0.0001);
       }
     }
@@ -874,10 +871,12 @@ public class AnimationEditPanel extends AnimationPanel
     for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
       // Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
-      if (jc.stereo && i == 0) {
-        g2 = g.create(0, 0, d.width / 2, d.height);
-      } else if (jc.stereo && i == 1) {
-        g2 = g.create(d.width / 2, 0, d.width / 2, d.height);
+      if (jc.stereo) {
+        if (i == 0) {
+          g2 = g.create(0, 0, d.width / 2, d.height);
+        } else {
+          g2 = g.create(d.width / 2, 0, d.width / 2, d.height);
+        }
       }
 
       if (g2 instanceof Graphics2D) {
@@ -1154,7 +1153,7 @@ public class AnimationEditPanel extends AnimationPanel
     }
 
     // need a Graphics2D object for setStroke() below
-    if (!(g instanceof Graphics2D)) {
+    if (!(g instanceof Graphics2D g2)) {
       return;
     }
 
@@ -1163,7 +1162,6 @@ public class AnimationEditPanel extends AnimationPanel
       return;
     }
 
-    Graphics2D g2 = (Graphics2D) g;
     g2.setColor(COLOR_GRID);
     Dimension d = getSize();
 
@@ -1275,9 +1273,9 @@ public class AnimationEditPanel extends AnimationPanel
       // screen (pixel) offset of a 1cm offset in each of the cardinal
       // directions in the juggler's coordinate system (i.e., global
       // coordinates rotated by the juggler's angle)
-      double dx[] = {0, 0};
-      double dy[] = {0, 0};
-      double dz[] = {0, 0};
+      double[] dx = {0, 0};
+      double[] dy = {0, 0};
+      double[] dz = {0, 0};
       double f = (jc.stereo ? 0.5 : 1.0);
 
       for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
@@ -1347,9 +1345,9 @@ public class AnimationEditPanel extends AnimationPanel
       // screen (pixel) offset of a 1cm offset in each of the cardinal
       // directions in the position's coordinate system (i.e., global
       // coordinates rotated by the position's angle)
-      double dx[] = {0, 0};
-      double dy[] = {0, 0};
-      double dz[] = {0, 0};
+      double[] dx = {0, 0};
+      double[] dy = {0, 0};
+      double[] dz = {0, 0};
       double f = (jc.stereo ? 0.5 : 1.0);
 
       for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {

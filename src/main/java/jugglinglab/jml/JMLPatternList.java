@@ -32,7 +32,7 @@ public class JMLPatternList {
   protected DefaultListModel<PatternRecord> model;
 
   public JMLPatternList() {
-    model = new DefaultListModel<PatternRecord>();
+    model = new DefaultListModel<>();
     clearModel();
   }
 
@@ -89,11 +89,11 @@ public class JMLPatternList {
 
     if (infonode != null) {
       info = infonode.getNodeValue();
-      info = (info != null && info.strip().length() > 0) ? info.strip() : null;
+      info = (info != null && !info.isBlank()) ? info.strip() : null;
 
       String tagstr = infonode.getAttributes().getAttribute("tags");
       if (tagstr != null) {
-        tags = new ArrayList<String>();
+        tags = new ArrayList<>();
 
         for (String t : tagstr.split(",")) {
           t = t.strip();
@@ -102,6 +102,7 @@ public class JMLPatternList {
           for (String t2 : tags) {
             if (t2.equalsIgnoreCase(t)) {
               is_new = false;
+              break;
             }
           }
 
@@ -135,7 +136,7 @@ public class JMLPatternList {
       return null;
     }
 
-    JMLPattern pat = null;
+    JMLPattern pat;
     if (rec.notation.equalsIgnoreCase("jml") && rec.patnode != null) {
       pat = new JMLPattern(rec.patnode, loadingversion);
     } else if (rec.anim != null) {
@@ -172,7 +173,7 @@ public class JMLPatternList {
   public void setTitle(String t) {
     // by convention we don't allow title to be zero-length string "", but
     // use null instead
-    title = ((t == null || t.length() == 0) ? null : t.strip());
+    title = ((t == null || t.isEmpty()) ? null : t.strip());
   }
 
   public String getTitle() {
@@ -225,7 +226,7 @@ public class JMLPatternList {
             patnode = child.findNode("pattern");
             if (patnode == null) {
               String template = errorstrings.getString("Error_missing_pattern");
-              Object[] arguments = {Integer.valueOf(linenumber)};
+              Object[] arguments = {linenumber};
               throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
             infonode = patnode.findNode("info");
@@ -248,10 +249,10 @@ public class JMLPatternList {
 
     write.println("<jml version=\"" + JMLNode.xmlescape(version) + "\">");
     write.println("<patternlist>");
-    if (title != null && title.length() > 0) {
+    if (title != null && !title.isEmpty()) {
       write.println("<title>" + JMLNode.xmlescape(title) + "</title>");
     }
-    if (info != null && info.length() > 0) {
+    if (info != null && !info.isEmpty()) {
       write.println("<info>" + JMLNode.xmlescape(info) + "</info>");
     }
 
@@ -287,11 +288,11 @@ public class JMLPatternList {
           rec.patnode.writeNode(write, 0);
         } else if (rec.anim != null) {
           write.println(JMLNode.xmlescape(rec.anim));
-          if (rec.info != null || (rec.tags != null && rec.tags.size() > 0)) {
+          if (rec.info != null || (rec.tags != null && !rec.tags.isEmpty())) {
             String tagstr = (rec.tags != null ? String.join(",", rec.tags) : "");
 
             if (rec.info != null) {
-              if (tagstr.length() == 0) {
+              if (tagstr.isEmpty()) {
                 write.println("<info>" + JMLNode.xmlescape(rec.info) + "</info>");
               } else {
                 write.println(
@@ -380,10 +381,8 @@ public class JMLPatternList {
       info = pr.info;
 
       if (pr.tags != null) {
-        tags = new ArrayList<String>();
-        for (String tag : pr.tags) {
-          tags.add(tag);
-        }
+        tags = new ArrayList<>();
+        tags.addAll(pr.tags);
       } else {
         tags = null;
       }

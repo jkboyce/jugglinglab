@@ -12,7 +12,6 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 public class MarginEquations {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
   protected static final double EPSILON = 0.000001;
 
@@ -94,7 +93,7 @@ public class MarginEquations {
     // in the pattern, in particular the ones that are throws or catches. The x-coordinate
     // of each will be a free variable in our equations.
 
-    ArrayList<JMLEvent> variableEvents = new ArrayList<JMLEvent>();
+    ArrayList<JMLEvent> variableEvents = new ArrayList<>();
 
     double maxValue = 0;
     double g = 980; // cm per second^2
@@ -192,9 +191,8 @@ public class MarginEquations {
     PathLink[] masterpl = null;
     for (int pass = 1; pass < 3; pass++) {
       int k = 0;
-      for (int i = 0; i < pathlinks.size(); i++) {
-        for (int j = 0; j < pathlinks.get(i).size(); j++) {
-          PathLink pl = pathlinks.get(i).get(j);
+      for (ArrayList<PathLink> pathlink : pathlinks) {
+        for (PathLink pl : pathlink) {
           if (!pl.isInHand() && pl.getStartEvent().isMaster()) {
             if (pass == 1) {
               masterplNum++;
@@ -243,7 +241,7 @@ public class MarginEquations {
       }
     }
 
-    ArrayList<double[]> eqns = new ArrayList<double[]>();
+    ArrayList<double[]> eqns = new ArrayList<>();
 
     if (Constants.DEBUG_OPTIMIZE) {
       System.out.println("potential collisions:");
@@ -430,7 +428,7 @@ public class MarginEquations {
     if (Constants.DEBUG_OPTIMIZE) {
       System.out.println("total margin equations = " + marginsNum);
       for (int i = 0; i < marginsNum; i++) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("{ ");
         double[] temp = eqns.get(i);
         for (int j = 0; j <= varsNum; j++) {
@@ -445,9 +443,9 @@ public class MarginEquations {
         for (int j = 0; j < varsNum; j++) {
           dtemp += temp[j] * varsValues[j];
         }
-        sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
+        sb.append(" } --> ").append(JLFunc.toStringRounded(dtemp, 4));
 
-        System.out.println("   eq[" + i + "] = " + sb.toString());
+        System.out.println("   eq[" + i + "] = " + sb);
       }
       System.out.println("de-duplicating equations...");
     }
@@ -461,12 +459,13 @@ public class MarginEquations {
       for (int j = 0; !dupoverall && j < i; j++) {
         double[] rowj = eqns.get(j);
         boolean duprow = true;
-        for (int k = 0; duprow && k <= varsNum; k++) {
+        for (int k = 0; k <= varsNum; k++) {
           if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON)) {
             duprow = false;
+            break;
           }
         }
-        dupoverall |= duprow;
+        dupoverall = duprow;
       }
 
       if (dupoverall) {
@@ -494,7 +493,7 @@ public class MarginEquations {
     if (Constants.DEBUG_OPTIMIZE) {
       System.out.println("total margin equations = " + marginsNum);
       for (int i = 0; i < marginsNum; i++) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("{ ");
         for (int j = 0; j <= varsNum; j++) {
           sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
@@ -508,9 +507,9 @@ public class MarginEquations {
         for (int j = 0; j < varsNum; j++) {
           dtemp += marginsEqs[i].coef(j) * varsValues[j];
         }
-        sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
+        sb.append(" } --> ").append(JLFunc.toStringRounded(dtemp, 4));
 
-        System.out.println("   eq[" + i + "] = " + sb.toString());
+        System.out.println("   eq[" + i + "] = " + sb);
       }
     }
 
@@ -519,7 +518,7 @@ public class MarginEquations {
     if (Constants.DEBUG_OPTIMIZE) {
       System.out.println("sorted:");
       for (int i = 0; i < marginsNum; i++) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("{ ");
         for (int j = 0; j <= varsNum; j++) {
           sb.append(JLFunc.toStringRounded(marginsEqs[i].coef(j), 4));
@@ -533,16 +532,16 @@ public class MarginEquations {
         for (int j = 0; j < varsNum; j++) {
           dtemp += marginsEqs[i].coef(j) * varsValues[j];
         }
-        sb.append(" } --> " + JLFunc.toStringRounded(dtemp, 4));
+        sb.append(" } --> ").append(JLFunc.toStringRounded(dtemp, 4));
 
-        System.out.println("   eq[" + i + "] = " + sb.toString());
+        System.out.println("   eq[" + i + "] = " + sb);
       }
     }
   }
 
   public void sort() {
     Comparator<LinearEquation> comp =
-        new Comparator<LinearEquation>() {
+        new Comparator<>() {
           @Override
           public int compare(LinearEquation eq1, LinearEquation eq2) {
             if (eq1.done() && !eq2.done()) {

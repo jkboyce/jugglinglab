@@ -25,8 +25,8 @@ public class JMLAttributes {
 
   public void addAttribute(String name, String value) {
     if (size == 0) {
-      names = new ArrayList<String>();
-      values = new ArrayList<String>();
+      names = new ArrayList<>();
+      values = new ArrayList<>();
     }
     names.add(name);
     values.add(value);

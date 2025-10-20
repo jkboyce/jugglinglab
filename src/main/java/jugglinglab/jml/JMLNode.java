@@ -8,7 +8,6 @@ package jugglinglab.jml;
 
 import java.io.*;
 import java.util.*;
-import jugglinglab.util.*;
 
 public class JMLNode {
   protected String nodeType; // from taglist in JMLDefs.java
@@ -21,7 +20,7 @@ public class JMLNode {
 
   public JMLNode(String nodeType) {
     this.nodeType = nodeType;
-    childNodes = new ArrayList<JMLNode>();
+    childNodes = new ArrayList<>();
     attributes = new JMLAttributes(this);
   }
 
@@ -53,8 +52,9 @@ public class JMLNode {
     return childNodes.get(index);
   }
 
+  /*
   public JMLNode getFirstChild() {
-    return childNodes.get(0);
+    return childNodes.getFirst();
   }
 
   public JMLNode getLastChild() {
@@ -68,14 +68,17 @@ public class JMLNode {
   public JMLNode getPreviousSibling() {
     return previousSibling;
   }
+  */
 
   public void setPreviousSibling(JMLNode sibling) {
     previousSibling = sibling;
   }
 
+  /*
   public JMLNode getNextSibling() {
     return nextSibling;
   }
+  */
 
   public void setNextSibling(JMLNode sibling) {
     nextSibling = sibling;
@@ -89,6 +92,7 @@ public class JMLNode {
     return attributes;
   }
 
+  /*
   // Inserts a child node newChild before the existing child node refChild.
   public void insertBefore(JMLNode newChild, JMLNode refChild) {
     if (refChild != null) {
@@ -139,12 +143,13 @@ public class JMLNode {
       throw new JuggleExceptionInternal("Node to remove doesn't exist");
     }
   }
+  */
 
   public void appendChild(JMLNode newChild) {
     JMLNode lastnode = null;
 
-    if (childNodes.size() != 0) {
-      lastnode = childNodes.get(childNodes.size() - 1);
+    if (!childNodes.isEmpty()) {
+      lastnode = childNodes.getLast();
       lastnode.setNextSibling(newChild);
     }
     childNodes.add(newChild);
@@ -153,9 +158,11 @@ public class JMLNode {
     newChild.setParentNode(this);
   }
 
+  /*
   public boolean hasChildNodes() {
-    return (childNodes.size() != 0);
+    return !childNodes.isEmpty();
   }
+  */
 
   // Recursively traverse the node tree to find the first instance of a given
   // node type
@@ -174,34 +181,35 @@ public class JMLNode {
     return null;
   }
 
-  public void writeNode(PrintWriter write, int indentlevel) throws IOException {
+  public void writeNode(PrintWriter write, int indentlevel) {
     int i;
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
 
     /*
        for (i = 0; i < indentlevel; i++)
     result.append('\t');
     */
 
-    result.append("<" + nodeType);
+    result.append("<").append(nodeType);
     // output attributes
     for (i = 0; i < attributes.getNumberOfAttributes(); i++) {
-      result.append(" " + attributes.getAttributeName(i));
-      result.append("=\"" + JMLNode.xmlescape(attributes.getAttributeValue(i)) + "\"");
+      result.append(" ").append(attributes.getAttributeName(i))
+            .append("=\"").append(JMLNode.xmlescape(attributes.getAttributeValue(i)))
+            .append("\"");
     }
 
     if (getNumberOfChildren() == 0) {
       if (nodeValue == null) {
         result.append("/>");
       } else {
-        result.append(">" + JMLNode.xmlescape(nodeValue) + "</" + nodeType + ">");
+        result.append(">").append(JMLNode.xmlescape(nodeValue))
+              .append("</").append(nodeType).append(">");
       }
-      write.println(result.toString());
-      result = new StringBuffer();
+      write.println(result);
     } else {
       result.append('>');
-      write.println(result.toString());
-      result = new StringBuffer();
+      write.println(result);
+      result = new StringBuilder();
 
       if (nodeValue != null) {
         /*
@@ -209,8 +217,8 @@ public class JMLNode {
         result.append('\t');
         */
         result.append(JMLNode.xmlescape(nodeValue));
-        write.println(result.toString());
-        result = new StringBuffer();
+        write.println(result);
+        result = new StringBuilder();
       }
       write.flush();
 
@@ -222,8 +230,8 @@ public class JMLNode {
       for (i = 0; i < indentlevel; i++)
       result.append('\t');
       */
-      result.append("</" + nodeType + ">");
-      write.println(result.toString());
+      result.append("</").append(nodeType).append(">");
+      write.println(result);
     }
     write.flush();
   }

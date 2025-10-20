@@ -21,7 +21,6 @@ import jugglinglab.view.View;
 
 public class PatternListPanel extends JPanel {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   static final Font FONT_NOPATTERN = new Font("SanSerif", Font.BOLD | Font.ITALIC, 14);
   static final Font FONT_PATTERN = new Font("Monospaced", Font.PLAIN, 14);
@@ -67,7 +66,7 @@ public class PatternListPanel extends JPanel {
   //----------------------------------------------------------------------------
 
   protected void makePanel() {
-    list = new JList<PatternRecord>(pl.getModel());
+    list = new JList<>(pl.getModel());
     list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     list.setCellRenderer(new PatternCellRenderer());
 
@@ -191,7 +190,7 @@ public class PatternListPanel extends JPanel {
     JPopupMenu popup = new JPopupMenu();
     int row = list.getSelectedIndex();
 
-    popupPatterns = new ArrayList<PatternWindow>();
+    popupPatterns = new ArrayList<>();
     for (Frame fr : Frame.getFrames()) {
       if (fr.isVisible() && fr instanceof PatternWindow) {
         popupPatterns.add((PatternWindow) fr);
@@ -199,27 +198,21 @@ public class PatternListPanel extends JPanel {
     }
 
     ActionListener al =
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            String command = ae.getActionCommand();
-            int row = list.getSelectedIndex();
+        ae -> {
+          String command = ae.getActionCommand();
+          int row1 = list.getSelectedIndex();
 
-            if (command.equals("inserttext")) {
-              insertText(row);
-            } else if (command.equals("insertpattern")) {
-              // do nothing
-            } else if (command.equals("title")) {
-              changeTitle();
-            } else if (command.equals("displaytext")) {
-              changeDisplayText(row);
-            } else if (command.equals("remove")) {
-              pl.getModel().remove(row);
-            } else {
+          switch (command) {
+            case "inserttext" -> insertText(row1);
+            case "insertpattern" -> {}
+            case "title" -> changeTitle();
+            case "displaytext" -> changeDisplayText(row1);
+            case "remove" -> pl.getModel().remove(row1);
+            default -> {
               // inserting a pattern
-              int patnum = Integer.parseInt(command.substring(3, command.length()));
+              int patnum = Integer.parseInt(command.substring(3));
               PatternWindow pw = popupPatterns.get(patnum);
-              insertPattern(row, pw);
+              insertPattern(row1, pw);
             }
           }
         };
@@ -243,7 +236,7 @@ public class PatternListPanel extends JPanel {
           && JMLPatternList.BLANK_AT_END && row == pl.getModel().size() - 1) {
         item.setEnabled(false);
       }
-      if (popupCommands[i].equals("insertpattern") && popupPatterns.size() == 0) {
+      if (popupCommands[i].equals("insertpattern") && popupPatterns.isEmpty()) {
         item.setEnabled(false);
       }
 
@@ -286,7 +279,7 @@ public class PatternListPanel extends JPanel {
   protected void insertPattern(int row, PatternWindow pw) {
     String display = pw.getTitle();
     String animprefs = pw.getAnimationPrefs().toString();
-    if (animprefs.length() == 0) {
+    if (animprefs.isEmpty()) {
       animprefs = null;
     }
 
@@ -294,7 +287,7 @@ public class PatternListPanel extends JPanel {
     String anim = null;
 
     JMLPattern pattern = pw.getPattern();
-    JMLNode patnode = null;
+    JMLNode patnode;
     try {
       patnode = pattern.getRootNode().findNode("pattern");
     } catch (JuggleExceptionInternal jei) {
@@ -333,22 +326,19 @@ public class PatternListPanel extends JPanel {
     makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "");
 
     okbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            String display = tf.getText();
-            dialog.dispose();
+        e -> {
+          String display = tf.getText();
+          dialog.dispose();
 
-            pl.addLine(row, display, null, null, null, null, null);
+          pl.addLine(row, display, null, null, null, null, null);
 
-            if (row < 0) {
-              list.setSelectedIndex(pl.size() - 1);
-            } else {
-              list.setSelectedIndex(row);
-            }
-
-            hasUnsavedChanges = true;
+          if (row < 0) {
+            list.setSelectedIndex(pl.size() - 1);
+          } else {
+            list.setSelectedIndex(row);
           }
+
+          hasUnsavedChanges = true;
         });
 
     dialog.setVisible(true);
@@ -360,18 +350,15 @@ public class PatternListPanel extends JPanel {
     makeDialog(guistrings.getString("PLDIALOG_Change_title"), pl.getTitle());
 
     okbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            pl.setTitle(tf.getText());
-            dialog.dispose();
+        e -> {
+          pl.setTitle(tf.getText());
+          dialog.dispose();
 
-            if (parent != null) {
-              parent.setTitle(pl.getTitle());
-            }
-
-            hasUnsavedChanges = true;
+          if (parent != null) {
+            parent.setTitle(pl.getTitle());
           }
+
+          hasUnsavedChanges = true;
         });
 
     dialog.setVisible(true);
@@ -385,16 +372,13 @@ public class PatternListPanel extends JPanel {
     makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display);
 
     okbutton.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            rec.display = tf.getText();
-            dialog.dispose();
+        e -> {
+          rec.display = tf.getText();
+          dialog.dispose();
 
-            pl.getModel().set(row, rec);
+          pl.getModel().set(row, rec);
 
-            hasUnsavedChanges = true;
-          }
+          hasUnsavedChanges = true;
         });
 
     dialog.setVisible(true);
@@ -486,11 +470,7 @@ public class PatternListPanel extends JPanel {
       if (info.isDataFlavorSupported(PATTERN_FLAVOR)) {
         return true;
       }
-      if (info.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-        return true;
-      }
-
-      return false;
+      return info.isDataFlavorSupported(DataFlavor.stringFlavor);
     }
 
     @Override
@@ -556,7 +536,7 @@ public class PatternListPanel extends JPanel {
     }
   }
 
-  class PatternTransferable implements Transferable {
+  static class PatternTransferable implements Transferable {
     public PatternRecord rec;
 
     public PatternTransferable(PatternRecord pr) {
@@ -571,7 +551,7 @@ public class PatternListPanel extends JPanel {
 
       if (flavor.equals(DataFlavor.stringFlavor)) {
         String s;
-        if (rec.anim == null || rec.anim.equals("")) {
+        if (rec.anim == null || rec.anim.isEmpty()) {
           s = rec.display;
         } else {
           s = rec.anim;
@@ -599,18 +579,16 @@ public class PatternListPanel extends JPanel {
   // Class to support rendering of list items
   //----------------------------------------------------------------------------
 
-  class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
+  static class PatternCellRenderer extends JLabel implements ListCellRenderer<PatternRecord> {
     public Component getListCellRendererComponent(
         JList<? extends PatternRecord> list,  // the list
-        PatternRecord value,  // value to display
+        PatternRecord rec,  // value to display
         int index,  // cell index
         boolean isSelected,  // is the cell selected
         boolean cellHasFocus)  // does the cell have focus
         {
-      PatternRecord rec = value;
-
       setFont(rec.anim == null && rec.patnode == null ? FONT_NOPATTERN : FONT_PATTERN);
-      setText(rec.display.length() > 0 ? rec.display : " ");
+      setText(!rec.display.isEmpty() ? rec.display : " ");
 
       if (isSelected) {
         setBackground(list.getSelectionBackground());

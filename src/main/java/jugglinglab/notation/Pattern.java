@@ -15,7 +15,6 @@ import jugglinglab.jml.JMLPattern;
 import jugglinglab.util.*;
 
 public abstract class Pattern {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   // The built-in notations
@@ -26,8 +25,7 @@ public abstract class Pattern {
   public static final int NOTATION_SITESWAP = 1;
 
   // creates a new blank pattern in the given notation
-  public static Pattern newPattern(String notation)
-      throws JuggleExceptionUser, JuggleExceptionInternal {
+  public static Pattern newPattern(String notation) throws JuggleExceptionUser {
     if (notation == null) {
       throw new JuggleExceptionUser("Notation type not specified");
     }

@@ -11,7 +11,6 @@ import java.util.*;
 import jugglinglab.util.*;
 
 public class JMLSymmetry {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   int type;

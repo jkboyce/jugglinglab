@@ -87,7 +87,7 @@ public class HandLink {
 
   @Override
   public String toString() {
-    String result = null;
+    String result;
 
     Coordinate start = startevent.getGlobalCoordinate();
     result =

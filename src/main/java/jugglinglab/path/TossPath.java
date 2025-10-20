@@ -28,7 +28,7 @@ public class TossPath extends Path {
     ParameterDescriptor[] result = new ParameterDescriptor[1];
 
     result[0] = new ParameterDescriptor(
-        "g", ParameterDescriptor.TYPE_FLOAT, null, Double.valueOf(G_DEF), Double.valueOf(g));
+        "g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g);
     return result;
   }
 

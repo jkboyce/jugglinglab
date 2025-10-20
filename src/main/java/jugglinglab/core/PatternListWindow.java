@@ -19,7 +19,6 @@ import jugglinglab.util.*;
 
 public class PatternListWindow extends JFrame implements ActionListener {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   // used for tiling the windows on the screen as they're created
   protected static final int NUM_TILES = 8;
@@ -55,13 +54,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
           }
         });
 
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            ApplicationWindow.updateWindowMenus();
-          }
-        });
+    SwingUtilities.invokeLater(ApplicationWindow::updateWindowMenus);
   }
 
   // JML loaded from a file
@@ -247,22 +240,15 @@ public class PatternListWindow extends JFrame implements ActionListener {
     String command = ae.getActionCommand();
 
     try {
-      if (command.equals("newpat")) {
-        doMenuCommand(MenuCommand.FILE_NEWPAT);
-      } else if (command.equals("newpl")) {
-        doMenuCommand(MenuCommand.FILE_NEWPL);
-      } else if (command.equals("open")) {
-        doMenuCommand(MenuCommand.FILE_OPEN);
-      } else if (command.equals("close")) {
-        doMenuCommand(MenuCommand.FILE_CLOSE);
-      } else if (command.equals("saveas")) {
-        doMenuCommand(MenuCommand.FILE_SAVE);
-      } else if (command.equals("savetext")) {
-        doMenuCommand(MenuCommand.FILE_SAVETEXT);
-      } else if (command.equals("about")) {
-        doMenuCommand(MenuCommand.HELP_ABOUT);
-      } else if (command.equals("online")) {
-        doMenuCommand(MenuCommand.HELP_ONLINE);
+      switch (command) {
+        case "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT);
+        case "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL);
+        case "open" -> doMenuCommand(MenuCommand.FILE_OPEN);
+        case "close" -> doMenuCommand(MenuCommand.FILE_CLOSE);
+        case "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE);
+        case "savetext" -> doMenuCommand(MenuCommand.FILE_SAVETEXT);
+        case "about" -> doMenuCommand(MenuCommand.HELP_ABOUT);
+        case "online" -> doMenuCommand(MenuCommand.HELP_ONLINE);
       }
 
     } catch (JuggleExceptionUser je) {
@@ -272,7 +258,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
   }
 
-  protected static enum MenuCommand {
+  protected enum MenuCommand {
     FILE_NONE,
     FILE_NEWPAT,
     FILE_NEWPL,
@@ -404,7 +390,7 @@ public class PatternListWindow extends JFrame implements ActionListener {
 
   @Override
   public void setTitle(String title) {
-    if (title == null || title.length() == 0) {
+    if (title == null || title.isEmpty()) {
       title = guistrings.getString("PLWINDOW_Default_window_title");
     }
 
@@ -446,12 +432,6 @@ public class PatternListWindow extends JFrame implements ActionListener {
     }
 
     super.dispose();
-    SwingUtilities.invokeLater(
-        new Runnable() {
-          @Override
-          public void run() {
-            ApplicationWindow.updateWindowMenus();
-          }
-        });
+    SwingUtilities.invokeLater(ApplicationWindow::updateWindowMenus);
   }
 }

@@ -220,9 +220,7 @@ public class Animator {
     for (int i = 0; i < paths; i++) {
       temppropnum[invpathperm.getMapping(i + 1) - 1] = animpropnum[i];
     }
-    for (int i = 0; i < paths; i++) {
-      animpropnum[i] = temppropnum[i];
-    }
+    System.arraycopy(temppropnum, 0, animpropnum, 0, paths);
   }
 
   // Rescale the animator so that the pattern and key parts of the juggler
@@ -585,9 +583,9 @@ public class Animator {
 
   public interface WriteGIFMonitor {
     // callback method invoked when a processing step is completed
-    public void update(int step, int steps_total);
+    void update(int step, int steps_total);
 
     // callback method should return true when user wants to cancel
-    public boolean isCanceled();
+    boolean isCanceled();
   }
 }

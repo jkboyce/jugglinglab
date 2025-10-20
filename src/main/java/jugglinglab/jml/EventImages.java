@@ -155,8 +155,8 @@ public class EventImages {
           for (int k = 0; k < evtransitions; k++) {
             if (ea[i][h][j] != null) {
               int newp = ea[i][h][j].getMapping(ev.getTransition(k).getPath());
-              for (int l = 0; l < cycle.length; l++) {
-                if (newp == cycle[l]) {
+              for (int value : cycle) {
+                if (newp == value) {
                   return true;
                 }
               }
@@ -179,8 +179,8 @@ public class EventImages {
             for (int h = 0; h < 2; h++) {
               if (ea[i][h][j] != null) {
                 int newp = ea[i][h][j].getMapping(ev.getTransition(k).getPath());
-                for (int l = 0; l < cycle.length; l++) {
-                  if (newp == cycle[l]) {
+                for (int value : cycle) {
+                  if (newp == value) {
                     return true;
                   }
                 }

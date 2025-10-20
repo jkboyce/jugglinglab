@@ -13,7 +13,6 @@ import java.util.*;
 import jugglinglab.util.*;
 
 public abstract class Path {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected double start_time;

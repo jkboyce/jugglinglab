@@ -28,7 +28,7 @@ public class SiteswapPattern extends MHNPattern {
   @Override
   public SiteswapPattern fromString(String conf)
       throws JuggleExceptionUser, JuggleExceptionInternal {
-    if (conf.indexOf((int) '=') == -1) {
+    if (conf.indexOf('=') == -1) {
       // just the pattern
       conf = "pattern=" + conf;
     }
@@ -119,8 +119,8 @@ public class SiteswapPattern extends MHNPattern {
   protected void parseSiteswapNotation() throws JuggleExceptionUser, JuggleExceptionInternal {
     // first clear out the internal variables
     th = null;
-    symmetry = new ArrayList<MHNSymmetry>();
-    SiteswapTreeItem tree = null;
+    symmetry = new ArrayList<>();
+    SiteswapTreeItem tree;
 
     try {
       if (Constants.DEBUG_SITESWAP_PARSING) {
@@ -129,7 +129,7 @@ public class SiteswapPattern extends MHNPattern {
       tree = SiteswapParser.parsePattern(pattern);
       if (Constants.DEBUG_SITESWAP_PARSING) {
         System.out.println("Parse tree:\n");
-        System.out.println(tree.toString());
+        System.out.println(tree);
       }
     } catch (ParseException pe) {
       if (Constants.DEBUG_SITESWAP_PARSING) {
@@ -147,13 +147,13 @@ public class SiteswapPattern extends MHNPattern {
       } else {
         String template = errorstrings.getString("Error_pattern_syntax");
         String problem = ParseException.add_escapes(pe.currentToken.next.image);
-        Object[] arguments = {problem, Integer.valueOf(pe.currentToken.next.beginColumn)};
+        Object[] arguments = {problem, pe.currentToken.next.beginColumn};
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
       }
     } catch (TokenMgrError tme) {
       String template = errorstrings.getString("Error_pattern_syntax");
       String problem = TokenMgrError.addEscapes(String.valueOf(tme.curChar));
-      Object[] arguments = {problem, Integer.valueOf(tme.errorColumn - 1)};
+      Object[] arguments = {problem, tme.errorColumn - 1};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
 
@@ -221,9 +221,9 @@ public class SiteswapPattern extends MHNPattern {
     // Finally, add pattern symmetries
     addSymmetry(new MHNSymmetry(MHNSymmetry.TYPE_DELAY, numjugglers, null, period));
     if (tree.switchrepeat) { // know that tree is of type Pattern
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       for (int i = 1; i <= numjugglers; i++) {
-        sb.append("(" + i + "," + i + "*)");
+        sb.append("(").append(i).append(",").append(i).append("*)");
       }
       addSymmetry(
           new MHNSymmetry(MHNSymmetry.TYPE_SWITCHDELAY, numjugglers, sb.toString(), period / 2));
@@ -249,9 +249,8 @@ public class SiteswapPattern extends MHNPattern {
 
   boolean[] right_on_even; // async throws on even beat numbers made with right hand?
 
-  protected void doFirstPass(SiteswapTreeItem sti)
-      throws JuggleExceptionUser, JuggleExceptionInternal {
-    SiteswapTreeItem child = null;
+  protected void doFirstPass(SiteswapTreeItem sti) throws JuggleExceptionInternal {
+    SiteswapTreeItem child;
 
     sti.throw_sum = 0;
     sti.vanilla_async = true;
@@ -528,9 +527,8 @@ public class SiteswapPattern extends MHNPattern {
   // Second pass through the tree:
   // 1)  Fill in the th[] array with MHNThrow objects
 
-  protected void doSecondPass(SiteswapTreeItem sti, boolean switchhands, int beatoffset)
-      throws JuggleExceptionUser {
-    SiteswapTreeItem child = null;
+  protected void doSecondPass(SiteswapTreeItem sti, boolean switchhands, int beatoffset) {
+    SiteswapTreeItem child;
 
     switch (sti.type) {
       case SiteswapTreeItem.TYPE_PATTERN:

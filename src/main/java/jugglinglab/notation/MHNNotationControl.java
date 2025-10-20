@@ -11,8 +11,6 @@
 package jugglinglab.notation;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -84,10 +82,10 @@ public abstract class MHNNotationControl extends NotationControl {
     p1.add(lab4);
     gb.setConstraints(lab4, make_constraints(
         GridBagConstraints.LINE_END, 0, 3, new Insets(vspacing, border, 0, hspacing)));
-    cb1 = new JComboBox<String>();
+    cb1 = new JComboBox<>();
     cb1.addItem(guistrings.getString("MHNHands_name_default"));
-    for (int i = 0; i < builtinHandsNames.length; i++) {
-      String item = "MHNHands_name_" + builtinHandsNames[i];
+    for (String builtinHandsName : builtinHandsNames) {
+      String item = "MHNHands_name_" + builtinHandsName;
       cb1.addItem(guistrings.getString(item));
     }
     cb1.addItem(guistrings.getString("MHNHands_name_custom"));
@@ -99,23 +97,20 @@ public abstract class MHNNotationControl extends NotationControl {
     gb.setConstraints(tf4, make_constraints(
         GridBagConstraints.LINE_START, 1, 4, new Insets(5, 0, 0, border)));
     cb1.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            int index = cb1.getSelectedIndex();
-            cb1_selected = true;
+        ae -> {
+          int index = cb1.getSelectedIndex();
+          cb1_selected = true;
 
-            // System.out.println("Selected item number "+index);
-            if (index == 0) {
-              tf4.setText("");
-              tf4.setEnabled(false);
-            } else if (index == (builtinHandsNames.length + 1)) {
-              tf4.setEnabled(true);
-            } else {
-              tf4.setText(builtinHandsStrings[index - 1]);
-              tf4.setCaretPosition(0);
-              tf4.setEnabled(true);
-            }
+          // System.out.println("Selected item number "+index);
+          if (index == 0) {
+            tf4.setText("");
+            tf4.setEnabled(false);
+          } else if (index == (builtinHandsNames.length + 1)) {
+            tf4.setEnabled(true);
+          } else {
+            tf4.setText(builtinHandsStrings[index - 1]);
+            tf4.setCaretPosition(0);
+            tf4.setEnabled(true);
           }
         });
     tf4.getDocument()
@@ -144,10 +139,10 @@ public abstract class MHNNotationControl extends NotationControl {
     p1.add(lab5);
     gb.setConstraints(lab5, make_constraints(
         GridBagConstraints.LINE_END, 0, 5, new Insets(vspacing, border, 0, hspacing)));
-    cb2 = new JComboBox<String>();
+    cb2 = new JComboBox<>();
     cb2.addItem(guistrings.getString("MHNBody_name_default"));
-    for (int i = 0; i < builtinBodyNames.length; i++) {
-      String item = "MHNBody_name_" + builtinBodyNames[i];
+    for (String builtinBodyName : builtinBodyNames) {
+      String item = "MHNBody_name_" + builtinBodyName;
       cb2.addItem(guistrings.getString(item));
     }
     cb2.addItem(guistrings.getString("MHNBody_name_custom"));
@@ -159,23 +154,20 @@ public abstract class MHNNotationControl extends NotationControl {
     gb.setConstraints(tf5, make_constraints(
         GridBagConstraints.LINE_START, 1, 6, new Insets(5, 0, 0, border)));
     cb2.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            int index = cb2.getSelectedIndex();
-            cb2_selected = true;
+        ae -> {
+          int index = cb2.getSelectedIndex();
+          cb2_selected = true;
 
-            // System.out.println("Selected item number "+index);
-            if (index == 0) {
-              tf5.setText("");
-              tf5.setEnabled(false);
-            } else if (index == (builtinBodyNames.length + 1)) {
-              tf5.setEnabled(true);
-            } else {
-              tf5.setText(builtinBodyStrings[index - 1]);
-              tf5.setCaretPosition(0);
-              tf5.setEnabled(true);
-            }
+          // System.out.println("Selected item number "+index);
+          if (index == 0) {
+            tf5.setText("");
+            tf5.setEnabled(false);
+          } else if (index == (builtinBodyNames.length + 1)) {
+            tf5.setEnabled(true);
+          } else {
+            tf5.setText(builtinBodyStrings[index - 1]);
+            tf5.setCaretPosition(0);
+            tf5.setEnabled(true);
           }
         });
     tf5.getDocument()
@@ -204,7 +196,7 @@ public abstract class MHNNotationControl extends NotationControl {
     p1.add(prop_label);
     gb.setConstraints(prop_label, make_constraints(
         GridBagConstraints.LINE_END, 0, 7, new Insets(vspacing, border, 0, hspacing)));
-    cb3 = new JComboBox<String>();
+    cb3 = new JComboBox<>();
     for (int i = 0; i < Prop.builtinProps.length; i++) {
       String item = "Prop_name_" + Prop.builtinProps[i].toLowerCase();
       cb3.addItem(guistrings.getString(item));
@@ -226,18 +218,6 @@ public abstract class MHNNotationControl extends NotationControl {
 
     this.resetControl();
     this.add(p1, BorderLayout.PAGE_START);
-  }
-
-  protected static GridBagConstraints make_constraints(int location, int gridx, int gridy) {
-    GridBagConstraints gbc = new GridBagConstraints();
-
-    gbc.anchor = location;
-    gbc.fill = GridBagConstraints.NONE;
-    gbc.gridheight = gbc.gridwidth = 1;
-    gbc.gridx = gridx;
-    gbc.gridy = gridy;
-    gbc.weightx = gbc.weighty = 0.0;
-    return gbc;
   }
 
   protected static GridBagConstraints make_constraints(
@@ -269,31 +249,31 @@ public abstract class MHNNotationControl extends NotationControl {
 
   @Override
   public ParameterList getParameterList() throws JuggleExceptionUser {
-    StringBuffer sb = new StringBuffer(256);
+    StringBuilder sb = new StringBuilder(256);
 
     sb.append("pattern=");
     sb.append(tf1.getText());
     if (cb3.getSelectedIndex() != 0)
-      sb.append(";prop=" + Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
-    if (tf2.getText().length() > 0) {
+      sb.append(";prop=").append(Prop.builtinProps[cb3.getSelectedIndex()].toLowerCase());
+    if (!tf2.getText().isEmpty()) {
       if (!tf2.getText().equals(JLFunc.toStringRounded(MHNPattern.dwell_default, 2))) {
         sb.append(";dwell=");
         sb.append(tf2.getText());
       }
     }
-    if (tf3.getText().length() > 0) {
+    if (!tf3.getText().isEmpty()) {
       sb.append(";bps=");
       sb.append(tf3.getText());
     }
-    if (tf4.getText().length() > 0) {
+    if (!tf4.getText().isEmpty()) {
       sb.append(";hands=");
       sb.append(tf4.getText());
     }
-    if (tf5.getText().length() > 0) {
+    if (!tf5.getText().isEmpty()) {
       sb.append(";body=");
       sb.append(tf5.getText());
     }
-    if (tf6.getText().length() > 0) {
+    if (!tf6.getText().isEmpty()) {
       sb.append(";");
       sb.append(tf6.getText());
     }

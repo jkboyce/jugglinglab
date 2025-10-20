@@ -30,7 +30,7 @@ public abstract class Generator {
     StringTokenizer st = new StringTokenizer(arg, " \n");
 
     int numargs = st.countTokens();
-    String args[] = new String[numargs];
+    String[] args = new String[numargs];
 
     for (int i = 0; i < numargs; i++) {
       args[i] = st.nextToken();

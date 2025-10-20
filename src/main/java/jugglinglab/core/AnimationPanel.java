@@ -26,7 +26,6 @@ import jugglinglab.util.*;
 
 public class AnimationPanel extends JPanel implements Runnable {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
   static final double SNAPANGLE = Math.toRadians(8);
 
   protected Animator anim;
@@ -59,7 +58,7 @@ public class AnimationPanel extends JPanel implements Runnable {
   public AnimationPanel() {
     anim = new Animator();
     jc = new AnimationPrefs();
-    attachments = new ArrayList<AnimationAttachment>();
+    attachments = new ArrayList<>();
     setOpaque(true);
     loadAudioClips();
     initHandlers();
@@ -402,15 +401,12 @@ public class AnimationPanel extends JPanel implements Runnable {
                   // do audio playback on the EDT -- not strictly
                   // necessary but it seems to work better on Linux
                   SwingUtilities.invokeLater(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          if (catchclip.isActive()) {
-                            catchclip.stop();
-                          }
-                          catchclip.setFramePosition(0);
-                          catchclip.start();
+                      () -> {
+                        if (catchclip.isActive()) {
+                          catchclip.stop();
                         }
+                        catchclip.setFramePosition(0);
+                        catchclip.start();
                       });
                 }
               }
@@ -421,15 +417,12 @@ public class AnimationPanel extends JPanel implements Runnable {
               for (int path = 1; path <= anim.pat.getNumberOfPaths(); path++) {
                 if (anim.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
                   SwingUtilities.invokeLater(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          if (bounceclip.isActive()) {
-                            bounceclip.stop();
-                          }
-                          bounceclip.setFramePosition(0);
-                          bounceclip.start();
+                      () -> {
+                        if (bounceclip.isActive()) {
+                          bounceclip.stop();
                         }
+                        bounceclip.setFramePosition(0);
+                        bounceclip.start();
                       });
                 }
               }
@@ -439,7 +432,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         anim.advanceProps();
       }
     } catch (InterruptedException ie) {
-      return;
     }
   }
 
@@ -451,7 +443,6 @@ public class AnimationPanel extends JPanel implements Runnable {
         engine.join();
       }
     } catch (InterruptedException ie) {
-      return;
     } finally {
       engine = null;
       engineRunning = false;
@@ -466,7 +457,7 @@ public class AnimationPanel extends JPanel implements Runnable {
   }
 
   public synchronized void setPaused(boolean wanttopause) {
-    if (enginePaused == true && wanttopause == false) {
+    if (enginePaused && !wanttopause) {
       notify();  // wake up wait() in run() method
     }
     enginePaused = wanttopause;
@@ -555,12 +546,12 @@ public class AnimationPanel extends JPanel implements Runnable {
 
   public interface AnimationAttachment {
     // AnimationPanel we're attached to
-    public void setAnimationPanel(AnimationPanel ap);
+    void setAnimationPanel(AnimationPanel ap);
 
     // simulation time (seconds)
-    public void setTime(double t);
+    void setTime(double t);
 
     // force a redraw
-    public void repaintAttachment();
+    void repaintAttachment();
   }
 }

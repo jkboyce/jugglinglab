@@ -129,7 +129,7 @@ public class SiteswapTransitioner extends Transitioner {
         target.setStatus(guistrings.getString("Generator_patterns_1"));
       } else {
         String template = guistrings.getString("Generator_patterns_ne1");
-        Object[] arguments = {Integer.valueOf(num)};
+        Object[] arguments = {num};
         target.setStatus(MessageFormat.format(template, arguments));
       }
 
@@ -137,7 +137,7 @@ public class SiteswapTransitioner extends Transitioner {
     } finally {
       if (Constants.DEBUG_TRANSITIONS) {
         long millis = System.currentTimeMillis() - start_time_millis;
-        System.out.println(String.format("time elapsed: %d.%03d s", millis / 1000, millis % 1000));
+        System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000);
       }
     }
   }
@@ -153,8 +153,8 @@ public class SiteswapTransitioner extends Transitioner {
     if (Constants.DEBUG_TRANSITIONS) {
       System.out.println("-----------------------------------------------------");
       System.out.println("initializing transitioner with args:");
-      for (int i = 0; i < args.length; ++i) {
-        System.out.print(args[i] + " ");
+      for (String arg : args) {
+        System.out.print(arg + " ");
       }
       System.out.print("\n");
     }
@@ -176,28 +176,28 @@ public class SiteswapTransitioner extends Transitioner {
     target = null;
 
     for (int i = 2; i < args.length; ++i) {
-      if (args[i].equals("-mf")) {
-        mp_allow_simulcatches = true;
-      } else if (args[i].equals("-mc")) {
-        mp_allow_clusters = false;
-      } else if (args[i].equals("-m")) {
-        if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
-          try {
-            target_occupancy = Integer.parseInt(args[i + 1]);
-          } catch (NumberFormatException nfe) {
-            String template = errorstrings.getString("Error_number_format");
-            String str = guistrings.getString("simultaneous_throws");
-            Object[] arguments = {str};
-            throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+      switch (args[i]) {
+        case "-mf" -> mp_allow_simulcatches = true;
+        case "-mc" -> mp_allow_clusters = false;
+        case "-m" -> {
+          if (i < (args.length - 1) && args[i + 1].charAt(0) != '-') {
+            try {
+              target_occupancy = Integer.parseInt(args[i + 1]);
+            } catch (NumberFormatException nfe) {
+              String template = errorstrings.getString("Error_number_format");
+              String str = guistrings.getString("simultaneous_throws");
+              Object[] arguments = {str};
+              throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+            }
+            i++;
           }
-          i++;
         }
-      } else if (args[i].equals("-limits")) {
-        no_limits = true;  // for CLI mode only
-      } else {
-        String template = errorstrings.getString("Error_unrecognized_option");
-        Object[] arguments = {args[i]};
-        throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        case "-limits" -> no_limits = true;  // for CLI mode only
+        default -> {
+          String template = errorstrings.getString("Error_unrecognized_option");
+          Object[] arguments = {args[i]};
+          throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
+        }
       }
     }
 
@@ -323,7 +323,9 @@ public class SiteswapTransitioner extends Transitioner {
     // if we added a hands modifier at the end, such as 'R' or '<R|R>',
     // then remove it (unneeded at end of overall pattern)
     String return_trans =
-        sb.toString().replaceAll("\n", "").replaceAll("R$", "").replaceAll("\\<(R\\|)+R\\>$", "");
+        sb.toString().replaceAll("\n", "")
+                     .replaceAll("R$", "")
+                     .replaceAll("\\<(R\\|)+R\\>$", "");
 
     if (Constants.DEBUG_TRANSITIONS) {
       System.out.println("return trans = " + return_trans);
@@ -362,7 +364,7 @@ public class SiteswapTransitioner extends Transitioner {
     int num = recurse(0, 0, 0);
 
     if (Constants.DEBUG_TRANSITIONS) {
-      System.out.println("" + num + " patterns found");
+      System.out.println(num + " patterns found");
     }
 
     return num;
@@ -385,7 +387,7 @@ public class SiteswapTransitioner extends Transitioner {
         loop_counter = 0;
         if ((System.currentTimeMillis() - start_time_millis) > max_time_millis) {
           String template = guistrings.getString("Generator_timeout");
-          Object[] arguments = {Integer.valueOf((int) max_time)};
+          Object[] arguments = {(int) max_time};
           throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
         }
       }
@@ -463,7 +465,7 @@ public class SiteswapTransitioner extends Transitioner {
           mhnt.targetslot = ts;
 
           if (Constants.DEBUG_TRANSITIONS) {
-            System.out.println("trying throw " + mhnt.toString());
+            System.out.println("trying throw " + mhnt);
           }
 
           if (!isThrowValid(pos, mhnt)) {
@@ -471,10 +473,9 @@ public class SiteswapTransitioner extends Transitioner {
           }
 
           if (Constants.DEBUG_TRANSITIONS) {
-            StringBuffer sb = new StringBuffer();
-            for (int t = 0; t < pos; ++t) sb.append(".  ");
-            sb.append(mhnt.toString());
-            System.out.println(sb.toString());
+            String sb = ".  ".repeat(pos) +
+                mhnt;
+            System.out.println(sb);
           }
 
           addThrow(pos, mhnt);
@@ -487,7 +488,7 @@ public class SiteswapTransitioner extends Transitioner {
 
           if (max_num > 0 && num >= max_num) {
             String template = guistrings.getString("Generator_spacelimit");
-            Object[] arguments = {Integer.valueOf(max_num)};
+            Object[] arguments = {max_num};
             throw new JuggleExceptionDone(MessageFormat.format(template, arguments));
           }
         }
@@ -732,7 +733,7 @@ public class SiteswapTransitioner extends Transitioner {
       outputBeat(pos);
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     if (jugglers > 1) {
       sb.append('<');
@@ -743,7 +744,7 @@ public class SiteswapTransitioner extends Transitioner {
       }
 
       // if we ended with an unneeded separator, remove it
-      if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '/') {
+      if (!sb.isEmpty() && sb.charAt(sb.length() - 1) == '/') {
         sb.deleteCharAt(sb.length() - 1);
       }
 
@@ -995,8 +996,8 @@ public class SiteswapTransitioner extends Transitioner {
 
     for (int j = 0; j < jugglers; ++j) {
       for (int h = 0; h < 2; ++h) {
-        for (int i = 0; i < (indexes - 1); ++i) {
-          state[pos + 1][j][h][i] = state[pos][j][h][i + 1];
+        if (indexes - 1 >= 0) {
+          System.arraycopy(state[pos][j][h], 1, state[pos + 1][j][h], 0, indexes - 1);
         }
         state[pos + 1][j][h][indexes - 1] = 0;
 
@@ -1027,7 +1028,9 @@ public class SiteswapTransitioner extends Transitioner {
     for (int i = 0; i < indexes; ++i) {
       for (int j = 0; j < jugglers; ++j) {
         for (int h = 0; h < 2; ++h) {
-          if (state[j][h][i] != 0) last_index = i;
+          if (state[j][h][i] != 0) {
+            last_index = i;
+          }
         }
       }
     }
@@ -1102,7 +1105,7 @@ public class SiteswapTransitioner extends Transitioner {
   // Print the throw matrix to standard output (useful for debugging).
 
   protected void printThrowSet() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     for (int pos = 0; pos < l_target; ++pos) {
       for (int j = 0; j < jugglers; ++j) {
@@ -1113,15 +1116,12 @@ public class SiteswapTransitioner extends Transitioner {
               continue;
             }
 
-            for (int t = 0; t < pos; ++t) {
-              sb.append(".  ");
-            }
-            sb.append(mhnt.toString() + '\n');
+            sb.append(".  ".repeat(pos)).append(mhnt).append('\n');
           }
         }
       }
     }
-    System.out.println(sb.toString());
+    System.out.println(sb);
   }
 
   //----------------------------------------------------------------------------
@@ -1147,7 +1147,7 @@ public class SiteswapTransitioner extends Transitioner {
       String intro = guistrings.getString("Transitioner_intro");
       if (jugglinglab.JugglingLab.isWindows) {
         // replace single quotes with double quotes in Windows examples
-        intro = intro.replaceAll("\'", "\"");
+        intro = intro.replaceAll("'", "\"");
       }
       output += intro;
 

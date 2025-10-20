@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import jugglinglab.util.*;
 
 public class MHNHands {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected int jugglers;

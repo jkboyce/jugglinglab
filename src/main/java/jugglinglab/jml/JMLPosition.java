@@ -11,7 +11,6 @@ import java.util.*;
 import jugglinglab.util.*;
 
 public class JMLPosition {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected double x, y, z, t, angle;
@@ -135,7 +134,7 @@ public class JMLPosition {
             + "\" angle=\""
             + JLFunc.toStringRounded(getAngle(), 4)
             + "\" juggler=\""
-            + Integer.toString(getJuggler())
+            + getJuggler()
             + "\"/>");
   }
 

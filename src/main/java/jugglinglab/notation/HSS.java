@@ -34,7 +34,6 @@ class ModParms {
 }
 
 public class HSS {
-  static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected static double hss_dwell_default = 0.3;
@@ -51,9 +50,9 @@ public class HSS {
     int ossPer, hssPer, hssOrb, numHnd, numJug;
     ModParms modinf = new ModParms();
 
-    ArrayList<ArrayList<Character>> ossPat = new ArrayList<ArrayList<Character>>();
-    ArrayList<Character> hssPat = new ArrayList<Character>();
-    ArrayList<ArrayList<String>> bounc = new ArrayList<ArrayList<String>>();
+    ArrayList<ArrayList<Character>> ossPat;
+    ArrayList<Character> hssPat;
+    ArrayList<ArrayList<String>> bounc;
     HssParms hssinfo;
     PatParms patinfo;
     OssPatBnc ossinfo;
@@ -112,8 +111,8 @@ public class HSS {
     int numBeats = 0;
     int subBeats = 0; // for multiplex throws
     int numObj = 0;
-    ArrayList<ArrayList<Character>> oPat = new ArrayList<ArrayList<Character>>();
-    ArrayList<ArrayList<String>> bncinfo = new ArrayList<ArrayList<String>>();
+    ArrayList<ArrayList<Character>> oPat = new ArrayList<>();
+    ArrayList<ArrayList<String>> bncinfo = new ArrayList<>();
 
     for (int i = 0; i < ss.length(); i++) {
       char c = ss.charAt(i);
@@ -140,7 +139,7 @@ public class HSS {
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (Character.isWhitespace(c)) {
@@ -156,21 +155,21 @@ public class HSS {
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (c == 'F' || c == 'L') {
           if (b2) {
-            bncinfo.get(numBeats - 1).set(subBeats - 1, "B" + Character.toString(c));
+            bncinfo.get(numBeats - 1).set(subBeats - 1, "B" + c);
             b2 = false;
             continue;
           } else if (b3) {
-            bncinfo.get(numBeats - 1).set(subBeats - 1, "BH" + Character.toString(c));
+            bncinfo.get(numBeats - 1).set(subBeats - 1, "BH" + c);
             b3 = false;
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (c == 'H') {
@@ -180,20 +179,20 @@ public class HSS {
             b3 = true;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else {
           String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-          Object[] arguments = {Integer.valueOf(i + 1)};
+          Object[] arguments = {i + 1};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
       } else {
         if (Character.toString(c).matches("[0-9,a-z]")) {
           minOneThrow = true;
-          oPat.add(numBeats, new ArrayList<Character>());
+          oPat.add(numBeats, new ArrayList<>());
           oPat.get(numBeats).add(subBeats, c);
-          bncinfo.add(numBeats, new ArrayList<String>());
+          bncinfo.add(numBeats, new ArrayList<>());
           bncinfo.get(numBeats).add(subBeats, "null");
           numBeats++;
           throwSum += Character.getNumericValue(c);
@@ -203,8 +202,8 @@ public class HSS {
           continue;
         } else if (c == '[') {
           muxThrow = true;
-          oPat.add(numBeats, new ArrayList<Character>());
-          bncinfo.add(numBeats, new ArrayList<String>());
+          oPat.add(numBeats, new ArrayList<>());
+          bncinfo.add(numBeats, new ArrayList<>());
           numBeats++;
           b1 = false;
           b2 = false;
@@ -223,21 +222,21 @@ public class HSS {
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (c == 'F' || c == 'L') {
           if (b2) {
-            bncinfo.get(numBeats - 1).set(subBeats, "B" + Character.toString(c));
+            bncinfo.get(numBeats - 1).set(subBeats, "B" + c);
             b2 = false;
             continue;
           } else if (b3) {
-            bncinfo.get(numBeats - 1).set(subBeats, "BH" + Character.toString(c));
+            bncinfo.get(numBeats - 1).set(subBeats, "BH" + c);
             b3 = false;
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (c == 'H') {
@@ -247,12 +246,12 @@ public class HSS {
             b3 = true;
           } else {
             String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else {
           String template = errorstrings.getString("Error_hss_object_syntax_error_at_pos");
-          Object[] arguments = {Integer.valueOf(i + 1)};
+          Object[] arguments = {i + 1};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
       }  // if-else muxThrow
@@ -275,12 +274,12 @@ public class HSS {
     // and simultaneously a multiplex 4 is to be thrown. In the latter, it'll get
     // interpreted as a 5 to be passed to juggler 34. In other cases, the space may
     // not matter. However, for coding convenience, the space is appended everywhere.
-    for (int i = 0; i < bncinfo.size(); i++) {
-      for (int j = 0; j < bncinfo.get(i).size(); j++) {
-        if (bncinfo.get(i).get(j) == "null") {
-          bncinfo.get(i).set(j, " ");
+    for (ArrayList<String> strings : bncinfo) {
+      for (int j = 0; j < strings.size(); j++) {
+        if (Objects.equals(strings.get(j), "null")) {
+          strings.set(j, " ");
         } else {
-          bncinfo.get(i).set(j, bncinfo.get(i).get(j) + " ");
+          strings.set(j, strings.get(j) + " ");
         }
       }
     }
@@ -300,8 +299,8 @@ public class HSS {
   private static HssParms hssSyntax(String ss) throws JuggleExceptionUser {
     int throwSum = 0;
     int numBeats = 0;
-    int nHnds = 0;
-    ArrayList<Character> hPat = new ArrayList<Character>();
+    int nHnds;
+    ArrayList<Character> hPat = new ArrayList<>();
     for (int i = 0; i < ss.length(); i++) {
       char c = ss.charAt(i);
       if (Character.toString(c).matches("[0-9,a-z]")) {
@@ -313,7 +312,7 @@ public class HSS {
         continue;
       } else {
         String template = errorstrings.getString("Error_hss_hand_syntax_error_at_pos");
-        Object[] arguments = {Integer.valueOf(i + 1)};
+        Object[] arguments = {i + 1};
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
       }
     }
@@ -334,11 +333,11 @@ public class HSS {
 
   private static void ossPermTest(ArrayList<ArrayList<Character>> os, int op)
       throws JuggleExceptionUser {
-    ArrayList<ArrayList<Integer>> mods = new ArrayList<ArrayList<Integer>>();
+    ArrayList<ArrayList<Integer>> mods = new ArrayList<>();
     int modulo;
     int[] cmp = new int[op];
     for (int i = 0; i < op; i++) {
-      mods.add(i, new ArrayList<Integer>());
+      mods.add(i, new ArrayList<>());
       for (int j = 0; j < os.get(i).size(); j++) {
         modulo = (Character.getNumericValue(os.get(i).get(j)) + i) % op;
         mods.get(i).add(j, modulo);
@@ -377,10 +376,9 @@ public class HSS {
     ho = 1;
     for (int i = 0; i < hp; i++) {
       if (!touched[i]) {
-        int j = i;
         orb[i] = Character.getNumericValue(hs.get(i));
         touched[i] = true;
-        j = mods[i];
+        int j = mods[i];
         while (j != i) {
           orb[i] += Character.getNumericValue(hs.get(j));
           touched[j] = true;
@@ -427,7 +425,7 @@ public class HSS {
           continue;
         } else {
           String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-          Object[] arguments = {Integer.valueOf(i + 1)};
+          Object[] arguments = {i + 1};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
       } else {
@@ -437,21 +435,19 @@ public class HSS {
               if (buildHndNum == null) {
                 buildHndNum = Character.toString(c);
               } else {
-                buildHndNum = buildHndNum + Character.toString(c);
+                buildHndNum = buildHndNum + c;
               }
               continue;
             } else {
               String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-              Object[] arguments = {Integer.valueOf(i + 1)};
+              Object[] arguments = {i + 1};
               throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
           } else if (Character.isWhitespace(c)) {
-            if ((buildHndNum != null) && (buildHndNum.length() >= 1)) {
+            if (buildHndNum != null && !buildHndNum.isEmpty()) {
               numFormStart = false;
-              continue;
-            } else {
-              continue;
             }
+            continue;
           } else if (c == ',') {
             assignLH = false;  // at "," left hand assignment complete
             assignRH = true;
@@ -482,7 +478,7 @@ public class HSS {
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         } else if (assignRH) {
@@ -491,21 +487,19 @@ public class HSS {
               if (buildHndNum == null) {
                 buildHndNum = Character.toString(c);
               } else {
-                buildHndNum = buildHndNum + Character.toString(c);
+                buildHndNum = buildHndNum + c;
               }
               continue;
             } else {
               String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-              Object[] arguments = {Integer.valueOf(i + 1)};
+              Object[] arguments = {i + 1};
               throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
             }
           } else if (Character.isWhitespace(c)) {
-            if ((buildHndNum != null) && (buildHndNum.length() >= 1)) {
+            if (buildHndNum != null && !buildHndNum.isEmpty()) {
               numFormStart = false;
-              continue;
-            } else {
-              continue;
             }
+            continue;
           } else if (c == ')') {
             assignRH = false;
             jugAct = false;  // juggler assignment is inactive after ")"
@@ -528,7 +522,7 @@ public class HSS {
             continue;
           } else {
             String template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         }
@@ -536,7 +530,7 @@ public class HSS {
     }
     if (jugNum > nh) {  // will this ever happen?
       String template = errorstrings.getString("Error_hss_handspec_too_many_jugglers");
-      Object[] arguments = {Integer.valueOf(nh)};
+      Object[] arguments = {nh};
       throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
     }
     if (pass) {
@@ -547,7 +541,7 @@ public class HSS {
         }
         if (!matchFnd) {
           String template = errorstrings.getString("Error_hss_handspec_hand_missing");
-          Object[] arguments = {Integer.valueOf(i + 1)};
+          Object[] arguments = {i + 1};
           throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
         }
       }
@@ -558,7 +552,7 @@ public class HSS {
     for (int i = 0; i < nh; i++) {
       if (hmap[i][0] == 0) {
         String template = errorstrings.getString("Error_hss_juggler_not_assigned_to_hand");
-        Object[] arguments = {Integer.valueOf(i + 1)};
+        Object[] arguments = {i + 1};
         throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
       }
     }
@@ -615,14 +609,14 @@ public class HSS {
     boolean flag = false;
 
     // invert, pass and hold for x, p and H
-    ArrayList<ArrayList<String>> iph = new ArrayList<ArrayList<String>>();
+    ArrayList<ArrayList<String>> iph = new ArrayList<>();
 
     objPer = os.size();
     hndPer = hs.size();
     patPer = Permutation.lcm(objPer, ho); // pattern period
 
     int[] ah = new int[patPer]; // assigned hand
-    boolean assignDone[] = new boolean[patPer];
+    boolean[] assignDone = new boolean[patPer];
     int[][] ji = new int[patPer][2]; // jugglerInfo: juggler#, hand#
     double[] dwlBts = new double[patPer]; // dwell beats
 
@@ -654,7 +648,7 @@ public class HSS {
         for (int j = 0; j < os.get(i).size(); j++) {
           if (os.get(i).get(j) != '0') {
             String template = errorstrings.getString("Error_hss_no_hand_to_throw_at_beat");
-            Object[] arguments = {Integer.valueOf(i + 1)};
+            Object[] arguments = {i + 1};
             throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
           }
         }
@@ -681,7 +675,7 @@ public class HSS {
     // determine dwellbeats array
     flag = false;
     int[] mincaught = new int[patPer];
-    int tgtIdx = 0;  // target index
+    int tgtIdx;  // target index
     int curThrow;  // current throw
 
     // find minimum throw being caught at each beat: more than one throw could be
@@ -767,7 +761,7 @@ public class HSS {
 
     // determine x, p and H throws
     for (int i = 0; i < patPer; i++) {
-      iph.add(i, new ArrayList<String>());
+      iph.add(i, new ArrayList<>());
       for (int j = 0; j < os.get(i).size(); j++) {
         iph.get(i).add(j, null);
         throwVal = Character.getNumericValue(os.get(i).get(j));
@@ -819,39 +813,28 @@ public class HSS {
         } else if (currJug == 0) {  // at the start of a new beat
           modPat = modPat + "<";
         }
+
         if (ji[i][1] == 0) {  // if left hand is throwing at current beat
           modPat = modPat + "(";
           if (ji[i][0] == currJug + 1) {  // if currentjuggler is throwing at current beat
             if (os.get(i).size() > 1) {  // if it is a multiplex throw
               modPat = modPat + "[";
               for (int j = 0; j < os.get(i).size(); j++) {
-                modPat = modPat + Character.toString(os.get(i).get(j));
+                modPat = modPat + os.get(i).get(j);
                 if (iph.get(i).get(j) != null) {
                   modPat = modPat + iph.get(i).get(j);
                 }
               }
               modPat = modPat + "]";
             } else { // if not multiplex throw
-              modPat = modPat + Character.toString(os.get(i).get(0));
-              if (iph.get(i).get(0) != null) {
-                modPat = modPat + iph.get(i).get(0);
+              modPat = modPat + os.get(i).getFirst();
+              if (iph.get(i).getFirst() != null) {
+                modPat = modPat + iph.get(i).getFirst();
               }
             }
             modPat = modPat + ",0)!";  // no sync throws allowed, put 0 for right hand
-            if (currJug == nj - 1) {
-              modPat = modPat + ">";
-            } else {
-              modPat = modPat + "|";
-            }
-            currJug++;
           } else {  // if current juggler is not throwing at this beat
             modPat = modPat + "0,0)!";
-            if (currJug == nj - 1) {
-              modPat = modPat + ">";
-            } else {
-              modPat = modPat + "|";
-            }
-            currJug++;
           }
         } else {  // if right hand is throwing at this beat
           modPat = modPat + "(0,";  // no sync throws allowed, put 0 for left hand
@@ -859,35 +842,30 @@ public class HSS {
             if (os.get(i).size() > 1) {  // if it is a multiplex throw
               modPat = modPat + "[";
               for (int j = 0; j < os.get(i).size(); j++) {
-                modPat = modPat + Character.toString(os.get(i).get(j));
+                modPat = modPat + os.get(i).get(j);
                 if (iph.get(i).get(j) != null) {
                   modPat = modPat + iph.get(i).get(j);
                 }
               }
               modPat = modPat + "]";
             } else {  // if not multiplex throw
-              modPat = modPat + Character.toString(os.get(i).get(0));
-              if (iph.get(i).get(0) != null) {
-                modPat = modPat + iph.get(i).get(0);
+              modPat = modPat + os.get(i).getFirst();
+              if (iph.get(i).getFirst() != null) {
+                modPat = modPat + iph.get(i).getFirst();
               }
             }
             modPat = modPat + ")!";
-            if (currJug == nj - 1) {
-              modPat = modPat + ">";
-            } else {
-              modPat = modPat + "|";
-            }
-            currJug++;
           } else {  // if current juggler is not throwing at this beat
             modPat = modPat + "0)!";
-            if (currJug == nj - 1) {
-              modPat = modPat + ">";
-            } else {
-              modPat = modPat + "|";
-            }
-            currJug++;
           }
         }  // if-else left-right hand
+
+        if (currJug == nj - 1) {
+          modPat = modPat + ">";
+        } else {
+          modPat = modPat + "|";
+        }
+        currJug++;
       }  // while currJug < nj
     }  // for all beats
 

@@ -51,7 +51,7 @@ public class GeneratorTarget {
 
     if (Constants.VALIDATE_GENERATED_PATTERNS) {
       if (ltarget != null || ptarget != null) {
-        if (notation.equalsIgnoreCase("siteswap") && anim.length() > 0) {
+        if (notation.equalsIgnoreCase("siteswap") && !anim.isEmpty()) {
           try {
             (new SiteswapPattern()).fromString(anim);
           } catch (JuggleException je) {
@@ -67,18 +67,13 @@ public class GeneratorTarget {
     if (ltarget != null) {
       // Note we may not be running on the event dispatch thread
       SwingUtilities.invokeLater(
-          new Runnable() {
-            @Override
-            public void run() {
-              ltarget.addPattern(fdisplay, null, notation, fanim);
-            }
-          });
+          () -> ltarget.addPattern(fdisplay, null, notation, fanim));
     }
     if (ptarget != null) {
       ptarget.println(fdisplay);
     }
     if (btarget != null) {
-      btarget.append(fdisplay + '\n');
+      btarget.append(fdisplay).append('\n');
     }
   }
 
@@ -94,14 +89,8 @@ public class GeneratorTarget {
   public void setStatus(String display) {
     if (ltarget != null) {
       SwingUtilities.invokeLater(
-          new Runnable() {
-            @Override
-            public void run() {
-              ltarget.addPattern(display, null, null, null);
-            }
-          });
+          () -> ltarget.addPattern(display, null, null, null));
     }
-
     if (ptarget != null) {
       ptarget.println(display);
     }

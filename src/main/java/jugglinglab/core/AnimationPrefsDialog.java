@@ -11,7 +11,6 @@
 package jugglinglab.core;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
@@ -45,21 +44,15 @@ public class AnimationPrefsDialog extends JDialog {
     setLocationRelativeTo(parent);
 
     but_cancel.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            setVisible(false);
-            ok_selected = false;
-          }
+        e -> {
+          setVisible(false);
+          ok_selected = false;
         });
 
     but_ok.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            setVisible(false);
-            ok_selected = true;
-          }
+        ae -> {
+          setVisible(false);
+          ok_selected = true;
         });
   }
 
@@ -179,7 +172,7 @@ public class AnimationPrefsDialog extends JDialog {
     p1.add(lab6);
     gb.setConstraints(
         lab6, make_constraints(GridBagConstraints.LINE_START, 1, 5, new Insets(0, 3, 0, 0)));
-    combo_showground = new JComboBox<String>();
+    combo_showground = new JComboBox<>();
     combo_showground.addItem(guistrings.getString("Prefs_show_ground_auto"));
     combo_showground.addItem(guistrings.getString("Prefs_show_ground_yes"));
     combo_showground.addItem(guistrings.getString("Prefs_show_ground_no"));
@@ -344,9 +337,9 @@ public class AnimationPrefsDialog extends JDialog {
     newjc.catchSound = cb_catchsounds.isSelected();
     newjc.bounceSound = cb_bouncesounds.isSelected();
 
-    if (tf_other.getText().trim().length() > 0) {
+    if (!tf_other.getText().trim().isEmpty()) {
       try {
-        newjc = new AnimationPrefs().fromString(newjc.toString() + ";" + tf_other.getText());
+        newjc = new AnimationPrefs().fromString(newjc + ";" + tf_other.getText());
       } catch (JuggleExceptionUser jeu) {
         ErrorDialog.handleUserException(AnimationPrefsDialog.this, jeu.getMessage());
       }

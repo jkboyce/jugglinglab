@@ -198,7 +198,7 @@ public class JMLParser extends DefaultHandler {
   }
 
   @Override
-  public void characters(char ch[], int start, int length) throws SAXException {
+  public void characters(char[] ch, int start, int length) throws SAXException {
     if (Constants.DEBUG_JML_PARSING) {
       System.out.print("Characters: ");
       display(ch, start, length);
@@ -211,7 +211,7 @@ public class JMLParser extends DefaultHandler {
   }
 
   @Override
-  public void ignorableWhitespace(char ch[], int start, int length) {
+  public void ignorableWhitespace(char[] ch, int start, int length) {
     if (Constants.DEBUG_JML_PARSING) {
       System.out.print("Ignorable Whitespace: ");
       display(ch, start, length);
@@ -226,7 +226,7 @@ public class JMLParser extends DefaultHandler {
   }
 
   // Display text, escaping some characters.
-  private static void display(char ch[], int start, int length) {
+  private static void display(char[] ch, int start, int length) {
     if (Constants.DEBUG_JML_PARSING) {
       for (int i = start; i < start + length; i++) {
         switch (ch[i]) {
@@ -367,7 +367,7 @@ public class JMLParser extends DefaultHandler {
       throw new JuggleExceptionInternal("addJMLText(): no element to add to");
     }
 
-    String newvalue = null;
+    String newvalue;
     if (currentNode.getNodeValue() == null) {
       newvalue = text;
     } else {

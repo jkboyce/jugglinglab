@@ -14,7 +14,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;
 import javax.swing.*;
-import javax.swing.event.*;
 import jugglinglab.generator.*;
 import jugglinglab.jml.JMLPattern;
 import jugglinglab.notation.*;
@@ -23,7 +22,6 @@ import jugglinglab.view.View;
 
 public class ApplicationPanel extends JPanel implements ActionListener {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
-  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
   protected JFrame parent;
   protected JTabbedPane jtp;
@@ -52,7 +50,6 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     // of Juggling Lab
     animtarget = v;
     patlist = pl;
-    patlisttab = (pl == null) ? patlisttab : true;
   }
 
   @Override
@@ -81,7 +78,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
   // Input is for example Pattern.NOTATION_SITESWAP.
 
-  public void setNotation(int num) throws JuggleExceptionUser, JuggleExceptionInternal {
+  public void setNotation(int num) {
     if (num > Pattern.builtinNotations.length) {
       return;
     }
@@ -120,13 +117,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     }
 
     // change the default button when the tab changes
-    jtp.addChangeListener(
-        new ChangeListener() {
-          @Override
-          public void stateChanged(ChangeEvent e) {
-            getRootPane().setDefaultButton(getDefaultButton());
-          }
-        });
+    jtp.addChangeListener(e -> getRootPane().setDefaultButton(getDefaultButton()));
 
     setLayout(new BorderLayout());
     add(jtp, BorderLayout.CENTER);
@@ -147,14 +138,11 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     np2.setLayout(new FlowLayout(FlowLayout.TRAILING));
     JButton nbut1 = new JButton(guistrings.getString("Defaults"));
     nbut1.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            try {
-              fcontrol.resetControl();
-            } catch (Exception e) {
-              ErrorDialog.handleFatalException(e);
-            }
+        ae -> {
+          try {
+            fcontrol.resetControl();
+          } catch (Exception e) {
+            ErrorDialog.handleFatalException(e);
           }
         });
     np2.add(nbut1);
@@ -163,38 +151,31 @@ public class ApplicationPanel extends JPanel implements ActionListener {
     juggle_button.setDefaultCapable(true);
 
     juggle_button.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            PatternWindow jaw2 = null;
-            try {
-              ParameterList pl = fcontrol.getParameterList();
-              Pattern p = fcontrol.newPattern().fromParameters(pl);
-              AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
-              pl.errorIfParametersLeft();
+        ae -> {
+          try {
+            ParameterList pl = fcontrol.getParameterList();
+            Pattern p = fcontrol.newPattern().fromParameters(pl);
+            AnimationPrefs jc = (new AnimationPrefs()).fromParameters(pl);
+            pl.errorIfParametersLeft();
 
-              String notation = p.getNotationName();
-              String config = p.toString();
-              JMLPattern pat = JMLPattern.fromBasePattern(notation, config);
-              pat.layoutPattern();
+            String notation = p.getNotationName();
+            String config = p.toString();
+            JMLPattern pat = JMLPattern.fromBasePattern(notation, config);
+            pat.layoutPattern();
 
-              if (PatternWindow.bringToFront(pat.getHashCode())) {
-                return;
-              }
-
-              if (animtarget != null) {
-                animtarget.restartView(pat, jc);
-              } else {
-                jaw2 = new PatternWindow(pat.getTitle(), pat, jc);
-              }
-            } catch (JuggleExceptionUser je) {
-              ErrorDialog.handleUserException(ApplicationPanel.this, je.getMessage());
-            } catch (Exception e) {
-              if (jaw2 != null) {
-                jaw2.dispose();
-              }
-              ErrorDialog.handleFatalException(e);
+            if (PatternWindow.bringToFront(pat.getHashCode())) {
+              return;
             }
+
+            if (animtarget != null) {
+              animtarget.restartView(pat, jc);
+            } else {
+              new PatternWindow(pat.getTitle(), pat, jc);
+            }
+          } catch (JuggleExceptionUser je) {
+            ErrorDialog.handleUserException(ApplicationPanel.this, je.getMessage());
+          } catch (Exception e) {
+            ErrorDialog.handleFatalException(e);
           }
         });
     np2.add(juggle_button);
@@ -212,13 +193,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
     JButton but1 = new JButton(guistrings.getString("Defaults"));
 
-    but1.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            trans.resetTransitionerControl();
-          }
-        });
+    but1.addActionListener(ae -> trans.resetTransitionerControl());
     p2.add(but1);
 
     trans_button = new JButton(guistrings.getString("Run"));
@@ -236,7 +211,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     PatternListWindow pw = null;
                     try {
                       trans.initTransitioner();
-                      GeneratorTarget pwot = null;
+                      GeneratorTarget pwot;
                       if (plp != null) {
                         plp.clearList();
                         pwot = new GeneratorTarget(plp);
@@ -301,13 +276,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
 
     JButton but1 = new JButton(guistrings.getString("Defaults"));
 
-    but1.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ae) {
-            gen.resetGeneratorControl();
-          }
-        });
+    but1.addActionListener(ae -> gen.resetGeneratorControl());
     p2.add(but1);
 
     gen_button = new JButton(guistrings.getString("Run"));
@@ -325,7 +294,7 @@ public class ApplicationPanel extends JPanel implements ActionListener {
                     PatternListWindow pw = null;
                     try {
                       gen.initGenerator();
-                      GeneratorTarget pwot = null;
+                      GeneratorTarget pwot;
                       if (plp != null) {
                         plp.clearList();
                         pwot = new GeneratorTarget(plp);

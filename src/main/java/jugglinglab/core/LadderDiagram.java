@@ -86,7 +86,7 @@ public class LadderDiagram extends JPanel
     if (jugglers > MAX_JUGGLERS) {
       // allocate enough space for a "too many jugglers" message; see paintLadder()
       String template = guistrings.getString("Too_many_jugglers");
-      Object[] arguments = {Integer.valueOf(MAX_JUGGLERS)};
+      Object[] arguments = {MAX_JUGGLERS};
       String message = MessageFormat.format(template, arguments);
       int mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message);
       setPreferredSize(new Dimension(mwidth, 1));
@@ -100,7 +100,8 @@ public class LadderDiagram extends JPanel
         new double[] {
           1.0, 1.0, 0.85, 0.72, 0.65, 0.55,
         };
-    pref_width *= (jugglers >= width_mult.length ? 0.5 : width_mult[jugglers]);
+    pref_width = (int) ((double) pref_width *
+        (jugglers >= width_mult.length ? 0.5 : width_mult[jugglers]));
     pref_width = Math.max(pref_width, min_width);
     setPreferredSize(new Dimension(pref_width, 1));
     setMinimumSize(new Dimension(min_width, 1));
@@ -231,8 +232,8 @@ public class LadderDiagram extends JPanel
         d = (x - item.xcenter) * (x - item.xcenter) + (y - item.ycenter) * (y - item.ycenter);
         d = Math.abs(Math.sqrt(d) - item.radius);
       } else {
-        int xmin = (item.xstart < item.xend) ? item.xstart : item.xend;
-        int xmax = (item.xstart < item.xend) ? item.xend : item.xstart;
+        int xmin = Math.min(item.xstart, item.xend);
+        int xmax = Math.max(item.xstart, item.xend);
 
         if (x < (xmin - slop) || x > (xmax + slop)) {
           continue;
@@ -257,6 +258,7 @@ public class LadderDiagram extends JPanel
     return result;
   }
 
+  /*
   public void setPathColor(int path, Color color) {
     for (LadderPathItem item : ladderpathitems) {
       if (item.pathnum == path) {
@@ -264,6 +266,7 @@ public class LadderDiagram extends JPanel
       }
     }
   }
+  */
 
   protected void updateTrackerPosition() {
     double loop_start = pat.getLoopStartTime();
@@ -297,7 +300,7 @@ public class LadderDiagram extends JPanel
     double loop_end = pat.getLoopEndTime();
 
     // first create events (black circles on the vertical lines representing hands)
-    laddereventitems = new ArrayList<LadderEventItem>();
+    laddereventitems = new ArrayList<>();
     JMLEvent eventlist = pat.getEventList();
     JMLEvent ev = eventlist;
 
@@ -325,7 +328,7 @@ public class LadderDiagram extends JPanel
     }
 
     // create paths (lines and arcs)
-    ladderpathitems = new ArrayList<LadderPathItem>();
+    ladderpathitems = new ArrayList<>();
     ev = eventlist;
     while (ev.getT() <= loop_end) {
       for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
@@ -358,9 +361,8 @@ public class LadderDiagram extends JPanel
     }
 
     // create juggler positions
-    ladderpositionitems = new ArrayList<LadderPositionItem>();
-    JMLPosition positionlist = pat.getPositionList();
-    JMLPosition pos = positionlist;
+    ladderpositionitems = new ArrayList<>();
+    JMLPosition pos = pat.getPositionList();
 
     while (pos != null && pos.getT() < loop_start) {
       pos = pos.getNext();
@@ -413,22 +415,17 @@ public class LadderDiagram extends JPanel
               + BORDER_TOP
               - TRANSITION_RADIUS;
 
-      if (item.type == LadderEventItem.TYPE_EVENT) {
-        item.xlow = event_x;
-        item.xhigh = event_x + 2 * TRANSITION_RADIUS;
-        item.ylow = event_y;
-        item.yhigh = event_y + 2 * TRANSITION_RADIUS;
-      } else {
+      if (item.type != LadderEventItem.TYPE_EVENT) {
         if (ev.getHand() == HandLink.LEFT_HAND) {
           event_x += 2 * TRANSITION_RADIUS * (item.transnum + 1);
         } else {
           event_x -= 2 * TRANSITION_RADIUS * (item.transnum + 1);
         }
-        item.xlow = event_x;
-        item.xhigh = event_x + 2 * TRANSITION_RADIUS;
-        item.ylow = event_y;
-        item.yhigh = event_y + 2 * TRANSITION_RADIUS;
       }
+      item.xlow = event_x;
+      item.xhigh = event_x + 2 * TRANSITION_RADIUS;
+      item.ylow = event_y;
+      item.yhigh = event_y + 2 * TRANSITION_RADIUS;
     }
 
     // set locations of paths (lines and arcs)
@@ -511,7 +508,7 @@ public class LadderDiagram extends JPanel
       gr.setFont(MSGFONT);
       FontMetrics fm = gr.getFontMetrics();
       String template = guistrings.getString("Too_many_jugglers");
-      Object[] arguments = {Integer.valueOf(MAX_JUGGLERS)};
+      Object[] arguments = {MAX_JUGGLERS};
       String message = MessageFormat.format(template, arguments);
       int mwidth = fm.stringWidth(message);
       int x = Math.max((dim.width - mwidth) / 2, 0);
@@ -540,8 +537,7 @@ public class LadderDiagram extends JPanel
               .createCompatibleImage(width, height, Transparency.OPAQUE);
       g = im.getGraphics();
 
-      if (g instanceof Graphics2D) {
-        Graphics2D g2 = (Graphics2D) g;
+      if (g instanceof Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       }
     }
@@ -720,8 +716,7 @@ public class LadderDiagram extends JPanel
 
   @Override
   protected void paintComponent(Graphics gr) {
-    if (gr instanceof Graphics2D) {
-      Graphics2D gr2 = (Graphics2D) gr;
+    if (gr instanceof Graphics2D gr2) {
       gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
