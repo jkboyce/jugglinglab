@@ -11,16 +11,14 @@
 #
 # It:
 #    - Builds the macOS application bundle "Juggling Lab.app" in the bin/ directory
-#    - Packages this into a dmg file
+#    - Application is targeted to the same architecture of Mac (Arm vs. x86) that
+#      the script is run on
+#    - Packages the application into a dmg file
 #
 # Note:
 #    - Juggling Lab.app in the bin directory will be overwritten
 #    - JugglingLab.jar needs to be built prior to running this, using Maven
 #    - Need to be using JDK 16 or later for jpackage to work
-#    - Need to have Xcode installed for codesign to work
-#    - Need to run under an x86-based version of JDK in order to build a binary
-#      that runs on any Mac (jpackage builds for the CPU type the active JDK uses,
-#      and all Macs can run Intel code either natively or via Rosetta)
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html
@@ -37,7 +35,19 @@ cd ..
 rm -rf "Juggling Lab.app"
 mkdir target
 cp JugglingLab.jar target
-cp -r ortools-lib/ortools-darwin-aarch64/* target
+
+architecture=$(uname -m)
+if [[ "$architecture" == "arm64" ]]; then
+   echo "Building installer for Apple Silicon (ARM)"
+   cp -r ortools-lib/ortools-darwin-aarch64/* target
+elif [[ "$architecture" == "x86_64" ]]; then
+   echo "Building installer for Intel (x86)"
+   cp -r ortools-lib/ortools-darwin-x86-64/* target
+else
+   echo "Unknown architecture: $architecture"
+   rm -r target
+   exit
+fi
 
 jpackage --type app-image \
    --input target/ \
@@ -59,15 +69,7 @@ rm -r target
 cp "packaging/macos/JML_document.icns" "Juggling Lab.app/Contents/Resources/"
 cp "packaging/macos/Juggling Lab.cfg" "Juggling Lab.app/Contents/app/"
 
-# Remove the Oracle signature on the application, which causes Gatekeeper to
-# refuse to launch the app since it isn't notarized. With no signature the user
-# gets the "Developer cannot be verified" warning but they can launch.
-#
-# Note: this step no longer seems necessary with Java 25
-#
-# codesign --remove-signature "Juggling Lab.app"
-
-# Step 3: Create the target dmg
+# Step 3: Create the target dmg and rename to our convention
 
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
@@ -75,6 +77,11 @@ jpackage --type dmg \
    --app-version "1.6.6" \
    --verbose
 
-find . -name "Juggling Lab*.dmg" -type f \
-   -exec bash -c 'rm -f "${0/Juggling Lab/JugglingLab}"; mv "$0" "${0/Juggling Lab/JugglingLab}"' {} \;
-
+if [[ "$architecture" == "arm64" ]]; then
+   find . -name "Juggling Lab-*.dmg" \
+      -exec bash -c 'no_space="${1// /}"; mv -f "$1" "$no_space"' _ {} \;
+else [[ "$architecture" == "x86_64" ]]; then
+   find . \( -name "Juggling Lab-*.dmg" -o -name "JugglingLab-*.dmg" \) \
+      -not -name "*-x86.dmg" \
+      -exec bash -c 'no_space="${1// /}"; mv -f "$1" "${no_space%.dmg}-x86.dmg"' _ {} \;
+fi
