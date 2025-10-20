@@ -17,7 +17,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <commons-math3.version>3.6.1</commons-math3.version>
         <ortools.version>9.4.1874</ortools.version>
     </properties>
@@ -40,18 +41,6 @@
 
     <build>
         <plugins>
-            <!-- configure compiler to show deprecation warnings -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <compilerArgs>
-                        <arg>-Xlint:deprecation</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
             <!-- remove existing `bin/JugglingLab.jar` -->
             <!-- otherwise on overwrite Maven creates `bin/original-JugglingLab.jar` -->
             <plugin>
