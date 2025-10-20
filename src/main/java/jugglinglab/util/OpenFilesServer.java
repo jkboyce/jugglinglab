@@ -1,19 +1,19 @@
 //
 // OpenFilesServer.java
 //
-// This class is used to handle open file messages, i.e., when the user double-
-// clicks on a .jml file. This is primarily used on Windows; on macOS the open
-// file messages are handled through the Desktop class.
+// This is a utility class to handle open file messages when the user double-
+// clicks on a .jml file. On macOS open file messages are handled in a different
+// way; see ApplicationWindow.registerOpenFilesHandler().
 //
-// The OS opens a new instance of Juggling Lab, and this class needs to use
-// some kind of inter-process communication to hand off the open file request
-// to another Juggling Lab instance that may be already running.
+// When the user double-clicks a .jml file, the OS opens a new instance of
+// Juggling Lab. This class needs to use some form of inter-process communication
+// to hand off the open file request to another Juggling Lab instance that may be
+// already running.
 //
-// There are two distinct implementations here: One that uses a memory-mapped
-// file for IPC, and another that uses sockets. Both work well but the sockets
-// version can trigger a Windows firewall warning that requires user approval,
-// so we default to the other. Neither uses OS-specific APIs so they should be
-// fairly portable.
+// There are two implementations here: One that uses a memory-mapped file for
+// IPC, and another that uses sockets. Both work well but the sockets version can
+// trigger a Windows firewall warning that requires user approval, so we default
+// to the other. Neither uses OS-specific APIs so they should be fairly portable.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -31,7 +31,12 @@ public class OpenFilesServer {
   private static OpenFilesServerMMF ofs_mmf;
   private static OpenFilesServerSockets ofs_sockets;
 
-  public OpenFilesServer() {
+  private OpenFilesServer() {}
+
+  // Start up the OpenFilesServer thread, which listens for open file messages
+  // from other instances of Juggling Lab.
+
+  public static void startOpenFilesServer() {
     switch (Constants.OPEN_FILES_METHOD) {
       case SERVER_MMF:
         if (ofs_mmf == null) {
