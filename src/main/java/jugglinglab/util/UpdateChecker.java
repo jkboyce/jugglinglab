@@ -13,8 +13,8 @@ package jugglinglab.util;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -40,7 +40,7 @@ public class UpdateChecker extends Thread {
     String line = null;
 
     try {
-      URL url = new URL(Constants.site_URL);
+      URL url = new URI(Constants.site_URL).toURL();
       is = url.openStream();
       isr = new InputStreamReader(is);
       BufferedReader br = new BufferedReader(isr);
@@ -50,7 +50,7 @@ public class UpdateChecker extends Thread {
           break;
         }
       }
-    } catch (MalformedURLException mue) {
+    } catch (URISyntaxException mue) {
       // handle errors quietly; no big deal if this background operation fails
     } catch (IOException ioe) {
     } finally {

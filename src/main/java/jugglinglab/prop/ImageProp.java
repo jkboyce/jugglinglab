@@ -10,6 +10,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import javax.imageio.ImageIO;
@@ -25,7 +27,7 @@ public class ImageProp extends Prop {
   protected URL url;
   protected BufferedImage image;
   protected BufferedImage scaled_image;
-  protected final double WIDTH_DEF = 10; // in centimeters
+  protected final double WIDTH_DEF = 10;  // in centimeters
   protected double width;
   protected double height;
   protected Dimension size;
@@ -149,8 +151,10 @@ public class ImageProp extends Prop {
     String sourcestr = pl.getParameter("image");
     if (sourcestr != null) {
       try {
-        url = new URL(sourcestr);
+        url = new URI(sourcestr).toURL();
         loadImage();
+      } catch (URISyntaxException ex) {
+        throw new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"));
       } catch (MalformedURLException ex) {
         throw new JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"));
       }
