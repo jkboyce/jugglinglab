@@ -328,7 +328,6 @@ public class AnimationPanel extends JPanel implements Runnable {
   @Override
   public void run() {
     Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-
     engineRunning = true;  // ok to start painting
     engineAnimating = false;
 

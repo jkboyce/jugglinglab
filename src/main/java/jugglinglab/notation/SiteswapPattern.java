@@ -49,7 +49,7 @@ public class SiteswapPattern extends MHNPattern {
     super.fromParameters(pl);
 
     if (hss != null) {
-      ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
+      HSS.ModParms modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell);
       pattern = modinfo.convertedPattern;
       dwellarray = modinfo.dwellBeatsArray;
     }

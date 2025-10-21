@@ -13,26 +13,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import jugglinglab.util.*;
 
-class OssPatBnc {
-  ArrayList<ArrayList<Character>> objPat;
-  ArrayList<ArrayList<String>> bnc;
-}
-
-class HssParms {
-  ArrayList<Character> pat;
-  int hands;
-}
-
-class PatParms {
-  String newPat;
-  double[] dwellBt;
-}
-
-class ModParms {
-  String convertedPattern;
-  double[] dwellBeatsArray;
-}
-
 public class HSS {
   static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
 
@@ -872,4 +852,28 @@ public class HSS {
     patinf.newPat = modPat;
     return patinf;
   }  // convNotation
+
+  //----------------------------------------------------------------------------
+  // Types related to HSS
+  //----------------------------------------------------------------------------
+
+  public static class OssPatBnc {
+    ArrayList<ArrayList<Character>> objPat;
+    ArrayList<ArrayList<String>> bnc;
+  }
+
+  public static class HssParms {
+    ArrayList<Character> pat;
+    int hands;
+  }
+
+  public static class PatParms {
+    String newPat;
+    double[] dwellBt;
+  }
+
+  public static class ModParms {
+    String convertedPattern;
+    double[] dwellBeatsArray;
+  }
 }

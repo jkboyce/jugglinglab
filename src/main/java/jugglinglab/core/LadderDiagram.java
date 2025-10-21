@@ -53,7 +53,7 @@ public class LadderDiagram extends JPanel
   protected static final int STATE_MOVING_TRACKER = 1;
 
   protected AnimationPanel ap;
-  protected JMLPattern pat;
+  protected final JMLPattern pat;
 
   protected int width;  // pixel dimensions of entire panel
   protected int height;
@@ -589,17 +589,7 @@ public class LadderDiagram extends JPanel
       for (LadderPathItem item : ladderpathitems) {
         g.setColor(item.color);
 
-        Graphics2D gdash = null;
-
-        if (item.type == LadderPathItem.TYPE_PASS) {
-          gdash = (Graphics2D) g.create();
-          Stroke dashed =
-              new BasicStroke(
-                  2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f, new float[] {7f, 3f}, 0);
-          gdash.setStroke(dashed);
-
-          gdash.clipRect(left_x, BORDER_TOP, width - left_x, height - 2 * BORDER_TOP);
-        } else {
+        if (item.type != LadderPathItem.TYPE_PASS) {
           g.clipRect(
               left_x + (item.startevent.getJuggler() - 1) * juggler_delta_x,
               BORDER_TOP,
@@ -612,6 +602,13 @@ public class LadderDiagram extends JPanel
         } else if (item.type == LadderPathItem.TYPE_HOLD) {
           g.drawLine(item.xstart, item.ystart, item.xend, item.yend);
         } else if (item.type == LadderPathItem.TYPE_PASS) {
+          Graphics2D gdash = (Graphics2D) g.create();
+          Stroke dashed =
+              new BasicStroke(
+                  2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f, new float[]{7f, 3f}, 0);
+          gdash.setStroke(dashed);
+          gdash.clipRect(left_x, BORDER_TOP, width - left_x, height - 2 * BORDER_TOP);
+
           gdash.drawLine(item.xstart, item.ystart, item.xend, item.yend);
           gdash.dispose();
         } else if (item.type == LadderPathItem.TYPE_SELF) {
@@ -728,51 +725,55 @@ public class LadderDiagram extends JPanel
       gr.drawString(JLFunc.toStringRounded(sim_time, 2) + " s", width / 2 - 18, tracker_y - 5);
     }
   }
-}
 
-class LadderItem {
-  public static final int TYPE_EVENT = 1;
-  public static final int TYPE_TRANSITION = 2;
-  public static final int TYPE_SELF = 3;
-  public static final int TYPE_CROSS = 4;
-  public static final int TYPE_HOLD = 5;
-  public static final int TYPE_PASS = 6;
-  public static final int TYPE_POSITION = 7;
+  //----------------------------------------------------------------------------
+  // Types for building the ladder diagram
+  //----------------------------------------------------------------------------
 
-  public int type;
-}
+  public static class LadderItem {
+    public static final int TYPE_EVENT = 1;
+    public static final int TYPE_TRANSITION = 2;
+    public static final int TYPE_SELF = 3;
+    public static final int TYPE_CROSS = 4;
+    public static final int TYPE_HOLD = 5;
+    public static final int TYPE_PASS = 6;
+    public static final int TYPE_POSITION = 7;
 
-class LadderEventItem extends LadderItem {
-  public int xlow, xhigh, ylow, yhigh;
-
-  // for transitions within an event, the next two point to the containing event:
-  public LadderEventItem eventitem;
-  public JMLEvent event;
-
-  public int transnum;
-
-  public int getHashCode() {
-    return event.getHashCode() * 17 + type * 23 + transnum * 27;
+    public int type;
   }
-}
 
-class LadderPathItem extends LadderItem {
-  public int xstart, ystart, xend, yend;
-  public int xcenter, ycenter, radius; // for type SELF
-  public Color color;
+  public static class LadderEventItem extends LadderItem {
+    public int xlow, xhigh, ylow, yhigh;
 
-  public JMLEvent startevent;
-  public JMLEvent endevent;
-  public int transnum_start;
-  public int pathnum;
-}
+    // for transitions within an event, the next two point to the containing event:
+    public LadderEventItem eventitem;
+    public JMLEvent event;
 
-class LadderPositionItem extends LadderItem {
-  public int xlow, xhigh, ylow, yhigh;
+    public int transnum;
 
-  public JMLPosition position;
+    public int getHashCode() {
+      return event.getHashCode() * 17 + type * 23 + transnum * 27;
+    }
+  }
 
-  public int getHashCode() {
-    return position.getHashCode();
+  public static class LadderPathItem extends LadderItem {
+    public int xstart, ystart, xend, yend;
+    public int xcenter, ycenter, radius; // for type SELF
+    public Color color;
+
+    public JMLEvent startevent;
+    public JMLEvent endevent;
+    public int transnum_start;
+    public int pathnum;
+  }
+
+  public static class LadderPositionItem extends LadderItem {
+    public int xlow, xhigh, ylow, yhigh;
+
+    public JMLPosition position;
+
+    public int getHashCode() {
+      return position.getHashCode();
+    }
   }
 }

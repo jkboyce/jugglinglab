@@ -628,7 +628,11 @@ public class Renderer2D extends Renderer {
     return min;
   }
 
-  static class DrawObject2D {
+  //----------------------------------------------------------------------------
+  // Class for defining the objects to draw
+  //----------------------------------------------------------------------------
+
+  public static class DrawObject2D {
     public static final int TYPE_PROP = 1;
     public static final int TYPE_BODY = 2;
     public static final int TYPE_LINE = 3;
