@@ -14,7 +14,7 @@ public class EventImages {
   protected double looptime;
   protected Permutation loopperm;
 
-  protected JMLEvent ev = null;
+  protected JMLEvent ev;
   protected int evjuggler, evhand, evtransitions; // hand is by index (0 or 1)
   protected double evtime;
 
@@ -61,7 +61,7 @@ public class EventImages {
           currentj = numjugglers - 1;
           if (currententry-- == 0) {
             currententry = numentries - 1;
-            currentloop--;
+            --currentloop;
           }
         }
       }
@@ -87,8 +87,8 @@ public class EventImages {
       pow = -pow;
     }
     while (pow > 0) {
-      p = lp.apply(p);
-      pow--;
+      p = p.apply(lp);
+      --pow;
     }
     for (int i = 0; i < evtransitions; i++) {
       JMLTransition tr = newevent.getTransition(i);
@@ -97,8 +97,7 @@ public class EventImages {
     }
     newevent.setPathPermFromMaster(p);
 
-    double t =
-        evtime
+    double t = evtime
             + (double) currentloop * looptime
             + (double) currententry * (looptime / (double) numentries);
     newevent.setT(t);
@@ -113,11 +112,14 @@ public class EventImages {
     currententry = 0;
   }
 
-  // Does this event have any transitions for the specified hand, after
-  // symmetries are applied?
+  // Determine if this event has any transitions for the specified hand, after
+  // symmetries are applied.
+
   public boolean hasJMLTransitionForHand(int jug, int han) {
     for (int i = 0; i < numentries; i++) {
-      if (ea[jug - 1][HandLink.index(han)][i] != null) return true;
+      if (ea[jug - 1][HandLink.index(han)][i] != null) {
+        return true;
+      }
     }
     return false;
   }
@@ -280,12 +282,12 @@ public class EventImages {
                 continue;
               }
 
-              p = sym[i].getPathPerm().apply(p);
+              p = p.apply(sym[i].getPathPerm());
 
               int newl = l + deltaentries[i];
               // map back into range
               if (newl >= numentries) {
-                p = invdelayperm.apply(p);
+                p = p.apply(invdelayperm);
                 newl -= numentries;
               }
               // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);

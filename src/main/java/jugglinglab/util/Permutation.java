@@ -189,16 +189,12 @@ public class Permutation {
   }
 
   public String toString(boolean cyclenotation) {
-    String s;
+    StringBuilder sb = new StringBuilder();
 
     if (cyclenotation) {
       if (reverses) {
         int start, current;
         boolean[] printed = new boolean[size];
-        for (int i = 0; i < size; i++) {
-          printed[i] = false;
-        }
-        s = "";
 
         for (int i = 0; i < size; i++) {
           if (!printed[i]) {
@@ -206,17 +202,17 @@ public class Permutation {
             printed[i] = true;
             current = mapping[start + size];
             if (current != 0) {
-              s += "(" + convertReverse(start);
+              sb.append("(").append(convertReverse(start));
               while (current != start) {
                 if (current > 0) {
                   printed[current - 1] = true;
                 } else if (current < 0) {
                   printed[-current - 1] = true;
                 }
-                s += "," + convertReverse(current);
+                sb.append(",").append(convertReverse(current));
                 current = mapping[current + size];
               }
-              s += ")";
+              sb.append(")");
             }
           }
         }
@@ -226,7 +222,6 @@ public class Permutation {
         for (int i = 0; i < size; i++) {
           printed[i] = false;
         }
-        s = "";
 
         while (left > 0) {
           int i = 0;
@@ -238,32 +233,32 @@ public class Permutation {
           }
           start = i + 1;
           printed[i] = true;
-          s = s + "(" + start;
+          sb.append("(").append(start);
           left--;
           current = mapping[i];
           while (current != start) {
-            s = s + "," + current;
+            sb.append(",").append(current);
             printed[current - 1] = true;
             left--;
             current = mapping[current - 1];
           }
-          s = s + ")";
+          sb.append(")");
         }
       }
     } else {
       if (reverses) {
-        s = convertReverse(mapping[size + 1]);
+        sb.append(convertReverse(mapping[size + 1]));
         for (int i = 1; i < size; i++) {
-          s = s + "," + convertReverse(mapping[size + 1 + i]);
+          sb.append(",").append(convertReverse(mapping[size + 1 + i]));
         }
       } else {
-        s = "" + mapping[0];
+        sb.append(mapping[0]);
         for (int i = 1; i < size; i++) {
-          s = s + "," + mapping[i];
+          sb.append(",").append(mapping[i]);
         }
       }
     }
-    return s;
+    return sb.toString();
   }
 
   protected String convertReverse(int num) {
@@ -321,17 +316,20 @@ public class Permutation {
     return elem;
   }
 
-  public Permutation apply(Permutation firstp) {
-    if (this.getSize() != firstp.getSize()) {
-      return null;
+  // Return the permutation that is this one, plus permutation `secondp` applied
+  // afterward.
+
+  public Permutation apply(Permutation secondp) {
+    if (secondp == null || this.getSize() != secondp.getSize()) {
+      return this;
     }
-    if (this.hasReverses() || firstp.hasReverses()) {
-      return null;
+    if (this.hasReverses() || secondp.hasReverses()) {
+      return this;
     }
 
     int[] res = new int[this.getSize()];
     for (int i = 0; i < this.getSize(); i++) {
-      res[i] = this.getMapping(firstp.getMapping(i + 1));
+      res[i] = secondp.getMapping(this.getMapping(i + 1));
     }
 
     return new Permutation(this.getSize(), res, false);

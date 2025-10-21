@@ -554,10 +554,8 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
   @Override
   public void actionPerformed(ActionEvent ae) {
-    String command = ae.getActionCommand();
-
     try {
-      switch (command) {
+      switch (ae.getActionCommand()) {
         case "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT);
         case "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL);
         case "open" -> doMenuCommand(MenuCommand.FILE_OPEN);

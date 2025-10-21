@@ -56,13 +56,11 @@ public class OpenFilesServer {
   // Otherwise return false.
 
   public static boolean tryOpenFile(File f) {
-    switch (Constants.OPEN_FILES_METHOD) {
-      case SERVER_MMF:
-        return OpenFilesServerMMF.tryOpenFile(f);
-      case SERVER_SOCKETS:
-        return OpenFilesServerSockets.tryOpenFile(f);
-    }
-    return false;
+    return switch (Constants.OPEN_FILES_METHOD) {
+      case SERVER_MMF -> OpenFilesServerMMF.tryOpenFile(f);
+      case SERVER_SOCKETS -> OpenFilesServerSockets.tryOpenFile(f);
+      default -> false;
+    };
   }
 
   // Do any needed cleanup when things are closing down.

@@ -28,7 +28,7 @@ public class AnimationPanel extends JPanel implements Runnable {
   static final ResourceBundle guistrings = jugglinglab.JugglingLab.guistrings;
   static final double SNAPANGLE = Math.toRadians(8);
 
-  protected Animator anim;
+  protected final Animator anim;
   protected AnimationPrefs jc;
 
   protected Thread engine;
@@ -315,7 +315,6 @@ public class AnimationPanel extends JPanel implements Runnable {
 
     anim.setDimension(getSize());
     anim.restartAnimator(pat, newjc);
-
     setBackground(anim.getBackground());
 
     engine = new Thread(this);

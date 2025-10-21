@@ -1170,10 +1170,12 @@ public class AnimationEditPanel extends AnimationPanel
     for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
       Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
 
-      if (jc.stereo && i == 0) {
-        g2 = (Graphics2D) g.create(0, 0, d.width / 2, d.height);
-      } else if (jc.stereo && i == 1) {
-        g2 = (Graphics2D) g.create(d.width / 2, 0, d.width / 2, d.height);
+      if (jc.stereo) {
+        if (i == 0) {
+          g2 = (Graphics2D) g.create(0, 0, d.width / 2, d.height);
+        } else {
+          g2 = (Graphics2D) g.create(d.width / 2, 0, d.width / 2, d.height);
+        }
       }
 
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1468,9 +1470,8 @@ public class AnimationEditPanel extends AnimationPanel
 
   @Override
   public void paintComponent(Graphics g) {
-    if (g instanceof Graphics2D) {
-      ((Graphics2D) g)
-          .setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    if (g instanceof Graphics2D g2) {
+      g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
     if (message != null) {

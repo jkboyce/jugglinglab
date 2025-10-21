@@ -275,72 +275,72 @@ public class AnimationPrefs {
 
   @Override
   public String toString() {
-    String result = "";
+    StringBuilder sb = new StringBuilder();
 
     if (width != WIDTH_DEF) {
-      result += "width=" + width + ";";
+      sb.append("width=").append(width).append(";");
     }
     if (height != HEIGHT_DEF) {
-      result += "height=" + height + ";";
+      sb.append("height=").append(height).append(";");
     }
     if (fps != FPS_DEF) {
-      result += "fps=" + JLFunc.toStringRounded(fps, 2) + ";";
+      sb.append("fps=").append(JLFunc.toStringRounded(fps, 2)).append(";");
     }
     if (slowdown != SLOWDOWN_DEF) {
-      result += "slowdown=" + JLFunc.toStringRounded(slowdown, 2) + ";";
+      sb.append("slowdown=").append(JLFunc.toStringRounded(slowdown, 2)).append(";");
     }
     if (border != BORDER_DEF) {
-      result += "border=" + border + ";";
+      sb.append("border=").append(border).append(";");
     }
     if (showGround != SHOWGROUND_DEF) {
       switch (showGround) {
         case GROUND_AUTO:
-          result += "showground=auto;";
+          sb.append("showground=auto;");
           break;
         case GROUND_ON:
-          result += "showground=true;";
+          sb.append("showground=true;");
           break;
         case GROUND_OFF:
-          result += "showground=false;";
+          sb.append("showground=false;");
           break;
       }
     }
     if (stereo != STEREO_DEF) {
-      result += "stereo=" + stereo + ";";
+      sb.append("stereo=").append(stereo).append(";");
     }
     if (startPause != STARTPAUSE_DEF) {
-      result += "startpaused=" + startPause + ";";
+      sb.append("startpaused=").append(startPause).append(";");
     }
     if (mousePause != MOUSEPAUSE_DEF) {
-      result += "mousepause=" + mousePause + ";";
+      sb.append("mousepause=").append(mousePause).append(";");
     }
     if (catchSound != CATCHSOUND_DEF) {
-      result += "catchsound=" + catchSound + ";";
+      sb.append("catchsound=").append(catchSound).append(";");
     }
     if (bounceSound != BOUNCESOUND_DEF) {
-      result += "bouncesound=" + bounceSound + ";";
+      sb.append("bouncesound=").append(bounceSound).append(";");
     }
     if (camangle != null) {
-      result += "camangle=(" + camangle[0] + "," + camangle[1] + ");";
+      sb.append("camangle=(").append(camangle[0]).append(",").append(camangle[1]).append(");");
     }
     if (view != VIEW_DEF) {
-      result += "view=" + View.viewNames[view - 1] + ";";
+      sb.append("view=").append(View.viewNames[view - 1]).append(";");
     }
     if (hideJugglers != null) {
-      result += "hidejugglers=(";
+      sb.append("hidejugglers=(");
       for (int i = 0; i < hideJugglers.length; i++) {
-        result += Integer.toString(hideJugglers[i]);
+        sb.append(hideJugglers[i]);
         if (i != hideJugglers.length - 1) {
-          result += ",";
+          sb.append(",");
         }
       }
-      result += ");";
+      sb.append(");");
     }
 
-    if (!result.isEmpty()) {
-      result = result.substring(0, result.length() - 1);
+    if (!sb.isEmpty()) {
+      sb.setLength(sb.length() - 1);
     }
 
-    return result;
+    return sb.toString();
   }
 }
