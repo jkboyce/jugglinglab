@@ -51,16 +51,12 @@ public class JMLSymmetry {
     return jugglerperm;
   }
 
-  protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionUser {
+  protected void setJugglerPerm(int nj, String jp) {
     numjugglers = nj;
-    try {
-      if (jp == null) {
-        jugglerperm = new Permutation(numjugglers, true);
-      } else {
-        jugglerperm = new Permutation(numjugglers, jp, true);
-      }
-    } catch (JuggleException je) {
-      throw new JuggleExceptionUser(je.getMessage());
+    if (jp == null) {
+      jugglerperm = new Permutation(numjugglers, true);
+    } else {
+      jugglerperm = new Permutation(numjugglers, jp, true);
     }
   }
 
@@ -74,14 +70,10 @@ public class JMLSymmetry {
 
   protected void setPathPerm(int np, String pp) throws JuggleExceptionUser {
     numpaths = np;
-    try {
-      if (pp == null) {
-        pathperm = new Permutation(numpaths, false);
-      } else {
-        pathperm = new Permutation(numpaths, pp, false);
-      }
-    } catch (JuggleException je) {
-      throw new JuggleExceptionUser(je.getMessage());
+    if (pp == null) {
+      pathperm = new Permutation(numpaths, false);
+    } else {
+      pathperm = new Permutation(numpaths, pp, false);
     }
   }
 

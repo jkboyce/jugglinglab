@@ -18,8 +18,7 @@ public class MHNSymmetry {
   public static final int TYPE_SWITCH = 2;
   public static final int TYPE_SWITCHDELAY = 3;
 
-  public MHNSymmetry(int type, int numjugglers, String jugperm, int delay)
-      throws JuggleExceptionInternal {
+  public MHNSymmetry(int type, int numjugglers, String jugperm, int delay) {
     setType(type);
     setJugglerPerm(numjugglers, jugperm);
     setDelay(delay);
@@ -41,16 +40,12 @@ public class MHNSymmetry {
     return jugglerperm;
   }
 
-  protected void setJugglerPerm(int nj, String jp) throws JuggleExceptionInternal {
+  protected void setJugglerPerm(int nj, String jp) {
     numjugglers = nj;
-    try {
-      if (jp == null) {
-        jugglerperm = new Permutation(numjugglers, true);
-      } else {
-        jugglerperm = new Permutation(numjugglers, jp, true);
-      }
-    } catch (JuggleException je) {
-      throw new JuggleExceptionInternal(je.getMessage());
+    if (jp == null) {
+      jugglerperm = new Permutation(numjugglers, true);
+    } else {
+      jugglerperm = new Permutation(numjugglers, jp, true);
     }
   }
 
