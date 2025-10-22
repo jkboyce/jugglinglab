@@ -6,8 +6,9 @@
 <!-- `mvn package` to compile and build jar -->
 <!-- `mvn clean` to remove temp build directory -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jugglinglab</groupId>
@@ -202,7 +203,8 @@
                                     <artifactId>ortools-linux-x86-64</artifactId>
                                     <version>${ortools.version}</version>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.basedir}/bin/ortools-lib</outputDirectory>
+                                    <outputDirectory>${project.basedir}/bin/ortools-lib
+                                    </outputDirectory>
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -210,7 +212,8 @@
                                     <artifactId>ortools-darwin-x86-64</artifactId>
                                     <version>${ortools.version}</version>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.basedir}/bin/ortools-lib</outputDirectory>
+                                    <outputDirectory>${project.basedir}/bin/ortools-lib
+                                    </outputDirectory>
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -218,7 +221,8 @@
                                     <artifactId>ortools-win32-x86-64</artifactId>
                                     <version>${ortools.version}</version>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.basedir}/bin/ortools-lib</outputDirectory>
+                                    <outputDirectory>${project.basedir}/bin/ortools-lib
+                                    </outputDirectory>
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -226,7 +230,8 @@
                                     <artifactId>ortools-linux-aarch64</artifactId>
                                     <version>${ortools.version}</version>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.basedir}/bin/ortools-lib</outputDirectory>
+                                    <outputDirectory>${project.basedir}/bin/ortools-lib
+                                    </outputDirectory>
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -234,7 +239,8 @@
                                     <artifactId>ortools-darwin-aarch64</artifactId>
                                     <version>${ortools.version}</version>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.basedir}/bin/ortools-lib</outputDirectory>
+                                    <outputDirectory>${project.basedir}/bin/ortools-lib
+                                    </outputDirectory>
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                             </artifactItems>
