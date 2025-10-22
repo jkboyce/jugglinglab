@@ -7,14 +7,10 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.util;
+package jugglinglab.util
 
-public class JuggleExceptionDone extends JuggleExceptionUser {
-  public JuggleExceptionDone() {
-    super();
-  }
+class JuggleExceptionDone : JuggleExceptionUser {
+    constructor() : super()
 
-  public JuggleExceptionDone(String s) {
-    super(s);
-  }
+    constructor(s: String?) : super(s)
 }
