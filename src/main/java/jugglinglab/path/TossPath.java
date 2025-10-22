@@ -61,17 +61,17 @@ public class TossPath extends Path {
 
   @Override
   public void calcPath() throws JuggleExceptionInternal {
-    if (start_coord == null || end_coord == null) {
+    if (startCoord == null || endCoord == null) {
       throw new JuggleExceptionInternal("Error in parabolic path: endpoints not set");
     }
 
     double t = getDuration();
-    cx = start_coord.x;
-    bx = (end_coord.x - start_coord.x) / t;
-    cy = start_coord.y;
-    by = (end_coord.y - start_coord.y) / t;
-    cz = start_coord.z;
-    bz = (end_coord.z - start_coord.z) / t - az * t;
+    cx = startCoord.x;
+    bx = (endCoord.x - startCoord.x) / t;
+    cy = startCoord.y;
+    by = (endCoord.y - startCoord.y) / t;
+    cz = startCoord.z;
+    bz = (endCoord.z - startCoord.z) / t - az * t;
   }
 
   @Override
@@ -86,24 +86,24 @@ public class TossPath extends Path {
 
   @Override
   public void getCoordinate(double time, Coordinate newPosition) {
-    if (time < start_time || time > end_time) {
+    if (time < getStartTime() || time > getEndTime()) {
       return;
     }
-    time -= start_time;
+    time -= getStartTime();
     newPosition.setCoordinate(cx + bx * time, cy + by * time, cz + time * (bz + az * time));
   }
 
   @Override
   protected Coordinate getMax2(double begin, double end) {
     Coordinate result = null;
-    double tlow = Math.max(start_time, begin);
-    double thigh = Math.min(end_time, end);
+    double tlow = Math.max(getStartTime(), begin);
+    double thigh = Math.min(getEndTime(), end);
 
     result = check(result, tlow, true);
     result = check(result, thigh, true);
 
     if (az < 0) {
-      double te = -bz / (2 * az) + start_time;
+      double te = -bz / (2 * az) + getStartTime();
       if (tlow < te && te < thigh) {
         result = check(result, te, true);
       }
@@ -114,14 +114,14 @@ public class TossPath extends Path {
   @Override
   protected Coordinate getMin2(double begin, double end) {
     Coordinate result = null;
-    double tlow = Math.max(start_time, begin);
-    double thigh = Math.min(end_time, end);
+    double tlow = Math.max(getStartTime(), begin);
+    double thigh = Math.min(getEndTime(), end);
 
     result = check(result, tlow, false);
     result = check(result, thigh, false);
 
     if (az > 0) {
-      double te = -by / (2 * az) + start_time;
+      double te = -by / (2 * az) + getStartTime();
       if (tlow < te && te < thigh) {
         result = check(result, te, false);
       }
