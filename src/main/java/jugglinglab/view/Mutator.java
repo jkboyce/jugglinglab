@@ -433,7 +433,7 @@ public class Mutator {
     boolean outside_box;
 
     do {
-      result = new Coordinate(pos);
+      result = new Coordinate(pos.x, pos.y, pos.z);
       // leave y component unchanged to maintain plane of juggling
       result.x += 2.0 * scaleDistance * (Math.random() - 0.5);
       result.z += 2.0 * scaleDistance * (Math.random() - 0.5);

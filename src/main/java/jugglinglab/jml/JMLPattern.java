@@ -1247,7 +1247,7 @@ public class JMLPattern {
         }
         times[num] = times[0] + getLoopEndTime() - getLoopStartTime();
         positions[num] = positions[0];
-        angles[num] = new Coordinate(angles[0]);
+        angles[num] = new Coordinate(angles[0].x, angles[0].y, angles[0].z);
 
         for (j = 1; j <= num; j++) {
           while ((angles[j].x - angles[j - 1].x) > 180) {
@@ -1740,7 +1740,7 @@ public class JMLPattern {
     Coordinate origin = new Coordinate();
     getJugglerPosition(juggler, t, origin);
     double angle = Math.toRadians(getJugglerAngle(juggler, t));
-    Coordinate c2 = Coordinate.sub(gc, origin);
+    Coordinate c2 = Coordinate.Companion.sub(gc, origin);
 
     Coordinate lc =
         new Coordinate(
@@ -1855,9 +1855,11 @@ public class JMLPattern {
     for (int i = 0; i < pathlinks.get(path - 1).size(); i++) {
       PathLink pl = pathlinks.get(path - 1).get(i);
       if (pl.isInHand()) {
-        result = Coordinate.max(result, getHandMax(pl.getHoldingJuggler(), pl.getHoldingHand()));
+        Coordinate coord2 = getHandMax(pl.getHoldingJuggler(), pl.getHoldingHand());
+        result = Coordinate.Companion.max(result, coord2);
       } else {
-        result = Coordinate.max(result, pl.getPath().getMax(t1, t2));
+        Coordinate coord2 = pl.getPath().getMax(t1, t2);
+        result = Coordinate.Companion.max(result, coord2);
       }
     }
     return result;
@@ -1871,9 +1873,9 @@ public class JMLPattern {
     for (int i = 0; i < pathlinks.get(path - 1).size(); i++) {
       PathLink pl = pathlinks.get(path - 1).get(i);
       if (pl.isInHand()) {
-        result = Coordinate.min(result, getHandMin(pl.getHoldingJuggler(), pl.getHoldingHand()));
+        result = Coordinate.Companion.min(result, getHandMin(pl.getHoldingJuggler(), pl.getHoldingHand()));
       } else {
-        result = Coordinate.min(result, pl.getPath().getMin(t1, t2));
+        result = Coordinate.Companion.min(result, pl.getPath().getMin(t1, t2));
       }
     }
     return result;
@@ -1889,7 +1891,7 @@ public class JMLPattern {
       HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
       Curve hp = hl.getHandCurve();
       if (hp != null) {
-        result = Coordinate.max(result, hp.getMax(t1, t2));
+        result = Coordinate.Companion.max(result, hp.getMax(t1, t2));
       }
     }
     return result;
@@ -1905,7 +1907,7 @@ public class JMLPattern {
       HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
       Curve hp = hl.getHandCurve();
       if (hp != null) {
-        result = Coordinate.min(result, hp.getMin(t1, t2));
+        result = Coordinate.Companion.max(result, hp.getMin(t1, t2));
       }
     }
     return result;

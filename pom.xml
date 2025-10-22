@@ -19,11 +19,25 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+        <kotlin.version>2.2.0</kotlin.version>
         <commons-math3.version>3.6.1</commons-math3.version>
         <ortools.version>9.4.1874</ortools.version>
     </properties>
 
     <dependencies>
+        <!-- Kotlin -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -41,6 +55,69 @@
 
     <build>
         <plugins>
+            <!-- Kotlin compile -->
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src/main/kotlin</source>
+                                <source>target/generated-sources/annotations</source>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>${maven.compiler.release}</jvmTarget>
+                </configuration>
+            </plugin>
+
+            <!-- Java compile -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- remove existing `bin/JugglingLab.jar` -->
             <!-- otherwise on overwrite Maven creates `bin/original-JugglingLab.jar` -->
             <plugin>
@@ -86,7 +163,6 @@
                                     </excludes>
                                 </filter>
                             </filters>
-
                             <artifactSet>
                                 <excludes>
                                     <exclude>com.google.ortools:ortools-darwin*</exclude>
@@ -94,16 +170,13 @@
                                     <exclude>com.google.ortools:ortools-linux*</exclude>
                                 </excludes>
                             </artifactSet>
-
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>jugglinglab.JugglingLab</mainClass>
                                 </transformer>
                             </transformers>
-
                             <outputFile>${project.basedir}/bin/JugglingLab.jar</outputFile>
-
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
@@ -123,7 +196,6 @@
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
-
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.google.ortools</groupId>
@@ -166,12 +238,10 @@
                                     <excludes>META-INF/</excludes>
                                 </artifactItem>
                             </artifactItems>
-
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

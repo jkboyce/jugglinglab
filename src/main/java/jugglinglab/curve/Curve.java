@@ -116,9 +116,9 @@ public abstract class Curve {
     Coordinate loc = new Coordinate();
     getCoordinate(t, loc);
     if (findmax) {
-      result = Coordinate.max(result, loc);
+      result = Coordinate.Companion.max(result, loc);
     } else {
-      result = Coordinate.min(result, loc);
+      result = Coordinate.Companion.min(result, loc);
     }
     return result;
   }

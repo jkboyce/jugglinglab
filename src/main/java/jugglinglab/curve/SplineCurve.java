@@ -47,7 +47,8 @@ public class SplineCurve extends Curve {
     // copy the velocity array so we can modify it
     Coordinate[] vel = new Coordinate[n + 1];
     for (int i = 0; i < n + 1; i++) {
-      vel[i] = (velocities[i] == null ? null : new Coordinate(velocities[i]));
+      vel[i] = (velocities[i] == null ? null
+          : new Coordinate(velocities[i].x, velocities[i].y, velocities[i].z));
     }
 
     if (vel[0] != null && vel[n] != null) {
@@ -61,10 +62,10 @@ public class SplineCurve extends Curve {
       double t = durations[i];
 
       for (int j = 0; j < 3; j++) {
-        double xi0 = positions[i].getIndex(j);
-        double xi1 = positions[i + 1].getIndex(j);
-        double vi0 = vel[i].getIndex(j);
-        double vi1 = vel[i + 1].getIndex(j);
+        double xi0 = positions[i].get(j);
+        double xi1 = positions[i + 1].get(j);
+        double vi0 = vel[i].get(j);
+        double vi1 = vel[i + 1].get(j);
 
         a[i][j] = xi0;
         b[i][j] = vi0;
@@ -131,13 +132,13 @@ public class SplineCurve extends Curve {
     double[] b = new double[dim];
 
     for (int axis = 0; axis < 3; axis++) {
-      double v0 = v[0].getIndex(axis);
-      double vn = v[n].getIndex(axis);
+      double v0 = v[0].get(axis);
+      double vn = v[n].get(axis);
 
       for (int i = 0; i < n - 1; i++) {
-        double xi0 = x[i].getIndex(axis);
-        double xi1 = x[i + 1].getIndex(axis);
-        double xi2 = x[i + 2].getIndex(axis);
+        double xi0 = x[i].get(axis);
+        double xi1 = x[i + 1].get(axis);
+        double xi2 = x[i + 2].get(axis);
         int index = i + axis * (n - 1);
 
         switch (Constants.SPLINE_LAYOUT_METHOD) {
@@ -196,9 +197,9 @@ public class SplineCurve extends Curve {
       }
 
       int index = 3 * (n - 1) + 2 * catchnum;
-      double ci0 = v[i + 1].getIndex(0);  // components of catch velocity
-      double ci1 = v[i + 1].getIndex(1);
-      double ci2 = v[i + 1].getIndex(2);
+      double ci0 = v[i + 1].get(0);  // components of catch velocity
+      double ci1 = v[i + 1].get(1);
+      double ci2 = v[i + 1].get(2);
 
       // System.out.println("catch velocity (i=" + (i+1) + ") = " + v[i+1]);
 
@@ -281,13 +282,13 @@ public class SplineCurve extends Curve {
     // Here we can solve each axis independently, and combine the results
 
     for (int axis = 0; axis < 3; axis++) {
-      double xn0 = x[n].getIndex(axis);
-      double xnm1 = x[n - 1].getIndex(axis);
+      double xn0 = x[n].get(axis);
+      double xnm1 = x[n - 1].get(axis);
 
       for (int i = 0; i < n; i++) {
-        double xi0 = x[i].getIndex(axis);
-        double xi1 = x[i + 1].getIndex(axis);
-        double xim1 = (i == 0 ? 0 : x[i - 1].getIndex(axis));
+        double xi0 = x[i].get(axis);
+        double xi1 = x[i + 1].get(axis);
+        double xim1 = (i == 0 ? 0 : x[i - 1].get(axis));
 
         switch (Constants.SPLINE_LAYOUT_METHOD) {
           case MINIMIZE_RMSACCEL:
@@ -322,7 +323,7 @@ public class SplineCurve extends Curve {
 
       double[] vel = new double[n];
       for (int i = 0; i < n; i++) {
-        vel[i] = v[i].getIndex(axis);
+        vel[i] = v[i].get(axis);
       }
 
       // Woodbury's formula: First solve the problem ignoring A's nonzero corners
@@ -365,7 +366,7 @@ public class SplineCurve extends Curve {
       }
 
       for (int i = 0; i < n; i++) {
-        v[i].setIndex(axis, vel[i]);
+        v[i].set(axis, vel[i]);
       }
 
       /*
@@ -386,7 +387,7 @@ public class SplineCurve extends Curve {
       */
     }
 
-    v[n] = new Coordinate(v[0]);  // v[n] = v[0]
+    v[n] = new Coordinate(v[0].x, v[0].y, v[0].z);  // v[n] = v[0]
   }
 
   // The following method is adapted from Numerical Recipes. It solves the

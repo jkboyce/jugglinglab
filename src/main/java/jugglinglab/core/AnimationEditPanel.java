@@ -417,9 +417,9 @@ public class AnimationEditPanel extends AnimationPanel
         Coordinate cc = getCurrentCoordinate();
 
         if (event_active) {
-          Coordinate deltalc = Coordinate.sub(cc, event_start);
-          deltalc = Coordinate.truncate(deltalc, 1e-7);
-          event.setLocalCoordinate(Coordinate.add(event_start, deltalc));
+          Coordinate deltalc = Coordinate.Companion.sub(cc, event_start);
+          deltalc = Coordinate.Companion.truncate(deltalc, 1e-7);
+          event.setLocalCoordinate(Coordinate.Companion.add(event_start, deltalc));
 
           if (!event.isMaster()) {
             // set new coordinate in the master event
@@ -428,7 +428,7 @@ public class AnimationEditPanel extends AnimationPanel
             if (flipx) {
               deltalc.x = -deltalc.x;
             }
-            master.setLocalCoordinate(Coordinate.add(event_master_start, deltalc));
+            master.setLocalCoordinate(Coordinate.Companion.add(event_master_start, deltalc));
           }
 
           dolayout = true;
@@ -769,7 +769,7 @@ public class AnimationEditPanel extends AnimationPanel
           throw new JuggleExceptionInternal("AEP: No coord on event " + ev, getPattern());
         }
         Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
-        double dl = 1.0 / Coordinate.distance(c, c2);  // pixels/cm
+        double dl = 1.0 / Coordinate.Companion.distance(c, c2);  // pixels/cm
 
         double[] ca = ren.getCameraAngle();
         double theta =
@@ -1014,9 +1014,9 @@ public class AnimationEditPanel extends AnimationPanel
 
       // translate by one pixel and see how far it is in juggler space
       Coordinate c =
-          Coordinate.add(position.getCoordinate(), new Coordinate(0, 0, POSITION_BOX_Z_OFFSET_CM));
+          Coordinate.Companion.add(position.getCoordinate(), new Coordinate(0, 0, POSITION_BOX_Z_OFFSET_CM));
       Coordinate c2 = ren.getScreenTranslatedCoordinate(c, 1, 0);
-      double dl = 1.0 / Coordinate.distance(c, c2); // pixels/cm
+      double dl = 1.0 / Coordinate.Companion.distance(c, c2); // pixels/cm
 
       double[] ca = ren.getCameraAngle();
       double theta = ca[0] + startangle + deltaangle;
@@ -1270,7 +1270,7 @@ public class AnimationEditPanel extends AnimationPanel
         return event.getLocalCoordinate();
       }
 
-      Coordinate c = new Coordinate(event_start);
+      Coordinate c = new Coordinate(event_start.x, event_start.y, event_start.z);
 
       // screen (pixel) offset of a 1cm offset in each of the cardinal
       // directions in the juggler's coordinate system (i.e., global
@@ -1342,7 +1342,7 @@ public class AnimationEditPanel extends AnimationPanel
         return position.getCoordinate();
       }
 
-      Coordinate c = new Coordinate(position_start);
+      Coordinate c = new Coordinate(position_start.x, position_start.y, position_start.z);
 
       // screen (pixel) offset of a 1cm offset in each of the cardinal
       // directions in the position's coordinate system (i.e., global

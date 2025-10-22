@@ -275,8 +275,8 @@ public class Animator {
     Coordinate patternmax = null;
     Coordinate patternmin = null;
     for (int i = 1; i <= pat.getNumberOfPaths(); i++) {
-      patternmax = Coordinate.max(patternmax, pat.getPathMax(i));
-      patternmin = Coordinate.min(patternmin, pat.getPathMin(i));
+      patternmax = Coordinate.Companion.max(patternmax, pat.getPathMax(i));
+      patternmin = Coordinate.Companion.min(patternmin, pat.getPathMin(i));
 
       if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
         System.out.println("Path max " + i + " = " + pat.getPathMax(i));
@@ -287,14 +287,14 @@ public class Animator {
     Coordinate propmax = null;
     Coordinate propmin = null;
     for (int i = 1; i <= pat.getNumberOfProps(); i++) {
-      propmax = Coordinate.max(propmax, pat.getProp(i).getMax());
-      propmin = Coordinate.min(propmin, pat.getProp(i).getMin());
+      propmax = Coordinate.Companion.max(propmax, pat.getProp(i).getMax());
+      propmin = Coordinate.Companion.min(propmin, pat.getProp(i).getMin());
     }
 
     // Make sure props are entirely visible along all paths. In principle
     // not all props go on all paths so this could be done more carefully.
-    patternmax = Coordinate.add(patternmax, propmax);
-    patternmin = Coordinate.add(patternmin, propmin);
+    patternmax = Coordinate.Companion.add(patternmax, propmax);
+    patternmin = Coordinate.Companion.add(patternmin, propmin);
 
     // Step 2: Work out a bounding box that contains the hands at all times,
     // factoring in the physical extent of the hands.
@@ -302,10 +302,10 @@ public class Animator {
     Coordinate handmax = null;
     Coordinate handmin = null;
     for (int i = 1; i <= pat.getNumberOfJugglers(); i++) {
-      handmax = Coordinate.max(handmax, pat.getHandMax(i, HandLink.LEFT_HAND));
-      handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.LEFT_HAND));
-      handmax = Coordinate.max(handmax, pat.getHandMax(i, HandLink.RIGHT_HAND));
-      handmin = Coordinate.min(handmin, pat.getHandMin(i, HandLink.RIGHT_HAND));
+      handmax = Coordinate.Companion.max(handmax, pat.getHandMax(i, HandLink.LEFT_HAND));
+      handmin = Coordinate.Companion.min(handmin, pat.getHandMin(i, HandLink.LEFT_HAND));
+      handmax = Coordinate.Companion.max(handmax, pat.getHandMax(i, HandLink.RIGHT_HAND));
+      handmin = Coordinate.Companion.min(handmin, pat.getHandMin(i, HandLink.RIGHT_HAND));
     }
 
     // The renderer's hand window is in local coordinates. We don't know
@@ -322,8 +322,8 @@ public class Animator {
     hwmin.y = hwmin.x;
 
     // make sure hands are entirely visible
-    handmax = Coordinate.add(handmax, hwmax);
-    handmin = Coordinate.add(handmin, hwmin);
+    handmax = Coordinate.Companion.add(handmax, hwmax);
+    handmin = Coordinate.Companion.add(handmin, hwmin);
 
     // Step 3: Find a bounding box that contains the juggler's body
     // at all times, incorporating any juggler movements as well as the
@@ -335,8 +335,8 @@ public class Animator {
     // Step 4: Combine the pattern, hand, and juggler bounding boxes into
     // an overall bounding box.
 
-    overallmax = Coordinate.max(patternmax, Coordinate.max(handmax, jwmax));
-    overallmin = Coordinate.min(patternmin, Coordinate.min(handmin, jwmin));
+    overallmax = Coordinate.Companion.max(patternmax, Coordinate.Companion.max(handmax, jwmax));
+    overallmin = Coordinate.Companion.min(patternmin, Coordinate.Companion.min(handmin, jwmin));
 
     if (jugglinglab.core.Constants.DEBUG_LAYOUT) {
       System.out.println("Hand max = " + handmax);

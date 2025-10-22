@@ -101,8 +101,8 @@ public class Renderer2D extends Renderer {
     viewport = new Rectangle(border, border, width - 2 * border, height - 2 * border);
 
     // Make some adjustments to the bounding box.
-    Coordinate adjusted_max = new Coordinate(overallmax);
-    Coordinate adjusted_min = new Coordinate(overallmin);
+    Coordinate adjusted_max = new Coordinate(overallmax.x, overallmax.y, overallmax.z);
+    Coordinate adjusted_min = new Coordinate(overallmin.x, overallmin.y, overallmin.z);
 
     final boolean ORIGINAL_ZOOM = true;
 
@@ -605,10 +605,10 @@ public class Renderer2D extends Renderer {
   public Coordinate getJugglerWindowMax() {
     Coordinate max = pat.getJugglerMax(1);
     for (int i = 2; i <= pat.getNumberOfJugglers(); i++) {
-      max = Coordinate.max(max, pat.getJugglerMax(i));
+      max = Coordinate.Companion.max(max, pat.getJugglerMax(i));
     }
 
-    max = Coordinate.add(
+    max = Coordinate.Companion.add(
             max,
             new Coordinate(
                 Juggler.SHOULDER_HW,
@@ -621,10 +621,10 @@ public class Renderer2D extends Renderer {
   public Coordinate getJugglerWindowMin() {
     Coordinate min = pat.getJugglerMin(1);
     for (int i = 2; i <= pat.getNumberOfJugglers(); i++) {
-      min = Coordinate.min(min, pat.getJugglerMin(i));
+      min = Coordinate.Companion.min(min, pat.getJugglerMin(i));
     }
 
-    min = Coordinate.add(min, new Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0));
+    min = Coordinate.Companion.add(min, new Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0));
     return min;
   }
 

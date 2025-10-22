@@ -34,7 +34,7 @@ public class LineCurve extends Curve {
 
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < (n + 1); j++) {
-        x[j] = positions[j].getIndex(i);
+        x[j] = positions[j].get(i);
       }
 
       // now solve for line coefficients

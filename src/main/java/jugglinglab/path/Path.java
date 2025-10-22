@@ -101,9 +101,9 @@ public abstract class Path {
     Coordinate loc = new Coordinate(0, 0, 0);
     getCoordinate(t, loc);
     if (findmax) {
-      result = Coordinate.max(result, loc);
+      result = Coordinate.Companion.max(result, loc);
     } else {
-      result = Coordinate.min(result, loc);
+      result = Coordinate.Companion.min(result, loc);
     }
     return result;
   }
