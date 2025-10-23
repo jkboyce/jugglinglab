@@ -2,7 +2,7 @@
 // Path.kt
 //
 // This is the base class for all Path types in Juggling Lab. A Path describes
-// the movement of an object during the time between throw and catch.
+// the movement of an object from one point in spacetime to another.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -17,8 +17,11 @@ import jugglinglab.util.ParameterDescriptor
 import java.util.*
 
 abstract class Path {
+  // Coordinate and time of path start
   protected var startCoord: Coordinate? = null
   protected var startTime: Double = 0.0
+
+  // Coordinate and time of path end
   protected var endCoord: Coordinate? = null
   protected var endTime: Double = 0.0
 

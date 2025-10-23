@@ -421,11 +421,10 @@ class BouncePath : Path() {
   }
 
   override fun getMax2(time1: Double, time2: Double): Coordinate? {
-    var result: Coordinate? = null
     val tlow = max(startTime, time1)
     val thigh = min(endTime, time2)
 
-    result = check(result, tlow, true)
+    var result: Coordinate? = check(null, tlow, true)
     result = check(result, thigh, true)
     if (az[0] < 0) {
       val te = -bz[0] / (2 * az[0]) + startTime
@@ -459,11 +458,10 @@ class BouncePath : Path() {
   }
 
   override fun getMin2(time1: Double, time2: Double): Coordinate? {
-    var result: Coordinate? = null
     val tlow = max(startTime, time1)
     val thigh = min(endTime, time2)
 
-    result = check(result, tlow, false)
+    var result: Coordinate? = check(null, tlow, false)
     result = check(result, thigh, false)
     if (az[0] > 0) {
       val te = -bz[0] / (2 * az[0]) + startTime
