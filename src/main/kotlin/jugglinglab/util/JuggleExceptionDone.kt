@@ -10,7 +10,7 @@
 package jugglinglab.util
 
 class JuggleExceptionDone : JuggleExceptionUser {
-  constructor() : super()
+    constructor() : super()
 
-  constructor(s: String) : super(s)
+    constructor(s: String) : super(s)
 }

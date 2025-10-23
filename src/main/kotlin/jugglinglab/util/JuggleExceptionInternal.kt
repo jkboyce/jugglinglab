@@ -13,21 +13,21 @@ package jugglinglab.util
 import jugglinglab.jml.JMLPattern
 
 class JuggleExceptionInternal : JuggleException {
-  @JvmField
-  var pat: JMLPattern? = null
+    @JvmField
+    var pat: JMLPattern? = null
 
-  constructor() : super()
+    constructor() : super()
 
-  constructor(s: String?) : super(s)
+    constructor(s: String?) : super(s)
 
-  // Constructor that includes a reference to the JMLPattern where the error
-  // occurred. See ErrorDialog::handleFatalException().
+    // Constructor that includes a reference to the JMLPattern where the error
+    // occurred. See ErrorDialog::handleFatalException().
 
-  constructor(s: String?, pat: JMLPattern?) : super(s) {
-    this.pat = pat
-  }
+    constructor(s: String?, pat: JMLPattern?) : super(s) {
+        this.pat = pat
+    }
 
-  fun attachPattern(pat: JMLPattern?) {
-    this.pat = pat
-  }
+    fun attachPattern(pat: JMLPattern?) {
+        this.pat = pat
+    }
 }
