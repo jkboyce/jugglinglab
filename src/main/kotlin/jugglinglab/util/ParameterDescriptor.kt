@@ -7,7 +7,7 @@
 package jugglinglab.util
 
 class ParameterDescriptor(
-    @JvmField var name: String?,
+    @JvmField var name: String,
     @JvmField var type: Int,
     @JvmField var range: ArrayList<String?>?,
     @JvmField var defaultValue: Any?,

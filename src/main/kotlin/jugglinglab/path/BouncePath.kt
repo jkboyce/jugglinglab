@@ -298,10 +298,9 @@ class BouncePath : Path() {
     override val type: String
         get() = "Bounce"
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor?> {
-        val result = arrayOfNulls<ParameterDescriptor>(6)
-
-        result[0] =
+    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
+        val result = ArrayList<ParameterDescriptor>()
+        result.add(
             ParameterDescriptor(
                 "bounces",
                 ParameterDescriptor.TYPE_INT,
@@ -309,7 +308,8 @@ class BouncePath : Path() {
                 BOUNCES_DEF,
                 bounces
             )
-        result[1] =
+        )
+        result.add(
             ParameterDescriptor(
                 "forced",
                 ParameterDescriptor.TYPE_BOOLEAN,
@@ -317,7 +317,8 @@ class BouncePath : Path() {
                 FORCED_DEF,
                 forced
             )
-        result[2] =
+        )
+        result.add(
             ParameterDescriptor(
                 "hyper",
                 ParameterDescriptor.TYPE_BOOLEAN,
@@ -325,7 +326,8 @@ class BouncePath : Path() {
                 HYPER_DEF,
                 hyper
             )
-        result[3] =
+        )
+        result.add(
             ParameterDescriptor(
                 "bounceplane",
                 ParameterDescriptor.TYPE_FLOAT,
@@ -333,7 +335,8 @@ class BouncePath : Path() {
                 BOUNCEPLANE_DEF,
                 bounceplane
             )
-        result[4] =
+        )
+        result.add(
             ParameterDescriptor(
                 "bouncefrac",
                 ParameterDescriptor.TYPE_FLOAT,
@@ -341,12 +344,13 @@ class BouncePath : Path() {
                 BOUNCEFRAC_DEF,
                 bouncefrac
             )
-        result[5] =
+        )
+        result.add(
             ParameterDescriptor(
                 "g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g
             )
-
-        return result
+        )
+        return result.toTypedArray()
     }
 
     override val minDuration: Double

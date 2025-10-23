@@ -216,6 +216,7 @@ class SplineCurve : Curve() {
         return result
     }
 
+    @Suppress("KotlinConstantConditions")
     companion object {
         // These are the three techniques to assign velocities:
         //    "MINIMIZE_RMSACCEL" minimizes the rms acceleration of the hand
@@ -407,7 +408,7 @@ class SplineCurve : Curve() {
             }
 
             try {
-                val solver = LUDecomposition(Array2DRowRealMatrix(m)).getSolver()
+                val solver = LUDecomposition(Array2DRowRealMatrix(m)).solver
                 val solution = solver.solve(ArrayRealVector(b))
 
                 for (i in 0..<n - 1) {
@@ -437,6 +438,7 @@ class SplineCurve : Curve() {
         // tridiagonal problems and then combine the results to solve the full
         // problem. See pg. 77 from Numerical Recipes in C, first edition.
 
+        @Suppress("LocalVariableName")
         @Throws(JuggleExceptionInternal::class)
         private fun findvelsEdgesUnknown(
             n: Int,

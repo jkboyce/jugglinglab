@@ -46,6 +46,7 @@ abstract class Path {
     abstract fun calcPath()
 
     // Utility method
+    @Suppress("unused")
     fun translateTime(deltat: Double) {
         this.startTime += deltat
         this.endTime += deltat
@@ -66,7 +67,7 @@ abstract class Path {
     abstract val minDuration: Double
 
     // Parameters for defining the path in the UI (e.g., EditLadderDiagram)
-    abstract fun getParameterDescriptors(): Array<ParameterDescriptor?>
+    abstract fun getParameterDescriptors(): Array<ParameterDescriptor>
 
     // Calculated velocity at the start and end of the path, for hand layout
     abstract fun getStartVelocity(): Coordinate

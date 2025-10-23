@@ -72,12 +72,12 @@ class TossPath : Path() {
     override val minDuration: Double
         get() = 0.0
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor?> {
-        val result = arrayOfNulls<ParameterDescriptor>(1)
-        result[0] = ParameterDescriptor(
-            "g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g
+    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
+        val result = ArrayList<ParameterDescriptor>()
+        result.add(
+            ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
         )
-        return result
+        return result.toTypedArray()
     }
 
     override fun getStartVelocity(): Coordinate {

@@ -50,6 +50,7 @@ abstract class Curve {
     abstract fun calcCurve()
 
     // Utility method
+    @Suppress("unused")
     fun translateTime(deltat: Double) {
         for (i in 0..<numpoints) {
             times[i] += deltat
@@ -66,6 +67,7 @@ abstract class Curve {
     val endTime: Double
         get() = times[numpoints - 1]
 
+    @Suppress("unused")
     protected val duration: Double
         get() = (times[numpoints - 1] - times[0])
 
@@ -119,6 +121,7 @@ abstract class Curve {
 
     companion object {
         // implemented types
+        @Suppress("unused")
         const val CURVE_SPLINE: Int = 1
         const val CURVE_LINE: Int = 2
     }
