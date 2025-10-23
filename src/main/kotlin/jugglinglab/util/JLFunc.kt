@@ -49,7 +49,7 @@ fun binomial(a: Int, b: Int): Int {
 // expand to '(((((' or '('?
 
 fun expandRepeats(str: String): String {
-    val sb = StringBuffer()
+    val sb = StringBuilder()
     addExpansionToBuffer(str, sb)
     return sb.toString()
 
@@ -64,7 +64,7 @@ fun expandRepeats(str: String): String {
     */
 }
 
-private fun addExpansionToBuffer(str: String, sb: StringBuffer) {
+private fun addExpansionToBuffer(str: String, sb: StringBuilder) {
     var pos = 0
     while (pos < str.length) {
         val ch = str[pos]

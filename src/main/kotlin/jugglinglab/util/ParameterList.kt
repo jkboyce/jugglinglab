@@ -95,14 +95,14 @@ class ParameterList() {
     }
 
     override fun toString(): String {
-        var result = ""
+        val sb = StringBuilder()
         for (i in 0..<this.numberOfParameters) {
             if (i != 0) {
-                result += ";"
+                sb.append(';')
             }
-            result += getParameterName(i) + "=" + getParameterValue(i)
+            sb.append(getParameterName(i)).append('=').append(getParameterValue(i))
         }
-        return result
+        return sb.toString()
     }
 
     // Throw an appropriate error if there are parameters left over after parsing.
