@@ -1,0 +1,128 @@
+//
+// Curve.kt
+//
+// This type describes a path through 3D space, used to model hand movements as
+// well as juggler positions/angles.
+//
+// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+//
+
+package jugglinglab.curve
+
+import jugglinglab.util.Coordinate
+import jugglinglab.util.JuggleExceptionInternal
+
+abstract class Curve {
+  // The curve is defined by `numpoints` control points
+  protected var numpoints: Int = 0
+
+  // Position at each control point; coordinates must not be null. The curve is
+  // expected to match each position at its corresponding time.
+  protected lateinit var positions: Array<Coordinate>
+
+  // Time at each control point
+  protected lateinit var times: DoubleArray
+
+  // Velocity at each control point
+  // - For line curves, velocities are ignored.
+  // - For spline curves, if the velocities at the endpoints are defined (non-
+  //   null), the curve will match those velocities precisely. For velocities
+  //   in the middle, the curve will match the *directions* of those velocities,
+  //   but not their magnitudes. Any of the velocities may be null, in which
+  //   case the spline will choose a velocity.
+  protected lateinit var velocities: Array<Coordinate?>
+
+  //----------------------------------------------------------------------------
+  // Methods to define the Curve
+  //----------------------------------------------------------------------------
+
+  @Throws(JuggleExceptionInternal::class)
+  fun setCurve(times: DoubleArray, positions: Array<Coordinate>, velocities: Array<Coordinate?>) {
+    numpoints = times.size
+    this.times = times
+    this.positions = positions
+    this.velocities = velocities
+
+    if (numpoints != positions.size || numpoints != velocities.size) {
+      throw JuggleExceptionInternal("Curve error 1")
+    }
+  }
+
+  // Calculate the curve; this is called after setting curve parameters but
+  // before any calls to getCoordinate().
+  @Throws(JuggleExceptionInternal::class)
+  abstract fun calcCurve()
+
+  // Utility method
+  fun translateTime(deltat: Double) {
+    for (i in 0..<numpoints) {
+      times[i] += deltat
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // Querying properties of the curve
+  //----------------------------------------------------------------------------
+
+  val startTime: Double
+    get() = times[0]
+
+  val endTime: Double
+    get() = times[numpoints - 1]
+
+  protected val duration: Double
+    get() = (times[numpoints - 1] - times[0])
+
+  // Calculated curve coordinate at time `time`
+  abstract fun getCoordinate(time: Double, newPosition: Coordinate)
+
+  //----------------------------------------------------------------------------
+  // Max and min coordinates over a range of times, used for layout
+  //----------------------------------------------------------------------------
+
+  // Curve max/min coordinates over time interval [time1, time2]
+  protected abstract fun getMax2(time1: Double, time2: Double): Coordinate?
+  protected abstract fun getMin2(time1: Double, time2: Double): Coordinate?
+
+  // Max/min over the entire curve duration
+  val max: Coordinate?
+    get() = getMax2(times[0], times[numpoints - 1])
+  val min: Coordinate?
+    get() = getMin2(times[0], times[numpoints - 1])
+
+  // Path max/min over [time1, time2], but clipped to `null` when the time is
+  // out of range
+  fun getMax(time1: Double, time2: Double): Coordinate? {
+    if (time2 < this.startTime || time1 > this.endTime) {
+      return null
+    }
+    return getMax2(time1, time2)
+  }
+  fun getMin(time1: Double, time2: Double): Coordinate? {
+    if (time2 < this.startTime || time1 > this.endTime) {
+      return null
+    }
+    return getMin2(time1, time2)
+  }
+
+  // Utility for getMax2/getMin2
+  protected fun check(result: Coordinate?, t: Double, findmax: Boolean): Coordinate {
+    val loc = Coordinate(0.0, 0.0, 0.0)
+    getCoordinate(t, loc)
+
+    val res = if (result == null) {
+      loc
+    } else if (findmax) {
+      Coordinate.max(result, loc)
+    } else {
+      Coordinate.min(result, loc)
+    }
+    return res!!
+  }
+
+  companion object {
+    // implemented types
+    const val CURVE_SPLINE: Int = 1
+    const val CURVE_LINE: Int = 2
+  }
+}
