@@ -1902,7 +1902,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         // boolean val = ((jcb.getSelectedIndex() == 0) ? true : false);
         JCheckBox jcb = (JCheckBox) control;
         boolean val = jcb.isSelected();
-        boolean def_val = (Boolean) (dialog_pd[i].default_value);
+        boolean def_val = (Boolean) (dialog_pd[i].defaultValue);
         if (val != def_val) {
           term = (Boolean.valueOf(val)).toString();
         }
@@ -1910,7 +1910,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         JTextField tf = (JTextField) control;
         try {
           double val = JLFunc.parseDouble(tf.getText());
-          double def_val = (Double) (dialog_pd[i].default_value);
+          double def_val = (Double) (dialog_pd[i].defaultValue);
           if (val != def_val) {
             term = tf.getText().trim();
           }
@@ -1923,7 +1923,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         JComboBox<?> jcb = (JComboBox<?>) control;
         int ind = jcb.getSelectedIndex();
         String val = dialog_pd[i].range.get(ind);
-        String def_val = (String) (dialog_pd[i].default_value);
+        String def_val = (String) (dialog_pd[i].defaultValue);
         if (!val.equalsIgnoreCase(def_val)) {
           term = val;
         }
@@ -1931,7 +1931,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         JTextField tf = (JTextField) control;
         try {
           int val = Integer.parseInt(tf.getText());
-          int def_val = (Integer) (dialog_pd[i].default_value);
+          int def_val = (Integer) (dialog_pd[i].defaultValue);
           if (val != def_val) {
             term = tf.getText().trim();
           }
@@ -1943,7 +1943,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       } else if (dialog_pd[i].type == ParameterDescriptor.TYPE_ICON) {
         JLabel label = (JLabel) control;
         ImageIcon icon = (ImageIcon) label.getIcon();
-        String def = dialog_pd[i].default_value.toString();
+        String def = dialog_pd[i].defaultValue.toString();
         if (!icon.getDescription().equals(def)) {
           term = icon.getDescription();  // This contains the URL string
         }
