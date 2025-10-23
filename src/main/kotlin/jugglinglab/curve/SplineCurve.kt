@@ -418,7 +418,7 @@ class SplineCurve : Curve() {
                     )
                 }
             } catch (_: SingularMatrixException) {
-                throw JuggleExceptionInternal("Singular matrix in findvels_edges_known()")
+                throw JuggleExceptionInternal("Singular matrix in findvelsEdgesKnown()")
             }
         }
 
@@ -582,7 +582,7 @@ class SplineCurve : Curve() {
             n: Int
         ) {
             if (b[0] == 0.0) {
-                throw JuggleExceptionInternal("Error 1 in TRIDAG")
+                throw JuggleExceptionInternal("Error 1 in tridag()")
             }
 
             var bet = b[0]
@@ -593,7 +593,7 @@ class SplineCurve : Curve() {
                 gam[j] = c[j - 1] / bet
                 bet = b[j] - a[j - 1] * gam[j]
                 if (bet == 0.0) {
-                    throw JuggleExceptionInternal("Error 2 in TRIDAG")
+                    throw JuggleExceptionInternal("Error 2 in tridag()")
                 }
                 u[j] = (r[j] - a[j - 1] * u[j - 1]) / bet
             }
