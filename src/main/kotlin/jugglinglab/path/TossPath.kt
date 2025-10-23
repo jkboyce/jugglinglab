@@ -29,13 +29,13 @@ class TossPath : Path() {
 
     // parse for edits to the above variables
     val pl = ParameterList(st)
-    for (i in 0..<pl.getNumberOfParameters()) {
+    for (i in 0..<pl.numberOfParameters) {
       val pname = pl.getParameterName(i)
       val pvalue = pl.getParameterValue(i)
 
       if (pname.equals("g", ignoreCase = true)) {
         try {
-          g = JLFunc.parseDouble(pvalue)
+          g = parseDouble(pvalue)
         } catch (_: NumberFormatException) {
           val template = errorstrings!!.getString("Error_number_format")
           val arguments = arrayOf<Any?>("g")

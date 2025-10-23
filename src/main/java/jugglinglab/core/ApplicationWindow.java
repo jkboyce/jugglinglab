@@ -258,10 +258,10 @@ public class ApplicationWindow extends JFrame implements ActionListener {
   // Show the user a file chooser to open a JML file.
 
   public static void openJMLFile() throws JuggleExceptionInternal {
-    JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
-    if (JLFunc.jfc().showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return;
+    JLFunc.getJfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+    if (JLFunc.getJfc().showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return;
 
-    File file = JLFunc.jfc().getSelectedFile();
+    File file = JLFunc.getJfc().getSelectedFile();
     if (file != null) {
       try {
         openJMLFile(file);

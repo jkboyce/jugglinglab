@@ -1850,10 +1850,10 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                  JLFunc.jfc()
+                  JLFunc.getJfc()
                       .setFileFilter(
                           new FileNameExtensionFilter("Image file", "jpg", "jpeg", "gif", "png"));
-                  int result = JLFunc.jfc().showOpenDialog(EditLadderDiagram.this);
+                  int result = JLFunc.getJfc().showOpenDialog(EditLadderDiagram.this);
                   if (result != JFileChooser.APPROVE_OPTION) {
                     return;
                   }
@@ -1862,7 +1862,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
                     // We have to load the image to get the correct dimensions
                     // ImageIcon icon = new ImageIcon(source, source.toString());
                     // Rebuild the paramter descriptions
-                    fpds[0].value = JLFunc.jfc().getSelectedFile().toURI().toURL();
+                    fpds[0].value = JLFunc.getJfc().getSelectedFile().toURI().toURL();
                     // fpds[1].value = new Integer(icon.getIconWidth());
                     // fpds[2].value = new Integer(icon.getIconHeight());
                     // fpds[1].default_value = fpds[1].value;

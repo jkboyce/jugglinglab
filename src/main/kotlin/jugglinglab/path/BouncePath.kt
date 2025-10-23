@@ -42,7 +42,7 @@ class BouncePath : Path() {
 
     // now parse for edits to the above variables
     val pl = ParameterList(st)
-    for (i in 0..<pl.getNumberOfParameters()) {
+    for (i in 0..<pl.numberOfParameters) {
       val pname = pl.getParameterName(i)
       val pvalue = pl.getParameterValue(i)
 
@@ -60,7 +60,7 @@ class BouncePath : Path() {
         hyper = pvalue.toBoolean()
       } else if (pname.equals("bounceplane", ignoreCase = true)) {
         try {
-          bounceplane = JLFunc.parseDouble(pvalue)
+          bounceplane = parseDouble(pvalue)
         } catch (_: NumberFormatException) {
           val template = errorstrings!!.getString("Error_number_format")
           val arguments = arrayOf<Any?>("bounceplane")
@@ -68,7 +68,7 @@ class BouncePath : Path() {
         }
       } else if (pname.equals("bouncefrac", ignoreCase = true)) {
         try {
-          bouncefrac = JLFunc.parseDouble(pvalue)
+          bouncefrac = parseDouble(pvalue)
         } catch (_: NumberFormatException) {
           val template = errorstrings!!.getString("Error_number_format")
           val arguments = arrayOf<Any?>("bouncefrac")
@@ -76,7 +76,7 @@ class BouncePath : Path() {
         }
       } else if (pname.equals("g", ignoreCase = true)) {
         try {
-          g = JLFunc.parseDouble(pvalue)
+          g = parseDouble(pvalue)
         } catch (_: NumberFormatException) {
           val template = errorstrings!!.getString("Error_number_format")
           val arguments = arrayOf<Any?>("g")
@@ -161,7 +161,6 @@ class BouncePath : Path() {
             continue
           }
           v0 = root[i]
-          choseroot = true
           break
         }
       }
@@ -623,13 +622,10 @@ class BouncePath : Path() {
     private fun findRoot(coef: DoubleArray, degree: Int, xlow: Double, xhigh: Double): Double {
       var xlow = xlow
       var xhigh = xhigh
-      var val1: Double
-      var val2: Double
+      var val1 = evalPolynomial(coef, degree, xlow)
+      val val2 = evalPolynomial(coef, degree, xhigh)
       var valtemp: Double
       var t: Double
-
-      val1 = evalPolynomial(coef, degree, xlow)
-      val2 = evalPolynomial(coef, degree, xhigh)
 
       if (val1 * val2 > 0.0) {
         return 0.5 * (xlow + xhigh)  // should never happen!
@@ -643,7 +639,6 @@ class BouncePath : Path() {
           val1 = valtemp
         } else {
           xhigh = t
-          val2 = valtemp
         }
       }
       return xlow

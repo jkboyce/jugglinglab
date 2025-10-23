@@ -666,14 +666,14 @@ public class PatternWindow extends JFrame implements ActionListener {
             fname = getTitle() + ".jml";  // default filename
           }
           fname = JLFunc.sanitizeFilename(fname);
-          JLFunc.jfc().setSelectedFile(new File(fname));
-          JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
+          JLFunc.getJfc().setSelectedFile(new File(fname));
+          JLFunc.getJfc().setFileFilter(new FileNameExtensionFilter("JML file", "jml"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+          if (JLFunc.getJfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             break;
           }
 
-          File f = JLFunc.jfc().getSelectedFile();
+          File f = JLFunc.getJfc().getSelectedFile();
           if (f == null) {
             break;
           }
@@ -711,14 +711,14 @@ public class PatternWindow extends JFrame implements ActionListener {
           }
 
           fname = JLFunc.sanitizeFilename(fname);
-          JLFunc.jfc().setSelectedFile(new File(fname));
-          JLFunc.jfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
+          JLFunc.getJfc().setSelectedFile(new File(fname));
+          JLFunc.getJfc().setFileFilter(new FileNameExtensionFilter("GIF file", "gif"));
 
-          if (JLFunc.jfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+          if (JLFunc.getJfc().showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             break;
           }
 
-          File f = JLFunc.jfc().getSelectedFile();
+          File f = JLFunc.getJfc().getSelectedFile();
           if (f == null) {
             break;
           }
