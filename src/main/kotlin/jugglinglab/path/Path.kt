@@ -17,51 +17,83 @@ import jugglinglab.util.ParameterDescriptor
 import java.util.*
 
 abstract class Path {
-  var startTime: Double = 0.0
-    protected set
-  var endTime: Double = 0.0
-    protected set
-
-  @JvmField
   protected var startCoord: Coordinate? = null
-
-  @JvmField
+  protected var startTime: Double = 0.0
   protected var endCoord: Coordinate? = null
+  protected var endTime: Double = 0.0
 
-  fun setStart(position: Coordinate?, time: Double) {
+  //----------------------------------------------------------------------------
+  // Methods to define the Path
+  //----------------------------------------------------------------------------
+
+  fun setStart(position: Coordinate, time: Double) {
     startCoord = position
     this.startTime = time
   }
 
-  fun setEnd(position: Coordinate?, time: Double) {
+  fun setEnd(position: Coordinate, time: Double) {
     endCoord = position
     this.endTime = time
   }
 
-  val duration: Double
-    get() = (this.endTime - this.startTime)
+  @Throws(JuggleExceptionUser::class)
+  abstract fun initPath(st: String?)
 
-  open val minDuration: Double
-    // Minimum duration is nonzero for certain throw types, e.g., a double
-    get() = 0.0
+  // Must be called after above path parameters are set, before querying for
+  // path coordinates
+  @Throws(JuggleExceptionInternal::class)
+  abstract fun calcPath()
 
+  // Utility method
   fun translateTime(deltat: Double) {
     this.startTime += deltat
     this.endTime += deltat
   }
 
-  val max: Coordinate?
-    // For screen layout.
-    get() = getMax2(this.startTime, this.endTime)
+  //----------------------------------------------------------------------------
+  // Querying properties of the path
+  //----------------------------------------------------------------------------
 
+  // String indicating the type of path
+  abstract val type: String
+
+  val duration: Double
+    get() = (this.endTime - this.startTime)
+
+  // Minimum duration between `startCoord` and `endCoord`, for a path of the
+  // given type
+  abstract val minDuration: Double
+
+  // Parameters for defining the path in the UI (e.g., EditLadderDiagram)
+  abstract fun getParameterDescriptors(): Array<ParameterDescriptor?>
+
+  // Calculated velocity at the start and end of the path, for hand layout
+  abstract fun getStartVelocity(): Coordinate
+  abstract fun getEndVelocity(): Coordinate
+
+  // Calculated path coordinate at time `time`
+  abstract fun getCoordinate(time: Double, newPosition: Coordinate)
+
+  //----------------------------------------------------------------------------
+  // Max and min coordinates over a range of times, used for layout
+  //----------------------------------------------------------------------------
+
+  // Path max/min coordinates over time interval [time1, time2]
+  protected abstract fun getMax2(time1: Double, time2: Double): Coordinate?
+  protected abstract fun getMin2(time1: Double, time2: Double): Coordinate?
+
+  // Max/min over the entire path duration
+  val max: Coordinate?
+    get() = getMax2(this.startTime, this.endTime)
   val min: Coordinate?
     get() = getMin2(this.startTime, this.endTime)
 
-  fun getMax(begin: Double, end: Double): Coordinate? {
-    if (end < this.startTime || begin > this.endTime) return null
-    return getMax2(begin, end)
+  // Path max/min over [time1, time2], but clipped to `null` when the time is
+  // out of range
+  fun getMax(time1: Double, time2: Double): Coordinate? {
+    if (time2 < this.startTime || time1 > this.endTime) return null
+    return getMax2(time1, time2)
   }
-
   fun getMin(begin: Double, end: Double): Coordinate? {
     if (end < this.startTime || begin > this.endTime) {
       return null
@@ -69,55 +101,30 @@ abstract class Path {
     return getMin2(begin, end)
   }
 
-  // Utility for getMax/getMin.
-
-  protected fun check(result: Coordinate?, t: Double, findmax: Boolean): Coordinate? {
-    var result = result
+  // Utility for getMax2/getMin2
+  protected fun check(result: Coordinate?, t: Double, findmax: Boolean): Coordinate {
     val loc = Coordinate(0.0, 0.0, 0.0)
     getCoordinate(t, loc)
-    result = if (findmax) {
+
+    val res = if (result == null) {
+      loc
+    } else if (findmax) {
       Coordinate.max(result, loc)
     } else {
       Coordinate.min(result, loc)
     }
-    return result
+    return res!!
   }
 
-  // string indicating the type of path
-  abstract val type: String?
-
-  // used for defining the path in the UI (EditLadderDiagram)
-  abstract fun getParameterDescriptors(): Array<ParameterDescriptor?>?
-
-  // defines the path from a config string
-  @Throws(JuggleExceptionUser::class)
-  abstract fun initPath(st: String?)
-
-  @Throws(JuggleExceptionInternal::class)
-  abstract fun calcPath()
-
-  // for hand layout purposes, only valid after calcPath()
-  abstract fun getStartVelocity(): Coordinate?
-
-  abstract fun getEndVelocity(): Coordinate?
-
-  // only valid after calcPath()
-  abstract fun getCoordinate(time: Double, newPosition: Coordinate?)
-
-  // for hand layout, only valid after calcPath()
-  protected abstract fun getMax2(begin: Double, end: Double): Coordinate?
-
-  protected abstract fun getMin2(begin: Double, end: Double): Coordinate?
-
   companion object {
-    @JvmField
-    val errorstrings: ResourceBundle? = JugglingLab.errorstrings
+    @JvmStatic
+    protected val errorstrings: ResourceBundle? = JugglingLab.errorstrings
 
-    // the built-in path types
+    // List of the built-in path types
     @JvmField
-    val builtinPaths: Array<String?> = arrayOf<String?>("Toss", "Bounce")
+    val builtinPaths: Array<String> = arrayOf<String>("Toss", "Bounce")
 
-    // Create a new path of the given type.
+    // Factory method to create paths
     @JvmStatic
     @Throws(JuggleExceptionUser::class)
     fun newPath(type: String): Path {
@@ -126,7 +133,6 @@ abstract class Path {
       } else if (type.equals("bounce", ignoreCase = true)) {
         return BouncePath()
       }
-
       throw JuggleExceptionUser("Path type '$type' not recognized")
     }
   }
