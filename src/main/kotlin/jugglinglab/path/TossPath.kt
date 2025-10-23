@@ -37,13 +37,13 @@ class TossPath : Path() {
                 try {
                     g = parseDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings!!.getString("Error_number_format")
+                    val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("g")
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
             } else {
                 throw JuggleExceptionUser(
-                    errorstrings!!.getString("Error_path_badmod") + ": '" + pname + "'"
+                    errorstrings.getString("Error_path_badmod") + ": '" + pname + "'"
                 )
             }
         }

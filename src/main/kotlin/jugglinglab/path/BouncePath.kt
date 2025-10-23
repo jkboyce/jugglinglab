@@ -50,7 +50,7 @@ class BouncePath : Path() {
                 try {
                     bounces = pvalue.toInt()
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings!!.getString("Error_number_format")
+                    val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("bounces")
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
@@ -62,7 +62,7 @@ class BouncePath : Path() {
                 try {
                     bounceplane = parseDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings!!.getString("Error_number_format")
+                    val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("bounceplane")
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
@@ -70,7 +70,7 @@ class BouncePath : Path() {
                 try {
                     bouncefrac = parseDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings!!.getString("Error_number_format")
+                    val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("bouncefrac")
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
@@ -78,13 +78,13 @@ class BouncePath : Path() {
                 try {
                     g = parseDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings!!.getString("Error_number_format")
+                    val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("g")
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
             } else {
                 throw JuggleExceptionUser(
-                    errorstrings!!.getString("Error_path_badmod") + ": '" + pname + "'"
+                    errorstrings.getString("Error_path_badmod") + ": '" + pname + "'"
                 )
             }
         }

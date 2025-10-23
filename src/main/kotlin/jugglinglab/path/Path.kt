@@ -9,12 +9,10 @@
 
 package jugglinglab.path
 
-import jugglinglab.JugglingLab
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
-import java.util.*
 
 abstract class Path {
     // Coordinate and time of path start
@@ -121,9 +119,6 @@ abstract class Path {
     }
 
     companion object {
-        @JvmStatic
-        protected val errorstrings: ResourceBundle? = JugglingLab.errorstrings
-
         // List of the built-in path types
         @JvmField
         val builtinPaths: Array<String> = arrayOf<String>("Toss", "Bounce")
