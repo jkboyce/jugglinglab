@@ -139,7 +139,7 @@ public class PatternWindow extends JFrame implements ActionListener {
       throw new JuggleExceptionInternal("createInitialView: problem creating view");
     }
 
-    view.setParent(this);
+    view.setPatternWindow(this);
     view.setOpaque(true);
     view.setDoubleBuffered(true);
     setContentPane(view);
@@ -191,7 +191,7 @@ public class PatternWindow extends JFrame implements ActionListener {
       throw new JuggleExceptionInternal("setViewMode: problem creating view");
     }
 
-    newview.setParent(this);
+    newview.setPatternWindow(this);
     newview.setPaused(paused);
     newview.setOpaque(true);
     newview.setDoubleBuffered(true);

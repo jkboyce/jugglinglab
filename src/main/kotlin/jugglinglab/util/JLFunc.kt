@@ -236,7 +236,7 @@ fun constraints(location: Int, gridx: Int, gridy: Int): GridBagConstraints {
 
 fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagConstraints {
     val gbc = constraints(location, gridx, gridy)
-    gbc.insets = ins
+    gbc.insets = (ins ?: Insets(0, 0, 0, 0))
     return gbc
 }
 
@@ -346,6 +346,5 @@ fun errorIfNotSanitized(fname: String) {
     if (fname == sanitizeFilename(fname)) {
         return
     }
-
     throw JuggleExceptionUser(errorstrings.getString("Error_saving_disallowed_character"))
 }
