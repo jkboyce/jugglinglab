@@ -10,6 +10,8 @@
 package jugglinglab.util
 
 import jugglinglab.core.Constants
+import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.JugglingLab.guistrings
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.PrintWriter
@@ -37,7 +39,7 @@ object ErrorDialog {
     // debugging information. The intent is that these exceptions only happen in
     // the event of a bug in Juggling Lab, and so we invite users to email us this
     // information.
-    
+
     @JvmStatic
     fun handleFatalException(e: Exception) {
         SwingUtilities.invokeLater { showInternalErrorWindow(e) }

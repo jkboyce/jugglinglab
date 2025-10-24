@@ -12,6 +12,7 @@
 package jugglinglab.util
 
 import jugglinglab.core.ApplicationWindow
+import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import java.awt.Desktop

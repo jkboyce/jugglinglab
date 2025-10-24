@@ -8,6 +8,7 @@
 
 package jugglinglab.path
 
+import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.*
 import java.text.MessageFormat
 import kotlin.math.*

@@ -11,6 +11,8 @@
 package jugglinglab.util
 
 import jugglinglab.JugglingLab
+import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.JugglingLab.guistrings
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import java.text.*
@@ -23,9 +25,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
-
-val guistrings: ResourceBundle = JugglingLab.guistrings
-val errorstrings: ResourceBundle = JugglingLab.errorstrings
 
 // Calculate the binomial coefficient (a choose b).
 

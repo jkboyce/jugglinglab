@@ -8,6 +8,7 @@ package jugglinglab.util
 
 import java.text.MessageFormat
 import java.util.StringTokenizer
+import jugglinglab.JugglingLab.errorstrings
 
 class ParameterList() {
     var numberOfParameters: Int = 0
