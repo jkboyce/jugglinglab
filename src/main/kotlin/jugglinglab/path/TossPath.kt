@@ -54,34 +54,35 @@ class TossPath : Path() {
 
     @Throws(JuggleExceptionInternal::class)
     override fun calcPath() {
-        if (startCoord == null || endCoord == null) {
+        val start = startCoord
+        val end = endCoord
+        if (start == null || end == null) {
             throw JuggleExceptionInternal("Error in parabolic path: endpoints not set")
         }
 
         val t = duration
-        cx = startCoord!!.x
-        bx = (endCoord!!.x - startCoord!!.x) / t
-        cy = startCoord!!.y
-        by = (endCoord!!.y - startCoord!!.y) / t
-        cz = startCoord!!.z
-        bz = (endCoord!!.z - startCoord!!.z) / t - az * t
+        cx = start.x
+        bx = (end.x - start.x) / t
+        cy = start.y
+        by = (end.y - start.y) / t
+        cz = start.z
+        bz = (end.z - start.z) / t - az * t
     }
 
     override val type = "Toss"
 
     override val minDuration = 0.0
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val result = ArrayList<ParameterDescriptor>()
-        result.add(
+    override val parameterDescriptors
+        get() = arrayOf(
             ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
         )
-        return result.toTypedArray()
-    }
 
-    override fun getStartVelocity() = Coordinate(bx, by, bz)
+    override val startVelocity
+        get() = Coordinate(bx, by, bz)
 
-    override fun getEndVelocity() = Coordinate(bx, by, bz + 2 * az * duration)
+    override val endVelocity
+        get() = Coordinate(bx, by, bz + 2 * az * duration)
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
         if (time in startTime..endTime) {

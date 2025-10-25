@@ -113,7 +113,9 @@ class BouncePath : Path() {
 
     @Throws(JuggleExceptionInternal::class)
     override fun calcPath() {
-        if (startCoord == null || endCoord == null) {
+        val start = startCoord
+        val end = endCoord
+        if (start == null || end == null) {
             return
         }
 
@@ -134,23 +136,17 @@ class BouncePath : Path() {
             // Select which root to use. First try to get the forced and hyper values as
             // desired. If no solution, try to get forced, then try to get hyper as desired.
             var choseroot = false
-            var v0 = root[0] // default
+            var v0 = root[0]  // default
             for (i in 0..<numroots) {
-                if (forced xor (root[i] < 0)) {
-                    continue
-                }
-                if (hyper xor liftcatch[i] xor forced) {
-                    continue
-                }
+                if (forced xor (root[i] < 0)) continue
+                if (hyper xor liftcatch[i] xor forced) continue
                 v0 = root[i]
                 choseroot = true
                 break
             }
             if (!choseroot) {
                 for (i in 0..<numroots) {
-                    if (forced xor (root[i] < 0)) {
-                        continue
-                    }
+                    if (forced xor (root[i] < 0)) continue
                     v0 = root[i]
                     choseroot = true
                     break
@@ -158,20 +154,17 @@ class BouncePath : Path() {
             }
             if (!choseroot) {
                 for (i in 0..<numroots) {
-                    if (hyper xor liftcatch[i] xor (root[i] < 0)) {
-                        continue
-                    }
+                    if (hyper xor liftcatch[i] xor (root[i] < 0)) continue
                     v0 = root[i]
                     break
                 }
             }
-
             numbounces = n
 
             // set the remaining path variables based on our solution for
             // `numbounces` and `v0`
             bz[0] = v0
-            cz[0] = startCoord!!.z
+            cz[0] = start.z
             endtime[0] = if (az[0] < 0) {
                 (-v0 - sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0])
             } else {
@@ -186,14 +179,13 @@ class BouncePath : Path() {
                 endtime[i] = endtime[i - 1] - vrebound / az[i]
                 vrebound *= bouncefracsqrt
             }
-            endtime[n] = duration // fix this assignment from the above loop
+            endtime[n] = duration  // fix this assignment from the above loop
 
             // finally do the x and y coordinates -- these are simple
-            cx = startCoord!!.x
-            bx = (endCoord!!.x - startCoord!!.x) / duration
-            cy = startCoord!!.y
-            by = (endCoord!!.y - startCoord!!.y) / duration
-
+            cx = start.x
+            bx = (end.x - start.x) / duration
+            cy = start.y
+            by = (end.y - start.y) / duration
             return
         }
 
@@ -326,76 +318,28 @@ class BouncePath : Path() {
         val numroots = solveBounceEquation(bounces, duration, root, liftcatch)
 
         for (i in 0..<numroots) {
-            if (forced xor (root[i] < 0)) {
-                continue
-            }
-            if (hyper xor liftcatch[i] xor forced) {
-                continue
-            }
+            if (forced xor (root[i] < 0)) continue
+            if (hyper xor liftcatch[i] xor forced) continue
             return true
         }
         return false
     }
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val result = ArrayList<ParameterDescriptor>()
-        result.add(
-            ParameterDescriptor(
-                "bounces",
-                ParameterDescriptor.TYPE_INT,
-                null,
-                BOUNCES_DEF,
-                bounces
-            )
+    override val parameterDescriptors
+        get() = arrayOf(
+            ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT, null, BOUNCES_DEF, bounces),
+            ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN, null, FORCED_DEF, forced),
+            ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN, null, HYPER_DEF, hyper),
+            ParameterDescriptor("bounceplane", ParameterDescriptor.TYPE_FLOAT, null, BOUNCEPLANE_DEF, bounceplane),
+            ParameterDescriptor("bouncefrac", ParameterDescriptor.TYPE_FLOAT, null, BOUNCEFRAC_DEF, bouncefrac),
+            ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
         )
-        result.add(
-            ParameterDescriptor(
-                "forced",
-                ParameterDescriptor.TYPE_BOOLEAN,
-                null,
-                FORCED_DEF,
-                forced
-            )
-        )
-        result.add(
-            ParameterDescriptor(
-                "hyper",
-                ParameterDescriptor.TYPE_BOOLEAN,
-                null,
-                HYPER_DEF,
-                hyper
-            )
-        )
-        result.add(
-            ParameterDescriptor(
-                "bounceplane",
-                ParameterDescriptor.TYPE_FLOAT,
-                null,
-                BOUNCEPLANE_DEF,
-                bounceplane
-            )
-        )
-        result.add(
-            ParameterDescriptor(
-                "bouncefrac",
-                ParameterDescriptor.TYPE_FLOAT,
-                null,
-                BOUNCEFRAC_DEF,
-                bouncefrac
-            )
-        )
-        result.add(
-            ParameterDescriptor(
-                "g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g
-            )
-        )
-        return result.toTypedArray()
-    }
 
-    override fun getStartVelocity() = Coordinate(bx, by, bz[0])
+    override val startVelocity
+        get() = Coordinate(bx, by, bz[0])
 
-    override fun getEndVelocity() =
-        Coordinate(bx, by, bz[numbounces] + 2 * az[numbounces] * (endTime - startTime))
+    override val endVelocity
+        get() = Coordinate(bx, by, bz[numbounces] + 2 * az[numbounces] * (endTime - startTime))
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
         if (time in startTime..endTime) {

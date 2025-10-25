@@ -67,11 +67,11 @@ abstract class Path {
     abstract val minDuration: Double
 
     // Parameters for defining the path in the UI (e.g., EditLadderDiagram)
-    abstract fun getParameterDescriptors(): Array<ParameterDescriptor>
+    abstract val parameterDescriptors: Array<ParameterDescriptor>
 
     // Calculated velocity at the start and end of the path, for hand layout
-    abstract fun getStartVelocity(): Coordinate
-    abstract fun getEndVelocity(): Coordinate
+    abstract val startVelocity: Coordinate
+    abstract val endVelocity: Coordinate
 
     // Calculated path coordinate at time `time`
     abstract fun getCoordinate(time: Double, newPosition: Coordinate)
