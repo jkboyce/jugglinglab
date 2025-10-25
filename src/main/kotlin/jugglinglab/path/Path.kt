@@ -96,12 +96,9 @@ abstract class Path {
         if (time2 < this.startTime || time1 > this.endTime) return null
         return getMax2(time1, time2)
     }
-
-    fun getMin(begin: Double, end: Double): Coordinate? {
-        if (end < this.startTime || begin > this.endTime) {
-            return null
-        }
-        return getMin2(begin, end)
+    fun getMin(time1: Double, time2: Double): Coordinate? {
+        if (time2 < this.startTime || time1 > this.endTime) return null
+        return getMin2(time1, time2)
     }
 
     // Utility for getMax2/getMin2

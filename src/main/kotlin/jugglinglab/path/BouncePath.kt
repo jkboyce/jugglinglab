@@ -172,17 +172,17 @@ class BouncePath : Path() {
             // `numbounces` and `v0`
             bz[0] = v0
             cz[0] = startCoord!!.z
-            if (az[0] < 0) {
-                endtime[0] = (-v0 - sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0])
+            endtime[0] = if (az[0] < 0) {
+                (-v0 - sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0])
             } else {
-                endtime[0] = (-v0 + sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0])
+                (-v0 + sqrt(v0 * v0 - 4 * az[0] * (cz[0] - bounceplane))) / (2 * az[0])
             }
             var vrebound = (-v0 - 2 * az[0] * endtime[0]) * bouncefracsqrt
 
             for (i in 1..n) {
                 bz[i] = vrebound - 2 * az[i] * endtime[i - 1]
-                cz[i] =
-                    bounceplane - az[i] * endtime[i - 1] * endtime[i - 1] - bz[i] * endtime[i - 1]
+                cz[i] = bounceplane - az[i] * endtime[i - 1] * endtime[i - 1] -
+                    bz[i] * endtime[i - 1]
                 endtime[i] = endtime[i - 1] - vrebound / az[i]
                 vrebound *= bouncefracsqrt
             }
@@ -278,13 +278,12 @@ class BouncePath : Path() {
         // equation was converted into a polynomial, nonphysical extra solutions
         // with (v0^2+c) < 0 are generated. Filter these out.
         var numroots = 0
-
         for (i in 0..<numrealroots) {
             val v0 = realroot[i]
             if (v0 * v0 + c >= 0) {
                 root[numroots] = v0
                 liftcatch[numroots] = ((gt - v0 - k * sqrt(v0 * v0 + u)) > 0)
-                numroots++
+                ++numroots
                 /*
                 double lhs = gt - v0 - k*Math.sqrt(v0*v0+u);
                 double rhs = f1 * Math.sqrt(v0*v0+c);
@@ -292,12 +291,51 @@ class BouncePath : Path() {
                 */
             }
         }
-
         return numroots
     }
 
-    override val type: String
-        get() = "Bounce"
+    override val type = "Bounce"
+
+    override val minDuration: Double
+        get() {
+            if (bounces == 1 && hyper && forced) {
+                // single hyperforce bounce is the only one with zero min duration
+                return 0.0
+            }
+
+            var dlower = 0.0
+            var dupper = 1.0
+            while (!isFeasibleDuration(dupper)) {
+                dlower = dupper
+                dupper *= 2.0
+            }
+            while (dupper - dlower > 0.0001) {
+                val davg = 0.5 * (dlower + dupper)
+                if (isFeasibleDuration(davg)) {
+                    dupper = davg
+                } else {
+                    dlower = davg
+                }
+            }
+            return dupper
+        }
+
+    private fun isFeasibleDuration(duration: Double): Boolean {
+        val root = DoubleArray(4)
+        val liftcatch = BooleanArray(4)
+        val numroots = solveBounceEquation(bounces, duration, root, liftcatch)
+
+        for (i in 0..<numroots) {
+            if (forced xor (root[i] < 0)) {
+                continue
+            }
+            if (hyper xor liftcatch[i] xor forced) {
+                continue
+            }
+            return true
+        }
+        return false
+    }
 
     override fun getParameterDescriptors(): Array<ParameterDescriptor> {
         val result = ArrayList<ParameterDescriptor>()
@@ -354,73 +392,23 @@ class BouncePath : Path() {
         return result.toTypedArray()
     }
 
-    override val minDuration: Double
-        get() {
-            // single hyperforce bounce is the only one with zero minimum duration
-            if (bounces == 1 && hyper && forced) {
-                return 0.0
-            }
+    override fun getStartVelocity() = Coordinate(bx, by, bz[0])
 
-            var dlower = 0.0
-            var dupper = 1.0
-            while (!isFeasibleDuration(dupper)) {
-                dlower = dupper
-                dupper *= 2.0
-            }
-
-            while (dupper - dlower > 0.0001) {
-                val davg = 0.5 * (dlower + dupper)
-                if (isFeasibleDuration(davg)) {
-                    dupper = davg
-                } else {
-                    dlower = davg
-                }
-            }
-
-            return dupper
-        }
-
-    private fun isFeasibleDuration(duration: Double): Boolean {
-        val root = DoubleArray(4)
-        val liftcatch = BooleanArray(4)
-        val numroots = solveBounceEquation(bounces, duration, root, liftcatch)
-
-        for (i in 0..<numroots) {
-            if (forced xor (root[i] < 0)) {
-                continue
-            }
-            if (hyper xor liftcatch[i] xor forced) {
-                continue
-            }
-
-            return true
-        }
-        return false
-    }
-
-    override fun getStartVelocity(): Coordinate {
-        return Coordinate(bx, by, bz[0])
-    }
-
-    override fun getEndVelocity(): Coordinate {
-        return Coordinate(bx, by, bz[numbounces] + 2 * az[numbounces] * (endTime - startTime))
-    }
+    override fun getEndVelocity() =
+        Coordinate(bx, by, bz[numbounces] + 2 * az[numbounces] * (endTime - startTime))
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
-        var time = time
-        if (time !in startTime..endTime) {
-            return
-        }
-        time -= startTime
-
-        var zpos = 0.0
-        for (i in 0..numbounces) {
-            if (time < endtime[i] || i == numbounces) {
-                zpos = cz[i] + time * (bz[i] + az[i] * time)
-                break
+        if (time in startTime..endTime) {
+            val t = time - startTime
+            var zpos = 0.0
+            for (i in 0..numbounces) {
+                if (t < endtime[i] || i == numbounces) {
+                    zpos = cz[i] + t * (bz[i] + az[i] * t)
+                    break
+                }
             }
+            newPosition.setCoordinate(cx + bx * t, cy + by * t, zpos)
         }
-        newPosition.setCoordinate(cx + bx * time, cy + by * time, zpos)
     }
 
     override fun getMax2(time1: Double, time2: Double): Coordinate? {
@@ -503,20 +491,15 @@ class BouncePath : Path() {
     // The animator doesn't adjust the volume so for now treat it as yes/no.
 
     fun getBounceVolume(time1: Double, time2: Double): Double {
-        var time1 = time1
-        var time2 = time2
         if (time2 < startTime || time1 > endTime) {
             return 0.0
         }
-        time1 -= startTime
-        time2 -= startTime
+        val t1 = time1 - startTime
+        val t2 = time2 - startTime
 
         for (i in 0..<numbounces) {
-            if (time1 < endtime[i]) {
-                if (time2 > endtime[i]) {
-                    return 1.0
-                }
-                return 0.0
+            if (t1 < endtime[i]) {
+                return if (t2 > endtime[i]) 1.0 else 0.0
             }
         }
         return 0.0

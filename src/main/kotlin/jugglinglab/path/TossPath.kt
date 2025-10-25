@@ -67,11 +67,9 @@ class TossPath : Path() {
         bz = (endCoord!!.z - startCoord!!.z) / t - az * t
     }
 
-    override val type: String
-        get() = "Toss"
+    override val type = "Toss"
 
-    override val minDuration: Double
-        get() = 0.0
+    override val minDuration = 0.0
 
     override fun getParameterDescriptors(): Array<ParameterDescriptor> {
         val result = ArrayList<ParameterDescriptor>()
@@ -81,21 +79,15 @@ class TossPath : Path() {
         return result.toTypedArray()
     }
 
-    override fun getStartVelocity(): Coordinate {
-        return Coordinate(bx, by, bz)
-    }
+    override fun getStartVelocity() = Coordinate(bx, by, bz)
 
-    override fun getEndVelocity(): Coordinate {
-        return Coordinate(bx, by, bz + 2 * az * duration)
-    }
+    override fun getEndVelocity() = Coordinate(bx, by, bz + 2 * az * duration)
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
-        var time = time
-        if (time !in startTime..endTime) {
-            return
+        if (time in startTime..endTime) {
+            val t = time - startTime
+            newPosition.setCoordinate(cx + bx * t, cy + by * t, cz + t * (bz + az * t))
         }
-        time -= startTime
-        newPosition.setCoordinate(cx + bx * time, cy + by * time, cz + time * (bz + az * time))
     }
 
     override fun getMax2(time1: Double, time2: Double): Coordinate {
