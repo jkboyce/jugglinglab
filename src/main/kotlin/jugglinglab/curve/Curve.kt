@@ -68,7 +68,7 @@ abstract class Curve {
         get() = times[numpoints - 1]
 
     @Suppress("unused")
-    protected val duration: Double
+    val duration: Double
         get() = (times[numpoints - 1] - times[0])
 
     // Calculated curve coordinate at time `time`
@@ -91,32 +91,28 @@ abstract class Curve {
     // Path max/min over [time1, time2], but clipped to `null` when the time is
     // out of range
     fun getMax(time1: Double, time2: Double): Coordinate? {
-        if (time2 < this.startTime || time1 > this.endTime) {
-            return null
+        return when {
+            time2 < this.startTime || time1 > this.endTime -> null
+            else -> getMax2(time1, time2)
         }
-        return getMax2(time1, time2)
     }
-
     fun getMin(time1: Double, time2: Double): Coordinate? {
-        if (time2 < this.startTime || time1 > this.endTime) {
-            return null
+        return when {
+            time2 < this.startTime || time1 > this.endTime -> null
+            else -> getMin2(time1, time2)
         }
-        return getMin2(time1, time2)
     }
 
     // Utility for getMax2/getMin2
     protected fun check(result: Coordinate?, t: Double, findmax: Boolean): Coordinate {
-        val loc = Coordinate(0.0, 0.0, 0.0)
+        val loc = Coordinate()
         getCoordinate(t, loc)
 
-        val res = if (result == null) {
-            loc
-        } else if (findmax) {
-            Coordinate.max(result, loc)
-        } else {
-            Coordinate.min(result, loc)
+        return when {
+            result == null -> loc
+            findmax -> Coordinate.max(result, loc)!!
+            else -> Coordinate.min(result, loc)!!
         }
-        return res!!
     }
 
     companion object {

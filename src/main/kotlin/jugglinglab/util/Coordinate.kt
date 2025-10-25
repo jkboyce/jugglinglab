@@ -24,7 +24,7 @@ data class Coordinate @JvmOverloads constructor(
         this.z = z
     }
 
-    fun get(index: Int): Double {
+    operator fun get(index: Int): Double {
         return when (index) {
             0 -> x
             1 -> y
@@ -33,7 +33,7 @@ data class Coordinate @JvmOverloads constructor(
         }
     }
 
-    fun set(index: Int, value: Double) {
+    operator fun set(index: Int, value: Double) {
         when (index) {
             0 -> x = value
             1 -> y = value
@@ -85,31 +85,32 @@ data class Coordinate @JvmOverloads constructor(
             )
         }
 
-        fun add(coord1: Coordinate, coord2: Coordinate): Coordinate {
-            return Coordinate(coord1.x + coord2.x, coord1.y + coord2.y, coord1.z + coord2.z)
+        fun add(coord1: Coordinate?, coord2: Coordinate?): Coordinate? {
+            return when {
+                coord1 == null -> coord2
+                coord2 == null -> coord1
+                else -> Coordinate(coord1.x + coord2.x, coord1.y + coord2.y, coord1.z + coord2.z)
+            }
         }
 
-        fun sub(coord1: Coordinate, coord2: Coordinate): Coordinate {
-            return Coordinate(coord1.x - coord2.x, coord1.y - coord2.y, coord1.z - coord2.z)
+        fun sub(coord1: Coordinate?, coord2: Coordinate?): Coordinate? {
+            return when {
+                coord1 == null -> coord2
+                coord2 == null -> coord1
+                else -> Coordinate(coord1.x - coord2.x, coord1.y - coord2.y, coord1.z - coord2.z)
+            }
         }
 
         fun truncate(coord: Coordinate, epsilon: Double): Coordinate {
-            val result: Coordinate = coord.copy()
-
-            if (abs(result.x) < epsilon) {
-                result.x = 0.0
-            }
-            if (abs(result.y) < epsilon) {
-                result.y = 0.0
-            }
-            if (abs(result.z) < epsilon) {
-                result.z = 0.0
-            }
+            val result = coord.copy()
+            if (abs(result.x) < epsilon) result.x = 0.0
+            if (abs(result.y) < epsilon) result.y = 0.0
+            if (abs(result.z) < epsilon) result.z = 0.0
             return result
         }
 
         fun distance(coord1: Coordinate, coord2: Coordinate): Double {
-            val dc: Coordinate = sub(coord1, coord2)
+            val dc = sub(coord1, coord2)!!
             return sqrt(dc.x * dc.x + dc.y * dc.y + dc.z * dc.z)
         }
     }

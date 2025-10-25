@@ -40,7 +40,7 @@ class LineCurve : Curve() {
 
         for (i in 0..2) {
             for (j in 0..<(n + 1)) {
-                x[j] = positions[j].get(i)
+                x[j] = positions[j][i]
             }
 
             // now solve for line coefficients
@@ -52,26 +52,18 @@ class LineCurve : Curve() {
     }
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
-        var time = time
-        if (time < times[0] || time > times[n]) {
-            return
-        }
+        if (time !in times[0]..times[n]) return
 
-        var i: Int
-        i = 0
+        var i = 0
         while (i < n) {
-            if (time <= times[i + 1]) {
-                break
-            }
-            i++
+            if (time <= times[i + 1]) break
+            ++i
         }
-        if (i == n) {
-            i = n - 1
-        }
+        i = min(i, n - 1)
 
-        time -= times[i]
+        val t = time - times[i]
         newPosition.setCoordinate(
-            a[i][0] + time * b[i][0], a[i][1] + time * b[i][1], a[i][2] + time * b[i][2]
+            a[i][0] + t * b[i][0], a[i][1] + t * b[i][1], a[i][2] + t * b[i][2]
         )
     }
 
@@ -99,12 +91,11 @@ class LineCurve : Curve() {
                 }
             }
         }
-
         return result
     }
 
     override fun getMin2(time1: Double, time2: Double): Coordinate? {
-        if ((time2 < times[0]) || (time1 > times[n])) {
+        if (time2 < times[0] || time1 > times[n]) {
             return null
         }
 
@@ -127,7 +118,6 @@ class LineCurve : Curve() {
                 }
             }
         }
-
         return result
     }
 }

@@ -66,13 +66,7 @@ class SplineCurve : Curve() {
         }
 
         // copy the velocity array so we can modify it
-        val vel = arrayOfNulls<Coordinate>(n + 1)
-        for (i in 0..<n + 1) {
-            vel[i] = (if (velocities[i] == null)
-                null
-            else
-                Coordinate(velocities[i]!!.x, velocities[i]!!.y, velocities[i]!!.z))
-        }
+        val vel = velocities.map { it?.copy() }.toTypedArray()
 
         if (vel[0] != null && vel[n] != null) {
             findvelsEdgesKnown(n, durations, positions, vel)
@@ -85,10 +79,10 @@ class SplineCurve : Curve() {
             val t = durations[i]
 
             for (j in 0..2) {
-                val xi0 = positions[i].get(j)
-                val xi1 = positions[i + 1].get(j)
-                val vi0 = vel[i]!!.get(j)
-                val vi1 = vel[i + 1]!!.get(j)
+                val xi0 = positions[i][j]
+                val xi1 = positions[i + 1][j]
+                val vi0 = vel[i]!![j]
+                val vi1 = vel[i + 1]!![j]
 
                 a[i][j] = xi0
                 b[i][j] = vi0
@@ -100,27 +94,20 @@ class SplineCurve : Curve() {
     }
 
     override fun getCoordinate(time: Double, newPosition: Coordinate) {
-        var time = time
-        if (time < times[0] || time > times[n]) {
-            return
-        }
+        if (time !in times[0]..times[n]) return
 
         var i = 0
         while (i < n) {
-            if (time <= times[i + 1]) {
-                break
-            }
+            if (time <= times[i + 1]) break
             ++i
         }
-        if (i == n) {
-            i = n - 1
-        }
+        i = min(i, n - 1)
 
-        time -= times[i]
+        val t = time - times[i]
         newPosition.setCoordinate(
-            a[i][0] + time * (b[i][0] + time * (c[i][0] + time * d[i][0])),
-            a[i][1] + time * (b[i][1] + time * (c[i][1] + time * d[i][1])),
-            a[i][2] + time * (b[i][2] + time * (c[i][2] + time * d[i][2]))
+            a[i][0] + t * (b[i][0] + t * (c[i][0] + t * d[i][0])),
+            a[i][1] + t * (b[i][1] + t * (c[i][1] + t * d[i][1])),
+            a[i][2] + t * (b[i][2] + t * (c[i][2] + t * d[i][2]))
         )
     }
 
@@ -151,14 +138,13 @@ class SplineCurve : Curve() {
                             val k = c[i][index] * c[i][index] - 3 * b[i][index] * d[i][index]
                             if (k > 0) {
                                 val te = times[i] + (-c[i][index] - sqrt(k)) / (3 * d[i][index])
-                                if (tlowtemp < te && te < thightemp) {
+                                if (te in tlowtemp..thightemp) {
                                     result = check(result, te, true)
                                 }
                             }
                         } else if (c[i][index] < 0) {
-                            var te = -b[i][index] / (2 * c[i][index])
-                            te += times[i]
-                            if (tlowtemp < te && te < thightemp) {
+                            val te = times[i] - b[i][index] / (2 * c[i][index])
+                            if (te in tlowtemp..thightemp) {
                                 result = check(result, te, true)
                             }
                         }
@@ -197,14 +183,13 @@ class SplineCurve : Curve() {
                             val k = c[i][index] * c[i][index] - 3 * b[i][index] * d[i][index]
                             if (k > 0) {
                                 val te = times[i] + (-c[i][index] + sqrt(k)) / (3 * d[i][index])
-                                if (tlowtemp < te && te < thightemp) {
+                                if (te in tlowtemp..thightemp) {
                                     result = check(result, te, false)
                                 }
                             }
                         } else if (c[i][index] > 0) {
-                            var te = -b[i][index] / (2 * c[i][index])
-                            te += times[i]
-                            if (tlowtemp < te && te < thightemp) {
+                            val te = times[i] - b[i][index] / (2 * c[i][index])
+                            if (te in tlowtemp..thightemp) {
                                 result = check(result, te, false)
                             }
                         }
@@ -256,14 +241,12 @@ class SplineCurve : Curve() {
             x: Array<Coordinate>,
             v: Array<Coordinate?>
         ) {
-            if (n < 2) {
-                return
-            }
+            if (n < 2) return
 
             var numcatches = 0
             for (i in 1..<n) {
                 if (v[i] != null) {
-                    numcatches++
+                    ++numcatches
                 }
             }
 
@@ -278,13 +261,13 @@ class SplineCurve : Curve() {
             val b = DoubleArray(dim)
 
             for (axis in 0..2) {
-                val v0 = v[0]!!.get(axis)
-                val vn = v[n]!!.get(axis)
+                val v0 = v[0]!![axis]
+                val vn = v[n]!![axis]
 
                 for (i in 0..<n - 1) {
-                    val xi0 = x[i].get(axis)
-                    val xi1 = x[i + 1].get(axis)
-                    val xi2 = x[i + 2].get(axis)
+                    val xi0 = x[i][axis]
+                    val xi1 = x[i + 1][axis]
+                    val xi2 = x[i + 2][axis]
                     val index = i + axis * (n - 1)
 
                     when (Constants.SPLINE_LAYOUT_METHOD) {
@@ -297,9 +280,8 @@ class SplineCurve : Curve() {
                                 m[index + 1][index] = offdiag1
                             }
 
-                            b[index] =
-                                3 * (xi2 - xi1) / (t[i + 1] * t[i + 1]) + 3 * (xi1 - xi0) /
-                                    (t[i] * t[i])
+                            b[index] = 3 * (xi2 - xi1) / (t[i + 1] * t[i + 1]) + 3 * (xi1 - xi0) /
+                                (t[i] * t[i])
                             if (i == 0) {
                                 b[index] -= v0 / t[0]
                             }
@@ -307,7 +289,6 @@ class SplineCurve : Curve() {
                                 b[index] -= vn / t[n - 1]
                             }
                         }
-
                         MINIMIZE_RMSVEL -> {
                             m[index][index] = 4 * (t[i] + t[i + 1])
                             val offdiag2 = (if (i == n - 2) 0.0 else -t[i + 1])
@@ -342,69 +323,56 @@ class SplineCurve : Curve() {
             var catchnum = 0
             while (i < n - 1) {
                 if (v[i + 1] == null) {
-                    i++
+                    ++i
                     continue
                 }
 
                 val index = 3 * (n - 1) + 2 * catchnum
-                val ci0 = v[i + 1]!!.get(0)  // components of catch velocity
-                val ci1 = v[i + 1]!!.get(1)
-                val ci2 = v[i + 1]!!.get(2)
+                val ci0 = v[i + 1]!![0]  // components of catch velocity
+                val ci1 = v[i + 1]!![1]
+                val ci2 = v[i + 1]!![2]
 
-                // System.out.println("catch velocity (i=" + (i+1) + ") = " + v[i+1]);
-                var largeaxis = 0
-                if (abs(ci1) >= max(abs(ci0), abs(ci2))) {
-                    largeaxis = 1
-                } else if (abs(ci2) >= max(abs(ci0), abs(ci1))) {
-                    largeaxis = 2
+                val largeaxis = when {
+                    abs(ci1) >= max(abs(ci0), abs(ci2)) -> 1
+                    abs(ci2) >= max(abs(ci0), abs(ci1)) -> 2
+                    else -> 0
                 }
 
                 when (largeaxis) {
                     0 -> {
                         m[index][i] = ci2
-                        m[i][index] = m[index][i]
-
+                        m[i][index] = ci2
                         m[index + 1][i] = ci1
-                        m[i][index + 1] = m[index + 1][i]
-
+                        m[i][index + 1] = ci1
                         m[index + 1][i + (n - 1)] = -ci0
-                        m[i + (n - 1)][index + 1] = m[index + 1][i + (n - 1)]
-
+                        m[i + (n - 1)][index + 1] = -ci0
                         m[index][i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1)][index] = m[index][i + 2 * (n - 1)]
+                        m[i + 2 * (n - 1)][index] = -ci0
                     }
-
                     1 -> {
                         m[index + 1][i] = ci1
-                        m[i][index + 1] = m[index + 1][i]
-
+                        m[i][index + 1] = ci1
                         m[index][i + (n - 1)] = ci2
-                        m[i + (n - 1)][index] = m[index][i + (n - 1)]
-
+                        m[i + (n - 1)][index] = ci2
                         m[index + 1][i + (n - 1)] = -ci0
-                        m[i + (n - 1)][index + 1] = m[index + 1][i + (n - 1)]
-
+                        m[i + (n - 1)][index + 1] = -ci0
                         m[index][i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1)][index] = m[index][i + 2 * (n - 1)]
+                        m[i + 2 * (n - 1)][index] = -ci1
                     }
-
                     2 -> {
                         m[index + 1][i] = ci2
-                        m[i][index + 1] = m[index + 1][i]
-
+                        m[i][index + 1] = ci2
                         m[index][i + (n - 1)] = ci2
-                        m[i + (n - 1)][index] = m[index][i + (n - 1)]
-
+                        m[i + (n - 1)][index] = ci2
                         m[index][i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1)][index] = m[index][i + 2 * (n - 1)]
-
+                        m[i + 2 * (n - 1)][index] = -ci1
                         m[index + 1][i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1)][index + 1] = m[index + 1][i + 2 * (n - 1)]
+                        m[i + 2 * (n - 1)][index + 1] = -ci0
                     }
                 }
 
-                catchnum++
-                i++
+                ++catchnum
+                ++i
             }
 
             try {
@@ -446,9 +414,7 @@ class SplineCurve : Curve() {
             x: Array<Coordinate>,
             v: Array<Coordinate?>
         ) {
-            if (n < 1) {
-                return
-            }
+            if (n < 1) return
 
             val Adiag = DoubleArray(n)  // v[0]...v[n-1]
             val Aoffd = DoubleArray(n)  // A is symmetric
@@ -456,18 +422,18 @@ class SplineCurve : Curve() {
             val b = DoubleArray(n)
 
             for (i in 0..<n) {
-                v[i] = Coordinate(0.0, 0.0, 0.0)
+                v[i] = Coordinate()
             }
 
             // Here we can solve each axis independently, and combine the results
             for (axis in 0..2) {
-                val xn0 = x[n].get(axis)
-                val xnm1 = x[n - 1].get(axis)
+                val xn0 = x[n][axis]
+                val xnm1 = x[n - 1][axis]
 
                 for (i in 0..<n) {
-                    val xi0 = x[i].get(axis)
-                    val xi1 = x[i + 1].get(axis)
-                    val xim1 = if (i == 0) 0.0 else x[i - 1].get(axis)
+                    val xi0 = x[i][axis]
+                    val xi1 = x[i + 1][axis]
+                    val xim1 = if (i == 0) 0.0 else x[i - 1][axis]
 
                     when (Constants.SPLINE_LAYOUT_METHOD) {
                         MINIMIZE_RMSACCEL, CONTINUOUS_ACCEL -> {
@@ -501,10 +467,7 @@ class SplineCurve : Curve() {
                 // System.out.println("\nBeginning solution.  RHS:");
                 // for (int i = 0; i < n; i++)
                 //     System.out.println("  b["+i+"] = "+b[i]);
-                val vel = DoubleArray(n)
-                for (i in 0..<n) {
-                    vel[i] = v[i]!!.get(axis)
-                }
+                val vel = DoubleArray(n) { v[it]!![axis] }
 
                 // Woodbury's formula: First solve the problem ignoring A's nonzero corners
                 tridag(Aoffd, Adiag, Aoffd, b, vel, n)
@@ -545,7 +508,7 @@ class SplineCurve : Curve() {
                 }
 
                 for (i in 0..<n) {
-                    v[i]!!.set(axis, vel[i])
+                    v[i]!![axis] = vel[i]
                 }
 
                 /*
@@ -566,7 +529,7 @@ class SplineCurve : Curve() {
                 */
             }
 
-            v[n] = Coordinate(v[0]!!.x, v[0]!!.y, v[0]!!.z)  // v[n] = v[0]
+            v[n] = v[0]?.copy()  // v[n] = v[0]
         }
 
         // The following method is adapted from Numerical Recipes. It solves the
