@@ -1873,8 +1873,16 @@ public class JMLPattern {
     for (int i = 0; i < pathlinks.get(path - 1).size(); i++) {
       PathLink pl = pathlinks.get(path - 1).get(i);
       if (pl.isInHand()) {
+        if (Constants.DEBUG_LAYOUT) {
+          System.out.println("Path min " + path + " link " + i + ": HandMin = " +
+              getHandMin(pl.getHoldingJuggler(), pl.getHoldingHand()));
+        }
         result = Coordinate.Companion.min(result, getHandMin(pl.getHoldingJuggler(), pl.getHoldingHand()));
       } else {
+        if (Constants.DEBUG_LAYOUT) {
+          System.out.println("Path min " + path + " link " + ": PathMin = " +
+              pl.getPath().getMin(t1, t2));
+        }
         result = Coordinate.Companion.min(result, pl.getPath().getMin(t1, t2));
       }
     }
@@ -1891,6 +1899,9 @@ public class JMLPattern {
       HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
       Curve hp = hl.getHandCurve();
       if (hp != null) {
+        if (Constants.DEBUG_LAYOUT) {
+          System.out.println("getHandMax(" + juggler + "," + hand + ") = " + hp.getMin(t1, t2));
+        }
         result = Coordinate.Companion.max(result, hp.getMax(t1, t2));
       }
     }
@@ -1907,7 +1918,10 @@ public class JMLPattern {
       HandLink hl = handlinks.get(juggler - 1).get(handnum).get(i);
       Curve hp = hl.getHandCurve();
       if (hp != null) {
-        result = Coordinate.Companion.max(result, hp.getMin(t1, t2));
+        if (Constants.DEBUG_LAYOUT) {
+          System.out.println("getHandMin(" + juggler + "," + hand + ") = " + hp.getMin(t1, t2));
+        }
+        result = Coordinate.Companion.min(result, hp.getMin(t1, t2));
       }
     }
     return result;
