@@ -333,7 +333,7 @@ public class PatternListPanel extends JPanel {
           pl.addLine(row, display, null, null, null, null, null);
 
           if (row < 0) {
-            list.setSelectedIndex(pl.size() - 1);
+            list.setSelectedIndex(pl.getSize() - 1);
           } else {
             list.setSelectedIndex(row);
           }

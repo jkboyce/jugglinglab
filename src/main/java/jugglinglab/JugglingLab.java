@@ -512,7 +512,7 @@ public class JugglingLab {
           continue;
         }
 
-        for (int i = 0; i < pl.size(); ++i) {
+        for (int i = 0; i < pl.getSize(); ++i) {
           // Verify pattern and animprefs for each line
           try {
             JMLPattern pat = pl.getPatternForLine(i);
