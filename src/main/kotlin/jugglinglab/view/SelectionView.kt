@@ -214,7 +214,7 @@ class SelectionView(dim: Dimension) : View() {
         setAnimationPanelPreferredSize(animationPrefs.size)
 
         if (p != null) {
-            patternWindow?.setTitle(p.getTitle())
+            patternWindow?.setTitle(p.title)
         }
     }
 

@@ -41,7 +41,7 @@ abstract class View : JPanel() {
 
     val hashCode: Int
         get() {
-            return pattern?.getHashCode() ?: 0
+            return pattern?.hashCode ?: 0
         }
 
     //--------------------------------------------------------------------------

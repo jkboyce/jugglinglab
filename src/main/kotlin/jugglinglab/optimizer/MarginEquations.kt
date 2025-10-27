@@ -70,7 +70,7 @@ class MarginEquations() {
         if (pat.numberOfJugglers > 1) {
             throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_passing"))
         }
-        if (pat.isBouncePattern()) {
+        if (pat.isBouncePattern) {
             throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_bouncing"))
         }
 
@@ -162,7 +162,7 @@ class MarginEquations() {
         // calculation below
         var propradius = 0.0
         for (i in 0..<pat.numberOfProps) {
-            val thisprop = 0.5 * pat.getProp(i + 1).getWidth()
+            val thisprop = 0.5 * pat.getProp(i + 1)!!.getWidth()
             if (thisprop > propradius) {
                 propradius = thisprop
             }
@@ -171,13 +171,13 @@ class MarginEquations() {
             println("   propradius = $propradius")
         }
 
-        // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting on
-        // master events. Put them into a linear array for convenience
+        // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting
+        // on master events. Put them into a linear array for convenience.
         var masterplNum = 0
         val masterpl: MutableList<PathLink> = ArrayList<PathLink>()
         for (pathlink in pathlinks) {
-            for (pl in pathlink) {
-                if (!pl!!.isInHand && pl.startEvent.isMaster) {
+            for (pl in pathlink!!) {
+                if (!pl.isInHand && pl.startEvent.isMaster) {
                     ++masterplNum
                     masterpl.add(pl)
                 }

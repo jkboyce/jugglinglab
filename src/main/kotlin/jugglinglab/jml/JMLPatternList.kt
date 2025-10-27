@@ -137,12 +137,12 @@ class JMLPatternList() {
 
         val pat: JMLPattern?
         if (rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-            pat = JMLPattern(rec.patnode, loadingversion)
+            pat = JMLPattern(rec.patnode!!, loadingversion)
         } else if (rec.anim != null) {
             pat = JMLPattern.fromBasePattern(rec.notation, rec.anim)
 
             if (rec.info != null) {
-                pat.setInfo(rec.info)
+                pat.info = rec.info
             }
             if (rec.tags != null) {
                 for (tag in rec.tags) {

@@ -34,7 +34,7 @@ class SimpleView(dim: Dimension?) : View() {
         ja.restartJuggle(p, c)
         setAnimationPanelPreferredSize(animationPrefs.size)
         if (p != null) {
-            patternWindow?.setTitle(p.getTitle())
+            patternWindow?.setTitle(p.title)
         }
     }
 

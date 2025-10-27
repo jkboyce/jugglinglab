@@ -251,7 +251,7 @@ class Renderer2D : Renderer() {
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pat.getProp(pnum[i - 1])
-            if (pr.getProp2DImage(zoom, cameraangle) != null) {
+            if (pr!!.getProp2DImage(zoom, cameraangle) != null) {
                 val center = pr.getProp2DCenter(zoom)
                 val size = pr.getProp2DSize(zoom)
                 obj[index].boundingbox.x = x - center!!.width
@@ -510,7 +510,7 @@ class Renderer2D : Renderer() {
                     val pr = pat.getProp(pnum[ob.number - 1])
                     val x = ob.coord[0].x.roundToInt()
                     val y = ob.coord[0].y.roundToInt()
-                    val propimage = pr.getProp2DImage(zoom, cameraangle)
+                    val propimage = pr!!.getProp2DImage(zoom, cameraangle)
                     if (propimage != null) {
                         val grip = pr.getProp2DGrip(zoom)
                         g.drawImage(propimage, x - grip!!.width, y - grip.height, null)
@@ -613,7 +613,7 @@ class Renderer2D : Renderer() {
                     Juggler.SHOULDER_H + Juggler.NECK_H + Juggler.HEAD_H
                 )
             )
-            return max
+            return max!!
         }
 
      override val jugglerWindowMin: Coordinate
@@ -627,7 +627,7 @@ class Renderer2D : Renderer() {
                 min,
                 Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0.0)
             )
-            return min
+            return min!!
         }
 
     //--------------------------------------------------------------------------

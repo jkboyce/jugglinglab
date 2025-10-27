@@ -107,7 +107,7 @@ class EditView(dim: Dimension?, pat: JMLPattern?) : View() {
             ladder.validate() // to make ladder redraw
         }
 
-        patternWindow?.setTitle(p.getTitle())
+        patternWindow?.setTitle(p.title)
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

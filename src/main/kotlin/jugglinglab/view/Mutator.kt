@@ -154,9 +154,9 @@ class Mutator {
         }
         val tmax =
             (if (evNext == null)
-                pat.getLoopEndTime()
+                pat.loopEndTime
             else
-                min(pat.getLoopEndTime(), evNext.t) - MUTATION_MIN_EVENT_DELTA_SEC)
+                min(pat.loopEndTime, evNext.t) - MUTATION_MIN_EVENT_DELTA_SEC)
 
         if (tmax <= tmin) {
             return null

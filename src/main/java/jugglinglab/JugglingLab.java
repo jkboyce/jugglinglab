@@ -586,8 +586,6 @@ public class JugglingLab {
             System.out.println("Error: File is not valid JML");
             break;
         }
-      } catch (JuggleExceptionUser jeu) {
-        System.out.println("Error parsing JML: " + jeu.getMessage());
       } catch (SAXException se) {
         System.out.println("Error: Formatting error in JML file");
       } catch (IOException ioe) {

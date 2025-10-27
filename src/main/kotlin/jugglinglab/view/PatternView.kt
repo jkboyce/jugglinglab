@@ -168,12 +168,12 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
             rbJml.setSelected(true)
         } else {
             rbBp.setEnabled(true)
-            bpEditedIcon?.isVisible = pat.isBasePatternEdited()
+            bpEditedIcon?.isVisible = pat.isBasePatternEdited
             rbJml.setEnabled(true)
         }
 
         if (rbBp.isSelected) {
-            compile.setEnabled(pat != null && (pat.isBasePatternEdited() || textEdited))
+            compile.setEnabled(pat != null && (pat.isBasePatternEdited || textEdited))
             revert.setEnabled(textEdited)
         } else if (rbJml.isSelected) {
             compile.setEnabled(textEdited)
@@ -185,7 +185,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
     // that was there.
     private fun reloadTextArea() {
         if (rbBp.isSelected) {
-            ta.text = pattern!!.basePatternConfig.replace(";", ";\n")
+            ta.text = pattern!!.basePatternConfig!!.replace(";", ";\n")
         } else if (rbJml.isSelected) {
             ta.text = pattern.toString()
         }
@@ -256,7 +256,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
 
             updateButtons()
             reloadTextArea()
-            patternWindow?.setTitle(p.getTitle())
+            patternWindow?.setTitle(p.title)
         }
     }
 
