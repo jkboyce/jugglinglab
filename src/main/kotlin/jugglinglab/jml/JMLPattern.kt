@@ -19,9 +19,11 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("KotlinConstantConditions", "SimplifyBooleanWithConstants")
+
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab
+import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.core.Constants
 import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
@@ -41,50 +43,25 @@ import jugglinglab.util.Permutation.Companion.lcm
 import org.xml.sax.SAXException
 import java.io.*
 import java.text.MessageFormat
-import java.util.*
-import kotlin.Any
-import kotlin.Array
-import kotlin.Boolean
-import kotlin.BooleanArray
-import kotlin.Double
-import kotlin.DoubleArray
-import kotlin.Exception
-import kotlin.Int
-import kotlin.IntArray
-import kotlin.NumberFormatException
-import kotlin.Suppress
-import kotlin.Throws
-import kotlin.arrayOf
-import kotlin.arrayOfNulls
-import kotlin.collections.ArrayList
-import kotlin.collections.MutableCollection
-import kotlin.collections.dropLastWhile
-import kotlin.collections.indices
-import kotlin.collections.toTypedArray
+import java.util.Locale
+import java.util.StringTokenizer
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.run
-import kotlin.text.equals
-import kotlin.text.isEmpty
-import kotlin.text.replace
-import kotlin.text.split
-import kotlin.text.toInt
-import kotlin.text.toRegex
-import kotlin.text.trim
+import kotlin.math.max
 
 class JMLPattern() {
-    protected var version: String = JMLDefs.CURRENT_JML_VERSION
+    private var version: String = JMLDefs.CURRENT_JML_VERSION
     var info: String? = null
         set(t) {
             field = if (t != null && !t.trim().isBlank()) t.trim() else null
         }
 
     var tags: ArrayList<String>
-        protected set
-    protected var numjugglers: Int = 0
-    protected var numpaths: Int = 0
-    protected var props: ArrayList<PropDef>
-    protected var propassignment: IntArray? = null
+        private set
+    private var numjugglers: Int = 0
+    private var numpaths: Int = 0
+    private var props: ArrayList<PropDef>
+    private var propassignment: IntArray? = null
 
     //--------------------------------------------------------------------------
     // Methods related to the base pattern (if set)
@@ -94,33 +71,33 @@ class JMLPattern() {
         private set
     var basePatternConfig: String? = null
         private set
-    protected var base_pattern_hashcode: Int = 0
-    protected var base_pattern_hashcode_valid: Boolean = false
+    private var basePatternHashcode: Int = 0
+    private var basePatternHashcodeValid: Boolean = false
 
     // whether pattern has a velocity-defining transition
     private lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
     private lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
 
-    protected var symmetries: java.util.ArrayList<JMLSymmetry>
+    private var symmetries: ArrayList<JMLSymmetry>
     var eventList: JMLEvent? = null
-        protected set
+        private set
     var positionList: JMLPosition? = null
-        protected set
+        private set
 
     // list of PathLink objects for each path
-    protected var pathlinks: java.util.ArrayList<java.util.ArrayList<PathLink>?>? = null
+    private var pathlinks: ArrayList<ArrayList<PathLink>>? = null
 
     // list of HandLink objects for each juggler/hand combination
-    protected var handlinks: java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<HandLink>?>?>? =
+    private var handlinks: java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<HandLink>?>?>? =
         null
 
-    protected lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
-    protected lateinit var jugglerangle: Array<Curve?> // angles for each juggler
+    private lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
+    private lateinit var jugglerangle: Array<Curve?> // angles for each juggler
 
-    protected var loadingversion: String? = JMLDefs.CURRENT_JML_VERSION
-    protected var laidout: Boolean = false
+    private var loadingversion: String? = JMLDefs.CURRENT_JML_VERSION
+    private var laidout: Boolean = false
     var isValid: Boolean = true
-        protected set
+        private set
 
     var title: String? = null
         set(title) {
@@ -141,11 +118,11 @@ class JMLPattern() {
                 if (pl.getParameter("pattern") == title) {
                     pl.removeParameter("title")
                 } else {
-                    pl.addParameter("title", if (title == null) "" else title)
+                    pl.addParameter("title", title ?: "")
                 }
 
                 basePatternConfig = pl.toString()
-                base_pattern_hashcode_valid = false // recalculate hash code
+                basePatternHashcodeValid = false // recalculate hash code
             } catch (jeu: JuggleExceptionUser) {
                 // can't be a user error since base pattern has already successfully
                 // compiled
@@ -159,13 +136,16 @@ class JMLPattern() {
         symmetries = ArrayList<JMLSymmetry>()
     }
 
+    //--------------------------------------------------------------------------
+    // Alternate constructors
+    //--------------------------------------------------------------------------
+
     constructor(root: JMLNode) : this() {
         readJML(root)
         isValid = true
     }
 
     // Used to specify the jml version number, when pattern is part of a patternlist
-
     constructor(root: JMLNode, jmlvers: String) : this() {
         loadingversion = jmlvers
         readJML(root)
@@ -177,7 +157,7 @@ class JMLPattern() {
             val parser = JMLParser()
             parser.parse(read)
             readJML(parser.tree!!)
-            this.isValid = true
+            isValid = true
         } catch (se: SAXException) {
             throw JuggleExceptionUser(se.message)
         } catch (ioe: IOException) {
@@ -197,18 +177,19 @@ class JMLPattern() {
         }
     }
 
+    @Suppress("unused")
     fun removeTag(tag: String?): Boolean {
         if (tag == null || !isTaggedWith(tag)) {
             return false
         }
 
         for (i in tags.indices) {
-            if (tags.get(i).equals(tag, ignoreCase = true)) {
+            if (tags[i].equals(tag, ignoreCase = true)) {
                 tags.removeAt(i)
                 return true
             }
         }
-        return false // shouldn't happen
+        return false  // shouldn't happen
     }
 
     fun addProp(pd: PropDef?) {
@@ -257,10 +238,10 @@ class JMLPattern() {
 
         var current = this.eventList
         while (true) {
-            val combine_events =
+            val combineEvents =
                 current!!.t == ev.t && current.hand == ev.hand && current.juggler == ev.juggler
 
-            if (combine_events) {
+            if (combineEvents) {
                 // replace `current` with `ev` in the list...
                 ev.previous = current.previous
                 ev.next = current.next
@@ -275,18 +256,18 @@ class JMLPattern() {
 
                 // ...then move all the transitions from `current` to `ev`, except
                 // those for a path number that already has a transition in `ev`.
-                for (tr_current in current.transitions) {
-                    var add_transition = true
+                for (trCurrent in current.transitions) {
+                    var addTransition = true
 
                     for (tr in ev.transitions) {
-                        if (tr.path == tr_current.path) {
-                            add_transition = false
+                        if (tr.path == trCurrent.path) {
+                            addTransition = false
                             break
                         }
                     }
 
-                    if (add_transition) {
-                        ev.addTransition(tr_current)
+                    if (addTransition) {
+                        ev.addTransition(trCurrent)
                     }
                 }
                 return
@@ -347,8 +328,10 @@ class JMLPattern() {
         return null
     }
 
-    // used for debugging
-    protected fun printEventList() {
+    // Useful for debugging.
+
+    @Suppress("unused")
+    private fun printEventList() {
         var current = this.eventList
         val pw = PrintWriter(System.out)
         while (current != null) {
@@ -367,7 +350,7 @@ class JMLPattern() {
         }
     }
 
-    val pathLinks: ArrayList<ArrayList<PathLink>?>
+    val pathLinks: ArrayList<ArrayList<PathLink>>
         get() = pathlinks!!
 
     fun addPosition(pos: JMLPosition) {
@@ -431,8 +414,8 @@ class JMLPattern() {
             try {
                 // Omit <info> tag metadata for the purposes of evaluating hash code.
                 // Two patterns that differ only by metadata are treated as identical.
-                writeJML(sw, true, false)
-            } catch (ioe: IOException) {
+                writeJML(sw, writeTitle = true, writeInfo = false)
+            } catch (_: IOException) {
             }
 
             return sw.toString().hashCode()
@@ -448,20 +431,20 @@ class JMLPattern() {
                 return false
             }
 
-            if (!base_pattern_hashcode_valid) {
+            if (!basePatternHashcodeValid) {
                 try {
-                    base_pattern_hashcode =
+                    basePatternHashcode =
                         fromBasePattern(this.basePatternNotation, this.basePatternConfig)
                             .layoutPattern().hashCode
-                    base_pattern_hashcode_valid = true
-                } catch (je: JuggleException) {
-                    base_pattern_hashcode = 0
-                    base_pattern_hashcode_valid = false
+                    basePatternHashcodeValid = true
+                } catch (_: JuggleException) {
+                    basePatternHashcode = 0
+                    basePatternHashcodeValid = false
                     return false
                 }
             }
 
-            return (this.hashCode != base_pattern_hashcode)
+            return (this.hashCode != basePatternHashcode)
         }
 
     //----------------------------------------------------------------------------
@@ -499,28 +482,28 @@ class JMLPattern() {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun scaleTimeToFitThrows(multiplier: Double): Double {
         layoutPattern() // to ensure we have PathLinks
-        var scale_factor = 1.0
+        var scaleFactor = 1.0
 
-        for (path in 1..this.numberOfPaths) {
-            for (pl in this.pathLinks.get(path - 1)!!) {
+        for (path in 1..numberOfPaths) {
+            for (pl in pathLinks[path - 1]) {
                 val p = pl.path
                 if (p != null) {
                     val d = p.duration
                     val dmin = p.minDuration
 
                     if (d < dmin && d > 0) {
-                        scale_factor = kotlin.math.max(scale_factor, dmin / d)
+                        scaleFactor = max(scaleFactor, dmin / d)
                     }
                 }
             }
         }
 
-        if (scale_factor > 1) {
-            scale_factor *= multiplier // so things aren't just barely feasible
-            scaleTime(scale_factor)
+        if (scaleFactor > 1) {
+            scaleFactor *= multiplier // so things aren't just barely feasible
+            scaleTime(scaleFactor)
         }
 
-        return scale_factor
+        return scaleFactor
     }
 
     // Swap the assignment of hands, leaving events in the same locations.
@@ -530,10 +513,10 @@ class JMLPattern() {
             var hand = ev.hand
 
             // flip hand assignment, invert x coordinate
-            if (hand == HandLink.LEFT_HAND) {
-                hand = HandLink.RIGHT_HAND
+            hand = if (hand == HandLink.LEFT_HAND) {
+                HandLink.RIGHT_HAND
             } else {
-                hand = HandLink.LEFT_HAND
+                HandLink.LEFT_HAND
             }
 
             ev.setHand(ev.juggler, hand)
@@ -551,10 +534,10 @@ class JMLPattern() {
             val c = ev.localCoordinate
 
             // flip hand assignment, invert x coordinate
-            if (hand == HandLink.LEFT_HAND) {
-                hand = HandLink.RIGHT_HAND
+            hand = if (hand == HandLink.LEFT_HAND) {
+                HandLink.RIGHT_HAND
             } else {
-                hand = HandLink.LEFT_HAND
+                HandLink.LEFT_HAND
             }
 
             c.x = -c.x
@@ -628,8 +611,8 @@ class JMLPattern() {
             //     - find corresponding throw-type JMLTransition in startevent
             //     - find corresponding catch-type JMLTransition in endevent
             //     - swap {type, throw type, throw mod} for the two transitions
-            for (path in 1..this.numberOfPaths) {
-                for (pl in this.pathLinks.get(path - 1)!!) {
+            for (path in 1..numberOfPaths) {
+                for (pl in pathLinks[path - 1]) {
                     if (pl.isInHand) {
                         continue
                     }
@@ -637,42 +620,42 @@ class JMLPattern() {
                     val start = pl.startEvent
                     val end = pl.endEvent
 
-                    var start_tr: JMLTransition? = null
+                    var startTr: JMLTransition? = null
                     for (tr in start.transitions) {
                         if (tr.path == path) {
-                            start_tr = tr
+                            startTr = tr
                             break
                         }
                     }
 
-                    var end_tr: JMLTransition? = null
+                    var endTr: JMLTransition? = null
                     for (tr in end.transitions) {
                         if (tr.path == path) {
-                            end_tr = tr
+                            endTr = tr
                             break
                         }
                     }
 
-                    if (start_tr == null || end_tr == null) {
+                    if (startTr == null || endTr == null) {
                         throw JuggleExceptionInternal("invertTime() error 1", this)
                     }
-                    if (start_tr.outgoingPathLink != pl) {
+                    if (startTr.outgoingPathLink != pl) {
                         throw JuggleExceptionInternal("invertTime() error 2", this)
                     }
-                    if (end_tr.incomingPathLink != pl) {
+                    if (endTr.incomingPathLink != pl) {
                         throw JuggleExceptionInternal("invertTime() error 3", this)
                     }
 
-                    val start_tr_type = start_tr.getType()
-                    val start_tr_throw_type = start_tr.throwType
-                    val start_tr_throw_mod = start_tr.mod
+                    val startTrType = startTr.getType()
+                    val startTrThrowType = startTr.throwType
+                    val startTrThrowMod = startTr.mod
 
-                    start_tr.setType(end_tr.getType())
-                    start_tr.throwType = end_tr.throwType
-                    start_tr.mod = end_tr.mod
-                    end_tr.setType(start_tr_type)
-                    end_tr.throwType = start_tr_throw_type
-                    end_tr.mod = start_tr_throw_mod
+                    startTr.setType(endTr.getType())
+                    startTr.throwType = endTr.throwType
+                    startTr.mod = endTr.mod
+                    endTr.setType(startTrType)
+                    endTr.throwType = startTrThrowType
+                    endTr.mod = startTrThrowMod
 
                     // don't need to do surgery on PathLinks or Paths since those
                     // will be recalculated during pattern layout
@@ -703,9 +686,9 @@ class JMLPattern() {
     fun streamlinePatternWithWindow(twindow: Double) {
         layoutPattern() // to ensure we have PathLinks
 
-        var n_events = 0 // for reporting stats
-        var n_holds = 0
-        var n_removed = 0
+        var nEvents = 0 // for reporting stats
+        var nHolds = 0
+        var nRemoved = 0
 
         var ev = this.eventList
 
@@ -713,42 +696,42 @@ class JMLPattern() {
             val prev = ev.previousForHand
             val next = ev.nextForHand
 
-            var holding_only = true
+            var holdingOnly = true
             for (tr in ev.transitions) {
                 if (tr.getType() != JMLTransition.TRANS_HOLDING) {
-                    holding_only = false
+                    holdingOnly = false
                     break
                 }
             }
-            val different_masters = (prev == null || !ev.hasSameMasterAs(prev))
-            val inside_window = (prev != null && (ev.t - prev.t) < twindow)
-            val not_pass_adjacent =
+            val differentMasters = (prev == null || !ev.hasSameMasterAs(prev))
+            val insideWindow = (prev != null && (ev.t - prev.t) < twindow)
+            val notPassAdjacent =
                 (prev != null && next != null && !prev.hasPassingTransition() && !next.hasPassingTransition())
 
-            val remove = holding_only && different_masters && inside_window && not_pass_adjacent
+            val remove = holdingOnly && differentMasters && insideWindow && notPassAdjacent
 
             if (remove) {
                 removeEvent(ev)
-                n_removed++
+                nRemoved++
             }
 
-            n_events++
-            if (holding_only) {
-                n_holds++
+            nEvents++
+            if (holdingOnly) {
+                nHolds++
             }
 
             ev = ev.next
         }
 
         if (Constants.DEBUG_LAYOUT) {
-            println("Streamlined with time window " + twindow + " secs:")
+            println("Streamlined with time window $twindow secs:")
             println(
                 ("    Removed "
-                    + n_removed
+                    + nRemoved
                     + " of "
-                    + n_holds
+                    + nHolds
                     + " holding events ("
-                    + n_events
+                    + nEvents
                     + " events total)")
             )
         }
@@ -775,7 +758,7 @@ class JMLPattern() {
                 addProp(PropDef("ball", null))
             }
             for (i in 0..<this.numberOfProps) {
-                props.get(i).layoutProp()
+                props[i].layoutProp()
             }
 
             buildEventList()
@@ -786,24 +769,24 @@ class JMLPattern() {
             layoutHandPaths()
 
             if (Constants.DEBUG_LAYOUT) {
-                for (i in 0..<this.numberOfPaths) {
-                    println(pathlinks!!.get(i)!!.size.toString() + " pathlinks for path " + (i + 1) + ":")
-                    for (jtemp in pathlinks!!.get(i)!!.indices) {
-                        println("   " + pathlinks!!.get(i)!!.get(jtemp))
+                for (i in 0..<numberOfPaths) {
+                    println(pathlinks!![i].size.toString() + " pathlinks for path " + (i + 1) + ":")
+                    for (jtemp in pathlinks!![i].indices) {
+                        println("   " + pathlinks!![i][jtemp])
                     }
                 }
-                for (i in 0..<this.numberOfJugglers) {
+                for (i in 0..<numberOfJugglers) {
                     for (j in 0..1) {
                         println(
-                            (handlinks!!.get(i)!!.get(j)!!.size
+                            (handlinks!![i]!![j]!!.size
                                 .toString() + " handlinks for juggler "
                                 + (i + 1)
                                 + ", hand "
                                 + (j + 1)
                                 + ":")
                         )
-                        for (k in handlinks!!.get(i)!!.get(j)!!.indices) {
-                            println("   " + handlinks!!.get(i)!!.get(j)!!.get(k))
+                        for (k in handlinks!![i]!![j]!!.indices) {
+                            println("   " + handlinks!![i]!![j]!![k])
                         }
                     }
                 }
@@ -835,7 +818,7 @@ class JMLPattern() {
         var numevents = 0
         var current = this.eventList
         while (current != null) {
-            if (current.juggler < 1 || current.juggler > numjugglers) {
+            if (current.juggler !in 1..numjugglers) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_juggler_outofrange"))
             }
             if (current.isMaster) {
@@ -854,19 +837,19 @@ class JMLPattern() {
         }
 
         // arrays used for creating the event list
-        val needHandEvent = Array<BooleanArray?>(numjugglers) { BooleanArray(2) }
-        val needVDHandEvent = Array<BooleanArray?>(numjugglers) { BooleanArray(2) }
+        val needHandEvent = Array(numjugglers) { BooleanArray(2) }
+        val needVDHandEvent = Array(numjugglers) { BooleanArray(2) }
         val needPathEvent = BooleanArray(numpaths)
         val needSpecialPathEvent = BooleanArray(numpaths)
-        hasVDHandJMLTransition = Array<BooleanArray>(numjugglers) { BooleanArray(2) }
+        hasVDHandJMLTransition = Array(numjugglers) { BooleanArray(2) }
         hasVDPathJMLTransition = BooleanArray(numpaths)
 
         // make sure each hand and path are hit at least once
         for (i in 0..<numjugglers) {
             var hasJMLTransitionForLeft = false
             var hasJMLTransitionForRight = false
-            hasVDHandJMLTransition[i]!![1] = false
-            hasVDHandJMLTransition[i]!![0] = hasVDHandJMLTransition[i]!![1]
+            hasVDHandJMLTransition[i][1] = false
+            hasVDHandJMLTransition[i][0] = false
 
             for (j in 0..<numevents) {
                 if (!hasJMLTransitionForLeft) {
@@ -877,12 +860,12 @@ class JMLPattern() {
                     hasJMLTransitionForRight =
                         ei[j]!!.hasJMLTransitionForHand(i + 1, HandLink.RIGHT_HAND)
                 }
-                if (!hasVDHandJMLTransition[i]!![0]) {
-                    hasVDHandJMLTransition[i]!![0] =
+                if (!hasVDHandJMLTransition[i][0]) {
+                    hasVDHandJMLTransition[i][0] =
                         ei[j]!!.hasVDJMLTransitionForHand(i + 1, HandLink.LEFT_HAND)
                 }
-                if (!hasVDHandJMLTransition[i]!![1]) {
-                    hasVDHandJMLTransition[i]!![1] =
+                if (!hasVDHandJMLTransition[i][1]) {
+                    hasVDHandJMLTransition[i][1] =
                         ei[j]!!.hasVDJMLTransitionForHand(i + 1, HandLink.RIGHT_HAND)
                 }
             }
@@ -896,10 +879,10 @@ class JMLPattern() {
                 val arguments = arrayOf<Any?>(i + 1)
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             }
-            needVDHandEvent[i]!![0] = hasVDHandJMLTransition[i]!![0] // set up for later
-            needVDHandEvent[i]!![1] = hasVDHandJMLTransition[i]!![1]
-            needHandEvent[i]!![1] = true
-            needHandEvent[i]!![0] = needHandEvent[i]!![1]
+            needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0] // set up for later
+            needVDHandEvent[i][1] = hasVDHandJMLTransition[i][1]
+            needHandEvent[i][1] = true
+            needHandEvent[i][0] = true
         }
         for (i in 0..<numpaths) {
             var hasPathJMLTransition = false
@@ -923,7 +906,7 @@ class JMLPattern() {
         }
 
         // queue used to store events while building event list
-        val eventqueue: Array<JMLEvent?> = arrayOfNulls<JMLEvent>(numevents)
+        val eventqueue: Array<JMLEvent?> = arrayOfNulls(numevents)
         for (i in 0..<numevents) {
             eventqueue[i] = ei[i]!!.previous // seed the queue
         }
@@ -951,8 +934,8 @@ class JMLPattern() {
                 val jug = maxevent.juggler - 1
                 val han = index(maxevent.hand)
 
-                if (!hasVDHandJMLTransition[jug]!![han]) {
-                    needHandEvent[jug]!![han] = false
+                if (!hasVDHandJMLTransition[jug][han]) {
+                    needHandEvent[jug][han] = false
                 }
 
                 for (tr in maxevent.transitions) {
@@ -961,23 +944,19 @@ class JMLPattern() {
                     when (tr.getType()) {
                         JMLTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
-                            run {
-                                needHandEvent[jug]!![han] = false
-                                needVDHandEvent[jug]!![han] = needHandEvent[jug]!![han]
-                            }
+                            needHandEvent[jug][han] = false
+                            needVDHandEvent[jug][han] = false
                             needSpecialPathEvent[path] = false
                         }
 
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_GRABCATCH -> {}
                         JMLTransition.TRANS_SOFTCATCH -> {
-                            if (needVDHandEvent[jug]!![han]) {
-                                needSpecialPathEvent[path] =
-                                    true // need corresponding throw to get velocity
+                            if (needVDHandEvent[jug][han]) {
+                                // need corresponding throw to get velocity
+                                needSpecialPathEvent[path] = true
                             }
-                            run {
-                                needHandEvent[jug]!![han] = false
-                                needVDHandEvent[jug]!![han] = needHandEvent[jug]!![han]
-                            }
+                            needHandEvent[jug][han] = false
+                            needVDHandEvent[jug][han] = false
                         }
 
                         JMLTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
@@ -995,10 +974,10 @@ class JMLPattern() {
             // do we need to continue adding earlier events?
             contin = false
             for (i in 0..<numjugglers) {
-                contin = contin or needHandEvent[i]!![0]
-                contin = contin or needHandEvent[i]!![1]
-                contin = contin or needVDHandEvent[i]!![0]
-                contin = contin or needVDHandEvent[i]!![1]
+                contin = contin or needHandEvent[i][0]
+                contin = contin or needHandEvent[i][1]
+                contin = contin or needVDHandEvent[i][0]
+                contin = contin or needVDHandEvent[i][1]
             }
             for (i in 0..<numpaths) {
                 contin = contin or needPathEvent[i]
@@ -1008,10 +987,10 @@ class JMLPattern() {
 
         // reset things to go forward in time
         for (i in 0..<numjugglers) {
-            needVDHandEvent[i]!![0] = hasVDHandJMLTransition[i]!![0]
-            needVDHandEvent[i]!![1] = hasVDHandJMLTransition[i]!![1]
-            needHandEvent[i]!![1] = true
-            needHandEvent[i]!![0] = needHandEvent[i]!![1]
+            needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0]
+            needVDHandEvent[i][1] = hasVDHandJMLTransition[i][1]
+            needHandEvent[i][1] = true
+            needHandEvent[i][0] = true
         }
         for (i in 0..<numpaths) {
             needPathEvent[i] = true
@@ -1039,17 +1018,17 @@ class JMLPattern() {
             eventqueue[minnum] = ei[minnum]!!.next // restock queue
 
             // now update the needs arrays, so we know when to stop
-            if (mintime > this.loopEndTime) {
+            if (mintime > loopEndTime) {
                 val jug = minevent.juggler - 1
                 val han = index(minevent.hand)
 
                 // if this hand has no throws/catches, then need to build out event list
                 // past a certain time, due to how the hand layout is done in this case
                 // (see layoutHandPaths() below)
-                if ((!hasVDHandJMLTransition[jug]!![han])
-                    && (mintime > (2 * this.loopEndTime - this.loopStartTime))
+                if ((!hasVDHandJMLTransition[jug][han])
+                    && (mintime > (2 * loopEndTime - loopStartTime))
                 ) {
-                    needHandEvent[jug]!![han] = false
+                    needHandEvent[jug][han] = false
                 }
 
                 for (tr in minevent.transitions) {
@@ -1058,14 +1037,12 @@ class JMLPattern() {
                     when (tr.getType()) {
                         JMLTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
-                            if (needVDHandEvent[jug]!![han]) {
+                            if (needVDHandEvent[jug][han]) {
                                 // need corresponding catch to get velocity
                                 needSpecialPathEvent[path] = true
                             }
-                            run {
-                                needHandEvent[jug]!![han] = false
-                                needVDHandEvent[jug]!![han] = needHandEvent[jug]!![han]
-                            }
+                            needHandEvent[jug][han] = false
+                            needVDHandEvent[jug][han] = false
                         }
 
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_GRABCATCH -> {
@@ -1076,14 +1053,15 @@ class JMLPattern() {
                         JMLTransition.TRANS_SOFTCATCH -> {
                             needPathEvent[path] = false
                             run {
-                                needHandEvent[jug]!![han] = false
-                                needVDHandEvent[jug]!![han] = needHandEvent[jug]!![han]
+                                needHandEvent[jug][han] = false
+                                needVDHandEvent[jug][han] = false
                             }
                             needSpecialPathEvent[path] = false
                         }
 
                         JMLTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
-                            needPathEvent[path] = false // no throws for this path, done
+                            // no throws for this path, done
+                            needPathEvent[path] = false
                         }
 
                         else -> throw JuggleExceptionInternal(
@@ -1096,10 +1074,10 @@ class JMLPattern() {
             // do we need to continue adding later events?
             contin = false
             for (i in 0..<numjugglers) {
-                contin = contin or needHandEvent[i]!![0]
-                contin = contin or needHandEvent[i]!![1]
-                contin = contin or needVDHandEvent[i]!![0]
-                contin = contin or needVDHandEvent[i]!![1]
+                contin = contin or needHandEvent[i][0]
+                contin = contin or needHandEvent[i][1]
+                contin = contin or needVDHandEvent[i][0]
+                contin = contin or needVDHandEvent[i][1]
             }
             for (i in 0..<numpaths) {
                 contin = contin or needPathEvent[i]
@@ -1108,9 +1086,10 @@ class JMLPattern() {
         } while (contin)
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Step 2: figure out which events should be considered master events
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
     fun findMasterEvents() {
         var rebuildList = false
@@ -1165,13 +1144,9 @@ class JMLPattern() {
     @Throws(JuggleExceptionInternal::class)
     fun findPositions() {
         jugglercurve = arrayOfNulls(this.numberOfJugglers)
-        jugglerangle =
-            (if (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE)
-                (arrayOfNulls<Curve>(this.numberOfJugglers)) as Array<Curve?>
-            else
-                (arrayOfNulls<Curve>(this.numberOfJugglers)) as Array<Curve?>)
+        jugglerangle = arrayOfNulls(numberOfJugglers)
 
-        for (i in 1..this.numberOfJugglers) {
+        for (i in 1..numberOfJugglers) {
             var num = 0
             var current = this.positionList
 
@@ -1185,49 +1160,45 @@ class JMLPattern() {
             if (num == 0) {
                 jugglercurve[i - 1] = SplineCurve()
                 jugglerangle[i - 1] =
-                    ((if (jugglinglab.core.Constants.ANGLE_LAYOUT_METHOD == jugglinglab.curve.Curve.CURVE_LINE)
-                        (LineCurve()) as jugglinglab.curve.Curve
+                    if (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE)
+                        LineCurve()
                     else
-                        (SplineCurve()) as jugglinglab.curve.Curve?)!!)
-                val times = DoubleArray(2)
-                times[0] = this.loopStartTime
-                times[1] = this.loopEndTime
+                        SplineCurve()
+                val times = doubleArrayOf(loopStartTime, loopEndTime)
                 val positions = Array(2) { Coordinate() }
                 val angles = Array(2) { Coordinate() }
-                positions[0] = Coordinate()
-                angles[0] = Coordinate()
 
                 // default juggler body positions
-                if (this.numberOfJugglers == 1) {
-                    positions[0]!!.setCoordinate(0.0, 0.0, 100.0)
-                    angles[0]!!.setCoordinate(0.0, 0.0, 0.0)
+                if (numberOfJugglers == 1) {
+                    positions[0].setCoordinate(0.0, 0.0, 100.0)
+                    angles[0].setCoordinate(0.0, 0.0, 0.0)
                 } else {
                     var r = 70.0
-                    val theta = 360 / this.numberOfJugglers.toDouble()
+                    val theta = 360 / numberOfJugglers.toDouble()
                     if (r * sin(Math.toRadians(0.5 * theta)) < 65) {
                         r = 65 / sin(Math.toRadians(0.5 * theta))
                     }
-                    positions[0]!!.setCoordinate(
+                    positions[0].setCoordinate(
                         r * cos(Math.toRadians(theta * (i - 1).toDouble())),
                         r * sin(Math.toRadians(theta * (i - 1).toDouble())),
                         100.0
                     )
-                    angles[0]!!.setCoordinate(90 + theta * (i - 1).toDouble(), 0.0, 0.0)
+                    angles[0].setCoordinate(90 + theta * (i - 1).toDouble(), 0.0, 0.0)
                 }
 
                 positions[1] = positions[0]
                 angles[1] = angles[0]
-                jugglercurve[i - 1]!!.setCurve(times, positions, arrayOfNulls<Coordinate>(2))
+                jugglercurve[i - 1]!!.setCurve(times, positions, arrayOfNulls(2))
                 jugglercurve[i - 1]!!.calcCurve()
-                jugglerangle[i - 1]!!.setCurve(times, angles, arrayOfNulls<Coordinate>(2))
+                jugglerangle[i - 1]!!.setCurve(times, angles, arrayOfNulls(2))
                 jugglerangle[i - 1]!!.calcCurve()
             } else {
                 jugglercurve[i - 1] = SplineCurve()
                 jugglerangle[i - 1] =
-                    ((if (jugglinglab.core.Constants.ANGLE_LAYOUT_METHOD == jugglinglab.curve.Curve.CURVE_LINE)
-                        (LineCurve()) as jugglinglab.curve.Curve
+                    if (Constants.ANGLE_LAYOUT_METHOD == Curve.CURVE_LINE)
+                        LineCurve()
                     else
-                        (SplineCurve()) as jugglinglab.curve.Curve?)!!)
+                        SplineCurve()
                 val times = DoubleArray(num + 1)
                 val positions = Array(num + 1) { Coordinate() }
                 val angles = Array(num + 1) { Coordinate() }
@@ -1246,32 +1217,33 @@ class JMLPattern() {
                 }
                 times[num] = times[0] + this.loopEndTime - this.loopStartTime
                 positions[num] = positions[0]
-                angles[num] = Coordinate(angles[0]!!.x, angles[0]!!.y, angles[0]!!.z)
+                angles[num] = Coordinate(angles[0].x, angles[0].y, angles[0].z)
 
                 j = 1
                 while (j <= num) {
-                    while ((angles[j]!!.x - angles[j - 1]!!.x) > 180) {
-                        angles[j]!!.x -= 360.0
+                    while ((angles[j].x - angles[j - 1].x) > 180) {
+                        angles[j].x -= 360.0
                     }
-                    while ((angles[j]!!.x - angles[j - 1]!!.x) < -180) {
-                        angles[j]!!.x += 360.0
+                    while ((angles[j].x - angles[j - 1].x) < -180) {
+                        angles[j].x += 360.0
                     }
-                    j++
+                    ++j
                 }
 
-                jugglercurve[i - 1]!!.setCurve(times, positions, arrayOfNulls<Coordinate>(num + 1))
+                jugglercurve[i - 1]!!.setCurve(times, positions, arrayOfNulls(num + 1))
                 jugglercurve[i - 1]!!.calcCurve()
-                jugglerangle[i - 1]!!.setCurve(times, angles, arrayOfNulls<Coordinate>(num + 1))
+                jugglerangle[i - 1]!!.setCurve(times, angles, arrayOfNulls(num + 1))
                 jugglerangle[i - 1]!!.calcCurve()
             }
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Step 4: transform event coordinates from local to global reference frame
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     fun gotoGlobalCoordinates() {
-        var ev = this.eventList
+        var ev = eventList
 
         while (ev != null) {
             val lc = ev.localCoordinate
@@ -1281,15 +1253,16 @@ class JMLPattern() {
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Step 5: construct the links connecting events; build PathLink and
     // HandLink lists
-    //----------------------------------------------------------------------------
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    protected fun buildLinkLists() {
-        pathlinks = java.util.ArrayList<java.util.ArrayList<PathLink>?>(this.numberOfPaths)
+    //--------------------------------------------------------------------------
 
-        for (i in 0..<this.numberOfPaths) {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    private fun buildLinkLists() {
+        pathlinks = ArrayList(numberOfPaths)
+
+        for (i in 0..<numberOfPaths) {
             // build the PathLink list for the ith path
             pathlinks!!.add(ArrayList())
             var ev = this.eventList
@@ -1371,10 +1344,8 @@ class JMLPattern() {
                         )
                     }
 
-                    pathlinks!!.get(i)!!.add(pl)
-                    if (lasttr != null) {
-                        lasttr.outgoingPathLink = pl
-                    }
+                    pathlinks!![i].add(pl)
+                    lasttr.outgoingPathLink = pl
                     tr.incomingPathLink = pl
                 }
 
@@ -1386,7 +1357,7 @@ class JMLPattern() {
                 }
             }
 
-            if (pathlinks!!.get(i)!!.isEmpty()) {
+            if (pathlinks!![i].isEmpty()) {
                 throw JuggleExceptionInternal("No event found for path " + (i + 1), this)
             }
         }
@@ -1402,7 +1373,7 @@ class JMLPattern() {
             for (j in 0..1) {
                 val handnum = (if (j == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND)
 
-                handlinks!!.get(i)!!.add(ArrayList())
+                handlinks!![i]!!.add(ArrayList())
 
                 var ev = this.eventList
                 var lastev: JMLEvent? = null
@@ -1448,7 +1419,7 @@ class JMLPattern() {
                         val hl = HandLink(i, handnum, lastev, ev)
                         hl.startVelocityRef = lastvr // may be null, which is ok
                         hl.endVelocityRef = vr
-                        handlinks!!.get(i)!!.get(j)!!.add(hl)
+                        handlinks!![i]!![j]!!.add(hl)
                     }
                     lastev = ev
                     lastvr = vr
@@ -1461,12 +1432,13 @@ class JMLPattern() {
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Step 6: do a physical layout of the handlink paths
     // (Props were physically laid out in PathLink.setThrow() in Step 5 above)
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     @Throws(JuggleExceptionInternal::class)
-    protected fun layoutHandPaths() {
+    private fun layoutHandPaths() {
         // go through HandLink lists, creating Path objects and calculating paths
 
         for (j in 0..<this.numberOfJugglers) {
@@ -1476,12 +1448,12 @@ class JMLPattern() {
                 // To determine the spline paths, we need to solve for hand velocity at each
                 // of its events, but this is done differently in the two cases.
 
-                if (hasVDHandJMLTransition[j]!![h]) {
+                if (hasVDHandJMLTransition[j][h]) {
                     var startlink: HandLink? = null
                     var num = 0
 
-                    for (k in handlinks!!.get(j)!!.get(h)!!.indices) {
-                        val hl = handlinks!!.get(j)!!.get(h)!!.get(k)
+                    for (k in handlinks!![j]!![h]!!.indices) {
+                        val hl = handlinks!![j]!![h]!![k]
 
                         var vr = hl.startVelocityRef
                         if (vr != null
@@ -1504,7 +1476,7 @@ class JMLPattern() {
                             val hp: Curve = SplineCurve()
 
                             for (l in 0..<num) {
-                                val hl2 = handlinks!!.get(j)!!.get(h)!!.get(k - num + 1 + l)
+                                val hl2 = handlinks!![j]!![h]!![k - num + 1 + l]
                                 times[l] = hl2.startEvent.t
                                 pos[l] = hl2.startEvent.globalCoordinate!!
                                 val vr2 = hl2.startVelocityRef
@@ -1539,8 +1511,8 @@ class JMLPattern() {
                     //    build spline hand path from startlink to endlink, and calculate (chain 2)
                     var k = 0
                     var hl: HandLink? = null
-                    while (k < handlinks!!.get(j)!!.get(h)!!.size) {
-                        hl = handlinks!!.get(j)!!.get(h)!!.get(k)
+                    while (k < handlinks!![j]!![h]!!.size) {
+                        hl = handlinks!![j]!![h]!![k]
                         if (hl.endEvent.t > this.loopStartTime) {
                             break
                         }
@@ -1552,7 +1524,7 @@ class JMLPattern() {
                         val startevent = startlink!!.startEvent
                         var num = 1 // number of links in chain
                         while (!hl!!.endEvent.isDelayOf(startevent)) {
-                            hl = handlinks!!.get(j)!!.get(h)!!.get(++k)
+                            hl = handlinks!![j]!![h]!![++k]
                             ++num
                         }
                         val times = DoubleArray(num + 1)
@@ -1560,7 +1532,7 @@ class JMLPattern() {
                         val hp: Curve = SplineCurve()
 
                         for (l in 0..<num) {
-                            val hl2 = handlinks!!.get(j)!!.get(h)!!.get(k - num + 1 + l)
+                            val hl2 = handlinks!![j]!![h]!![k - num + 1 + l]
                             pos[l] = hl2.startEvent.globalCoordinate!!
                             times[l] = hl2.startEvent.t
                             hl2.handCurve = hp
@@ -1568,11 +1540,11 @@ class JMLPattern() {
                         pos[num] = hl.endEvent.globalCoordinate!!
                         times[num] = hl.endEvent.t
                         // all velocities are null (unknown) -> signal to calculate
-                        hp.setCurve(times, pos, arrayOfNulls<Coordinate>(num + 1))
+                        hp.setCurve(times, pos, arrayOfNulls(num + 1))
                         hp.calcCurve()
 
                         if (chain == 0) {
-                            hl = handlinks!!.get(j)!!.get(h)!!.get(++k)
+                            hl = handlinks!![j]!![h]!![++k]
                         }
                     }
                 }
@@ -1615,15 +1587,15 @@ class JMLPattern() {
         get() = props.size
 
     fun getProp(propnum: Int): Prop? {
-        return getPropDef(propnum)!!.prop
+        return getPropDef(propnum).prop
     }
 
-    fun getPropDef(propnum: Int): PropDef? {
-        return props.get(propnum - 1)
+    fun getPropDef(propnum: Int): PropDef {
+        return props[propnum - 1]
     }
 
     fun getPropAssignment(path: Int): Int {
-        return propassignment!!.get(path - 1)
+        return propassignment!![path - 1]
     }
 
     fun symmetries(): MutableCollection<JMLSymmetry> {
@@ -1646,7 +1618,7 @@ class JMLPattern() {
     // returns path coordinate in global frame
     @Throws(JuggleExceptionInternal::class)
     fun getPathCoordinate(path: Int, time: Double, newPosition: Coordinate) {
-        for (pl in pathlinks!!.get(path - 1)!!) {
+        for (pl in pathlinks!![path - 1]) {
             if (time >= pl.startEvent.t && time <= pl.endEvent.t) {
                 if (pl.isInHand) {
                     val jug = pl.holdingJuggler
@@ -1658,21 +1630,16 @@ class JMLPattern() {
                 return
             }
         }
-        throw JuggleExceptionInternal("time t=" + time + " is out of path range", this)
+        throw JuggleExceptionInternal("time t=$time is out of path range", this)
     }
 
     // Check if a given hand is holding the path at a given time.
+
     fun isHandHoldingPath(juggler: Int, hand: Int, time: Double, path: Int): Boolean {
-        for (pl in pathlinks!!.get(path - 1)!!) {
-            if (!pl.isInHand) {
-                continue
-            }
-            if (pl.holdingJuggler != juggler) {
-                continue
-            }
-            if (pl.holdingHand != hand) {
-                continue
-            }
+        for (pl in pathlinks!![path - 1]) {
+            if (!pl.isInHand) continue
+            if (pl.holdingJuggler != juggler) continue
+            if (pl.holdingHand != hand) continue
             if (time >= pl.startEvent.t && time <= pl.endEvent.t) {
                 return true
             }
@@ -1681,8 +1648,9 @@ class JMLPattern() {
     }
 
     // Check if a given hand is holding any path at the given time.
+
     fun isHandHolding(juggler: Int, hand: Int, time: Double): Boolean {
-        for (path in 1..this.numberOfPaths) {
+        for (path in 1..numberOfPaths) {
             if (isHandHoldingPath(juggler, hand, time, path)) return true
         }
         return false
@@ -1690,6 +1658,8 @@ class JMLPattern() {
 
     // Return orientation of prop on given path, in global frame
     // result is {pitch, yaw, roll}.
+
+    @Suppress("unused")
     fun getPathOrientation(path: Int, time: Double, axis: Coordinate): Double {
         axis.x = 0.0 // components of unit vector to rotate around
         axis.y = 0.0
@@ -1698,17 +1668,16 @@ class JMLPattern() {
     }
 
     // Return juggler coordinate in global frame.
+
     fun getJugglerPosition(juggler: Int, time: Double, newPosition: Coordinate) {
         var time = time
         val p = jugglercurve[juggler - 1]
-
         while (time < p!!.startTime) {
             time += this.loopEndTime - this.loopStartTime
         }
         while (time > p.endTime) {
             time -= this.loopEndTime - this.loopStartTime
         }
-
         p.getCoordinate(time, newPosition)
     }
 
@@ -1771,11 +1740,10 @@ class JMLPattern() {
         while (time < this.loopStartTime) time += this.loopEndTime - this.loopStartTime
         while (time >= this.loopEndTime) time -= this.loopEndTime - this.loopStartTime
 
-        for (hl in handlinks!!.get(juggler - 1)!!.get(handindex)!!) {
+        for (hl in handlinks!![juggler - 1]!![handindex]!!) {
             if (time >= hl.startEvent.t && time < hl.endEvent.t) {
-                val hp = hl.handCurve
-                if (hp == null) throw JuggleExceptionInternal(
-                    "getHandCoordinate() null pointer at t=" + time,
+                val hp = hl.handCurve ?: throw JuggleExceptionInternal(
+                    "getHandCoordinate() null pointer at t=$time",
                     this
                 )
                 hp.getCoordinate(time, newPosition)
@@ -1783,7 +1751,7 @@ class JMLPattern() {
             }
         }
         throw JuggleExceptionInternal(
-            "time t=" + time + " (j=" + juggler + ",h=" + handindex + ") is out of handpath range",
+            "time t=$time (j=$juggler,h=$handindex) is out of handpath range",
             this
         )
     }
@@ -1799,14 +1767,14 @@ class JMLPattern() {
         var gotcatch = false
 
         i = 0
-        while (i < pathlinks!!.get(path - 1)!!.size) {
-            pl1 = pathlinks!!.get(path - 1)!!.get(i)
+        while (i < pathlinks!![path - 1].size) {
+            pl1 = pathlinks!![path - 1][i]
             if (time1 >= pl1.startEvent.t && time1 <= pl1.endEvent.t) break
             i++
         }
-        if (i == pathlinks!!.get(path - 1)!!.size) return 0.0
+        if (i == pathlinks!![path - 1].size) return 0.0
         while (true) {
-            pl2 = pathlinks!!.get(path - 1)!!.get(i)
+            pl2 = pathlinks!![path - 1][i]
             if (!pl2.isInHand) wasinair = true
             if (pl2.isInHand && wasinair) {
                 gotcatch = true
@@ -1815,7 +1783,7 @@ class JMLPattern() {
             if (time2 >= pl2.startEvent.t && time2 <= pl2.endEvent.t) break
 
             i++
-            if (i == pathlinks!!.get(path - 1)!!.size) i = 0
+            if (i == pathlinks!![path - 1].size) i = 0
         }
 
         // We don't adjust the playback volume of the audio clip, so this is just
@@ -1833,18 +1801,18 @@ class JMLPattern() {
         var pl: PathLink
 
         i = 0
-        while (i < pathlinks!!.get(path - 1)!!.size) {
-            pl = pathlinks!!.get(path - 1)!!.get(i)
+        while (i < pathlinks!![path - 1].size) {
+            pl = pathlinks!![path - 1][i]
             if (time1 >= pl.startEvent.t && time1 <= pl.endEvent.t) {
                 break
             }
             i++
         }
-        if (i == pathlinks!!.get(path - 1)!!.size) {
+        if (i == pathlinks!![path - 1].size) {
             return 0.0
         }
         while (true) {
-            pl = pathlinks!!.get(path - 1)!!.get(i)
+            pl = pathlinks!![path - 1][i]
             val p = pl.path
             if (p is BouncePath) {
                 val vol = p.getBounceVolume(time1, time2)
@@ -1857,7 +1825,7 @@ class JMLPattern() {
             }
 
             ++i
-            if (i == pathlinks!!.get(path - 1)!!.size) {
+            if (i == pathlinks!![path - 1].size) {
                 i = 0
             }
         }
@@ -1870,8 +1838,8 @@ class JMLPattern() {
         val t1 = this.loopStartTime
         val t2 = this.loopEndTime
 
-        for (i in pathlinks!!.get(path - 1)!!.indices) {
-            val pl = pathlinks!!.get(path - 1)!!.get(i)
+        for (i in pathlinks!![path - 1].indices) {
+            val pl = pathlinks!![path - 1][i]
             if (pl.isInHand) {
                 val coord2 = getHandMax(pl.holdingJuggler, pl.holdingHand)
                 result = max(result, coord2)
@@ -1888,8 +1856,8 @@ class JMLPattern() {
         val t1 = this.loopStartTime
         val t2 = this.loopEndTime
 
-        for (i in pathlinks!!.get(path - 1)!!.indices) {
-            val pl = pathlinks!!.get(path - 1)!!.get(i)
+        for (i in pathlinks!![path - 1].indices) {
+            val pl = pathlinks!![path - 1][i]
             if (pl.isInHand) {
                 if (Constants.DEBUG_LAYOUT) {
                     println(
@@ -1917,12 +1885,12 @@ class JMLPattern() {
         val t2 = this.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (i in handlinks!!.get(juggler - 1)!!.get(handnum)!!.indices) {
-            val hl = handlinks!!.get(juggler - 1)!!.get(handnum)!!.get(i)
+        for (i in handlinks!![juggler - 1]!![handnum]!!.indices) {
+            val hl = handlinks!![juggler - 1]!![handnum]!![i]
             val hp = hl.handCurve
             if (hp != null) {
                 if (Constants.DEBUG_LAYOUT) {
-                    println("getHandMax(" + juggler + "," + hand + ") = " + hp.getMin(t1, t2))
+                    println("getHandMax($juggler,$hand) = ${hp.getMin(t1, t2)}")
                 }
                 result = max(result, hp.getMax(t1, t2))
             }
@@ -1936,8 +1904,8 @@ class JMLPattern() {
         val t2 = this.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (i in handlinks!!.get(juggler - 1)!!.get(handnum)!!.indices) {
-            val hl = handlinks!!.get(juggler - 1)!!.get(handnum)!!.get(i)
+        for (i in handlinks!![juggler - 1]!![handnum]!!.indices) {
+            val hl = handlinks!![juggler - 1]!![handnum]!![i]
             val hp = hl.handCurve
             if (hp != null) {
                 if (Constants.DEBUG_LAYOUT) {
@@ -1973,7 +1941,7 @@ class JMLPattern() {
     val isBouncePattern: Boolean
         get() {
             for (path in 1..numberOfPaths) {
-                for (pl in pathlinks!!.get(path - 1)!!) {
+                for (pl in pathlinks!![path - 1]) {
                     if (pl.path is BouncePath) {
                         return true
                     }
@@ -2023,12 +1991,9 @@ class JMLPattern() {
             addProp(pd)
         } else if (type.equals("setup", ignoreCase = true)) {
             val at = current.attributes
-            val jugglerstring: String?
-            val pathstring: String?
-            val propstring: String?
-            jugglerstring = at.getAttribute("jugglers")
-            pathstring = at.getAttribute("paths")
-            propstring = at.getAttribute("props")
+            val jugglerstring = at.getAttribute("jugglers")
+            val pathstring: String? = at.getAttribute("paths")
+            val propstring = at.getAttribute("props")
 
             try {
                 if (jugglerstring != null) {
@@ -2037,7 +2002,7 @@ class JMLPattern() {
                     this.numberOfJugglers = 1
                 }
                 this.numberOfPaths = pathstring!!.toInt()
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_setup_tag"))
             }
 
@@ -2054,7 +2019,7 @@ class JMLPattern() {
                             throw JuggleExceptionUser(errorstrings.getString("Error_prop_number"))
                         }
                     }
-                } catch (nfe: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     throw JuggleExceptionUser(errorstrings.getString("Error_prop_format"))
                 }
             } else {
@@ -2097,36 +2062,32 @@ class JMLPattern() {
     }
 
     @Throws(IOException::class)
-    fun writeJML(wr: Writer, write_title: Boolean, write_info: Boolean) {
+    fun writeJML(wr: Writer, writeTitle: Boolean, writeInfo: Boolean) {
         val write = PrintWriter(wr)
 
         for (i in JMLDefs.jmlprefix.indices) {
             write.println(JMLDefs.jmlprefix[i])
         }
-        write.println("<jml version=\"" + xmlescape(version) + "\">")
+        write.println("<jml version=\"${xmlescape(version)}\">")
         write.println("<pattern>")
-        if (write_title && title != null) {
-            write.println("<title>" + JMLNode.xmlescape(title!!) + "</title>")
+        if (writeTitle && title != null) {
+            write.println("<title>${xmlescape(title!!)}</title>")
         }
-        if (write_info && (info != null || !tags.isEmpty())) {
+        if (writeInfo && (info != null || !tags.isEmpty())) {
             val tagstr = tags.joinToString(",")
             if (info != null) {
                 if (tagstr.isEmpty()) {
-                    write.println("<info>" + JMLNode.xmlescape(info!!) + "</info>")
+                    write.println("<info>${xmlescape(info!!)}</info>")
                 } else {
                     write.println(
-                        ("<info tags=\""
-                            + xmlescape(tagstr)
-                            + "\">"
-                            + JMLNode.xmlescape(info!!)
-                            + "</info>")
+                        ("<info tags=\"${xmlescape(tagstr)}\">${xmlescape(info!!)}</info>")
                     )
                 }
             } else {
-                write.println("<info tags=\"" + xmlescape(tagstr) + "\"/>")
+                write.println("<info tags=\"${xmlescape(tagstr)}\"/>")
             }
         }
-        if (this.basePatternNotation != null && this.basePatternConfig != null) {
+        if (basePatternNotation != null && basePatternConfig != null) {
             write.println(
                 ("<basepattern notation=\""
                     + xmlescape(basePatternNotation!!.lowercase(Locale.getDefault()))
@@ -2152,7 +2113,7 @@ class JMLPattern() {
                 out += "," + getPropAssignment(i)
             }
         }
-        write.println(out + "\"/>")
+        write.println("$out\"/>")
 
         for (symmetry in symmetries) {
             symmetry.writeJML(write)
@@ -2194,39 +2155,30 @@ class JMLPattern() {
             }
         }
 
-    //----------------------------------------------------------------------------
-    // java.lang.Object methods
-    //----------------------------------------------------------------------------
-    override fun toString(): kotlin.String {
+    override fun toString(): String {
         val sw = StringWriter()
         try {
-            writeJML(sw, true, true)
-        } catch (ioe: IOException) {
+            writeJML(sw, writeTitle = true, writeInfo = true)
+        } catch (_: IOException) {
         }
-
         return sw.toString()
     }
 
     companion object {
-        val errorstrings: ResourceBundle = JugglingLab.errorstrings
-
         // Here `config` can be regular (like `pattern=3`) or not (like `3`)
         @JvmStatic
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun fromBasePattern(notation: kotlin.String?, config: kotlin.String?): JMLPattern {
+        fun fromBasePattern(notation: String?, config: String?): JMLPattern {
             val p = Pattern.newPattern(notation).fromString(config)
-
             val pat = p.asJMLPattern()
 
             // regularize the notation name and config string
             pat.basePatternNotation = p.getNotationName()
             pat.basePatternConfig = p.toString()
-
             return pat
         }
 
         fun getPeriod(perm: Permutation, propassign: IntArray): Int {
-            var i: Int
             var j: Int
             var k: Int
             var cperiod: Int
@@ -2235,10 +2187,10 @@ class JMLPattern() {
             val size = perm.size
             val notdone = BooleanArray(size)
 
-            i = 0
+            var i = 0
             while (i < size) {
                 notdone[i] = true
-                i++
+                ++i
             }
             i = 0
             while (i < size) {
