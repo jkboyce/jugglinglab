@@ -318,7 +318,7 @@ class Optimizer private constructor(p: JMLPattern) {
                 val newx = (me.varsValues[i] * 100.0).roundToInt().toDouble() / 100.0
                 val coord = ev.localCoordinate
                 coord.x = newx
-                ev.setLocalCoordinate(coord)
+                ev.localCoordinate = coord
             }
         }
         pat.setNeedsLayout()

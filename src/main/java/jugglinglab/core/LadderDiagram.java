@@ -304,11 +304,11 @@ public class LadderDiagram extends JPanel
     JMLEvent eventlist = pat.getEventList();
     JMLEvent ev = eventlist;
 
-    while (ev.getT() < loop_start) {
+    while (ev.t < loop_start) {
       ev = ev.getNext();
     }
 
-    while (ev.getT() < loop_end) {
+    while (ev.t < loop_end) {
       LadderEventItem item = new LadderEventItem();
       item.type = LadderEventItem.TYPE_EVENT;
       item.eventitem = item;
@@ -330,7 +330,7 @@ public class LadderDiagram extends JPanel
     // create paths (lines and arcs)
     ladderpathitems = new ArrayList<>();
     ev = eventlist;
-    while (ev.getT() <= loop_end) {
+    while (ev.t <= loop_end) {
       for (int i = 0; i < ev.getNumberOfTransitions(); i++) {
         JMLTransition tr = ev.getTransition(i);
         PathLink opl = tr.getOutgoingPathLink();
@@ -411,7 +411,7 @@ public class LadderDiagram extends JPanel
               + (ev.getJuggler() - 1) * juggler_delta_x
               - TRANSITION_RADIUS;
       int event_y = (int) (0.5 + (double) (height - 2 * BORDER_TOP)
-              * (ev.getT() - loop_start) / (loop_end - loop_start))
+              * (ev.t - loop_start) / (loop_end - loop_start))
               + BORDER_TOP
               - TRANSITION_RADIUS;
 
@@ -436,10 +436,10 @@ public class LadderDiagram extends JPanel
                   : (right_x - (item.transnum_start + 1) * 2 * TRANSITION_RADIUS))
               + (item.startevent.getJuggler() - 1) * juggler_delta_x;
       item.ystart = (int) (0.5 + (double) (height - 2 * BORDER_TOP)
-              * (item.startevent.getT() - loop_start) / (loop_end - loop_start))
+              * (item.startevent.t - loop_start) / (loop_end - loop_start))
               + BORDER_TOP;
       item.yend = (int) (0.5 + (double) (height - 2 * BORDER_TOP)
-              * (item.endevent.getT() - loop_start) / (loop_end - loop_start))
+              * (item.endevent.t - loop_start) / (loop_end - loop_start))
               + BORDER_TOP;
 
       int slot = 0;

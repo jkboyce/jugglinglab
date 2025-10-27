@@ -91,7 +91,7 @@ class MarginEquations() {
         var ev = events
         while (ev != null) {
             if (ev.isMaster) {
-                for (tr in ev.transitions()) {
+                for (tr in ev.transitions) {
                     val type = tr.transType
                     if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
                         type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH
@@ -115,7 +115,7 @@ class MarginEquations() {
                     }
                 }
             }
-            ev = ev.getNext()
+            ev = ev.next
         }
         if (Constants.DEBUG_OPTIMIZE) {
             println("   number of variables = $varsNum")
@@ -223,10 +223,10 @@ class MarginEquations() {
                 val mpl2 = masterpl[j]
 
                 // enumerate all of the ways that mpl2 could collide with mpl1.
-                val mpl1Start = mpl1.startEvent.getT()
-                val mpl1End = mpl1.endEvent.getT()
-                val mpl2Start = mpl2.startEvent.getT()
-                val mpl2End = mpl2.endEvent.getT()
+                val mpl1Start = mpl1.startEvent.t
+                val mpl1End = mpl1.endEvent.t
+                val mpl2Start = mpl2.startEvent.t
+                val mpl2End = mpl2.endEvent.t
                 var delay = 0.0
                 var invertMpl2 = false
 
@@ -243,10 +243,10 @@ class MarginEquations() {
                         if (mpl1End > (mpl2End + delay)) {
                             canCollide = false
                         } else if (mpl1End == (mpl2End + delay)) {
-                            if (mpl1.startEvent.getJuggler() > mpl2.startEvent.getJuggler()) {
+                            if (mpl1.startEvent.juggler > mpl2.startEvent.juggler) {
                                 canCollide = false
-                            } else if (mpl1.startEvent.getJuggler() == mpl2.startEvent.getJuggler()) {
-                                if (mpl1.startEvent.getHand() == HandLink.LEFT_HAND) {
+                            } else if (mpl1.startEvent.juggler == mpl2.startEvent.juggler) {
+                                if (mpl1.startEvent.hand == HandLink.LEFT_HAND) {
                                     canCollide = false
                                 }
                             }
@@ -318,34 +318,34 @@ class MarginEquations() {
 
                             var mplev = mpl1.startEvent
                             if (!mplev.isMaster) {
-                                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                                if (mplev.hand != mplev.master.hand) {
                                     coefT1 = -coefT1
                                 }
-                                mplev = mplev.getMaster()
+                                mplev = mplev.master
                             }
                             t1Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl1.endEvent
                             if (!mplev.isMaster) {
-                                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                                if (mplev.hand != mplev.master.hand) {
                                     coefC1 = -coefC1
                                 }
-                                mplev = mplev.getMaster()
+                                mplev = mplev.master
                             }
                             c1Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl2.startEvent
                             if (!mplev.isMaster) {
-                                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                                if (mplev.hand != mplev.master.hand) {
                                     coefT2 = -coefT2
                                 }
-                                mplev = mplev.getMaster()
+                                mplev = mplev.master
                             }
                             t2Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl2.endEvent
                             if (!mplev.isMaster) {
-                                if (mplev.getHand() != mplev.getMaster().getHand()) {
+                                if (mplev.hand != mplev.master.hand) {
                                     coefC2 = -coefC2
                                 }
-                                mplev = mplev.getMaster()
+                                mplev = mplev.master
                             }
                             c2Varnum = variableEvents.indexOf(mplev)
 

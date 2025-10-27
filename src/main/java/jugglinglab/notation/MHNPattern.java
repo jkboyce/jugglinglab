@@ -1492,7 +1492,7 @@ public abstract class MHNPattern extends Pattern {
               ev.calcpos = false;
             }
 
-            ev.setT(sst.throwtime);
+            ev.t = sst.throwtime;
             ev.setHand(
                 j + 1, (h == MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
             pat.addEvent(ev);
@@ -1575,7 +1575,7 @@ public abstract class MHNPattern extends Pattern {
               ev.calcpos = false;
             }
 
-            ev.setT(sst.catchtime);
+            ev.t = sst.catchtime;
             lastcatchtime = sst.catchtime;
 
             ev.setHand(
@@ -1635,7 +1635,7 @@ public abstract class MHNPattern extends Pattern {
               }
               ev.calcpos = false;
 
-              ev.setT(sst2.catchtime);
+              ev.t = sst2.catchtime;
               if (sst2.catchnum == (num_catches - 1)) {
                 lastcatchtime = sst2.catchtime;
               }
@@ -1674,7 +1674,7 @@ public abstract class MHNPattern extends Pattern {
             }
             ev.setLocalCoordinate(c);
             ev.calcpos = false;
-            ev.setT(lastcatchtime + (double) di * (sst.throwtime - lastcatchtime) / numcoords);
+            ev.t = lastcatchtime + (double) di * (sst.throwtime - lastcatchtime) / numcoords;
             ev.setHand(sst.juggler,
                 (h == MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
             pat.addEvent(ev);
@@ -1726,7 +1726,7 @@ public abstract class MHNPattern extends Pattern {
             }
             ev.setLocalCoordinate(c);
             ev.calcpos = false;
-            ev.setT(sst.throwtime + (double) di * (nextcatchtime - sst.throwtime) / numcoords);
+            ev.t = sst.throwtime + (double) di * (nextcatchtime - sst.throwtime) / numcoords;
             ev.setHand(sst.juggler,
                 (h == MHNPattern.RIGHT_HAND ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
             pat.addEvent(ev);
@@ -1763,7 +1763,7 @@ public abstract class MHNPattern extends Pattern {
           JMLEvent ev = new JMLEvent();
           ev.setLocalCoordinate(
               new Coordinate((h == MHNPattern.RIGHT_HAND ? restingx : -restingx), 0, 0));
-          ev.setT(-1.0);
+          ev.t = -1.0;
           ev.setHand(j + 1, (h == 0 ? HandLink.RIGHT_HAND : HandLink.LEFT_HAND));
           ev.calcpos = false;
           pat.addEvent(ev);
@@ -1851,20 +1851,20 @@ public abstract class MHNPattern extends Pattern {
         while (ev != null) {
           if (ev.getJuggler() == j && ev.getHand() == hand) {
             if (start != null) {
-              double gap = ev.getT() - start.getT();
+              double gap = ev.t - start.t;
 
               if (gap > SECS_EVENT_GAP_MAX) {
                 int add = (int) (gap / SECS_EVENT_GAP_MAX);
                 double deltat = gap / (double) (add + 1);
 
                 for (int i = 1; i <= add; i++) {
-                  double evtime = start.getT() + i * deltat;
+                  double evtime = start.t + i * deltat;
                   if (evtime < pat.getLoopStartTime() || evtime >= pat.getLoopEndTime()) {
                     continue;
                   }
 
                   JMLEvent ev2 = new JMLEvent();
-                  ev2.setT(evtime);
+                  ev2.t = evtime;
                   ev2.setHand(j, hand);
                   ev2.calcpos = true;
                   pat.addEvent(ev2);
@@ -1906,15 +1906,15 @@ public abstract class MHNPattern extends Pattern {
                 case 3:
                   if (start != null) {
                     JMLEvent end = ev;
-                    double t_end = end.getT();
+                    double t_end = end.t;
                     Coordinate pos_end = end.getLocalCoordinate();
-                    double t_start = start.getT();
+                    double t_start = start.t;
                     Coordinate pos_start = start.getLocalCoordinate();
 
                     ev = start.getNext();
                     while (ev != end) {
                       if (ev.getJuggler() == j && ev.getHand() == hand) {
-                        double t = ev.getT();
+                        double t = ev.t;
                         double x = pos_start.x
                                 + (t - t_start) * (pos_end.x - pos_start.x) / (t_end - t_start);
                         double y = pos_start.y

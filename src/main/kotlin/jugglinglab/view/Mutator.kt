@@ -120,8 +120,8 @@ class Mutator {
     private fun mutateEventPosition(pat: JMLPattern): JMLPattern {
         val ev = pickMasterEvent(pat)
         var pos = ev.localCoordinate
-        pos = pickNewPosition(ev.getHand(), rate * MUTATION_POSITION_CM, pos)
-        ev.setLocalCoordinate(pos)
+        pos = pickNewPosition(ev.hand, rate * MUTATION_POSITION_CM, pos)
+        ev.localCoordinate = pos
         pat.setNeedsLayout()
         return pat
     }
@@ -134,7 +134,7 @@ class Mutator {
 
         var evPrev = ev.previous
         while (evPrev != null) {
-            if (evPrev.getJuggler() == ev.getJuggler() && evPrev.getHand() == ev.getHand()) {
+            if (evPrev.juggler == ev.juggler && evPrev.hand == ev.hand) {
                 break
             }
             evPrev = evPrev.previous
@@ -143,20 +143,20 @@ class Mutator {
             (if (evPrev == null)
                 pat.loopStartTime
             else
-                max(pat.loopStartTime, evPrev.getT()) + MUTATION_MIN_EVENT_DELTA_SEC)
+                max(pat.loopStartTime, evPrev.t) + MUTATION_MIN_EVENT_DELTA_SEC)
 
-        var evNext = ev.getNext()
+        var evNext = ev.next
         while (evNext != null) {
-            if (evNext.getJuggler() == ev.getJuggler() && evNext.getHand() == ev.getHand()) {
+            if (evNext.juggler == ev.juggler && evNext.hand == ev.hand) {
                 break
             }
-            evNext = evNext.getNext()
+            evNext = evNext.next
         }
         val tmax =
             (if (evNext == null)
                 pat.getLoopEndTime()
             else
-                min(pat.getLoopEndTime(), evNext.getT()) - MUTATION_MIN_EVENT_DELTA_SEC)
+                min(pat.getLoopEndTime(), evNext.t) - MUTATION_MIN_EVENT_DELTA_SEC)
 
         if (tmax <= tmin) {
             return null
@@ -165,14 +165,14 @@ class Mutator {
         // Sample t from two one-sided triangular distributions: Event time has
         // equal probability of going down or up.
         val r = Math.random()
-        val tnow = ev.getT()
+        val tnow = ev.t
         val t = if (r < 0.5) {
             tmin + (tnow - tmin) * sqrt(2 * r)
         } else {
             tmax - (tmax - tnow) * sqrt(2 * (1 - r))
         }
 
-        ev.setT(t)
+        ev.t = t
         pat.setNeedsLayout()
         return pat
     }
@@ -195,9 +195,9 @@ class Mutator {
         var ev = pat.eventList
         while (ev != null) {
             if (ev.isMaster) {
-                ev.setT(ev.getT() * scale)
+                ev.t = ev.t * scale
             }
-            ev = ev.getNext()
+            ev = ev.next
         }
         var pos = pat.positionList
         while (pos != null) {
@@ -245,18 +245,18 @@ class Mutator {
 
             ev = pat.eventList
             while (ev != null) {
-                if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() >= t) {
+                if (ev.juggler == juggler && ev.hand == hand && ev.t >= t) {
                     break
                 }
-                ev = ev.getNext()
+                ev = ev.next
             }
             if (ev == null) {
                 return null
             }
-            tmax = ev.getT() - MUTATION_MIN_EVENT_DELTA_SEC
+            tmax = ev.t - MUTATION_MIN_EVENT_DELTA_SEC
 
             while (ev != null) {
-                if (ev.getJuggler() == juggler && ev.getHand() == hand && ev.getT() <= t) {
+                if (ev.juggler == juggler && ev.hand == hand && ev.t <= t) {
                     break
                 }
                 ev = ev.previous
@@ -264,7 +264,7 @@ class Mutator {
             if (ev == null) {
                 return null
             }
-            tmin = ev.getT() + MUTATION_MIN_EVENT_DELTA_SEC
+            tmin = ev.t + MUTATION_MIN_EVENT_DELTA_SEC
 
             tries++
         } while (tmin > tmax && tries < 5)
@@ -290,8 +290,8 @@ class Mutator {
 
         ev = JMLEvent()
         ev.setHand(juggler, hand)
-        ev.setT(t)
-        ev.setMaster(null) // null signifies a master event
+        ev.t = t
+        ev.masterEvent = null  // null signifies a master event
 
         // Now choose a spatial location for the event. Figure out where the
         // hand is currently and adjust it.
@@ -299,7 +299,7 @@ class Mutator {
         pat.getHandCoordinate(juggler, hand, t, pos)
         pos = pat.convertGlobalToLocal(pos, juggler, t)
         pos = pickNewPosition(hand, rate * MUTATION_NEW_EVENT_POSITION_CM, pos)
-        ev.setLocalCoordinate(pos)
+        ev.localCoordinate = pos
 
         // Last step: add a "holding" transition for every path that the hand
         // is holding at the chosen time
@@ -326,7 +326,7 @@ class Mutator {
         while (ev != null) {
             if (ev.isMaster) {
                 var holdingOnly = true
-                for (tr in ev.transitions()) {
+                for (tr in ev.transitions) {
                     val type = tr.transType
                     if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
                         holdingOnly = false
@@ -337,7 +337,7 @@ class Mutator {
                     ++count
                 }
             }
-            ev = ev.getNext()
+            ev = ev.next
         }
 
         if (count == 0) {
@@ -352,7 +352,7 @@ class Mutator {
         while (ev != null) {
             if (ev.isMaster) {
                 var holdingOnly = true
-                for (tr in ev.transitions()) {
+                for (tr in ev.transitions) {
                     val type = tr.transType
                     if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
                         holdingOnly = false
@@ -368,7 +368,7 @@ class Mutator {
                     --count
                 }
             }
-            ev = ev.getNext()
+            ev = ev.next
         }
 
         throw JuggleExceptionInternal("mutateRemoveEvent error")
@@ -392,7 +392,7 @@ class Mutator {
             if (current!!.isMaster) {
                 ++masterCount
             }
-            current = current.getNext()
+            current = current.next
         } while (current != null)
 
         // pick a number from 0 to (master_count - 1) inclusive
@@ -406,7 +406,7 @@ class Mutator {
                 }
                 --eventNum
             }
-            current = current.getNext()
+            current = current.next
         } while (current != null)
 
         throw JuggleExceptionInternal("Mutator: pickEvent() failed")

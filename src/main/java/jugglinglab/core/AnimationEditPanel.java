@@ -583,7 +583,7 @@ public class AnimationEditPanel extends AnimationPanel
     boolean snap_horizontal = true;
 
     if (event_active) {
-      a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.getT()));
+      a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.t));
     } else if (position_active) {
       // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
       a = 0;
@@ -703,13 +703,13 @@ public class AnimationEditPanel extends AnimationPanel
     // determine which events to display on-screen
     visible_events = new ArrayList<>();
     visible_events.add(event);
-    handpath_start_time = event.getT();
-    handpath_end_time = event.getT();
+    handpath_start_time = event.t;
+    handpath_end_time = event.t;
 
     JMLEvent ev2 = event.getPrevious();
     while (ev2 != null) {
       if (ev2.getJuggler() == event.getJuggler() && ev2.getHand() == event.getHand()) {
-        handpath_start_time = Math.min(handpath_start_time, ev2.getT());
+        handpath_start_time = Math.min(handpath_start_time, ev2.t);
 
         boolean new_master = true;
         for (JMLEvent ev3 : visible_events) {
@@ -732,7 +732,7 @@ public class AnimationEditPanel extends AnimationPanel
     ev2 = event.getNext();
     while (ev2 != null) {
       if (ev2.getJuggler() == event.getJuggler() && ev2.getHand() == event.getHand()) {
-        handpath_end_time = Math.max(handpath_end_time, ev2.getT());
+        handpath_end_time = Math.max(handpath_end_time, ev2.t);
 
         boolean new_master = true;
         for (JMLEvent ev3 : visible_events) {
@@ -773,7 +773,7 @@ public class AnimationEditPanel extends AnimationPanel
 
         double[] ca = ren.getCameraAngle();
         double theta =
-            ca[0] + Math.toRadians(getPattern().getJugglerAngle(ev.getJuggler(), ev.getT()));
+            ca[0] + Math.toRadians(getPattern().getJugglerAngle(ev.getJuggler(), ev.t));
         double phi = ca[1];
 
         double dlc = dl * Math.cos(phi);

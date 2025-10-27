@@ -35,8 +35,8 @@ class PathLink(val pathNum: Int, val startEvent: JMLEvent, val endEvent: JMLEven
     fun setThrow(pathType: String, pathMod: String?) {
         val newPath = Path.newPath(pathType)
         newPath.initPath(pathMod)
-        newPath.setStart(startEvent.globalCoordinate, startEvent.t)
-        newPath.setEnd(endEvent.globalCoordinate, endEvent.t)
+        newPath.setStart(startEvent.globalCoordinate!!, startEvent.t)
+        newPath.setEnd(endEvent.globalCoordinate!!, endEvent.t)
         newPath.calcPath()
         path = newPath
         throwtype = pathType

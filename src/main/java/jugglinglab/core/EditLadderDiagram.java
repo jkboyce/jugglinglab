@@ -316,7 +316,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             start_y = me.getY();
             start_ylow = active_eventitem.ylow;
             start_yhigh = active_eventitem.yhigh;
-            start_t = active_eventitem.event.getT();
+            start_t = active_eventitem.event.t;
             findEventLimits(active_eventitem);
             break;
           }
@@ -552,7 +552,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     double scale =
         (pat.getLoopEndTime() - pat.getLoopStartTime()) / (double) (height - 2 * BORDER_TOP);
 
-    for (JMLTransition tr : item.event.transitions()) {
+    for (JMLTransition tr : item.event.getTransitions()) {
       switch (tr.getType()) {
         case JMLTransition.TRANS_THROW:
           {
@@ -575,12 +575,12 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               }
               return;
             }
-            tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
+            tmin = Math.max(tmin, ev.t + MIN_THROW_SEP_TIME);
 
             // next catch is easy to find
             ev = tr.getOutgoingPathLink().getEndEvent();
             if (!ev.hasSameMasterAs(item.event)) {
-              tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
+              tmax = Math.min(tmax, ev.t - MIN_THROW_SEP_TIME);
             }
           }
           break;
@@ -591,7 +591,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             // previous throw is easy to find
             JMLEvent ev = tr.getIncomingPathLink().getStartEvent();
             if (!ev.hasSameMasterAs(item.event)) {
-              tmin = Math.max(tmin, ev.getT() + MIN_THROW_SEP_TIME);
+              tmin = Math.max(tmin, ev.t + MIN_THROW_SEP_TIME);
             }
 
             // find out when the ball being caught is next thrown
@@ -611,13 +611,13 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
               }
               return;
             }
-            tmax = Math.min(tmax, ev.getT() - MIN_THROW_SEP_TIME);
+            tmax = Math.min(tmax, ev.t - MIN_THROW_SEP_TIME);
           }
           break;
       }
     }
-    delta_y_min = (int) ((tmin - item.event.getT()) / scale);
-    delta_y_max = (int) ((tmax - item.event.getT()) / scale);
+    delta_y_min = (int) ((tmin - item.event.t) / scale);
+    delta_y_max = (int) ((tmax - item.event.t) / scale);
   }
 
   // Return value of `delta_y` during mouse drag of an event, clipping it to
@@ -656,8 +656,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             sep = MIN_EVENT_SEP_TIME;
           }
 
-          double ev_excl_min = ev.getT() - sep;
-          double ev_excl_max = ev.getT() + sep;
+          double ev_excl_min = ev.t - sep;
+          double ev_excl_max = ev.t + sep;
 
           if (ev_excl_max > t_excl_max && ev_excl_min <= t_excl_max) {
             t_excl_max = ev_excl_max;
@@ -716,7 +716,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     boolean[] catchpath = new boolean[pat.getNumberOfPaths()];
     boolean[] holdpathorig = new boolean[pat.getNumberOfPaths()];
     boolean[] holdpathnew = new boolean[pat.getNumberOfPaths()];
-    for (JMLTransition tr : ev.transitions()) {
+    for (JMLTransition tr : ev.getTransitions()) {
       switch (tr.getType()) {
         case JMLTransition.TRANS_THROW:
           throwpath[tr.path - 1] = true;
@@ -732,9 +732,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       }
     }
 
-    if (newt < ev.getT()) {  // moving to earlier time
+    if (newt < ev.t) {  // moving to earlier time
       ev = ev.getPrevious();
-      while (ev != null && ev.getT() > newt) {
+      while (ev != null && ev.t > newt) {
         if (!ev.hasSameMasterAs(item.event)
             && ev.getJuggler() == item.event.getJuggler()
             && ev.getHand() == item.event.getHand()) {
@@ -777,9 +777,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         }
         ev = ev.getPrevious();
       }
-    } else if (newt > ev.getT()) {  // moving to later time
+    } else if (newt > ev.t) {  // moving to later time
       ev = ev.getNext();
-      while (ev != null && ev.getT() < newt) {
+      while (ev != null && ev.t < newt) {
         if (!ev.hasSameMasterAs(item.event)
             && ev.getJuggler() == item.event.getJuggler()
             && ev.getHand() == item.event.getHand()) {
@@ -830,8 +830,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     if (!ev.isMaster()) {
       double new_event_t = new_master_t;
-      new_master_t += ev.getMaster().getT() - ev.getT();
-      ev.setT(new_event_t); // update event time so getHashCode() works
+      new_master_t += ev.getMaster().t - ev.t;
+      ev.t = new_event_t; // update event time so getHashCode() works
       ev = ev.getMaster();
     }
 
@@ -859,7 +859,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     pat.removeEvent(ev);
-    ev.setT(new_master_t); // change time of master
+    ev.t = new_master_t; // change time of master
     pat.addEvent(ev); // remove/add cycle keeps events sorted
   }
 
@@ -1071,7 +1071,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
         // can't remove an event with throws or catches
         LadderEventItem evitem = (LadderEventItem) laditem;
 
-        for (JMLTransition tr : evitem.event.transitions()) {
+        for (JMLTransition tr : evitem.event.getTransitions()) {
           if (tr.getType() != JMLTransition.TRANS_HOLDING) {
             return false;
           }
@@ -1310,7 +1310,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
     JMLEvent ev = new JMLEvent();
     ev.setLocalCoordinate(pat.convertGlobalToLocal(evpos, juggler, evtime));
-    ev.setT(evtime);
+    ev.t = evtime;
     ev.setHand(juggler, hand);
     pat.addEvent(ev);
 
