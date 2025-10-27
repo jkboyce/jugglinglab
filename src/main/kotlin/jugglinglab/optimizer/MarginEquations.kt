@@ -206,7 +206,7 @@ class MarginEquations() {
         var symSwitchdelay = false
         for (sym in pat.symmetries()) {
             when (sym.getType()) {
-                JMLSymmetry.TYPE_DELAY -> symDelay = sym.getDelay()
+                JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
                 JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
                 JMLSymmetry.TYPE_SWITCH -> throw JuggleExceptionUser(errorstrings.getString("Error_no_optimize_switch"))
             }

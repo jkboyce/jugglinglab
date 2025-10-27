@@ -225,7 +225,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         numentries = 1
         var index = 0
         for (temp in pat.symmetries()) {
-            when (temp.type) {
+            when (temp.symType) {
                 JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm!!.inverse
                 JMLSymmetry.TYPE_SWITCH -> {
                     sym[index] = temp

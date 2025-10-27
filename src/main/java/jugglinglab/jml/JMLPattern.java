@@ -503,9 +503,9 @@ public class JMLPattern {
     }
 
     for (JMLSymmetry sym : symmetries()) {
-      double delay = sym.getDelay();
+      double delay = sym.delay;
       if (delay > 0) {
-        sym.setDelay(delay * scale);
+        sym.delay = delay * scale;
       }
     }
 
@@ -1623,7 +1623,7 @@ public class JMLPattern {
   public double getLoopEndTime() {
     for (JMLSymmetry sym : symmetries()) {
       if (sym.getType() == JMLSymmetry.TYPE_DELAY) {
-        return sym.getDelay();
+        return sym.delay;
       }
     }
     return -1;
