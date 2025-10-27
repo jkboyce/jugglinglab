@@ -50,9 +50,9 @@ public class JMLParser extends DefaultHandler {
   }
 
   public int getFileType() {
-    if (rootNode.getNodeType().equalsIgnoreCase("jml")) {
+    if (rootNode.nodeType.equalsIgnoreCase("jml")) {
       if (rootNode.getNumberOfChildren() == 1) {
-        String child = rootNode.getChildNode(0).getNodeType();
+        String child = rootNode.getChildNode(0).nodeType;
 
         if (child.equalsIgnoreCase("pattern")) {
           return JML_PATTERN;
@@ -86,10 +86,10 @@ public class JMLParser extends DefaultHandler {
     if (systemId.equalsIgnoreCase("file://jml.dtd")) {
       if (Constants.DEBUG_JML_PARSING) {
         System.out.println("--------- jml.dtd -----------");
-        System.out.println(JMLDefs.jmldtd);
+        System.out.println(JMLDefs.JML_DTD);
         System.out.println("-----------------------------");
       }
-      return new InputSource(new StringReader(JMLDefs.jmldtd));
+      return new InputSource(new StringReader(JMLDefs.JML_DTD));
     }
     return null;
   }
@@ -322,7 +322,7 @@ public class JMLParser extends DefaultHandler {
 
     JMLNode newNode = new JMLNode(name);
     if (currentNode != null) {
-      currentNode.appendChild(newNode);
+      currentNode.addChildNode(newNode);
       currentNode = newNode;
     } else {
       rootNode = currentNode = newNode;
@@ -339,7 +339,7 @@ public class JMLParser extends DefaultHandler {
     if (currentNode == null) {
       throw new JuggleExceptionInternal("endJMLElement(): no correspanding startElement()");
     }
-    currentNode = currentNode.getParentNode();
+    currentNode = currentNode.parentNode;
   }
 
   protected void addJMLAttribute(String name, String value) throws JuggleExceptionInternal {
@@ -368,12 +368,12 @@ public class JMLParser extends DefaultHandler {
     }
 
     String newvalue;
-    if (currentNode.getNodeValue() == null) {
+    if (currentNode.nodeValue == null) {
       newvalue = text;
     } else {
-      newvalue = currentNode.getNodeValue() + text;
+      newvalue = currentNode.nodeValue + text;
     }
-    currentNode.setNodeValue(newvalue);
+    currentNode.nodeValue = newvalue;
   }
 
   protected void endJMLPattern() throws JuggleExceptionInternal {

@@ -1601,7 +1601,7 @@ public class JMLPattern {
   }
 
   public Prop getProp(int propnum) {
-    return getPropDef(propnum).getProp();
+    return getPropDef(propnum).prop;
   }
 
   public PropDef getPropDef(int propnum) {
@@ -2004,7 +2004,7 @@ public class JMLPattern {
   protected void readJML(JMLNode current) throws JuggleExceptionUser {
     // process current node, then treat subnodes recursively
 
-    String type = current.getNodeType();
+    String type = current.nodeType;
 
     if (type.equalsIgnoreCase("jml")) {
       String vers = current.getAttributes().getAttribute("version");
@@ -2017,9 +2017,9 @@ public class JMLPattern {
     } else if (type.equalsIgnoreCase("pattern")) {
       // do nothing
     } else if (type.equalsIgnoreCase("title")) {
-      setTitle(current.getNodeValue());
+      setTitle(current.nodeValue);
     } else if (type.equalsIgnoreCase("info")) {
-      setInfo(current.getNodeValue());
+      setInfo(current.nodeValue);
       String tagstr = current.getAttributes().getAttribute("tags");
       if (tagstr != null) {
         for (String t : tagstr.split(",")) {
@@ -2029,7 +2029,7 @@ public class JMLPattern {
     } else if (type.equalsIgnoreCase("basepattern")) {
       base_pattern_notation =
           Pattern.canonicalNotation(current.getAttributes().getAttribute("notation"));
-      base_pattern_config = current.getNodeValue().strip();
+      base_pattern_config = current.nodeValue.strip();
     } else if (type.equalsIgnoreCase("prop")) {
       PropDef pd = new PropDef();
       pd.readJML(current, loadingversion);
@@ -2101,7 +2101,7 @@ public class JMLPattern {
 
     // Set title in base pattern, if any. Do this after reading the <basepattern>
     // tag so that we don't overwrite these changes.
-    if (current.getNodeType().equalsIgnoreCase("jml")) {
+    if (current.nodeType.equalsIgnoreCase("jml")) {
       setTitle(title);
     }
   }

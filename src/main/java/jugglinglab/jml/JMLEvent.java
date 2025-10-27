@@ -383,7 +383,7 @@ public class JMLEvent {
     // process current event node children
     for (int i = 0; i < current.getNumberOfChildren(); i++) {
       JMLNode child = current.getChildNode(i);
-      String nodetype = child.getNodeType();
+      String nodetype = child.nodeType;
       at = child.getAttributes();
       String path = null, transtype = null, mod = null;
 

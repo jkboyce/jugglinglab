@@ -88,7 +88,7 @@ public class JMLPatternList {
     ArrayList<String> tags = null;
 
     if (infonode != null) {
-      info = infonode.getNodeValue();
+      info = infonode.nodeValue;
       info = (info != null && !info.isBlank()) ? info.strip() : null;
 
       String tagstr = infonode.getAttributes().getAttribute("tags");
@@ -185,7 +185,7 @@ public class JMLPatternList {
   //----------------------------------------------------------------------------
 
   public void readJML(JMLNode root) throws JuggleExceptionUser {
-    if (!root.getNodeType().equalsIgnoreCase("jml")) {
+    if (!root.nodeType.equalsIgnoreCase("jml")) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"));
     }
 
@@ -198,7 +198,7 @@ public class JMLPatternList {
     }
 
     JMLNode listnode = root.getChildNode(0);
-    if (!listnode.getNodeType().equalsIgnoreCase("patternlist")) {
+    if (!listnode.nodeType.equalsIgnoreCase("patternlist")) {
       throw new JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"));
     }
 
@@ -206,11 +206,11 @@ public class JMLPatternList {
 
     for (int i = 0; i < listnode.getNumberOfChildren(); i++) {
       JMLNode child = listnode.getChildNode(i);
-      if (child.getNodeType().equalsIgnoreCase("title")) {
-        title = child.getNodeValue().strip();
-      } else if (child.getNodeType().equalsIgnoreCase("info")) {
-        info = child.getNodeValue().strip();
-      } else if (child.getNodeType().equalsIgnoreCase("line")) {
+      if (child.nodeType.equalsIgnoreCase("title")) {
+        title = child.nodeValue.strip();
+      } else if (child.nodeType.equalsIgnoreCase("info")) {
+        info = child.nodeValue.strip();
+      } else if (child.nodeType.equalsIgnoreCase("line")) {
         linenumber++;
         JMLAttributes attr = child.getAttributes();
 
@@ -231,7 +231,7 @@ public class JMLPatternList {
             }
             infonode = patnode.findNode("info");
           } else {
-            anim = child.getNodeValue().strip();
+            anim = child.nodeValue.strip();
             infonode = child.findNode("info");
           }
         }
