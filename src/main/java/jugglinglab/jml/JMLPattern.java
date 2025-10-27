@@ -360,12 +360,12 @@ public class JMLPattern {
   }
 
   public void addPosition(JMLPosition pos) {
-    if (pos.getT() < getLoopStartTime() || pos.getT() > getLoopEndTime()) {
+    if (pos.t < getLoopStartTime() || pos.t > getLoopEndTime()) {
       return; // throw new JuggleExceptionUser("<position> time out of range");
     }
     setNeedsLayout();
 
-    if (positionlist == null || positionlist.getT() > pos.getT()) {
+    if (positionlist == null || positionlist.t > pos.t) {
       pos.setPrevious(null);
       pos.setNext(positionlist);
       if (positionlist != null) {
@@ -380,7 +380,7 @@ public class JMLPattern {
     while (current.getNext() != null) {
       current = current.getNext();
 
-      if (current.getT() > pos.getT()) {
+      if (current.t > pos.t) {
         pos.setNext(current);
         pos.setPrevious(current.getPrevious());
         current.getPrevious().setNext(pos);
@@ -498,7 +498,7 @@ public class JMLPattern {
     }
     JMLPosition pos = getPositionList();
     while (pos != null) {
-      pos.setT(pos.getT() * scale);
+      pos.t = pos.t * scale;
       pos = pos.getNext();
     }
 
@@ -626,8 +626,8 @@ public class JMLPattern {
       while (pos != null) {
         // no notion analagous to master events, so have to keep
         // position time within [0, looptime).
-        if (pos.getT() != 0) {
-          pos.setT(looptime - pos.getT());
+        if (pos.t != 0) {
+          pos.t = looptime - pos.t;
         }
 
         JMLPosition next = pos.getNext();
@@ -1238,9 +1238,9 @@ public class JMLPattern {
 
         while (current != null) {
           if (current.getJuggler() == i) {
-            times[j] = current.getT();
+            times[j] = current.t;
             positions[j] = current.getCoordinate();
-            angles[j] = new Coordinate(current.getAngle(), 0, 0);
+            angles[j] = new Coordinate(current.angle, 0, 0);
             ++j;
           }
           current = current.getNext();

@@ -405,7 +405,7 @@ public class AnimationEditPanel extends AnimationPanel
         while (final_angle < 0) {
           final_angle += 360;
         }
-        position.setAngle(final_angle);
+        position.angle = final_angle;
 
         dolayout = true;
       } else {
@@ -967,7 +967,7 @@ public class AnimationEditPanel extends AnimationPanel
     deactivateEvent();
     position = pos;
     position_active = true;
-    startangle = Math.toRadians(position.getAngle());
+    startangle = Math.toRadians(position.angle);
     createPositionView();
   }
 
@@ -1374,7 +1374,7 @@ public class AnimationEditPanel extends AnimationPanel
         double b = (-dx[1] * deltax + dx[0] * deltay) / det;
 
         // transform changes to global coordinates
-        double angle = Math.toRadians(position.getAngle());
+        double angle = Math.toRadians(position.angle);
         c.x += a * Math.cos(angle) - b * Math.sin(angle);
         c.y += a * Math.sin(angle) + b * Math.cos(angle);
 

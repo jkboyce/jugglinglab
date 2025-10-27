@@ -201,8 +201,8 @@ class Mutator {
         }
         var pos = pat.positionList
         while (pos != null) {
-            pos.setT(pos.getT() * scale)
-            pos = pos.getNext()
+            pos.t = pos.t * scale
+            pos = pos.next
         }
 
         for (sym in pat.symmetries()) {

@@ -1748,7 +1748,7 @@ public abstract class MHNPattern extends Pattern {
         for (int z = 0; z < coords; z++) {
           JMLPosition jmlp = bodies.getPosition(j + 1, index, z);
           if (jmlp != null) {
-            jmlp.setT(((double) k + (double) z / (double) coords) / bps);
+            jmlp.t = ((double) k + (double) z / (double) coords) / bps;
             pat.addPosition(jmlp);
           }
         }

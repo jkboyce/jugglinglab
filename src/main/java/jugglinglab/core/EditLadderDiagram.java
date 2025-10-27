@@ -333,7 +333,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             start_y = me.getY();
             start_ylow = active_positionitem.ylow;
             start_yhigh = active_positionitem.yhigh;
-            start_t = active_positionitem.position.getT();
+            start_t = active_positionitem.position.t;
             findPositionLimits(active_positionitem);
             if (aep != null) {
               aep.activatePosition(active_positionitem.position);
@@ -869,8 +869,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     double scale =
         (pat.getLoopEndTime() - pat.getLoopStartTime()) / (double) (height - 2 * BORDER_TOP);
 
-    delta_y_min = (int) ((tmin - item.position.getT()) / scale);
-    delta_y_max = (int) ((tmax - item.position.getT()) / scale);
+    delta_y_min = (int) ((tmin - item.position.t) / scale);
+    delta_y_max = (int) ((tmax - item.position.t) / scale);
   }
 
   // Return value of `delta_y` during mouse drag of an event, clipping it to
@@ -900,8 +900,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
 
       while (pos != null) {
         if (pos != position && pos.getJuggler() == position.getJuggler()) {
-          double pos_excl_min = pos.getT() - MIN_POSITION_SEP_TIME;
-          double pos_excl_max = pos.getT() + MIN_POSITION_SEP_TIME;
+          double pos_excl_min = pos.t - MIN_POSITION_SEP_TIME;
+          double pos_excl_max = pos.t + MIN_POSITION_SEP_TIME;
 
           if (pos_excl_max > t_excl_max && pos_excl_min <= t_excl_max) {
             t_excl_max = pos_excl_max;
@@ -952,7 +952,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     }
 
     pat.removePosition(pos);
-    pos.setT(newt);
+    pos.t = newt;
     pat.addPosition(pos); // remove/add keeps positions sorted
   }
 
@@ -1399,8 +1399,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     Coordinate loc = new Coordinate();
     pat.getJugglerPosition(juggler, postime, loc);
     pos.setCoordinate(loc);
-    pos.setAngle(pat.getJugglerAngle(juggler, postime));
-    pos.setT(postime);
+    pos.angle = pat.getJugglerAngle(juggler, postime);
+    pos.t = postime;
     pos.setJuggler(juggler);
     pat.addPosition(pos);
 

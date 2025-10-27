@@ -170,7 +170,7 @@ public class MHNBody {
     result.setJuggler(juggler);
     result.setCoordinate(new Coordinate(
         bodypath[j][pos][index][1], bodypath[j][pos][index][2], bodypath[j][pos][index][3]));
-    result.setAngle(bodypath[j][pos][index][0]);
+    result.angle = bodypath[j][pos][index][0];
     return result;
   }
 }

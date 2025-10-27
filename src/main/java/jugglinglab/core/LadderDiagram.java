@@ -364,11 +364,11 @@ public class LadderDiagram extends JPanel
     ladderpositionitems = new ArrayList<>();
     JMLPosition pos = pat.getPositionList();
 
-    while (pos != null && pos.getT() < loop_start) {
+    while (pos != null && pos.t < loop_start) {
       pos = pos.getNext();
     }
 
-    while (pos != null && pos.getT() < loop_end) {
+    while (pos != null && pos.t < loop_end) {
       LadderPositionItem item = new LadderPositionItem();
       item.type = LadderPositionItem.TYPE_POSITION;
       item.position = pos;
@@ -486,7 +486,7 @@ public class LadderDiagram extends JPanel
       int position_x =
           (left_x + right_x) / 2 + (pos.getJuggler() - 1) * juggler_delta_x - POSITION_RADIUS;
       int position_y = (int) (0.5 + (double) (height - 2 * BORDER_TOP)
-              * (pos.getT() - loop_start) / (loop_end - loop_start))
+              * (pos.t - loop_start) / (loop_end - loop_start))
               + BORDER_TOP
               - POSITION_RADIUS;
 
