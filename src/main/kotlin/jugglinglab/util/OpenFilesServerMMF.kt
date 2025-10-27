@@ -98,7 +98,7 @@ class OpenFilesServerMMF : Thread() {
                 } else if (line.startsWith("identify")) {
                     writeMessage(
                         bufFromserver,
-                        "Juggling Lab version " + jugglinglab.core.Constants.version + '\u0000'
+                        "Juggling Lab version " + jugglinglab.core.Constants.VERSION + '\u0000'
                     )
                 } else if (line.startsWith("done")) {
                     writeMessage(bufFromserver, "goodbye\u0000")
@@ -167,7 +167,7 @@ class OpenFilesServerMMF : Thread() {
                     return false
                 }
                 var line = readMessage(bufFromserver)
-                if (line != "Juggling Lab version " + jugglinglab.core.Constants.version) {
+                if (line != "Juggling Lab version " + jugglinglab.core.Constants.VERSION) {
                     if (jugglinglab.core.Constants.DEBUG_OPEN_SERVER) {
                         println("ID response didn't match: $line")
                         println("exiting")

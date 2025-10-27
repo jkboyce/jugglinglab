@@ -2079,12 +2079,12 @@ class SiteswapGenerator : Generator() {
         fun runGeneratorCLI(args: Array<String>, target: GeneratorTarget) {
             if (args.size < 3) {
                 var template: String = guistrings.getString("Version")
-                val arg1 = arrayOf<Any?>(Constants.version)
+                val arg1 = arrayOf<Any?>(Constants.VERSION)
                 var output: String =
                     "Juggling Lab " + MessageFormat.format(template, *arg1).lowercase(Locale.getDefault()) + "\n"
 
                 template = guistrings.getString("Copyright_message")
-                val arg2 = arrayOf<Any?>(Constants.year)
+                val arg2 = arrayOf<Any?>(Constants.YEAR)
                 output += MessageFormat.format(template, *arg2) + "\n"
                 output += guistrings.getString("GPL_message") + "\n\n"
                 output += guistrings.getString("Generator_intro")

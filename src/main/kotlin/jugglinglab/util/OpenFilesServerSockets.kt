@@ -101,7 +101,7 @@ class OpenFilesServerSockets : Thread() {
 
                 sout.println("identify")
                 var line: String = sin.readLine()
-                if (line != "Juggling Lab version " + jugglinglab.core.Constants.version) {
+                if (line != "Juggling Lab version " + jugglinglab.core.Constants.VERSION) {
                     if (jugglinglab.core.Constants.DEBUG_OPEN_SERVER) {
                         println("ID response didn't match: $line")
                         println("exiting")
@@ -224,7 +224,7 @@ internal class Connection(var client: Socket) : Thread() {
                         }
                     }
                 } else if (line.startsWith("identify")) {
-                    outStream!!.println("Juggling Lab version " + jugglinglab.core.Constants.version)
+                    outStream!!.println("Juggling Lab version " + jugglinglab.core.Constants.VERSION)
                 } else if (line.startsWith("done")) {
                     outStream!!.println("goodbye")
                     return

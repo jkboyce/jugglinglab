@@ -320,10 +320,10 @@ public class JugglingLab {
   private static void doHelp(String firstarg) {
     System.setProperty("java.awt.headless", "true");
     String template = guistrings.getString("Version");
-    Object[] arg1 = {Constants.version};
+    Object[] arg1 = {Constants.VERSION};
     String output = "Juggling Lab " + MessageFormat.format(template, arg1).toLowerCase() + "\n";
     template = guistrings.getString("Copyright_message");
-    Object[] arg2 = {Constants.year};
+    Object[] arg2 = {Constants.YEAR};
     output += MessageFormat.format(template, arg2) + "\n";
     output += guistrings.getString("GPL_message") + "\n\n";
     output += guistrings.getString("CLI_help1");

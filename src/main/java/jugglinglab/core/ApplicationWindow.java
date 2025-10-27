@@ -345,7 +345,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JLFunc.constraints(GridBagConstraints.LINE_START, 0, 0, new Insets(15, 15, 0, 15)));
 
     String template = guistrings.getString("Version");
-    Object[] arguments = {Constants.version};
+    Object[] arguments = {Constants.VERSION};
     JLabel abouttext5 = new JLabel(MessageFormat.format(template, arguments));
     abouttext5.setFont(new Font("SansSerif", Font.PLAIN, 16));
     textPanel.add(abouttext5);
@@ -354,7 +354,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
         JLFunc.constraints(GridBagConstraints.LINE_START, 0, 1, new Insets(0, 15, 0, 15)));
 
     String template2 = guistrings.getString("Copyright_message");
-    Object[] arguments2 = {Constants.year};
+    Object[] arguments2 = {Constants.YEAR};
     JLabel abouttext6 = new JLabel(MessageFormat.format(template2, arguments2));
     abouttext6.setFont(new Font("SansSerif", Font.PLAIN, 14));
     textPanel.add(abouttext6);
@@ -424,14 +424,14 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
     if (browse_supported) {
       try {
-        Desktop.getDesktop().browse(new URI(Constants.help_URL));
+        Desktop.getDesktop().browse(new URI(Constants.HELP_URL));
       } catch (Exception e) {
         browse_problem = true;
       }
     }
 
     if (!browse_supported || browse_problem) {
-      new LabelDialog(null, "Help", "Find online help at " + Constants.help_URL);
+      new LabelDialog(null, "Help", "Find online help at " + Constants.HELP_URL);
     }
   }
 

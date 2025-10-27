@@ -38,7 +38,7 @@ class UpdateChecker : Thread() {
         // id "versionstring" surrounding the version number string we want
         val pattern = ".*versionstring.*?>(.*?)<.*"
         val latestVersion = line.replace(pattern.toRegex(), "$1")
-        val runningVersion = jugglinglab.core.Constants.version
+        val runningVersion = jugglinglab.core.Constants.VERSION
 
         if (latestVersion.isEmpty()
             || compareVersions(latestVersion, runningVersion) <= 0
@@ -64,7 +64,7 @@ class UpdateChecker : Thread() {
                 var line: String? = null
 
                 try {
-                    val url = URI(jugglinglab.core.Constants.site_URL).toURL()
+                    val url = URI(jugglinglab.core.Constants.SITE_URL).toURL()
                     instream = url.openStream()
                     isr = InputStreamReader(instream)
                     val br = BufferedReader(isr)
@@ -106,7 +106,7 @@ class UpdateChecker : Thread() {
             )
 
             val template2: String = guistrings.getString("New_version_text2")
-            val arguments2 = arrayOf<Any?>(jugglinglab.core.Constants.version)
+            val arguments2 = arrayOf<Any?>(jugglinglab.core.Constants.VERSION)
             val text2 = JLabel(MessageFormat.format(template2, *arguments2))
             text2.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text2)
@@ -137,7 +137,7 @@ class UpdateChecker : Thread() {
 
                 if (browseSupported) {
                     try {
-                        Desktop.getDesktop().browse(URI(jugglinglab.core.Constants.download_URL))
+                        Desktop.getDesktop().browse(URI(jugglinglab.core.Constants.DOWNLOAD_URL))
                     } catch (_: Exception) {
                         browseProblem = true
                     }
@@ -145,7 +145,7 @@ class UpdateChecker : Thread() {
 
                 if (!browseSupported || browseProblem) {
                     val template3 = guistrings.getString("Download_message")
-                    val arguments3 = arrayOf<Any?>(jugglinglab.core.Constants.download_URL)
+                    val arguments3 = arrayOf<Any?>(jugglinglab.core.Constants.DOWNLOAD_URL)
                     val message = MessageFormat.format(template3, *arguments3)
                     LabelDialog(updateBox, title, message)
                 }
