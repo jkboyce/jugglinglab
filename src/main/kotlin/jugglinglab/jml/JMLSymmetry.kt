@@ -116,14 +116,12 @@ class JMLSymmetry {
                     + "\" delay=\""
                     + toStringRounded(this.delay, 4)
                     + "\"/>")
-
             TYPE_SWITCH -> out +=
                 ("switch\" jperm=\""
                     + jugglerPerm!!.toString(true)
                     + "\" pperm=\""
                     + pathPerm!!.toString(true)
                     + "\"/>")
-
             TYPE_SWITCHDELAY -> out +=
                 ("switchdelay\" jperm=\""
                     + jugglerPerm!!.toString(true)

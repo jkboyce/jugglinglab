@@ -1,6 +1,9 @@
 //
 // HandLink.kt
 //
+// This class is used during JMLPattern layout for keeping track of the hand
+// movement from one JMLEvent to another.
+//
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
@@ -13,41 +16,33 @@ class HandLink(var juggler: Int, var hand: Int, var startEvent: JMLEvent, var en
     var endVelocityRef: VelocityRef? = null
     var handCurve: Curve? = null
 
-    /*
-    var isMaster: Boolean = true
-        protected set
-     */
-
-    private var duplicates: Array<HandLink?>? = null // if master
-    private var master: HandLink? = null // if duplicate
-
     override fun toString(): String {
         val start = startEvent.globalCoordinate
         val end = endEvent.globalCoordinate
-        var result =
-            ("Link from (x=${start!!.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
-        result += "to (x=${end!!.x},y=${end.y},z=${end.z},t=${endEvent.t})"
-
         val svr = startVelocityRef
+        val evr = endVelocityRef
+        val hp = handCurve
+        var sb = StringBuilder()
+
+        sb.append("Link from (x=${start!!.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
+        sb.append("to (x=${end!!.x},y=${end.y},z=${end.z},t=${endEvent.t})")
         if (svr != null) {
             val vel = svr.velocity
-            result += "\n      start velocity (x=${vel.x},y=${vel.y},z=${vel.z})"
+            sb.append("\n      start velocity (x=${vel.x},y=${vel.y},z=${vel.z})")
         }
-        val evr = endVelocityRef
         if (evr != null) {
             val vel = evr.velocity
-            result += "\n      end velocity (x=${vel.x},y=${vel.y},z=${vel.z})"
+            sb.append("\n      end velocity (x=${vel.x},y=${vel.y},z=${vel.z})")
         }
-        val hp = handCurve
         if (hp != null) {
             val maxcoord = hp.getMax(startEvent.t, endEvent.t)
             val mincoord = hp.getMin(startEvent.t, endEvent.t)
-            result += "\n      minimum (x=${mincoord!!.x},y=${mincoord.y},z=${mincoord.z})"
-            result += "\n      maximum (x=${maxcoord!!.x},y=${maxcoord.y},z=${maxcoord.z})"
+            sb.append("\n      minimum (x=${mincoord!!.x},y=${mincoord.y},z=${mincoord.z})")
+            sb.append("\n      maximum (x=${maxcoord!!.x},y=${maxcoord.y},z=${maxcoord.z})")
         } else {
-            result += "\n      no handpath"
+            sb.append("\n      no handpath")
         }
-        return result
+        return sb.toString()
     }
 
     companion object {

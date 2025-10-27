@@ -722,7 +722,7 @@ public class AnimationEditPanel extends AnimationPanel
         } else {
           break;
         }
-        if (ev2.hasThrowOrCatch()) {
+        if (ev2.getHasThrowOrCatch()) {
           break;
         }
       }
@@ -745,7 +745,7 @@ public class AnimationEditPanel extends AnimationPanel
         } else {
           break;
         }
-        if (ev2.hasThrowOrCatch()) {
+        if (ev2.getHasThrowOrCatch()) {
           break;
         }
       }

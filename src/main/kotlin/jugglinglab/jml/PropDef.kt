@@ -11,44 +11,36 @@ import java.io.IOException
 import java.io.PrintWriter
 
 class PropDef() {
-    var type: String?
-        protected set
+    var type: String? = null
+        private set
     var mod: String? = null
-        protected set
+        private set
     @JvmField
-    var prop: Prop?
+    var prop: Prop? = null
 
-    init {
-        this.type = mod
-        prop = null
-    }
-
-    constructor(proptype: String?, mod: String?) : this() {
-        this.type = proptype
-        this.mod = mod
+    constructor(propType: String?, propMod: String?) : this() {
+        type = propType
+        mod = propMod
     }
 
     @Throws(JuggleExceptionUser::class)
     fun layoutProp() {
-        prop = Prop.newProp(this.type!!)
-        prop!!.initProp(this.mod)
+        val newprop = Prop.newProp(type!!)
+        newprop.initProp(mod)
+        prop = newprop
     }
 
+    @Suppress("unused")
     fun readJML(current: JMLNode, version: String?) {
         val at = current.attributes
-
-        this.type = at.getAttribute("type")
-        this.mod = at.getAttribute("mod")
+        type = at.getAttribute("type")
+        mod = at.getAttribute("mod")
     }
 
     @Throws(IOException::class)
     fun writeJML(wr: PrintWriter) {
-        var out = "<prop type=\"" + this.type + "\""
-        if (mod != null) {
-            out += " mod=\"" + mod + "\"/>"
-        } else {
-            out += "/>"
-        }
+        var out = "<prop type=\"$type\""
+        out += if (mod != null) " mod=\"$mod\"/>" else "/>"
         wr.println(out)
     }
 }

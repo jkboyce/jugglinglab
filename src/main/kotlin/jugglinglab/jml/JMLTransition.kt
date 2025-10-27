@@ -30,15 +30,14 @@ class JMLTransition(
         when (transType) {
             TRANS_THROW -> {
                 var out = "<throw path=\"$path\""
-                if (this.throwType != null) {
+                if (throwType != null) {
                     out += " type=\"$throwType\""
                 }
-                if (this.mod != null) {
+                if (mod != null) {
                     out += " mod=\"$mod\""
                 }
                 wr.println("$out/>")
             }
-
             TRANS_CATCH -> wr.println("<catch path=\"$path\"/>")
             TRANS_SOFTCATCH -> wr.println("<catch path=\"$path\" type=\"soft\"/>")
             TRANS_GRABCATCH -> wr.println("<catch path=\"$path\" type=\"grab\"/>")

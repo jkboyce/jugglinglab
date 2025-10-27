@@ -42,7 +42,7 @@ class Renderer2D : Renderer() {
     private lateinit var pat: JMLPattern
     private var zoom: Double = 0.0 // pixels/cm
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
-    private var zoomfactor: Double // multiplier of `zoom`
+    private var zoomfactor: Double = 1.0 // multiplier of `zoom`
     private var originx: Int = 0
     private var originz: Int = 0
     private var polysides: Int = 40 // # sides in polygon for head
@@ -55,19 +55,15 @@ class Renderer2D : Renderer() {
     private lateinit var obj2: MutableList<DrawObject2D>
     private lateinit var jugglervec: Array<Array<JLVector?>>
     // private var propmin: Double = 0.0 // for drawing floor
-    private var tempc: Coordinate
-    private var tempv1: JLVector
-    private var tempv2: JLVector
+    private var tempc: Coordinate = Coordinate()
+    private var tempv1: JLVector = JLVector()
+    private var tempv2: JLVector = JLVector()
 
     init {
         for (i in 0..<polysides) {
             headcos[i] = cos(i.toDouble() * 2.0 * Math.PI / polysides)
             headsin[i] = sin(i.toDouble() * 2.0 * Math.PI / polysides)
         }
-        tempc = Coordinate()
-        tempv1 = JLVector()
-        tempv2 = JLVector()
-        zoomfactor = 1.0
     }
 
     override fun setPattern(pat: JMLPattern) {

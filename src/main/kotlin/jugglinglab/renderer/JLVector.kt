@@ -23,9 +23,7 @@ class JLVector {
     }
 
     val length: Double
-        get() {
-            return sqrt(x * x + y * y + z * z)
-        }
+        get() = sqrt(x * x + y * y + z * z)
 
     fun transform(m: JLMatrix): JLVector {
         val newx = x * m.m00 + y * m.m01 + z * m.m02 + m.m03

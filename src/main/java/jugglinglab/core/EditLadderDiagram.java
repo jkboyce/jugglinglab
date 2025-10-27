@@ -649,8 +649,8 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       while (ev != null) {
         if (ev != event && ev.getJuggler() == event.getJuggler()
             && ev.getHand() == event.getHand()) {
-          if (ev.hasThrow() && event.hasThrowOrCatch()
-              || ev.hasThrowOrCatch() && event.hasThrow()) {
+          if (ev.getHasThrow() && event.getHasThrowOrCatch()
+              || ev.getHasThrowOrCatch() && event.getHasThrow()) {
             sep = MIN_THROW_SEP_TIME;
           } else {
             sep = MIN_EVENT_SEP_TIME;

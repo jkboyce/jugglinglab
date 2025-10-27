@@ -119,6 +119,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
     // Determine if this event has any transitions for the specified hand, after
     // symmetries are applied.
+    
     fun hasJMLTransitionForHand(jug: Int, han: Int): Boolean {
         for (i in 0..<numentries) {
             if (ea[jug - 1][HandLink.index(han)][i] != null) {
@@ -139,9 +140,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
             }
             ++i
         }
-        if (i == numentries) {
-            return false
-        }
+        if (i == numentries) return false
 
         for (j in 0..<evtransitions) {
             if (transitiontype[j] == JMLTransition.TRANS_THROW
@@ -156,18 +155,14 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
     fun hasJMLTransitionForPath(path: Int): Boolean {
         val cycle = loopperm!!.getCycle(path)
 
-        for (i in 0..<numjugglers) {
-            for (j in 0..<numentries) {
-                for (h in 0..1) {
-                    for (k in 0..<evtransitions) {
+        for (k in 0..<evtransitions) {
+            val transPath = ev.getTransition(k).path
+            for (i in 0..<numjugglers) {
+                for (j in 0..<numentries) {
+                    for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
-                            val newp = permtemp.getMapping(ev.getTransition(k).path)
-                            for (value in cycle) {
-                                if (newp == value) {
-                                    return true
-                                }
-                            }
+                            if (permtemp.getMapping(transPath) in cycle) return true
                         }
                     }
                 }
@@ -180,27 +175,23 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         val cycle = loopperm!!.getCycle(path)
 
         for (k in 0..<evtransitions) {
-            if (transitiontype[k] == JMLTransition.TRANS_THROW
-                || transitiontype[k] == JMLTransition.TRANS_SOFTCATCH
+            if (transitiontype[k] != JMLTransition.TRANS_THROW
+                && transitiontype[k] != JMLTransition.TRANS_SOFTCATCH
             ) {
-                for (i in 0..<numjugglers) {
-                    for (j in 0..<numentries) {
-                        for (h in 0..1) {
-                            val permtemp = ea[i][h][j]
-                            if (permtemp != null) {
-                                val newp = permtemp.getMapping(ev.getTransition(k).path)
-                                for (value in cycle) {
-                                    if (newp == value) {
-                                        return true
-                                    }
-                                }
-                            }
+                continue
+            }
+            val transPath = ev.getTransition(k).path
+            for (i in 0..<numjugglers) {
+                for (j in 0..<numentries) {
+                    for (h in 0..1) {
+                        val permtemp = ea[i][h][j]
+                        if (permtemp != null) {
+                            if (permtemp.getMapping(transPath) in cycle) return true
                         }
                     }
                 }
             }
         }
-
         return false
     }
 
@@ -263,8 +254,6 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
         var changed: Boolean
         do {
-            // System.out.println("{"+ea[0][0][0][0]+","+ea[0][0][1][0]+"},{"+ea[0][1][0][0]+","+ea[0][1][1][0]+"}");
-
             changed = false
 
             for (i in 0..<numsyms) {
@@ -281,7 +270,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
                             if (newj < 0) {
                                 newj = -newj
                             }
-                            newj--
+                            --newj
 
                             var p = ea[j][k][l] ?: continue
 
@@ -312,12 +301,12 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         // System.out.println("**** done with event");
 
         /*      int[][][] ea = eventlist.getEventArray();
-    for (int j = 0; j < numjugglers; j++) {
-        for (int k = 0; k < 2; k++) {
-            for (int l = 0; l < numentries; l++) {
-                System.out.println("ea["+(j+1)+","+k+","+l+"] = "+ea[j][k][l][0]);
+        for (int j = 0; j < numjugglers; j++) {
+            for (int k = 0; k < 2; k++) {
+                for (int l = 0; l < numentries; l++) {
+                    System.out.println("ea["+(j+1)+","+k+","+l+"] = "+ea[j][k][l][0]);
+                }
             }
-        }
-    }*/
+        }*/
     }
 }

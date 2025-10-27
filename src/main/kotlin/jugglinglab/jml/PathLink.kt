@@ -11,25 +11,20 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 
 class PathLink(val pathNum: Int, val startEvent: JMLEvent, val endEvent: JMLEvent) {
-    // var catch: Int = 0
     var path: Path? = null
-        private set
-    var throwtype: String? = null
-        private set
-    var mod: String? = null
         private set
     var isInHand: Boolean = false
         private set
+    // for paths corresponding to a throw (isInHand false):
+    var throwType: String? = null
+        private set
+    var throwMod: String? = null
+        private set
+    // for paths corresponding to a carry (isInHand true):
     var holdingJuggler: Int = 0
         private set
     var holdingHand: Int = 0
         private set
-
-    /*
-    var isMaster: Boolean = false
-        private set
-    private var master: PathLink? = null  // if duplicate
-    */
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun setThrow(pathType: String, pathMod: String?) {
@@ -39,33 +34,31 @@ class PathLink(val pathNum: Int, val startEvent: JMLEvent, val endEvent: JMLEven
         newPath.setEnd(endEvent.globalCoordinate!!, endEvent.t)
         newPath.calcPath()
         path = newPath
-        throwtype = pathType
-        mod = pathMod
+        throwType = pathType
+        throwMod = pathMod
         isInHand = false
     }
 
     fun setInHand(juggler: Int, hand: Int) {
-        this.isInHand = true
-        this.holdingJuggler = juggler
-        this.holdingHand = hand
+        isInHand = true
+        holdingJuggler = juggler
+        holdingHand = hand
     }
 
     override fun toString(): String {
-        var result: String = if (this.isInHand) {
-            "In hand, "
-        } else {
-            "Not in hand (type=\"$throwtype\", mod=\"$mod\"), "
-        }
-
         val start = startEvent.globalCoordinate
-        if (start != null) {
-            result += "from (x=" + start.x + ",y=" + start.y + ",z=" + start.z + ",t=" +
-                startEvent.t + ") "
-        }
         val end = endEvent.globalCoordinate
-        if (end != null) {
-            result += "to (x=" + end.x + ",y=" + end.y + ",z=" + end.z + ",t=" + endEvent.t + ")"
+        var sb = StringBuilder()
+
+        sb.append(if (isInHand) "In hand, " else
+            "Not in hand (type=\"$throwType\", mod=\"$throwMod\"), "
+        )
+        if (start != null) {
+            sb.append("from (x=${start.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
         }
-        return result
+        if (end != null) {
+            sb.append("to (x=${end.x},y=${end.y},z=${end.z},t=${endEvent.t})")
+        }
+        return sb.toString()
     }
 }

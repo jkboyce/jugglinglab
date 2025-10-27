@@ -14,7 +14,8 @@ import java.io.StringWriter
 import java.util.*
 
 class JMLEvent {
-    @JvmField var t: Double = 0.0
+    @JvmField
+    var t: Double = 0.0
     var juggler: Int = 0
         private set
     var hand: Int = 0
@@ -26,7 +27,8 @@ class JMLEvent {
     var pathPermFromMaster: Permutation? = null
 
     // for use during layout
-    @JvmField var calcpos: Boolean = false
+    @JvmField
+    var calcpos: Boolean = false
 
     // for linking into event chains
     var previous: JMLEvent? = null
@@ -115,10 +117,9 @@ class JMLEvent {
 
     val previousForHand: JMLEvent?
         get() {
-            var ev = this.previous
-
+            var ev = previous
             while (ev != null) {
-                if (ev.juggler == this.juggler && ev.hand == this.hand) {
+                if (ev.juggler == juggler && ev.hand == hand) {
                     return ev
                 }
                 ev = ev.previous
@@ -128,10 +129,9 @@ class JMLEvent {
 
     val nextForHand: JMLEvent?
         get() {
-            var ev = this.next
-
+            var ev = next
             while (ev != null) {
-                if (ev.juggler == this.juggler && ev.hand == this.hand) {
+                if (ev.juggler == juggler && ev.hand == hand) {
                     return ev
                 }
                 ev = ev.next
@@ -160,70 +160,54 @@ class JMLEvent {
         return (mast1 === mast2)
     }
 
-    fun getPathTransition(path: Int, transtype: Int): JMLTransition? {
-        for (tr in transitions) {
-            if (tr.path == path) {
-                if (transtype == JMLTransition.TRANS_ANY || transtype == tr.transType) {
-                    return tr
-                }
-            }
+    fun getPathTransition(path: Int, transType: Int): JMLTransition? {
+        return transitions.firstOrNull {
+            it.path == path && (transType == JMLTransition.TRANS_ANY || transType == it.transType)
         }
-        return null
     }
 
-    fun hasThrow(): Boolean {
-        for (tr in transitions) {
-            if (tr.transType == JMLTransition.TRANS_THROW) {
-                return true
+    val hasThrow: Boolean
+        get() = transitions.any { it.transType == JMLTransition.TRANS_THROW }
+
+    val hasThrowOrCatch: Boolean
+        get() = transitions.any {
+            when (it.transType) {
+                JMLTransition.TRANS_THROW,
+                JMLTransition.TRANS_CATCH,
+                JMLTransition.TRANS_SOFTCATCH,
+                JMLTransition.TRANS_GRABCATCH -> true
+                else -> false
             }
         }
-        return false
-    }
-
-    fun hasThrowOrCatch(): Boolean {
-        for (tr in transitions) {
-            val type = tr.transType
-
-            if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH || type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH) {
-                return true
-            }
-        }
-        return false
-    }
 
     // Return true if the event contains a throw transition to another juggler.
     //
     // Note this will only work after pattern layout.
-    
-    fun hasPassingThrow(): Boolean {
-        for (tr in transitions) {
-            if (tr.transType != JMLTransition.TRANS_THROW) continue
-            val pl = tr.outgoingPathLink ?: continue
-            if (pl.endEvent.juggler != juggler) return true
+
+    val hasPassingThrow: Boolean
+        get() = transitions.any { tr ->
+            tr.transType == JMLTransition.TRANS_THROW &&
+                tr.outgoingPathLink?.endEvent?.juggler != juggler
         }
-        return false
-    }
 
     // Return true if the event contains a catch transition from another juggler.
     //
     // Note this will only work after pattern layout.
-    
-    fun hasPassingCatch(): Boolean {
-        for (tr in transitions) {
-            if (tr.transType != JMLTransition.TRANS_CATCH &&
-                tr.transType != JMLTransition.TRANS_SOFTCATCH &&
-                tr.transType != JMLTransition.TRANS_GRABCATCH) 
-            {
-                continue
-            }
-            val pl = tr.incomingPathLink ?: continue
-            if (pl.startEvent.juggler != juggler) return true
-        }
-        return false
-    }
 
-    // Note this will only work after pattern layout
-    fun hasPassingTransition() = (hasPassingThrow() || hasPassingCatch())
+    val hasPassingCatch: Boolean
+        get() = transitions.any { tr ->
+            when (tr.transType) {
+                JMLTransition.TRANS_CATCH,
+                JMLTransition.TRANS_SOFTCATCH,
+                JMLTransition.TRANS_GRABCATCH -> true
+                else -> false
+            } && tr.incomingPathLink?.startEvent?.juggler != juggler
+        }
+
+    // Note this only works after pattern layout.
+
+    val hasPassingTransition: Boolean
+        get() = (hasPassingThrow || hasPassingCatch)
 
     fun duplicate(delay: Int, delayunits: Int): JMLEvent {
         val dup = JMLEvent()
@@ -242,31 +226,32 @@ class JMLEvent {
         return dup
     }
 
+    // Return the event hash code, for locating a particular event in a pattern.
+
     val hashCode: Int
-        // For locating a particular event in a pattern.
         get() {
-            val c = this.localCoordinate
+            val c = localCoordinate
             val s =
                 ("<event x=\""
-                        + toStringRounded(c.x, 4)
-                        + "\" y=\""
-                        + toStringRounded(c.y, 4)
-                        + "\" z=\""
-                        + toStringRounded(c.z, 4)
-                        + "\" t=\""
-                        + toStringRounded(this.t, 4)
-                        + "\" hand=\""
-                        + this.juggler
-                        + ":"
-                        + (if (this.hand == HandLink.LEFT_HAND) "left" else "right")
-                        + "\">")
+                    + toStringRounded(c.x, 4)
+                    + "\" y=\""
+                    + toStringRounded(c.y, 4)
+                    + "\" z=\""
+                    + toStringRounded(c.z, 4)
+                    + "\" t=\""
+                    + toStringRounded(t, 4)
+                    + "\" hand=\""
+                    + juggler
+                    + ":"
+                    + (if (hand == HandLink.LEFT_HAND) "left" else "right")
+                    + "\">")
             return s.hashCode()
         }
 
     //--------------------------------------------------------------------------
     // Reader/writer methods
     //--------------------------------------------------------------------------
-    
+
     @Throws(JuggleExceptionUser::class)
     fun readJML(current: JMLNode, jmlvers: String, njugglers: Int, npaths: Int) {
         val at = current.attributes
@@ -340,14 +325,21 @@ class JMLEvent {
             }
 
             if (childNodeType.equals("throw", ignoreCase = true)) {
-                addTransition(JMLTransition(JMLTransition.TRANS_THROW, pnum, childTranstype, childMod))
+                addTransition(
+                    JMLTransition(
+                        JMLTransition.TRANS_THROW,
+                        pnum,
+                        childTranstype,
+                        childMod
+                    )
+                )
             } else if (childNodeType.equals("catch", ignoreCase = true) &&
-                childTranstype.equals("soft", ignoreCase = true))
-            {
+                childTranstype.equals("soft", ignoreCase = true)
+            ) {
                 addTransition(JMLTransition(JMLTransition.TRANS_SOFTCATCH, pnum, null, null))
             } else if (childNodeType.equals("catch", ignoreCase = true) &&
-                childTranstype.equals("grab", ignoreCase = true))
-            {
+                childTranstype.equals("grab", ignoreCase = true)
+            ) {
                 addTransition(JMLTransition(JMLTransition.TRANS_GRABCATCH, pnum, null, null))
             } else if (childNodeType.equals("catch", ignoreCase = true)) {
                 addTransition(JMLTransition(JMLTransition.TRANS_CATCH, pnum, null, null))
@@ -366,18 +358,18 @@ class JMLEvent {
         val c = localCoordinate
         wr.println(
             ("<event x=\""
-                    + toStringRounded(c.x, 4)
-                    + "\" y=\""
-                    + toStringRounded(c.y, 4)
-                    + "\" z=\""
-                    + toStringRounded(c.z, 4)
-                    + "\" t=\""
-                    + toStringRounded(t, 4)
-                    + "\" hand=\""
-                    + juggler
-                    + ":"
-                    + (if (hand == HandLink.LEFT_HAND) "left" else "right")
-                    + "\">")
+                + toStringRounded(c.x, 4)
+                + "\" y=\""
+                + toStringRounded(c.y, 4)
+                + "\" z=\""
+                + toStringRounded(c.z, 4)
+                + "\" t=\""
+                + toStringRounded(t, 4)
+                + "\" hand=\""
+                + juggler
+                + ":"
+                + (if (hand == HandLink.LEFT_HAND) "left" else "right")
+                + "\">")
         )
         for (tr in transitions) {
             tr.writeJML(wr)

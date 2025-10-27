@@ -55,20 +55,16 @@ class JMLNode(
     }
 
     fun writeNode(write: PrintWriter, indentlevel: Int) {
-        var i: Int
         var sb = StringBuilder()
         
         sb.append("<").append(nodeType)
-        // output attributes
-        i = 0
-        while (i < attributes.numberOfAttributes) {
+        for (i in 0..<attributes.numberOfAttributes) {
             sb.append(" ").append(attributes.getAttributeName(i))
                 .append("=\"").append(xmlescape(attributes.getAttributeValue(i)))
                 .append("\"")
-            i++
         }
 
-        if (this.numberOfChildren == 0) {
+        if (numberOfChildren == 0) {
             if (nodeValue == null) {
                 sb.append("/>")
             } else {
@@ -87,13 +83,9 @@ class JMLNode(
                 sb = StringBuilder()
             }
             write.flush()
-
-            i = 0
-            while (i < this.numberOfChildren) {
-                getChildNode(i).writeNode(write, indentlevel + 1)
-                i++
+            for (child in childNodes) {
+                child.writeNode(write, indentlevel + 1)
             }
-            
             sb.append("</").append(nodeType).append(">")
             write.println(sb)
         }

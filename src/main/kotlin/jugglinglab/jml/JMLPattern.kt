@@ -685,7 +685,7 @@ class JMLPattern() {
             val differentMasters = (prev == null || !ev.hasSameMasterAs(prev))
             val insideWindow = (prev != null && (ev.t - prev.t) < twindow)
             val notPassAdjacent =
-                (prev != null && next != null && !prev.hasPassingTransition() && !next.hasPassingTransition())
+                (prev != null && next != null && !prev.hasPassingTransition && !next.hasPassingTransition)
 
             val remove = holdingOnly && differentMasters && insideWindow && notPassAdjacent
             if (remove) {
