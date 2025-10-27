@@ -293,7 +293,7 @@ public class ApplicationWindow extends JFrame implements ActionListener {
 
         case JMLParser.JML_LIST:
           PatternListWindow plw = new PatternListWindow(parser.getTree());
-          plw.setJMLFilename(jmlf.getName());
+          plw.setJmlFilename(jmlf.getName());
           break;
 
         default:
