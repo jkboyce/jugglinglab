@@ -216,7 +216,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         evtransitions = ev.numberOfTransitions
         evtime = ev.t
 
-        val numsyms = pat.symmetries().size - 1
+        val numsyms = pat.symmetries.size - 1
         val sym = arrayOfNulls<JMLSymmetry>(numsyms)
         val symperiod = IntArray(numsyms)
         val deltaentries = IntArray(numsyms)
@@ -224,7 +224,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
         numentries = 1
         var index = 0
-        for (temp in pat.symmetries()) {
+        for (temp in pat.symmetries) {
             when (temp.symType) {
                 JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm!!.inverse
                 JMLSymmetry.TYPE_SWITCH -> {

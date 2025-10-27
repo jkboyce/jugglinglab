@@ -205,7 +205,7 @@ class Mutator {
             pos = pos.next
         }
 
-        for (sym in pat.symmetries()) {
+        for (sym in pat.symmetries) {
             val delay = sym.delay
             if (delay > 0) {
                 sym.delay = delay * scale

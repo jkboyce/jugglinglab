@@ -1774,7 +1774,7 @@ public abstract class MHNPattern extends Pattern {
 
   protected void addEventsForUntouchedPathsToJML(JMLPattern pat, boolean[] pathtouched) {
     // first, apply all pattern symmetries to figure out which paths don't get touched
-    for (JMLSymmetry sym : pat.symmetries()) {
+    for (JMLSymmetry sym : pat.getSymmetries()) {
       Permutation perm = sym.getPathPerm();
       for (int k = 0; k < getNumberOfPaths(); k++) {
         if (pathtouched[k]) {
@@ -1819,7 +1819,7 @@ public abstract class MHNPattern extends Pattern {
 
           // mark related paths as touched
           pathtouched[k] = true;
-          for (JMLSymmetry sym : pat.symmetries()) {
+          for (JMLSymmetry sym : pat.getSymmetries()) {
             Permutation perm = sym.getPathPerm();
             for (int l = 1; l < perm.getOrder(k + 1); l++) {
               pathtouched[perm.getMapping(k + 1, l) - 1] = true;

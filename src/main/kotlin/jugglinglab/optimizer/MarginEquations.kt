@@ -176,7 +176,7 @@ class MarginEquations() {
         var masterplNum = 0
         val masterpl: MutableList<PathLink> = ArrayList<PathLink>()
         for (pathlink in pathlinks) {
-            for (pl in pathlink!!) {
+            for (pl in pathlink) {
                 if (!pl.isInHand && pl.startEvent.isMaster) {
                     ++masterplNum
                     masterpl.add(pl)
@@ -204,7 +204,7 @@ class MarginEquations() {
         // * P1 and P2 can collide (t_same is defined and occurs when both are in the air)
         var symDelay = -1.0
         var symSwitchdelay = false
-        for (sym in pat.symmetries()) {
+        for (sym in pat.symmetries) {
             when (sym.getType()) {
                 JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
                 JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true

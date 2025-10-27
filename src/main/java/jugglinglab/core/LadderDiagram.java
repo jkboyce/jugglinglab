@@ -285,7 +285,7 @@ public class LadderDiagram extends JPanel
   protected void createView() {
     has_switch_symmetry = has_switchdelay_symmetry = false;
 
-    for (JMLSymmetry sym : pat.symmetries()) {
+    for (JMLSymmetry sym : pat.getSymmetries()) {
       switch (sym.getType()) {
         case JMLSymmetry.TYPE_SWITCH:
           has_switch_symmetry = true;

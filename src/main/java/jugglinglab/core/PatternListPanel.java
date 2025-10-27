@@ -298,7 +298,7 @@ public class PatternListPanel extends JPanel {
     }
     JMLNode infonode = patnode.findNode("info");
 
-    if (pattern.hasBasePattern() && !pattern.isBasePatternEdited()) {
+    if (pattern.getHasBasePattern() && !pattern.isBasePatternEdited()) {
       // add as base pattern instead of JML
       notation = pattern.getBasePatternNotation();
       anim = pattern.getBasePatternConfig();
