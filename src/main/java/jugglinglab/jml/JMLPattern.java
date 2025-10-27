@@ -262,7 +262,7 @@ public class JMLPattern {
           boolean add_transition = true;
 
           for (JMLTransition tr : ev.transitions()) {
-            if (tr.getPath() == tr_current.getPath()) {
+            if (tr.path == tr_current.path) {
               add_transition = false;
               break;
             }
@@ -662,7 +662,7 @@ public class JMLPattern {
 
           JMLTransition start_tr = null;
           for (JMLTransition tr : start.transitions()) {
-            if (tr.getPath() == path) {
+            if (tr.path == path) {
               start_tr = tr;
               break;
             }
@@ -670,7 +670,7 @@ public class JMLPattern {
 
           JMLTransition end_tr = null;
           for (JMLTransition tr : end.transitions()) {
-            if (tr.getPath() == path) {
+            if (tr.path == path) {
               end_tr = tr;
               break;
             }
@@ -688,14 +688,14 @@ public class JMLPattern {
 
           int start_tr_type = start_tr.getType();
           String start_tr_throw_type = start_tr.getThrowType();
-          String start_tr_throw_mod = start_tr.getMod();
+          String start_tr_throw_mod = start_tr.mod;
 
           start_tr.setType(end_tr.getType());
           start_tr.setThrowType(end_tr.getThrowType());
-          start_tr.setMod(end_tr.getMod());
+          start_tr.mod = end_tr.mod;
           end_tr.setType(start_tr_type);
           end_tr.setThrowType(start_tr_throw_type);
-          end_tr.setMod(start_tr_throw_mod);
+          end_tr.mod = start_tr_throw_mod;
 
           // don't need to do surgery on PathLinks or Paths since those
           // will be recalculated during pattern layout
@@ -980,7 +980,7 @@ public class JMLPattern {
         }
 
         for (JMLTransition tr : maxevent.transitions()) {
-          int path = tr.getPath() - 1;
+          int path = tr.path - 1;
 
           switch (tr.getType()) {
             case JMLTransition.TRANS_THROW:
@@ -1067,7 +1067,7 @@ public class JMLPattern {
         }
 
         for (JMLTransition tr : minevent.transitions()) {
-          int path = tr.getPath() - 1;
+          int path = tr.path - 1;
 
           switch (tr.getType()) {
             case JMLTransition.TRANS_THROW:
@@ -1342,7 +1342,7 @@ public class JMLPattern {
                 Object[] arguments = {i + 1};
                 throw new JuggleExceptionUser(MessageFormat.format(template, arguments));
               }
-              pl.setThrow(lasttr.getThrowType(), lasttr.getMod());
+              pl.setThrow(lasttr.getThrowType(), lasttr.mod);
               break;
             default:
               throw new JuggleExceptionInternal("unrecognized transition type in buildLinkLists()", this);

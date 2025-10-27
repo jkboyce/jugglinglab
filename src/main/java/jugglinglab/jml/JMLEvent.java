@@ -214,7 +214,7 @@ public class JMLEvent {
 
   public JMLTransition getPathTransition(int path, int transtype) {
     for (JMLTransition tr : transitions) {
-      if (tr.getPath() == path) {
+      if (tr.path == path) {
         if (transtype == JMLTransition.TRANS_ANY || transtype == tr.getType()) {
           return tr;
         }
@@ -306,7 +306,7 @@ public class JMLEvent {
     dup.calcpos = calcpos;
 
     for (JMLTransition tr : transitions()) {
-      dup.addTransition(tr.duplicate());
+      dup.addTransition(tr.copy());
     }
 
     dup.setMaster(isMaster() ? this : master);

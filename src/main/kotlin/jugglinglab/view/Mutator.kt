@@ -327,7 +327,7 @@ class Mutator {
             if (ev.isMaster) {
                 var holdingOnly = true
                 for (tr in ev.transitions()) {
-                    val type = tr.getType()
+                    val type = tr.transType
                     if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
                         holdingOnly = false
                         break
@@ -353,7 +353,7 @@ class Mutator {
             if (ev.isMaster) {
                 var holdingOnly = true
                 for (tr in ev.transitions()) {
-                    val type = tr.getType()
+                    val type = tr.transType
                     if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
                         holdingOnly = false
                         break

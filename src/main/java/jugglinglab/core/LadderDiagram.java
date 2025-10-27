@@ -445,7 +445,7 @@ public class LadderDiagram extends JPanel
       int slot = 0;
       for (int j = 0; j < item.endevent.getNumberOfTransitions(); j++) {
         JMLTransition temp = item.endevent.getTransition(j);
-        if (temp.getPath() == item.pathnum) {
+        if (temp.path == item.pathnum) {
           slot = j;
           break;
         }
@@ -664,7 +664,7 @@ public class LadderDiagram extends JPanel
           } else {
             // color ball representation with the prop's color
             JMLTransition tr = item.event.getTransition(item.transnum);
-            int propnum = animpropnum[tr.getPath() - 1];
+            int propnum = animpropnum[tr.path - 1];
             gr.setColor(pat.getProp(propnum).getEditorColor());
           }
           gr.fillOval(item.xlow, item.ylow, item.xhigh - item.xlow, item.yhigh - item.ylow);

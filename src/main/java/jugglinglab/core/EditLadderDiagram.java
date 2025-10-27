@@ -559,9 +559,9 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             // find out when the ball being thrown was last caught
             JMLEvent ev = item.event.getPrevious();
             while (ev != null) {
-              if (ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_CATCH) != null
-                  || ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_SOFTCATCH) != null
-                  || ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_GRABCATCH) != null) {
+              if (ev.getPathTransition(tr.path, JMLTransition.TRANS_CATCH) != null
+                  || ev.getPathTransition(tr.path, JMLTransition.TRANS_SOFTCATCH) != null
+                  || ev.getPathTransition(tr.path, JMLTransition.TRANS_GRABCATCH) != null) {
                 break;
               }
               ev = ev.getPrevious();
@@ -597,7 +597,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             // find out when the ball being caught is next thrown
             ev = item.event.getNext();
             while (ev != null) {
-              if (ev.getPathTransition(tr.getPath(), JMLTransition.TRANS_THROW) != null) {
+              if (ev.getPathTransition(tr.path, JMLTransition.TRANS_THROW) != null) {
                 break;
               }
               ev = ev.getNext();
@@ -719,15 +719,15 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
     for (JMLTransition tr : ev.transitions()) {
       switch (tr.getType()) {
         case JMLTransition.TRANS_THROW:
-          throwpath[tr.getPath() - 1] = true;
+          throwpath[tr.path - 1] = true;
           break;
         case JMLTransition.TRANS_CATCH:
         case JMLTransition.TRANS_SOFTCATCH:
         case JMLTransition.TRANS_GRABCATCH:
-          catchpath[tr.getPath() - 1] = true;
+          catchpath[tr.path - 1] = true;
           break;
         case JMLTransition.TRANS_HOLDING:
-          holdpathnew[tr.getPath() - 1] = holdpathorig[tr.getPath() - 1] = true;
+          holdpathnew[tr.path - 1] = holdpathorig[tr.path - 1] = true;
           break;
       }
     }
@@ -742,15 +742,15 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             JMLTransition tr = ev.getTransition(j);
             switch (tr.getType()) {
               case JMLTransition.TRANS_THROW:
-                holdpathnew[tr.getPath() - 1] = true;
+                holdpathnew[tr.path - 1] = true;
                 break;
               case JMLTransition.TRANS_CATCH:
               case JMLTransition.TRANS_SOFTCATCH:
               case JMLTransition.TRANS_GRABCATCH:
-                holdpathnew[tr.getPath() - 1] = false;
+                holdpathnew[tr.path - 1] = false;
                 break;
               case JMLTransition.TRANS_HOLDING:
-                if (throwpath[tr.getPath() - 1]) {
+                if (throwpath[tr.path - 1]) {
                   ev.removeTransition(j);
                   if (!ev.isMaster()) {
                     ev.getMaster().removeTransition(j);
@@ -787,15 +787,15 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             JMLTransition tr = ev.getTransition(j);
             switch (tr.getType()) {
               case JMLTransition.TRANS_THROW:
-                holdpathnew[tr.getPath() - 1] = false;
+                holdpathnew[tr.path - 1] = false;
                 break;
               case JMLTransition.TRANS_CATCH:
               case JMLTransition.TRANS_SOFTCATCH:
               case JMLTransition.TRANS_GRABCATCH:
-                holdpathnew[tr.getPath() - 1] = true;
+                holdpathnew[tr.path - 1] = true;
                 break;
               case JMLTransition.TRANS_HOLDING:
-                if (catchpath[tr.getPath() - 1]) {
+                if (catchpath[tr.path - 1]) {
                   ev.removeTransition(j);
                   if (!ev.isMaster()) {
                     ev.getMaster().removeTransition(j);
@@ -1450,7 +1450,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
       JMLEvent ev = ((LadderEventItem) popupitem).event;
       int transnum = ((LadderEventItem) popupitem).transnum;
       JMLTransition tr = ev.getTransition(transnum);
-      pn = tr.getPath();
+      pn = tr.path;
     } else {
       pn = ((LadderPathItem) popupitem).pathnum;
     }
@@ -1690,7 +1690,7 @@ public class EditLadderDiagram extends LadderDiagram implements ActionListener {
             return;
           }
 
-          tr.setMod(mod);
+          tr.mod = mod;
 
           activeEventChanged();
           jd.dispose();

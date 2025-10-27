@@ -258,7 +258,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         ea[evjuggler][evhand][0] = idperm
         for (i in 0..<evtransitions) {
             val tr = ev.getTransition(i)
-            transitiontype[i] = tr.getType()
+            transitiontype[i] = tr.transType
         }
 
         var changed: Boolean
