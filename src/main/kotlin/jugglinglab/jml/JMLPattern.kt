@@ -123,18 +123,21 @@ class JMLPattern() {
     // Alternate constructors
     //--------------------------------------------------------------------------
 
+    @Throws(JuggleExceptionUser::class)
     constructor(root: JMLNode) : this() {
         readJML(root)
         isValid = true
     }
 
     // Used to specify jml version number, when pattern is part of a patternlist
+    @Throws(JuggleExceptionUser::class)
     constructor(root: JMLNode, jmlvers: String) : this() {
         loadingversion = jmlvers
         readJML(root)
         isValid = true
     }
 
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     constructor(read: Reader?) : this() {
         try {
             val parser = JMLParser()
@@ -148,6 +151,7 @@ class JMLPattern() {
         }
     }
 
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     constructor(pat: JMLPattern) : this(StringReader(pat.toString()))
 
     //--------------------------------------------------------------------------

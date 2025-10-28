@@ -26,13 +26,14 @@ import javax.swing.*
 import javax.swing.border.BevelBorder
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
+import kotlin.collections.ArrayList
 
 class PatternListPanel private constructor() : JPanel() {
     val patternList: JMLPatternList = JMLPatternList()
 
     private var parentFrame: JFrame? = null
     private var animtarget: View? = null
-    private var list: JList<PatternRecord?>? = null
+    private lateinit var list: JList<PatternRecord>
     @JvmField
     var hasUnsavedChanges: Boolean = false
 
@@ -65,20 +66,19 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun makePanel() {
         list = JList(patternList.model)
-        list!!.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        list!!.setCellRenderer(PatternCellRenderer())
+        list.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        list.setCellRenderer(PatternCellRenderer())
 
-        list!!.setDragEnabled(true)
-        list!!.setTransferHandler(PatternTransferHandler())
+        list.setDragEnabled(true)
+        list.setTransferHandler(PatternTransferHandler())
 
         val pane = JScrollPane(list)
-
-        list!!.addMouseListener(
+        list.addMouseListener(
             object : MouseAdapter() {
                 override fun mousePressed(me: MouseEvent) {
-                    val row = list!!.locationToIndex(me.getPoint())
+                    val row = list.locationToIndex(me.getPoint())
                     if (row >= 0) {
-                        list!!.setSelectedIndex(row)
+                        list.setSelectedIndex(row)
                     }
 
                     didPopup = false
@@ -113,7 +113,7 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun launchAnimation() {
         try {
-            val row = list!!.selectedIndex
+            val row = list.selectedIndex
             if (row < 0 || (JMLPatternList.BLANK_AT_END && row == patternList.model.size() - 1)) {
                 return
             }
@@ -157,19 +157,20 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun makePopupMenu(): JPopupMenu {
         val popup = JPopupMenu()
-        val row = list!!.selectedIndex
+        val row = list.selectedIndex
 
-        popupPatterns = ArrayList()
+        val pupatterns = ArrayList<PatternWindow>()
+        popupPatterns = pupatterns
         for (fr in Frame.getFrames()) {
             if (fr.isVisible && fr is PatternWindow) {
-                popupPatterns!!.add(fr)
+                pupatterns.add(fr)
             }
         }
 
         val al =
             ActionListener { ae: ActionEvent? ->
                 val command = ae!!.getActionCommand()
-                val row1 = list!!.selectedIndex
+                val row1 = list.selectedIndex
                 when (command) {
                     "inserttext" -> insertText(row1)
                     "insertpattern" -> {}
@@ -179,7 +180,7 @@ class PatternListPanel private constructor() : JPanel() {
                     else -> {
                         // inserting a pattern
                         val patnum = command.substring(3).toInt()
-                        val pw = popupPatterns!![patnum]
+                        val pw = pupatterns[patnum]
                         insertPattern(row1, pw)
                     }
                 }
@@ -187,7 +188,6 @@ class PatternListPanel private constructor() : JPanel() {
 
         for (i in popupItems.indices) {
             val name: String? = popupItems[i]
-
             if (name == null) {
                 popup.addSeparator()
                 continue
@@ -205,7 +205,7 @@ class PatternListPanel private constructor() : JPanel() {
             ) {
                 item.setEnabled(false)
             }
-            if (popupCommands[i] == "insertpattern" && popupPatterns!!.isEmpty()) {
+            if (popupCommands[i] == "insertpattern" && pupatterns.isEmpty()) {
                 item.setEnabled(false)
             }
 
@@ -213,7 +213,7 @@ class PatternListPanel private constructor() : JPanel() {
 
             if (popupCommands[i] == "insertpattern") {
                 var patnum = 0
-                for (pw in popupPatterns!!) {
+                for (pw in pupatterns) {
                     val pitem = JMenuItem("   " + pw.getTitle())
                     pitem.actionCommand = "pat$patnum"
                     pitem.addActionListener(al)
@@ -231,9 +231,7 @@ class PatternListPanel private constructor() : JPanel() {
                 override fun popupMenuCanceled(e: PopupMenuEvent?) {
                     checkSelection()
                 }
-
                 override fun popupMenuWillBecomeInvisible(e: PopupMenuEvent?) {}
-
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {}
             })
 
@@ -248,11 +246,10 @@ class PatternListPanel private constructor() : JPanel() {
         if (animprefs!!.isEmpty()) {
             animprefs = null
         }
-
         var notation: String? = "jml"
         var anim: String? = null
 
-        val pattern = pw.pattern
+        val pattern = pw.pattern!!
         var patnode: JMLNode?
         try {
             patnode = pattern.rootNode!!.findNode("pattern")
@@ -275,12 +272,12 @@ class PatternListPanel private constructor() : JPanel() {
 
         if (row < 0) {
             if (JMLPatternList.BLANK_AT_END) {
-                list!!.setSelectedIndex(patternList.model.size() - 2)
+                list.setSelectedIndex(patternList.model.size() - 2)
             } else {
-                list!!.setSelectedIndex(patternList.model.size() - 1)
+                list.setSelectedIndex(patternList.model.size() - 1)
             }
         } else {
-            list!!.setSelectedIndex(row)
+            list.setSelectedIndex(row)
         }
 
         hasUnsavedChanges = true
@@ -297,9 +294,9 @@ class PatternListPanel private constructor() : JPanel() {
 
             patternList.addLine(row, display, null, null, null, null, null)
             if (row < 0) {
-                list!!.setSelectedIndex(patternList.size - 1)
+                list.setSelectedIndex(patternList.size - 1)
             } else {
-                list!!.setSelectedIndex(row)
+                list.setSelectedIndex(row)
             }
             hasUnsavedChanges = true
         }
@@ -323,7 +320,7 @@ class PatternListPanel private constructor() : JPanel() {
         }
 
         dialog!!.isVisible = true
-        list!!.clearSelection()
+        list.clearSelection()
     }
 
     // Open a dialog to allow the user to change the display text of a line.
@@ -382,10 +379,9 @@ class PatternListPanel private constructor() : JPanel() {
     // Do final cleanup after any mouse-related interaction.
 
     private fun checkSelection() {
-        if (JMLPatternList.BLANK_AT_END && list!!.selectedIndex == patternList.model.size() - 1) {
-            list!!.clearSelection()
+        if (JMLPatternList.BLANK_AT_END && list.selectedIndex == patternList.model.size() - 1) {
+            list.clearSelection()
         }
-
         popupPatterns = null
         dialog = null
         tf = null
@@ -402,7 +398,7 @@ class PatternListPanel private constructor() : JPanel() {
         }
 
         override fun createTransferable(c: JComponent?): Transferable? {
-            val row = list!!.selectedIndex
+            val row = list.selectedIndex
             if (row < 0 || (JMLPatternList.BLANK_AT_END && row == patternList.model.size() - 1)) {
                 return null
             }
@@ -448,7 +444,7 @@ class PatternListPanel private constructor() : JPanel() {
                 if (t.isDataFlavorSupported(PATTERN_FLAVOR)) {
                     val rec = t.getTransferData(PATTERN_FLAVOR) as PatternRecord
                     patternList.model.add(index, PatternRecord(rec))
-                    list!!.setSelectedIndex(index)
+                    list.setSelectedIndex(index)
                     hasUnsavedChanges = true
                     return true
                 }
@@ -464,7 +460,7 @@ class PatternListPanel private constructor() : JPanel() {
                         val rec = PatternRecord(lines[i]!!, null, null, null, null, null, null)
                         patternList.model.add(index, rec)
                     }
-                    list!!.setSelectedIndex(index)
+                    list.setSelectedIndex(index)
                     hasUnsavedChanges = true
                     return true
                 }
