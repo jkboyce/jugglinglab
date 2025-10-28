@@ -221,7 +221,7 @@ open class AnimationPanel : JPanel(), Runnable {
                     if (writingGIF) {
                         return
                     }
-                    animator.setDimension(size)
+                    animator.dimension = size
                     repaint()
 
                     // Don't update the preferred animation size if the enclosing
@@ -258,8 +258,8 @@ open class AnimationPanel : JPanel(), Runnable {
             result[1] = Math.toRadians(179.9999)
         }
 
-        if (animator.pat.numberOfJugglers == 1) {
-            var a = -Math.toRadians(animator.pat.getJugglerAngle(1, this.time))
+        if (animator.pat!!.numberOfJugglers == 1) {
+            var a = -Math.toRadians(animator.pat!!.getJugglerAngle(1, this.time))
 
             while (a < 0) {
                 a += Math.toRadians(360.0)
@@ -294,7 +294,7 @@ open class AnimationPanel : JPanel(), Runnable {
             jc = newjc
         }
 
-        animator.setDimension(size)
+        animator.dimension = size
         animator.restartAnimator(pat, newjc)
         setBackground(animator.background)
 
@@ -345,12 +345,12 @@ open class AnimationPanel : JPanel(), Runnable {
             engineAnimating = true
 
             while (true) {
-                this.time = animator.pat.loopStartTime
+                this.time = animator.pat!!.loopStartTime
 
-                while (this.time < (animator.pat.loopEndTime - 0.5 * animator.sim_interval_secs)) {
+                while (this.time < (animator.pat!!.loopEndTime - 0.5 * animator.simIntervalSecs)) {
                     repaint()
                     realTimeWait =
-                        animator.real_interval_millis - (System.currentTimeMillis() - realTimeStart)
+                        animator.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
 
                     if (realTimeWait > 0) {
                         Thread.sleep(realTimeWait)
@@ -367,15 +367,16 @@ open class AnimationPanel : JPanel(), Runnable {
                     }
 
                     oldtime = this.time
-                    this.time += animator.sim_interval_secs
+                    this.time += animator.simIntervalSecs
                     newtime = this.time
 
                     if (jc.catchSound && catchclip != null) {
                         // use synchronized here to prevent editing actions in
                         // EditLadderDiagram from creating data consistency problems
-                        synchronized(animator.pat) {
-                            for (path in 1..animator.pat.numberOfPaths) {
-                                if (animator.pat.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
+                        val pattemp = animator.pat!!
+                        synchronized(pattemp) {
+                            for (path in 1..pattemp.numberOfPaths) {
+                                if (pattemp.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
                                     // do audio playback on the EDT -- not strictly
                                     // necessary but it seems to work better on Linux
                                     SwingUtilities.invokeLater {
@@ -390,9 +391,10 @@ open class AnimationPanel : JPanel(), Runnable {
                         }
                     }
                     if (jc.bounceSound && bounceclip != null) {
-                        synchronized(animator.pat) {
-                            for (path in 1..animator.pat.numberOfPaths) {
-                                if (animator.pat.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
+                        val pattemp = animator.pat!!
+                        synchronized(pattemp) {
+                            for (path in 1..pattemp.numberOfPaths) {
+                                if (pattemp.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
                                     SwingUtilities.invokeLater {
                                         if (bounceclip!!.isActive) {
                                             bounceclip!!.stop()
@@ -448,9 +450,9 @@ open class AnimationPanel : JPanel(), Runnable {
         }
 
     var cameraAngle: DoubleArray
-        get() = animator.getCameraAngle()
+        get() = animator.cameraAngle
         set(ca) {
-            animator.setCameraAngle(ca)
+            animator.cameraAngle = ca
         }
 
     protected fun drawString(message: String, g: Graphics) {
@@ -477,7 +479,7 @@ open class AnimationPanel : JPanel(), Runnable {
         get() = animator.zoomLevel
         set(z) {
             if (!writingGIF) {
-                animator.setZoomLevel(z)
+                animator.zoomLevel = z
                 repaint()
             }
         }

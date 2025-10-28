@@ -247,6 +247,7 @@ class AnimationPrefs {
             height = dim.height
         }
 
+    @Suppress("KotlinConstantConditions")
     override fun toString(): String {
         val sb = StringBuilder()
         if (width != WIDTH_DEF) {

@@ -183,10 +183,8 @@ abstract class View : JPanel() {
                         pm.setProgress(step)
                     }
                 }
-
-                override fun isCanceled(): Boolean {
-                    return (pm.isCanceled() || interrupted())
-                }
+                override val isCanceled: Boolean
+                    get() = (pm.isCanceled() || interrupted())
             }
 
             val jc = ap.animationPrefs
