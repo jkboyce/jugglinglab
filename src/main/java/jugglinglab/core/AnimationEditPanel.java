@@ -316,7 +316,7 @@ public class AnimationEditPanel extends AnimationPanel
       setPaused(!enginePaused);
     }
 
-    dragging_camera = false;
+    draggingCamera = false;
     dragging = false;
     dragging_xz = dragging_y = false;
     dragging_xy = dragging_z = dragging_angle = false;
@@ -337,7 +337,7 @@ public class AnimationEditPanel extends AnimationPanel
       setPaused(waspaused);
     }
     outside = false;
-    outside_valid = true;
+    outsideValid = true;
   }
 
   @Override
@@ -347,7 +347,7 @@ public class AnimationEditPanel extends AnimationPanel
       setPaused(true);
     }
     outside = true;
-    outside_valid = true;
+    outsideValid = true;
   }
 
   //----------------------------------------------------------------------------
@@ -442,9 +442,9 @@ public class AnimationEditPanel extends AnimationPanel
 
       if (dolayout) {
         try {
-          synchronized (anim.pat) {
-            anim.pat.setNeedsLayout();
-            anim.pat.layoutPattern();
+          synchronized (getAnimator().pat) {
+            getAnimator().pat.setNeedsLayout();
+            getAnimator().pat.layoutPattern();
           }
           if (event_active) {
             createHandpathView();
@@ -457,14 +457,14 @@ public class AnimationEditPanel extends AnimationPanel
 
         repaint();
       }
-    } else if (!dragging_camera) {
-      dragging_camera = true;
+    } else if (!draggingCamera) {
+      draggingCamera = true;
       lastx = startx;
       lasty = starty;
-      dragcamangle = anim.getCameraAngle();
+      dragcamangle = getAnimator().getCameraAngle();
     }
 
-    if (dragging_camera) {
+    if (draggingCamera) {
       int dx = me.getX() - lastx;
       int dy = me.getY() - lasty;
       lastx = me.getX();
@@ -485,10 +485,10 @@ public class AnimationEditPanel extends AnimationPanel
         ca[0] -= Math.toRadians(360);
       }
 
-      anim.setCameraAngle(snapCamera(ca));
+      getAnimator().setCameraAngle(snapCamera(ca));
     }
 
-    if (event_active && dragging_camera) {
+    if (event_active && draggingCamera) {
       try {
         createEventView();
       } catch (JuggleExceptionInternal jei) {
@@ -497,7 +497,7 @@ public class AnimationEditPanel extends AnimationPanel
       }
     }
 
-    if (position_active && (dragging_camera || dragging_angle)) {
+    if (position_active && (draggingCamera || dragging_angle)) {
       createPositionView();
     }
 
@@ -531,7 +531,7 @@ public class AnimationEditPanel extends AnimationPanel
               return;
             }
 
-            anim.setDimension(getSize());
+            getAnimator().setDimension(getSize());
             if (event_active) {
               try {
                 createEventView();
@@ -583,12 +583,12 @@ public class AnimationEditPanel extends AnimationPanel
     boolean snap_horizontal = true;
 
     if (event_active) {
-      a = -Math.toRadians(anim.pat.getJugglerAngle(event.getJuggler(), event.t));
+      a = -Math.toRadians(getAnimator().pat.getJugglerAngle(event.getJuggler(), event.t));
     } else if (position_active) {
       // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
       a = 0;
-    } else if (anim.pat.getNumberOfJugglers() == 1) {
-      a = -Math.toRadians(anim.pat.getJugglerAngle(1, getTime()));
+    } else if (getAnimator().pat.getNumberOfJugglers() == 1) {
+      a = -Math.toRadians(getAnimator().pat.getJugglerAngle(1, getTime()));
     } else {
       snap_horizontal = false;
     }
@@ -761,7 +761,7 @@ public class AnimationEditPanel extends AnimationPanel
     int ev_num = 0;
     for (JMLEvent ev : visible_events) {
       for (int i = 0; i < renderer_count; ++i) {
-        Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+        Renderer ren = (i == 0 ? getAnimator().ren1 : getAnimator().ren2);
 
         // translate by one pixel and see how far it is in juggler space
         Coordinate c = ev.getGlobalCoordinate();
@@ -846,7 +846,7 @@ public class AnimationEditPanel extends AnimationPanel
     handpath_hold = new boolean[num_handpath_points];
 
     for (int i = 0; i < renderer_count; ++i) {
-      Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+      Renderer ren = (i == 0 ? getAnimator().ren1 : getAnimator().ren2);
       Coordinate c = new Coordinate();
 
       for (int j = 0; j < num_handpath_points; ++j) {
@@ -1010,7 +1010,7 @@ public class AnimationEditPanel extends AnimationPanel
     pos_points = new double[2][pos_control_points.length][2];
 
     for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-      Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+      Renderer ren = (i == 0 ? getAnimator().ren1 : getAnimator().ren2);
 
       // translate by one pixel and see how far it is in juggler space
       Coordinate c =
@@ -1063,7 +1063,7 @@ public class AnimationEditPanel extends AnimationPanel
     Graphics g2 = g;
 
     for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-      Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+      Renderer ren = (i == 0 ? getAnimator().ren1 : getAnimator().ren2);
 
       if (jc.stereo && i == 0) {
         g2 = g.create(0, 0, d.width / 2, d.height);
@@ -1168,7 +1168,7 @@ public class AnimationEditPanel extends AnimationPanel
     int width = (jc.stereo ? d.width / 2 : d.width);
 
     for (int i = 0; i < (jc.stereo ? 2 : 1); i++) {
-      Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
+      Renderer ren = (i == 0 ? getAnimator().ren1 : getAnimator().ren2);
 
       if (jc.stereo) {
         if (i == 0) {
@@ -1478,9 +1478,9 @@ public class AnimationEditPanel extends AnimationPanel
       drawString(message, g);
     } else if (engineRunning && !writingGIF) {
       try {
-        anim.drawBackground(g);
+        getAnimator().drawBackground(g);
         drawGrid(g);
-        anim.drawFrame(getTime(), g, dragging_camera, false);
+        getAnimator().drawFrame(getTime(), g, draggingCamera, false);
         drawEvents(g);
         drawPositions(g);
       } catch (JuggleExceptionInternal jei) {
