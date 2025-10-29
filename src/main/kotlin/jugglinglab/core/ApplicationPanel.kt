@@ -52,7 +52,6 @@ class ApplicationPanel
 
     override fun actionPerformed(ae: ActionEvent) {
         val command = ae.getActionCommand()
-
         try {
             if (command.startsWith("notation")) {
                 try {
@@ -72,11 +71,9 @@ class ApplicationPanel
     }
 
     // Input is for example Pattern.NOTATION_SITESWAP.
-    fun setNotation(num: Int) {
-        if (num > Pattern.builtinNotations.size) {
-            return
-        }
 
+    fun setNotation(num: Int) {
+        if (num > Pattern.builtinNotations.size) return
         if (jtp != null) {
             remove(jtp)
         }
@@ -109,29 +106,23 @@ class ApplicationPanel
         }
 
         // change the default button when the tab changes
-        jtp!!.addChangeListener { _: ChangeEvent? -> rootPane.setDefaultButton(defaultButton) }
+        jtp!!.addChangeListener { _: ChangeEvent? -> rootPane.defaultButton = defaultButton }
 
         setLayout(BorderLayout())
         add(jtp!!, BorderLayout.CENTER)
-        parentFrame?.getRootPane()?.setDefaultButton(defaultButton)
+        parentFrame?.rootPane?.defaultButton = defaultButton
     }
 
     private fun addPatternEntryControl(control: NotationControl) {
-        val np1 = JPanel()
-        np1.setLayout(BorderLayout())
-        np1.add(control, BorderLayout.PAGE_START)
-
-        val np2 = JPanel()
-        np2.setLayout(FlowLayout(FlowLayout.TRAILING))
-        val nbut1 = JButton(guistrings.getString("Defaults"))
-        nbut1.addActionListener { _: ActionEvent? ->
-            try {
-                control.resetControl()
-            } catch (e: Exception) {
-                handleFatalException(e)
+        val nbut1 = JButton(guistrings.getString("Defaults")).apply {
+            addActionListener { _: ActionEvent? ->
+                try {
+                    control.resetControl()
+                } catch (e: Exception) {
+                    handleFatalException(e)
+                }
             }
         }
-        np2.add(nbut1)
 
         juggleButton =
             JButton(guistrings.getString("Juggle")).apply {
@@ -164,8 +155,17 @@ class ApplicationPanel
                     }
                 }
             }
-        np2.add(juggleButton)
-        np1.add(np2, BorderLayout.PAGE_END)
+
+        val np2 = JPanel().apply {
+            setLayout(FlowLayout(FlowLayout.TRAILING))
+            add(nbut1)
+            add(juggleButton)
+        }
+        val np1 = JPanel().apply {
+            setLayout(BorderLayout())
+            add(control, BorderLayout.PAGE_START)
+            add(np2, BorderLayout.PAGE_END)
+        }
 
         jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
     }
