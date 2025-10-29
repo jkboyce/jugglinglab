@@ -90,15 +90,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         // reports simultaneous enter/press events when the user mouses down in
         // the component; we want to not treat this as a click, but just use it
         // to get focus back.
-        if (jc.mousePause && lastpress == lastenter) {
-            return
-        }
-        if (!engineAnimating) {
-            return
-        }
-        if (writingGIF) {
-            return
-        }
+        if (jc.mousePause && lastpress == lastenter) return
+        if (!engineAnimating) return
+        if (writingGIF) return
 
         startx = me.getX()
         starty = me.getY()
@@ -128,8 +122,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltay = 0
                         deltax = 0
                         eventStart = event!!.localCoordinate
-                        val master = (if (event!!.isMaster) event else event!!.master)!!
-                        eventMasterStart = master.localCoordinate
+                        eventMasterStart = event!!.master.localCoordinate
                         repaint()
                         return
                     }
@@ -144,7 +137,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         if (j > 0) {
                             try {
                                 activateEvent(pattern!!.getEventImageInLoop(visibleEvents!![j]))
-
                                 for (att in attachments) {
                                     if (att is EditLadderDiagram) {
                                         att.activateEvent(event)
@@ -163,8 +155,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltay = 0
                         deltax = 0
                         eventStart = event!!.localCoordinate
-                        val master = (if (event!!.isMaster) event else event!!.master)!!
-                        eventMasterStart = master.localCoordinate
+                        eventMasterStart = event!!.master.localCoordinate
                         repaint()
                         return
                     }
@@ -244,7 +235,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                 posPoints[i][5][0] - posPoints[i][4][0],
                                 posPoints[i][5][1] - posPoints[i][4][1]
                             )
-
                         repaint()
                         return
                     }
@@ -343,12 +333,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     //--------------------------------------------------------------------------
 
     override fun mouseDragged(me: MouseEvent) {
-        if (!engineAnimating) {
-            return
-        }
-        if (writingGIF) {
-            return
-        }
+        if (!engineAnimating) return
+        if (writingGIF) return
 
         if (dragging) {
             val mx = me.getX()
@@ -357,7 +343,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             if (draggingAngle) {
                 // shift pixel coords of control point by mouse drag
-                val dcontrol = doubleArrayOf(startControl[0] + mx - startx, startControl[1] + my - starty)
+                val dcontrol = doubleArrayOf(
+                    startControl[0] + mx - startx,
+                    startControl[1] + my - starty
+                )
 
                 // re-express control point location in coordinate
                 // system of juggler:
@@ -392,7 +381,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     finalAngle += 360.0
                 }
                 position!!.angle = finalAngle
-
                 dolayout = true
             } else {
                 deltax = mx - startx
@@ -400,7 +388,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 // Get updated event/position coordinate based on mouse position.
                 // This modifies deltax, deltay based on snapping and projection.
-                val cc = this.currentCoordinate
+                val cc = currentCoordinate
 
                 if (eventActive) {
                     var deltalc = sub(cc, eventStart)
@@ -416,7 +404,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         }
                         master.localCoordinate = add(eventMasterStart, deltalc)!!
                     }
-
                     dolayout = true
                 }
 
@@ -440,7 +427,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     // into an invalid state, so we shouldn't ever get here
                     handleFatalException(je)
                 }
-
                 repaint()
             }
         } else if (!draggingCamera) {
@@ -507,12 +493,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 var hasResized: Boolean = false
 
                 override fun componentResized(e: ComponentEvent?) {
-                    if (!engineAnimating) {
-                        return
-                    }
-                    if (writingGIF) {
-                        return
-                    }
+                    if (!engineAnimating) return
+                    if (writingGIF) return
 
                     animator.dimension = size
                     if (eventActive) {
@@ -623,9 +605,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Helper functions related to event editing
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     @Throws(JuggleExceptionInternal::class)
     fun activateEvent(ev: JMLEvent?) {
         deactivatePosition()
@@ -646,9 +629,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
     @Throws(JuggleExceptionInternal::class)
     private fun createEventView() {
-        if (!eventActive) {
-            return
-        }
+        if (!eventActive) return
 
         // determine which events to display on-screen
         visibleEvents = ArrayList()
@@ -704,7 +685,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         // Determine screen coordinates of visual representations for events.
         // Note the first event in `visible_events` is the selected one.
-        val rendererCount = (if (jc.stereo) 2 else 1)
+        val rendererCount = if (jc.stereo) 2 else 1
         eventPoints =
             Array(visibleEvents!!.size) {
                 Array(rendererCount) {
@@ -724,8 +705,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val dl = 1.0 / distance(c, c2) // pixels/cm
 
                 val ca = ren.cameraAngle
-                val theta =
-                    ca[0] + Math.toRadians(pattern!!.getJugglerAngle(ev.juggler, ev.t))
+                val theta = ca[0] + Math.toRadians(pattern!!.getJugglerAngle(ev.juggler, ev.t))
                 val phi = ca[1]
 
                 val dlc = dl * cos(phi)
@@ -753,11 +733,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                 dzy * EVENT_CONTROL_POINTS[j][2])
                     }
 
-                    showXzDragControl = (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
+                    showXzDragControl =
+                        (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
                             && (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
                             || anglediff(theta - Math.PI) < Math.toRadians(XZ_CONTROL_SHOW_DEG))
                             )
-                    showYDragControl = !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
+                    showYDragControl =
+                        !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
                             && (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG)
                             || anglediff(theta - Math.PI) < Math.toRadians(Y_CONTROL_SHOW_DEG))
                             )
@@ -776,18 +758,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
                 }
             }
-
             ++evNum
         }
-
         createHandpathView()
     }
 
     @Throws(JuggleExceptionInternal::class)
     private fun createHandpathView() {
-        if (!eventActive) {
-            return
-        }
+        if (!eventActive) return
 
         val pat = pattern
         val rendererCount = (if (jc.stereo) 2 else 1)
@@ -831,13 +809,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
             if (g2 is Graphics2D) {
-                g2
-                    .setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             }
 
             // draw hand path
             val numHandpathPoints = handpathPoints[0].size
-
             val pathSolid = Path2D.Double()
             val pathDashed = Path2D.Double()
             for (j in 0..<numHandpathPoints - 1) {
@@ -934,9 +910,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     }
 
     private fun createPositionView() {
-        if (!positionActive) {
-            return
-        }
+        if (!positionActive) return
 
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
 
@@ -995,7 +969,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         var g2 = g
 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
-            val ren = (if (i == 0) animator.ren1 else animator.ren2)
+            val ren = if (i == 0) animator.ren1 else animator.ren2
 
             if (jc.stereo) {
                 g2 = when (i) {
@@ -1053,7 +1027,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             if (!draggingAngle) {
                 if (draggingZ || (cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
                     // line dropping down to projection on ground (z = 0)
-                    val c = this.currentCoordinate
+                    val c = currentCoordinate
                     val z = c.z
                     c.z = 0.0
                     val xyProjection = ren!!.getXY(c)
@@ -1141,7 +1115,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             for (j in 0..3) {
                 val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
                 val b = ((if (j < 2) 0 else d.height) - center[1]).toDouble()
-
                 val m = (axis2[1] * a - axis2[0] * b) / det
                 val n = (-axis1[1] * a + axis1[0] * b) / det
                 val mint = floor(m).toInt()
@@ -1188,7 +1161,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     return event!!.localCoordinate
                 }
 
-                val c = Coordinate(eventStart!!.x, eventStart!!.y, eventStart!!.z)
+                val c = eventStart!!.copy()
 
                 // screen (pixel) offset of a 1cm offset in each of the cardinal
                 // directions in the juggler's coordinate system (i.e., global
@@ -1260,7 +1233,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     return position!!.coordinate
                 }
 
-                val c = Coordinate(positionStart!!.x, positionStart!!.y, positionStart!!.z)
+                val c = positionStart!!.copy()
 
                 // screen (pixel) offset of a 1cm offset in each of the cardinal
                 // directions in the position's coordinate system (i.e., global
@@ -1346,7 +1319,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
 
     private fun drawLine(
-        g: Graphics, array: Array<Array<DoubleArray>>, index: Int, p1: Int, p2: Int, mouse: Boolean
+        g: Graphics,
+        array: Array<Array<DoubleArray>>,
+        index: Int,
+        p1: Int,
+        p2: Int,
+        mouse: Boolean
     ) {
         if (mouse) {
             g.drawLine(
@@ -1416,8 +1394,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         private val COLOR_POSITIONS: Color = Color.green
         private val COLOR_GRID: Color = Color.lightGray
 
-        // Points in the juggler's coordinate system that are used for drawing the
-        // onscreen representation of a selected event.
+        // points in the juggler's coordinate system that are used for drawing the
+        // onscreen representation of a selected event
         private val EVENT_CONTROL_POINTS: Array<DoubleArray> = arrayOf(
             // corners of square representing xz movement control
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, -EVENT_BOX_HW_CM),
@@ -1437,7 +1415,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             doubleArrayOf(0.0, 0.0, 1.0),
         )
 
-        // faces in terms of indices in event_control_points[]
+        // faces in terms of indices in EVENT_CONTROL_POINTS[]
         private val FACE_XZ: IntArray = intArrayOf(0, 1, 2, 3)
 
         // points for an event that is not selected (active)
@@ -1449,8 +1427,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             doubleArrayOf(0.0, 0.0, 0.0),
         )
 
-        // Points in the juggler's coordinate system that are used for drawing the
-        // onscreen representation of a selected position.
+        // points in the juggler's coordinate system that are used for drawing the
+        // onscreen representation of a selected position
         private val POS_CONTROL_POINTS: Array<DoubleArray> = arrayOf(
             // corners of square representing xy movement control
             doubleArrayOf(-POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0.0),
@@ -1474,6 +1452,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         private val FACE_XY: IntArray = intArrayOf(0, 1, 2, 3)
 
         // Test whether a point (x, y) lies inside a polygon.
+
         private fun isInsidePolygon(
             x: Int,
             y: Int,
@@ -1490,7 +1469,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val yj = array[index][points[j]][1].roundToInt()
 
                 // note we only evaluate the second term when yj != yi:
-                val intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+                val intersect = (yi > y) != (yj > y) &&
+                    x < (xj - xi) * (y - yi) / (yj - yi) + xi
                 if (intersect) {
                     inside = !inside
                 }
