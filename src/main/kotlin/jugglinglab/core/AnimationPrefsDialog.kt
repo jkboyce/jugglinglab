@@ -105,178 +105,174 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
 
         okSelected = false
         isVisible = true // Blocks until user clicks OK or Cancel
-
         if (okSelected) {
             return readDialogBox(oldjc)
         }
-
         return oldjc
     }
 
     private fun createContents() {
-        val gb = GridBagLayout()
-        contentPane.setLayout(gb)
-
         // panel of text boxes at the top
-        val p1 = JPanel()
-        p1.setLayout(gb)
-
         val lab1 = JLabel(guistrings.getString("Width"))
-        p1.add(lab1)
-        gb.setConstraints(
-            lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
-        )
-        tfWidth = JTextField(4)
-        tfWidth.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tfWidth)
-        gb.setConstraints(
-            tfWidth, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
-        )
-
+        tfWidth = JTextField(4).apply {
+            setHorizontalAlignment(JTextField.CENTER)
+        }
         val lab2 = JLabel(guistrings.getString("Height"))
-        p1.add(lab2)
-        gb.setConstraints(
-            lab2, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
-        )
-        tfHeight = JTextField(4)
-        tfHeight.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tfHeight)
-        gb.setConstraints(
-            tfHeight, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
-        )
-
+        tfHeight = JTextField(4).apply {
+            setHorizontalAlignment(JTextField.CENTER)
+        }
         val lab3 = JLabel(guistrings.getString("Frames_per_second"))
-        p1.add(lab3)
-        gb.setConstraints(
-            lab3, constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
-        )
-        tfFps = JTextField(4)
-        tfFps.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tfFps)
-        gb.setConstraints(
-            tfFps, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
-        )
-
+        tfFps = JTextField(4).apply {
+            setHorizontalAlignment(JTextField.CENTER)
+        }
         val lab4 = JLabel(guistrings.getString("Slowdown_factor"))
-        p1.add(lab4)
-        gb.setConstraints(
-            lab4, constraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
-        )
-        tfSlowdown = JTextField(4)
-        tfSlowdown.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tfSlowdown)
-        gb.setConstraints(
-            tfSlowdown, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
-        )
-
+        tfSlowdown = JTextField(4).apply {
+            setHorizontalAlignment(JTextField.CENTER)
+        }
         val lab5 = JLabel(guistrings.getString("Border_(pixels)"))
-        p1.add(lab5)
-        gb.setConstraints(
-            lab5, constraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
-        )
-        tfBorder = JTextField(4)
-        tfBorder.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tfBorder)
-        gb.setConstraints(
-            tfBorder, constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
-        )
-
+        tfBorder = JTextField(4).apply {
+            setHorizontalAlignment(JTextField.CENTER)
+        }
         val lab6 = JLabel(guistrings.getString("Prefs_show_ground"))
-        p1.add(lab6)
-        gb.setConstraints(
-            lab6, constraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
-        )
-        comboShowground = JComboBox<String>()
-        comboShowground.addItem(guistrings.getString("Prefs_show_ground_auto"))
-        comboShowground.addItem(guistrings.getString("Prefs_show_ground_yes"))
-        comboShowground.addItem(guistrings.getString("Prefs_show_ground_no"))
-        p1.add(comboShowground)
-        gb.setConstraints(
-            comboShowground,
-            constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
-        )
-
+        comboShowground = JComboBox<String>().apply {
+            addItem(guistrings.getString("Prefs_show_ground_auto"))
+            addItem(guistrings.getString("Prefs_show_ground_yes"))
+            addItem(guistrings.getString("Prefs_show_ground_no"))
+        }
         // checkboxes farther down
         cbPaused = JCheckBox(guistrings.getString("Start_paused"))
         cbMousepause = JCheckBox(guistrings.getString("Pause_on_mouse_away"))
         cbStereo = JCheckBox(guistrings.getString("Stereo_display"))
         cbCatchsounds = JCheckBox(guistrings.getString("Catch_sounds"))
         cbBouncesounds = JCheckBox(guistrings.getString("Bounce_sounds"))
-
-        // manual settings
         val labOther = JLabel("Manual settings")
         tfOther = JTextField(15)
-
         // buttons at the bottom
-        val p2 = JPanel()
-        p2.setLayout(gb)
         butCancel = JButton(guistrings.getString("Cancel"))
+        butOk = JButton(guistrings.getString("OK"))
 
-        p2.add(butCancel)
+        // assemble subpanels
+        val gb = GridBagLayout()
+
+        val p1 = JPanel().apply {
+            setLayout(gb)
+            add(lab1)
+            add(tfWidth)
+            add(lab2)
+            add(tfHeight)
+            add(lab3)
+            add(tfFps)
+            add(lab4)
+            add(tfSlowdown)
+            add(lab5)
+            add(tfBorder)
+            add(lab6)
+            add(comboShowground)
+        }
+        gb.setConstraints(
+            lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            tfWidth, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab2, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            tfHeight, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab3, constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            tfFps, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab4, constraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            tfSlowdown, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab5, constraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            tfBorder, constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab6, constraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            comboShowground,
+            constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
+        )
+
+        val p2 = JPanel().apply {
+            setLayout(gb)
+            add(butCancel)
+            add(butOk)
+        }
         gb.setConstraints(
             butCancel, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
-        butOk = JButton(guistrings.getString("OK"))
-
-        p2.add(butOk)
         gb.setConstraints(
             butOk, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
 
-        // now make the whole window
-        contentPane.add(p1)
+        // whole window
+        contentPane.apply {
+            setLayout(gb)
+            add(p1)
+            add(cbPaused)
+            add(cbMousepause)
+            add(cbStereo)
+            add(cbCatchsounds)
+            add(cbBouncesounds)
+            add(labOther)
+            add(tfOther)
+            add(p2)
+        }
         gb.setConstraints(
             p1,
             constraints(GridBagConstraints.LINE_START, 0, 0, Insets(3, BORDER, 0, BORDER))
         )
-
-        contentPane.add(cbPaused)
         gb.setConstraints(
             cbPaused,
             constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, BORDER, 0, BORDER))
         )
-        contentPane.add(cbMousepause)
         gb.setConstraints(
             cbMousepause,
             constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, BORDER, 0, BORDER))
         )
-        contentPane.add(cbStereo)
         gb.setConstraints(
             cbStereo,
             constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, BORDER, 0, BORDER))
         )
-        contentPane.add(cbCatchsounds)
         gb.setConstraints(
             cbCatchsounds,
             constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, BORDER, 0, BORDER))
         )
-        contentPane.add(cbBouncesounds)
         gb.setConstraints(
             cbBouncesounds,
             constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, BORDER, 8, BORDER))
         )
-        contentPane.add(labOther)
         gb.setConstraints(
             labOther,
             constraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, BORDER, 0, BORDER))
         )
-        contentPane.add(tfOther)
         gb.setConstraints(
             tfOther,
             constraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, BORDER, 3, BORDER))
         )
-
-        contentPane.add(p2)
         gb.setConstraints(
             p2,
             constraints(GridBagConstraints.LINE_END, 0, 8, Insets(0, BORDER, BORDER, BORDER))
         )
 
-        getRootPane().setDefaultButton(butOk) // OK button is default
+        getRootPane().setDefaultButton(butOk)  // OK button is default
 
         val loc = Locale.getDefault()
         applyComponentOrientation(ComponentOrientation.getOrientation(loc))
-
         pack()
         setResizable(false)
     }
