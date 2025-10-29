@@ -23,54 +23,55 @@ import java.awt.event.*
 import java.awt.geom.Path2D
 import javax.swing.SwingUtilities
 import kotlin.math.*
+import kotlin.math.roundToInt
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
     // for when an event is activated/dragged
-    protected var event_active: Boolean = false
-    protected var event: JMLEvent? = null
-    protected var dragging_xz: Boolean = false
-    protected var dragging_y: Boolean = false
-    protected var show_xz_drag_control: Boolean = false
-    protected var show_y_drag_control: Boolean = false
-    protected var event_start: Coordinate? = null
-    protected var event_master_start: Coordinate? = null
-    protected var visible_events: ArrayList<JMLEvent>? = null
-    protected var event_points: Array<Array<Array<DoubleArray>>>
-    protected var handpath_points: Array<Array<DoubleArray>>
-    protected var handpath_start_time: Double = 0.0
-    protected var handpath_end_time: Double = 0.0
-    protected var handpath_hold: BooleanArray = BooleanArray(0)
+    private var eventActive: Boolean = false
+    private var event: JMLEvent? = null
+    private var draggingXz: Boolean = false
+    private var draggingY: Boolean = false
+    private var showXzDragControl: Boolean = false
+    private var showYDragControl: Boolean = false
+    private var eventStart: Coordinate? = null
+    private var eventMasterStart: Coordinate? = null
+    private var visibleEvents: ArrayList<JMLEvent>? = null
+    private var eventPoints: Array<Array<Array<DoubleArray>>>
+    private var handpathPoints: Array<Array<DoubleArray>>
+    private var handpathStartTime: Double = 0.0
+    private var handpathEndTime: Double = 0.0
+    private var handpathHold: BooleanArray = BooleanArray(0)
 
     // for when a position is activated/dragged
-    protected var position_active: Boolean = false
-    protected var position: JMLPosition? = null
-    protected var pos_points: Array<Array<DoubleArray>>
-    protected var dragging_xy: Boolean = false
-    protected var dragging_z: Boolean = false
-    protected var dragging_angle: Boolean = false
-    protected var show_xy_drag_control: Boolean = false
-    protected var show_z_drag_control: Boolean = false
-    protected var show_angle_drag_control: Boolean = false
-    protected var position_start: Coordinate? = null
-    protected var startangle: Double = 0.0
+    private var positionActive: Boolean = false
+    private var position: JMLPosition? = null
+    private var posPoints: Array<Array<DoubleArray>>
+    private var draggingXy: Boolean = false
+    private var draggingZ: Boolean = false
+    private var draggingAngle: Boolean = false
+    private var showXyDragControl: Boolean = false
+    private var showZDragControl: Boolean = false
+    private var showAngleDragControl: Boolean = false
+    private var positionStart: Coordinate? = null
+    private var startAngle: Double = 0.0
 
     // for when a position angle is being dragged
-    protected var deltaangle: Double = 0.0
-    protected var start_dx: DoubleArray = doubleArrayOf(0.0, 0.0)
-    protected var start_dy: DoubleArray = doubleArrayOf(0.0, 0.0)
-    protected var start_control: DoubleArray = doubleArrayOf(0.0, 0.0)
+    private var deltaAngle: Double = 0.0
+    private var startDx: DoubleArray = doubleArrayOf(0.0, 0.0)
+    private var startDy: DoubleArray = doubleArrayOf(0.0, 0.0)
+    private var startControl: DoubleArray = doubleArrayOf(0.0, 0.0)
 
     // for when either an event or position is being dragged
-    protected var dragging: Boolean = false
-    protected var dragging_left: Boolean = false // for stereo mode; may not be necessary?
-    protected var deltax: Int = 0
-    protected var deltay: Int = 0 // extent of drag action (pixels)
+    private var dragging: Boolean = false
+    private var draggingLeft: Boolean = false // for stereo mode; may not be necessary?
+    private var deltax: Int = 0
+    private var deltay: Int = 0 // extent of drag action (pixels)
 
     init {
-        event_points = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
-        handpath_points = Array(1) { Array(0) { DoubleArray(2) } }
-        handpath_hold = BooleanArray(0)
-        pos_points = Array(2) { Array(0) { DoubleArray(2) } }
+        eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
+        handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
+        handpathHold = BooleanArray(0)
+        posPoints = Array(2) { Array(0) { DoubleArray(2) } }
     }
 
     //--------------------------------------------------------------------------
@@ -102,47 +103,47 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         startx = me.getX()
         starty = me.getY()
 
-        if (event_active) {
+        if (eventActive) {
             val mx = me.getX()
             val my = me.getY()
 
             for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                val t = i * getSize().width / 2
+                val t = i * size.width / 2
 
-                if (show_y_drag_control) {
-                    dragging_y =
+                if (showYDragControl) {
+                    draggingY =
                         isNearLine(
                             mx - t,
                             my,
-                            Math.round(event_points!![0]!![i]!![5]!![0]).toInt(),
-                            Math.round(event_points!![0]!![i]!![5]!![1]).toInt(),
-                            Math.round(event_points!![0]!![i]!![6]!![0]).toInt(),
-                            Math.round(event_points!![0]!![i]!![6]!![1]).toInt(),
+                            eventPoints[0][i][5][0].roundToInt(),
+                            eventPoints[0][i][5][1].roundToInt(),
+                            eventPoints[0][i][6][0].roundToInt(),
+                            eventPoints[0][i][6][1].roundToInt(),
                             4
                         )
 
-                    if (dragging_y) {
+                    if (draggingY) {
                         dragging = true
-                        dragging_left = (i == 0)
+                        draggingLeft = (i == 0)
                         deltay = 0
-                        deltax = deltay
-                        event_start = event!!.localCoordinate
+                        deltax = 0
+                        eventStart = event!!.localCoordinate
                         val master = (if (event!!.isMaster) event else event!!.master)!!
-                        event_master_start = master.localCoordinate
+                        eventMasterStart = master.localCoordinate
                         repaint()
                         return
                     }
                 }
 
-                if (show_xz_drag_control) {
-                    for (j in event_points!!.indices) {
-                        if (!Companion.isInsidePolygon(mx - t, my, event_points!![j]!!, i, face_xz)) {
+                if (showXzDragControl) {
+                    for (j in eventPoints.indices) {
+                        if (!isInsidePolygon(mx - t, my, eventPoints[j], i, face_xz)) {
                             continue
                         }
 
                         if (j > 0) {
                             try {
-                                activateEvent(pattern!!.getEventImageInLoop(visible_events!!.get(j)))
+                                activateEvent(pattern!!.getEventImageInLoop(visibleEvents!![j]))
 
                                 for (att in attachments) {
                                     if (att is EditLadderDiagram) {
@@ -156,14 +157,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             }
                         }
 
-                        dragging_xz = true
+                        draggingXz = true
                         dragging = true
-                        dragging_left = (i == 0)
+                        draggingLeft = (i == 0)
                         deltay = 0
-                        deltax = deltay
-                        event_start = event!!.localCoordinate
+                        deltax = 0
+                        eventStart = event!!.localCoordinate
                         val master = (if (event!!.isMaster) event else event!!.master)!!
-                        event_master_start = master.localCoordinate
+                        eventMasterStart = master.localCoordinate
                         repaint()
                         return
                     }
@@ -171,77 +172,77 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
 
-        if (position_active) {
+        if (positionActive) {
             val mx = me.getX()
             val my = me.getY()
 
             for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                val t = i * getSize().width / 2
+                val t = i * size.width / 2
 
-                if (show_z_drag_control) {
-                    dragging_z =
+                if (showZDragControl) {
+                    draggingZ =
                         isNearLine(
                             mx - t,
                             my,
-                            Math.round(pos_points[i]!![4]!![0]).toInt(),
-                            Math.round(pos_points[i]!![4]!![1]).toInt(),
-                            Math.round(pos_points[i]!![6]!![0]).toInt(),
-                            Math.round(pos_points[i]!![6]!![1]).toInt(),
+                            posPoints[i][4][0].roundToInt(),
+                            posPoints[i][4][1].roundToInt(),
+                            posPoints[i][6][0].roundToInt(),
+                            posPoints[i][6][1].roundToInt(),
                             4
                         )
 
-                    if (dragging_z) {
+                    if (draggingZ) {
                         dragging = true
-                        dragging_left = (i == 0)
+                        draggingLeft = (i == 0)
                         deltay = 0
-                        deltax = deltay
-                        position_start = position!!.coordinate
+                        deltax = 0
+                        positionStart = position!!.coordinate
                         repaint()
                         return
                     }
                 }
 
-                if (show_xy_drag_control) {
-                    dragging_xy = isInsidePolygon(mx - t, my, pos_points, i, face_xy)
+                if (showXyDragControl) {
+                    draggingXy = isInsidePolygon(mx - t, my, posPoints, i, face_xy)
 
-                    if (dragging_xy) {
+                    if (draggingXy) {
                         dragging = true
-                        dragging_left = (i == 0)
+                        draggingLeft = (i == 0)
                         deltay = 0
-                        deltax = deltay
-                        position_start = position!!.coordinate
+                        deltax = 0
+                        positionStart = position!!.coordinate
                         repaint()
                         return
                     }
                 }
 
-                if (show_angle_drag_control) {
-                    val dmx = mx - t - Math.round(pos_points[i]!![5]!![0]).toInt()
-                    val dmy = my - Math.round(pos_points[i]!![5]!![1]).toInt()
-                    dragging_angle = (dmx * dmx + dmy * dmy < 49.0)
+                if (showAngleDragControl) {
+                    val dmx = mx - t - posPoints[i][5][0].roundToInt()
+                    val dmy = my - posPoints[i][5][1].roundToInt()
+                    draggingAngle = (dmx * dmx + dmy * dmy < 49.0)
 
-                    if (dragging_angle) {
+                    if (draggingAngle) {
                         dragging = true
-                        dragging_left = (i == 0)
+                        draggingLeft = (i == 0)
                         deltay = 0
-                        deltax = deltay
+                        deltax = 0
 
                         // record pixel coordinates of x and y unit vectors
                         // in juggler's frame, at start of angle drag
-                        start_dx =
+                        startDx =
                             doubleArrayOf(
-                                pos_points[i]!![11]!![0] - pos_points[i]!![4]!![0],
-                                pos_points[i]!![11]!![1] - pos_points[i]!![4]!![1]
+                                posPoints[i][11][0] - posPoints[i][4][0],
+                                posPoints[i][11][1] - posPoints[i][4][1]
                             )
-                        start_dy =
+                        startDy =
                             doubleArrayOf(
-                                pos_points[i]!![12]!![0] - pos_points[i]!![4]!![0],
-                                pos_points[i]!![12]!![1] - pos_points[i]!![4]!![1]
+                                posPoints[i][12][0] - posPoints[i][4][0],
+                                posPoints[i][12][1] - posPoints[i][4][1]
                             )
-                        start_control =
+                        startControl =
                             doubleArrayOf(
-                                pos_points[i]!![5]!![0] - pos_points[i]!![4]!![0],
-                                pos_points[i]!![5]!![1] - pos_points[i]!![4]!![1]
+                                posPoints[i][5][0] - posPoints[i][4][0],
+                                posPoints[i][5][1] - posPoints[i][4][1]
                             )
 
                         repaint()
@@ -259,16 +260,16 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (writingGIF) {
             return
         }
-        if (!engineAnimating && engine != null && engine!!.isAlive()) {
+        if (!engineAnimating && engine != null && engine!!.isAlive) {
             isPaused = !enginePaused
             return
         }
 
-        val mouse_moved = (me.getX() != startx) || (me.getY() != starty)
+        val mouseMoved = (me.getX() != startx) || (me.getY() != starty)
 
-        if (event_active && dragging && mouse_moved) {
-            dragging_y = false
-            dragging_xz = dragging_y
+        if (eventActive && dragging && mouseMoved) {
+            draggingY = false
+            draggingXz = false
 
             try {
                 for (att in attachments) {
@@ -288,11 +289,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
 
-        if (position_active && dragging && mouse_moved) {
-            dragging_angle = false
-            dragging_z = dragging_angle
-            dragging_xy = dragging_z
-            deltaangle = 0.0
+        if (positionActive && dragging && mouseMoved) {
+            draggingAngle = false
+            draggingZ = false
+            draggingXy = false
+            deltaAngle = 0.0
 
             for (att in attachments) {
                 if (att is EditLadderDiagram) {
@@ -304,23 +305,23 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             activatePosition(position)
         }
 
-        if (!mouse_moved && !dragging && engine != null && engine!!.isAlive()) {
+        if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
             isPaused = !enginePaused
         }
 
         draggingCamera = false
         dragging = false
-        dragging_y = false
-        dragging_xz = dragging_y
-        dragging_angle = false
-        dragging_z = dragging_angle
-        dragging_xy = dragging_z
+        draggingY = false
+        draggingXz = false
+        draggingAngle = false
+        draggingZ = false
+        draggingXy = false
         deltay = 0
-        deltax = deltay
-        deltaangle = 0.0
-        event_master_start = null
-        event_start = event_master_start
-        position_start = null
+        deltax = 0
+        deltaAngle = 0.0
+        eventMasterStart = null
+        eventStart = null
+        positionStart = null
         repaint()
     }
 
@@ -360,9 +361,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             val my = me.getY()
             var dolayout = false
 
-            if (dragging_angle) {
+            if (draggingAngle) {
                 // shift pixel coords of control point by mouse drag
-                val dcontrol = doubleArrayOf(start_control[0] + mx - startx, start_control[1] + my - starty)
+                val dcontrol = doubleArrayOf(startControl[0] + mx - startx, startControl[1] + my - starty)
 
                 // re-express control point location in coordinate
                 // system of juggler:
@@ -372,31 +373,31 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 //
                 // then (A, B) are coordinates of shifted control
                 // point, in juggler space
-                val det = start_dx[0] * start_dy[1] - start_dx[1] * start_dy[0]
-                val a = (start_dy[1] * dcontrol[0] - start_dy[0] * dcontrol[1]) / det
-                val b = (-start_dx[1] * dcontrol[0] + start_dx[0] * dcontrol[1]) / det
-                deltaangle = -atan2(-a, -b)
+                val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
+                val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
+                val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
+                deltaAngle = -atan2(-a, -b)
 
                 // snap the angle to the four cardinal directions
-                val new_angle = startangle + deltaangle
-                if (anglediff(new_angle) < SNAPANGLE / 2) {
-                    deltaangle = -startangle
-                } else if (anglediff(new_angle + 0.5 * Math.PI) < SNAPANGLE / 2) {
-                    deltaangle = -startangle - 0.5 * Math.PI
-                } else if (anglediff(new_angle + Math.PI) < SNAPANGLE / 2) {
-                    deltaangle = -startangle + Math.PI
-                } else if (anglediff(new_angle + 1.5 * Math.PI) < SNAPANGLE / 2) {
-                    deltaangle = -startangle + 0.5 * Math.PI
+                val newAngle = startAngle + deltaAngle
+                if (anglediff(newAngle) < SNAPANGLE / 2) {
+                    deltaAngle = -startAngle
+                } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAPANGLE / 2) {
+                    deltaAngle = -startAngle - 0.5 * Math.PI
+                } else if (anglediff(newAngle + Math.PI) < SNAPANGLE / 2) {
+                    deltaAngle = -startAngle + Math.PI
+                } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAPANGLE / 2) {
+                    deltaAngle = -startAngle + 0.5 * Math.PI
                 }
 
-                var final_angle = Math.toDegrees(startangle + deltaangle)
-                while (final_angle > 360) {
-                    final_angle -= 360.0
+                var finalAngle = Math.toDegrees(startAngle + deltaAngle)
+                while (finalAngle > 360) {
+                    finalAngle -= 360.0
                 }
-                while (final_angle < 0) {
-                    final_angle += 360.0
+                while (finalAngle < 0) {
+                    finalAngle += 360.0
                 }
-                position!!.angle = final_angle
+                position!!.angle = finalAngle
 
                 dolayout = true
             } else {
@@ -407,10 +408,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 // This modifies deltax, deltay based on snapping and projection.
                 val cc = this.currentCoordinate
 
-                if (event_active) {
-                    var deltalc = sub(cc, event_start)
-                    deltalc = Coordinate.Companion.truncate(deltalc!!, 1e-7)
-                    event!!.localCoordinate = add(event_start, deltalc)!!
+                if (eventActive) {
+                    var deltalc = sub(cc, eventStart)
+                    deltalc = Coordinate.truncate(deltalc!!, 1e-7)
+                    event!!.localCoordinate = add(eventStart, deltalc)!!
 
                     if (!event!!.isMaster) {
                         // set new coordinate in the master event
@@ -419,13 +420,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         if (flipx) {
                             deltalc.x = -deltalc.x
                         }
-                        master.localCoordinate = add(event_master_start, deltalc)!!
+                        master.localCoordinate = add(eventMasterStart, deltalc)!!
                     }
 
                     dolayout = true
                 }
 
-                if (position_active) {
+                if (positionActive) {
                     position!!.coordinate = cc
                     dolayout = true
                 }
@@ -437,7 +438,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         animator.pat!!.setNeedsLayout()
                         animator.pat!!.layoutPattern()
                     }
-                    if (event_active) {
+                    if (eventActive) {
                         createHandpathView()
                     }
                 } catch (je: JuggleException) {
@@ -479,7 +480,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             animator.cameraAngle = snapCamera(ca)
         }
 
-        if (event_active && draggingCamera) {
+        if (eventActive && draggingCamera) {
             try {
                 createEventView()
             } catch (jei: JuggleExceptionInternal) {
@@ -488,7 +489,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
 
-        if (position_active && (draggingCamera || dragging_angle)) {
+        if (positionActive && (draggingCamera || draggingAngle)) {
             createPositionView()
         }
 
@@ -518,8 +519,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         return
                     }
 
-                    animator.dimension = getSize()
-                    if (event_active) {
+                    animator.dimension = size
+                    if (eventActive) {
                         try {
                             createEventView()
                         } catch (jei: JuggleExceptionInternal) {
@@ -527,7 +528,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             handleFatalException(jei)
                         }
                     }
-                    if (position_active) {
+                    if (positionActive) {
                         createPositionView()
                     }
                     if (isPaused) {
@@ -544,7 +545,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
 
                     if (hasResized) {
-                        jc.size = getSize()
+                        jc.size = size
                     }
                     hasResized = true
                 }
@@ -566,20 +567,20 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
 
         var a = 0.0
-        var snap_horizontal = true
+        var snapHorizontal = true
 
-        if (event_active) {
+        if (eventActive) {
             a = -Math.toRadians(animator.pat!!.getJugglerAngle(event!!.juggler, event!!.t))
-        } else if (position_active) {
+        } else if (positionActive) {
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
         } else if (animator.pat!!.numberOfJugglers == 1) {
             a = -Math.toRadians(animator.pat!!.getJugglerAngle(1, time))
         } else {
-            snap_horizontal = false
+            snapHorizontal = false
         }
 
-        if (snap_horizontal) {
+        if (snapHorizontal) {
             while (a < 0) {
                 a += Math.toRadians(360.0)
             }
@@ -601,12 +602,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    public override fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
+    override fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
         super.restartJuggle(pat, newjc)
-        if (event_active) {
+        if (eventActive) {
             createEventView()
         }
-        if (position_active) {
+        if (positionActive) {
             createPositionView()
         }
     }
@@ -634,45 +635,45 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     fun activateEvent(ev: JMLEvent?) {
         deactivatePosition()
         event = ev
-        event_active = true
+        eventActive = true
         createEventView()
     }
 
     fun deactivateEvent() {
         event = null
-        event_active = false
-        dragging_y = false
-        dragging_xz = false
-        event_points = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
-        visible_events = null
-        handpath_points = Array(1) { Array(0) { DoubleArray(2) } }
+        eventActive = false
+        draggingY = false
+        draggingXz = false
+        eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
+        visibleEvents = null
+        handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
     }
 
     @Throws(JuggleExceptionInternal::class)
-    protected fun createEventView() {
-        if (!event_active) {
+    private fun createEventView() {
+        if (!eventActive) {
             return
         }
 
         // determine which events to display on-screen
-        visible_events = ArrayList<JMLEvent>()
-        visible_events!!.add(event!!)
-        handpath_start_time = event!!.t
-        handpath_end_time = event!!.t
+        visibleEvents = ArrayList()
+        visibleEvents!!.add(event!!)
+        handpathStartTime = event!!.t
+        handpathEndTime = event!!.t
 
         var ev2 = event!!.previous
         while (ev2 != null) {
             if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
-                handpath_start_time = min(handpath_start_time, ev2.t)
+                handpathStartTime = min(handpathStartTime, ev2.t)
 
-                var new_master = true
-                for (ev3 in visible_events!!) {
+                var newMaster = true
+                for (ev3 in visibleEvents!!) {
                     if (ev3.hasSameMasterAs(ev2)) {
-                        new_master = false
+                        newMaster = false
                     }
                 }
-                if (new_master) {
-                    visible_events!!.add(ev2)
+                if (newMaster) {
+                    visibleEvents!!.add(ev2)
                 } else {
                     break
                 }
@@ -686,16 +687,16 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         ev2 = event!!.next
         while (ev2 != null) {
             if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
-                handpath_end_time = max(handpath_end_time, ev2.t)
+                handpathEndTime = max(handpathEndTime, ev2.t)
 
-                var new_master = true
-                for (ev3 in visible_events!!) {
+                var newMaster = true
+                for (ev3 in visibleEvents!!) {
                     if (ev3.hasSameMasterAs(ev2)) {
-                        new_master = false
+                        newMaster = false
                     }
                 }
-                if (new_master) {
-                    visible_events!!.add(ev2)
+                if (newMaster) {
+                    visibleEvents!!.add(ev2)
                 } else {
                     break
                 }
@@ -708,24 +709,22 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         // Determine screen coordinates of visual representations for events.
         // Note the first event in `visible_events` is the selected one.
-        val renderer_count = (if (jc.stereo) 2 else 1)
-        event_points =
-            Array(visible_events!!.size) {
-                Array(renderer_count) {
+        val rendererCount = (if (jc.stereo) 2 else 1)
+        eventPoints =
+            Array(visibleEvents!!.size) {
+                Array(rendererCount) {
                     Array(event_control_points.size) { DoubleArray(2) }
                 }
             }
 
-        var ev_num = 0
-        for (ev in visible_events!!) {
-            for (i in 0..<renderer_count) {
+        var evNum = 0
+        for (ev in visibleEvents!!) {
+            for (i in 0..<rendererCount) {
                 val ren = (if (i == 0) animator.ren1 else animator.ren2)
 
                 // translate by one pixel and see how far it is in juggler space
                 val c = ev.globalCoordinate
-                if (c == null) {
-                    throw JuggleExceptionInternal("AEP: No coord on event " + ev, pattern)
-                }
+                    ?: throw JuggleExceptionInternal("AEP: No coord on event $ev", pattern)
                 val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2) // pixels/cm
 
@@ -747,72 +746,82 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 if (ev == event) {
                     for (j in event_control_points.indices) {
-                        event_points!![0]!![i]!![j]!![0] =
-                            (center[0].toDouble() + dxx * event_control_points[j]!![0] + dyx * event_control_points[j]!![1] + dzx * event_control_points[j]!![2])
-                        event_points!![0]!![i]!![j]!![1] =
-                            (center[1].toDouble() + dxy * event_control_points[j]!![0] + dyy * event_control_points[j]!![1] + dzy * event_control_points[j]!![2])
+                        eventPoints[0][i][j][0] =
+                            (center[0].toDouble() +
+                                dxx * event_control_points[j]!![0] +
+                                dyx * event_control_points[j]!![1] +
+                                dzx * event_control_points[j]!![2])
+                        eventPoints[0][i][j][1] =
+                            (center[1].toDouble() +
+                                dxy * event_control_points[j]!![0] +
+                                dyy * event_control_points[j]!![1] +
+                                dzy * event_control_points[j]!![2])
                     }
 
-                    show_xz_drag_control = (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
+                    showXzDragControl = (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
                             && (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
                             || anglediff(theta - Math.PI) < Math.toRadians(XZ_CONTROL_SHOW_DEG))
                             )
-                    show_y_drag_control = !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
+                    showYDragControl = !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
                             && (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG)
                             || anglediff(theta - Math.PI) < Math.toRadians(Y_CONTROL_SHOW_DEG))
                             )
                 } else {
                     for (j in unselected_event_points.indices) {
-                        event_points!![ev_num]!![i]!![j]!![0] =
-                            (center[0].toDouble() + dxx * unselected_event_points[j]!![0] + dyx * unselected_event_points[j]!![1] + dzx * unselected_event_points[j]!![2])
-                        event_points!![ev_num]!![i]!![j]!![1] =
-                            (center[1].toDouble() + dxy * unselected_event_points[j]!![0] + dyy * unselected_event_points[j]!![1] + dzy * unselected_event_points[j]!![2])
+                        eventPoints[evNum][i][j][0] =
+                            (center[0].toDouble() +
+                                dxx * unselected_event_points[j]!![0] +
+                                dyx * unselected_event_points[j]!![1] +
+                                dzx * unselected_event_points[j]!![2])
+                        eventPoints[evNum][i][j][1] =
+                            (center[1].toDouble() +
+                                dxy * unselected_event_points[j]!![0] +
+                                dyy * unselected_event_points[j]!![1] +
+                                dzy * unselected_event_points[j]!![2])
                     }
                 }
             }
 
-            ++ev_num
+            ++evNum
         }
 
         createHandpathView()
     }
 
     @Throws(JuggleExceptionInternal::class)
-    protected fun createHandpathView() {
-        if (!event_active) {
+    private fun createHandpathView() {
+        if (!eventActive) {
             return
         }
 
         val pat = pattern
-        val renderer_count = (if (jc.stereo) 2 else 1)
-        val num_handpath_points =
-            ceil((handpath_end_time - handpath_start_time) / HANDPATH_POINT_SEP_TIME).toInt() + 1
-        handpath_points =
-            Array(renderer_count) { Array(num_handpath_points) { DoubleArray(2) } }
-        handpath_hold = BooleanArray(num_handpath_points)
+        val rendererCount = (if (jc.stereo) 2 else 1)
+        val numHandpathPoints =
+            ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
+        handpathPoints =
+            Array(rendererCount) { Array(numHandpathPoints) { DoubleArray(2) } }
+        handpathHold = BooleanArray(numHandpathPoints)
 
-        for (i in 0..<renderer_count) {
+        for (i in 0..<rendererCount) {
             val ren = (if (i == 0) animator.ren1 else animator.ren2)
             val c = Coordinate()
 
-            for (j in 0..<num_handpath_points) {
-                val t: Double = handpath_start_time + j * HANDPATH_POINT_SEP_TIME
+            for (j in 0..<numHandpathPoints) {
+                val t: Double = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
                 pat!!.getHandCoordinate(event!!.juggler, event!!.hand, t, c)
                 val point = ren!!.getXY(c)
-                handpath_points!![i]!![j]!![0] = point[0].toDouble()
-                handpath_points!![i]!![j]!![1] = point[1].toDouble()
-                handpath_hold[j] = pat.isHandHolding(event!!.juggler, event!!.hand, t + 0.0001)
+                handpathPoints[i][j][0] = point[0].toDouble()
+                handpathPoints[i][j][1] = point[1].toDouble()
+                handpathHold[j] = pat.isHandHolding(event!!.juggler, event!!.hand, t + 0.0001)
             }
         }
     }
 
     @Throws(JuggleExceptionInternal::class)
-    protected fun drawEvents(g: Graphics) {
-        if (!event_active) {
-            return
-        }
+    private fun drawEvents(g: Graphics) {
+        if (!eventActive) return
 
-        val d = getSize()
+        val d = size
         var g2 = g
 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
@@ -832,22 +841,22 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
             // draw hand path
-            val num_handpath_points = handpath_points!![0]!!.size
+            val numHandpathPoints = handpathPoints[0].size
 
-            val path_solid = Path2D.Double()
-            val path_dashed = Path2D.Double()
-            for (j in 0..<num_handpath_points - 1) {
-                val path = (if (handpath_hold[j]) path_solid else path_dashed)
+            val pathSolid = Path2D.Double()
+            val pathDashed = Path2D.Double()
+            for (j in 0..<numHandpathPoints - 1) {
+                val path = (if (handpathHold[j]) pathSolid else pathDashed)
 
                 if (path.getCurrentPoint() == null) {
-                    path.moveTo(handpath_points!![i]!![j]!![0], handpath_points!![i]!![j]!![1])
-                    path.lineTo(handpath_points!![i]!![j + 1]!![0], handpath_points!![i]!![j + 1]!![1])
+                    path.moveTo(handpathPoints[i][j][0], handpathPoints[i][j][1])
+                    path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
                 } else {
-                    path.lineTo(handpath_points!![i]!![j + 1]!![0], handpath_points!![i]!![j + 1]!![1])
+                    path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
                 }
             }
 
-            if (path_dashed.getCurrentPoint() != null) {
+            if (pathDashed.getCurrentPoint() != null) {
                 val gdash = g2.create() as Graphics2D
                 val dashed: Stroke =
                     BasicStroke(
@@ -855,14 +864,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     )
                 gdash.setStroke(dashed)
                 gdash.setColor(COLOR_HANDPATH)
-                gdash.draw(path_dashed)
+                gdash.draw(pathDashed)
                 gdash.dispose()
             }
 
-            if (path_solid.getCurrentPoint() != null) {
+            if (pathSolid.getCurrentPoint() != null) {
                 val gsolid = g2.create() as Graphics2D
                 gsolid.setColor(COLOR_HANDPATH)
-                gsolid.draw(path_solid)
+                gsolid.draw(pathSolid)
                 gsolid.dispose()
             }
 
@@ -871,69 +880,70 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             // dot at center
             g2.fillOval(
-                Math.round(event_points!![0]!![i]!![4]!![0]).toInt() + deltax - 2,
-                Math.round(event_points!![0]!![i]!![4]!![1]).toInt() + deltay - 2,
+                Math.round(eventPoints[0][i][4][0]).toInt() + deltax - 2,
+                Math.round(eventPoints[0][i][4][1]).toInt() + deltay - 2,
                 5,
                 5
             )
 
-            if (show_xz_drag_control || dragging) {
+            if (showXzDragControl || dragging) {
                 // edges of xz plane control
-                drawLine(g2, event_points!![0]!!, i, 0, 1, true)
-                drawLine(g2, event_points!![0]!!, i, 1, 2, true)
-                drawLine(g2, event_points!![0]!!, i, 2, 3, true)
-                drawLine(g2, event_points!![0]!!, i, 3, 0, true)
+                drawLine(g2, eventPoints[0], i, 0, 1, true)
+                drawLine(g2, eventPoints[0], i, 1, 2, true)
+                drawLine(g2, eventPoints[0], i, 2, 3, true)
+                drawLine(g2, eventPoints[0], i, 3, 0, true)
 
-                for (j in 1..<event_points!!.size) {
-                    drawLine(g2, event_points!![j]!!, i, 0, 1, false)
-                    drawLine(g2, event_points!![j]!!, i, 1, 2, false)
-                    drawLine(g2, event_points!![j]!!, i, 2, 3, false)
-                    drawLine(g2, event_points!![j]!!, i, 3, 0, false)
+                for (j in 1..<eventPoints.size) {
+                    drawLine(g2, eventPoints[j], i, 0, 1, false)
+                    drawLine(g2, eventPoints[j], i, 1, 2, false)
+                    drawLine(g2, eventPoints[j], i, 2, 3, false)
+                    drawLine(g2, eventPoints[j], i, 3, 0, false)
                     g2.fillOval(
-                        Math.round(event_points!![j]!![i]!![4]!![0]).toInt() - 1,
-                        Math.round(event_points!![j]!![i]!![4]!![1]).toInt() - 1,
+                        Math.round(eventPoints[j][i][4][0]).toInt() - 1,
+                        Math.round(eventPoints[j][i][4][1]).toInt() - 1,
                         3,
                         3
                     )
                 }
             }
 
-            if (show_y_drag_control && (!dragging || dragging_y)) {
+            if (showYDragControl && (!dragging || draggingY)) {
                 // y-axis control pointing forward/backward
-                drawLine(g2, event_points!![0]!!, i, 5, 6, true)
-                drawLine(g2, event_points!![0]!!, i, 5, 7, true)
-                drawLine(g2, event_points!![0]!!, i, 5, 8, true)
-                drawLine(g2, event_points!![0]!!, i, 6, 9, true)
-                drawLine(g2, event_points!![0]!!, i, 6, 10, true)
+                drawLine(g2, eventPoints[0], i, 5, 6, true)
+                drawLine(g2, eventPoints[0], i, 5, 7, true)
+                drawLine(g2, eventPoints[0], i, 5, 8, true)
+                drawLine(g2, eventPoints[0], i, 6, 9, true)
+                drawLine(g2, eventPoints[0], i, 6, 10, true)
             }
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Helper functions related to position editing
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     fun activatePosition(pos: JMLPosition?) {
         deactivateEvent()
         position = pos
-        position_active = true
-        startangle = Math.toRadians(position!!.angle)
+        positionActive = true
+        startAngle = Math.toRadians(position!!.angle)
         createPositionView()
     }
 
     fun deactivatePosition() {
         position = null
-        position_active = false
-        dragging_angle = false
-        dragging_z = false
-        dragging_xy = false
+        positionActive = false
+        draggingAngle = false
+        draggingZ = false
+        draggingXy = false
     }
 
     protected fun createPositionView() {
-        if (!position_active) {
+        if (!positionActive) {
             return
         }
 
-        pos_points = Array(2) { Array(pos_control_points.size) { DoubleArray(2) } }
+        posPoints = Array(2) { Array(pos_control_points.size) { DoubleArray(2) } }
 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
             val ren = (if (i == 0) animator.ren1 else animator.ren2)
@@ -942,10 +952,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             val c =
                 add(position!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
             val c2 = ren!!.getScreenTranslatedCoordinate(c!!, 1, 0)
-            val dl = 1.0 / Coordinate.Companion.distance(c, c2) // pixels/cm
+            val dl = 1.0 / distance(c, c2) // pixels/cm
 
             val ca = ren.cameraAngle
-            val theta = ca[0] + startangle + deltaangle
+            val theta = ca[0] + startAngle + deltaAngle
             val phi = ca[1]
 
             val dlc = dl * cos(phi)
@@ -959,24 +969,30 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             val center = ren.getXY(c)
             for (j in pos_control_points.indices) {
-                pos_points[i]!![j]!![0] =
-                    (center[0].toDouble() + dxx * pos_control_points[j]!![0] + dyx * pos_control_points[j]!![1] + dzx * pos_control_points[j]!![2])
-                pos_points[i]!![j]!![1] =
-                    (center[1].toDouble() + dxy * pos_control_points[j]!![0] + dyy * pos_control_points[j]!![1] + dzy * pos_control_points[j]!![2])
+                posPoints[i][j][0] =
+                    (center[0].toDouble() +
+                        dxx * pos_control_points[j]!![0] +
+                        dyx * pos_control_points[j]!![1] +
+                        dzx * pos_control_points[j]!![2])
+                posPoints[i][j][1] =
+                    (center[1].toDouble() +
+                        dxy * pos_control_points[j]!![0] +
+                        dyy * pos_control_points[j]!![1] +
+                        dzy * pos_control_points[j]!![2])
             }
 
-            show_angle_drag_control =
+            showAngleDragControl =
                 (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - ANGLE_CONTROL_SHOW_DEG))
-            show_xy_drag_control =
+            showXyDragControl =
                 (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - XY_CONTROL_SHOW_DEG))
-            show_z_drag_control =
+            showZDragControl =
                 (anglediff(phi - Math.PI / 2) < Math.toRadians(90 - Z_CONTROL_SHOW_DEG))
         }
     }
 
     @Throws(JuggleExceptionInternal::class)
-    protected fun drawPositions(g: Graphics) {
-        if (!position_active) {
+    private fun drawPositions(g: Graphics) {
+        if (!positionActive) {
             return
         }
 
@@ -986,59 +1002,61 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
             val ren = (if (i == 0) animator.ren1 else animator.ren2)
 
-            if (jc.stereo && i == 0) {
-                g2 = g.create(0, 0, d.width / 2, d.height)
-            } else if (jc.stereo && i == 1) {
-                g2 = g.create(d.width / 2, 0, d.width / 2, d.height)
+            if (jc.stereo) {
+                g2 = when (i) {
+                    0 -> g.create(0, 0, d.width / 2, d.height)
+                    else -> g.create(d.width / 2, 0, d.width / 2, d.height)
+                }
             }
 
             if (g2 is Graphics2D) {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON)
             }
 
             g2.setColor(COLOR_POSITIONS)
 
             // dot at center
             g2.fillOval(
-                Math.round(pos_points[i]!![4]!![0]).toInt() + deltax - 2,
-                Math.round(pos_points[i]!![4]!![1]).toInt() + deltay - 2,
+                Math.round(posPoints[i][4][0]).toInt() + deltax - 2,
+                Math.round(posPoints[i][4][1]).toInt() + deltay - 2,
                 5,
                 5
             )
 
-            if (show_xy_drag_control || dragging) {
+            if (showXyDragControl || dragging) {
                 // edges of xy plane control
-                drawLine(g2, pos_points, i, 0, 1, true)
-                drawLine(g2, pos_points, i, 1, 2, true)
-                drawLine(g2, pos_points, i, 2, 3, true)
-                drawLine(g2, pos_points, i, 3, 0, true)
+                drawLine(g2, posPoints, i, 0, 1, true)
+                drawLine(g2, posPoints, i, 1, 2, true)
+                drawLine(g2, posPoints, i, 2, 3, true)
+                drawLine(g2, posPoints, i, 3, 0, true)
             }
 
-            if (show_z_drag_control && (!dragging || dragging_z)) {
+            if (showZDragControl && (!dragging || draggingZ)) {
                 // z-axis control pointing upward
-                drawLine(g2, pos_points, i, 4, 6, true)
-                drawLine(g2, pos_points, i, 6, 7, true)
-                drawLine(g2, pos_points, i, 6, 8, true)
+                drawLine(g2, posPoints, i, 4, 6, true)
+                drawLine(g2, posPoints, i, 6, 7, true)
+                drawLine(g2, posPoints, i, 6, 8, true)
             }
 
-            if (show_angle_drag_control && (!dragging || dragging_angle)) {
+            if (showAngleDragControl && (!dragging || draggingAngle)) {
                 // angle-changing control pointing backward
-                drawLine(g2, pos_points, i, 4, 5, true)
+                drawLine(g2, posPoints, i, 4, 5, true)
                 g2.fillOval(
-                    Math.round(pos_points[i]!![5]!![0]).toInt() - 4 + deltax,
-                    Math.round(pos_points[i]!![5]!![1]).toInt() - 4 + deltay,
+                    Math.round(posPoints[i][5][0]).toInt() - 4 + deltax,
+                    Math.round(posPoints[i][5][1]).toInt() - 4 + deltay,
                     10,
                     10
                 )
             }
 
-            if (dragging_angle) {
+            if (draggingAngle) {
                 // sighting line during angle rotation
-                drawLine(g2, pos_points, i, 9, 10, true)
+                drawLine(g2, posPoints, i, 9, 10, true)
             }
 
-            if (!dragging_angle) {
-                if (dragging_z || (cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
+            if (!draggingAngle) {
+                if (draggingZ || (cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
                     // line dropping down to projection on ground (z = 0)
                     val c = this.currentCoordinate
                     val z = c.z
@@ -1047,16 +1065,16 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     g2.drawLine(
                         xy_projection[0],
                         xy_projection[1],
-                        Math.round(pos_points[i]!![4]!![0]).toInt() + deltax,
-                        Math.round(pos_points[i]!![4]!![1]).toInt() + deltay
+                        Math.round(posPoints[i][4][0]).toInt() + deltax,
+                        Math.round(posPoints[i][4][1]).toInt() + deltay
                     )
                     g2.fillOval(xy_projection[0] - 2, xy_projection[1] - 2, 5, 5)
 
-                    if (dragging_z) {
+                    if (draggingZ) {
                         // z-label on the line
                         val y = max(
-                            max(pos_points[i]!![0]!![1], pos_points[i]!![1]!![1]),
-                            max(pos_points[i]!![2]!![1], pos_points[i]!![3]!![1])
+                            max(posPoints[i][0][1], posPoints[i][1][1]),
+                            max(posPoints[i][2][1], posPoints[i][3][1])
                         )
                         val message_y = Math.round(y).toInt() + deltay + 40
 
@@ -1070,9 +1088,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
     }
 
-    // In position editing mode, draw an xy grid at ground level (z = 0)
+    // In position editing mode, draw an xy grid at ground level (z = 0).
+
     private fun drawGrid(g: Graphics) {
-        if (!position_active) return
+        if (!positionActive) return
 
         // need a Graphics2D object for setStroke() below
         if (g !is Graphics2D) return
@@ -1168,12 +1187,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
     protected val currentCoordinate: Coordinate
         get() {
-            if (event_active) {
+            if (eventActive) {
                 if (!dragging) {
                     return event!!.localCoordinate
                 }
 
-                val c = Coordinate(event_start!!.x, event_start!!.y, event_start!!.z)
+                val c = Coordinate(eventStart!!.x, eventStart!!.y, eventStart!!.z)
 
                 // screen (pixel) offset of a 1cm offset in each of the cardinal
                 // directions in the juggler's coordinate system (i.e., global
@@ -1184,15 +1203,15 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val f = (if (jc.stereo) 0.5 else 1.0)
 
                 for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                    dx[0] += f * (event_points!![0]!![i]!![11]!![0] - event_points!![0]!![i]!![4]!![0])
-                    dx[1] += f * (event_points!![0]!![i]!![11]!![1] - event_points!![0]!![i]!![4]!![1])
-                    dy[0] += f * (event_points!![0]!![i]!![12]!![0] - event_points!![0]!![i]!![4]!![0])
-                    dy[1] += f * (event_points!![0]!![i]!![12]!![1] - event_points!![0]!![i]!![4]!![1])
-                    dz[0] += f * (event_points!![0]!![i]!![13]!![0] - event_points!![0]!![i]!![4]!![0])
-                    dz[1] += f * (event_points!![0]!![i]!![13]!![1] - event_points!![0]!![i]!![4]!![1])
+                    dx[0] += f * (eventPoints[0][i][11][0] - eventPoints[0][i][4][0])
+                    dx[1] += f * (eventPoints[0][i][11][1] - eventPoints[0][i][4][1])
+                    dy[0] += f * (eventPoints[0][i][12][0] - eventPoints[0][i][4][0])
+                    dy[1] += f * (eventPoints[0][i][12][1] - eventPoints[0][i][4][1])
+                    dz[0] += f * (eventPoints[0][i][13][0] - eventPoints[0][i][4][0])
+                    dz[1] += f * (eventPoints[0][i][13][1] - eventPoints[0][i][4][1])
                 }
 
-                if (dragging_xz) {
+                if (draggingXz) {
                     // express deltax, deltay in terms of dx, dz above
                     //
                     // deltax = A * dxx + B * dzx;
@@ -1214,7 +1233,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
                 }
 
-                if (dragging_y) {
+                if (draggingY) {
                     // express deltax, deltay in terms of dy, dz above
                     //
                     // deltax = A * dyx + B * dzx;
@@ -1233,19 +1252,19 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                     // Calculate `deltax`, `deltay` that put the event closest to its final
                     // location
-                    deltax = Math.round((c.y - event_start!!.y) * dy[0]).toInt()
-                    deltay = Math.round((c.y - event_start!!.y) * dy[1]).toInt()
+                    deltax = Math.round((c.y - eventStart!!.y) * dy[0]).toInt()
+                    deltay = Math.round((c.y - eventStart!!.y) * dy[1]).toInt()
                 }
 
                 return c
             }
 
-            if (position_active) {
-                if (!dragging_xy && !dragging_z) {
+            if (positionActive) {
+                if (!draggingXy && !draggingZ) {
                     return position!!.coordinate
                 }
 
-                val c = Coordinate(position_start!!.x, position_start!!.y, position_start!!.z)
+                val c = Coordinate(positionStart!!.x, positionStart!!.y, positionStart!!.z)
 
                 // screen (pixel) offset of a 1cm offset in each of the cardinal
                 // directions in the position's coordinate system (i.e., global
@@ -1256,15 +1275,15 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val f = (if (jc.stereo) 0.5 else 1.0)
 
                 for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                    dx[0] += f * (pos_points[i]!![11]!![0] - pos_points[i]!![4]!![0])
-                    dx[1] += f * (pos_points[i]!![11]!![1] - pos_points[i]!![4]!![1])
-                    dy[0] += f * (pos_points[i]!![12]!![0] - pos_points[i]!![4]!![0])
-                    dy[1] += f * (pos_points[i]!![12]!![1] - pos_points[i]!![4]!![1])
-                    dz[0] += f * (pos_points[i]!![13]!![0] - pos_points[i]!![4]!![0])
-                    dz[1] += f * (pos_points[i]!![13]!![1] - pos_points[i]!![4]!![1])
+                    dx[0] += f * (posPoints[i][11][0] - posPoints[i][4][0])
+                    dx[1] += f * (posPoints[i][11][1] - posPoints[i][4][1])
+                    dy[0] += f * (posPoints[i][12][0] - posPoints[i][4][0])
+                    dy[1] += f * (posPoints[i][12][1] - posPoints[i][4][1])
+                    dz[0] += f * (posPoints[i][13][0] - posPoints[i][4][0])
+                    dz[1] += f * (posPoints[i][13][1] - posPoints[i][4][1])
                 }
 
-                if (dragging_xy) {
+                if (draggingXy) {
                     // express deltax, deltay in terms of dx, dy above
                     //
                     // deltax = A * dxx + B * dyx;
@@ -1314,7 +1333,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
                 }
 
-                if (dragging_z) {
+                if (draggingZ) {
                     deltax = 0 // constrain movement to be vertical
                     c.z += deltay / dz[1]
 
@@ -1335,24 +1354,25 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     ) {
         if (mouse) {
             g.drawLine(
-                Math.round(array[index]!![p1]!![0]).toInt() + deltax,
-                Math.round(array[index]!![p1]!![1]).toInt() + deltay,
-                Math.round(array[index]!![p2]!![0]).toInt() + deltax,
-                Math.round(array[index]!![p2]!![1]).toInt() + deltay
+                Math.round(array[index][p1][0]).toInt() + deltax,
+                Math.round(array[index][p1][1]).toInt() + deltay,
+                Math.round(array[index][p2][0]).toInt() + deltax,
+                Math.round(array[index][p2][1]).toInt() + deltay
             )
         } else {
             g.drawLine(
-                Math.round(array[index]!![p1]!![0]).toInt(),
-                Math.round(array[index]!![p1]!![1]).toInt(),
-                Math.round(array[index]!![p2]!![0]).toInt(),
-                Math.round(array[index]!![p2]!![1]).toInt()
+                Math.round(array[index][p1][0]).toInt(),
+                Math.round(array[index][p1][1]).toInt(),
+                Math.round(array[index][p2][0]).toInt(),
+                Math.round(array[index][p2][1]).toInt()
             )
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // javax.swing.JComponent methods
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     override fun paintComponent(g: Graphics) {
         if (g is Graphics2D) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -1465,10 +1485,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             var i = 0
             var j = points.size - 1
             while (i < points.size) {
-                val xi = Math.round(array[index]!![points[i]]!![0]).toInt()
-                val yi = Math.round(array[index]!![points[i]]!![1]).toInt()
-                val xj = Math.round(array[index]!![points[j]]!![0]).toInt()
-                val yj = Math.round(array[index]!![points[j]]!![1]).toInt()
+                val xi = Math.round(array[index][points[i]][0]).toInt()
+                val yi = Math.round(array[index][points[i]][1]).toInt()
+                val xj = Math.round(array[index][points[j]][0]).toInt()
+                val yj = Math.round(array[index][points[j]][1]).toInt()
 
                 // note we only evaluate the second term when yj != yi:
                 val intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
