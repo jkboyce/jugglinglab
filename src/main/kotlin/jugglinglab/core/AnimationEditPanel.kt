@@ -139,7 +139,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                 activateEvent(pattern!!.getEventImageInLoop(visibleEvents!![j]))
                                 for (att in attachments) {
                                     if (att is EditLadderDiagram) {
-                                        att.activateEvent(event)
+                                        att.activateEvent(event!!)
                                     }
                                     att.repaintAttachment()
                                 }

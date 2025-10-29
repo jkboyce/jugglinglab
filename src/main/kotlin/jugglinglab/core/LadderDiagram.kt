@@ -56,7 +56,7 @@ open class LadderDiagram(p: JMLPattern) :
     protected var ladderPathItems: ArrayList<LadderPathItem>? = null
     @JvmField
     protected var ladderPositionItems: ArrayList<LadderPositionItem>? = null
-    
+
     protected var im: BufferedImage? = null
     protected var imageValid: Boolean = false
     protected var framesUntilImageDraw: Int = 0
@@ -750,26 +750,19 @@ open class LadderDiagram(p: JMLPattern) :
     class LadderEventItem : LadderItem() {
         @JvmField
         var xlow: Int = 0
-
         @JvmField
         var xhigh: Int = 0
-
         @JvmField
         var ylow: Int = 0
-
         @JvmField
         var yhigh: Int = 0
-
         // for transitions within an event, the next two point to the containing event:
         @JvmField
         var eventitem: LadderEventItem? = null
-
         @JvmField
         var event: JMLEvent? = null
-
         @JvmField
         var transnum: Int = 0
-
         val hashCode: Int
             get() = event!!.hashCode * 17 + type * 23 + transnum * 27
     }
@@ -783,11 +776,9 @@ open class LadderDiagram(p: JMLPattern) :
         var yCenter: Int = 0
         var radius: Int = 0 // for type SELF
         var color: Color? = null
-
         var startEvent: JMLEvent? = null
         var endEvent: JMLEvent? = null
         var transnumStart: Int = 0
-
         @JvmField
         var pathNum: Int = 0
     }
@@ -795,19 +786,14 @@ open class LadderDiagram(p: JMLPattern) :
     class LadderPositionItem : LadderItem() {
         @JvmField
         var xLow: Int = 0
-
         @JvmField
         var xHigh: Int = 0
-
         @JvmField
         var yLow: Int = 0
-
         @JvmField
         var yHigh: Int = 0
-
         @JvmField
         var position: JMLPosition? = null
-
         val hashCode: Int
             get() = position!!.hashCode
     }
