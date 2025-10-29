@@ -98,7 +98,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val jc = jc ?: AnimationPrefs()
         val mode = when {
             (jc.view != View.VIEW_NONE) -> jc.view
-            (pat.numberOfJugglers > EditLadderDiagram.MAX_JUGGLERS) ->
+            (pat.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
                 View.VIEW_SIMPLE
             else -> View.VIEW_EDIT
         }
@@ -143,7 +143,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             viewmenu.getItem(mode - 1).setSelected(true)
 
             // items to carry over from old view to the new
-            val pat = view.pattern
+            val pat = view.pattern!!
             val jc = view.animationPrefs
             val paused = view.isPaused
             val undoIndex = view.undoIndex

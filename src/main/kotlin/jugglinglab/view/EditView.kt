@@ -23,7 +23,7 @@ import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
-class EditView(dim: Dimension?, pat: JMLPattern?) : View() {
+class EditView(dim: Dimension?, pat: JMLPattern) : View() {
     private var ap: AnimationPanel = AnimationEditPanel()
     private var ladder: JPanel
     private var jsp: JSplitPane
