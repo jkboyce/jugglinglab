@@ -8,7 +8,8 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab
+import jugglinglab.JugglingLab.guistrings
+import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.jml.*
 import jugglinglab.path.Path
 import jugglinglab.path.Path.Companion.newPath
@@ -30,7 +31,6 @@ import java.util.*
 import javax.swing.*
 import javax.swing.border.BevelBorder
 import javax.swing.event.CaretEvent
-import javax.swing.event.CaretListener
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -41,25 +41,25 @@ import kotlin.math.min
 
 class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, private var parentview: View) :
     LadderDiagram(pat), ActionListener {
-    protected var aep: AnimationEditPanel? = null
+    private var aep: AnimationEditPanel? = null
 
-    protected var active_eventitem: LadderEventItem? = null
-    protected var active_positionitem: LadderPositionItem? = null
-    protected var item_was_selected: Boolean = false // for detecting de-selecting clicks
-    protected var start_y: Int = 0
-    protected var start_ylow: Int = 0
-    protected var start_yhigh: Int = 0 // initial box y-coordinates
-    protected var start_t: Double = 0.0 // initial time
-    protected var delta_y: Int = 0
-    protected var delta_y_min: Int = 0
-    protected var delta_y_max: Int = 0 // limits for dragging up/down
+    private var activeEventitem: LadderEventItem? = null
+    private var activePositionitem: LadderPositionItem? = null
+    private var itemWasSelected: Boolean = false // for detecting de-selecting clicks
+    private var startY: Int = 0
+    private var startYlow: Int = 0
+    private var startYhigh: Int = 0 // initial box y-coordinates
+    private var startT: Double = 0.0 // initial time
+    private var deltaY: Int = 0
+    private var deltaYMin: Int = 0
+    private var deltaYMax: Int = 0 // limits for dragging up/down
 
-    protected var popupitem: LadderItem? = null
-    protected var popup_x: Int = 0 // screen coordinates where popup was raised
-    protected var popup_y: Int = 0
+    private var popupitem: LadderItem? = null
+    private var popupX: Int = 0 // screen coordinates where popup was raised
+    private var popupY: Int = 0
 
-    protected var dialog_controls: ArrayList<JComponent>? = null
-    protected var dialog_pd: Array<ParameterDescriptor>? = null
+    private var dialogControls: ArrayList<JComponent>? = null
+    private var dialogPd: Array<ParameterDescriptor>? = null
 
     //--------------------------------------------------------------------------
     // Methods to respond to changes made in this object's UI
@@ -69,29 +69,26 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
     // some way, within this ladder diagram's UI.
 
     fun activeEventChanged() {
-        if (active_eventitem == null) {
-            return
-        }
+        if (activeEventitem == null) return
 
-        val hash = active_eventitem!!.hashCode
-
-        layoutPattern(false) // rebuild pattern event list
-        createView() // rebuild ladder diagram (LadderItem arrays)
+        val hash = activeEventitem!!.hashCode
+        layoutPattern(false)  // rebuild pattern event list
+        createView()  // rebuild ladder diagram (LadderItem arrays)
 
         // locate the event we're editing, in the updated pattern
-        active_eventitem = null
+        activeEventitem = null
         for (item in ladderEventItems!!) {
             if (item.hashCode == hash) {
-                active_eventitem = item
+                activeEventitem = item
                 break
             }
         }
 
         try {
-            if (active_eventitem == null) {
+            if (activeEventitem == null) {
                 throw JuggleExceptionInternal("activeEventChanged(): event not found", pat)
             } else if (aep != null) {
-                aep!!.activateEvent(active_eventitem!!.event)
+                aep!!.activateEvent(activeEventitem!!.event)
             }
         } catch (jei: JuggleExceptionInternal) {
             handleFatalException(jei)
@@ -102,32 +99,29 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
     // some way, within this ladder diagram's UI.
 
     fun activePositionChanged() {
-        if (active_positionitem == null) {
-            return
-        }
+        if (activePositionitem == null) return
 
-        val hash = active_positionitem!!.hashCode
-
+        val hash = activePositionitem!!.hashCode
         layoutPattern(false)
         createView()
 
-        active_positionitem = null
+        activePositionitem = null
         for (item in ladderPositionItems!!) {
             // System.out.println(item.event.toString());
             if (item.hashCode == hash) {
-                active_positionitem = item
+                activePositionitem = item
                 break
             }
         }
 
-        if (active_positionitem == null) {
+        if (activePositionitem == null) {
             handleFatalException(JuggleExceptionInternal("ELD: position not found", pat))
         } else if (aep != null) {
-            aep!!.activatePosition(active_positionitem!!.position)
+            aep!!.activatePosition(activePositionitem!!.position)
         }
     }
 
-    protected fun layoutPattern(undo: Boolean) {
+    private fun layoutPattern(undo: Boolean) {
         try {
             // use synchronized here to avoid data consistency problems with
             // animation thread in AnimationPanel's run() method
@@ -160,62 +154,54 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         parentview.addToUndoList(pat)
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Methods to respond to changes made elsewhere
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     @Throws(JuggleExceptionInternal::class)
     fun activateEvent(ev: JMLEvent) {
-        createView() // rebuild ladder diagram (LadderItem arrays)
-
-        active_eventitem = null
-        val ev_inloop = pat.getEventImageInLoop(ev)
-        if (ev_inloop == null) {
-            throw JuggleExceptionInternal("activateEvent(): null event", pat)
-        }
-
+        createView()  // rebuild ladder diagram (LadderItem arrays)
+        activeEventitem = null
+        val evInloop = pat.getEventImageInLoop(ev)
+            ?: throw JuggleExceptionInternal("activateEvent(): null event", pat)
         for (item in ladderEventItems!!) {
-            if (item.event == ev_inloop) {
-                active_eventitem = item
+            if (item.event == evInloop) {
+                activeEventitem = item
                 break
             }
         }
-
-        if (active_eventitem == null) {
+        if (activeEventitem == null) {
             throw JuggleExceptionInternal("activateEvent(): event not found", pat)
         }
     }
 
     @Throws(JuggleExceptionInternal::class)
     fun reactivateEvent(): JMLEvent? {
-        if (active_eventitem == null) {
+        if (activeEventitem == null) {
             throw JuggleExceptionInternal("reactivateEvent(): null eventitem", pat)
         }
-
-        val hash = active_eventitem!!.hashCode
-
+        val hash = activeEventitem!!.hashCode
         createView()  // rebuild ladder diagram (LadderItem arrays)
 
         // re-locate the event we're editing in the newly laid out pattern
-        active_eventitem = null
+        activeEventitem = null
         for (item in ladderEventItems!!) {
             if (item.hashCode == hash) {
-                active_eventitem = item
+                activeEventitem = item
                 break
             }
         }
-
-        if (active_eventitem == null) {
+        if (activeEventitem == null) {
             throw JuggleExceptionInternal("reactivateEvent(): event not found", pat)
         }
-
-        return active_eventitem!!.event
+        return activeEventitem!!.event
     }
 
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
     //--------------------------------------------------------------------------
 
-    public override fun mousePressed(me: MouseEvent) {
+    override fun mousePressed(me: MouseEvent) {
         if (aep != null && (aep!!.writingGIF || !aep!!.engineAnimating)) {
             return
         }
@@ -224,17 +210,17 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
 
         // on macOS the popup triggers here
-        if (me.isPopupTrigger()) {
+        if (me.isPopupTrigger) {
             guiState = STATE_POPUP
-            active_eventitem = getSelectedLadderEvent(me.getX(), me.getY())
-            active_positionitem = getSelectedLadderPosition(me.getX(), me.getY())
-            popupitem = if (active_eventitem != null) active_eventitem else active_positionitem
+            activeEventitem = getSelectedLadderEvent(me.getX(), me.getY())
+            activePositionitem = getSelectedLadderPosition(me.getX(), me.getY())
+            popupitem = if (activeEventitem != null) activeEventitem else activePositionitem
             if (popupitem == null) {
                 popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
             }
 
-            popup_x = me.getX()
-            popup_y = me.getY()
+            popupX = me.getX()
+            popupY = me.getY()
             if (aep != null) {
                 val scale =
                     (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
@@ -244,16 +230,16 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 aep!!.time = newtime
                 aep!!.deactivateEvent()
                 aep!!.deactivatePosition()
-                if (active_eventitem != null) {
+                if (activeEventitem != null) {
                     try {
-                        aep!!.activateEvent(active_eventitem!!.event)
+                        aep!!.activateEvent(activeEventitem!!.event)
                     } catch (jei: JuggleExceptionInternal) {
                         jei.attachPattern(pat)
                         handleFatalException(jei)
                     }
                 }
-                if (active_positionitem != null) {
-                    aep!!.activatePosition(active_positionitem!!.position)
+                if (activePositionitem != null) {
+                    aep!!.activatePosition(activePositionitem!!.position)
                 }
                 aep!!.repaint()
             }
@@ -263,57 +249,57 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             when (guiState) {
                 STATE_INACTIVE -> {
                     var needsHandling = true
-                    item_was_selected = false
+                    itemWasSelected = false
 
-                    val old_eventitem = active_eventitem
-                    active_eventitem = getSelectedLadderEvent(me.getX(), me.getY())
-                    if (old_eventitem != null && old_eventitem == active_eventitem) {
-                        item_was_selected = true
+                    val oldEventitem = activeEventitem
+                    activeEventitem = getSelectedLadderEvent(me.getX(), me.getY())
+                    if (oldEventitem != null && oldEventitem == activeEventitem) {
+                        itemWasSelected = true
                     }
 
-                    if (active_eventitem != null) {
+                    if (activeEventitem != null) {
                         if (aep != null) {
                             try {
-                                aep!!.activateEvent(active_eventitem!!.event)
+                                aep!!.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
                                 jei.attachPattern(pat)
                                 handleFatalException(jei)
                             }
                         }
-                        if (active_eventitem!!.type == LadderItem.TYPE_TRANSITION) {
+                        if (activeEventitem!!.type == LadderItem.TYPE_TRANSITION) {
                             // only allow dragging of TYPE_EVENT
                             needsHandling = false
                         }
 
                         if (needsHandling) {
                             guiState = STATE_MOVING_EVENT
-                            active_positionitem = null
-                            start_y = me.getY()
-                            start_ylow = active_eventitem!!.ylow
-                            start_yhigh = active_eventitem!!.yhigh
-                            start_t = active_eventitem!!.event!!.t
-                            findEventLimits(active_eventitem!!)
+                            activePositionitem = null
+                            startY = me.getY()
+                            startYlow = activeEventitem!!.ylow
+                            startYhigh = activeEventitem!!.yhigh
+                            startT = activeEventitem!!.event!!.t
+                            findEventLimits(activeEventitem!!)
                             needsHandling = false
                         }
                     }
 
                     if (needsHandling) {
-                        val old_positionitem = active_positionitem
-                        active_positionitem = getSelectedLadderPosition(me.getX(), me.getY())
-                        if (old_positionitem != null && old_positionitem == active_positionitem) {
-                            item_was_selected = true
+                        val oldPositionitem = activePositionitem
+                        activePositionitem = getSelectedLadderPosition(me.getX(), me.getY())
+                        if (oldPositionitem != null && oldPositionitem == activePositionitem) {
+                            itemWasSelected = true
                         }
 
-                        if (active_positionitem != null) {
+                        if (activePositionitem != null) {
                             guiState = STATE_MOVING_POSITION
-                            active_eventitem = null
-                            start_y = me.getY()
-                            start_ylow = active_positionitem!!.yLow
-                            start_yhigh = active_positionitem!!.yHigh
-                            start_t = active_positionitem!!.position!!.t
-                            findPositionLimits(active_positionitem!!)
+                            activeEventitem = null
+                            startY = me.getY()
+                            startYlow = activePositionitem!!.yLow
+                            startYhigh = activePositionitem!!.yHigh
+                            startT = activePositionitem!!.position!!.t
+                            findPositionLimits(activePositionitem!!)
                             if (aep != null) {
-                                aep!!.activatePosition(active_positionitem!!.position)
+                                aep!!.activatePosition(activePositionitem!!.position)
                             }
                             needsHandling = false
                         }
@@ -356,7 +342,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
 
         // on Windows the popup triggers here
-        if (me!!.isPopupTrigger()) {
+        if (me!!.isPopupTrigger) {
             when (guiState) {
                 STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
                     // skip this code for MOVING_TRACKER state, since already executed in
@@ -373,29 +359,29 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         aep!!.time = newtime
                         aep!!.deactivateEvent()
                         aep!!.deactivatePosition()
-                        if (active_eventitem != null) {
+                        if (activeEventitem != null) {
                             try {
-                                aep!!.activateEvent(active_eventitem!!.event)
+                                aep!!.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
                                 jei.attachPattern(pat)
                                 handleFatalException(jei)
                             }
                         }
-                        if (active_positionitem != null) {
-                            aep!!.activatePosition(active_positionitem!!.position)
+                        if (activePositionitem != null) {
+                            aep!!.activatePosition(activePositionitem!!.position)
                         }
                         aep!!.repaint()
                     }
 
                     guiState = STATE_POPUP
 
-                    if (delta_y != 0) {
-                        delta_y = 0
+                    if (deltaY != 0) {
+                        deltaY = 0
                         repaint()
                     }
-                    popup_x = me.getX()
-                    popup_y = me.getY()
-                    popupitem = (if (active_eventitem != null) active_eventitem else active_positionitem)
+                    popupX = me.getX()
+                    popupY = me.getY()
+                    popupitem = (if (activeEventitem != null) activeEventitem else activePositionitem)
                     if (popupitem == null) {
                         popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
                     }
@@ -412,12 +398,12 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 STATE_INACTIVE -> {}
                 STATE_MOVING_EVENT -> {
                     guiState = STATE_INACTIVE
-                    if (delta_y != 0) {
-                        delta_y = 0
+                    if (deltaY != 0) {
+                        deltaY = 0
                         addToUndoList()
-                    } else if (item_was_selected) {
+                    } else if (itemWasSelected) {
                         // clicked without moving --> deselect
-                        active_eventitem = null
+                        activeEventitem = null
                         if (aep != null) {
                             aep!!.deactivateEvent()
                             aep!!.repaint()
@@ -428,11 +414,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
                 STATE_MOVING_POSITION -> {
                     guiState = STATE_INACTIVE
-                    if (delta_y != 0) {
-                        delta_y = 0
+                    if (deltaY != 0) {
+                        deltaY = 0
                         addToUndoList()
-                    } else if (item_was_selected) {
-                        active_positionitem = null
+                    } else if (itemWasSelected) {
+                        activePositionitem = null
                         if (aep != null) {
                             aep!!.deactivatePosition()
                             aep!!.repaint()
@@ -457,8 +443,8 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
     //--------------------------------------------------------------------------
     // java.awt.event.MouseMotionListener methods
     //--------------------------------------------------------------------------
-    
-    public override fun mouseDragged(me: MouseEvent) {
+
+    override fun mouseDragged(me: MouseEvent) {
         if (aep != null && (aep!!.writingGIF || !aep!!.engineAnimating)) {
             return
         }
@@ -469,22 +455,22 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         when (guiState) {
             STATE_INACTIVE, STATE_POPUP -> {}
             STATE_MOVING_EVENT -> {
-                val old_delta_y = delta_y
-                delta_y = getClippedEventTime(me, active_eventitem!!.event!!)
+                val oldDeltaY = deltaY
+                deltaY = getClippedEventTime(me, activeEventitem!!.event!!)
 
-                if (delta_y != old_delta_y) {
-                    moveEventInPattern(active_eventitem!!.eventitem!!)
+                if (deltaY != oldDeltaY) {
+                    moveEventInPattern(activeEventitem!!.eventitem!!)
                     activeEventChanged()
                     repaint()
                 }
             }
 
             STATE_MOVING_POSITION -> {
-                val old_delta_y = delta_y
-                delta_y = getClippedPositionTime(me, active_positionitem!!.position!!)
+                val oldDeltaY = deltaY
+                deltaY = getClippedPositionTime(me, activePositionitem!!.position!!)
 
-                if (delta_y != old_delta_y) {
-                    movePositionInPattern(active_positionitem!!)
+                if (deltaY != oldDeltaY) {
+                    movePositionInPattern(activePositionitem!!)
                     activePositionChanged()
                     repaint()
                 }
@@ -504,10 +490,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Utility methods for mouse interactions
-    //----------------------------------------------------------------------------
-    protected fun findEventLimits(item: LadderEventItem) {
+    //--------------------------------------------------------------------------
+
+    private fun findEventLimits(item: LadderEventItem) {
         var tmin = pat.loopStartTime
         var tmax = pat.loopEndTime
         val scale =
@@ -579,27 +566,28 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 }
             }
         }
-        delta_y_min = ((tmin - item.event!!.t) / scale).toInt()
-        delta_y_max = ((tmax - item.event!!.t) / scale).toInt()
+        deltaYMin = ((tmin - item.event!!.t) / scale).toInt()
+        deltaYMax = ((tmax - item.event!!.t) / scale).toInt()
     }
 
     // Return value of `delta_y` during mouse drag of an event, clipping it to
     // enforce proximity limits between various event types, as well as hard
     // limits `delta_y_min` and `delta_y_max`.
-    protected fun getClippedEventTime(me: MouseEvent, event: JMLEvent): Int {
-        var dy = me.getY() - start_y
 
-        dy = min(max(dy, delta_y_min), delta_y_max)
+    private fun getClippedEventTime(me: MouseEvent, event: JMLEvent): Int {
+        var dy = me.getY() - startY
+
+        dy = min(max(dy, deltaYMin), deltaYMax)
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
         val shift = dy * scale
-        val newt = start_t + shift // unclipped new event time
+        val newt = startT + shift // unclipped new event time
 
         // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
         // proximity to other events, where `newt` is contained within the window.
-        var t_excl_min = newt
-        var t_excl_max = newt
+        var tExclMin = newt
+        var tExclMax = newt
         var changed: Boolean
 
         do {
@@ -609,24 +597,24 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
             while (ev != null) {
                 if (ev != event && ev.juggler == event.juggler && ev.hand == event.hand) {
-                    if (ev.hasThrow && event.hasThrowOrCatch
+                    sep = if (ev.hasThrow && event.hasThrowOrCatch
                         || ev.hasThrowOrCatch && event.hasThrow
                     ) {
-                        sep = MIN_THROW_SEP_TIME
+                        MIN_THROW_SEP_TIME
                     } else {
-                        sep = MIN_EVENT_SEP_TIME
+                        MIN_EVENT_SEP_TIME
                     }
 
-                    val ev_excl_min = ev.t - sep
-                    val ev_excl_max = ev.t + sep
+                    val evExclMin = ev.t - sep
+                    val evExclMax = ev.t + sep
 
-                    if (ev_excl_max > t_excl_max && ev_excl_min <= t_excl_max) {
-                        t_excl_max = ev_excl_max
+                    if (tExclMax in evExclMin..<evExclMax) {
+                        tExclMax = evExclMax
                         changed = true
                     }
 
-                    if (ev_excl_min < t_excl_min && ev_excl_max >= t_excl_min) {
-                        t_excl_min = ev_excl_min
+                    if (evExclMin < tExclMin && evExclMax >= tExclMin) {
+                        tExclMin = evExclMin
                         changed = true
                     }
                 }
@@ -638,38 +626,38 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         // Clip the event time `newt` to whichever end of the exclusion window
         // is closest. First check if each end is feasible.
-        val excl_dy_min = floor((t_excl_min - start_t) / scale).toInt()
-        val excl_dy_max = ceil((t_excl_max - start_t) / scale).toInt()
-        val feasible_min = (excl_dy_min >= delta_y_min && excl_dy_min <= delta_y_max)
-        val feasible_max = (excl_dy_max >= delta_y_min && excl_dy_max <= delta_y_max)
+        val exclDyMin = floor((tExclMin - startT) / scale).toInt()
+        val exclDyMax = ceil((tExclMax - startT) / scale).toInt()
+        val feasibleMin = (exclDyMin in deltaYMin..deltaYMax)
+        val feasibleMax = (exclDyMax in deltaYMin..deltaYMax)
 
-        var result_dy = dy
+        var resultDy = dy
 
-        if (feasible_min && feasible_max) {
-            val t_midpoint = 0.5 * (t_excl_min + t_excl_max)
-            result_dy = (if (newt <= t_midpoint) excl_dy_min else excl_dy_max)
-        } else if (feasible_min && !feasible_max) {
-            result_dy = excl_dy_min
-        } else if (!feasible_min && feasible_max) {
-            result_dy = excl_dy_max
+        if (feasibleMin && feasibleMax) {
+            val tMidpoint = 0.5 * (tExclMin + tExclMax)
+            resultDy = (if (newt <= tMidpoint) exclDyMin else exclDyMax)
+        } else if (feasibleMin) {
+            resultDy = exclDyMin
+        } else if (feasibleMax) {
+            resultDy = exclDyMax
         }
 
-        return result_dy
+        return resultDy
     }
 
-    protected fun moveEventInPattern(item: LadderEventItem) {
+    private fun moveEventInPattern(item: LadderEventItem) {
         var ev = item.event
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        var shift = delta_y * scale
-        var newt = start_t + shift
+        var shift = deltaY * scale
+        var newt = startT + shift
         if (newt < pat.loopStartTime + scale) {
             // within 1 pixel of top
-            shift = pat.loopStartTime - start_t
+            shift = pat.loopStartTime - startT
             newt = pat.loopStartTime
         } else if (newt >= pat.loopEndTime) {
-            shift = pat.loopEndTime - 0.0001 - start_t
+            shift = pat.loopEndTime - 0.0001 - startT
             newt = pat.loopEndTime - 0.0001
         }
 
@@ -778,12 +766,12 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         ev = item.event
         val pp = ev!!.pathPermFromMaster!!.inverse
-        var new_master_t = start_t + shift
+        var newMasterT = startT + shift
 
         if (!ev.isMaster) {
-            val new_event_t = new_master_t
-            new_master_t += ev.master.t - ev.t
-            ev.t = new_event_t // update event time so getHashCode() works
+            val newEventT = newMasterT
+            newMasterT += ev.master.t - ev.t
+            ev.t = newEventT // update event time so getHashCode() works
             ev = ev.master
         }
 
@@ -812,37 +800,38 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
 
         pat.removeEvent(ev)
-        ev.t = new_master_t // change time of master
+        ev.t = newMasterT // change time of master
         pat.addEvent(ev) // remove/add cycle keeps events sorted
     }
 
-    protected fun findPositionLimits(item: LadderPositionItem) {
+    private fun findPositionLimits(item: LadderPositionItem) {
         val tmin = pat.loopStartTime
         val tmax = pat.loopEndTime
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
-        delta_y_min = ((tmin - item.position!!.t) / scale).toInt()
-        delta_y_max = ((tmax - item.position!!.t) / scale).toInt()
+        deltaYMin = ((tmin - item.position!!.t) / scale).toInt()
+        deltaYMax = ((tmax - item.position!!.t) / scale).toInt()
     }
 
     // Return value of `delta_y` during mouse drag of an event, clipping it to
     // enforce proximity limits between various event types, as well as hard
     // limits `delta_y_min` and `delta_y_max`.
-    protected fun getClippedPositionTime(me: MouseEvent, position: JMLPosition): Int {
-        var dy = me.getY() - start_y
 
-        dy = min(max(dy, delta_y_min), delta_y_max)
+    private fun getClippedPositionTime(me: MouseEvent, position: JMLPosition): Int {
+        var dy = me.getY() - startY
+
+        dy = min(max(dy, deltaYMin), deltaYMax)
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
         val shift = dy * scale
-        val newt = start_t + shift // unclipped new event time
+        val newt = startT + shift // unclipped new event time
 
         // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
         // proximity to other events, where `newt` is contained within the window.
-        var t_excl_min = newt
-        var t_excl_max = newt
+        var tExclMin = newt
+        var tExclMax = newt
         var changed: Boolean
 
         do {
@@ -851,16 +840,16 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
             while (pos != null) {
                 if (pos != position && pos.juggler == position.juggler) {
-                    val pos_excl_min: Double = pos.t - MIN_POSITION_SEP_TIME
-                    val pos_excl_max: Double = pos.t + MIN_POSITION_SEP_TIME
+                    val posExclMin: Double = pos.t - MIN_POSITION_SEP_TIME
+                    val posExclMax: Double = pos.t + MIN_POSITION_SEP_TIME
 
-                    if (pos_excl_max > t_excl_max && pos_excl_min <= t_excl_max) {
-                        t_excl_max = pos_excl_max
+                    if (tExclMax in posExclMin..<posExclMax) {
+                        tExclMax = posExclMax
                         changed = true
                     }
 
-                    if (pos_excl_min < t_excl_min && pos_excl_max >= t_excl_min) {
-                        t_excl_min = pos_excl_min
+                    if (posExclMin < tExclMin && posExclMax >= tExclMin) {
+                        tExclMin = posExclMin
                         changed = true
                     }
                 }
@@ -870,32 +859,32 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         // Clip the position time `newt` to whichever end of the exclusion window
         // is closest. First check if each end is feasible.
-        val excl_dy_min = floor((t_excl_min - start_t) / scale).toInt()
-        val excl_dy_max = ceil((t_excl_max - start_t) / scale).toInt()
-        val feasible_min = (excl_dy_min >= delta_y_min && excl_dy_min <= delta_y_max)
-        val feasible_max = (excl_dy_max >= delta_y_min && excl_dy_max <= delta_y_max)
+        val exclDyMin = floor((tExclMin - startT) / scale).toInt()
+        val exclDyMax = ceil((tExclMax - startT) / scale).toInt()
+        val feasibleMin = (exclDyMin in deltaYMin..deltaYMax)
+        val feasibleMax = (exclDyMax in deltaYMin..deltaYMax)
 
-        var result_dy = dy
+        var resultDy = dy
 
-        if (feasible_min && feasible_max) {
-            val t_midpoint = 0.5 * (t_excl_min + t_excl_max)
-            result_dy = (if (newt <= t_midpoint) excl_dy_min else excl_dy_max)
-        } else if (feasible_min && !feasible_max) {
-            result_dy = excl_dy_min
-        } else if (!feasible_min && feasible_max) {
-            result_dy = excl_dy_max
+        if (feasibleMin && feasibleMax) {
+            val tMidpoint = 0.5 * (tExclMin + tExclMax)
+            resultDy = (if (newt <= tMidpoint) exclDyMin else exclDyMax)
+        } else if (feasibleMin) {
+            resultDy = exclDyMin
+        } else if (feasibleMax) {
+            resultDy = exclDyMax
         }
 
-        return result_dy
+        return resultDy
     }
 
-    protected fun movePositionInPattern(item: LadderPositionItem) {
+    private fun movePositionInPattern(item: LadderPositionItem) {
         val pos = item.position
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
-        var newt = start_t + delta_y * scale
+        var newt = startT + deltaY * scale
         if (newt < pat.loopStartTime + scale) {
             newt = pat.loopStartTime // within 1 pixel of top
         } else if (newt >= pat.loopEndTime) {
@@ -907,7 +896,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         pat.addPosition(pos) // remove/add keeps positions sorted
     }
 
-    protected fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
+    private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
         val popup = JPopupMenu()
 
         for (i in popupItems.indices) {
@@ -918,9 +907,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 continue
             }
 
-            val item: JMenuItem = JMenuItem(guistrings.getString(name.replace(' ', '_')))
+            val item = JMenuItem(guistrings.getString(name.replace(' ', '_')))
             val command: String? = popupCommands[i]
-            item.setActionCommand(command)
+            item.actionCommand = command
             item.addActionListener(this)
             item.setEnabled(isCommandEnabled(laditem, command))
 
@@ -943,14 +932,12 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         return popup
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // java.awt.event.ActionListener methods
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     override fun actionPerformed(event: ActionEvent) {
-        val command = event.getActionCommand()
-        if (command == null) {
-            return
-        }
+        val command = event.getActionCommand() ?: return
 
         when (command) {
             "changetitle" -> changeTitle()
@@ -974,28 +961,27 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         finishPopup()
     }
 
-    protected fun changeTitle() {
+    private fun changeTitle() {
         val jd = JDialog(parentframe, guistrings.getString("Change_title"), true)
         val gb = GridBagLayout()
-        jd.getContentPane().setLayout(gb)
+        jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
-        tf.setText(pat.title)
+        tf.text = pat.title
 
-        val okbutton: JButton = JButton(guistrings.getString("OK"))
-        okbutton.addActionListener(
-            ActionListener { e: ActionEvent? ->
-                val newtitle = tf.getText()
-                pat.title = newtitle
-                jd.dispose()
-                addToUndoList()
-            })
+        val okbutton = JButton(guistrings.getString("OK"))
+        okbutton.addActionListener { _: ActionEvent? ->
+            val newtitle = tf.getText()
+            pat.title = newtitle
+            jd.dispose()
+            addToUndoList()
+        }
 
-        jd.getContentPane().add(tf)
+        jd.contentPane.add(tf)
         gb.setConstraints(
             tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        jd.getContentPane().add(okbutton)
+        jd.contentPane.add(okbutton)
         gb.setConstraints(
             okbutton,
             constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
@@ -1004,35 +990,35 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         jd.pack()
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
-        jd.setVisible(true)
+        jd.isVisible = true
         parentframe!!.setTitle(pat.title)
     }
 
-    protected fun changeTiming() {
+    private fun changeTiming() {
         val jd = JDialog(parentframe, guistrings.getString("Change_timing"), true)
         val gb = GridBagLayout()
-        jd.getContentPane().setLayout(gb)
+        jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab: JLabel = JLabel(guistrings.getString("Rescale_percentage"))
+        val lab = JLabel(guistrings.getString("Rescale_percentage"))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         val tf = JTextField(7)
-        tf.setText("100")
+        tf.text = "100"
         p1.add(tf)
         gb.setConstraints(
             tf, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
         )
 
-        val okbutton: JButton = JButton(guistrings.getString("OK"))
-        okbutton.addActionListener { e: ActionEvent? ->
+        val okbutton = JButton(guistrings.getString("OK"))
+        okbutton.addActionListener { _: ActionEvent? ->
             val scale: Double
             try {
                 scale = parseDouble(tf.getText()) / 100.0
-            } catch (nfe: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 handleUserException(
                     this@EditLadderDiagram,
                     "Number format error in rescale percentage"
@@ -1048,11 +1034,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             jd.dispose()
         }
 
-        jd.getContentPane().add(p1)
+        jd.contentPane.add(p1)
         gb.setConstraints(
             p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        jd.getContentPane().add(okbutton)
+        jd.contentPane.add(okbutton)
         gb.setConstraints(
             okbutton,
             constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
@@ -1060,21 +1046,21 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         jd.getRootPane().setDefaultButton(okbutton) // OK button is default
         jd.pack()
         jd.setLocationRelativeTo(this)
-        jd.setVisible(true)
+        jd.isVisible = true
     }
 
-    protected fun addEventToHand(hand: Int): JMLEvent? {
+    private fun addEventToHand(hand: Int): JMLEvent? {
         var juggler = 1
         if (pat.numberOfJugglers > 1) {
-            var mouse_x = popup_x
-            val juggler_right_px = (leftX + rightX + jugglerDeltaX) / 2
+            var mouseX = popupX
+            val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
 
             while (juggler <= pat.numberOfJugglers) {
-                if (mouse_x < juggler_right_px) {
+                if (mouseX < jugglerRightPx) {
                     break
                 }
 
-                mouse_x -= jugglerDeltaX
+                mouseX -= jugglerDeltaX
                 juggler++
             }
             if (juggler > pat.numberOfJugglers) {
@@ -1084,7 +1070,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        val evtime = (popup_y - BORDER_TOP).toDouble() * scale
+        val evtime = (popupY - BORDER_TOP).toDouble() * scale
 
         val evpos = Coordinate()
         try {
@@ -1130,7 +1116,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             }
         }
 
-        active_eventitem = null
+        activeEventitem = null
         if (aep != null) {
             aep!!.deactivateEvent()
         }
@@ -1141,7 +1127,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         return ev
     }
 
-    protected fun removeEvent() {
+    private fun removeEvent() {
         // makePopupMenu() ensures that the event only has hold transitions
         if (popupitem !is LadderEventItem) {
             handleFatalException(
@@ -1154,7 +1140,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             ev = ev.master
         }
         pat.removeEvent(ev)
-        active_eventitem = null
+        activeEventitem = null
         if (aep != null) {
             aep!!.deactivateEvent()
         }
@@ -1163,18 +1149,18 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         repaint()
     }
 
-    protected fun addPositionToJuggler(): JMLPosition {
+    private fun addPositionToJuggler(): JMLPosition {
         var juggler = 1
         if (pat.numberOfJugglers > 1) {
-            var mouse_x = popup_x
-            val juggler_right_px = (leftX + rightX + jugglerDeltaX) / 2
+            var mouseX = popupX
+            val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
 
             while (juggler <= pat.numberOfJugglers) {
-                if (mouse_x < juggler_right_px) {
+                if (mouseX < jugglerRightPx) {
                     break
                 }
 
-                mouse_x -= jugglerDeltaX
+                mouseX -= jugglerDeltaX
                 juggler++
             }
             if (juggler > pat.numberOfJugglers) {
@@ -1184,7 +1170,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        val postime = (popup_y - BORDER_TOP).toDouble() * scale
+        val postime = (popupY - BORDER_TOP).toDouble() * scale
 
         val pos = JMLPosition()
         val loc = Coordinate()
@@ -1195,7 +1181,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         pos.juggler = juggler
         pat.addPosition(pos)
 
-        active_eventitem = null
+        activeEventitem = null
         if (aep != null) {
             aep!!.deactivateEvent()
         }
@@ -1206,7 +1192,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         return pos
     }
 
-    protected fun removePosition() {
+    private fun removePosition() {
         if (popupitem !is LadderPositionItem) {
             handleFatalException(
                 JuggleExceptionInternal("LadderDiagram illegal remove position", pat)
@@ -1215,7 +1201,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
         val pos = (popupitem as LadderPositionItem).position
         pat.removePosition(pos!!)
-        active_positionitem = null
+        activePositionitem = null
         if (aep != null) {
             aep!!.deactivatePosition()
         }
@@ -1224,7 +1210,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         repaint()
     }
 
-    protected fun defineProp() {
+    private fun defineProp() {
         if (popupitem == null) {
             handleFatalException(JuggleExceptionInternal("defineProp() null popupitem", pat))
             return
@@ -1248,9 +1234,8 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             pn = (popupitem as LadderPathItem).pathNum
         }
 
-        val pathnum = pn
         val animpropnum = aep!!.animator.animPropNum
-        val propnum = animpropnum!![pathnum - 1]
+        val propnum = animpropnum!![pn - 1]
         // final int propnum = pat.getPropAssignment(pathnum);
         // System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         val startprop = pat.getProp(propnum)
@@ -1258,11 +1243,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val jd = JDialog(parentframe, guistrings.getString("Define_prop"), true)
         val gb = GridBagLayout()
-        jd.getContentPane().setLayout(gb)
+        jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab: JLabel = JLabel(guistrings.getString("Prop_type"))
+        val lab = JLabel(guistrings.getString("Prop_type"))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -1271,19 +1256,18 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox<String>(prtypes)
+        val cb1 = JComboBox(prtypes)
         p1.add(cb1)
         gb.setConstraints(
             cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
-        cb1.addActionListener { ae: ActionEvent? ->
+        cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             try {
-                val pt: Prop?
-                if (type.equals(startprop!!.type, ignoreCase = true)) {
-                    pt = startprop
+                val pt = if (type.equals(startprop!!.type, ignoreCase = true)) {
+                    startprop
                 } else {
-                    pt = newProp(type)
+                    newProp(type)
                 }
                 makeParametersPanel(p2, pt.getParameterDescriptors()!!)
             } catch (jeu: JuggleExceptionUser) {
@@ -1302,19 +1286,19 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton: JButton = JButton(guistrings.getString("Cancel"))
+        val cancelbutton = JButton(guistrings.getString("Cancel"))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
-        cancelbutton.addActionListener(ActionListener { e: ActionEvent? -> jd.dispose() })
-        val okbutton: JButton = JButton(guistrings.getString("OK"))
+        cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
+        val okbutton = JButton(guistrings.getString("OK"))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
-        okbutton.addActionListener { e: ActionEvent? ->
+        okbutton.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             val mod: String?
 
@@ -1336,7 +1320,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             // check to see if any other paths are using this prop definition
             var killprop = true
             for (i in 0..<pat.numberOfPaths) {
-                if (i != pathnum - 1) {
+                if (i != pn - 1) {
                     if (animpropnum[i] == propnum) {
                         killprop = false
                         break
@@ -1366,15 +1350,15 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
             if (gotmatch) {
                 // new prop is identical to pre-existing one
-                pat.setPropAssignment(pathnum, matchingprop)
+                pat.setPropAssignment(pn, matchingprop)
             } else {
                 // new prop is different
                 val newprop = PropDef(type.lowercase(Locale.getDefault()), mod)
                 pat.addProp(newprop)
-                pat.setPropAssignment(pathnum, pat.numberOfProps)
+                pat.setPropAssignment(pn, pat.numberOfProps)
             }
 
-            if (active_eventitem != null) {
+            if (activeEventitem != null) {
                 activeEventChanged()
             } else {
                 layoutPattern(true)
@@ -1383,15 +1367,15 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             repaint()
         }
 
-        jd.getContentPane().add(p1)
+        jd.contentPane.add(p1)
         gb.setConstraints(
             p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        jd.getContentPane().add(p2)
+        jd.contentPane.add(p2)
         gb.setConstraints(
             p2, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
-        jd.getContentPane().add(p3)
+        jd.contentPane.add(p3)
         gb.setConstraints(
             p3, constraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
         )
@@ -1403,11 +1387,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         jd.pack()
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
-        jd.setVisible(true) // blocks until dispose() above
-        dialog_controls = null
+        jd.isVisible = true  // blocks until dispose() above
+        dialogControls = null
     }
 
-    protected fun defineThrow() {
+    private fun defineThrow() {
         if (popupitem !is LadderEventItem) {
             handleFatalException(JuggleExceptionInternal("defineThrow() class format", pat))
             return
@@ -1422,11 +1406,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val jd = JDialog(parentframe, guistrings.getString("Define_throw"), true)
         val gb = GridBagLayout()
-        jd.getContentPane().setLayout(gb)
+        jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab: JLabel = JLabel(guistrings.getString("Throw_type"))
+        val lab = JLabel(guistrings.getString("Throw_type"))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -1435,19 +1419,18 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox<String>(pptypes)
+        val cb1 = JComboBox(pptypes)
         p1.add(cb1)
         gb.setConstraints(
             cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
-        cb1.addActionListener { ae: ActionEvent? ->
+        cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             try {
-                val ppt: Path?
-                if (type.equals(tr.throwType, ignoreCase = true)) {
-                    ppt = tr.outgoingPathLink!!.path
+                val ppt = if (type.equals(tr.throwType, ignoreCase = true)) {
+                    tr.outgoingPathLink!!.path
                 } else {
-                    ppt = newPath(type)
+                    newPath(type)
                 }
                 makeParametersPanel(p2, ppt!!.parameterDescriptors)
             } catch (jeu: JuggleExceptionUser) {
@@ -1466,19 +1449,19 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton: JButton = JButton(guistrings.getString("Cancel"))
+        val cancelbutton = JButton(guistrings.getString("Cancel"))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
-        cancelbutton.addActionListener(ActionListener { e: ActionEvent? -> jd.dispose() })
-        val okbutton: JButton = JButton(guistrings.getString("OK"))
+        cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
+        val okbutton = JButton(guistrings.getString("OK"))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
-        okbutton.addActionListener { e: ActionEvent? ->
+        okbutton.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             tr.throwType = type.lowercase(Locale.getDefault())
 
@@ -1496,15 +1479,15 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             jd.dispose()
         }
 
-        jd.getContentPane().add(p1)
+        jd.contentPane.add(p1)
         gb.setConstraints(
             p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        jd.getContentPane().add(p2)
+        jd.contentPane.add(p2)
         gb.setConstraints(
             p2, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
-        jd.getContentPane().add(p3)
+        jd.contentPane.add(p3)
         gb.setConstraints(
             p3, constraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
         )
@@ -1513,11 +1496,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         jd.pack()
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
-        jd.setVisible(true) // blocks until dispose() above
-        dialog_controls = null
+        jd.isVisible = true  // blocks until dispose() above
+        dialogControls = null
     }
 
-    protected fun changeCatchStyleTo(type: Int) {
+    private fun changeCatchStyleTo(type: Int) {
         if (popupitem == null) {
             handleFatalException(JuggleExceptionInternal("No popupitem in case 10", pat))
             return
@@ -1539,7 +1522,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         repaint()
     }
 
-    protected fun makeLastInEvent() {
+    private fun makeLastInEvent() {
         if (popupitem == null) {
             handleFatalException(JuggleExceptionInternal("No popupitem in case 8", pat))
             return
@@ -1557,7 +1540,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         val tr = ev.getTransition((popupitem as LadderEventItem).transnum)
         ev.removeTransition(tr)
         ev.addTransition(tr) // will add at end
-        active_eventitem = null // deselect event since it's moving
+        activeEventitem = null // deselect event since it's moving
         if (aep != null) {
             aep!!.deactivateEvent()
         }
@@ -1566,16 +1549,17 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         repaint()
     }
 
-    // Helper for defineProp() and defineThrow()
-    protected fun makeParametersPanel(jp: JPanel, pd: Array<ParameterDescriptor>) {
+    // Helper for defineProp() and defineThrow().
+
+    private fun makeParametersPanel(jp: JPanel, pd: Array<ParameterDescriptor>) {
         jp.removeAll()
         val gb = GridBagLayout()
         jp.setLayout(gb)
 
-        dialog_controls = ArrayList<JComponent>()
-        dialog_pd = pd
+        dialogControls = ArrayList<JComponent>()
+        dialogPd = pd
 
-        if (pd.size != 0) {
+        if (pd.isNotEmpty()) {
             val pdp = JPanel()
             pdp.setLayout(gb)
 
@@ -1592,7 +1576,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     gb.setConstraints(
                         jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(2, 5, 2, 0))
                     )
-                    dialog_controls!!.add(jcb)
+                    dialogControls!!.add(jcb)
                     val def = (pd[i].value) as Boolean
                     // jcb.setSelectedIndex(def ? 0 : 1);
                     jcb.setSelected(def)
@@ -1602,9 +1586,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     gb.setConstraints(
                         tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                     )
-                    dialog_controls!!.add(tf)
+                    dialogControls!!.add(tf)
                     val def = (pd[i].value) as Double?
-                    tf.setText(def.toString())
+                    tf.text = def.toString()
                 } else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
                     val choices = arrayOfNulls<String>(pd[i].range!!.size)
                     pd[i].range!!.toArray<String?>(choices)
@@ -1615,7 +1599,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     gb.setConstraints(
                         jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                     )
-                    dialog_controls!!.add(jcb)
+                    dialogControls!!.add(jcb)
 
                     val `val` = (pd[i].value) as String?
                     for (j in choices.indices) {
@@ -1630,24 +1614,22 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     gb.setConstraints(
                         tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                     )
-                    dialog_controls!!.add(tf)
+                    dialogControls!!.add(tf)
                     val def = (pd[i].value) as Int?
-                    tf.setText(def.toString())
+                    tf.text = def.toString()
 
-                    tf.addCaretListener(CaretListener { e: CaretEvent? -> })
+                    tf.addCaretListener { _: CaretEvent? -> }
                 } else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
                     val fpd = pd[i]
-                    val fpds = pd
-                    val fjp = jp
                     val filename = fpd.value as URL?
 
                     val icon = ImageIcon(filename, filename.toString())
                     // Scale the image down if it's too big
-                    val MAX_HEIGHT = 100f
-                    if (icon.getIconHeight() > MAX_HEIGHT) {
-                        val scaleFactor = MAX_HEIGHT / icon.getIconHeight()
-                        val height = (scaleFactor * icon.getIconHeight()).toInt()
-                        val width = (scaleFactor * icon.getIconWidth()).toInt()
+                    val maxHeight = 100f
+                    if (icon.iconHeight > maxHeight) {
+                        val scaleFactor = maxHeight / icon.iconHeight
+                        val height = (scaleFactor * icon.iconHeight).toInt()
+                        val width = (scaleFactor * icon.iconWidth).toInt()
                         icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH))
                     }
                     val label = JLabel(icon)
@@ -1669,15 +1651,15 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                                     // We have to load the image to get the correct dimensions
                                     // ImageIcon icon = new ImageIcon(source, source.toString());
                                     // Rebuild the paramter descriptions
-                                    fpds[0].value = jfc.getSelectedFile().toURI().toURL()
+                                    pd[0].value = jfc.selectedFile.toURI().toURL()
                                     // fpds[1].value = new Integer(icon.getIconWidth());
                                     // fpds[2].value = new Integer(icon.getIconHeight());
                                     // fpds[1].default_value = fpds[1].value;
                                     // fpds[2].default_value = fpds[2].value;
                                     // Remake the parameter panal with new default values.
-                                    makeParametersPanel(fjp, fpds)
-                                    ((fjp.getTopLevelAncestor()) as JDialog).pack()
-                                } catch (ex: MalformedURLException) {
+                                    makeParametersPanel(jp, pd)
+                                    ((jp.getTopLevelAncestor()) as JDialog).pack()
+                                } catch (_: MalformedURLException) {
                                     // This should never happen
                                     handleFatalException(
                                         JuggleExceptionUser(errorstrings.getString("Error_malformed_URL."))
@@ -1691,7 +1673,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         label,
                         constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 5, 0))
                     )
-                    dialog_controls!!.add(label)
+                    dialogControls!!.add(label)
                 }
             }
 
@@ -1703,31 +1685,31 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
     }
 
     @get:Throws(JuggleExceptionUser::class)
-    protected val parameterList: String?
+    private val parameterList: String?
         get() {
             var result: String? = null
-            val dialog = dialog_pd!!
+            val dialog = dialogPd!!
             for (i in dialog.indices) {
                 var term: String? = null
-                val control: Any = dialog_controls!!.get(i)
+                val control: Any = dialogControls!![i]
                 if (dialog[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
                     // JComboBox jcb = (JComboBox)control;
                     // boolean val = ((jcb.getSelectedIndex() == 0) ? true : false);
                     val jcb = control as JCheckBox
-                    val `val` = jcb.isSelected()
-                    val def_val = (dialog[i].defaultValue) as Boolean
-                    if (`val` != def_val) {
-                        term = (`val`).toString()
+                    val value = jcb.isSelected
+                    val defValue = (dialog[i].defaultValue) as Boolean
+                    if (value != defValue) {
+                        term = value.toString()
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_FLOAT) {
                     val tf = control as JTextField
                     try {
-                        val `val` = parseDouble(tf.getText())
-                        val def_val = (dialog[i].defaultValue) as Double
-                        if (`val` != def_val) {
+                        val value = parseDouble(tf.getText())
+                        val defValue = (dialog[i].defaultValue) as Double
+                        if (value != defValue) {
                             term = tf.getText().trim { it <= ' ' }
                         }
-                    } catch (nfe: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         val template: String =
                             errorstrings.getString("Error_number_format")
                         val arguments = arrayOf<Any?>(dialog[i].name)
@@ -1736,20 +1718,20 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_CHOICE) {
                     val jcb = control as JComboBox<*>
                     val ind = jcb.getSelectedIndex()
-                    val `val` = dialog[i].range!!.get(ind)
-                    val def_val = (dialog[i].defaultValue) as String?
-                    if (!`val`.equals(def_val, ignoreCase = true)) {
-                        term = `val`
+                    val value = dialog[i].range!![ind]
+                    val defValue = (dialog[i].defaultValue) as String?
+                    if (!value.equals(defValue, ignoreCase = true)) {
+                        term = value
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_INT) {
                     val tf = control as JTextField
                     try {
-                        val `val` = tf.getText().toInt()
-                        val def_val = (dialog[i].defaultValue) as Int
-                        if (`val` != def_val) {
+                        val value = tf.getText().toInt()
+                        val defValue = (dialog[i].defaultValue) as Int
+                        if (value != defValue) {
                             term = tf.getText().trim { it <= ' ' }
                         }
-                    } catch (nfe: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         val template: String =
                             errorstrings.getString("Error_number_format")
                         val arguments = arrayOf<Any?>(dialog[i].name)
@@ -1757,7 +1739,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_ICON) {
                     val label = control as JLabel
-                    val icon = label.getIcon() as ImageIcon
+                    val icon = label.icon as ImageIcon
                     val def: String = dialog[i].defaultValue.toString()
                     if (icon.getDescription() != def) {
                         term = icon.getDescription() // This contains the URL string
@@ -1765,22 +1747,17 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 }
 
                 if (term != null) {
-                    term = dialog[i].name + "=" + term
-
-                    if (result == null) {
-                        result = term
-                    } else {
-                        result = result + ";" + term
-                    }
+                    term = "${dialog[i].name}=$term"
+                    result = if (result == null) term else "$result;$term"
                 }
             }
             return result
         }
 
     // Call this at the very end of every popup interaction.
-    protected fun finishPopup() {
-        popupitem = null
 
+    private fun finishPopup() {
+        popupitem = null
         if (guiState == STATE_POPUP) {
             guiState = STATE_INACTIVE
             if (aep != null) {
@@ -1789,118 +1766,115 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // AnimationPanel.AnimationAttachment methods
-    //----------------------------------------------------------------------------
-    public override fun setAnimationPanel(a: AnimationPanel?) {
-        super.setAnimationPanel(a)
+    //--------------------------------------------------------------------------
 
-        if (a is AnimationEditPanel) {
-            aep = a
+    override fun setAnimationPanel(animPanel: AnimationPanel?) {
+        super.setAnimationPanel(animPanel)
+        if (animPanel is AnimationEditPanel) {
+            aep = animPanel
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // javax.swing.JComponent methods
-    //----------------------------------------------------------------------------
-    protected override fun paintComponent(gr: Graphics) {
+    //--------------------------------------------------------------------------
+
+    override fun paintComponent(gr: Graphics) {
         if (gr is Graphics2D) {
             gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         }
 
-        if (!paintLadder(gr)) {
-            return
-        }
+        if (!paintLadder(gr)) return
 
         // draw the box around the selected position
-        if (active_positionitem != null) {
-            gr.setColor(COLOR_SELECTION)
+        if (activePositionitem != null) {
+            gr.color = COLOR_SELECTION
             gr.drawLine(
-                active_positionitem!!.xLow - 1,
-                active_positionitem!!.yLow - 1,
-                active_positionitem!!.xHigh + 1,
-                active_positionitem!!.yLow - 1
+                activePositionitem!!.xLow - 1,
+                activePositionitem!!.yLow - 1,
+                activePositionitem!!.xHigh + 1,
+                activePositionitem!!.yLow - 1
             )
             gr.drawLine(
-                active_positionitem!!.xHigh + 1,
-                active_positionitem!!.yLow - 1,
-                active_positionitem!!.xHigh + 1,
-                active_positionitem!!.yHigh + 1
+                activePositionitem!!.xHigh + 1,
+                activePositionitem!!.yLow - 1,
+                activePositionitem!!.xHigh + 1,
+                activePositionitem!!.yHigh + 1
             )
             gr.drawLine(
-                active_positionitem!!.xHigh + 1,
-                active_positionitem!!.yHigh + 1,
-                active_positionitem!!.xLow,
-                active_positionitem!!.yHigh + 1
+                activePositionitem!!.xHigh + 1,
+                activePositionitem!!.yHigh + 1,
+                activePositionitem!!.xLow,
+                activePositionitem!!.yHigh + 1
             )
             gr.drawLine(
-                active_positionitem!!.xLow - 1,
-                active_positionitem!!.yHigh + 1,
-                active_positionitem!!.xLow - 1,
-                active_positionitem!!.yLow - 1
+                activePositionitem!!.xLow - 1,
+                activePositionitem!!.yHigh + 1,
+                activePositionitem!!.xLow - 1,
+                activePositionitem!!.yLow - 1
             )
         }
 
         // draw the box around the selected event
-        if (active_eventitem != null) {
-            gr.setColor(COLOR_SELECTION)
+        if (activeEventitem != null) {
+            gr.color = COLOR_SELECTION
             gr.drawLine(
-                active_eventitem!!.xlow - 1,
-                active_eventitem!!.ylow - 1,
-                active_eventitem!!.xhigh + 1,
-                active_eventitem!!.ylow - 1
+                activeEventitem!!.xlow - 1,
+                activeEventitem!!.ylow - 1,
+                activeEventitem!!.xhigh + 1,
+                activeEventitem!!.ylow - 1
             )
             gr.drawLine(
-                active_eventitem!!.xhigh + 1,
-                active_eventitem!!.ylow - 1,
-                active_eventitem!!.xhigh + 1,
-                active_eventitem!!.yhigh + 1
+                activeEventitem!!.xhigh + 1,
+                activeEventitem!!.ylow - 1,
+                activeEventitem!!.xhigh + 1,
+                activeEventitem!!.yhigh + 1
             )
             gr.drawLine(
-                active_eventitem!!.xhigh + 1,
-                active_eventitem!!.yhigh + 1,
-                active_eventitem!!.xlow,
-                active_eventitem!!.yhigh + 1
+                activeEventitem!!.xhigh + 1,
+                activeEventitem!!.yhigh + 1,
+                activeEventitem!!.xlow,
+                activeEventitem!!.yhigh + 1
             )
             gr.drawLine(
-                active_eventitem!!.xlow - 1,
-                active_eventitem!!.yhigh + 1,
-                active_eventitem!!.xlow - 1,
-                active_eventitem!!.ylow - 1
+                activeEventitem!!.xlow - 1,
+                activeEventitem!!.yhigh + 1,
+                activeEventitem!!.xlow - 1,
+                activeEventitem!!.ylow - 1
             )
         }
 
         // label the tracker line with the time
         if (guiState == STATE_MOVING_TRACKER) {
-            gr.setColor(COLOR_TRACKER)
+            gr.color = COLOR_TRACKER
             gr.drawString(toStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
         }
     }
 
     companion object {
-        val guistrings: ResourceBundle = JugglingLab.guistrings
-        val errorstrings: ResourceBundle = JugglingLab.errorstrings
-
         // minimum time (seconds) between a throw and another event with transitions
-        protected const val MIN_THROW_SEP_TIME: Double = 0.05
+        private const val MIN_THROW_SEP_TIME: Double = 0.05
 
         // minimum time (seconds) between all events for a hand
-        protected const val MIN_EVENT_SEP_TIME: Double = 0.01
+        private const val MIN_EVENT_SEP_TIME: Double = 0.01
 
         // minimum time (seconds) between positions for a juggler
-        protected const val MIN_POSITION_SEP_TIME: Double = 0.02
+        private const val MIN_POSITION_SEP_TIME: Double = 0.02
 
-        protected val COLOR_SELECTION: Color? = Color.green
+        private val COLOR_SELECTION: Color? = Color.green
 
         // additional GUI states
-        protected const val STATE_MOVING_EVENT: Int = 2
-        protected const val STATE_MOVING_POSITION: Int = 3
-        protected const val STATE_POPUP: Int = 4
+        private const val STATE_MOVING_EVENT: Int = 2
+        private const val STATE_MOVING_POSITION: Int = 3
+        private const val STATE_POPUP: Int = 4
 
-        //----------------------------------------------------------------------------
+        //----------------------------------------------------------------------
         // Popup menu and related handlers
-        //----------------------------------------------------------------------------
-        protected val popupItems: Array<String?> = arrayOf<String?>(
+        //----------------------------------------------------------------------
+
+        private val popupItems: Array<String?> = arrayOf<String?>(
             "Change title...",
             "Change overall timing...",
             null,
@@ -1918,7 +1892,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             "Make last in event",
         )
 
-        protected val popupCommands: Array<String?> = arrayOf<String?>(
+        private val popupCommands: Array<String?> = arrayOf<String?>(
             "changetitle",
             "changetiming",
             null,
@@ -1953,7 +1927,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     "makelast"
                 ).contains(command)
             } else if (laditem.type == LadderItem.TYPE_EVENT) {
-                if (mutableListOf<String?>(
+                if (mutableListOf(
                         "changetitle",
                         "changetiming",
                         "addeventtoleft",
@@ -1999,7 +1973,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     }
                 }
             } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
-                if (mutableListOf<String?>(
+                if (mutableListOf(
                         "changetitle",
                         "changetiming",
                         "addeventtoleft",
@@ -2014,31 +1988,22 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 val tr = evitem.event!!.getTransition(evitem.transnum)
 
                 when (command) {
-                    "makelast" -> {
+                    "makelast" ->
                         return evitem.transnum != (evitem.event!!.numberOfTransitions - 1)
-                    }
-
-                    "definethrow" -> {
+                    "definethrow" ->
                         return tr.getType() == JMLTransition.TRANS_THROW
-                    }
-
-                    "changetocatch" -> {
+                    "changetocatch" ->
                         return tr.getType() == JMLTransition.TRANS_SOFTCATCH
                                 || tr.getType() == JMLTransition.TRANS_GRABCATCH
-                    }
-
-                    "changetosoftcatch" -> {
+                    "changetosoftcatch" ->
                         return tr.getType() == JMLTransition.TRANS_CATCH
                                 || tr.getType() == JMLTransition.TRANS_GRABCATCH
-                    }
-
-                    "changetograbcatch" -> {
+                    "changetograbcatch" ->
                         return tr.getType() == JMLTransition.TRANS_CATCH
                                 || tr.getType() == JMLTransition.TRANS_SOFTCATCH
-                    }
                 }
             } else if (laditem.type == LadderItem.TYPE_POSITION) {
-                return !mutableListOf<String?>(
+                return !mutableListOf(
                     "changetitle",
                     "changetiming",
                     "addeventtoleft",
@@ -2053,7 +2018,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     "makelast"
                 ).contains(command)
             } else {  // LadderPathItem
-                return !mutableListOf<String?>(
+                return !mutableListOf(
                     "removeevent",
                     "removeposition",
                     "definethrow",
