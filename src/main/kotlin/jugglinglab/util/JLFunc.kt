@@ -110,6 +110,7 @@ private fun addExpansionToBuffer(str: String, sb: StringBuilder) {
 // We always call this function with `fromPos` sitting on the '(' that starts
 // the repeat section.
 
+@Suppress("UnnecessaryVariable")
 private fun tryParseRepeat(str: String, fromPos: Int): IntArray? {
     var depth = 0
 
@@ -226,17 +227,17 @@ fun constraints(location: Int, gridx: Int, gridy: Int): GridBagConstraints {
     gbc.anchor = location
     gbc.fill = GridBagConstraints.NONE
     gbc.gridwidth = 1
-    gbc.gridheight = gbc.gridwidth
+    gbc.gridheight = 1
     gbc.gridx = gridx
     gbc.gridy = gridy
     gbc.weighty = 0.0
-    gbc.weightx = gbc.weighty
+    gbc.weightx = 0.0
     return gbc
 }
 
 fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagConstraints {
     val gbc = constraints(location, gridx, gridy)
-    gbc.insets = (ins ?: Insets(0, 0, 0, 0))
+    gbc.insets = ins ?: Insets(0, 0, 0, 0)
     return gbc
 }
 
