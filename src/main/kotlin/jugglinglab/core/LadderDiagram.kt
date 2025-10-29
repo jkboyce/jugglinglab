@@ -10,7 +10,7 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab
+import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
 import jugglinglab.util.toStringRounded
@@ -33,38 +33,36 @@ open class LadderDiagram(p: JMLPattern) :
     @JvmField
     protected val pat: JMLPattern
     @JvmField
-    protected var width: Int = 0 // pixel dimensions of entire panel
+    protected var ladderWidth: Int = 0 // pixel dimensions of entire panel
     @JvmField
-    protected var height: Int = 0
+    protected var ladderHeight: Int = 0
     @JvmField
-    protected var right_x: Int = 0 // right/left hand pos. for juggler 1 (px)
+    protected var rightX: Int = 0 // right/left hand pos. for juggler 1 (px)
     @JvmField
-    protected var left_x: Int = 0
+    protected var leftX: Int = 0
     @JvmField
-    protected var juggler_delta_x: Int = 0 // horizontal offset between jugglers (px)
+    protected var jugglerDeltaX: Int = 0 // horizontal offset between jugglers (px)
     @JvmField
-    protected var gui_state: Int = STATE_INACTIVE // one of STATE_x values above
+    protected var guiState: Int = STATE_INACTIVE // one of STATE_x values above
     @JvmField
-    protected var sim_time: Double = 0.0
+    protected var simTime: Double = 0.0
+    @JvmField
+    protected var trackerY: Int = BORDER_TOP
+    protected var hasSwitchSymmetry: Boolean = false
+    protected var hasSwitchdelaySymmetry: Boolean = false
 
     @JvmField
-    protected var tracker_y: Int = BORDER_TOP
-    protected var has_switch_symmetry: Boolean = false
-    protected var has_switchdelay_symmetry: Boolean = false
-
+    protected var ladderEventItems: ArrayList<LadderEventItem>? = null
+    protected var ladderPathItems: ArrayList<LadderPathItem>? = null
     @JvmField
-    protected var laddereventitems: ArrayList<LadderEventItem>? = null
-    protected var ladderpathitems: ArrayList<LadderPathItem>? = null
-
-    @JvmField
-    protected var ladderpositionitems: ArrayList<LadderPositionItem>? = null
-
+    protected var ladderPositionItems: ArrayList<LadderPositionItem>? = null
+    
     protected var im: BufferedImage? = null
-    protected var image_valid: Boolean = false
-    protected var frames_until_image_draw: Int = 0
+    protected var imageValid: Boolean = false
+    protected var framesUntilImageDraw: Int = 0
 
     @JvmField
-    protected var anim_paused: Boolean = false
+    protected var animPaused: Boolean = false
 
     init {
         setBackground(COLOR_BACKGROUND)
@@ -78,20 +76,20 @@ open class LadderDiagram(p: JMLPattern) :
             val arguments = arrayOf<Any?>(MAX_JUGGLERS)
             val message = MessageFormat.format(template, *arguments)
             val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
-            setPreferredSize(Dimension(mwidth, 1))
-            setMinimumSize(Dimension(mwidth, 1))
+            preferredSize = Dimension(mwidth, 1)
+            minimumSize = Dimension(mwidth, 1)
         } else {
-            var pref_width: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
-            val min_width: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
-            val width_mult =
+            var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
+            val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
+            val widthMult =
                 doubleArrayOf(
                     1.0, 1.0, 0.85, 0.72, 0.65, 0.55,
                 )
-            pref_width = (pref_width.toDouble() *
-                (if (jugglers >= width_mult.size) 0.5 else width_mult[jugglers])).toInt()
-            pref_width = max(pref_width, min_width)
-            setPreferredSize(Dimension(pref_width, 1))
-            setMinimumSize(Dimension(min_width, 1))
+            prefWidth = (prefWidth.toDouble() *
+                (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
+            prefWidth = max(prefWidth, minWidth)
+            preferredSize = Dimension(prefWidth, 1)
+            minimumSize = Dimension(minWidth, 1)
 
             pat.layoutPattern() // ensures we have event list
             createView()
@@ -110,15 +108,15 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         var my = me.getY()
-        my = min(max(my, BORDER_TOP), height - BORDER_TOP)
+        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
 
-        gui_state = STATE_MOVING_TRACKER
-        tracker_y = my
+        guiState = STATE_MOVING_TRACKER
+        trackerY = my
         if (ap != null) {
             val scale = ((pat.loopEndTime - pat.loopStartTime)
-                / (height - 2 * BORDER_TOP).toDouble())
+                / (ladderHeight - 2 * BORDER_TOP).toDouble())
             val newtime = (my - BORDER_TOP).toDouble() * scale
-            anim_paused = ap!!.isPaused
+            animPaused = ap!!.isPaused
             ap!!.isPaused = true
             ap!!.time = newtime
         }
@@ -134,9 +132,9 @@ open class LadderDiagram(p: JMLPattern) :
             return
         }
 
-        gui_state = STATE_INACTIVE
+        guiState = STATE_INACTIVE
         if (ap != null) {
-            ap!!.isPaused = anim_paused
+            ap!!.isPaused = animPaused
         }
         repaint()
     }
@@ -156,13 +154,13 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         var my = me.getY()
-        my = min(max(my, BORDER_TOP), height - BORDER_TOP)
-        tracker_y = my
+        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
+        trackerY = my
         repaint()
 
         if (ap != null) {
             val scale = ((pat.loopEndTime - pat.loopStartTime)
-                / (height - 2 * BORDER_TOP).toDouble())
+                / (ladderHeight - 2 * BORDER_TOP).toDouble())
             val newtime = (my - BORDER_TOP).toDouble() * scale
             ap!!.time = newtime
             ap!!.repaint()
@@ -175,7 +173,7 @@ open class LadderDiagram(p: JMLPattern) :
     // Methods to interact with ladder items
     //----------------------------------------------------------------------------
     protected fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
-        for (item in laddereventitems!!) {
+        for (item in ladderEventItems!!) {
             if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) {
                 return item
             }
@@ -184,47 +182,48 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     protected fun getSelectedLadderPosition(x: Int, y: Int): LadderPositionItem? {
-        for (item in ladderpositionitems!!) {
-            if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) {
+        for (item in ladderPositionItems!!) {
+            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
                 return item
             }
         }
         return null
     }
 
+    @Suppress("SameParameterValue")
     protected fun getSelectedLadderPath(x: Int, y: Int, slop: Int): LadderPathItem? {
         var result: LadderPathItem? = null
         var dmin = 0.0
 
-        if (y < (BORDER_TOP - slop) || y > (height - BORDER_TOP + slop)) {
+        if (y < (BORDER_TOP - slop) || y > (ladderHeight - BORDER_TOP + slop)) {
             return null
         }
 
-        for (item in ladderpathitems!!) {
+        for (item in ladderPathItems!!) {
             var d: Double
 
-            if (item.type == LadderItem.Companion.TYPE_SELF) {
-                if (y < (item.ystart - slop) || y > (item.yend + slop)) {
+            if (item.type == LadderItem.TYPE_SELF) {
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
                     continue
                 }
                 d =
-                    ((x - item.xcenter) * (x - item.xcenter) + (y - item.ycenter) * (y - item.ycenter)).toDouble()
+                    ((x - item.xCenter) * (x - item.xCenter) + (y - item.yCenter) * (y - item.yCenter)).toDouble()
                 d = abs(sqrt(d) - item.radius)
             } else {
-                val xmin = min(item.xstart, item.xend)
-                val xmax = max(item.xstart, item.xend)
+                val xmin = min(item.xStart, item.xEnd)
+                val xmax = max(item.xStart, item.xEnd)
 
                 if (x < (xmin - slop) || x > (xmax + slop)) {
                     continue
                 }
-                if (y < (item.ystart - slop) || y > (item.yend + slop)) {
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
                     continue
                 }
-                d = ((item.xend - item.xstart) * (y - item.ystart)
-                    - (x - item.xstart) * (item.yend - item.ystart)).toDouble()
+                d = ((item.xEnd - item.xStart) * (y - item.yStart)
+                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
                 d = abs(d) / sqrt(
-                    ((item.xend - item.xstart) * (item.xend - item.xstart)
-                        + (item.yend - item.ystart) * (item.yend - item.ystart)).toDouble()
+                    ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
+                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
                 )
             }
 
@@ -248,86 +247,90 @@ open class LadderDiagram(p: JMLPattern) :
   }
   */
     protected fun updateTrackerPosition() {
-        val loop_start = pat.loopStartTime
-        val loop_end = pat.loopEndTime
-        tracker_y =
-            (0.5 + (height - 2 * BORDER_TOP).toDouble() * (sim_time - loop_start) / (loop_end - loop_start)).toInt() + BORDER_TOP
+        val loopStart = pat.loopStartTime
+        val loopEnd = pat.loopEndTime
+        trackerY = (
+            0.5 +
+                (ladderHeight - 2 * BORDER_TOP).toDouble() *
+                (simTime - loopStart) / (loopEnd - loopStart)
+            ).toInt() + BORDER_TOP
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Methods to create and paint the ladder view
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     // Create arrays of all the elements in the ladder diagram.
     protected fun createView() {
-        has_switchdelay_symmetry = false
-        has_switch_symmetry = has_switchdelay_symmetry
+        hasSwitchdelaySymmetry = false
+        hasSwitchSymmetry = false
 
         for (sym in pat.symmetries) {
             when (sym.getType()) {
-                JMLSymmetry.TYPE_SWITCH -> has_switch_symmetry = true
-                JMLSymmetry.TYPE_SWITCHDELAY -> has_switchdelay_symmetry = true
+                JMLSymmetry.TYPE_SWITCH -> hasSwitchSymmetry = true
+                JMLSymmetry.TYPE_SWITCHDELAY -> hasSwitchdelaySymmetry = true
             }
         }
 
-        val loop_start = pat.loopStartTime
-        val loop_end = pat.loopEndTime
+        val loopStart = pat.loopStartTime
+        val loopEnd = pat.loopEndTime
 
         // first create events (black circles on the vertical lines representing hands)
-        laddereventitems = ArrayList<LadderEventItem>()
+        ladderEventItems = ArrayList<LadderEventItem>()
         val eventlist = pat.eventList
         var ev = eventlist
 
-        while (ev!!.t < loop_start) {
+        while (ev!!.t < loopStart) {
             ev = ev.next
         }
 
-        while (ev!!.t < loop_end) {
+        while (ev!!.t < loopEnd) {
             val item = LadderEventItem()
-            item.type = LadderItem.Companion.TYPE_EVENT
+            item.type = LadderItem.TYPE_EVENT
             item.eventitem = item
             item.event = ev
-            laddereventitems!!.add(item)
+            ladderEventItems!!.add(item)
 
             for (i in 0..<ev.numberOfTransitions) {
                 val item2 = LadderEventItem()
-                item2.type = LadderItem.Companion.TYPE_TRANSITION
+                item2.type = LadderItem.TYPE_TRANSITION
                 item2.eventitem = item
                 item2.event = ev
                 item2.transnum = i
-                laddereventitems!!.add(item2)
+                ladderEventItems!!.add(item2)
             }
 
             ev = ev.next
         }
 
         // create paths (lines and arcs)
-        ladderpathitems = ArrayList<LadderPathItem>()
+        ladderPathItems = ArrayList<LadderPathItem>()
         ev = eventlist
-        while (ev!!.t <= loop_end) {
+        while (ev!!.t <= loopEnd) {
             for (i in 0..<ev.numberOfTransitions) {
                 val tr = ev.getTransition(i)
                 val opl = tr.outgoingPathLink
 
                 if (opl != null) {
                     val item = LadderPathItem()
-                    item.transnum_start = i
-                    item.startevent = opl.startEvent
-                    item.endevent = opl.endEvent
+                    item.transnumStart = i
+                    item.startEvent = opl.startEvent
+                    item.endEvent = opl.endEvent
 
                     if (opl.isInHand) {
-                        item.type = LadderItem.Companion.TYPE_HOLD
-                    } else if (item.startevent!!.juggler != item.endevent!!.juggler) {
-                        item.type = LadderItem.Companion.TYPE_PASS
+                        item.type = LadderItem.TYPE_HOLD
+                    } else if (item.startEvent!!.juggler != item.endEvent!!.juggler) {
+                        item.type = LadderItem.TYPE_PASS
                     } else {
-                        item.type = if (item.startevent!!.hand == item.endevent!!.hand)
-                            LadderItem.Companion.TYPE_SELF
+                        item.type = if (item.startEvent!!.hand == item.endEvent!!.hand)
+                            LadderItem.TYPE_SELF
                         else
-                            LadderItem.Companion.TYPE_CROSS
+                            LadderItem.TYPE_CROSS
                     }
 
-                    item.pathnum = opl.pathNum
+                    item.pathNum = opl.pathNum
                     item.color = Color.black
-                    ladderpathitems!!.add(item)
+                    ladderPathItems!!.add(item)
                 }
             }
 
@@ -335,18 +338,18 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         // create juggler positions
-        ladderpositionitems = ArrayList<LadderPositionItem>()
+        ladderPositionItems = ArrayList<LadderPositionItem>()
         var pos = pat.positionList
 
-        while (pos != null && pos.t < loop_start) {
+        while (pos != null && pos.t < loopStart) {
             pos = pos.next
         }
 
-        while (pos != null && pos.t < loop_end) {
+        while (pos != null && pos.t < loopEnd) {
             val item = LadderPositionItem()
-            item.type = LadderItem.Companion.TYPE_POSITION
+            item.type = LadderItem.TYPE_POSITION
             item.position = pos
-            ladderpositionitems!!.add(item)
+            ladderPositionItems!!.add(item)
 
             pos = pos.next
         }
@@ -356,114 +359,118 @@ open class LadderDiagram(p: JMLPattern) :
 
     // Assign physical locations to all the elements in the ladder diagram.
     protected fun updateView() {
-        val dim = getSize()
-        width = dim.width
-        height = dim.height
+        val dim = size
+        ladderWidth = dim.width
+        ladderHeight = dim.height
 
         // calculate placements of hands and jugglers
         val scale: Double =
-            width.toDouble() / (BORDER_SIDES * 2 + JUGGLER_SEPARATION * (pat.numberOfJugglers - 1) + pat.numberOfJugglers)
-        left_x = (scale * BORDER_SIDES + 0.5).toInt()
-        right_x = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
-        juggler_delta_x = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
+            ladderWidth.toDouble() / (BORDER_SIDES * 2 + JUGGLER_SEPARATION * (pat.numberOfJugglers - 1) + pat.numberOfJugglers)
+        leftX = (scale * BORDER_SIDES + 0.5).toInt()
+        rightX = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
+        jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
 
         // invalidate cached image of ladder diagram
-        image_valid = false
+        imageValid = false
         im = null
-        frames_until_image_draw = IMAGE_DRAW_WAIT
+        framesUntilImageDraw = IMAGE_DRAW_WAIT
 
-        val loop_start = pat.loopStartTime
-        val loop_end = pat.loopEndTime
+        val loopStart = pat.loopStartTime
+        val loopEnd = pat.loopEndTime
 
         // set locations of events and transitions
-        for (item in laddereventitems!!) {
+        for (item in ladderEventItems!!) {
             val ev = item.event
 
-            var event_x: Int = ((if (ev!!.hand == HandLink.LEFT_HAND) left_x else right_x)
-                + (ev.juggler - 1) * juggler_delta_x
+            var eventX: Int =
+                ((if (ev!!.hand == HandLink.LEFT_HAND) leftX else rightX)
+                + (ev.juggler - 1) * jugglerDeltaX
                 - TRANSITION_RADIUS)
-            val event_y: Int =
-                ((0.5 + (height - 2 * BORDER_TOP).toDouble() * (ev.t - loop_start) / (loop_end - loop_start)).toInt() + BORDER_TOP
-                    - TRANSITION_RADIUS)
+            val eventY: Int =
+                ((0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() *
+                    (ev.t - loopStart) / (loopEnd - loopStart)).toInt() +
+                    BORDER_TOP - TRANSITION_RADIUS)
 
-            if (item.type != LadderItem.Companion.TYPE_EVENT) {
+            if (item.type != LadderItem.TYPE_EVENT) {
                 if (ev.hand == HandLink.LEFT_HAND) {
-                    event_x += 2 * TRANSITION_RADIUS * (item.transnum + 1)
+                    eventX += 2 * TRANSITION_RADIUS * (item.transnum + 1)
                 } else {
-                    event_x -= 2 * TRANSITION_RADIUS * (item.transnum + 1)
+                    eventX -= 2 * TRANSITION_RADIUS * (item.transnum + 1)
                 }
             }
-            item.xlow = event_x
-            item.xhigh = event_x + 2 * TRANSITION_RADIUS
-            item.ylow = event_y
-            item.yhigh = event_y + 2 * TRANSITION_RADIUS
+            item.xlow = eventX
+            item.xhigh = eventX + 2 * TRANSITION_RADIUS
+            item.ylow = eventY
+            item.yhigh = eventY + 2 * TRANSITION_RADIUS
         }
 
         // set locations of paths (lines and arcs)
-        for (item in ladderpathitems!!) {
-            item.xstart =
-                ((if (item.startevent!!.hand == HandLink.LEFT_HAND)
-                    (left_x + (item.transnum_start + 1) * 2 * TRANSITION_RADIUS)
+        for (item in ladderPathItems!!) {
+            item.xStart =
+                ((if (item.startEvent!!.hand == HandLink.LEFT_HAND)
+                    (leftX + (item.transnumStart + 1) * 2 * TRANSITION_RADIUS)
                 else
-                    (right_x - (item.transnum_start + 1) * 2 * TRANSITION_RADIUS))
-                    + (item.startevent!!.juggler - 1) * juggler_delta_x)
-            item.ystart =
-                (0.5 + (height - 2 * BORDER_TOP).toDouble() * (item.startevent!!.t - loop_start) / (loop_end - loop_start)).toInt() + BORDER_TOP
-            item.yend =
-                (0.5 + (height - 2 * BORDER_TOP).toDouble() * (item.endevent!!.t - loop_start) / (loop_end - loop_start)).toInt() + BORDER_TOP
+                    (rightX - (item.transnumStart + 1) * 2 * TRANSITION_RADIUS))
+                    + (item.startEvent!!.juggler - 1) * jugglerDeltaX)
+            item.yStart =
+                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.startEvent!!.t - loopStart) / (loopEnd - loopStart)).toInt() + BORDER_TOP
+            item.yEnd =
+                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.endEvent!!.t - loopStart) / (loopEnd - loopStart)).toInt() + BORDER_TOP
 
             var slot = 0
-            for (j in 0..<item.endevent!!.numberOfTransitions) {
-                val temp = item.endevent!!.getTransition(j)
-                if (temp.path == item.pathnum) {
+            for (j in 0..<item.endEvent!!.numberOfTransitions) {
+                val temp = item.endEvent!!.getTransition(j)
+                if (temp.path == item.pathNum) {
                     slot = j
                     break
                 }
             }
-            item.xend = ((if (item.endevent!!.hand == HandLink.LEFT_HAND)
-                (left_x + (slot + 1) * 2 * TRANSITION_RADIUS)
+            item.xEnd = ((if (item.endEvent!!.hand == HandLink.LEFT_HAND)
+                (leftX + (slot + 1) * 2 * TRANSITION_RADIUS)
             else
-                (right_x - (slot + 1) * 2 * TRANSITION_RADIUS))
-                + (item.endevent!!.juggler - 1) * juggler_delta_x)
+                (rightX - (slot + 1) * 2 * TRANSITION_RADIUS))
+                + (item.endEvent!!.juggler - 1) * jugglerDeltaX)
 
-            if (item.type == LadderItem.Companion.TYPE_SELF) {
+            if (item.type == LadderItem.TYPE_SELF) {
                 val a = 0.5 * sqrt(
-                    ((item.xstart - item.xend) * (item.xstart - item.xend)).toDouble() + ((item.ystart - item.yend) * (item.ystart - item.yend)).toDouble()
+                    ((item.xStart - item.xEnd) * (item.xStart - item.xEnd)).toDouble() + ((item.yStart - item.yEnd) * (item.yStart - item.yEnd)).toDouble()
                 )
-                val xt = 0.5 * (item.xstart + item.xend).toDouble()
-                val yt = 0.5 * (item.ystart + item.yend).toDouble()
-                val b: Double = SELFTHROW_WIDTH * (width.toDouble() / pat.numberOfJugglers)
+                val xt = 0.5 * (item.xStart + item.xEnd).toDouble()
+                val yt = 0.5 * (item.yStart + item.yEnd).toDouble()
+                val b: Double = SELFTHROW_WIDTH * (ladderWidth.toDouble() / pat.numberOfJugglers)
                 var d = 0.5 * (a * a / b - b)
                 if (d < (0.5 * b)) {
                     d = 0.5 * b
                 }
-                val mult = if (item.endevent!!.hand == HandLink.LEFT_HAND) -1.0 else 1.0
-                val xc = xt + mult * d * (yt - item.ystart.toDouble()) / a
-                val yc = yt + mult * d * (item.xstart.toDouble() - xt) / a
+                val mult = if (item.endEvent!!.hand == HandLink.LEFT_HAND) -1.0 else 1.0
+                val xc = xt + mult * d * (yt - item.yStart.toDouble()) / a
+                val yc = yt + mult * d * (item.xStart.toDouble() - xt) / a
                 val rad = sqrt(
-                    (item.xstart.toDouble() - xc) * (item.xstart.toDouble() - xc)
-                        + (item.ystart.toDouble() - yc) * (item.ystart.toDouble() - yc)
+                    (item.xStart.toDouble() - xc) * (item.xStart.toDouble() - xc)
+                        + (item.yStart.toDouble() - yc) * (item.yStart.toDouble() - yc)
                 )
-                item.xcenter = (0.5 + xc).toInt()
-                item.ycenter = (0.5 + yc).toInt()
+                item.xCenter = (0.5 + xc).toInt()
+                item.yCenter = (0.5 + yc).toInt()
                 item.radius = (0.5 + rad).toInt()
             }
         }
 
         // set locations of juggler positions
-        for (item in ladderpositionitems!!) {
+        for (item in ladderPositionItems!!) {
             val pos = item.position
 
-            val position_x: Int =
-                (left_x + right_x) / 2 + (pos!!.juggler - 1) * juggler_delta_x - POSITION_RADIUS
-            val position_y: Int =
-                ((0.5 + (height - 2 * BORDER_TOP).toDouble() * (pos.t - loop_start) / (loop_end - loop_start)).toInt() + BORDER_TOP
-                    - POSITION_RADIUS)
+            val positionX: Int =
+                (leftX + rightX) / 2 + (pos!!.juggler - 1) * jugglerDeltaX - POSITION_RADIUS
+            val positionY: Int =
+                ((0.5 +
+                    (ladderHeight - 2 * BORDER_TOP).toDouble() *
+                    (pos.t - loopStart) / (loopEnd - loopStart)).toInt() +
+                    BORDER_TOP - POSITION_RADIUS)
 
-            item.xlow = position_x
-            item.xhigh = position_x + 2 * POSITION_RADIUS
-            item.ylow = position_y
-            item.yhigh = position_y + 2 * POSITION_RADIUS
+            item.xLow = positionX
+            item.xHigh = positionX + 2 * POSITION_RADIUS
+            item.yLow = positionY
+            item.yHigh = positionY + 2 * POSITION_RADIUS
         }
 
         // update position of tracker bar
@@ -473,18 +480,18 @@ open class LadderDiagram(p: JMLPattern) :
     // Return true if ladder was drawn successfully, false otherwise.
     protected fun paintLadder(gr: Graphics): Boolean {
         if (pat.numberOfJugglers > MAX_JUGGLERS) {
-            val dim = getSize()
-            gr.setFont(MSGFONT)
-            val fm = gr.getFontMetrics()
+            val dim = size
+            gr.font = MSGFONT
+            val fm = gr.fontMetrics
             val template: String = guistrings.getString("Too_many_jugglers")
             val arguments = arrayOf<Any?>(MAX_JUGGLERS)
             val message = MessageFormat.format(template, *arguments)
             val mwidth = fm.stringWidth(message)
             val x = max((dim.width - mwidth) / 2, 0)
-            val y = (dim.height + fm.getHeight()) / 2
-            gr.setColor(COLOR_BACKGROUND)
+            val y = (dim.height + fm.height) / 2
+            gr.color = COLOR_BACKGROUND
             gr.fillRect(0, 0, dim.width, dim.height)
-            gr.setColor(Color.black)
+            gr.color = Color.black
             gr.drawString(message, x, y)
             return false
         }
@@ -492,19 +499,19 @@ open class LadderDiagram(p: JMLPattern) :
         var g = gr
 
         // check if ladder was resized
-        val dim = getSize()
-        if (dim.width != width || dim.height != height) {
+        val dim = size
+        if (dim.width != ladderWidth || dim.height != ladderHeight) {
             updateView()
         }
 
-        val rebuild_ladder_image = (!image_valid && --frames_until_image_draw <= 0)
+        val rebuildLadderImage = (!imageValid && --framesUntilImageDraw <= 0)
 
-        if (rebuild_ladder_image) {
+        if (rebuildLadderImage) {
             im = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice()
-                .getDefaultConfiguration()
-                .createCompatibleImage(width, height, Transparency.OPAQUE)
-            g = im!!.getGraphics()
+                .defaultScreenDevice
+                .defaultConfiguration
+                .createCompatibleImage(ladderWidth, ladderHeight, Transparency.OPAQUE)
+            g = im!!.graphics
 
             if (g is Graphics2D) {
                 g.setRenderingHint(
@@ -514,81 +521,81 @@ open class LadderDiagram(p: JMLPattern) :
             }
         }
 
-        if (!image_valid) {
+        if (!imageValid) {
             // first erase the background
-            g.setColor(COLOR_BACKGROUND)
-            g.fillRect(0, 0, width, height)
+            g.color = COLOR_BACKGROUND
+            g.fillRect(0, 0, ladderWidth, ladderHeight)
 
             // draw the lines signifying symmetries
-            g.setColor(COLOR_SYMMETRIES)
-            g.drawLine(0, BORDER_TOP, width, BORDER_TOP)
-            g.drawLine(0, height - BORDER_TOP, width, height - BORDER_TOP)
-            if (has_switch_symmetry) {
-                g.drawLine(left_x, height - BORDER_TOP / 2, width - left_x, height - BORDER_TOP / 2)
+            g.color = COLOR_SYMMETRIES
+            g.drawLine(0, BORDER_TOP, ladderWidth, BORDER_TOP)
+            g.drawLine(0, ladderHeight - BORDER_TOP, ladderWidth, ladderHeight - BORDER_TOP)
+            if (hasSwitchSymmetry) {
+                g.drawLine(leftX, ladderHeight - BORDER_TOP / 2, ladderWidth - leftX, ladderHeight - BORDER_TOP / 2)
                 g.drawLine(
-                    left_x,
-                    height - BORDER_TOP / 2,
-                    left_x + left_x,
-                    height - BORDER_TOP * 3 / 4
+                    leftX,
+                    ladderHeight - BORDER_TOP / 2,
+                    leftX + leftX,
+                    ladderHeight - BORDER_TOP * 3 / 4
                 )
                 g.drawLine(
-                    left_x,
-                    height - BORDER_TOP / 2,
-                    left_x + left_x,
-                    height - BORDER_TOP / 4
+                    leftX,
+                    ladderHeight - BORDER_TOP / 2,
+                    leftX + leftX,
+                    ladderHeight - BORDER_TOP / 4
                 )
                 g.drawLine(
-                    width - left_x, height - BORDER_TOP / 2,
-                    width - 2 * left_x, height - BORDER_TOP * 3 / 4
+                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
+                    ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP * 3 / 4
                 )
                 g.drawLine(
-                    width - left_x, height - BORDER_TOP / 2,
-                    width - 2 * left_x, height - BORDER_TOP / 4
+                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
+                    ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP / 4
                 )
             }
-            if (has_switchdelay_symmetry) {
-                g.drawLine(0, height / 2, width, height / 2)
+            if (hasSwitchdelaySymmetry) {
+                g.drawLine(0, ladderHeight / 2, ladderWidth, ladderHeight / 2)
             }
 
             // draw the lines representing the hands
-            g.setColor(COLOR_HANDS)
+            g.color = COLOR_HANDS
             for (j in 0..<pat.numberOfJugglers) {
                 for (i in -1..1) {
                     g.drawLine(
-                        left_x + i + j * juggler_delta_x,
+                        leftX + i + j * jugglerDeltaX,
                         BORDER_TOP,
-                        left_x + i + j * juggler_delta_x,
-                        height - BORDER_TOP
+                        leftX + i + j * jugglerDeltaX,
+                        ladderHeight - BORDER_TOP
                     )
                     g.drawLine(
-                        right_x + i + j * juggler_delta_x,
+                        rightX + i + j * jugglerDeltaX,
                         BORDER_TOP,
-                        right_x + i + j * juggler_delta_x,
-                        height - BORDER_TOP
+                        rightX + i + j * jugglerDeltaX,
+                        ladderHeight - BORDER_TOP
                     )
                 }
             }
 
             // draw paths
-            val clip = g.getClip()
+            val clip = g.clip
 
-            for (item in ladderpathitems!!) {
-                g.setColor(item.color)
+            for (item in ladderPathItems!!) {
+                g.color = item.color
 
-                if (item.type != LadderItem.Companion.TYPE_PASS) {
+                if (item.type != LadderItem.TYPE_PASS) {
                     g.clipRect(
-                        left_x + (item.startevent!!.juggler - 1) * juggler_delta_x,
+                        leftX + (item.startEvent!!.juggler - 1) * jugglerDeltaX,
                         BORDER_TOP,
-                        right_x - left_x + (item.startevent!!.juggler - 1) * juggler_delta_x,
-                        height - 2 * BORDER_TOP
+                        rightX - leftX + (item.startEvent!!.juggler - 1) * jugglerDeltaX,
+                        ladderHeight - 2 * BORDER_TOP
                     )
                 }
 
-                if (item.type == LadderItem.Companion.TYPE_CROSS) {
-                    g.drawLine(item.xstart, item.ystart, item.xend, item.yend)
-                } else if (item.type == LadderItem.Companion.TYPE_HOLD) {
-                    g.drawLine(item.xstart, item.ystart, item.xend, item.yend)
-                } else if (item.type == LadderItem.Companion.TYPE_PASS) {
+                if (item.type == LadderItem.TYPE_CROSS) {
+                    g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
+                } else if (item.type == LadderItem.TYPE_HOLD) {
+                    g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
+                } else if (item.type == LadderItem.TYPE_PASS) {
                     val gdash = g.create() as Graphics2D
                     val dashed: Stroke =
                         BasicStroke(
@@ -599,68 +606,65 @@ open class LadderDiagram(p: JMLPattern) :
                             floatArrayOf(7f, 3f),
                             0f
                         )
-                    gdash.setStroke(dashed)
-                    gdash.clipRect(left_x, BORDER_TOP, width - left_x, height - 2 * BORDER_TOP)
+                    gdash.stroke = dashed
+                    gdash.clipRect(leftX, BORDER_TOP, ladderWidth - leftX, ladderHeight - 2 * BORDER_TOP)
 
-                    gdash.drawLine(item.xstart, item.ystart, item.xend, item.yend)
+                    gdash.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
                     gdash.dispose()
-                } else if (item.type == LadderItem.Companion.TYPE_SELF) {
-                    if (item.yend >= BORDER_TOP) {
+                } else if (item.type == LadderItem.TYPE_SELF) {
+                    if (item.yEnd >= BORDER_TOP) {
                         g.clipRect(
-                            left_x + (item.startevent!!.juggler - 1) * juggler_delta_x,
-                            item.ystart,
-                            right_x - left_x + (item.startevent!!.juggler - 1) * juggler_delta_x,
-                            item.yend - item.ystart
+                            leftX + (item.startEvent!!.juggler - 1) * jugglerDeltaX,
+                            item.yStart,
+                            rightX - leftX + (item.startEvent!!.juggler - 1) * jugglerDeltaX,
+                            item.yEnd - item.yStart
                         )
                         g.drawOval(
-                            item.xcenter - item.radius,
-                            item.ycenter - item.radius,
+                            item.xCenter - item.radius,
+                            item.yCenter - item.radius,
                             2 * item.radius,
                             2 * item.radius
                         )
                     }
                 }
-                g.setClip(clip)
+                g.clip = clip
             }
         }
 
-        if (rebuild_ladder_image) {
-            image_valid = true
+        if (rebuildLadderImage) {
+            imageValid = true
         }
 
-        if (image_valid) {
+        if (imageValid) {
             gr.drawImage(im, 0, 0, this)
         }
 
         // draw positions
-        for (item in ladderpositionitems!!) {
-            if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
-                gr.setColor(COLOR_BACKGROUND)
-                gr.fillRect(item.xlow, item.ylow, item.xhigh - item.xlow, item.yhigh - item.ylow)
-                gr.setColor(COLOR_POSITIONS)
-                gr.drawRect(item.xlow, item.ylow, item.xhigh - item.xlow, item.yhigh - item.ylow)
+        for (item in ladderPositionItems!!) {
+            if (item.yLow >= BORDER_TOP || item.yHigh <= ladderHeight + BORDER_TOP) {
+                gr.color = COLOR_BACKGROUND
+                gr.fillRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
+                gr.color = COLOR_POSITIONS
+                gr.drawRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
             }
         }
 
         // draw events
-        var animpropnum: IntArray? = null
-        if (ap != null && ap!!.animator != null) {
-            animpropnum = ap!!.animator.animPropNum
-        }
+        val animpropnum: IntArray? = ap?.animator?.animPropNum
 
-        for (item in laddereventitems!!) {
-            if (item.type == LadderItem.Companion.TYPE_EVENT) {
-                gr.setColor(COLOR_HANDS)
+        for (item in ladderEventItems!!) {
+            if (item.type == LadderItem.TYPE_EVENT) {
+                gr.color = COLOR_HANDS
                 gr.fillOval(item.xlow, item.ylow, item.xhigh - item.xlow, item.yhigh - item.ylow)
             } else {
-                if (item.ylow >= BORDER_TOP || item.yhigh <= height + BORDER_TOP) {
+                if (item.ylow >= BORDER_TOP || item.yhigh <= ladderHeight + BORDER_TOP) {
                     if (animpropnum == null) {
-                        gr.setColor(COLOR_BACKGROUND)
+                        gr.color = COLOR_BACKGROUND
                     } else {
                         // color ball representation with the prop's color
                         val tr = item.event!!.getTransition(item.transnum)
                         val propnum = animpropnum[tr.path - 1]
-                        gr.setColor(pat.getProp(propnum)!!.getEditorColor())
+                        gr.color = pat.getProp(propnum)!!.getEditorColor()
                     }
                     gr.fillOval(
                         item.xlow,
@@ -669,7 +673,7 @@ open class LadderDiagram(p: JMLPattern) :
                         item.yhigh - item.ylow
                     )
 
-                    gr.setColor(COLOR_HANDS)
+                    gr.color = COLOR_HANDS
                     gr.drawOval(
                         item.xlow,
                         item.ylow,
@@ -681,25 +685,23 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         // draw the tracker line showing the time
-        gr.setColor(COLOR_TRACKER)
-        gr.drawLine(0, tracker_y, width, tracker_y)
+        gr.color = COLOR_TRACKER
+        gr.drawLine(0, trackerY, ladderWidth, trackerY)
 
         return true
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // AnimationPanel.AnimationAttachment methods
-    //----------------------------------------------------------------------------
-    override fun setAnimationPanel(a: AnimationPanel?) {
-        ap = a
+    //--------------------------------------------------------------------------
+
+    override fun setAnimationPanel(animPanel: AnimationPanel?) {
+        ap = animPanel
     }
 
-    override fun setTime(time: Double) {
-        if (sim_time == time) {
-            return
-        }
-
-        sim_time = time
+    override fun setTime(t: Double) {
+        if (simTime == t) return
+        simTime = t
         updateTrackerPosition()
         repaint()
     }
@@ -708,9 +710,10 @@ open class LadderDiagram(p: JMLPattern) :
         repaint()
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // javax.swing.JComponent methods
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     override fun paintComponent(gr: Graphics) {
         if (gr is Graphics2D) {
             gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -719,15 +722,16 @@ open class LadderDiagram(p: JMLPattern) :
         paintLadder(gr)
 
         // label the tracker line with the time
-        if (gui_state == STATE_MOVING_TRACKER) {
-            gr.setColor(COLOR_TRACKER)
-            gr.drawString(toStringRounded(sim_time, 2) + " s", width / 2 - 18, tracker_y - 5)
+        if (guiState == STATE_MOVING_TRACKER) {
+            gr.color = COLOR_TRACKER
+            gr.drawString(toStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Types for building the ladder diagram
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     open class LadderItem {
         @JvmField
         var type: Int = 0
@@ -771,35 +775,35 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     class LadderPathItem : LadderItem() {
-        var xstart: Int = 0
-        var ystart: Int = 0
-        var xend: Int = 0
-        var yend: Int = 0
-        var xcenter: Int = 0
-        var ycenter: Int = 0
+        var xStart: Int = 0
+        var yStart: Int = 0
+        var xEnd: Int = 0
+        var yEnd: Int = 0
+        var xCenter: Int = 0
+        var yCenter: Int = 0
         var radius: Int = 0 // for type SELF
         var color: Color? = null
 
-        var startevent: JMLEvent? = null
-        var endevent: JMLEvent? = null
-        var transnum_start: Int = 0
+        var startEvent: JMLEvent? = null
+        var endEvent: JMLEvent? = null
+        var transnumStart: Int = 0
 
         @JvmField
-        var pathnum: Int = 0
+        var pathNum: Int = 0
     }
 
     class LadderPositionItem : LadderItem() {
         @JvmField
-        var xlow: Int = 0
+        var xLow: Int = 0
 
         @JvmField
-        var xhigh: Int = 0
+        var xHigh: Int = 0
 
         @JvmField
-        var ylow: Int = 0
+        var yLow: Int = 0
 
         @JvmField
-        var yhigh: Int = 0
+        var yHigh: Int = 0
 
         @JvmField
         var position: JMLPosition? = null
@@ -809,12 +813,6 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     companion object {
-        @JvmField
-        val guistrings: ResourceBundle = JugglingLab.guistrings
-
-        @JvmField
-        val errorstrings: ResourceBundle? = JugglingLab.errorstrings
-
         // overall sizing
         const val MAX_JUGGLERS: Int = 8
         protected const val LADDER_WIDTH_PER_JUGGLER: Int = 150 // pixels

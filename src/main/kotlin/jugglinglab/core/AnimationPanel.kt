@@ -510,7 +510,7 @@ open class AnimationPanel : JPanel(), Runnable {
 
     interface AnimationAttachment {
         // AnimationPanel we're attached to
-        fun setAnimationPanel(ap: AnimationPanel?)
+        fun setAnimationPanel(animPanel: AnimationPanel?)
 
         // simulation time (seconds)
         fun setTime(t: Double)
