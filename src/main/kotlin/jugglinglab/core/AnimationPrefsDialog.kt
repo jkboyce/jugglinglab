@@ -10,7 +10,8 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab
+import jugglinglab.JugglingLab.guistrings
+import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
@@ -22,66 +23,62 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.text.MessageFormat
 import java.util.*
 import javax.swing.*
 
 class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getString("Animation_Preferences"), true) {
-    protected lateinit var tf_width: JTextField
-    protected lateinit var tf_height: JTextField
-    protected lateinit var tf_fps: JTextField
-    protected lateinit var tf_slowdown: JTextField
-    protected lateinit var tf_border: JTextField
-    protected lateinit var combo_showground: JComboBox<String>
-    protected lateinit var cb_paused: JCheckBox
-    protected lateinit var cb_mousepause: JCheckBox
-    protected lateinit var cb_stereo: JCheckBox
-    protected lateinit var cb_catchsounds: JCheckBox
-    protected lateinit var cb_bouncesounds: JCheckBox
-    protected lateinit var tf_other: JTextField
-    protected lateinit var but_cancel: JButton
-    protected lateinit var but_ok: JButton
+    private lateinit var tfWidth: JTextField
+    private lateinit var tfHeight: JTextField
+    private lateinit var tfFps: JTextField
+    private lateinit var tfSlowdown: JTextField
+    private lateinit var tfBorder: JTextField
+    private lateinit var comboShowground: JComboBox<String>
+    private lateinit var cbPaused: JCheckBox
+    private lateinit var cbMousepause: JCheckBox
+    private lateinit var cbStereo: JCheckBox
+    private lateinit var cbCatchsounds: JCheckBox
+    private lateinit var cbBouncesounds: JCheckBox
+    private lateinit var tfOther: JTextField
+    private lateinit var butCancel: JButton
+    private lateinit var butOk: JButton
 
-    protected var ok_selected: Boolean = false
+    private var okSelected: Boolean = false
 
     init {
         createContents()
         setLocationRelativeTo(parent)
-
-        but_cancel!!.addActionListener(
-            ActionListener { e: ActionEvent? ->
-                setVisible(false)
-                ok_selected = false
-            })
-
-        but_ok!!.addActionListener(
-            ActionListener { ae: ActionEvent? ->
-                setVisible(false)
-                ok_selected = true
-            })
+        butCancel.addActionListener { _: ActionEvent? ->
+            isVisible = false
+            okSelected = false
+        }
+        butOk.addActionListener { _: ActionEvent? ->
+            isVisible = false
+            okSelected = true
+        }
     }
 
     // Show dialog box and return the new preferences.
+
     fun getPrefs(oldjc: AnimationPrefs): AnimationPrefs {
         // Fill in UI elements with current prefs
-        tf_width!!.setText(oldjc.width.toString())
-        tf_height!!.setText(oldjc.height.toString())
-        tf_fps!!.setText(toStringRounded(oldjc.fps, 2))
-        tf_slowdown!!.setText(toStringRounded(oldjc.slowdown, 2))
-        tf_border!!.setText(oldjc.border.toString())
-        combo_showground!!.setSelectedIndex(oldjc.showGround)
-        cb_paused!!.setSelected(oldjc.startPause)
-        cb_mousepause!!.setSelected(oldjc.mousePause)
-        cb_stereo!!.setSelected(oldjc.stereo)
-        cb_catchsounds!!.setSelected(oldjc.catchSound)
-        cb_bouncesounds!!.setSelected(oldjc.bounceSound)
+        tfWidth.text = oldjc.width.toString()
+        tfHeight.text = oldjc.height.toString()
+        tfFps.text = toStringRounded(oldjc.fps, 2)
+        tfSlowdown.text = toStringRounded(oldjc.slowdown, 2)
+        tfBorder.text = oldjc.border.toString()
+        comboShowground.setSelectedIndex(oldjc.showGround)
+        cbPaused.setSelected(oldjc.startPause)
+        cbMousepause.setSelected(oldjc.mousePause)
+        cbStereo.setSelected(oldjc.stereo)
+        cbCatchsounds.setSelected(oldjc.catchSound)
+        cbBouncesounds.setSelected(oldjc.bounceSound)
 
         try {
             // filter out all the explicit settings above to populate the
             // manual settings box
             val pl = ParameterList(oldjc.toString())
-            val params_remove = arrayOf<String?>(
+            val paramsRemove = arrayOf(
                 "width",
                 "height",
                 "fps",
@@ -94,11 +91,11 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
                 "catchsound",
                 "bouncesound",
             )
-            for (param in params_remove) {
-                pl.removeParameter(param!!)
+            for (param in paramsRemove) {
+                pl.removeParameter(param)
             }
-            tf_other!!.setText(pl.toString())
-            tf_other!!.setCaretPosition(0)
+            tfOther.text = pl.toString()
+            tfOther.setCaretPosition(0)
         } catch (jeu: JuggleExceptionUser) {
             // any error here can't be a user error
             handleFatalException(
@@ -106,176 +103,176 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
             )
         }
 
-        ok_selected = false
-        setVisible(true) // Blocks until user clicks OK or Cancel
+        okSelected = false
+        isVisible = true // Blocks until user clicks OK or Cancel
 
-        if (ok_selected) {
+        if (okSelected) {
             return readDialogBox(oldjc)
         }
 
         return oldjc
     }
 
-    protected fun createContents() {
+    private fun createContents() {
         val gb = GridBagLayout()
-        getContentPane().setLayout(gb)
+        contentPane.setLayout(gb)
 
         // panel of text boxes at the top
         val p1 = JPanel()
         p1.setLayout(gb)
 
-        val lab1: JLabel = JLabel(guistrings.getString("Width"))
+        val lab1 = JLabel(guistrings.getString("Width"))
         p1.add(lab1)
         gb.setConstraints(
-            lab1, make_constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
+            lab1, makeConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
         )
-        tf_width = JTextField(4)
-        tf_width!!.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tf_width)
+        tfWidth = JTextField(4)
+        tfWidth.setHorizontalAlignment(JTextField.CENTER)
+        p1.add(tfWidth)
         gb.setConstraints(
-            tf_width, make_constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
+            tfWidth, makeConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
         )
 
-        val lab2: JLabel = JLabel(guistrings.getString("Height"))
+        val lab2 = JLabel(guistrings.getString("Height"))
         p1.add(lab2)
         gb.setConstraints(
-            lab2, make_constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
+            lab2, makeConstraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
         )
-        tf_height = JTextField(4)
-        tf_height!!.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tf_height)
+        tfHeight = JTextField(4)
+        tfHeight.setHorizontalAlignment(JTextField.CENTER)
+        p1.add(tfHeight)
         gb.setConstraints(
-            tf_height, make_constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
+            tfHeight, makeConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
 
-        val lab3: JLabel = JLabel(guistrings.getString("Frames_per_second"))
+        val lab3 = JLabel(guistrings.getString("Frames_per_second"))
         p1.add(lab3)
         gb.setConstraints(
-            lab3, make_constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
+            lab3, makeConstraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
         )
-        tf_fps = JTextField(4)
-        tf_fps!!.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tf_fps)
+        tfFps = JTextField(4)
+        tfFps.setHorizontalAlignment(JTextField.CENTER)
+        p1.add(tfFps)
         gb.setConstraints(
-            tf_fps, make_constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
+            tfFps, makeConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
         )
 
-        val lab4: JLabel = JLabel(guistrings.getString("Slowdown_factor"))
+        val lab4 = JLabel(guistrings.getString("Slowdown_factor"))
         p1.add(lab4)
         gb.setConstraints(
-            lab4, make_constraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
+            lab4, makeConstraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
         )
-        tf_slowdown = JTextField(4)
-        tf_slowdown!!.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tf_slowdown)
+        tfSlowdown = JTextField(4)
+        tfSlowdown.setHorizontalAlignment(JTextField.CENTER)
+        p1.add(tfSlowdown)
         gb.setConstraints(
-            tf_slowdown, make_constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
+            tfSlowdown, makeConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
         )
 
-        val lab5: JLabel = JLabel(guistrings.getString("Border_(pixels)"))
+        val lab5 = JLabel(guistrings.getString("Border_(pixels)"))
         p1.add(lab5)
         gb.setConstraints(
-            lab5, make_constraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
+            lab5, makeConstraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
         )
-        tf_border = JTextField(4)
-        tf_border!!.setHorizontalAlignment(JTextField.CENTER)
-        p1.add(tf_border)
+        tfBorder = JTextField(4)
+        tfBorder.setHorizontalAlignment(JTextField.CENTER)
+        p1.add(tfBorder)
         gb.setConstraints(
-            tf_border, make_constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
+            tfBorder, makeConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
         )
 
-        val lab6: JLabel = JLabel(guistrings.getString("Prefs_show_ground"))
+        val lab6 = JLabel(guistrings.getString("Prefs_show_ground"))
         p1.add(lab6)
         gb.setConstraints(
-            lab6, make_constraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
+            lab6, makeConstraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
         )
-        combo_showground = JComboBox<String>()
-        combo_showground!!.addItem(guistrings.getString("Prefs_show_ground_auto"))
-        combo_showground!!.addItem(guistrings.getString("Prefs_show_ground_yes"))
-        combo_showground!!.addItem(guistrings.getString("Prefs_show_ground_no"))
-        p1.add(combo_showground)
+        comboShowground = JComboBox<String>()
+        comboShowground.addItem(guistrings.getString("Prefs_show_ground_auto"))
+        comboShowground.addItem(guistrings.getString("Prefs_show_ground_yes"))
+        comboShowground.addItem(guistrings.getString("Prefs_show_ground_no"))
+        p1.add(comboShowground)
         gb.setConstraints(
-            combo_showground,
-            make_constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
+            comboShowground,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
         )
 
         // checkboxes farther down
-        cb_paused = JCheckBox(guistrings.getString("Start_paused"))
-        cb_mousepause = JCheckBox(guistrings.getString("Pause_on_mouse_away"))
-        cb_stereo = JCheckBox(guistrings.getString("Stereo_display"))
-        cb_catchsounds = JCheckBox(guistrings.getString("Catch_sounds"))
-        cb_bouncesounds = JCheckBox(guistrings.getString("Bounce_sounds"))
+        cbPaused = JCheckBox(guistrings.getString("Start_paused"))
+        cbMousepause = JCheckBox(guistrings.getString("Pause_on_mouse_away"))
+        cbStereo = JCheckBox(guistrings.getString("Stereo_display"))
+        cbCatchsounds = JCheckBox(guistrings.getString("Catch_sounds"))
+        cbBouncesounds = JCheckBox(guistrings.getString("Bounce_sounds"))
 
         // manual settings
-        val lab_other = JLabel("Manual settings")
-        tf_other = JTextField(15)
+        val labOther = JLabel("Manual settings")
+        tfOther = JTextField(15)
 
         // buttons at the bottom
         val p2 = JPanel()
         p2.setLayout(gb)
-        but_cancel = JButton(guistrings.getString("Cancel"))
+        butCancel = JButton(guistrings.getString("Cancel"))
 
-        p2.add(but_cancel)
+        p2.add(butCancel)
         gb.setConstraints(
-            but_cancel, make_constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            butCancel, makeConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
-        but_ok = JButton(guistrings.getString("OK"))
+        butOk = JButton(guistrings.getString("OK"))
 
-        p2.add(but_ok)
+        p2.add(butOk)
         gb.setConstraints(
-            but_ok, make_constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
+            butOk, makeConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
 
         // now make the whole window
-        getContentPane().add(p1)
+        contentPane.add(p1)
         gb.setConstraints(
             p1,
-            make_constraints(GridBagConstraints.LINE_START, 0, 0, Insets(3, BORDER, 0, BORDER))
+            makeConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(3, BORDER, 0, BORDER))
         )
 
-        getContentPane().add(cb_paused)
+        contentPane.add(cbPaused)
         gb.setConstraints(
-            cb_paused,
-            make_constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, BORDER, 0, BORDER))
+            cbPaused,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, BORDER, 0, BORDER))
         )
-        getContentPane().add(cb_mousepause)
+        contentPane.add(cbMousepause)
         gb.setConstraints(
-            cb_mousepause,
-            make_constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, BORDER, 0, BORDER))
+            cbMousepause,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, BORDER, 0, BORDER))
         )
-        getContentPane().add(cb_stereo)
+        contentPane.add(cbStereo)
         gb.setConstraints(
-            cb_stereo,
-            make_constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, BORDER, 0, BORDER))
+            cbStereo,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, BORDER, 0, BORDER))
         )
-        getContentPane().add(cb_catchsounds)
+        contentPane.add(cbCatchsounds)
         gb.setConstraints(
-            cb_catchsounds,
-            make_constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, BORDER, 0, BORDER))
+            cbCatchsounds,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, BORDER, 0, BORDER))
         )
-        getContentPane().add(cb_bouncesounds)
+        contentPane.add(cbBouncesounds)
         gb.setConstraints(
-            cb_bouncesounds,
-            make_constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, BORDER, 8, BORDER))
+            cbBouncesounds,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, BORDER, 8, BORDER))
         )
-        getContentPane().add(lab_other)
+        contentPane.add(labOther)
         gb.setConstraints(
-            lab_other,
-            make_constraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, BORDER, 0, BORDER))
+            labOther,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, BORDER, 0, BORDER))
         )
-        getContentPane().add(tf_other)
+        contentPane.add(tfOther)
         gb.setConstraints(
-            tf_other,
-            make_constraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, BORDER, 3, BORDER))
+            tfOther,
+            makeConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, BORDER, 3, BORDER))
         )
 
-        getContentPane().add(p2)
+        contentPane.add(p2)
         gb.setConstraints(
             p2,
-            make_constraints(GridBagConstraints.LINE_END, 0, 8, Insets(0, BORDER, BORDER, BORDER))
+            makeConstraints(GridBagConstraints.LINE_END, 0, 8, Insets(0, BORDER, BORDER, BORDER))
         )
 
-        getRootPane().setDefaultButton(but_ok) // OK button is default
+        getRootPane().setDefaultButton(butOk) // OK button is default
 
         val loc = Locale.getDefault()
         applyComponentOrientation(ComponentOrientation.getOrientation(loc))
@@ -285,7 +282,8 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
     }
 
     // Read prefs out of UI elements.
-    protected fun readDialogBox(oldjc: AnimationPrefs): AnimationPrefs {
+
+    private fun readDialogBox(oldjc: AnimationPrefs): AnimationPrefs {
         var tempint: Int
         var tempdouble: Double
 
@@ -294,80 +292,77 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
         var newjc = AnimationPrefs(oldjc)
 
         try {
-            tempint = tf_width!!.getText().toInt()
+            tempint = tfWidth.getText().toInt()
             if (tempint >= 0) {
                 newjc.width = tempint
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             val template: String = errorstrings.getString("Error_number_format")
             val arguments = arrayOf<Any?>("width")
             handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
         }
         try {
-            tempint = tf_height!!.getText().toInt()
+            tempint = tfHeight.getText().toInt()
             if (tempint >= 0) {
                 newjc.height = tempint
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             val template: String = errorstrings.getString("Error_number_format")
             val arguments = arrayOf<Any?>("height")
             handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
         }
         try {
-            tempdouble = tf_fps!!.getText().toDouble()
+            tempdouble = tfFps.getText().toDouble()
             if (tempdouble > 0.0) {
                 newjc.fps = tempdouble
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             val template: String = errorstrings.getString("Error_number_format")
             val arguments = arrayOf<Any?>("fps")
             handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
         }
         try {
-            tempdouble = tf_slowdown!!.getText().toDouble()
+            tempdouble = tfSlowdown.getText().toDouble()
             if (tempdouble > 0.0) {
                 newjc.slowdown = tempdouble
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             val template: String = errorstrings.getString("Error_number_format")
             val arguments = arrayOf<Any?>("slowdown")
             handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
         }
         try {
-            tempint = tf_border!!.getText().toInt()
+            tempint = tfBorder.getText().toInt()
             if (tempint >= 0) {
                 newjc.border = tempint
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             val template: String = errorstrings.getString("Error_number_format")
             val arguments = arrayOf<Any?>("border")
             handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
         }
 
-        newjc.showGround = combo_showground!!.getSelectedIndex()
-        newjc.startPause = cb_paused!!.isSelected()
-        newjc.mousePause = cb_mousepause!!.isSelected()
-        newjc.stereo = cb_stereo!!.isSelected()
-        newjc.catchSound = cb_catchsounds!!.isSelected()
-        newjc.bounceSound = cb_bouncesounds!!.isSelected()
+        newjc.showGround = comboShowground.getSelectedIndex()
+        newjc.startPause = cbPaused.isSelected
+        newjc.mousePause = cbMousepause.isSelected
+        newjc.stereo = cbStereo.isSelected
+        newjc.catchSound = cbCatchsounds.isSelected
+        newjc.bounceSound = cbBouncesounds.isSelected
 
-        if (!tf_other!!.getText().trim { it <= ' ' }.isEmpty()) {
+        if (!tfOther.getText().trim { it <= ' ' }.isEmpty()) {
             try {
-                newjc = AnimationPrefs().fromString(newjc.toString() + ";" + tf_other!!.getText())
+                newjc = AnimationPrefs().fromString(newjc.toString() + ";" + tfOther.getText())
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(this@AnimationPrefsDialog, jeu.message)
             }
         }
-
         return newjc
     }
 
     companion object {
-        val guistrings: ResourceBundle = JugglingLab.guistrings
-        val errorstrings: ResourceBundle = JugglingLab.errorstrings
-        protected const val BORDER: Int = 10
+        private const val BORDER: Int = 10
 
-        protected fun make_constraints(
+        private fun makeConstraints(
             location: Int, gridx: Int, gridy: Int, ins: Insets?
         ): GridBagConstraints {
             val gbc = GridBagConstraints()
