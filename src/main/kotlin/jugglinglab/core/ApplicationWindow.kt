@@ -44,10 +44,11 @@ import java.util.*
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
+import kotlin.system.exitProcess
 
 class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     var windowMenu: JMenu? = null
-        protected set
+        private set
 
     init {
         createMenus()
@@ -57,7 +58,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         val locx = max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2)
         setLocation(locx, 50)
         setResizable(false)
-        setVisible(true)
+        isVisible = true
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
         addWindowListener(
@@ -65,8 +66,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 override fun windowClosing(e: WindowEvent?) {
                     try {
                         doMenuCommand(MenuCommand.FILE_EXIT)
-                    } catch (ex: Exception) {
-                        System.exit(0)
+                    } catch (_: Exception) {
+                        exitProcess(0)
                     }
                 }
             })
@@ -80,17 +81,17 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // launch a background thread to check for updates online
         UpdateChecker()
 
-        SwingUtilities.invokeLater(Runnable { updateWindowMenus() })
+        SwingUtilities.invokeLater { updateWindowMenus() }
     }
 
     //--------------------------------------------------------------------------
     // Create window contents
     //--------------------------------------------------------------------------
 
-    protected fun createContents() {
+    private fun createContents() {
         val ap = ApplicationPanel(this)
-        ap.setDoubleBuffered(true)
-        setContentPane(ap) // entire contents of window
+        ap.isDoubleBuffered = true
+        contentPane = ap // entire contents of window
 
         // does the real work of adding controls etc.
         ap.setNotation(Pattern.NOTATION_SITESWAP)
@@ -106,7 +107,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     // Menu creation and handlers
     //--------------------------------------------------------------------------
 
-    protected fun createMenus() {
+    private fun createMenus() {
         val mb = JMenuBar()
         mb.add(createFileMenu())
 
@@ -120,29 +121,28 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         this.windowMenu = JMenu(guistrings.getString("Window"))
         mb.add(this.windowMenu)
         mb.add(createHelpMenu())
-        setJMenuBar(mb)
+        jMenuBar = mb
     }
 
-    protected fun createFileMenu(): JMenu {
-        val quit_handler =
+    private fun createFileMenu(): JMenu {
+        val quitHandler =
             Desktop.isDesktopSupported()
                     && Desktop.getDesktop().isSupported(Desktop.Action.APP_QUIT_HANDLER)
 
-        if (quit_handler) {
+        if (quitHandler) {
             Desktop.getDesktop()
-                .setQuitHandler(
-                    QuitHandler { e: QuitEvent?, response: QuitResponse? ->
-                        try {
-                            doMenuCommand(MenuCommand.FILE_EXIT)
-                        } catch (jei: JuggleExceptionInternal) {
-                            response!!.performQuit()
-                        }
-                    })
+                .setQuitHandler { _: QuitEvent?, response: QuitResponse? ->
+                    try {
+                        doMenuCommand(MenuCommand.FILE_EXIT)
+                    } catch (_: JuggleExceptionInternal) {
+                        response!!.performQuit()
+                    }
+                }
         }
 
-        val filemenu: JMenu = JMenu(guistrings.getString("File"))
+        val filemenu = JMenu(guistrings.getString("File"))
 
-        for (i in 0..<(if (quit_handler) fileItems.size - 2 else fileItems.size)) {
+        for (i in 0..<(if (quitHandler) fileItems.size - 2 else fileItems.size)) {
             if (fileItems[i] == null) {
                 filemenu.addSeparator()
                 continue
@@ -156,20 +156,20 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     )
                 )
             }
-            fileitem.setActionCommand(fileCommands[i])
+            fileitem.actionCommand = fileCommands[i]
             fileitem.addActionListener(this)
             filemenu.add(fileitem)
         }
         return filemenu
     }
 
-    protected fun createNotationMenu(): JMenu {
-        val notationmenu: JMenu = JMenu(guistrings.getString("Notation"))
+    private fun createNotationMenu(): JMenu {
+        val notationmenu = JMenu(guistrings.getString("Notation"))
         val buttonGroup = ButtonGroup()
 
         for (i in Pattern.builtinNotations.indices) {
             val notationitem = JRadioButtonMenuItem(Pattern.builtinNotations[i])
-            notationitem.setActionCommand("notation" + (i + 1))
+            notationitem.actionCommand = "notation${i + 1}"
             notationitem.addActionListener(this)
             notationmenu.add(notationitem)
             buttonGroup.add(notationitem)
@@ -178,21 +178,21 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         return notationmenu
     }
 
-    protected fun createHelpMenu(): JMenu {
+    private fun createHelpMenu(): JMenu {
         // skip the about menu item if About handler was already installed
         // in JugglingLab.java
-        val include_about =
+        val includeAbout =
             !Desktop.isDesktopSupported()
                     || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        val helpmenu: JMenu = JMenu(guistrings.getString("Help"))
+        val helpmenu = JMenu(guistrings.getString("Help"))
 
-        for (i in (if (include_about) 0 else 1)..<helpItems.size) {
+        for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem: JMenuItem = JMenuItem(guistrings.getString(helpItems[i]!!.replace(' ', '_')))
-                helpitem.setActionCommand(helpCommands[i])
+                val helpitem = JMenuItem(guistrings.getString(helpItems[i]!!.replace(' ', '_')))
+                helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
             }
@@ -215,7 +215,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         }
     }
 
-    protected enum class MenuCommand {
+    private enum class MenuCommand {
         FILE_NONE,
         FILE_NEWPAT,
         FILE_NEWPL,
@@ -225,8 +225,9 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         HELP_ONLINE,
     }
 
+    @Suppress("KotlinConstantConditions")
     @Throws(JuggleExceptionInternal::class)
-    protected fun doMenuCommand(action: MenuCommand) {
+    private fun doMenuCommand(action: MenuCommand) {
         when (action) {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> newPattern()
@@ -243,7 +244,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     }
                     cleanup()
                 }
-                System.exit(0)
+                exitProcess(0)
             }
 
             MenuCommand.HELP_ABOUT -> showAboutBox()
@@ -257,7 +258,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         //
         // Returns true if successfully installed, false otherwise.
 
-        protected fun registerOpenFilesHandler(): Boolean {
+        private fun registerOpenFilesHandler(): Boolean {
             if (!Desktop.isDesktopSupported()) {
                 return false
             }
@@ -266,29 +267,28 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             }
 
             Desktop.getDesktop()
-                .setOpenFileHandler(
-                    OpenFilesHandler { ofe: OpenFilesEvent? ->
-                        if (Desktop.isDesktopSupported()
-                            && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)
-                        ) {
-                            Desktop.getDesktop().requestForeground(true)
-                        }
-                        try {
-                            for (file in ofe!!.getFiles()) {
-                                try {
-                                    openJMLFile(file)
-                                } catch (jeu: JuggleExceptionUser) {
-                                    val template: String = errorstrings.getString("Error_reading_file")
-                                    val arguments = arrayOf<Any?>(file.getName())
-                                    val msg =
-                                        MessageFormat.format(template, *arguments) + ":\n" + jeu.message
-                                    handleUserException(null, msg)
-                                }
+                .setOpenFileHandler { ofe: OpenFilesEvent? ->
+                    if (Desktop.isDesktopSupported()
+                        && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)
+                    ) {
+                        Desktop.getDesktop().requestForeground(true)
+                    }
+                    try {
+                        for (file in ofe!!.getFiles()) {
+                            try {
+                                openJMLFile(file)
+                            } catch (jeu: JuggleExceptionUser) {
+                                val template: String = errorstrings.getString("Error_reading_file")
+                                val arguments = arrayOf<Any?>(file.getName())
+                                val msg =
+                                    MessageFormat.format(template, *arguments) + ":\n" + jeu.message
+                                handleUserException(null, msg)
                             }
-                        } catch (jei: JuggleExceptionInternal) {
-                            handleFatalException(jei)
                         }
-                    })
+                    } catch (jei: JuggleExceptionInternal) {
+                        handleFatalException(jei)
+                    }
+                }
             return true
         }
 
@@ -303,19 +303,20 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             val menus = ArrayList<JMenu>()
 
             for (fr in getFrames()) {
-                if (!fr.isVisible()) {
-                    continue
-                }
-
-                if (fr is ApplicationWindow) {
-                    apps.add(fr)
-                    menus.add(fr.windowMenu!!)
-                } else if (fr is PatternListWindow) {
-                    pls.add(fr)
-                    menus.add(fr.windowMenu!!)
-                } else if (fr is PatternWindow) {
-                    anims.add(fr)
-                    menus.add(fr.windowMenu)
+                if (!fr.isVisible) continue
+                when (fr) {
+                    is ApplicationWindow -> {
+                        apps.add(fr)
+                        menus.add(fr.windowMenu!!)
+                    }
+                    is PatternListWindow -> {
+                        pls.add(fr)
+                        menus.add(fr.windowMenu!!)
+                    }
+                    is PatternWindow -> {
+                        anims.add(fr)
+                        menus.add(fr.windowMenu)
+                    }
                 }
             }
 
@@ -345,22 +346,22 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         var windownum = command.toInt()
 
                         if (windownum < apps.size) {
-                            apps.get(windownum).toFront()
+                            apps[windownum].toFront()
                             return@ActionListener
                         }
                         windownum -= apps.size
                         if (windownum < pls.size) {
-                            pls.get(windownum).toFront()
+                            pls[windownum].toFront()
                             return@ActionListener
                         }
                         windownum -= pls.size
                         if (windownum < anims.size) {
-                            anims.get(windownum).toFront()
+                            anims[windownum].toFront()
                             return@ActionListener
                         }
 
                         handleFatalException(
-                            JuggleExceptionInternal("Window number out of range: " + command)
+                            JuggleExceptionInternal("Window number out of range: $command")
                         )
                     }
                 }
@@ -368,8 +369,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             for (wm in menus) {
                 wm.removeAll()
 
-                val alltofront: JMenuItem = JMenuItem(guistrings.getString("Bring_All_To_Front"))
-                alltofront.setActionCommand("front")
+                val alltofront = JMenuItem(guistrings.getString("Bring_All_To_Front"))
+                alltofront.actionCommand = "front"
                 alltofront.addActionListener(al)
                 wm.add(alltofront)
 
@@ -378,7 +379,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 var windownum = 0
                 for (aw in apps) {
                     val awitem = JMenuItem(aw.getTitle())
-                    awitem.setActionCommand((windownum++).toString())
+                    awitem.actionCommand = (windownum++).toString()
                     awitem.addActionListener(al)
                     wm.add(awitem)
                 }
@@ -387,7 +388,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 //    wm.addSeparator();
                 for (pl in pls) {
                     val plitem = JMenuItem(pl.getTitle())
-                    plitem.setActionCommand((windownum++).toString())
+                    plitem.actionCommand = (windownum++).toString()
                     plitem.addActionListener(al)
                     wm.add(plitem)
                 }
@@ -396,7 +397,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 //    wm.addSeparator();
                 for (anim in anims) {
                     val animitem = JMenuItem(anim.getTitle())
-                    animitem.setActionCommand((windownum++).toString())
+                    animitem.actionCommand = (windownum++).toString()
                     animitem.addActionListener(al)
                     wm.add(animitem)
                 }
@@ -421,9 +422,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         @Throws(JuggleExceptionInternal::class)
         fun openJMLFile() {
             jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
-            if (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return
+            if (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+                return
+            }
 
-            val file = jfc.getSelectedFile()
+            val file = jfc.selectedFile
             if (file != null) {
                 try {
                     openJMLFile(file)
@@ -471,7 +474,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             } catch (spe: SAXParseException) {
                 val template: String = errorstrings.getString("Error_JML_parsing")
                 val arguments = arrayOf<Any?>(
-                    spe.getLineNumber(),
+                    spe.lineNumber,
                     if (!spe.message!!.isEmpty()) (":\n" + spe.message) else ""
                 )
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
@@ -482,9 +485,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         // Show the user the "About" dialog box.
 
+        @Suppress("AssignedValueIsNeverRead")
         @JvmStatic
         fun showAboutBox() {
-            val aboutBox: JFrame = JFrame(guistrings.getString("About_Juggling_Lab"))
+            val aboutBox = JFrame(guistrings.getString("About_Juggling_Lab"))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
             val aboutPanel = JPanel(BorderLayout())
@@ -530,7 +534,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 constraints(GridBagConstraints.LINE_START, 0, 2, Insets(15, 15, 15, 15))
             )
 
-            val abouttext3: JLabel = JLabel(guistrings.getString("GPL_message"))
+            val abouttext3 = JLabel(guistrings.getString("GPL_message"))
             abouttext3.setFont(Font("SansSerif", Font.PLAIN, 12))
             textPanel.add(abouttext3)
             gb.setConstraints(
@@ -544,7 +548,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
             var gridrow = 4
             if (javaversion != null) {
-                val java1 = JLabel("Java version " + javaversion)
+                val java1 = JLabel("Java version $javaversion")
                 java1.setFont(Font("SansSerif", Font.PLAIN, 12))
                 textPanel.add(java1)
                 gb.setConstraints(
@@ -555,7 +559,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 )
             }
             if (javavmname != null && javavmversion != null) {
-                val java2 = JLabel(javavmname + " (" + javavmversion + ")")
+                val java2 = JLabel("$javavmname ($javavmversion)")
                 java2.setFont(Font("SansSerif", Font.PLAIN, 12))
                 textPanel.add(java2)
                 gb.setConstraints(
@@ -566,19 +570,18 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 )
             }
 
-            val okbutton: JButton = JButton(guistrings.getString("OK"))
+            val okbutton = JButton(guistrings.getString("OK"))
             textPanel.add(okbutton)
             gb.setConstraints(
                 okbutton,
                 constraints(GridBagConstraints.LINE_END, 0, gridrow++, Insets(15, 15, 15, 15))
             )
-            okbutton.addActionListener(
-                ActionListener { e: ActionEvent? ->
-                    aboutBox.setVisible(false)
-                    aboutBox.dispose()
-                })
+            okbutton.addActionListener { _: ActionEvent? ->
+                aboutBox.isVisible = false
+                aboutBox.dispose()
+            }
 
-            aboutBox.setContentPane(aboutPanel)
+            aboutBox.contentPane = aboutPanel
 
             val loc = Locale.getDefault()
             aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc))
@@ -586,44 +589,44 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             aboutBox.pack()
             aboutBox.setResizable(false)
             aboutBox.setLocationRelativeTo(null) // center frame on screen
-            aboutBox.setVisible(true)
+            aboutBox.isVisible = true
         }
 
         // Bring the user to the online help page.
 
         fun showOnlineHelp() {
-            val browse_supported =
+            val browseSupported =
                 (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-            var browse_problem = false
+            var browseProblem = false
 
-            if (browse_supported) {
+            if (browseSupported) {
                 try {
                     Desktop.getDesktop().browse(URI(Constants.HELP_URL))
-                } catch (e: Exception) {
-                    browse_problem = true
+                } catch (_: Exception) {
+                    browseProblem = true
                 }
             }
 
-            if (!browse_supported || browse_problem) {
+            if (!browseSupported || browseProblem) {
                 LabelDialog(null, "Help", "Find online help at " + Constants.HELP_URL)
             }
         }
 
-        protected val fileItems: Array<String?> = arrayOf<String?>(
+        private val fileItems: Array<String?> = arrayOf<String?>(
             "New Pattern",
             "New Pattern List",
             "Open JML...",
             null,
             "Quit",
         )
-        protected val fileCommands: Array<String?> = arrayOf<String?>(
+        private val fileCommands: Array<String?> = arrayOf<String?>(
             "newpat",
             "newpl",
             "open",
             null,
             "exit",
         )
-        protected val fileShortcuts: CharArray = charArrayOf(
+        private val fileShortcuts: CharArray = charArrayOf(
             'N',
             'L',
             'O',
@@ -631,11 +634,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             'Q',
         )
 
-        protected val helpItems: Array<String?> = arrayOf<String?>(
+        private val helpItems: Array<String?> = arrayOf<String?>(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        protected val helpCommands: Array<String?> = arrayOf<String?>(
+        private val helpCommands: Array<String?> = arrayOf<String?>(
             "about",
             "online",
         )
