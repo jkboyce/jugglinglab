@@ -95,6 +95,7 @@ class SiteswapTransitioner : Transitioner() {
         return runTransitioner(t, -1, -1.0) // negative values --> no limits
     }
 
+    @Suppress("SimplifyBooleanWithConstants")
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun runTransitioner(t: GeneratorTarget, numLimit: Int, secsLimit: Double): Int {
         maxNum = numLimit
@@ -246,7 +247,7 @@ class SiteswapTransitioner : Transitioner() {
         }
         jugglers = fromJugglers
 
-        indexes = max(siteswapFrom.getIndexes(), siteswapTo.getIndexes())
+        indexes = max(siteswapFrom.indexes, siteswapTo.indexes)
         maxOccupancy = max(
             targetOccupancy,
             max(siteswapFrom.maxOccupancy, siteswapTo.maxOccupancy)
@@ -619,7 +620,7 @@ class SiteswapTransitioner : Transitioner() {
             }
 
             // case 2: incoming throws from the previous pattern
-            val th2 = siteswapPrev.throws
+            val th2 = siteswapPrev.th
             val period = siteswapPrev.period
             val slots = siteswapPrev.maxOccupancy
 
@@ -627,7 +628,7 @@ class SiteswapTransitioner : Transitioner() {
                 for (h2 in 0..1) {
                     for (i2 in 0..<period) {
                         for (s2 in 0..<slots) {
-                            val mhnt2 = th2[j2]!![h2]!![i2]!![s2] ?: break
+                            val mhnt2 = th2[j2][h2][i2][s2] ?: break
 
                             // Figure out if the throw is landing at the desired time.
                             // The time index for the previous pattern runs from 0 to
