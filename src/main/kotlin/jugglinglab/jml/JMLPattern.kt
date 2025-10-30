@@ -422,7 +422,7 @@ class JMLPattern() {
             if (!basePatternHashcodeValid) {
                 try {
                     basePatternHashcode =
-                        fromBasePattern(basePatternNotation, basePatternConfig)
+                        fromBasePattern(basePatternNotation!!, basePatternConfig!!)
                             .layoutPattern().hashCode
                     basePatternHashcodeValid = true
                 } catch (_: JuggleException) {
@@ -2145,12 +2145,12 @@ class JMLPattern() {
 
         @JvmStatic
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun fromBasePattern(notation: String?, config: String?): JMLPattern {
+        fun fromBasePattern(notation: String, config: String): JMLPattern {
             val p = Pattern.newPattern(notation).fromString(config)
             val pat = p.asJMLPattern()
 
             // regularize the notation name and config string
-            pat.basePatternNotation = p.getNotationName()
+            pat.basePatternNotation = p.notationName
             pat.basePatternConfig = p.toString()
             return pat
         }

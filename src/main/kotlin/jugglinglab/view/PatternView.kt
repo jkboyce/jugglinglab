@@ -208,7 +208,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
     private fun compilePattern() {
         try {
             if (rbBp.isSelected) {
-                val notation = pattern!!.basePatternNotation
+                val notation = pattern!!.basePatternNotation!!
                 val config = ta.getText().replace("\n", "").trim { it <= ' ' }
                 val newpat = JMLPattern.fromBasePattern(notation, config)
                 restartView(newpat, null)

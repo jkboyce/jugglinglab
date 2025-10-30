@@ -134,7 +134,7 @@ class ApplicationPanel
                         val jc = (AnimationPrefs()).fromParameters(pl)
                         pl.errorIfParametersLeft()
 
-                        val notation = p.getNotationName()
+                        val notation = p.notationName
                         val config: String = p.toString()
                         val pat = fromBasePattern(notation, config)
                         pat.layoutPattern()

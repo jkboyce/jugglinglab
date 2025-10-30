@@ -213,14 +213,14 @@ class SiteswapTransitioner : Transitioner() {
         siteswapTo = SiteswapPattern()
 
         try {
-            siteswapFrom.fromString(patternFrom)
+            siteswapFrom.fromString(patternFrom!!)
         } catch (jeu: JuggleExceptionUser) {
             val template: String = errorstrings.getString("Error_trans_in_from_pattern")
             val arguments = arrayOf<Any?>(jeu.message)
             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
         }
         try {
-            siteswapTo.fromString(patternTo)
+            siteswapTo.fromString(patternTo!!)
         } catch (jeu: JuggleExceptionUser) {
             val template: String = errorstrings.getString("Error_trans_in_to_pattern")
             val arguments = arrayOf<Any?>(jeu.message)

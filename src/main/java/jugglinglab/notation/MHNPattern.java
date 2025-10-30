@@ -27,6 +27,8 @@ import jugglinglab.jml.*;
 import jugglinglab.util.*;
 
 public abstract class MHNPattern extends Pattern {
+  static final ResourceBundle errorstrings = jugglinglab.JugglingLab.errorstrings;
+
   protected static double bps_default = -1; // calculate bps
   protected static double dwell_default = 1.3;
   protected static double gravity_default = 980;
