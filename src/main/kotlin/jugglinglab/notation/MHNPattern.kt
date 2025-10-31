@@ -322,7 +322,7 @@ abstract class MHNPattern : Pattern() {
 
             for (sym in symmetries) {
                 val jperm = sym.jugglerPerm
-                val delay = sym.getDelay()
+                val delay = sym.delay
 
                 for (i in 0..<indexes) {
                     val imagei = i + delay
@@ -902,16 +902,16 @@ abstract class MHNPattern : Pattern() {
             val symtype: Int
             val pathmap = IntArray(balls + 1)
 
-            when (sss.getType()) {
+            when (sss.type) {
                 MHNSymmetry.TYPE_DELAY -> {
                     symtype = JMLSymmetry.TYPE_DELAY
-                    for (k in 0..<(indexes - sss.getDelay())) {
+                    for (k in 0..<(indexes - sss.delay)) {
                         for (j in 0..<numberOfJugglers) {
                             for (h in 0..1) {
                                 for (slot in 0..<maxOccupancy) {
                                     val sst: MHNThrow? = th[j][h][k][slot]
                                     if (sst != null && sst.pathnum != -1) {
-                                        val sst2 = th[j][h][k + sss.getDelay()][slot]
+                                        val sst2 = th[j][h][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
                                                 errorstrings.getString("Error_badpattern_paths")
                                             )
@@ -939,7 +939,7 @@ abstract class MHNPattern : Pattern() {
                     symtype = JMLSymmetry.TYPE_SWITCHDELAY
 
                     val jugperm = sss.jugglerPerm
-                    for (k in 0..<(indexes - sss.getDelay())) {
+                    for (k in 0..<(indexes - sss.delay)) {
                         for (j in 0..<numberOfJugglers) {
                             for (h in 0..1) {
                                 var slot = 0
@@ -949,7 +949,7 @@ abstract class MHNPattern : Pattern() {
                                         val map = jugperm.getMapping(j + 1)
                                         val newj = abs(map) - 1
                                         val newh = (if (map > 0) h else 1 - h)
-                                        val sst2 = th[newj][newh][k + sss.getDelay()][slot]
+                                        val sst2 = th[newj][newh][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
                                                 errorstrings.getString("Error_badpattern_paths")
                                             )
@@ -990,7 +990,7 @@ abstract class MHNPattern : Pattern() {
                 sss.jugglerPerm.toString(),
                 numberOfPaths,
                 pathmapstring,
-                sss.getDelay().toDouble() / bps
+                sss.delay.toDouble() / bps
             )
 
             pat.addSymmetry(sym)
