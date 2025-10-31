@@ -1844,17 +1844,17 @@ abstract class MHNPattern : Pattern() {
     }
 
     companion object {
-        protected const val BPS_DEFAULT: Double = -1.0 // calculate bps
-        protected const val DWELL_DEFAULT: Double = 1.3
-        protected const val GRAVITY_DEFAULT: Double = 980.0
-        protected const val PROPDIAM_DEFAULT: Double = 10.0
-        protected const val BOUNCEFRAC_DEFAULT: Double = 0.9
-        protected const val SQUEEZEBEATS_DEFAULT: Double = 0.4
-        protected const val PROP_DEFAULT: String = "ball"
+        const val BPS_DEFAULT: Double = -1.0 // calculate bps
+        const val DWELL_DEFAULT: Double = 1.3
+        const val GRAVITY_DEFAULT: Double = 980.0
+        const val PROPDIAM_DEFAULT: Double = 10.0
+        const val BOUNCEFRAC_DEFAULT: Double = 0.9
+        const val SQUEEZEBEATS_DEFAULT: Double = 0.4
+        const val PROP_DEFAULT: String = "ball"
 
         // for hss config
-        protected const val HOLD_DEFAULT: Boolean = false
-        protected const val DWELLMAX_DEFAULT: Boolean = true
+        const val HOLD_DEFAULT: Boolean = false
+        const val DWELLMAX_DEFAULT: Boolean = true
 
         const val RIGHT_HAND: Int = 0
         const val LEFT_HAND: Int = 1
