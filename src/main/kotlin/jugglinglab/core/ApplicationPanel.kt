@@ -129,7 +129,7 @@ class ApplicationPanel
                 setDefaultCapable(true)
                 addActionListener { _: ActionEvent? ->
                     try {
-                        val pl = control.getParameterList()
+                        val pl = control.parameterList
                         val p = control.newPattern().fromParameters(pl)
                         val jc = (AnimationPrefs()).fromParameters(pl)
                         pl.errorIfParametersLeft()
