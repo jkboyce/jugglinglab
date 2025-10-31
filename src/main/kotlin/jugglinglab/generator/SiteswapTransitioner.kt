@@ -610,7 +610,7 @@ class SiteswapTransitioner : Transitioner() {
 
                             if (mhnt2.targetjuggler == mhnt.juggler &&
                                 mhnt2.targethand == mhnt.hand &&
-                                mhnt2.targetindex == pos && !mhnt2.isHold())
+                                mhnt2.targetindex == pos && !mhnt2.isHold)
                             {
                                 ++numNotHolds
                             }
@@ -645,7 +645,7 @@ class SiteswapTransitioner : Transitioner() {
                                 (indexOvershoot >= 0 && (indexOvershoot % period == 0))
 
                             if (correctIndex && mhnt2.targetjuggler == mhnt.juggler &&
-                                mhnt2.targethand == mhnt.hand && !mhnt2.isHold())
+                                mhnt2.targethand == mhnt.hand && !mhnt2.isHold)
                             {
                                 // System.out.println("got a fill from previous pattern");
                                 ++numNotHolds

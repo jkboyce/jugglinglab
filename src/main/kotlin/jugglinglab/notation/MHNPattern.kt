@@ -341,8 +341,8 @@ abstract class MHNPattern : Pattern() {
                                 val imaget = th[imagej][imageh][imagei][slot]
                                     ?: throw JuggleExceptionInternal("Problem finding master throws")
 
-                                val m = mhnt.master
-                                val im = imaget.master
+                                val m = mhnt.master!!
+                                val im = imaget.master!!
                                 if (m === im) {
                                     continue
                                 }
@@ -494,7 +494,7 @@ abstract class MHNPattern : Pattern() {
                         val sst = th[j][h][i][slot] ?: continue
 
                         if (sst.source != null) {
-                            sst.pathnum = sst.source.pathnum
+                            sst.pathnum = sst.source!!.pathnum
                             continue
                         }
 
@@ -595,7 +595,7 @@ abstract class MHNPattern : Pattern() {
                     for (slot in 0..<maxOccupancy) {
                         val sst = th[j][h][k][slot] ?: break
 
-                        sst.catching = (sst.source.mod[0] != 'H')
+                        sst.catching = (sst.source!!.mod!![0] != 'H')
                         if (sst.catching) {
                             sst.catchnum = slotcatches
                             ++slotcatches
@@ -651,7 +651,7 @@ abstract class MHNPattern : Pattern() {
                         if (sst == null || sst.master === sst) {
                             break // skip master throws
                         }
-                        sst.catchnum = sst.master.catchnum
+                        sst.catchnum = sst.master!!.catchnum
                     }
                 }
             }
@@ -741,7 +741,7 @@ abstract class MHNPattern : Pattern() {
                 for (h in 0..1) {
                     for (s in 0..<maxOccupancy) {
                         val mhnt = th[j][h][i][s] ?: continue
-                        if (mhnt.source.index < period) {
+                        if (mhnt.source!!.index < period) {
                             if ((i - period) < beats) {
                                 result[j][h][i - period] += 1
                             }
@@ -1041,7 +1041,7 @@ abstract class MHNPattern : Pattern() {
                         if (sst2.catching) {
                             numCatches++
 
-                            if (sst2.source.isThrownOne) {
+                            if (sst2.source!!.isThrownOne) {
                                 onecaught = true
                             }
                         }
@@ -1164,14 +1164,14 @@ abstract class MHNPattern : Pattern() {
                         val type: String?
                         var mod: String?
 
-                        when (sst2.mod[0]) {
+                        when (sst2.mod!![0]) {
                             'B' -> {
                                 type = "bounce"
                                 mod = null
-                                if (sst2.mod.contains("F")) {
+                                if (sst2.mod!!.contains("F")) {
                                     mod = "forced=true"
                                 }
-                                if (sst2.mod.contains("H")) {
+                                if (sst2.mod!!.contains("H")) {
                                     mod = if (mod == null) {
                                         "hyper=true"
                                     } else {
@@ -1180,8 +1180,8 @@ abstract class MHNPattern : Pattern() {
                                 }
                                 var bounces = 1
                                 var i = 1
-                                while (i < sst2.mod.length) {
-                                    if (sst2.mod[i] == 'B') {
+                                while (i < sst2.mod!!.length) {
+                                    if (sst2.mod!![i] == 'B') {
                                         ++bounces
                                     }
                                     i++
@@ -1208,7 +1208,6 @@ abstract class MHNPattern : Pattern() {
                                     }
                                 }
                             }
-
                             'F' -> {
                                 type = "bounce"
                                 mod = "forced=true"
@@ -1219,12 +1218,10 @@ abstract class MHNPattern : Pattern() {
                                     mod = "$mod;g=$gravity"
                                 }
                             }
-
                             'H' -> {
                                 type = "hold"
                                 mod = null
                             }
-
                             'T' -> {
                                 type = "toss"
                                 mod = null
@@ -1232,7 +1229,6 @@ abstract class MHNPattern : Pattern() {
                                     mod = "g=$gravity"
                                 }
                             }
-
                             else -> {
                                 type = "toss"
                                 mod = null
@@ -1242,7 +1238,7 @@ abstract class MHNPattern : Pattern() {
                             }
                         }
 
-                        if (sst2.mod[0] != 'H') {
+                        if (sst2.mod!![0] != 'H') {
                             if (sst2.isZero) {
                                 val template: String = errorstrings.getString("Error_modifier_on_0")
                                 val arguments = arrayOf<Any?>(sst2.mod, k + 1)
@@ -1264,7 +1260,7 @@ abstract class MHNPattern : Pattern() {
                             } else {
                                 if (throwval > 8) crossingthrowx[8] else crossingthrowx[throwval]
                             }
-                            numThrows++
+                            ++numThrows
                         } else if (hands != null) {
                             if (!sst2.isZero) {
                                 // add holding transition if there's a ball in
@@ -1344,7 +1340,7 @@ abstract class MHNPattern : Pattern() {
                         }
 
                         val catchpath = sst2.pathnum
-                        val catchval = k - sst2.source.index
+                        val catchval = k - sst2.source!!.index
                         pathtouched[catchpath - 1] = true
                         catchxsum += (if (catchval > 8) catchx[8] else catchx[catchval])
                         ++numCatches
@@ -1872,16 +1868,16 @@ abstract class MHNPattern : Pattern() {
 
         protected fun isCatchOrderIncorrect(t1: MHNThrow, t2: MHNThrow): Boolean {
             // first look at the time spent in the air; catch higher throws first
-            if (t1.source.index > t2.source.index) {
+            if (t1.source!!.index > t2.source!!.index) {
                 return true
             }
-            if (t1.source.index < t2.source.index) {
+            if (t1.source!!.index < t2.source!!.index) {
                 return false
             }
 
             // look at which juggler it's from; catch from "faraway" jugglers first
-            val jdiff1 = abs(t1.juggler - t1.source.juggler)
-            val jdiff2 = abs(t2.juggler - t2.source.juggler)
+            val jdiff1 = abs(t1.juggler - t1.source!!.juggler)
+            val jdiff2 = abs(t2.juggler - t2.source!!.juggler)
             if (jdiff1 < jdiff2) {
                 return true
             }
@@ -1890,8 +1886,8 @@ abstract class MHNPattern : Pattern() {
             }
 
             // look at which hand it's from; catch from same hand first
-            val hdiff1 = abs(t1.hand - t1.source.hand)
-            val hdiff2 = abs(t2.hand - t2.source.hand)
+            val hdiff1 = abs(t1.hand - t1.source!!.hand)
+            val hdiff2 = abs(t2.hand - t2.source!!.hand)
             return hdiff1 > hdiff2
         }
 
