@@ -860,9 +860,7 @@ class SiteswapTransitioner : Transitioner() {
 
         for (j in 0..<jugglers) {
             val sb = StringBuilder()
-
             var asyncHandRightNext = !asyncHandRight[j][pos]
-
             var handsThrowing = 0
             if (th[j][0][pos][0] != null) {
                 ++handsThrowing
@@ -873,7 +871,7 @@ class SiteswapTransitioner : Transitioner() {
 
             when (handsThrowing) {
                 0 -> {
-                    if (pos == 0 && siteswapPrev.hasHandsSpecifier()) {
+                    if (pos == 0 && siteswapPrev.hasHandsSpecifier) {
                         sb.append('R')
                     }
                     sb.append('0')
@@ -884,24 +882,21 @@ class SiteswapTransitioner : Transitioner() {
 
                 1 -> {
                     val needsSlash: Boolean
-
                     if (th[j][0][pos][0] != null) {
                         if (!asyncHandRight[j][pos]) {
                             sb.append('R')
                             asyncHandRightNext = false
-                        } else if (pos == 0 && siteswapPrev.hasHandsSpecifier()) {
+                        } else if (pos == 0 && siteswapPrev.hasHandsSpecifier) {
                             sb.append('R')
                         }
-
                         needsSlash = outputMultiThrow(pos, j, 0, sb)
                     } else {
                         if (asyncHandRight[j][pos]) {
                             sb.append('L')
                             asyncHandRightNext = true
-                        } else if (pos == 0 && siteswapPrev.hasHandsSpecifier()) {
+                        } else if (pos == 0 && siteswapPrev.hasHandsSpecifier) {
                             sb.append('R')
                         }
-
                         needsSlash = outputMultiThrow(pos, j, 1, sb)
                     }
                     if (needsSlash) {
@@ -913,10 +908,9 @@ class SiteswapTransitioner : Transitioner() {
                 }
 
                 2 -> {
-                    if (pos == 0 && siteswapPrev.hasHandsSpecifier()) {
+                    if (pos == 0 && siteswapPrev.hasHandsSpecifier) {
                         sb.append('R')
                     }
-
                     sb.append('(')
                     outputMultiThrow(pos, j, 1, sb)
                     sb.append(',')
