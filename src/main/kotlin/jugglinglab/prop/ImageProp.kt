@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.parseDouble
+import jugglinglab.util.jlParseDouble
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -157,7 +157,7 @@ class ImageProp : Prop() {
         val widthstr = pl.getParameter("width")
         if (widthstr != null) {
             try {
-                val temp = parseDouble(widthstr)
+                val temp = jlParseDouble(widthstr)
                 if (temp > 0) {
                     width = temp
                     val aspectRatio = (image!!.getHeight(null).toDouble()) / (image!!.getWidth(null).toDouble())

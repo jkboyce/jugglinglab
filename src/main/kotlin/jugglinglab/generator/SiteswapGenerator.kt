@@ -421,7 +421,7 @@ class SiteswapGenerator : Generator() {
             if (ht == -1) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_generator_underspecified"))
             }
-            lMax = binomial(ht * hands, n)
+            lMax = jlBinomial(ht * hands, n)
             lMax -= (lMax % rhythmPeriod)
         }
         if (ht == -1) {

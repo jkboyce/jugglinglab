@@ -52,11 +52,11 @@ data class Coordinate @JvmOverloads constructor(
 
     override fun toString(): String {
         return ("("
-            + toStringRounded(x, 5)
+            + jlToStringRounded(x, 5)
             + ", "
-            + toStringRounded(y, 5)
+            + jlToStringRounded(y, 5)
             + ", "
-            + toStringRounded(z, 5)
+            + jlToStringRounded(z, 5)
             + ")")
     }
 

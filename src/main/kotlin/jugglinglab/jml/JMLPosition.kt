@@ -9,8 +9,8 @@ package jugglinglab.jml
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.parseDouble
-import jugglinglab.util.toStringRounded
+import jugglinglab.util.jlParseDouble
+import jugglinglab.util.jlToStringRounded
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -60,15 +60,15 @@ class JMLPosition {
             for (i in 0..<at.numberOfAttributes) {
                 // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equals("x", ignoreCase = true)) {
-                    tempx = parseDouble(at.getAttributeValue(i))
+                    tempx = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("y", ignoreCase = true)) {
-                    tempy = parseDouble(at.getAttributeValue(i))
+                    tempy = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("z", ignoreCase = true)) {
-                    tempz = parseDouble(at.getAttributeValue(i))
+                    tempz = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("t", ignoreCase = true)) {
-                    tempt = parseDouble(at.getAttributeValue(i))
+                    tempt = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("angle", ignoreCase = true)) {
-                    tempangle = parseDouble(at.getAttributeValue(i))
+                    tempangle = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("juggler", ignoreCase = true)) {
                     jugglerstr = at.getAttributeValue(i)
                 }
@@ -92,15 +92,15 @@ class JMLPosition {
         val c = this.coordinate
         wr.println(
             ("<position x=\""
-                    + toStringRounded(c.x, 4)
+                    + jlToStringRounded(c.x, 4)
                     + "\" y=\""
-                    + toStringRounded(c.y, 4)
+                    + jlToStringRounded(c.y, 4)
                     + "\" z=\""
-                    + toStringRounded(c.z, 4)
+                    + jlToStringRounded(c.z, 4)
                     + "\" t=\""
-                    + toStringRounded(this.t, 4)
+                    + jlToStringRounded(this.t, 4)
                     + "\" angle=\""
-                    + toStringRounded(this.angle, 4)
+                    + jlToStringRounded(this.angle, 4)
                     + "\" juggler=\""
                     + this.juggler
                     + "\"/>")

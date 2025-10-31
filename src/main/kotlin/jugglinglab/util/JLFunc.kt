@@ -28,7 +28,7 @@ import kotlin.math.sqrt
 
 // Calculate the binomial coefficient (a choose b).
 
-fun binomial(a: Int, b: Int): Int {
+fun jlBinomial(a: Int, b: Int): Int {
     var result = 1
 
     for (i in 0..<b) {
@@ -47,7 +47,7 @@ fun binomial(a: Int, b: Int): Int {
 // be balanced. Otherwise we get ambiguous cases like '(()^5' --> does this
 // expand to '(((((' or '('?
 
-fun expandRepeats(str: String): String {
+fun jlExpandRepeats(str: String): String {
     val sb = StringBuilder()
     addExpansionToBuffer(str, sb)
     return sb.toString()
@@ -146,11 +146,35 @@ private fun tryParseRepeat(str: String, fromPos: Int): IntArray? {
     return null
 }
 
+// Split an input string at a given delimiter, but only outside of parentheses.
+
+fun jlSplitOnCharOutsideParens(input: String, delimiter: Char): List<String> {
+    if (input.isEmpty()) return listOf("")
+
+    val result = mutableListOf<String>()
+    var parenLevel = 0
+    var lastSplit = 0
+    for (i in input.indices) {
+        when (input[i]) {
+            '(' -> parenLevel++
+            ')' -> parenLevel--
+            delimiter -> {
+                if (parenLevel == 0) {
+                    result.add(input.substring(lastSplit, i))
+                    lastSplit = i + 1
+                }
+            }
+        }
+    }
+    result.add(input.substring(lastSplit))
+    return result.filter { it.isNotEmpty() }
+}
+
 // Compare two version numbers.
 //
 // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2.
 
-fun compareVersions(v1: String, v2: String): Int {
+fun jlCompareVersions(v1: String, v2: String): Int {
     val components1: Array<String?> =
         v1.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     val components2: Array<String?> =
@@ -168,7 +192,7 @@ fun compareVersions(v1: String, v2: String): Int {
 // Check if point (x, y) is near a line segment connecting (x1, y1) and
 // (x2, y2). "Near" means shortest distance is less than `slop`.
 
-fun isNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int): Boolean {
+fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int): Boolean {
     if (x < (min(x1, x2) - slop) || x > (max(x1, x2) + slop)) {
         return false
     }
@@ -193,7 +217,7 @@ private val nf: NumberFormat by lazy {
 }
 
 @Throws(NumberFormatException::class)
-fun parseDouble(s: String?): Double {
+fun jlParseDouble(s: String?): Double {
     try {
         return nf.parse(s).toDouble()
     } catch (_: ParseException) {
@@ -204,7 +228,7 @@ fun parseDouble(s: String?): Double {
 // Convert a double value to a String, rounding to `digits` places after
 // the decimal point, with trailing '.' and '0's suppressed.
 
-fun toStringRounded(`val`: Double, digits: Int): String {
+fun jlToStringRounded(`val`: Double, digits: Int): String {
     val fmt = "###.##########".take(if (digits <= 0) 3 else 4 + min(10, digits))
     val formatter = DecimalFormat(fmt, DecimalFormatSymbols(Locale.US))
     var result = formatter.format(`val`)
@@ -221,24 +245,23 @@ fun toStringRounded(`val`: Double, digits: Int): String {
 // Helpers for GridBagLayout
 //------------------------------------------------------------------------------
 
-fun constraints(location: Int, gridx: Int, gridy: Int): GridBagConstraints {
-    val gbc = GridBagConstraints()
-
-    gbc.anchor = location
-    gbc.fill = GridBagConstraints.NONE
-    gbc.gridwidth = 1
-    gbc.gridheight = 1
-    gbc.gridx = gridx
-    gbc.gridy = gridy
-    gbc.weighty = 0.0
-    gbc.weightx = 0.0
-    return gbc
+fun constraints(location: Int, gridX: Int, gridY: Int): GridBagConstraints {
+    return GridBagConstraints().apply {
+        anchor = location
+        fill = GridBagConstraints.NONE
+        gridwidth = 1
+        gridheight = 1
+        gridx = gridX
+        gridy = gridY
+        weighty = 0.0
+        weightx = 0.0
+    }
 }
 
 fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagConstraints {
-    val gbc = constraints(location, gridx, gridy)
-    gbc.insets = ins ?: Insets(0, 0, 0, 0)
-    return gbc
+    return constraints(location, gridx, gridy).apply {
+        insets = ins ?: Insets(0, 0, 0, 0)
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -289,7 +312,7 @@ val jfc: JFileChooser by lazy {
 // https://stackoverflow.com/questions/1976007/
 //       what-characters-are-forbidden-in-windows-and-linux-directory-names
 
-fun sanitizeFilename(fname: String): String {
+fun jlSanitizeFilename(fname: String): String {
     val index = fname.lastIndexOf(".")
 
     val base = if (index >= 0) fname.take(index) else fname
@@ -343,8 +366,8 @@ fun sanitizeFilename(fname: String): String {
 }
 
 @Throws(JuggleExceptionUser::class)
-fun errorIfNotSanitized(fname: String) {
-    if (fname == sanitizeFilename(fname)) {
+fun jlErrorIfNotSanitized(fname: String) {
+    if (fname == jlSanitizeFilename(fname)) {
         return
     }
     throw JuggleExceptionUser(errorstrings.getString("Error_saving_disallowed_character"))

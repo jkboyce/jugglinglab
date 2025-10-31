@@ -17,7 +17,7 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.toStringRounded
+import jugglinglab.util.jlToStringRounded
 import java.awt.ComponentOrientation
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -64,8 +64,8 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
         // Fill in UI elements with current prefs
         tfWidth.text = oldjc.width.toString()
         tfHeight.text = oldjc.height.toString()
-        tfFps.text = toStringRounded(oldjc.fps, 2)
-        tfSlowdown.text = toStringRounded(oldjc.slowdown, 2)
+        tfFps.text = jlToStringRounded(oldjc.fps, 2)
+        tfSlowdown.text = jlToStringRounded(oldjc.slowdown, 2)
         tfBorder.text = oldjc.border.toString()
         comboShowground.setSelectedIndex(oldjc.showGround)
         cbPaused.setSelected(oldjc.startPause)

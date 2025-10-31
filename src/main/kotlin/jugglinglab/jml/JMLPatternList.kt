@@ -15,7 +15,7 @@ import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.compareVersions
+import jugglinglab.util.jlCompareVersions
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.Writer
@@ -180,7 +180,7 @@ class JMLPatternList() {
 
         val vers = root.attributes.getAttribute("version")
         if (vers != null) {
-            if (compareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
+            if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
             }
             loadingversion = vers

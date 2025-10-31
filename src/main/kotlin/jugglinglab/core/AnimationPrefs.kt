@@ -11,7 +11,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.toStringRounded
+import jugglinglab.util.jlToStringRounded
 import jugglinglab.view.View
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
@@ -257,10 +257,10 @@ class AnimationPrefs {
             sb.append("height=").append(height).append(";")
         }
         if (fps != FPS_DEF) {
-            sb.append("fps=").append(toStringRounded(fps, 2)).append(";")
+            sb.append("fps=").append(jlToStringRounded(fps, 2)).append(";")
         }
         if (slowdown != SLOWDOWN_DEF) {
-            sb.append("slowdown=").append(toStringRounded(slowdown, 2)).append(";")
+            sb.append("slowdown=").append(jlToStringRounded(slowdown, 2)).append(";")
         }
         if (border != BORDER_DEF) {
             sb.append("border=").append(border).append(";")

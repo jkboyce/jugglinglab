@@ -218,7 +218,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             MenuCommand.FILE_CLOSE -> dispose()
             MenuCommand.FILE_SAVE -> try {
                 var fname = lastJmlFilename ?: (getTitle() + ".jml")
-                fname = sanitizeFilename(fname)
+                fname = jlSanitizeFilename(fname)
                 jfc.setSelectedFile(File(fname))
                 jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
                 if (jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -229,7 +229,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 if (!f.absolutePath.endsWith(".jml")) {
                     f = File(f.absolutePath + ".jml")
                 }
-                errorIfNotSanitized(f.getName())
+                jlErrorIfNotSanitized(f.getName())
                 lastJmlFilename = f.getName()
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
@@ -255,7 +255,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                     fname = getTitle() + ".txt" // default filename
                 }
 
-                fname = sanitizeFilename(fname)
+                fname = jlSanitizeFilename(fname)
                 jfc.setSelectedFile(File(fname))
                 jfc.setFileFilter(FileNameExtensionFilter("Text file", "txt"))
 
@@ -267,7 +267,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 if (!f.absolutePath.endsWith(".txt")) {
                     f = File(f.absolutePath + ".txt")
                 }
-                errorIfNotSanitized(f.getName())
+                jlErrorIfNotSanitized(f.getName())
                 val index = f.getName().lastIndexOf(".")
                 val base = if (index >= 0) f.getName().substring(0, index) else f.getName()
                 lastJmlFilename = "$base.jml"

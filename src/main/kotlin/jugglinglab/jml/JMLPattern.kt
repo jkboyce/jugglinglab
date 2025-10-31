@@ -1942,7 +1942,7 @@ class JMLPattern() {
         if (type.equals("jml", ignoreCase = true)) {
             val vers = current.attributes.getAttribute("version")
             if (vers != null) {
-                if (compareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
+                if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                     throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
                 }
                 loadingversion = vers

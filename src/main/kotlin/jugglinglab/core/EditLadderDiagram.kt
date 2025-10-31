@@ -1017,7 +1017,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         okbutton.addActionListener { _: ActionEvent? ->
             val scale: Double
             try {
-                scale = parseDouble(tf.getText()) / 100.0
+                scale = jlParseDouble(tf.getText()) / 100.0
             } catch (_: NumberFormatException) {
                 handleUserException(
                     this@EditLadderDiagram,
@@ -1704,7 +1704,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_FLOAT) {
                     val tf = control as JTextField
                     try {
-                        val value = parseDouble(tf.getText())
+                        val value = jlParseDouble(tf.getText())
                         val defValue = (dialog[i].defaultValue) as Double
                         if (value != defValue) {
                             term = tf.getText().trim { it <= ' ' }
@@ -1849,7 +1849,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         // label the tracker line with the time
         if (guiState == STATE_MOVING_TRACKER) {
             gr.color = COLOR_TRACKER
-            gr.drawString(toStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
+            gr.drawString(jlToStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
         }
     }
 

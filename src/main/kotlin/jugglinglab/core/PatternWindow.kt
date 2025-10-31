@@ -432,7 +432,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 if (fname == null) {
                     fname = getTitle() + ".jml" // default filename
                 }
-                fname = sanitizeFilename(fname)
+                fname = jlSanitizeFilename(fname)
                 jfc.setSelectedFile(File(fname))
                 jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
 
@@ -444,7 +444,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 if (!f.absolutePath.endsWith(".jml")) {
                     f = File(f.absolutePath + ".jml")
                 }
-                errorIfNotSanitized(f.getName())
+                jlErrorIfNotSanitized(f.getName())
                 lastJmlFilename = f.getName()
                 try {
                     val fw = FileWriter(f)
@@ -467,7 +467,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     fname = "${getTitle()}.gif" // default filename
                 }
 
-                fname = sanitizeFilename(fname)
+                fname = jlSanitizeFilename(fname)
                 jfc.setSelectedFile(File(fname))
                 jfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
 
@@ -479,7 +479,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 if (!f.absolutePath.endsWith(".gif")) {
                     f = File(f.absolutePath + ".gif")
                 }
-                errorIfNotSanitized(f.getName())
+                jlErrorIfNotSanitized(f.getName())
                 val index = f.getName().lastIndexOf(".")
                 val base = if (index >= 0) f.getName().substring(0, index) else f.getName()
                 lastJmlFilename = "$base.jml"

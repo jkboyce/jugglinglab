@@ -13,7 +13,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
-import jugglinglab.util.toStringRounded
+import jugglinglab.util.jlToStringRounded
 import java.awt.*
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -724,7 +724,7 @@ open class LadderDiagram(p: JMLPattern) :
         // label the tracker line with the time
         if (guiState == STATE_MOVING_TRACKER) {
             gr.color = COLOR_TRACKER
-            gr.drawString(toStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
+            gr.drawString(jlToStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
         }
     }
 

@@ -41,7 +41,7 @@ class UpdateChecker : Thread() {
         val runningVersion = jugglinglab.core.Constants.VERSION
 
         if (latestVersion.isEmpty()
-            || compareVersions(latestVersion, runningVersion) <= 0
+            || jlCompareVersions(latestVersion, runningVersion) <= 0
         ) {
             return
         }

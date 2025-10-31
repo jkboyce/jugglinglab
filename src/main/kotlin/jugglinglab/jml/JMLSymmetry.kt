@@ -9,8 +9,8 @@ package jugglinglab.jml
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
-import jugglinglab.util.parseDouble
-import jugglinglab.util.toStringRounded
+import jugglinglab.util.jlParseDouble
+import jugglinglab.util.jlToStringRounded
 import java.io.IOException
 import java.io.PrintWriter
 
@@ -81,7 +81,7 @@ class JMLSymmetry {
         val delayString = at.getAttribute("delay")
         if (delayString != null) {
             try {
-                delay = parseDouble(delayString)
+                delay = jlParseDouble(delayString)
             } catch (_: NumberFormatException) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_symmetry_format"))
             }
@@ -114,7 +114,7 @@ class JMLSymmetry {
                 ("delay\" pperm=\""
                     + pathPerm!!.toString(true)
                     + "\" delay=\""
-                    + toStringRounded(this.delay, 4)
+                    + jlToStringRounded(this.delay, 4)
                     + "\"/>")
             TYPE_SWITCH -> out +=
                 ("switch\" jperm=\""

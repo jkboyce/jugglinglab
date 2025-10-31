@@ -106,7 +106,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 if (showYDragControl) {
                     draggingY =
-                        isNearLine(
+                        jlIsNearLine(
                             mx - t,
                             my,
                             eventPoints[0][i][5][0].roundToInt(),
@@ -172,7 +172,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 if (showZDragControl) {
                     draggingZ =
-                        isNearLine(
+                        jlIsNearLine(
                             mx - t,
                             my,
                             posPoints[i][4][0].roundToInt(),
@@ -1049,7 +1049,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         g2.color = Color.black
                         g2.drawString(
-                            "z = " + toStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
+                            "z = " + jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
                         )
                     }
                 }

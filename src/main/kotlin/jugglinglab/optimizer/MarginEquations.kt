@@ -106,7 +106,7 @@ class MarginEquations() {
                             val gparam = pl.getParameter("g")
                             if (gparam != null) {
                                 try {
-                                    g = parseDouble(gparam)
+                                    g = jlParseDouble(gparam)
                                 } catch (_: NumberFormatException) {
                                 }
                             }
@@ -403,7 +403,7 @@ class MarginEquations() {
                 sb.append("{ ")
                 val temp = eqns[i]
                 for (j in 0..varsNum) {
-                    sb.append(toStringRounded(temp[j], 4))
+                    sb.append(jlToStringRounded(temp[j], 4))
                     if (j == (varsNum - 1)) {
                         sb.append(" : ")
                     } else if (j != varsNum) {
@@ -414,7 +414,7 @@ class MarginEquations() {
                 for (j in 0..<varsNum) {
                     dtemp += temp[j] * varsValues[j]
                 }
-                sb.append(" } --> ").append(toStringRounded(dtemp, 4))
+                sb.append(" } --> ").append(jlToStringRounded(dtemp, 4))
 
                 println("   eq[$i] = $sb")
             }
@@ -473,7 +473,7 @@ class MarginEquations() {
                 val sb = StringBuilder()
                 sb.append("{ ")
                 for (j in 0..varsNum) {
-                    sb.append(toStringRounded(marginsEqs[i].coef(j), 4))
+                    sb.append(jlToStringRounded(marginsEqs[i].coef(j), 4))
                     if (j == (varsNum - 1)) {
                         sb.append(" : ")
                     } else if (j != varsNum) {
@@ -484,7 +484,7 @@ class MarginEquations() {
                 for (j in 0..<varsNum) {
                     dtemp += marginsEqs[i].coef(j) * varsValues[j]
                 }
-                sb.append(" } --> ").append(toStringRounded(dtemp, 4))
+                sb.append(" } --> ").append(jlToStringRounded(dtemp, 4))
 
                 println("   eq[$i] = $sb")
             }
@@ -498,7 +498,7 @@ class MarginEquations() {
                 val sb = StringBuilder()
                 sb.append("{ ")
                 for (j in 0..varsNum) {
-                    sb.append(toStringRounded(marginsEqs[i].coef(j), 4))
+                    sb.append(jlToStringRounded(marginsEqs[i].coef(j), 4))
                     if (j == (varsNum - 1)) {
                         sb.append(" : ")
                     } else if (j != varsNum) {
@@ -509,7 +509,7 @@ class MarginEquations() {
                 for (j in 0..<varsNum) {
                     dtemp += marginsEqs[i].coef(j) * varsValues[j]
                 }
-                sb.append(" } --> ").append(toStringRounded(dtemp, 4))
+                sb.append(" } --> ").append(jlToStringRounded(dtemp, 4))
 
                 println("   eq[$i] = $sb")
             }

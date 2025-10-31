@@ -233,13 +233,13 @@ class JMLEvent {
             val c = localCoordinate
             val s =
                 ("<event x=\""
-                    + toStringRounded(c.x, 4)
+                    + jlToStringRounded(c.x, 4)
                     + "\" y=\""
-                    + toStringRounded(c.y, 4)
+                    + jlToStringRounded(c.y, 4)
                     + "\" z=\""
-                    + toStringRounded(c.z, 4)
+                    + jlToStringRounded(c.z, 4)
                     + "\" t=\""
-                    + toStringRounded(t, 4)
+                    + jlToStringRounded(t, 4)
                     + "\" hand=\""
                     + juggler
                     + ":"
@@ -265,13 +265,13 @@ class JMLEvent {
             for (i in 0..<at.numberOfAttributes) {
                 // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equals("x", ignoreCase = true)) {
-                    tempx = parseDouble(at.getAttributeValue(i))
+                    tempx = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("y", ignoreCase = true)) {
-                    tempy = parseDouble(at.getAttributeValue(i))
+                    tempy = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("z", ignoreCase = true)) {
-                    tempz = parseDouble(at.getAttributeValue(i))
+                    tempz = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("t", ignoreCase = true)) {
-                    tempt = parseDouble(at.getAttributeValue(i))
+                    tempt = jlParseDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("hand", ignoreCase = true)) {
                     handstr = at.getAttributeValue(i)
                 }
@@ -358,13 +358,13 @@ class JMLEvent {
         val c = localCoordinate
         wr.println(
             ("<event x=\""
-                + toStringRounded(c.x, 4)
+                + jlToStringRounded(c.x, 4)
                 + "\" y=\""
-                + toStringRounded(c.y, 4)
+                + jlToStringRounded(c.y, 4)
                 + "\" z=\""
-                + toStringRounded(c.z, 4)
+                + jlToStringRounded(c.z, 4)
                 + "\" t=\""
-                + toStringRounded(t, 4)
+                + jlToStringRounded(t, 4)
                 + "\" hand=\""
                 + juggler
                 + ":"

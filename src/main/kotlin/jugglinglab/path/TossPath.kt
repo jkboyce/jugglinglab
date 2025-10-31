@@ -36,7 +36,7 @@ class TossPath : Path() {
 
             if (pname.equals("g", ignoreCase = true)) {
                 try {
-                    g = parseDouble(pvalue)
+                    g = jlParseDouble(pvalue)
                 } catch (_: NumberFormatException) {
                     val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("g")
