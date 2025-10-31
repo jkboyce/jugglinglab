@@ -129,7 +129,7 @@ abstract class MHNPattern : Pattern() {
             hands = MHNHands(temp)
         }
         if ((pl.removeParameter("body").also { temp = it }) != null) {
-            bodies = MHNBody(temp)
+            bodies = MHNBody(temp!!)
         }
         if ((pl.removeParameter("gravity").also { temp = it }) != null) {
             try {
