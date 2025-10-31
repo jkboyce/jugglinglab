@@ -382,7 +382,7 @@ object JugglingLab {
                     pl.errorIfParametersLeft()
                     return jc
                 } catch (jeu: JuggleExceptionUser) {
-                    println("Error in animator prefs: " + jeu.message + "; ignoring")
+                    println("Error in animator prefs: ${jeu.message}; ignoring")
                     return null
                 }
             }
@@ -462,7 +462,7 @@ object JugglingLab {
         var patternsCount = 0
 
         for (file in files) {
-            ps.println("Verifying " + file.absolutePath)
+            ps.println("Verifying ${file.absolutePath}")
             ++filesCount
 
             var errorCountCurrentFile = 0
@@ -491,7 +491,7 @@ object JugglingLab {
                     pat.layoutPattern()
                     ps.println("   OK")
                 } catch (je: JuggleException) {
-                    ps.println("   Error creating pattern: " + je.message)
+                    ps.println("   Error creating pattern: ${je.message}")
                     ++errorCountCurrentFile
                 }
             } else if (parser.fileType == JMLParser.JML_LIST) {
@@ -499,7 +499,7 @@ object JugglingLab {
                 try {
                     pl = JMLPatternList(parser.tree!!)
                 } catch (jeu: JuggleExceptionUser) {
-                    ps.println("   Error creating pattern list: " + jeu.message)
+                    ps.println("   Error creating pattern list: ${jeu.message}")
                     ++errorCountCurrentFile
                 }
 
@@ -517,10 +517,10 @@ object JugglingLab {
                             ++patternsCount
                             pat.layoutPattern()
                             pl.getAnimationPrefsForLine(i)
-                            ps.println("   Pattern line " + (i + 1) + ": OK")
+                            ps.println("   Pattern line ${i + 1}: OK")
                         }
                     } catch (je: JuggleException) {
-                        ps.println("   Pattern line " + (i + 1) + ": Error: " + je.message)
+                        ps.println("   Pattern line ${i + 1}: Error: ${je.message}")
                         ++errorCountCurrentFile
                     }
                 }
@@ -579,7 +579,7 @@ object JugglingLab {
                     else -> println("Error: File is not valid JML")
                 }
             } catch (jeu: JuggleExceptionUser) {
-                println("Error parsing JML: " + jeu.message)
+                println("Error parsing JML: ${jeu.message}")
             } catch (_: SAXException) {
                 println("Error: Formatting error in JML file")
             } catch (_: IOException) {
