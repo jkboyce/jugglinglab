@@ -12,10 +12,9 @@ import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
 import java.text.MessageFormat
-import java.util.regex.Pattern
 
 class MHNBody(str: String) {
-    var numberOfJugglers: Int = 0
+    var numberOfJugglers: Int
         private set
     private var size: IntArray
     private var coords: Array<IntArray>
@@ -23,7 +22,7 @@ class MHNBody(str: String) {
 
     init {
         // parse the 'body' string to define juggler movements
-        val cleanStr = expandRepeats(str).replace("[<>{}]".toRegex(), "")
+        val cleanStr = jlExpandRepeats(str).replace("[<>{}]".toRegex(), "")
         val jugglerStrings = cleanStr.split(Regex("[|!]"))
 
         numberOfJugglers = jugglerStrings.size
@@ -32,7 +31,7 @@ class MHNBody(str: String) {
         bodypath = Array(numberOfJugglers) { emptyArray() }
 
         for ((jugglerIndex, jugglerStr) in jugglerStrings.withIndex()) {
-            val beatStrings = splitOnCharOutsideParens(jugglerStr.trim(), '.')
+            val beatStrings = jlSplitOnCharOutsideParens(jugglerStr.trim(), '.')
             val beatSize = beatStrings.size
             size[jugglerIndex] = beatSize
             coords[jugglerIndex] = IntArray(beatSize)
@@ -60,7 +59,7 @@ class MHNBody(str: String) {
                             }
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
                             try {
-                                val parts = coordStr.split(',').map { parseDouble(it.trim()) }
+                                val parts = coordStr.split(',').map { jlParseDouble(it.trim()) }
                                 // default z (elevation) value is 100.0 cm
                                 val coord = doubleArrayOf(0.0, 0.0, 0.0, 100.0)
                                 for ((partsIndex, partsVal) in parts.withIndex()) {
@@ -90,31 +89,6 @@ class MHNBody(str: String) {
                 }
             }
         }
-    }
-
-    // Split an input string at a given delimiter, but only outside of parentheses.
-
-    private fun splitOnCharOutsideParens(input: String, delimiter: Char): List<String> {
-        if (input.isEmpty()) return listOf("")
-
-        val result = mutableListOf<String>()
-        var parenLevel = 0
-        var lastSplit = 0
-        for (i in input.indices) {
-            when (input[i]) {
-                '(' -> parenLevel++
-                ')' -> parenLevel--
-                delimiter -> {
-                    if (parenLevel == 0) {
-                        result.add(input.substring(lastSplit, i))
-                        lastSplit = i + 1
-                    }
-                }
-            }
-        }
-        // Add the last part of the string
-        result.add(input.substring(lastSplit))
-        return result.filter { it.isNotEmpty() }
     }
 
     fun getPeriod(juggler: Int): Int {

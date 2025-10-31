@@ -126,7 +126,7 @@ abstract class MHNPattern : Pattern() {
             }
         }
         if ((pl.removeParameter("hands").also { temp = it }) != null) {
-            hands = MHNHands(temp)
+            hands = MHNHands(temp!!)
         }
         if ((pl.removeParameter("body").also { temp = it }) != null) {
             bodies = MHNBody(temp!!)
@@ -162,7 +162,7 @@ abstract class MHNPattern : Pattern() {
             temp = if (temp!!.trim() == "mixed") {
                 "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}"
             } else {
-                expandRepeats(temp)
+                jlExpandRepeats(temp)
             }
 
             color = temp.split('}')
@@ -1297,7 +1297,7 @@ abstract class MHNPattern : Pattern() {
                                 ev.calcpos = true
                             }
                         } else {
-                            val c = hands!!.getCoordinate(sst.juggler, sst.handsindex, 0)
+                            val c = hands!!.getCoordinate(sst.juggler, sst.handsindex, 0)!!
                             if (h == LEFT_HAND) {
                                 c.x = -c.x
                             }
@@ -1381,7 +1381,7 @@ abstract class MHNPattern : Pattern() {
                                 pos += hands!!.getPeriod(sst.juggler)
                             }
                             val index = hands!!.getCatchIndex(sst.juggler, pos)
-                            val c = hands!!.getCoordinate(sst.juggler, pos, index)
+                            val c = hands!!.getCoordinate(sst.juggler, pos, index)!!
                             if (h == LEFT_HAND) {
                                 c.x = -c.x
                             }
@@ -1451,7 +1451,7 @@ abstract class MHNPattern : Pattern() {
                                     pos += hands!!.getPeriod(sst.juggler)
                                 }
                                 val index = hands!!.getCatchIndex(sst.juggler, pos)
-                                val c = hands!!.getCoordinate(sst.juggler, pos, index)
+                                val c = hands!!.getCoordinate(sst.juggler, pos, index)!!
                                 if (h == LEFT_HAND) {
                                     c.x = -c.x
                                 }
@@ -1466,7 +1466,7 @@ abstract class MHNPattern : Pattern() {
 
                             ev.setHand(
                                 j + 1,
-                                (if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND)
+                                if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                             )
                             ev.addTransition(
                                 JMLTransition(JMLTransition.TRANS_CATCH, sst2.pathnum, null, null)
