@@ -56,7 +56,7 @@ class SiteswapPattern : MHNPattern() {
         super.fromParameters(pl)
 
         if (hss != null) {
-            val modinfo = HSS.processHSS(pattern, hss, hold, dwellmax, handspec, dwell)
+            val modinfo = HSS.processHSS(pattern!!, hss!!, hold, dwellmax, handspec, dwell)
             pattern = modinfo.convertedPattern
             dwellarray = modinfo.dwellBeatsArray
         }
