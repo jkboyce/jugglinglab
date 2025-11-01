@@ -13,7 +13,6 @@ import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation.Companion.lcm
 import java.text.MessageFormat
-import java.util.*
 import kotlin.math.max
 
 object HSS {
@@ -48,7 +47,7 @@ object HSS {
         } else {
             defHandspec(numHnd)
         }
-        val numJug = max(1, handmap.maxOfOrNull { it!![0] } ?: 1)
+        val numJug = max(1, handmap.maxOfOrNull { it[0] } ?: 1)
 
         val patinfo: PatParms =
             convertNotation(ossPat, hssPat, hssOrb, handmap, numJug, hld, dwlmax, dwl, ossinfo.bnc!!)
@@ -161,9 +160,9 @@ object HSS {
             } else {
                 if (c.toString().matches("[0-9,a-z]".toRegex())) {
                     minOneThrow = true
-                    oPat.add(numBeats, ArrayList<Char?>())
+                    oPat.add(numBeats, ArrayList())
                     oPat[numBeats]!!.add(subBeats, c)
-                    bncinfo.add(numBeats, ArrayList<String?>())
+                    bncinfo.add(numBeats, ArrayList())
                     bncinfo[numBeats].add(subBeats, "null")
                     numBeats++
                     throwSum += Character.getNumericValue(c)
@@ -173,8 +172,8 @@ object HSS {
                     continue
                 } else if (c == '[') {
                     muxThrow = true
-                    oPat.add(numBeats, ArrayList<Char?>())
-                    bncinfo.add(numBeats, ArrayList<String?>())
+                    oPat.add(numBeats, ArrayList())
+                    bncinfo.add(numBeats, ArrayList())
                     numBeats++
                     b1 = false
                     b2 = false
@@ -310,7 +309,7 @@ object HSS {
         var modulo: Int
         val cmp = IntArray(op)
         for (i in 0..<op) {
-            mods.add(i, ArrayList<Int?>())
+            mods.add(i, ArrayList())
             for (j in os[i]!!.indices) {
                 modulo = (Character.getNumericValue(os[i]!![j]!!) + i) % op
                 mods[i]!!.add(j, modulo)
@@ -371,31 +370,31 @@ object HSS {
     // juggler number and that juggler's left or right hand to each hand.
 
     @Throws(JuggleExceptionUser::class)
-    private fun parseHandspec(hspec: String, nh: Int): Array<IntArray?> {
-        // handmap: map hand number to juggler number (first index) and left/right hand
-        // (second index)
-        val hmap = Array<IntArray?>(nh) { IntArray(2) }
-        var assignLH = false // assignLeftHand
-        var assignRH = false // assignRightHand
-        var jugAct = false // jugglerActive
+    private fun parseHandspec(hspec: String, nh: Int): Array<IntArray> {
+        // handmap: map hand number to juggler number (first index) and
+        // left/right hand (second index)
+        val hmap = Array(nh) { IntArray(2) }
+        var assignLeftHand = false
+        var assignRightHand = false
+        var jugglerActive = false
         var pass = false
         var handPresent = false
-        var numFormStart = false // numberformationStarted
-        val matchFnd = false // matchFound
-        var jugNum = 0 // jugglerNumber
-        var buildHndNum: String? = null // buildHandNumber
+        var numberFormStarted = false
+        val matchFound = false
+        var jugglerNumber = 0
+        var buildHandNumber: String? = null
 
         for (i in 0..<hspec.length) {
             val c = hspec[i]
-            if (!jugAct) {  // if not in the middle of processing a () pair
+            if (!jugglerActive) {  // if not in the middle of processing a () pair
                 if (c == '(') {
-                    jugAct = true // juggler assignment for the current hand is now active
-                    assignLH = true // at opening "(" assign left hand
-                    numFormStart = true // hand number might be a multiple digit number
-                    buildHndNum = null
+                    jugglerActive = true  // juggler assignment for the current hand is now active
+                    assignLeftHand = true  // at opening "(" assign left hand
+                    numberFormStarted = true  // hand number might be a multiple digit number
+                    buildHandNumber = null
                     pass = false
                     handPresent = false
-                    jugNum++
+                    jugglerNumber++
                     continue
                 } else if (Character.isWhitespace(c)) {
                     continue
@@ -405,13 +404,13 @@ object HSS {
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
             } else {
-                if (assignLH) {
+                if (assignLeftHand) {
                     if (c.toString().matches("[0-9]".toRegex())) {
-                        if (numFormStart) {
-                            buildHndNum = if (buildHndNum == null) {
+                        if (numberFormStarted) {
+                            buildHandNumber = if (buildHandNumber == null) {
                                 c.toString()
                             } else {
-                                buildHndNum + c
+                                buildHandNumber + c
                             }
                             continue
                         } else {
@@ -420,50 +419,50 @@ object HSS {
                             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                         }
                     } else if (Character.isWhitespace(c)) {
-                        if (buildHndNum != null && !buildHndNum.isEmpty()) {
-                            numFormStart = false
+                        if (buildHandNumber?.isNotEmpty() ?: false) {
+                            numberFormStarted = false
                         }
                         continue
                     } else if (c == ',') {
-                        assignLH = false // at "," left hand assignment complete
-                        assignRH = true
-                        numFormStart = true
+                        assignLeftHand = false  // at "," left hand assignment complete
+                        assignRightHand = true
+                        numberFormStarted = true
 
-                        if (buildHndNum != null) {
-                            if ((buildHndNum.toInt() >= 1) && (buildHndNum.toInt() <= nh)) {
-                                if (hmap[buildHndNum.toInt() - 1]!![0] == 0) {
+                        if (buildHandNumber != null) {
+                            if ((buildHandNumber.toInt() >= 1) && (buildHandNumber.toInt() <= nh)) {
+                                if (hmap[buildHandNumber.toInt() - 1][0] == 0) {
                                     // if juggler not already assigned to this hand
-                                    hmap[buildHndNum.toInt() - 1]!![0] = jugNum
-                                    hmap[buildHndNum.toInt() - 1]!![1] = 0
+                                    hmap[buildHandNumber.toInt() - 1][0] = jugglerNumber
+                                    hmap[buildHandNumber.toInt() - 1][1] = 0
                                     handPresent = true
                                 } else {
                                     val template =
                                         errorstrings.getString("Error_hss_hand_assigned_more_than_once")
-                                    val arguments = arrayOf<Any?>(buildHndNum.toInt())
+                                    val arguments = arrayOf<Any?>(buildHandNumber.toInt())
                                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                                 }
                             } else {
                                 val template = errorstrings.getString("Error_hss_hand_number_out_of_range")
-                                val arguments = arrayOf<Any?>(buildHndNum.toInt())
+                                val arguments = arrayOf<Any?>(buildHandNumber.toInt())
                                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                             }
                         } else {
                             handPresent = false
                         }
-                        buildHndNum = null // reset bhn string
+                        buildHandNumber = null  // reset bhn string
                         continue
                     } else {
                         val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
                         val arguments = arrayOf<Any?>(i + 1)
                         throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                     }
-                } else if (assignRH) {
+                } else if (assignRightHand) {
                     if (c.toString().matches("[0-9]".toRegex())) {
-                        if (numFormStart) {
-                            buildHndNum = if (buildHndNum == null) {
+                        if (numberFormStarted) {
+                            buildHandNumber = if (buildHandNumber == null) {
                                 c.toString()
                             } else {
-                                buildHndNum + c
+                                buildHandNumber + c
                             }
                             continue
                         } else {
@@ -472,21 +471,22 @@ object HSS {
                             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                         }
                     } else if (Character.isWhitespace(c)) {
-                        if (buildHndNum != null && !buildHndNum.isEmpty()) {
-                            numFormStart = false
+                        if (buildHandNumber?.isNotEmpty()?: false) {
+                            numberFormStarted = false
                         }
                         continue
                     } else if (c == ')') {
-                        assignRH = false
-                        jugAct = false // juggler assignment is inactive after ")"
+                        assignRightHand = false
+                        jugglerActive = false  // juggler assignment is inactive after ")"
 
-                        if (buildHndNum != null) {
-                            if ((buildHndNum.toInt() >= 1) && (buildHndNum.toInt() <= nh)) {
-                                hmap[buildHndNum.toInt() - 1]!![0] = jugNum
-                                hmap[buildHndNum.toInt() - 1]!![1] = 1
+                        if (buildHandNumber != null) {
+                            val buildHandNumberInt = buildHandNumber.toInt()
+                            if (buildHandNumberInt in 1..nh) {
+                                hmap[buildHandNumberInt - 1][0] = jugglerNumber
+                                hmap[buildHandNumberInt - 1][1] = 1
                             } else {
                                 val template = errorstrings.getString("Error_hss_hand_number_out_of_range")
-                                val arguments = arrayOf<Any?>(buildHndNum.toInt())
+                                val arguments = arrayOf<Any?>(buildHandNumber.toInt())
                                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                             }
                         } else if (!handPresent) {  // if left hand was also not present
@@ -494,7 +494,7 @@ object HSS {
                                 errorstrings.getString("Error_hss_at_least_one_hand_per_juggler")
                             )
                         }
-                        buildHndNum = null // reset bhn string
+                        buildHandNumber = null  // reset bhn string
                         pass = true
                         continue
                     } else {
@@ -505,18 +505,19 @@ object HSS {
                 }
             }
         }
-        if (jugNum > nh) {  // will this ever happen?
+
+        // check various error conditions
+        if (jugglerNumber > nh) {  // will this ever happen?
             val template = errorstrings.getString("Error_hss_handspec_too_many_jugglers")
             val arguments = arrayOf<Any?>(nh)
             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
         }
         if (pass) {
             for (i in 0..<nh) {  // what is this for?
-                if (hmap[i]!![0] != 0) {
-                    //matchFnd = true
+                if (hmap[i][0] != 0) {
                     break
                 }
-                if (!matchFnd) {
+                if (!matchFound) {
                     val template = errorstrings.getString("Error_hss_handspec_hand_missing")
                     val arguments = arrayOf<Any?>(i + 1)
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
@@ -525,14 +526,14 @@ object HSS {
         } else {
             throw JuggleExceptionUser(errorstrings.getString("Error_hss_handspec_syntax_error"))
         }
-
         for (i in 0..<nh) {
-            if (hmap[i]!![0] == 0) {
+            if (hmap[i][0] == 0) {
                 val template = errorstrings.getString("Error_hss_juggler_not_assigned_to_hand")
                 val arguments = arrayOf<Any?>(i + 1)
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             }
         }
+
         return hmap
     }
 
@@ -542,24 +543,23 @@ object HSS {
     // assign hand 1 to J1 right hand, hand 2 to J2 right hand and so on
     // once all right hands assigned, come back to J1 and start assigning left hand.
 
-    private fun defHandspec(nh: Int): Array<IntArray?> {
-        val hmap = Array<IntArray?>(nh) { IntArray(2) }
+    private fun defHandspec(nh: Int): Array<IntArray> {
+        val hmap = Array(nh) { IntArray(2) }
         val nJugs: Int = if (nh % 2 == 0) {
             nh / 2
         } else {
             (nh + 1) / 2
-        } // numberofJugglers
+        }
 
         for (i in 0..<nh) {
             if (i < nJugs) {
-                hmap[i]!![0] = i + 1 // juggler number
-                hmap[i]!![1] = 1 // 0 for left hand, 1 for right
+                hmap[i][0] = i + 1  // juggler number
+                hmap[i][1] = 1  // 0 for left hand, 1 for right
             } else {
-                hmap[i]!![0] = i + 1 - nJugs
-                hmap[i]!![1] = 0
+                hmap[i][0] = i + 1 - nJugs
+                hmap[i][1] = 0
             }
         }
-
         return hmap
     }
 
@@ -571,7 +571,7 @@ object HSS {
         os: ArrayList<ArrayList<Char?>?>,
         hs: ArrayList<Char?>,
         ho: Int,
-        hm: Array<IntArray?>,
+        hm: Array<IntArray>,
         nj: Int,
         hldOpt: Boolean,
         dwlMaxOpt: Boolean,
@@ -645,8 +645,8 @@ object HSS {
                         next = (next + Character.getNumericValue(hs[next]!!)) % patPer
                     }
                 }
-                ji[i]!![0] = hm[ah[i] - 1]!![0] // juggler number at beat i based on handmap
-                ji[i]!![1] = hm[ah[i] - 1]!![1] // throwing hand at beat i based on handmap
+                ji[i]!![0] = hm[ah[i] - 1][0] // juggler number at beat i based on handmap
+                ji[i]!![1] = hm[ah[i] - 1][1] // throwing hand at beat i based on handmap
             }
         }
 
@@ -739,7 +739,7 @@ object HSS {
 
         // determine x, p and H throws
         for (i in 0..<patPer) {
-            iph.add(i, ArrayList<String?>())
+            iph.add(i, ArrayList())
             for (j in os[i]!!.indices) {
                 iph[i]!!.add(j, null)
                 throwVal = Character.getNumericValue(os[i]!![j]!!)
@@ -849,7 +849,7 @@ object HSS {
 
         patinf.newPat = modPat
         return patinf
-    } // convNotation
+    }
 
     //--------------------------------------------------------------------------
     // Types related to HSS
