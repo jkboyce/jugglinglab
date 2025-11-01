@@ -14,6 +14,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation.Companion.lcm
 import java.text.MessageFormat
 import java.util.*
+import kotlin.math.max
 
 object HSS {
     internal var hss_dwell_default: Double = 0.3
@@ -33,60 +34,39 @@ object HSS {
         hndspc: String?,
         dwl: Double
     ): ModParms {
-        val ossPer: Int
-        val hssPer: Int
-        val hssOrb: Int
-        val numHnd: Int
-        var numJug: Int
-        val modinf = ModParms()
+        val ossinfo = ossSyntax(p)
+        val ossPat = ossinfo.objPat!!
+        ossPermTest(ossPat, ossPat.size)
+        
+        val hssinfo = hssSyntax(h)
+        val numHnd = hssinfo.hands
+        val hssPat = hssinfo.pat!!
+        val hssOrb = hssPermTest(hssPat, hssPat.size)
 
-        val ossPat: ArrayList<ArrayList<Char?>?>
-        val hssPat: ArrayList<Char?>
-        val bounc: ArrayList<ArrayList<String?>>
-        val hssinfo: HssParms?
-        val patinfo: PatParms?
-        val ossinfo: OssPatBnc?
-
-        ossinfo = ossSyntax(p)
-        ossPat = ossinfo.objPat!!
-        bounc = ossinfo.bnc!!
-
-        hssinfo = hssSyntax(h)
-
-        hssPat = hssinfo.pat!!
-        numHnd = hssinfo.hands
-        ossPer = ossPat.size
-        hssPer = hssPat.size
-
-        ossPermTest(ossPat, ossPer)
-
-        hssOrb = hssPermTest(hssPat, hssPer)
-
-        val handmap = if (hndspc != null) parseHandspec(hndspc, numHnd) else defHandspec(numHnd)
-
-        numJug = 1
-        for (i in 0..<numHnd) {
-            if (handmap[i]!![0] > numJug) {
-                numJug = handmap[i]!![0]
-            }
+        val handmap = if (hndspc != null) {
+            parseHandspec(hndspc, numHnd)
+        } else {
+            defHandspec(numHnd)
         }
+        val numJug = max(1, handmap.maxOfOrNull { it!![0] } ?: 1)
 
-        patinfo = convNotation(ossPat, hssPat, hssOrb, handmap, numJug, hld, dwlmax, dwl, bounc)
-        modinf.convertedPattern = patinfo.newPat
-        if (modinf.convertedPattern == null) {
+        val patinfo: PatParms =
+            convertNotation(ossPat, hssPat, hssOrb, handmap, numJug, hld, dwlmax, dwl, ossinfo.bnc!!)
+        if (patinfo.newPat == null) {
             throw JuggleExceptionUser(errorstrings.getString("Error_no_pattern"))
         }
-
-        modinf.dwellBeatsArray = patinfo.dwellBt
-        return modinf
+        return ModParms().apply {
+            convertedPattern = patinfo.newPat
+            dwellBeatsArray = patinfo.dwellBt
+        }
     }
 
     // Ensure object pattern is a vanilla pattern (multiplex allowed), and also
     // perform average test.
     //
-    // convert input pattern string to ArrayList identifying throws made on each beat
+    // Convert input pattern string to ArrayList identifying throws made on each beat.
 
-    @Suppress("unused")
+    @Suppress("unused", "VariableNeverRead", "AssignedValueIsNeverRead")
     @Throws(JuggleExceptionUser::class)
     private fun ossSyntax(ss: String): OssPatBnc {
         var muxThrow = false
@@ -106,13 +86,13 @@ object HSS {
         val bncinfo = ArrayList<ArrayList<String?>>()
 
         for (i in 0..<ss.length) {
-            val c = ss.get(i)
+            val c = ss[i]
             if (muxThrow) {
                 if (c.toString().matches("[0-9,a-z]".toRegex())) {
                     minOneThrow = true
                     muxThrowFound = true
-                    oPat.get(numBeats - 1)!!.add(subBeats, c)
-                    bncinfo.get(numBeats - 1).add(subBeats, "null")
+                    oPat[numBeats - 1]!!.add(subBeats, c)
+                    bncinfo[numBeats - 1].add(subBeats, "null")
                     subBeats++
                     throwSum += Character.getNumericValue(c)
                     b1 = true
@@ -140,7 +120,7 @@ object HSS {
                     continue
                 } else if (c == 'B') {
                     if (b1) {
-                        bncinfo.get(numBeats - 1).set(subBeats - 1, "B")
+                        bncinfo[numBeats - 1][subBeats - 1] = "B"
                         b1 = false
                         b2 = true
                         continue
@@ -151,11 +131,11 @@ object HSS {
                     }
                 } else if (c == 'F' || c == 'L') {
                     if (b2) {
-                        bncinfo.get(numBeats - 1).set(subBeats - 1, "B" + c)
+                        bncinfo[numBeats - 1][subBeats - 1] = "B$c"
                         b2 = false
                         continue
                     } else if (b3) {
-                        bncinfo.get(numBeats - 1).set(subBeats - 1, "BH" + c)
+                        bncinfo[numBeats - 1][subBeats - 1] = "BH$c"
                         b3 = false
                         continue
                     } else {
@@ -165,7 +145,7 @@ object HSS {
                     }
                 } else if (c == 'H') {
                     if (b2) {
-                        bncinfo.get(numBeats - 1).set(subBeats - 1, "BH")
+                        bncinfo[numBeats - 1][subBeats - 1] = "BH"
                         b2 = false
                         b3 = true
                     } else {
@@ -182,9 +162,9 @@ object HSS {
                 if (c.toString().matches("[0-9,a-z]".toRegex())) {
                     minOneThrow = true
                     oPat.add(numBeats, ArrayList<Char?>())
-                    oPat.get(numBeats)!!.add(subBeats, c)
+                    oPat[numBeats]!!.add(subBeats, c)
                     bncinfo.add(numBeats, ArrayList<String?>())
-                    bncinfo.get(numBeats).add(subBeats, "null")
+                    bncinfo[numBeats].add(subBeats, "null")
                     numBeats++
                     throwSum += Character.getNumericValue(c)
                     b1 = true
@@ -207,7 +187,7 @@ object HSS {
                     continue
                 } else if (c == 'B') {
                     if (b1) {
-                        bncinfo.get(numBeats - 1).set(subBeats, "B")
+                        bncinfo[numBeats - 1][subBeats] = "B"
                         b1 = false
                         b2 = true
                         continue
@@ -218,11 +198,11 @@ object HSS {
                     }
                 } else if (c == 'F' || c == 'L') {
                     if (b2) {
-                        bncinfo.get(numBeats - 1).set(subBeats, "B" + c)
+                        bncinfo[numBeats - 1][subBeats] = "B$c"
                         b2 = false
                         continue
                     } else if (b3) {
-                        bncinfo.get(numBeats - 1).set(subBeats, "BH" + c)
+                        bncinfo[numBeats - 1][subBeats] = "BH$c"
                         b3 = false
                         continue
                     } else {
@@ -232,7 +212,7 @@ object HSS {
                     }
                 } else if (c == 'H') {
                     if (b2) {
-                        bncinfo.get(numBeats - 1).set(subBeats, "BH")
+                        bncinfo[numBeats - 1][subBeats] = "BH"
                         b2 = false
                         b3 = true
                     } else {
@@ -268,10 +248,10 @@ object HSS {
         // not matter. However, for coding convenience, the space is appended everywhere.
         for (strings in bncinfo) {
             for (j in strings.indices) {
-                if (strings.get(j) == "null") {
-                    strings.set(j, " ")
+                if (strings[j] == "null") {
+                    strings[j] = " "
                 } else {
-                    strings.set(j, strings.get(j) + " ")
+                    strings[j] = strings[j] + " "
                 }
             }
         }
@@ -287,6 +267,7 @@ object HSS {
     //
     // convert input pattern string to ArrayList identifying throws made on each beat
     // also return number of hands, used later to build handmap
+
     @Throws(JuggleExceptionUser::class)
     private fun hssSyntax(ss: String): HssParms {
         var throwSum = 0
@@ -294,7 +275,7 @@ object HSS {
         val nHnds: Int
         val hPat = ArrayList<Char?>()
         for (i in 0..<ss.length) {
-            val c = ss.get(i)
+            val c = ss[i]
             if (c.toString().matches("[0-9,a-z]".toRegex())) {
                 hPat.add(numBeats, c)
                 numBeats++
@@ -322,6 +303,7 @@ object HSS {
     }
 
     // Do permutation test for object pattern.
+
     @Throws(JuggleExceptionUser::class)
     private fun ossPermTest(os: ArrayList<ArrayList<Char?>?>, op: Int) {
         val mods = ArrayList<ArrayList<Int?>?>()
@@ -329,15 +311,15 @@ object HSS {
         val cmp = IntArray(op)
         for (i in 0..<op) {
             mods.add(i, ArrayList<Int?>())
-            for (j in os.get(i)!!.indices) {
-                modulo = (Character.getNumericValue(os.get(i)!!.get(j)!!) + i) % op
-                mods.get(i)!!.add(j, modulo)
+            for (j in os[i]!!.indices) {
+                modulo = (Character.getNumericValue(os[i]!![j]!!) + i) % op
+                mods[i]!!.add(j, modulo)
                 cmp[modulo]++
             }
         }
 
         for (i in 0..<op) {
-            if (cmp[i] != os.get(i)!!.size) {
+            if (cmp[i] != os[i]!!.size) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_hss_object_pattern_invalid"))
             }
         }
@@ -346,6 +328,7 @@ object HSS {
     // Do permutation test for hand pattern.
     //
     // Return overall hand orbit period which is lcm of individual hand orbit periods.
+
     @Throws(JuggleExceptionUser::class)
     private fun hssPermTest(hs: ArrayList<Char?>, hp: Int): Int {
         var modulo: Int
@@ -355,7 +338,7 @@ object HSS {
         val orb = IntArray(hp)
         val touched = BooleanArray(hp)
         for (i in 0..<hp) {
-            modulo = (Character.getNumericValue(hs.get(i)!!) + i) % hp
+            modulo = (Character.getNumericValue(hs[i]!!) + i) % hp
             mods[i] = modulo
             cmp[modulo]++
         }
@@ -368,11 +351,11 @@ object HSS {
         ho = 1
         for (i in 0..<hp) {
             if (!touched[i]) {
-                orb[i] = Character.getNumericValue(hs.get(i)!!)
+                orb[i] = Character.getNumericValue(hs[i]!!)
                 touched[i] = true
                 var j = mods[i]
                 while (j != i) {
-                    orb[i] += Character.getNumericValue(hs.get(j)!!)
+                    orb[i] += Character.getNumericValue(hs[j]!!)
                     touched[j] = true
                     j = mods[j]
                 }
@@ -386,6 +369,7 @@ object HSS {
 
     // Read and validate user defined handspec. If valid, convert to handmap assigning
     // juggler number and that juggler's left or right hand to each hand.
+
     @Throws(JuggleExceptionUser::class)
     private fun parseHandspec(hspec: String, nh: Int): Array<IntArray?> {
         // handmap: map hand number to juggler number (first index) and left/right hand
@@ -397,12 +381,12 @@ object HSS {
         var pass = false
         var handPresent = false
         var numFormStart = false // numberformationStarted
-        var matchFnd = false // matchFound
+        val matchFnd = false // matchFound
         var jugNum = 0 // jugglerNumber
         var buildHndNum: String? = null // buildHandNumber
 
         for (i in 0..<hspec.length) {
-            val c = hspec.get(i)
+            val c = hspec[i]
             if (!jugAct) {  // if not in the middle of processing a () pair
                 if (c == '(') {
                     jugAct = true // juggler assignment for the current hand is now active
@@ -424,10 +408,10 @@ object HSS {
                 if (assignLH) {
                     if (c.toString().matches("[0-9]".toRegex())) {
                         if (numFormStart) {
-                            if (buildHndNum == null) {
-                                buildHndNum = c.toString()
+                            buildHndNum = if (buildHndNum == null) {
+                                c.toString()
                             } else {
-                                buildHndNum = buildHndNum + c
+                                buildHndNum + c
                             }
                             continue
                         } else {
@@ -476,10 +460,10 @@ object HSS {
                 } else if (assignRH) {
                     if (c.toString().matches("[0-9]".toRegex())) {
                         if (numFormStart) {
-                            if (buildHndNum == null) {
-                                buildHndNum = c.toString()
+                            buildHndNum = if (buildHndNum == null) {
+                                c.toString()
                             } else {
-                                buildHndNum = buildHndNum + c
+                                buildHndNum + c
                             }
                             continue
                         } else {
@@ -529,7 +513,7 @@ object HSS {
         if (pass) {
             for (i in 0..<nh) {  // what is this for?
                 if (hmap[i]!![0] != 0) {
-                    matchFnd = true
+                    //matchFnd = true
                     break
                 }
                 if (!matchFnd) {
@@ -557,15 +541,14 @@ object HSS {
     // assume numHnd/2 jugglers if numHnd even, else (numHnd+1)/2 jugglers
     // assign hand 1 to J1 right hand, hand 2 to J2 right hand and so on
     // once all right hands assigned, come back to J1 and start assigning left hand.
+
     private fun defHandspec(nh: Int): Array<IntArray?> {
         val hmap = Array<IntArray?>(nh) { IntArray(2) }
-        val nJugs: Int // numberofJugglers
-
-        if (nh % 2 == 0) {
-            nJugs = nh / 2
+        val nJugs: Int = if (nh % 2 == 0) {
+            nh / 2
         } else {
-            nJugs = (nh + 1) / 2
-        }
+            (nh + 1) / 2
+        } // numberofJugglers
 
         for (i in 0..<nh) {
             if (i < nJugs) {
@@ -580,10 +563,11 @@ object HSS {
         return hmap
     }
 
-    // Convert oss hss format to Juggling Lab synchronous passing notation with suppressed
-    // empty beats so that odd synchronous throws are also allowed.
+    // Convert oss hss format to Juggling Lab synchronous passing notation with
+    // suppressed empty beats so that odd synchronous throws are also allowed.
+
     @Throws(JuggleExceptionUser::class)
-    private fun convNotation(
+    private fun convertNotation(
         os: ArrayList<ArrayList<Char?>?>,
         hs: ArrayList<Char?>,
         ho: Int,
@@ -595,22 +579,19 @@ object HSS {
         bncStr: ArrayList<ArrayList<String?>>
     ): PatParms {
         // pattern period, current hand, throw value, current juggler, ossPeriod, hssPeriod
-        val patPer: Int
-        var currHand: Int
+        //val patPer: Int
         var throwVal: Int
         var currJug: Int
-        val objPer: Int
-        val hndPer: Int
         var modPat: String? = null // modified pattern
         val patinf = PatParms()
-        var flag = false
+        var flag: Boolean
 
         // invert, pass and hold for x, p and H
         val iph = ArrayList<ArrayList<String?>?>()
 
-        objPer = os.size
-        hndPer = hs.size
-        patPer = lcm(objPer, ho) // pattern period
+        val objPer: Int = os.size
+        val hndPer: Int = hs.size
+        val patPer = lcm(objPer, ho) // pattern period
 
         val ah = IntArray(patPer) // assigned hand
         val assignDone = BooleanArray(patPer)
@@ -620,30 +601,30 @@ object HSS {
         // extend oss size to pp
         if (patPer > objPer) {
             for (i in objPer..<patPer) {
-                os.add(i, os.get(i - objPer))
+                os.add(i, os[i - objPer])
             }
         }
 
         // extend bounce size to pp
         if (patPer > objPer) {
             for (i in objPer..<patPer) {
-                bncStr.add(i, bncStr.get(i - objPer))
+                bncStr.add(i, bncStr[i - objPer])
             }
         }
 
         // extend hss size to pp
         if (patPer > hndPer) {
             for (i in hndPer..<patPer) {
-                hs.add(i, hs.get(i - hndPer))
+                hs.add(i, hs[i - hndPer])
             }
         }
 
         // check if hss is 0 when oss is not 0; else assign juggler and hand to each beat
-        currHand = 0
+        var currHand = 0
         for (i in 0..<patPer) {
-            if (hs.get(i) == '0') {
-                for (j in os.get(i)!!.indices) {
-                    if (os.get(i)!!.get(j) != '0') {
+            if (hs[i] == '0') {
+                for (j in os[i]!!.indices) {
+                    if (os[i]!![j] != '0') {
                         val template = errorstrings.getString("Error_hss_no_hand_to_throw_at_beat")
                         val arguments = arrayOf<Any?>(i + 1)
                         throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
@@ -657,11 +638,11 @@ object HSS {
                     currHand++
                     ah[i] = currHand
                     assignDone[i] = true
-                    var next = (i + Character.getNumericValue(hs.get(i)!!)) % patPer
+                    var next = (i + Character.getNumericValue(hs[i]!!)) % patPer
                     while (next != i) {
                         ah[next] = currHand
                         assignDone[next] = true
-                        next = (next + Character.getNumericValue(hs.get(next)!!)) % patPer
+                        next = (next + Character.getNumericValue(hs[next]!!)) % patPer
                     }
                 }
                 ji[i]!![0] = hm[ah[i] - 1]!![0] // juggler number at beat i based on handmap
@@ -680,8 +661,8 @@ object HSS {
         // maximized for the minimum throw being caught. Higher throws may thus show
         // more flight time than is strictly required going by hand availability.
         for (i in 0..<patPer) {
-            for (j in os.get(i)!!.indices) {
-                curThrow = Character.getNumericValue(os.get(i)!!.get(j)!!)
+            for (j in os[i]!!.indices) {
+                curThrow = Character.getNumericValue(os[i]!![j]!!)
                 tgtIdx = (i + curThrow) % patPer
                 if (curThrow > 0) {
                     if (mincaught[tgtIdx] == 0) {
@@ -759,9 +740,9 @@ object HSS {
         // determine x, p and H throws
         for (i in 0..<patPer) {
             iph.add(i, ArrayList<String?>())
-            for (j in os.get(i)!!.indices) {
-                iph.get(i)!!.add(j, null)
-                throwVal = Character.getNumericValue(os.get(i)!!.get(j)!!)
+            for (j in os[i]!!.indices) {
+                iph[i]!!.add(j, null)
+                throwVal = Character.getNumericValue(os[i]!![j]!!)
 
                 val sourceJug = ji[i]!![0]
                 val sourceHnd = ji[i]!![1]
@@ -769,22 +750,22 @@ object HSS {
                 val targetHnd = ji[(i + throwVal) % patPer]!![1]
 
                 if (throwVal % 2 == 0 && sourceHnd != targetHnd) {
-                    iph.get(i)!!.set(j, "x") // put x for even throws to other hand
+                    iph[i]!![j] = "x" // put x for even throws to other hand
                 } else if (throwVal % 2 != 0 && sourceHnd == targetHnd) {
-                    iph.get(i)!!.set(j, "x") // put x for odd throws to same hand
+                    iph[i]!![j] = "x" // put x for odd throws to same hand
                 }
                 if (sourceJug != targetJug) {
-                    if (iph.get(i)!!.get(j) !== "x") {
-                        iph.get(i)!!.set(j, "p" + targetJug)
+                    if (iph[i]!![j] !== "x") {
+                        iph[i]!![j] = "p$targetJug"
                     } else {
-                        iph.get(i)!!.set(j, "xp" + targetJug)
+                        iph[i]!![j] = "xp$targetJug"
                     }
                 } else if (hldOpt) {
-                    if (throwVal == Character.getNumericValue(hs.get(i)!!)) {
-                        if (iph.get(i)!!.get(j) !== "x") {
-                            iph.get(i)!!.set(j, "H") // enable hold for even throw to same hand
+                    if (throwVal == Character.getNumericValue(hs[i]!!)) {
+                        if (iph[i]!![j] !== "x") {
+                            iph[i]!![j] = "H" // enable hold for even throw to same hand
                         } else {
-                            iph.get(i)!!.set(j, "xH") // enable hold for odd throw to same hand
+                            iph[i]!![j] = "xH" // enable hold for odd throw to same hand
                         }
                     }
                 }
@@ -792,11 +773,11 @@ object HSS {
         }
 
         for (i in 0..<patPer) {
-            for (j in bncStr.get(i).indices) {
-                if (iph.get(i)!!.get(j) == null) {
-                    iph.get(i)!!.set(j, bncStr.get(i).get(j))
+            for (j in bncStr[i].indices) {
+                if (iph[i]!![j] == null) {
+                    iph[i]!![j] = bncStr[i][j]
                 } else {
-                    iph.get(i)!!.set(j, iph.get(i)!!.get(j) + bncStr.get(i).get(j))
+                    iph[i]!![j] = iph[i]!![j] + bncStr[i][j]
                 }
             }
         }
@@ -808,65 +789,63 @@ object HSS {
                 if (modPat == null) {  // at the start of building the converted pattern
                     modPat = "<"
                 } else if (currJug == 0) {  // at the start of a new beat
-                    modPat = modPat + "<"
+                    modPat += "<"
                 }
 
                 if (ji[i]!![1] == 0) {  // if left hand is throwing at current beat
-                    modPat = modPat + "("
+                    modPat += "("
                     if (ji[i]!![0] == currJug + 1) {  // if currentjuggler is throwing at current beat
-                        if (os.get(i)!!.size > 1) {  // if it is a multiplex throw
-                            modPat = modPat + "["
-                            for (j in os.get(i)!!.indices) {
-                                modPat = modPat + os.get(i)!!.get(j)
-                                if (iph.get(i)!!.get(j) != null) {
-                                    modPat = modPat + iph.get(i)!!.get(j)
+                        if (os[i]!!.size > 1) {  // if it is a multiplex throw
+                            modPat += "["
+                            for (j in os[i]!!.indices) {
+                                modPat += os[i]!![j]
+                                if (iph[i]!![j] != null) {
+                                    modPat += iph[i]!![j]
                                 }
                             }
-                            modPat = modPat + "]"
+                            modPat += "]"
                         } else { // if not multiplex throw
-                            modPat = modPat + os.get(i)!!.getFirst()
-                            if (iph.get(i)!!.getFirst() != null) {
-                                modPat = modPat + iph.get(i)!!.getFirst()
+                            modPat += os[i]!!.first()
+                            if (iph[i]!!.first() != null) {
+                                modPat += iph[i]!!.first()
                             }
                         }
-                        modPat = modPat + ",0)!" // no sync throws allowed, put 0 for right hand
+                        modPat += ",0)!" // no sync throws allowed, put 0 for right hand
                     } else {  // if current juggler is not throwing at this beat
-                        modPat = modPat + "0,0)!"
+                        modPat += "0,0)!"
                     }
                 } else {  // if right hand is throwing at this beat
-                    modPat = modPat + "(0," // no sync throws allowed, put 0 for left hand
+                    modPat += "(0," // no sync throws allowed, put 0 for left hand
                     if (ji[i]!![0] == currJug + 1) {  // if currentjuggler is throwing at current beat
-                        if (os.get(i)!!.size > 1) {  // if it is a multiplex throw
-                            modPat = modPat + "["
-                            for (j in os.get(i)!!.indices) {
-                                modPat = modPat + os.get(i)!!.get(j)
-                                if (iph.get(i)!!.get(j) != null) {
-                                    modPat = modPat + iph.get(i)!!.get(j)
+                        if (os[i]!!.size > 1) {  // if it is a multiplex throw
+                            modPat += "["
+                            for (j in os[i]!!.indices) {
+                                modPat += os[i]!![j]
+                                if (iph[i]!![j] != null) {
+                                    modPat += iph[i]!![j]
                                 }
                             }
-                            modPat = modPat + "]"
+                            modPat += "]"
                         } else {  // if not multiplex throw
-                            modPat = modPat + os.get(i)!!.getFirst()
-                            if (iph.get(i)!!.getFirst() != null) {
-                                modPat = modPat + iph.get(i)!!.getFirst()
+                            modPat += os[i]!!.first()
+                            if (iph[i]!!.first() != null) {
+                                modPat += iph[i]!!.first()
                             }
                         }
-                        modPat = modPat + ")!"
+                        modPat += ")!"
                     } else {  // if current juggler is not throwing at this beat
-                        modPat = modPat + "0)!"
+                        modPat += "0)!"
                     }
                 } // if-else left-right hand
 
-
-                if (currJug == nj - 1) {
-                    modPat = modPat + ">"
+                modPat = if (currJug == nj - 1) {
+                    "$modPat>"
                 } else {
-                    modPat = modPat + "|"
+                    "$modPat|"
                 }
                 currJug++
-            } // while currJug < nj
-        } // for all beats
-
+            }  // while currJug < nj
+        }  // for all beats
 
         patinf.newPat = modPat
         return patinf
