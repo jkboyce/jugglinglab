@@ -16,7 +16,7 @@ import java.text.MessageFormat
 import kotlin.math.max
 
 object HSS {
-    internal var hss_dwell_default: Double = 0.3
+    private const val HSS_DWELL_DEFAULT: Double = 0.3
 
     // This function is the external interface for the HSS processor. It takes
     // object and hand siteswaps and produces (among other things) a converted
@@ -33,31 +33,31 @@ object HSS {
         hndspc: String?,
         dwl: Double
     ): ModParms {
+        // object siteswap
         val ossinfo: OssPatBnc = ossSyntax(p)
         val ossPat = ossinfo.objPat
-        ossPermTest(ossPat, ossPat.size)
-        
-        val hssinfo = hssSyntax(h)
-        val numHnd = hssinfo.hands
+        ossPermTest(ossPat, ossPat.size)  // error check
+
+        // hand siteswap
+        val hssinfo: HssParms = hssSyntax(h)
         val hssPat = hssinfo.pat
         val hssOrb = hssPermTest(hssPat, hssPat.size)
 
         val handmap = if (hndspc != null) {
-            parseHandspec(hndspc, numHnd)
+            parseHandspec(hndspc, hssinfo.hands)
         } else {
-            defHandspec(numHnd)
+            defHandspec(hssinfo.hands)
         }
         val numJug = max(1, handmap.maxOfOrNull { it[0] } ?: 1)
 
+        // make the converted pattern
         val patinfo: PatParms =
             convertNotation(ossPat, hssPat, hssOrb, handmap, numJug, hld, dwlmax, dwl, ossinfo.bnc)
+
         if (patinfo.newPat == null) {
             throw JuggleExceptionUser(errorstrings.getString("Error_no_pattern"))
         }
-        return ModParms().apply {
-            convertedPattern = patinfo.newPat
-            dwellBeatsArray = patinfo.dwellBt
-        }
+        return ModParms(patinfo.newPat!!, patinfo.dwellBt)
     }
 
     // Ensure object pattern is a vanilla pattern (multiplex allowed), and also
@@ -81,7 +81,7 @@ object HSS {
         var numBeats = 0
         var subBeats = 0 // for multiplex throws
         var numObj = 0
-        val oPat = ArrayList<ArrayList<Char?>>()
+        val oPat = ArrayList<ArrayList<Char>>()
         val bncinfo = ArrayList<ArrayList<String?>>()
 
         for (i in 0..<ss.length) {
@@ -224,8 +224,8 @@ object HSS {
                     val arguments = arrayOf<Any?>(i + 1)
                     throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                 }
-            } // if-else muxThrow
-        } // for
+            }
+        }
 
         if (!muxThrow && minOneThrow) {
             if (throwSum % numBeats == 0) {
@@ -289,22 +289,21 @@ object HSS {
         } else {
             throw JuggleExceptionUser(errorstrings.getString("Error_hss_bad_average_hand"))
         }
-
         return HssParms(hPat, nHnds)
     }
 
     // Do permutation test for object pattern.
 
     @Throws(JuggleExceptionUser::class)
-    private fun ossPermTest(os: ArrayList<ArrayList<Char?>>, op: Int) {
-        val mods = ArrayList<ArrayList<Int?>?>()
+    private fun ossPermTest(os: ArrayList<ArrayList<Char>>, op: Int) {
+        val mods = ArrayList<ArrayList<Int?>>()
         var modulo: Int
         val cmp = IntArray(op)
         for (i in 0..<op) {
             mods.add(i, ArrayList())
             for (j in os[i].indices) {
-                modulo = (Character.getNumericValue(os[i][j]!!) + i) % op
-                mods[i]!!.add(j, modulo)
+                modulo = (Character.getNumericValue(os[i][j]) + i) % op
+                mods[i].add(j, modulo)
                 cmp[modulo]++
             }
         }
@@ -560,7 +559,7 @@ object HSS {
 
     @Throws(JuggleExceptionUser::class)
     private fun convertNotation(
-        os: ArrayList<ArrayList<Char?>>,
+        os: ArrayList<ArrayList<Char>>,
         hs: ArrayList<Char>,
         ho: Int,
         hm: Array<IntArray>,
@@ -651,7 +650,7 @@ object HSS {
         // more flight time than is strictly required going by hand availability.
         for (i in 0..<patPer) {
             for (j in os[i].indices) {
-                curThrow = Character.getNumericValue(os[i][j]!!)
+                curThrow = Character.getNumericValue(os[i][j])
                 tgtIdx = (i + curThrow) % patPer
                 if (curThrow > 0) {
                     if (mincaught[tgtIdx] == 0) {
@@ -670,9 +669,9 @@ object HSS {
                 }
             }
             for (i in 0..<patPer) {
-                dwlBts[i] = if (flag) hss_dwell_default else defDwl
+                dwlBts[i] = if (flag) HSS_DWELL_DEFAULT else defDwl
                 if (dwlBts[i] >= mincaught[i].toDouble()) {
-                    dwlBts[i] = mincaught[i].toDouble() - (1 - hss_dwell_default)
+                    dwlBts[i] = mincaught[i].toDouble() - (1 - HSS_DWELL_DEFAULT)
                 }
             }
         } else {  // if dwellmax is true
@@ -683,13 +682,13 @@ object HSS {
                     j = (j + 1) % patPer
                     diff++
                 }
-                dwlBts[j] = diff.toDouble() - (1 - hss_dwell_default)
+                dwlBts[j] = diff.toDouble() - (1 - HSS_DWELL_DEFAULT)
             }
             for (i in 0..<patPer) {
                 if (dwlBts[i] >= mincaught[i].toDouble()) {
-                    dwlBts[i] = mincaught[i].toDouble() - (1 - hss_dwell_default)
+                    dwlBts[i] = mincaught[i].toDouble() - (1 - HSS_DWELL_DEFAULT)
                 } else if (dwlBts[i] <= 0) {
-                    dwlBts[i] = hss_dwell_default
+                    dwlBts[i] = HSS_DWELL_DEFAULT
                 }
             }
         }
@@ -708,7 +707,7 @@ object HSS {
             while (clashcnt != 0) {
                 for (k in 0..<patPer) {
                     if (clash[k]) {
-                        dwlBts[k] = dwlBts[k] + hss_dwell_default / clashcnt
+                        dwlBts[k] = dwlBts[k] + HSS_DWELL_DEFAULT / clashcnt
                         clashcnt--
                         clash[k] = false
                     }
@@ -721,7 +720,7 @@ object HSS {
             iph.add(i, ArrayList())
             for (j in os[i].indices) {
                 iph[i].add(j, null)
-                throwVal = Character.getNumericValue(os[i][j]!!)
+                throwVal = Character.getNumericValue(os[i][j])
 
                 val sourceJug = ji[i][0]
                 val sourceHnd = ji[i][1]
@@ -834,7 +833,7 @@ object HSS {
     //--------------------------------------------------------------------------
 
     class OssPatBnc(
-        val objPat: ArrayList<ArrayList<Char?>>,
+        val objPat: ArrayList<ArrayList<Char>>,
         val bnc: ArrayList<ArrayList<String?>>
     )
 
@@ -848,8 +847,8 @@ object HSS {
         var dwellBt: DoubleArray
     )
 
-    class ModParms {
-        var convertedPattern: String? = null
-        var dwellBeatsArray: DoubleArray? = null
-    }
+    class ModParms(
+        var convertedPattern: String,
+        var dwellBeatsArray: DoubleArray
+    )
 }
