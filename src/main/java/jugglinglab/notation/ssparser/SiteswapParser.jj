@@ -1,43 +1,22 @@
 // SiteswapParser.jj
 //
+// This is a parser grammar file for use with the parser generator JavaCC
+// (https://javacc.org). Process this file using JavaCC
+// ("javacc SiteswapParser.jj") to generate the following source files:
+//
+// SiteswapParser.java
+// SiteswapParserConstants.java
+// SiteswapParserTokenManager.java
+// ParseException.java
+// SimpleCharStream.java
+// Token.java
+// TokenMgrError.java
+//
+// It is wise to avoid directly editing any of the source files above, as
+// JavaCC will overwrite any changes if this file is processed again later.
+//
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
-
-/*
-    This file is part of Juggling Lab.
-
-    Juggling Lab is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    Juggling Lab is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Juggling Lab; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
-/*
-This is a parser grammar file for use with the parser generator JavaCC
-(https://javacc.org)
-
-Process this file using JavaCC ("javacc SiteswapParser.jj") to generate
-the following source files:
-
-SiteswapParser.java
-SiteswapParserConstants.java
-SiteswapParserTokenManager.java
-ParseException.java
-SimpleCharStream.java
-Token.java
-TokenMgrError.java
-
-It is wise to avoid directly editing any of the source files above, as
-JavaCC will overwrite any changes if this file is processed again later.
-*/
+//
 
 options {
 	STATIC = false;
