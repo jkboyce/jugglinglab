@@ -8,11 +8,11 @@
 
 DIR=$(dirname "$0")
 JL_JAR="${DIR}/JugglingLab.jar"
-export JL_WORKING_DIR="`pwd`"
+JL_WORKING_DIR="$(pwd)"
+export JL_WORKING_DIR
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Running on macOS
-
     # First try launching in JugglingLab.jar in same directory
     if [ -a "${JL_JAR}" ]; then
         if type java >/dev/null 2>&1; then
@@ -25,9 +25,15 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
             version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
             if [ "$version1" -ge "011000" ]; then
+                architecture=$(uname -m)
+                if [[ "$architecture" == "arm64" ]]; then
+                    ortools_path="${DIR}/ortools-lib/ortools-darwin-aarch64"
+                elif [[ "$architecture" == "x86_64" ]]; then
+                    ortools_path="${DIR}/ortools-lib/ortools-darwin-x86-64"
+                fi
                 if [[ $# -ne 0 ]]; then
                     "$_java" -cp "${JL_JAR}" -Xss2048k \
-                        -Djava.library.path="${DIR}/ortools-lib/ortools-darwin-aarch64" \
+                        -Djava.library.path="${ortools_path}" \
                         --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
                     exit 1
                 else
@@ -39,7 +45,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         fi
     fi
 
-    # Then try launching in the application bundle
+    # Otherwise try launching in the application bundle
     OSX_JL_EXEC="${DIR}/Juggling Lab.app/Contents/MacOS/Juggling Lab"
     if ! [[ -x "${OSX_JL_EXEC}" ]]; then
         OSX_JL_EXEC="/Applications/Juggling Lab.app/Contents/MacOS/Juggling Lab"
@@ -59,7 +65,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo >&2 "\"Juggling Lab.app\" not found."
 else
     # Running on other Unix
-
     # First try launching in JugglingLab.jar in same directory
     if [ -a "${JL_JAR}" ]; then
         if type java >/dev/null 2>&1; then
@@ -88,9 +93,8 @@ else
         fi
     fi
 
-    # Then try launching in the application bundle
+    # Otherwise try launching in the application bundle
     UNIX_JL_EXEC="/opt/juggling-lab/bin/Juggling Lab"
-
     if [[ -x "${UNIX_JL_EXEC}" ]]; then
         if [[ $# -ne 0 ]]; then
             "${UNIX_JL_EXEC}" ${1+"$@"}
