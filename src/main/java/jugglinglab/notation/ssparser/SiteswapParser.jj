@@ -22,7 +22,7 @@
 
 /*
 This is a parser grammar file for use with the parser generator JavaCC
-(https://javacc.dev.java.net/)
+(https://javacc.org)
 
 Process this file using JavaCC ("javacc SiteswapParser.jj") to generate
 the following source files:
