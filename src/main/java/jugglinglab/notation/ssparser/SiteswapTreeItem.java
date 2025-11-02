@@ -1,11 +1,12 @@
+//
 // SiteswapTreeItem.java
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+//
 
 package jugglinglab.notation.ssparser;
 
 import java.util.*;
-
 
 public class SiteswapTreeItem {
     public static final int TYPE_PATTERN = 1;
@@ -50,7 +51,7 @@ public class SiteswapTreeItem {
 
     public SiteswapTreeItem(int type) {
         this.type = type;
-        children = new ArrayList<SiteswapTreeItem>();
+        children = new ArrayList<>();
         sync_throw = false;
     }
 
@@ -63,7 +64,7 @@ public class SiteswapTreeItem {
     }
 
     public void removeChildren() {
-        children = new ArrayList<SiteswapTreeItem>();
+        children = new ArrayList<>();
     }
 
     public int getNumberOfChildren() {
@@ -72,7 +73,6 @@ public class SiteswapTreeItem {
 
     public Object clone() {
         SiteswapTreeItem result = new SiteswapTreeItem(type);
-
         result.repeats = repeats;
         result.switchrepeat = switchrepeat;
         result.beats = beats;
@@ -83,10 +83,8 @@ public class SiteswapTreeItem {
         result.dest_juggler = dest_juggler;
         result.mod = mod;
         result.spec_left = spec_left;
-
         for (int i = 0; i < getNumberOfChildren(); i++)
             result.addChild((SiteswapTreeItem)(getChild(i).clone()));
-
         return result;
     }
 
@@ -169,9 +167,10 @@ public class SiteswapTreeItem {
 
     private static boolean field_active(int fieldnum, int type) {
         int[] a = field_defined_types[fieldnum];
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] == type)
+        for (int j : a) {
+            if (j == type) {
                 return true;
+            }
         }
         return false;
     }
