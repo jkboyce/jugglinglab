@@ -15,7 +15,6 @@ class PropDef() {
         private set
     var mod: String? = null
         private set
-    @JvmField
     var prop: Prop? = null
 
     constructor(propType: String?, propMod: String?) : this() {

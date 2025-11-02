@@ -9,12 +9,12 @@ package jugglinglab.jml
 import java.io.PrintWriter
 
 class JMLNode(
-    @JvmField var nodeType: String?  // from taglist in JMLDefs.java
+    val nodeType: String?  // from taglist in JMLDefs.java
 ) {
-    @JvmField var nodeValue: String? = null  // for nodes with character content
-    var attributes = JMLAttributes(this)
+    var nodeValue: String? = null  // for nodes with character content
+    var attributes = JMLAttributes()
         private set
-    @JvmField var parentNode: JMLNode? = null
+    var parentNode: JMLNode? = null
     private var childNodes: MutableList<JMLNode> = ArrayList<JMLNode>()
     var previousSibling: JMLNode? = null
     var nextSibling: JMLNode? = null
@@ -45,7 +45,7 @@ class JMLNode(
             return this
         }
 
-        for (i in 0..<this.numberOfChildren) {
+        for (i in 0..<numberOfChildren) {
             val match = getChildNode(i).findNode(type)
             if (match != null) {
                 return match
@@ -93,7 +93,6 @@ class JMLNode(
     }
 
     companion object {
-        @JvmStatic
         fun xmlescape(`in`: String): String {
             var result = `in`.replace("&", "&amp;")
             result = result.replace("<", "&lt;")

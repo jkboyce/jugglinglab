@@ -26,7 +26,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 class PatternView(dim: Dimension?) : View(), DocumentListener {
-    private lateinit var ja: AnimationPanel
+    private val ja: AnimationPanel = AnimationPanel()
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
     private var bpEditedIcon: JLabel? = null
@@ -46,7 +46,6 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         setLayout(BorderLayout())
 
         // animator on the left
-        ja = AnimationPanel()
         ja.preferredSize = dim
         ja.minimumSize = Dimension(10, 10)
 

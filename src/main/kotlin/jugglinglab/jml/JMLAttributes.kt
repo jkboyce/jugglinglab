@@ -6,7 +6,7 @@
 
 package jugglinglab.jml
 
-class JMLAttributes(private var parentTag: JMLNode?) {
+class JMLAttributes() {
     var numberOfAttributes: Int = 0
         private set
     private var names: MutableList<String> = ArrayList()
@@ -15,7 +15,7 @@ class JMLAttributes(private var parentTag: JMLNode?) {
     fun addAttribute(name: String, value: String) {
         names.add(name)
         values.add(value)
-        numberOfAttributes++
+        ++numberOfAttributes
     }
 
     fun getAttributeName(index: Int) = names[index]
@@ -23,7 +23,7 @@ class JMLAttributes(private var parentTag: JMLNode?) {
     fun getAttributeValue(index: Int) = values[index]
 
     fun getAttribute(name: String): String? {
-        for (i in 0..<this.numberOfAttributes) {
+        for (i in 0..<numberOfAttributes) {
             if (name.equals(names[i], ignoreCase = true)) {
                 return values[i]
             }

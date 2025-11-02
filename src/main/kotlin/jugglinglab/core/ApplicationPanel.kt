@@ -33,11 +33,11 @@ import javax.swing.event.ChangeEvent
 
 class ApplicationPanel
     (
-    private var parentFrame: JFrame?,
+    private val parentFrame: JFrame?,
     // fields below are currently unused; they supported the applet version
     // of Juggling Lab
-    private var animtarget: View?,
-    private var patlist: PatternListPanel?
+    private val animtarget: View?,
+    private val patlist: PatternListPanel?
 ) : JPanel(), ActionListener {
     private var jtp: JTabbedPane? = null
     private var patlisttab: Boolean = false
@@ -48,7 +48,8 @@ class ApplicationPanel
     private var genButton: JButton? = null
     private var genBusy: JLabel? = null
 
-    constructor(parent: JFrame?) : this(parent, null, null)
+    constructor(parentFrame: JFrame?) :
+        this(parentFrame, animtarget = null, patlist = null)
 
     override fun actionPerformed(ae: ActionEvent) {
         val command = ae.getActionCommand()
@@ -144,7 +145,7 @@ class ApplicationPanel
                         }
 
                         if (animtarget != null) {
-                            animtarget!!.restartView(pat, jc)
+                            animtarget.restartView(pat, jc)
                         } else {
                             PatternWindow(pat.title, pat, jc)
                         }

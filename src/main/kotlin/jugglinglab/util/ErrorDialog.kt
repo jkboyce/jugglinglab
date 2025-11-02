@@ -23,7 +23,6 @@ import kotlin.system.exitProcess
 object ErrorDialog {
     // Show a message dialog for a recoverable user error.
 
-    @JvmStatic
     fun handleUserException(parent: Component?, msg: String?) {
         SwingUtilities.invokeLater {
             JOptionPane.showMessageDialog(
@@ -40,7 +39,6 @@ object ErrorDialog {
     // the event of a bug in Juggling Lab, and so we invite users to email us this
     // information.
 
-    @JvmStatic
     fun handleFatalException(e: Exception) {
         SwingUtilities.invokeLater { showInternalErrorWindow(e) }
     }

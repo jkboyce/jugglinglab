@@ -24,28 +24,28 @@ import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
 class EditView(dim: Dimension?, pat: JMLPattern) : View() {
-    private var ap: AnimationPanel = AnimationEditPanel()
-    private var ladder: JPanel
-    private var jsp: JSplitPane
+    private val ap: AnimationPanel = AnimationEditPanel()
+    private val ladderPanel: JPanel
+    private val jsp: JSplitPane
 
     init {
         ap.preferredSize = dim
         ap.minimumSize = Dimension(10, 10)
 
-        ladder = JPanel()
-        ladder.setLayout(BorderLayout())
-        ladder.setBackground(Color.white)
+        ladderPanel = JPanel()
+        ladderPanel.setLayout(BorderLayout())
+        ladderPanel.setBackground(Color.white)
 
         // add a ladder diagram now to get dimensions correct; will be replaced in
         // restartView()
-        ladder.add(LadderDiagram(pat), BorderLayout.CENTER)
+        ladderPanel.add(LadderDiagram(pat), BorderLayout.CENTER)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ap, ladder)
+            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ap, ladderPanel)
             jsp.setResizeWeight(1.0)
         } else {
-            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, ap)
+            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladderPanel, ap)
             jsp.setResizeWeight(0.0)
         }
         jsp.setBorder(EmptyBorder(0, 0, 0, 0))
@@ -88,8 +88,8 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
             ap2.deactivatePosition()
         }
 
-        ladder.removeAll()
-        ladder.add(newLadder, BorderLayout.CENTER)
+        ladderPanel.removeAll()
+        ladderPanel.add(newLadder, BorderLayout.CENTER)
 
         if (changingJugglers && parent != null) {
             // the next line gets the JSplitPane divider to reset during layout
@@ -104,7 +104,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
                 }
             }
         } else {
-            ladder.validate() // to make ladder redraw
+            ladderPanel.validate() // to make ladder redraw
         }
 
         patternWindow?.setTitle(p.title)

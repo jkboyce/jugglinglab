@@ -426,7 +426,6 @@ class Permutation {
         // Find the least common multiple of two integers using Euclid's GCD
         // algorithm (x > 0, y > 0).
 
-        @JvmStatic
         fun lcm(x: Int, y: Int): Int {
             var x = x
             var y = y

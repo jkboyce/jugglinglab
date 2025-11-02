@@ -16,7 +16,7 @@ import java.awt.Dimension
 import java.io.File
 
 class SimpleView(dim: Dimension?) : View() {
-    private var ja: AnimationPanel = AnimationPanel()
+    private val ja: AnimationPanel = AnimationPanel()
 
     init {
         ja.preferredSize = dim

@@ -10,18 +10,13 @@ import java.io.IOException
 import java.io.PrintWriter
 
 class JMLTransition(
-    @JvmField var transType: Int,
-    @JvmField var path: Int,
+    var transType: Int,
+    var path: Int,
     var throwType: String?,
-    @JvmField var mod: String?
+    var mod: String?
 ) {
     var incomingPathLink: PathLink? = null
     var outgoingPathLink: PathLink? = null
-
-    fun getType() = transType
-    fun setType(newtype: Int) {
-        transType = newtype
-    }
 
     fun copy() = JMLTransition(transType, path, throwType, mod)
 

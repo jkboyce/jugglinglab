@@ -48,7 +48,7 @@ class PathLink(val pathNum: Int, val startEvent: JMLEvent, val endEvent: JMLEven
     override fun toString(): String {
         val start = startEvent.globalCoordinate
         val end = endEvent.globalCoordinate
-        var sb = StringBuilder()
+        val sb = StringBuilder()
 
         sb.append(if (isInHand) "In hand, " else
             "Not in hand (type=\"$throwType\", mod=\"$throwMod\"), "

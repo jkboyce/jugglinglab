@@ -334,14 +334,11 @@ class JMLPatternList() {
     //--------------------------------------------------------------------------
 
     class PatternRecord {
-        @JvmField
         var display: String
         var animprefs: String?
         var notation: String?
-        @JvmField
-        var anim: String? // if pattern is not in JML notation
-        @JvmField
-        var patnode: JMLNode? // if pattern is in JML
+        var anim: String?  // if pattern is not in JML notation
+        var patnode: JMLNode?  // if pattern is in JML
         var info: String?
         var tags: ArrayList<String>? = null
 

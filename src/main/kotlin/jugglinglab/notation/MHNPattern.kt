@@ -39,10 +39,8 @@ abstract class MHNPattern : Pattern() {
     protected var config: String? = null
 
     // input parameters:
-    @JvmField
     protected var pattern: String? = null
     protected var bpsSet: Double = BPS_DEFAULT
-    @JvmField
     protected var dwell: Double = DWELL_DEFAULT
     protected var gravity: Double = GRAVITY_DEFAULT
     protected var propdiam: Double = PROPDIAM_DEFAULT
@@ -54,15 +52,10 @@ abstract class MHNPattern : Pattern() {
     protected var title: String? = null
 
     // hss parameters:
-    @JvmField
     protected var hss: String? = null
-    @JvmField
     protected var hold: Boolean = HOLD_DEFAULT
-    @JvmField
     protected var dwellmax: Boolean = DWELLMAX_DEFAULT
-    @JvmField
     protected var handspec: String? = null
-    @JvmField
     protected var dwellarray: DoubleArray? = null
 
     // internal variables:
@@ -76,10 +69,7 @@ abstract class MHNPattern : Pattern() {
         protected set
     lateinit var th: Array<Array<Array<Array<MHNThrow?>>>>
 
-    @JvmField
     protected var hands: MHNHands? = null
-
-    @JvmField
     protected var bodies: MHNBody? = null
     var maxThrow: Int = 0
         protected set
@@ -1788,7 +1778,7 @@ abstract class MHNPattern : Pattern() {
             while (ev != null) {
                 val tr = ev.getPathTransition((k + 1), JMLTransition.TRANS_ANY)
                 if (tr != null) {
-                    when (tr.getType()) {
+                    when (tr.transType) {
                         JMLTransition.TRANS_THROW -> {
                             if (!foundEvent && !addMode) {
                                 // first event mentioning path is a throw

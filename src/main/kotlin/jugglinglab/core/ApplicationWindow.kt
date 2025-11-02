@@ -441,7 +441,6 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         // Open a JML file.
 
-        @JvmStatic
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun openJMLFile(jmlf: File) {
             try {
@@ -486,7 +485,6 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // Show the user the "About" dialog box.
 
         @Suppress("AssignedValueIsNeverRead")
-        @JvmStatic
         fun showAboutBox() {
             val aboutBox = JFrame(guistrings.getString("About_Juggling_Lab"))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)

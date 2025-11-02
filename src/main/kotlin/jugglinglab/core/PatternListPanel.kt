@@ -32,9 +32,8 @@ class PatternListPanel private constructor() : JPanel() {
     val patternList: JMLPatternList = JMLPatternList()
 
     private var parentFrame: JFrame? = null
-    private var animtarget: View? = null
+    private var animTarget: View? = null
     private lateinit var list: JList<PatternRecord>
-    @JvmField
     var hasUnsavedChanges: Boolean = false
 
     // for mouse/popup menu handling
@@ -42,7 +41,7 @@ class PatternListPanel private constructor() : JPanel() {
     private var popupPatterns: ArrayList<PatternWindow>? = null
     private var dialog: JDialog? = null
     private var tf: JTextField? = null
-    private var okbutton: JButton? = null
+    private var okButton: JButton? = null
 
     // for drag and drop operations
     private var draggingOut: Boolean = false
@@ -126,8 +125,8 @@ class PatternListPanel private constructor() : JPanel() {
 
             val ap = patternList.getAnimationPrefsForLine(row)
 
-            if (animtarget != null) {
-                animtarget!!.restartView(pat, ap)
+            if (animTarget != null) {
+                animTarget!!.restartView(pat, ap)
             } else {
                 PatternWindow(pat.title, pat, ap)
             }
@@ -146,7 +145,7 @@ class PatternListPanel private constructor() : JPanel() {
     }
 
     fun setTargetView(target: View?) {
-        animtarget = target
+        animTarget = target
     }
 
     // Used by GeneratorTarget.
@@ -288,7 +287,7 @@ class PatternListPanel private constructor() : JPanel() {
     private fun insertText(row: Int) {
         makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "")
 
-        okbutton!!.addActionListener { _: ActionEvent? ->
+        okButton!!.addActionListener { _: ActionEvent? ->
             val display = tf!!.getText()
             dialog!!.dispose()
 
@@ -309,7 +308,7 @@ class PatternListPanel private constructor() : JPanel() {
     private fun changeTitle() {
         makeDialog(guistrings.getString("PLDIALOG_Change_title"), patternList.title)
 
-        okbutton!!.addActionListener { _: ActionEvent? ->
+        okButton!!.addActionListener { _: ActionEvent? ->
             patternList.title = tf!!.getText()
             dialog!!.dispose()
 
@@ -329,7 +328,7 @@ class PatternListPanel private constructor() : JPanel() {
         val rec = patternList.model.get(row)
         makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display)
 
-        okbutton!!.addActionListener { _: ActionEvent? ->
+        okButton!!.addActionListener { _: ActionEvent? ->
             rec.display = tf!!.getText()
             dialog!!.dispose()
 
@@ -350,18 +349,18 @@ class PatternListPanel private constructor() : JPanel() {
         tf = JTextField(20)
         tf!!.text = defaultText
 
-        okbutton = JButton(guistrings.getString("OK"))
+        okButton = JButton(guistrings.getString("OK"))
 
         dialog!!.contentPane.add(tf)
         gb.setConstraints(
             tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        dialog!!.contentPane.add(okbutton)
+        dialog!!.contentPane.add(okButton)
         gb.setConstraints(
-            okbutton,
+            okButton,
             constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
-        dialog!!.getRootPane().setDefaultButton(okbutton) // OK button is default
+        dialog!!.getRootPane().setDefaultButton(okButton) // OK button is default
         dialog!!.pack()
         dialog!!.setResizable(false)
         dialog!!.setLocationRelativeTo(this)
@@ -385,7 +384,7 @@ class PatternListPanel private constructor() : JPanel() {
         popupPatterns = null
         dialog = null
         tf = null
-        okbutton = null
+        okButton = null
     }
 
     //--------------------------------------------------------------------------

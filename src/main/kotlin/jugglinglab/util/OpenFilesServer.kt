@@ -35,7 +35,7 @@ object OpenFilesServer {
 
     // Start up the OpenFilesServer thread, which listens for open file messages
     // from other instances of Juggling Lab.
-    @JvmStatic
+
     fun startOpenFilesServer() {
         when (Constants.OPEN_FILES_METHOD) {
             SERVER_MMF -> if (ofs_mmf == null) {
@@ -51,6 +51,7 @@ object OpenFilesServer {
     // Try to signal another instance of Juggling Lab on this machine to open
     // the file. If the open command is successfully handed off, return true.
     // Otherwise return false.
+
     @JvmStatic
     fun tryOpenFile(f: File?): Boolean {
         return when (Constants.OPEN_FILES_METHOD) {

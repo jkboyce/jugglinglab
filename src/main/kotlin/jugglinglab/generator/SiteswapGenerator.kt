@@ -137,6 +137,7 @@ class SiteswapGenerator : Generator() {
         return runGenerator(t, -1, -1.0) // no limits
     }
 
+    @Suppress("SimplifyBooleanWithConstants")
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun runGenerator(t: GeneratorTarget, maxNum: Int, secs: Double): Int {
         if (groundflag == 1 && groundStateLength > ht) {
@@ -981,7 +982,6 @@ class SiteswapGenerator : Generator() {
     private fun startBeat(pos: Int) {
         for (i in 0..<hands) {
             throwsLeft[pos][i] = state[pos][i][0]
-
             for (j in 0..<maxOccupancy) {
                 throwTo[pos][i][j] = i  // clear throw matrix
                 throwValue[pos][i][j] = 0
@@ -1043,29 +1043,22 @@ class SiteswapGenerator : Generator() {
                     }
                 }
             }
-
             var ballsLeft = n
-            run {
-                var i = 0
-                while (i < ht && ballsLeft != 0) {
-                    var j = 0
-                    while (j < hands && ballsLeft != 0) {
-                        if (rhythm[pos + 1][j][i] != 0) {
-                            if (--ballsLeft < ballsThrown) {
-                                scratch1[ballsLeft] = j // dest hand #
-                                scratch2[ballsLeft] = i + 1 // dest value
-                            }
+            for (i in 0..<ht) {
+                if (ballsLeft == 0) break
+                for (j in 0..<hands) {
+                    if (ballsLeft == 0) break
+                    if (rhythm[pos + 1][j][i] != 0) {
+                        if (--ballsLeft < ballsThrown) {
+                            scratch1[ballsLeft] = j // dest hand #
+                            scratch2[ballsLeft] = i + 1 // dest value
                         }
-                        ++j
                     }
-                    ++i
                 }
             }
-
             if (ballsLeft != 0) {
-                return false // shouldn't happen, but die anyway
+                return false  // shouldn't happen, but die anyway
             }
-
             for (i in 0..<hands) {
                 if (state[pos][i][0] != 0 && personNumber[i] != leaderPerson) {
                     var foundSpot = false
@@ -1074,7 +1067,7 @@ class SiteswapGenerator : Generator() {
                         if (scratch1[j] == throwTo[pos][i][0] &&
                             scratch2[j] == throwValue[pos][i][0])
                         {
-                            scratch2[j] = 0 // don't throw to spot again
+                            scratch2[j] = 0  // don't throw to spot again
                             foundSpot = true
                             break
                         }
@@ -1085,7 +1078,6 @@ class SiteswapGenerator : Generator() {
                 }
             }
         }
-
         return true
     }
 
@@ -1166,7 +1158,6 @@ class SiteswapGenerator : Generator() {
                     }
                 }
             }
-
             for (i in 0..<jugglers) {
                 if (!connections[i]) {
                     if (Constants.DEBUG_GENERATOR) {
@@ -1182,14 +1173,13 @@ class SiteswapGenerator : Generator() {
         // This algorithm is not guaranteed to eliminate all permuted duplicates,
         // but will do so in the vast majority of cases.
         if (jugglers > 1 && !jugglerPermutationsFlag) {
-            for (m in 1..<jugglers) {
+            loop@ for (m in 1..<jugglers) {
                 // compare juggler m against juggler (m + 1)
                 for (i in 0..<lTarget) {
                     permScratch2[i] = false
-                    permScratch1[i] = permScratch2[i]
+                    permScratch1[i] = false
                 }
-
-                for (p in 0..<lTarget) {
+                repeat (lTarget) {
                     var scorem = -1
                     var scoremp1 = -1
                     var maxm = 0
@@ -1215,7 +1205,6 @@ class SiteswapGenerator : Generator() {
                                     ++k
                                 }
                             }
-
                             if (scoretemp > scorem) {
                                 scorem = scoretemp
                                 maxm = i
@@ -1223,7 +1212,6 @@ class SiteswapGenerator : Generator() {
                         }
                         if (!permScratch2[i]) {
                             var scoretemp = 0
-
                             for (j in 0..<hands) {
                                 if (personNumber[j] != (m + 1)) {
                                     continue
@@ -1241,7 +1229,6 @@ class SiteswapGenerator : Generator() {
                                     ++k
                                 }
                             }
-
                             if (scoretemp > scoremp1) {
                                 scoremp1 = scoretemp
                                 maxmp1 = i
@@ -1256,11 +1243,11 @@ class SiteswapGenerator : Generator() {
                         return false
                     }
                     if (scoremp1 < scorem) {
-                        break  // go to the next pair of jugglers
+                        continue@loop  // go to the next pair of jugglers
                     }
 
                     permScratch2[maxmp1] = true
-                    permScratch1[maxm] = permScratch2[maxmp1]
+                    permScratch1[maxm] = true
                 }
             }
         }
@@ -1281,7 +1268,6 @@ class SiteswapGenerator : Generator() {
                             if (personNumber[h] != j) {
                                 continue
                             }
-
                             for (k in 0..<maxOccupancy) {
                                 val val1 = throwValue[i][hJuggler1][k]
                                 val self1 = (personNumber[throwTo[i][hJuggler1][k]] == 1)
@@ -1298,7 +1284,6 @@ class SiteswapGenerator : Generator() {
                                     continue@offsets
                                 }
                             }
-
                             ++hJuggler1
                         }
                     }
@@ -1318,6 +1303,7 @@ class SiteswapGenerator : Generator() {
     // This method assumes the throws are comparable, i.e., that pos1 is
     // congruent to pos2 mod rhythm_period.
 
+    @Suppress("SameParameterValue")
     private fun compareRotations(pos1: Int, pos2: Int): Int {
         var i = 0
         while (i < lTarget) {
@@ -2048,9 +2034,7 @@ class SiteswapGenerator : Generator() {
         // with siteswap notation: []()|
 
         private fun makeStandardRegex(term: String): String {
-            var res: String
-
-            res = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@")
+            var res: String = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@")
             res = Pattern.compile("\\[").matcher(res).replaceAll("\\\\[")
             res = Pattern.compile("@").matcher(res).replaceAll("[")
             res = Pattern.compile("\\\\]").matcher(res).replaceAll("@")
@@ -2067,7 +2051,6 @@ class SiteswapGenerator : Generator() {
             res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@")
             res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|")
             res = Pattern.compile("@").matcher(res).replaceAll("|")
-
             return res
         }
 
@@ -2075,7 +2058,6 @@ class SiteswapGenerator : Generator() {
         // Static methods to run the generator from the command line
         //----------------------------------------------------------------------
 
-        @JvmStatic
         fun runGeneratorCLI(args: Array<String>, target: GeneratorTarget) {
             if (args.size < 3) {
                 var template: String = guistrings.getString("Version")

@@ -628,14 +628,14 @@ class JMLPattern() {
                         throw JuggleExceptionInternal("invertTime() error 3", this)
                     }
 
-                    val startTrType = startTr.getType()
+                    val startTrType = startTr.transType
                     val startTrThrowType = startTr.throwType
                     val startTrThrowMod = startTr.mod
 
-                    startTr.setType(endTr.getType())
+                    startTr.transType = endTr.transType
                     startTr.throwType = endTr.throwType
                     startTr.mod = endTr.mod
-                    endTr.setType(startTrType)
+                    endTr.transType = startTrType
                     endTr.throwType = startTrThrowType
                     endTr.mod = startTrThrowMod
 
@@ -681,7 +681,7 @@ class JMLPattern() {
 
             var holdingOnly = true
             for (tr in ev.transitions) {
-                if (tr.getType() != JMLTransition.TRANS_HOLDING) {
+                if (tr.transType != JMLTransition.TRANS_HOLDING) {
                     holdingOnly = false
                     break
                 }
@@ -918,7 +918,7 @@ class JMLPattern() {
                 for (tr in maxevent.transitions) {
                     val path = tr.path - 1
 
-                    when (tr.getType()) {
+                    when (tr.transType) {
                         JMLTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
                             needHandEvent[jug][han] = false
@@ -1011,7 +1011,7 @@ class JMLPattern() {
                 for (tr in minevent.transitions) {
                     val path = tr.path - 1
 
-                    when (tr.getType()) {
+                    when (tr.transType) {
                         JMLTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
                             if (needVDHandEvent[jug][han]) {
@@ -1256,9 +1256,9 @@ class JMLPattern() {
                 if (lastev != null) {
                     val pl = PathLink(i + 1, lastev, ev)
 
-                    when (tr.getType()) {
+                    when (tr.transType) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
-                            if (lasttr!!.getType() == JMLTransition.TRANS_THROW) {
+                            if (lasttr!!.transType == JMLTransition.TRANS_THROW) {
                                 val template: String =
                                     errorstrings.getString("Error_successive_throws")
                                 val arguments = arrayOf<Any?>(i + 1)
@@ -1294,7 +1294,7 @@ class JMLPattern() {
                         }
 
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
-                            if (lasttr!!.getType() != JMLTransition.TRANS_THROW) {
+                            if (lasttr!!.transType != JMLTransition.TRANS_THROW) {
                                 val template: String =
                                     errorstrings.getString("Error_successive_catches")
                                 val arguments = arrayOf<Any?>(i + 1)
@@ -1363,17 +1363,17 @@ class JMLPattern() {
                     vr = null
                     if (ev.juggler == (i + 1) && ev.hand == handnum) {
                         for (tr in ev.transitions) {
-                            if (tr.getType() == JMLTransition.TRANS_THROW) {
+                            if (tr.transType == JMLTransition.TRANS_THROW) {
                                 val pl = tr.outgoingPathLink
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_THROW)
                                 }
-                            } else if (tr.getType() == JMLTransition.TRANS_SOFTCATCH) {
+                            } else if (tr.transType == JMLTransition.TRANS_SOFTCATCH) {
                                 val pl = tr.incomingPathLink
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_SOFTCATCH)
                                 }
-                            } else if (tr.getType() == JMLTransition.TRANS_CATCH) {
+                            } else if (tr.transType == JMLTransition.TRANS_CATCH) {
                                 val pl = tr.incomingPathLink
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_CATCH)
@@ -2143,7 +2143,6 @@ class JMLPattern() {
         // Create a JMLPattern from another notation. Here `config` can be regular
         // (like `pattern=3`) or not (like `3`).
 
-        @JvmStatic
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun fromBasePattern(notation: String, config: String): JMLPattern {
             val p = Pattern.newPattern(notation).fromString(config)

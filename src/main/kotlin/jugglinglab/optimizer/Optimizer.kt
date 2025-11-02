@@ -29,19 +29,15 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class Optimizer private constructor(p: JMLPattern) {
-    private var pat: JMLPattern = p
-    private var me: MarginEquations
-    private var pinned: BooleanArray  // true when variable is done optimizing
-
-    init {
-        me = MarginEquations(pat)
-        pinned = if (me.marginsNum > 0) {
+class Optimizer private constructor(val pat: JMLPattern) {
+    private val me: MarginEquations = MarginEquations(pat)
+    private val pinned: BooleanArray =
+        if (me.marginsNum > 0) {
+            // set to true when variable is done optimizing
             BooleanArray(me.varsNum)
         } else {
             BooleanArray(0)
         }
-    }
 
     // Run the MILP solver to maximize the minimum throwing margin of error in
     // the pattern.
@@ -336,6 +332,7 @@ class Optimizer private constructor(p: JMLPattern) {
             return _optimizerAvailable
         }
 
+        @JvmStatic
         private fun loadOptimizer() {
             if (_optimizerLoaded) {
                 return

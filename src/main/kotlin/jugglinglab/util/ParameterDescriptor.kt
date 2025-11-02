@@ -7,11 +7,11 @@
 package jugglinglab.util
 
 class ParameterDescriptor(
-    @JvmField var name: String,
-    @JvmField var type: Int,
-    @JvmField var range: ArrayList<String>?,
-    @JvmField var defaultValue: Any?,
-    @JvmField var value: Any?
+    val name: String,
+    val type: Int,
+    val range: ArrayList<String>?,
+    val defaultValue: Any?,
+    var value: Any?
 ) {
     companion object {
         const val TYPE_BOOLEAN: Int = 1

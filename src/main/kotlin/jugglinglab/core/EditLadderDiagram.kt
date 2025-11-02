@@ -39,8 +39,11 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, private var parentview: View) :
-    LadderDiagram(pat), ActionListener {
+class EditLadderDiagram(
+    pat: JMLPattern,
+    private var parentFrame: JFrame?,
+    private val parentView: View
+) : LadderDiagram(pat), ActionListener {
     private var aep: AnimationEditPanel? = null
 
     private var activeEventitem: LadderEventItem? = null
@@ -143,15 +146,15 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
             handleFatalException(je)
-            if (parentframe != null) {
-                parentframe!!.dispose()
-                parentframe = null
+            if (parentFrame != null) {
+                parentFrame!!.dispose()
+                parentFrame = null
             }
         }
     }
 
     fun addToUndoList() {
-        parentview.addToUndoList(pat)
+        parentView.addToUndoList(pat)
     }
 
     //--------------------------------------------------------------------------
@@ -501,7 +504,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         for (tr in item.event!!.transitions) {
-            when (tr.getType()) {
+            when (tr.transType) {
                 JMLTransition.TRANS_THROW -> {
                     // find out when the ball being thrown was last caught
                     var ev = item.event!!.previous
@@ -522,9 +525,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         handleFatalException(
                             JuggleExceptionInternal("Null event 1 in mousePressed()", pat)
                         )
-                        if (parentframe != null) {
-                            parentframe!!.dispose()
-                            parentframe = null
+                        if (parentFrame != null) {
+                            parentFrame!!.dispose()
+                            parentFrame = null
                         }
                         return
                     }
@@ -556,9 +559,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         handleFatalException(
                             JuggleExceptionInternal("Null event 2 in mousePressed()", pat)
                         )
-                        if (parentframe != null) {
-                            parentframe!!.dispose()
-                            parentframe = null
+                        if (parentFrame != null) {
+                            parentFrame!!.dispose()
+                            parentFrame = null
                         }
                         return
                     }
@@ -666,7 +669,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         val holdpathorig = BooleanArray(pat.numberOfPaths)
         val holdpathnew = BooleanArray(pat.numberOfPaths)
         for (tr in ev!!.transitions) {
-            when (tr.getType()) {
+            when (tr.transType) {
                 JMLTransition.TRANS_THROW -> throwpath[tr.path - 1] = true
                 JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> catchpath[tr.path - 1] =
                     true
@@ -686,7 +689,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         var j = 0
                         while (j < ev.numberOfTransitions) {
                             val tr = ev.getTransition(j)
-                            when (tr.getType()) {
+                            when (tr.transType) {
                                 JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = true
                                 JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] =
                                     false
@@ -728,7 +731,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         var j = 0
                         while (j < ev.numberOfTransitions) {
                             val tr = ev.getTransition(j)
-                            when (tr.getType()) {
+                            when (tr.transType) {
                                 JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = false
                                 JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] =
                                     true
@@ -788,9 +791,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                         handleFatalException(
                             JuggleExceptionInternal("Null transition in removing hold", pat)
                         )
-                        if (parentframe != null) {
-                            parentframe!!.dispose()
-                            parentframe = null
+                        if (parentFrame != null) {
+                            parentFrame!!.dispose()
+                            parentFrame = null
                         }
                         return
                     }
@@ -962,7 +965,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
     }
 
     private fun changeTitle() {
-        val jd = JDialog(parentframe, guistrings.getString("Change_title"), true)
+        val jd = JDialog(parentFrame, guistrings.getString("Change_title"), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
@@ -991,11 +994,11 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
         jd.isVisible = true
-        parentframe!!.setTitle(pat.title)
+        parentFrame!!.setTitle(pat.title)
     }
 
     private fun changeTiming() {
-        val jd = JDialog(parentframe, guistrings.getString("Change_timing"), true)
+        val jd = JDialog(parentFrame, guistrings.getString("Change_timing"), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
@@ -1077,9 +1080,9 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             pat.getHandCoordinate(juggler, hand, evtime, evpos)
         } catch (jei: JuggleExceptionInternal) {
             handleFatalException(jei)
-            if (parentframe != null) {
-                parentframe!!.dispose()
-                parentframe = null
+            if (parentFrame != null) {
+                parentFrame!!.dispose()
+                parentFrame = null
             }
             return null
         }
@@ -1101,7 +1104,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     if (evt.juggler != ev.juggler || evt.hand != ev.hand) {
                         break
                     }
-                    if (tr.getType() == JMLTransition.TRANS_THROW) {
+                    if (tr.transType == JMLTransition.TRANS_THROW) {
                         break
                     }
                     holding = true
@@ -1241,7 +1244,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         val startprop = pat.getProp(propnum)
         val prtypes: Array<String> = Prop.builtinProps
 
-        val jd = JDialog(parentframe, guistrings.getString("Define_prop"), true)
+        val jd = JDialog(parentFrame, guistrings.getString("Define_prop"), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
@@ -1308,7 +1311,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                 // fail if prop definition is invalid, before we change the pattern
                 (PropDef(type.lowercase(Locale.getDefault()), mod)).layoutProp()
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(parentframe, jeu.message)
+                handleUserException(parentFrame, jeu.message)
                 return@addActionListener
             }
 
@@ -1404,7 +1407,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
 
         val pptypes: Array<String> = Path.builtinPaths
 
-        val jd = JDialog(parentframe, guistrings.getString("Define_throw"), true)
+        val jd = JDialog(parentFrame, guistrings.getString("Define_throw"), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
@@ -1469,7 +1472,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
             try {
                 mod = this.parameterList
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(parentframe, jeu.message)
+                handleUserException(parentFrame, jeu.message)
                 return@addActionListener
             }
 
@@ -1517,7 +1520,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
         }
         // int transnum = ((LadderEventItem)popupitem).transnum;
         val tr = ev.getTransition((popupitem as LadderEventItem).transnum)
-        tr.setType(type)
+        tr.transType = type
         activeEventChanged()
         repaint()
     }
@@ -1948,7 +1951,7 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     val evitem = laditem as LadderEventItem
 
                     for (tr in evitem.event!!.transitions) {
-                        if (tr.getType() != JMLTransition.TRANS_HOLDING) {
+                        if (tr.transType != JMLTransition.TRANS_HOLDING) {
                             return false
                         }
                     }
@@ -1991,16 +1994,16 @@ class EditLadderDiagram(pat: JMLPattern, private var parentframe: JFrame?, priva
                     "makelast" ->
                         return evitem.transnum != (evitem.event!!.numberOfTransitions - 1)
                     "definethrow" ->
-                        return tr.getType() == JMLTransition.TRANS_THROW
+                        return tr.transType == JMLTransition.TRANS_THROW
                     "changetocatch" ->
-                        return tr.getType() == JMLTransition.TRANS_SOFTCATCH
-                                || tr.getType() == JMLTransition.TRANS_GRABCATCH
+                        return tr.transType == JMLTransition.TRANS_SOFTCATCH
+                                || tr.transType == JMLTransition.TRANS_GRABCATCH
                     "changetosoftcatch" ->
-                        return tr.getType() == JMLTransition.TRANS_CATCH
-                                || tr.getType() == JMLTransition.TRANS_GRABCATCH
+                        return tr.transType == JMLTransition.TRANS_CATCH
+                                || tr.transType == JMLTransition.TRANS_GRABCATCH
                     "changetograbcatch" ->
-                        return tr.getType() == JMLTransition.TRANS_CATCH
-                                || tr.getType() == JMLTransition.TRANS_SOFTCATCH
+                        return tr.transType == JMLTransition.TRANS_CATCH
+                                || tr.transType == JMLTransition.TRANS_SOFTCATCH
                 }
             } else if (laditem.type == LadderItem.TYPE_POSITION) {
                 return !mutableListOf(

@@ -13,10 +13,10 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-data class Coordinate @JvmOverloads constructor(
-    @JvmField var x: Double = 0.0,
-    @JvmField var y: Double = 0.0,
-    @JvmField var z: Double = 0.0
+data class Coordinate(
+    var x: Double = 0.0,
+    var y: Double = 0.0,
+    var z: Double = 0.0
 ) {
     fun setCoordinate(x: Double, y: Double, z: Double) {
         this.x = x

@@ -40,15 +40,10 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
-// import gifwriter.GIFAnimWriter;
-
 class Animator {
-    @JvmField
     var pat: JMLPattern? = null
     private var jc: AnimationPrefs = AnimationPrefs()
-    @JvmField
     var ren1: Renderer? = null
-    @JvmField
     var ren2: Renderer? = null
     private var overallMax: Coordinate? = null
     private var overallMin: Coordinate? = null

@@ -37,10 +37,8 @@ class JMLParser : DefaultHandler() {
             if (Constants.DEBUG_JML_PARSING) {
                 println("Starting JMLParser.parse()...")
             }
-
             val factory = SAXParserFactory.newInstance()
             factory.isValidating = true
-
             // Parse the document
             factory.newSAXParser().parse(InputSource(read), this)
         } catch (pce: ParserConfigurationException) {

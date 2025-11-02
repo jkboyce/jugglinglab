@@ -678,12 +678,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 return loc
             }
 
-        // Static method to check if a given pattern is already being animated, and
-        // if so then bring that window to the front.
+        // Check if a given pattern is already being animated, and if so then
+        // bring that window to the front.
         //
         // Returns true if animation found, false if not.
 
-        @JvmStatic
         fun bringToFront(hash: Int): Boolean {
             for (fr in getFrames()) {
                 if (fr is PatternWindow && fr.isVisible && fr.hashCode == hash) {
@@ -695,7 +694,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         }
 
         // Used when a single animation is created from the command line.
-        @JvmStatic
+
         fun setExitOnLastClose(value: Boolean) {
             exitOnLastClose = value
         }

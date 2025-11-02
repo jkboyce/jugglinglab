@@ -78,12 +78,14 @@ class GeneratorTarget {
     }
 
     // Set a prefix and suffix for both the displayed string and animation string.
+
     fun setPrefixSuffix(pr: String?, su: String?) {
         prefix = pr
         suffix = su
     }
 
     // Messages like "# of patterns found" come through here.
+
     fun setStatus(display: String?) {
         if (ltarget != null) {
             SwingUtilities.invokeLater { ltarget!!.addPattern(display, null, null, null) }

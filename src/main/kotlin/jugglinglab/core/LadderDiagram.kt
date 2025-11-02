@@ -30,38 +30,26 @@ import kotlin.math.sqrt
 open class LadderDiagram(p: JMLPattern) :
     JPanel(), AnimationAttachment, MouseListener, MouseMotionListener {
     protected var ap: AnimationPanel? = null
-    @JvmField
     protected val pat: JMLPattern
-    @JvmField
     protected var ladderWidth: Int = 0 // pixel dimensions of entire panel
-    @JvmField
     protected var ladderHeight: Int = 0
-    @JvmField
     protected var rightX: Int = 0 // right/left hand pos. for juggler 1 (px)
-    @JvmField
     protected var leftX: Int = 0
-    @JvmField
     protected var jugglerDeltaX: Int = 0 // horizontal offset between jugglers (px)
-    @JvmField
     protected var guiState: Int = STATE_INACTIVE // one of STATE_x values above
-    @JvmField
     protected var simTime: Double = 0.0
-    @JvmField
     protected var trackerY: Int = BORDER_TOP
     protected var hasSwitchSymmetry: Boolean = false
     protected var hasSwitchdelaySymmetry: Boolean = false
 
-    @JvmField
     protected var ladderEventItems: ArrayList<LadderEventItem>? = null
     protected var ladderPathItems: ArrayList<LadderPathItem>? = null
-    @JvmField
     protected var ladderPositionItems: ArrayList<LadderPositionItem>? = null
 
     protected var im: BufferedImage? = null
     protected var imageValid: Boolean = false
     protected var framesUntilImageDraw: Int = 0
 
-    @JvmField
     protected var animPaused: Boolean = false
 
     init {
@@ -733,7 +721,6 @@ open class LadderDiagram(p: JMLPattern) :
     //--------------------------------------------------------------------------
 
     open class LadderItem {
-        @JvmField
         var type: Int = 0
 
         companion object {
@@ -748,20 +735,13 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     class LadderEventItem : LadderItem() {
-        @JvmField
         var xlow: Int = 0
-        @JvmField
         var xhigh: Int = 0
-        @JvmField
         var ylow: Int = 0
-        @JvmField
         var yhigh: Int = 0
         // for transitions within an event, the next two point to the containing event:
-        @JvmField
         var eventitem: LadderEventItem? = null
-        @JvmField
         var event: JMLEvent? = null
-        @JvmField
         var transnum: Int = 0
         val hashCode: Int
             get() = event!!.hashCode * 17 + type * 23 + transnum * 27
@@ -779,20 +759,14 @@ open class LadderDiagram(p: JMLPattern) :
         var startEvent: JMLEvent? = null
         var endEvent: JMLEvent? = null
         var transnumStart: Int = 0
-        @JvmField
         var pathNum: Int = 0
     }
 
     class LadderPositionItem : LadderItem() {
-        @JvmField
         var xLow: Int = 0
-        @JvmField
         var xHigh: Int = 0
-        @JvmField
         var yLow: Int = 0
-        @JvmField
         var yHigh: Int = 0
-        @JvmField
         var position: JMLPosition? = null
         val hashCode: Int
             get() = position!!.hashCode
@@ -820,8 +794,7 @@ open class LadderDiagram(p: JMLPattern) :
         protected val COLOR_HANDS: Color? = Color.black
         protected val COLOR_POSITIONS: Color? = Color.black
         protected val COLOR_SYMMETRIES: Color? = Color.lightGray
-
-        @JvmField
+        @JvmStatic
         protected val COLOR_TRACKER: Color? = Color.red
         protected const val IMAGE_DRAW_WAIT: Int = 5 // frames
 

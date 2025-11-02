@@ -14,7 +14,6 @@ import java.io.StringWriter
 import java.util.*
 
 class JMLEvent {
-    @JvmField
     var t: Double = 0.0
     var juggler: Int = 0
         private set
@@ -27,7 +26,6 @@ class JMLEvent {
     var pathPermFromMaster: Permutation? = null
 
     // for use during layout
-    @JvmField
     var calcpos: Boolean = false
 
     // for linking into event chains

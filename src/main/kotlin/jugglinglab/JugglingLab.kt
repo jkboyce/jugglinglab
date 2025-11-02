@@ -44,9 +44,7 @@ import javax.swing.SwingUtilities
 
 object JugglingLab {
     // localized strings for UI
-    @JvmField
     val guistrings: ResourceBundle = ResourceBundle.getBundle("GUIStrings")
-    @JvmField
     val errorstrings: ResourceBundle = ResourceBundle.getBundle("ErrorStrings")
 
     // platform info

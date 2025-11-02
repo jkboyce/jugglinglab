@@ -28,49 +28,31 @@ import kotlin.math.abs
 
 open class AnimationPanel : JPanel(), Runnable {
     val animator: Animator = Animator()
-    @JvmField
     protected var jc: AnimationPrefs = AnimationPrefs()
-
-    @JvmField
     protected var engine: Thread? = null
-    @JvmField
     protected var engineRunning: Boolean = false
-    @JvmField
     protected var enginePaused: Boolean = false
-    @JvmField
     var engineAnimating: Boolean = false
     protected var simTime: Double = 0.0
-    @JvmField
     var writingGIF: Boolean = false
-    @JvmField
     var message: String? = null
 
     protected var catchclip: Clip? = null
     protected var bounceclip: Clip? = null
 
-    @JvmField
     protected var waspaused: Boolean = false // for pause on mouse away
-    @JvmField
     protected var outside: Boolean = false
-    @JvmField
     protected var outsideValid: Boolean = false
 
     // for camera dragging
-    @JvmField
     protected var draggingCamera: Boolean = false
-    @JvmField
     protected var startx: Int = 0
-    @JvmField
     protected var starty: Int = 0
-    @JvmField
     protected var lastx: Int = 0
-    @JvmField
     protected var lasty: Int = 0
-    @JvmField
     protected var dragcamangle: DoubleArray? = null
 
     // attached objects to be notified of events
-    @JvmField
     protected var attachments: ArrayList<AnimationAttachment> = ArrayList<AnimationAttachment>()
 
     init {
@@ -520,7 +502,6 @@ open class AnimationPanel : JPanel(), Runnable {
     }
 
     companion object {
-        @JvmField
         val SNAPANGLE: Double = Math.toRadians(8.0)
 
         @JvmStatic

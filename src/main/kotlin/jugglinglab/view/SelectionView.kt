@@ -21,9 +21,9 @@ import javax.swing.JPanel
 import kotlin.math.min
 
 class SelectionView(dim: Dimension) : View() {
-    private var ja: MutableList<AnimationPanel> = MutableList(COUNT) { AnimationPanel() }
-    private var layered: JLayeredPane
-    private var mutator: Mutator
+    private val ja: MutableList<AnimationPanel> = MutableList(COUNT) { AnimationPanel() }
+    private val layered: JLayeredPane
+    private val mutator: Mutator
     private var savedPrefs: AnimationPrefs? = null
 
     init {

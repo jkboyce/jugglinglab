@@ -19,8 +19,8 @@ class JMLPosition {
     var x: Double = 0.0
     var y: Double = 0.0
     var z: Double = 0.0
-    @JvmField var t: Double = 0.0
-    @JvmField var angle: Double = 0.0
+    var t: Double = 0.0
+    var angle: Double = 0.0
     var juggler: Int = 0
 
     var previous: JMLPosition? = null

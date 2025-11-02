@@ -25,7 +25,7 @@ class JMLSymmetry {
         private set
     var pathPerm: Permutation? = null
         private set
-    @JvmField var delay: Double = -1.0
+    var delay: Double = -1.0
 
     constructor()
 

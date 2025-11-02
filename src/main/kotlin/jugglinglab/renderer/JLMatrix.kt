@@ -10,29 +10,17 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class JLMatrix {
-    @JvmField
     var m00: Double = 1.0
-    @JvmField
     var m01: Double = 0.0
-    @JvmField
     var m02: Double = 0.0
-    @JvmField
     var m03: Double = 0.0
-    @JvmField
     var m10: Double = 0.0
-    @JvmField
     var m11: Double = 1.0
-    @JvmField
     var m12: Double = 0.0
-    @JvmField
     var m13: Double = 0.0
-    @JvmField
     var m20: Double = 0.0
-    @JvmField
     var m21: Double = 0.0
-    @JvmField
     var m22: Double = 1.0
-    @JvmField
     var m23: Double = 0.0
     var m30: Double = 0.0
     var m31: Double = 0.0
@@ -41,19 +29,6 @@ class JLMatrix {
 
     // Identity matrix
     constructor()
-
-    /*
-    constructor(right: JLVector, up: JLVector, forward: JLVector) {
-        m00 = right.x
-        m10 = right.y
-        m20 = right.z
-        m01 = up.x
-        m11 = up.y
-        m21 = up.z
-        m02 = forward.x
-        m12 = forward.y
-        m22 = forward.z
-    }*/
 
     @Suppress("unused")
     fun shift(dx: Double, dy: Double, dz: Double) {
@@ -75,7 +50,6 @@ class JLMatrix {
 
     fun transform(n: JLMatrix) {
         val m = this.clone
-
         m00 = n.m00 * m.m00 + n.m01 * m.m10 + n.m02 * m.m20
         m01 = n.m00 * m.m01 + n.m01 * m.m11 + n.m02 * m.m21
         m02 = n.m00 * m.m02 + n.m01 * m.m12 + n.m02 * m.m22
@@ -114,7 +88,6 @@ class JLMatrix {
 
     fun inverse(): JLMatrix {
         val m = JLMatrix()
-
         val q1 = m12
         val q6 = m10 * m01
         val q7 = m10 * m21
@@ -158,7 +131,6 @@ class JLMatrix {
         m.m21 = -(q48 * m33 - q36 * m31 - q13 * m33 + q38 * m31) * q51
         m.m22 = (q45 * m33 - q42 * m31 - q6 * m33 + q44 * m31) * q51
         m.m23 = -(q45 * m23 - q42 * m21 - q6 * m23 + q44 * m21 + q13 * m13 - q38 * m11) * q51
-
         return m
     }
 

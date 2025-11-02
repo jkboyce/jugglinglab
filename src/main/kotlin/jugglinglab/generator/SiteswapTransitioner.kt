@@ -740,16 +740,11 @@ class SiteswapTransitioner : Transitioner() {
 
     @Throws(JuggleExceptionInternal::class)
     private fun outputPattern() {
-        if (target == null) {
-            return
-        }
-
+        if (target == null) return
         for (pos in 0..<lTarget) {
             outputBeat(pos)
         }
-
         val sb = StringBuilder()
-
         if (jugglers > 1) {
             sb.append('<')
         }
@@ -757,12 +752,10 @@ class SiteswapTransitioner : Transitioner() {
             for (i in 0..<lTarget) {
                 sb.append(out[j][i])
             }
-
             // if we ended with an unneeded separator, remove it
-            if (!sb.isEmpty() && sb.get(sb.length - 1) == '/') {
+            if (!sb.isEmpty() && sb[sb.length - 1] == '/') {
                 sb.deleteCharAt(sb.length - 1)
             }
-
             if (j < jugglers - 1) {
                 sb.append('|')
             }
@@ -1153,7 +1146,6 @@ class SiteswapTransitioner : Transitioner() {
         private const val TRANS_MAX_PATTERNS: Int = 1000
         private const val TRANS_MAX_TIME: Double = 15.0
 
-        @JvmStatic
         fun runTransitionerCLI(args: Array<String>, target: GeneratorTarget?) {
             if (args.size < 2) {
                 var template: String = guistrings.getString("Version")

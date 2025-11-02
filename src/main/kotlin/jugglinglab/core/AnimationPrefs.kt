@@ -19,33 +19,19 @@ import java.text.MessageFormat
 import java.util.*
 
 class AnimationPrefs {
-    @JvmField
     var width: Int = WIDTH_DEF
-    @JvmField
     var height: Int = HEIGHT_DEF
-    @JvmField
     var fps: Double = FPS_DEF
-    @JvmField
     var slowdown: Double = SLOWDOWN_DEF
-    @JvmField
     var border: Int = BORDER_DEF
-    @JvmField
     var showGround: Int = SHOWGROUND_DEF
-    @JvmField
     var stereo: Boolean = STEREO_DEF
-    @JvmField
     var startPause: Boolean = STARTPAUSE_DEF
-    @JvmField
     var mousePause: Boolean = MOUSEPAUSE_DEF
-    @JvmField
     var catchSound: Boolean = CATCHSOUND_DEF
-    @JvmField
     var bounceSound: Boolean = BOUNCESOUND_DEF
-    @JvmField
     var camangle: DoubleArray? = null // in degrees! null means use default
-    @JvmField
     var view: Int = VIEW_DEF // one of the values in View
-    @JvmField
     var hideJugglers: IntArray? = null
 
     constructor() : super()

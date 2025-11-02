@@ -22,7 +22,7 @@ class HandLink(var juggler: Int, var hand: Int, var startEvent: JMLEvent, var en
         val svr = startVelocityRef
         val evr = endVelocityRef
         val hp = handCurve
-        var sb = StringBuilder()
+        val sb = StringBuilder()
 
         sb.append("Link from (x=${start!!.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
         sb.append("to (x=${end!!.x},y=${end.y},z=${end.z},t=${endEvent.t})")
@@ -51,7 +51,6 @@ class HandLink(var juggler: Int, var hand: Int, var startEvent: JMLEvent, var en
         const val LEFT_HAND: Int = 1
         const val RIGHT_HAND: Int = 2
 
-        @JvmStatic
         fun index(handdescription: Int) = if (handdescription == LEFT_HAND) 0 else 1
     }
 }
