@@ -10,15 +10,17 @@
 # This script packages Juggling Lab into a standalone macOS application
 #
 # It:
-#    - Builds the macOS application bundle "Juggling Lab.app" in the bin/ directory
-#    - Application is targeted to the same architecture of Mac (Arm vs. x86) that
-#      the script is run on
+#    - Targets the processor architecture specified on the command line
+#      ("apple" or "intel")
+#    - Builds the macOS application bundle "Juggling Lab.app" in the bin/
+#      directory
 #    - Packages the application into a dmg file
 #
 # Note:
 #    - Juggling Lab.app in the bin directory will be overwritten
 #    - JugglingLab.jar needs to be built prior to running this, using Maven
 #    - Need to be using JDK 16 or later for `jpackage` to work
+#    - Need to be using an Intel JDK if targeting Intel, Arm JDK otherwise
 #
 # Documentation at:
 #    https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html
@@ -26,28 +28,37 @@
 #
 # Notes:
 #    - The "-Xss2048k" JVM argument is needed for Google OR-Tools to work
-#    - The "--enable-native-access" JVM argument is needed so optimizer can load
-#      the OR-Tools native library
+#    - The "--enable-native-access" JVM argument is needed so optimizer can
+#      load the OR-Tools native library
 
 # Step 1: Build the application bundle "Juggling Lab.app"
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 [apple|intel]"
+    exit 1
+fi
+case "$1" in
+    apple)
+        echo "Building installer for Apple Silicon (ARM)"
+        architecture="arm64"
+        ortools_arch_suffix="aarch64"
+        ;;
+    intel)
+        echo "Building installer for Intel (x86)"
+        architecture="x86_64"
+        ortools_arch_suffix="x86-64"
+        ;;
+    *)
+        echo "Invalid argument: $1. Use 'apple' or 'intel'."
+        exit 1
+        ;;
+esac
 
 cd ..
 rm -rf "Juggling Lab.app"
 mkdir target
 cp JugglingLab.jar target
-
-architecture=$(uname -m)
-if [[ "$architecture" == "arm64" ]]; then
-   echo "Building installer for Apple Silicon (ARM)"
-   cp -r ortools-lib/ortools-darwin-aarch64/* target
-elif [[ "$architecture" == "x86_64" ]]; then
-   echo "Building installer for Intel (x86)"
-   cp -r ortools-lib/ortools-darwin-x86-64/* target
-else
-   echo "Unknown architecture: $architecture"
-   rm -r target
-   exit
-fi
+cp -r "ortools-lib/ortools-darwin-${ortools_arch_suffix}/"* target
 
 jpackage --type app-image \
    --input target/ \

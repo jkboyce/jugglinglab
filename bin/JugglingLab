@@ -5,7 +5,6 @@
 # Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
 
-
 DIR=$(dirname "$0")
 
 # Check if an adequate version of Java is installed
@@ -22,7 +21,7 @@ fi
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     version1=$(echo "$version" | awk -F. '{printf("%03d%03d",$1,$2);}')
-    if [ "$version1" \< "011000" ]; then
+    if [ "$version1" -lt "011000" ]; then
         echo >&2 "Java installed is version ${version}; need Java 11 or higher to run."
         exit 1
     fi
@@ -33,8 +32,14 @@ JL_JAR="${DIR}/JugglingLab.jar"
 
 if [ -a "${JL_JAR}" ]; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
+        architecture=$(uname -m)
+        if [[ "$architecture" == "arm64" ]]; then
+            ortools_path="${DIR}/ortools-lib/ortools-darwin-aarch64"
+        elif [[ "$architecture" == "x86_64" ]]; then
+            ortools_path="${DIR}/ortools-lib/ortools-darwin-x86-64"
+        fi
         "$_java" -cp "${JL_JAR}" -Xss2048k \
-            -Djava.library.path="${DIR}/ortools-lib/ortools-darwin-aarch64" \
+            -Djava.library.path="${ortools_path}" \
             --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab
     else
         # include both Arm and x86 versions of OR-Tools; JRE will choose correct one at runtime
