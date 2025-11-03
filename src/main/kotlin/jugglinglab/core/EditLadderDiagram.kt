@@ -205,7 +205,8 @@ class EditLadderDiagram(
     //--------------------------------------------------------------------------
 
     override fun mousePressed(me: MouseEvent) {
-        if (aep != null && (aep!!.writingGIF || !aep!!.engineAnimating)) {
+        val aep2 = aep
+        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
             return
         }
 
@@ -224,27 +225,27 @@ class EditLadderDiagram(
 
             popupX = me.getX()
             popupY = me.getY()
-            if (aep != null) {
+            if (aep2 != null) {
                 val scale =
                     (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
                 val newtime = (my - BORDER_TOP).toDouble() * scale
-                animPaused = aep!!.isPaused
-                aep!!.isPaused = true
-                aep!!.time = newtime
-                aep!!.deactivateEvent()
-                aep!!.deactivatePosition()
+                animPaused = aep2.isPaused
+                aep2.isPaused = true
+                aep2.time = newtime
+                aep2.deactivateEvent()
+                aep2.deactivatePosition()
                 if (activeEventitem != null) {
                     try {
-                        aep!!.activateEvent(activeEventitem!!.event)
+                        aep2.activateEvent(activeEventitem!!.event)
                     } catch (jei: JuggleExceptionInternal) {
                         jei.attachPattern(pat)
                         handleFatalException(jei)
                     }
                 }
                 if (activePositionitem != null) {
-                    aep!!.activatePosition(activePositionitem!!.position)
+                    aep2.activatePosition(activePositionitem!!.position)
                 }
-                aep!!.repaint()
+                aep2.repaint()
             }
 
             makePopupMenu(popupitem).show(this@EditLadderDiagram, me.getX(), me.getY())
@@ -261,9 +262,9 @@ class EditLadderDiagram(
                     }
 
                     if (activeEventitem != null) {
-                        if (aep != null) {
+                        if (aep2 != null) {
                             try {
-                                aep!!.activateEvent(activeEventitem!!.event)
+                                aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
                                 jei.attachPattern(pat)
                                 handleFatalException(jei)
@@ -301,9 +302,7 @@ class EditLadderDiagram(
                             startYhigh = activePositionitem!!.yHigh
                             startT = activePositionitem!!.position!!.t
                             findPositionLimits(activePositionitem!!)
-                            if (aep != null) {
-                                aep!!.activatePosition(activePositionitem!!.position)
-                            }
+                            aep2?.activatePosition(activePositionitem!!.position)
                             needsHandling = false
                         }
                     }
@@ -311,36 +310,33 @@ class EditLadderDiagram(
                     if (needsHandling) {
                         guiState = STATE_MOVING_TRACKER
                         trackerY = my
-                        if (aep != null) {
+                        if (aep2 != null) {
                             val scale =
                                 ((pat.loopEndTime - pat.loopStartTime)
                                     / (ladderHeight - 2 * BORDER_TOP).toDouble())
                             val newtime = (my - BORDER_TOP).toDouble() * scale
-                            animPaused = aep!!.isPaused
-                            aep!!.isPaused = true
-                            aep!!.time = newtime
-                            aep!!.deactivateEvent()
-                            aep!!.deactivatePosition()
+                            animPaused = aep2.isPaused
+                            aep2.isPaused = true
+                            aep2.time = newtime
+                            aep2.deactivateEvent()
+                            aep2.deactivatePosition()
                         }
                     }
                 }
-
                 STATE_MOVING_EVENT -> {}
                 STATE_MOVING_POSITION -> {}
                 STATE_MOVING_TRACKER -> {}
-                STATE_POPUP ->           // shouldn't ever get here
-                    finishPopup()
+                STATE_POPUP -> finishPopup()  // shouldn't ever get here
             }
 
             repaint()
-            if (aep != null) {
-                aep!!.repaint()
-            }
+            aep2?.repaint()
         }
     }
 
     override fun mouseReleased(me: MouseEvent?) {
-        if (aep != null && (aep!!.writingGIF || !aep!!.engineAnimating)) {
+        val aep2 = aep
+        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
             return
         }
 
@@ -350,30 +346,30 @@ class EditLadderDiagram(
                 STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
                     // skip this code for MOVING_TRACKER state, since already executed in
                     // mousePressed() above
-                    if (guiState != STATE_MOVING_TRACKER && aep != null) {
+                    if (guiState != STATE_MOVING_TRACKER && aep2 != null) {
                         var my = me.getY()
                         my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
 
                         val scale = ((pat.loopEndTime - pat.loopStartTime)
-                                / (ladderHeight - 2 * BORDER_TOP).toDouble())
+                            / (ladderHeight - 2 * BORDER_TOP).toDouble())
                         val newtime = (my - BORDER_TOP).toDouble() * scale
-                        animPaused = aep!!.isPaused
-                        aep!!.isPaused = true
-                        aep!!.time = newtime
-                        aep!!.deactivateEvent()
-                        aep!!.deactivatePosition()
+                        animPaused = aep2.isPaused
+                        aep2.isPaused = true
+                        aep2.time = newtime
+                        aep2.deactivateEvent()
+                        aep2.deactivatePosition()
                         if (activeEventitem != null) {
                             try {
-                                aep!!.activateEvent(activeEventitem!!.event)
+                                aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
                                 jei.attachPattern(pat)
                                 handleFatalException(jei)
                             }
                         }
                         if (activePositionitem != null) {
-                            aep!!.activatePosition(activePositionitem!!.position)
+                            aep2.activatePosition(activePositionitem!!.position)
                         }
-                        aep!!.repaint()
+                        aep2.repaint()
                     }
 
                     guiState = STATE_POPUP
@@ -384,7 +380,8 @@ class EditLadderDiagram(
                     }
                     popupX = me.getX()
                     popupY = me.getY()
-                    popupitem = (if (activeEventitem != null) activeEventitem else activePositionitem)
+                    popupitem =
+                        (if (activeEventitem != null) activeEventitem else activePositionitem)
                     if (popupitem == null) {
                         popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
                     }
@@ -407,10 +404,8 @@ class EditLadderDiagram(
                     } else if (itemWasSelected) {
                         // clicked without moving --> deselect
                         activeEventitem = null
-                        if (aep != null) {
-                            aep!!.deactivateEvent()
-                            aep!!.repaint()
-                        }
+                        aep2?.deactivateEvent()
+                        aep2?.repaint()
                         repaint()
                     }
                 }
@@ -422,19 +417,15 @@ class EditLadderDiagram(
                         addToUndoList()
                     } else if (itemWasSelected) {
                         activePositionitem = null
-                        if (aep != null) {
-                            aep!!.deactivatePosition()
-                            aep!!.repaint()
-                        }
+                        aep2?.deactivatePosition()
+                        aep2?.repaint()
                         repaint()
                     }
                 }
 
                 STATE_MOVING_TRACKER -> {
                     guiState = STATE_INACTIVE
-                    if (aep != null) {
-                        aep!!.isPaused = animPaused
-                    }
+                    aep2?.isPaused = animPaused
                     repaint()
                 }
 
@@ -448,7 +439,8 @@ class EditLadderDiagram(
     //--------------------------------------------------------------------------
 
     override fun mouseDragged(me: MouseEvent) {
-        if (aep != null && (aep!!.writingGIF || !aep!!.engineAnimating)) {
+        val aep2 = aep
+        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
             return
         }
 
@@ -482,12 +474,12 @@ class EditLadderDiagram(
             STATE_MOVING_TRACKER -> {
                 trackerY = my
                 this@EditLadderDiagram.repaint()
-                if (aep != null) {
+                if (aep2 != null) {
                     val scale =
                         (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
                     val newtime = (my - BORDER_TOP).toDouble() * scale
-                    aep!!.time = newtime
-                    aep!!.repaint()
+                    aep2.time = newtime
+                    aep2.repaint()
                 }
             }
         }
@@ -515,7 +507,10 @@ class EditLadderDiagram(
                             ) != null || ev.getPathTransition(
                                 tr.path,
                                 JMLTransition.TRANS_SOFTCATCH
-                            ) != null || ev.getPathTransition(tr.path, JMLTransition.TRANS_GRABCATCH) != null
+                            ) != null || ev.getPathTransition(
+                                tr.path,
+                                JMLTransition.TRANS_GRABCATCH
+                            ) != null
                         ) {
                             break
                         }
@@ -525,10 +520,8 @@ class EditLadderDiagram(
                         handleFatalException(
                             JuggleExceptionInternal("Null event 1 in mousePressed()", pat)
                         )
-                        if (parentFrame != null) {
-                            parentFrame!!.dispose()
-                            parentFrame = null
-                        }
+                        parentFrame?.dispose()
+                        parentFrame = null
                         return
                     }
                     tmin = max(tmin, ev.t + MIN_THROW_SEP_TIME)
@@ -559,10 +552,8 @@ class EditLadderDiagram(
                         handleFatalException(
                             JuggleExceptionInternal("Null event 2 in mousePressed()", pat)
                         )
-                        if (parentFrame != null) {
-                            parentFrame!!.dispose()
-                            parentFrame = null
-                        }
+                        parentFrame?.dispose()
+                        parentFrame = null
                         return
                     }
                     tmax = min(tmax, ev.t - MIN_THROW_SEP_TIME)
@@ -791,10 +782,8 @@ class EditLadderDiagram(
                         handleFatalException(
                             JuggleExceptionInternal("Null transition in removing hold", pat)
                         )
-                        if (parentFrame != null) {
-                            parentFrame!!.dispose()
-                            parentFrame = null
-                        }
+                        parentFrame?.dispose()
+                        parentFrame = null
                         return
                     }
                     ev.removeTransition(tr)
@@ -994,7 +983,7 @@ class EditLadderDiagram(
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
         jd.isVisible = true
-        parentFrame!!.setTitle(pat.title)
+        parentFrame?.setTitle(pat.title)
     }
 
     private fun changeTiming() {
@@ -1080,10 +1069,8 @@ class EditLadderDiagram(
             pat.getHandCoordinate(juggler, hand, evtime, evpos)
         } catch (jei: JuggleExceptionInternal) {
             handleFatalException(jei)
-            if (parentFrame != null) {
-                parentFrame!!.dispose()
-                parentFrame = null
-            }
+            parentFrame?.dispose()
+            parentFrame = null
             return null
         }
 
@@ -1096,7 +1083,6 @@ class EditLadderDiagram(
         // add holding transitions to the new event, if hand is filled
         for (i in 0..<pat.numberOfPaths) {
             var holding = false
-
             var evt = ev.previous
             while (evt != null) {
                 val tr = evt.getPathTransition(i + 1, JMLTransition.TRANS_ANY)
@@ -1120,13 +1106,10 @@ class EditLadderDiagram(
         }
 
         activeEventitem = null
-        if (aep != null) {
-            aep!!.deactivateEvent()
-        }
+        aep?.deactivateEvent()
         layoutPattern(true)
         createView()
         repaint()
-
         return ev
     }
 
@@ -1144,9 +1127,7 @@ class EditLadderDiagram(
         }
         pat.removeEvent(ev)
         activeEventitem = null
-        if (aep != null) {
-            aep!!.deactivateEvent()
-        }
+        aep?.deactivateEvent()
         layoutPattern(true)
         createView()
         repaint()
@@ -1185,13 +1166,10 @@ class EditLadderDiagram(
         pat.addPosition(pos)
 
         activeEventitem = null
-        if (aep != null) {
-            aep!!.deactivateEvent()
-        }
+        aep?.deactivateEvent()
         layoutPattern(true)
         createView()
         repaint()
-
         return pos
     }
 
@@ -1205,9 +1183,7 @@ class EditLadderDiagram(
         val pos = (popupitem as LadderPositionItem).position
         pat.removePosition(pos!!)
         activePositionitem = null
-        if (aep != null) {
-            aep!!.deactivatePosition()
-        }
+        aep?.deactivatePosition()
         layoutPattern(true)
         createView()
         repaint()
@@ -1544,9 +1520,7 @@ class EditLadderDiagram(
         ev.removeTransition(tr)
         ev.addTransition(tr) // will add at end
         activeEventitem = null // deselect event since it's moving
-        if (aep != null) {
-            aep!!.deactivateEvent()
-        }
+        aep?.deactivateEvent()
         layoutPattern(true)
         createView()
         repaint()
@@ -1633,7 +1607,9 @@ class EditLadderDiagram(
                         val scaleFactor = maxHeight / icon.iconHeight
                         val height = (scaleFactor * icon.iconHeight).toInt()
                         val width = (scaleFactor * icon.iconWidth).toInt()
-                        icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH))
+                        icon.setImage(
+                            icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH)
+                        )
                     }
                     val label = JLabel(icon)
 
@@ -1641,10 +1617,15 @@ class EditLadderDiagram(
                     label.addMouseListener(
                         object : MouseAdapter() {
                             override fun mouseClicked(e: MouseEvent?) {
-                                jfc
-                                    .setFileFilter(
-                                        FileNameExtensionFilter("Image file", "jpg", "jpeg", "gif", "png")
+                                jfc.setFileFilter(
+                                    FileNameExtensionFilter(
+                                        "Image file",
+                                        "jpg",
+                                        "jpeg",
+                                        "gif",
+                                        "png"
                                     )
+                                )
                                 val result = jfc.showOpenDialog(this@EditLadderDiagram)
                                 if (result != JFileChooser.APPROVE_OPTION) {
                                     return
@@ -1763,9 +1744,7 @@ class EditLadderDiagram(
         popupitem = null
         if (guiState == STATE_POPUP) {
             guiState = STATE_INACTIVE
-            if (aep != null) {
-                aep!!.isPaused = animPaused
-            }
+            aep?.isPaused = animPaused
         }
     }
 
@@ -1792,60 +1771,62 @@ class EditLadderDiagram(
         if (!paintLadder(gr)) return
 
         // draw the box around the selected position
-        if (activePositionitem != null) {
+        val api = activePositionitem
+        if (api != null) {
             gr.color = COLOR_SELECTION
             gr.drawLine(
-                activePositionitem!!.xLow - 1,
-                activePositionitem!!.yLow - 1,
-                activePositionitem!!.xHigh + 1,
-                activePositionitem!!.yLow - 1
+                api.xLow - 1,
+                api.yLow - 1,
+                api.xHigh + 1,
+                api.yLow - 1
             )
             gr.drawLine(
-                activePositionitem!!.xHigh + 1,
-                activePositionitem!!.yLow - 1,
-                activePositionitem!!.xHigh + 1,
-                activePositionitem!!.yHigh + 1
+                api.xHigh + 1,
+                api.yLow - 1,
+                api.xHigh + 1,
+                api.yHigh + 1
             )
             gr.drawLine(
-                activePositionitem!!.xHigh + 1,
-                activePositionitem!!.yHigh + 1,
-                activePositionitem!!.xLow,
-                activePositionitem!!.yHigh + 1
+                api.xHigh + 1,
+                api.yHigh + 1,
+                api.xLow,
+                api.yHigh + 1
             )
             gr.drawLine(
-                activePositionitem!!.xLow - 1,
-                activePositionitem!!.yHigh + 1,
-                activePositionitem!!.xLow - 1,
-                activePositionitem!!.yLow - 1
+                api.xLow - 1,
+                api.yHigh + 1,
+                api.xLow - 1,
+                api.yLow - 1
             )
         }
 
         // draw the box around the selected event
-        if (activeEventitem != null) {
+        val aei = activeEventitem
+        if (aei != null) {
             gr.color = COLOR_SELECTION
             gr.drawLine(
-                activeEventitem!!.xlow - 1,
-                activeEventitem!!.ylow - 1,
-                activeEventitem!!.xhigh + 1,
-                activeEventitem!!.ylow - 1
+                aei.xlow - 1,
+                aei.ylow - 1,
+                aei.xhigh + 1,
+                aei.ylow - 1
             )
             gr.drawLine(
-                activeEventitem!!.xhigh + 1,
-                activeEventitem!!.ylow - 1,
-                activeEventitem!!.xhigh + 1,
-                activeEventitem!!.yhigh + 1
+                aei.xhigh + 1,
+                aei.ylow - 1,
+                aei.xhigh + 1,
+                aei.yhigh + 1
             )
             gr.drawLine(
-                activeEventitem!!.xhigh + 1,
-                activeEventitem!!.yhigh + 1,
-                activeEventitem!!.xlow,
-                activeEventitem!!.yhigh + 1
+                aei.xhigh + 1,
+                aei.yhigh + 1,
+                aei.xlow,
+                aei.yhigh + 1
             )
             gr.drawLine(
-                activeEventitem!!.xlow - 1,
-                activeEventitem!!.yhigh + 1,
-                activeEventitem!!.xlow - 1,
-                activeEventitem!!.ylow - 1
+                aei.xlow - 1,
+                aei.yhigh + 1,
+                aei.xlow - 1,
+                aei.ylow - 1
             )
         }
 
@@ -1965,7 +1946,7 @@ class EditLadderDiagram(
                     val evm1 = if (evitem.event!!.isMaster) evitem.event else evitem.event!!.master
                     var ev = evitem.event!!.next
                     while (ev != null) {
-                        if ((ev.hand == hand) && (ev.juggler == juggler)) {
+                        if (ev.hand == hand && ev.juggler == juggler) {
                             val evm2 = if (ev.isMaster) ev else ev.master
                             if (evm1 == evm2) {
                                 return false
@@ -1993,17 +1974,21 @@ class EditLadderDiagram(
                 when (command) {
                     "makelast" ->
                         return evitem.transnum != (evitem.event!!.numberOfTransitions - 1)
+
                     "definethrow" ->
                         return tr.transType == JMLTransition.TRANS_THROW
+
                     "changetocatch" ->
                         return tr.transType == JMLTransition.TRANS_SOFTCATCH
-                                || tr.transType == JMLTransition.TRANS_GRABCATCH
+                            || tr.transType == JMLTransition.TRANS_GRABCATCH
+
                     "changetosoftcatch" ->
                         return tr.transType == JMLTransition.TRANS_CATCH
-                                || tr.transType == JMLTransition.TRANS_GRABCATCH
+                            || tr.transType == JMLTransition.TRANS_GRABCATCH
+
                     "changetograbcatch" ->
                         return tr.transType == JMLTransition.TRANS_CATCH
-                                || tr.transType == JMLTransition.TRANS_SOFTCATCH
+                            || tr.transType == JMLTransition.TRANS_SOFTCATCH
                 }
             } else if (laditem.type == LadderItem.TYPE_POSITION) {
                 return !mutableListOf(
