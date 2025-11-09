@@ -40,9 +40,7 @@ abstract class View : JPanel() {
         protected set
 
     val hashCode: Int
-        get() {
-            return pattern?.hashCode ?: 0
-        }
+        get() = pattern?.hashCode ?: 0
 
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality.
@@ -51,29 +49,26 @@ abstract class View : JPanel() {
     // we switch views. All of the methods are here however in case we want to
     // embed the View in something other than a PatternWindow in the future.
     //--------------------------------------------------------------------------
-    
+
     // For the PatternWindow to pass into a newly-initialized view.
 
     fun setUndoList(u: ArrayList<JMLPattern>, uIndex: Int) {
         undo = u
-        this.undoIndex = uIndex
+        undoIndex = uIndex
     }
 
     // Add a pattern to the undo list.
 
     fun addToUndoList(p: JMLPattern) {
         try {
-            val pcopy = JMLPattern(p) // add copy so it won't change
-            ++this.undoIndex
-            undo!!.add(this.undoIndex, pcopy)
-            while (this.undoIndex + 1 < undo!!.size) {
-                undo!!.removeAt(this.undoIndex + 1)
+            ++undoIndex
+            undo!!.add(undoIndex, JMLPattern(p))  // add a copy
+            while (undoIndex + 1 < undo!!.size) {
+                undo!!.removeAt(undoIndex + 1)
             }
-
-            if (patternWindow != null) {
-                patternWindow!!.updateUndoMenu()
-            }
+            patternWindow?.updateUndoMenu()
         } catch (jeu: JuggleExceptionUser) {
+            // pattern was animated before so user error should not occur
             handleFatalException(JuggleExceptionInternal(jeu.message))
         } catch (jei: JuggleExceptionInternal) {
             handleFatalException(jei)
@@ -84,22 +79,17 @@ abstract class View : JPanel() {
 
     @Throws(JuggleExceptionInternal::class)
     fun undoEdit() {
-        if (this.undoIndex > 0) {
-            try {
-                --this.undoIndex
-                val pcopy = JMLPattern(undo!![this.undoIndex])
-                restartView(pcopy, null)
-
-                if (this.undoIndex == 0 || this.undoIndex == undo!!.size - 2) {
-                    if (patternWindow != null) {
-                        patternWindow!!.updateUndoMenu()
-                    }
-                }
-            } catch (jeu: JuggleExceptionUser) {
-                // errors here aren't user errors since pattern was successfully
-                // animated before
-                throw JuggleExceptionInternal(jeu.message)
+        if (undoIndex == 0)
+            return
+        try {
+            --undoIndex
+            restartView(JMLPattern(undo!![undoIndex]), null)
+            if (undoIndex == 0 || undoIndex == undo!!.size - 2) {
+                patternWindow?.updateUndoMenu()
             }
+        } catch (jeu: JuggleExceptionUser) {
+            // pattern was animated before so user error should not occur
+            throw JuggleExceptionInternal(jeu.message)
         }
     }
 
@@ -107,20 +97,17 @@ abstract class View : JPanel() {
 
     @Throws(JuggleExceptionInternal::class)
     fun redoEdit() {
-        if (this.undoIndex < undo!!.size - 1) {
-            try {
-                ++this.undoIndex
-                val pcopy = JMLPattern(undo!![this.undoIndex])
-                restartView(pcopy, null)
-
-                if (this.undoIndex == 1 || this.undoIndex == undo!!.size - 1) {
-                    if (patternWindow != null) {
-                        patternWindow!!.updateUndoMenu()
-                    }
-                }
-            } catch (jeu: JuggleExceptionUser) {
-                throw JuggleExceptionInternal(jeu.message)
+        if (undoIndex == undo!!.size - 1)
+            return
+        try {
+            ++undoIndex
+            restartView(JMLPattern(undo!![undoIndex]), null)
+            if (undoIndex == 1 || undoIndex == undo!!.size - 1) {
+                patternWindow?.updateUndoMenu()
             }
+        } catch (jeu: JuggleExceptionUser) {
+            // pattern was animated before so user error should not occur
+            throw JuggleExceptionInternal(jeu.message)
         }
     }
 
@@ -183,6 +170,7 @@ abstract class View : JPanel() {
                         pm.setProgress(step)
                     }
                 }
+
                 override val isCanceled: Boolean
                     get() = (pm.isCanceled() || interrupted())
             }
@@ -227,7 +215,10 @@ abstract class View : JPanel() {
         // same order as VIEW_ constants above
         @JvmField
         val viewNames: Array<String> = arrayOf(
-            "simple", "visual_editor", "pattern_editor", "selection_editor",
+            "simple",
+            "visual_editor",
+            "pattern_editor",
+            "selection_editor",
         )
     }
 }
