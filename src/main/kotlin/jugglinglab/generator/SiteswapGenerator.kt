@@ -86,8 +86,6 @@ class SiteswapGenerator : Generator() {
     private lateinit var throwValue: Array<Array<IntArray>>
     private lateinit var mpFilter: Array<Array<Array<IntArray>>>
     private var patternPrintx: Boolean = false
-    private lateinit var scratch1: IntArray
-    private lateinit var scratch2: IntArray
     private lateinit var connections: BooleanArray
     private lateinit var startingSeq: String
     private lateinit var endingSeq: String
@@ -256,6 +254,7 @@ class SiteswapGenerator : Generator() {
                         ++i
                     }
                 }
+
                 "-j" -> {
                     if (i < (args.size - 1) && args[i + 1][0] != '-') {
                         try {
@@ -274,6 +273,7 @@ class SiteswapGenerator : Generator() {
                         ++i
                     }
                 }
+
                 "-d" -> {
                     if (i < (args.size - 1) && args[i + 1][0] != '-') {
                         try {
@@ -294,6 +294,7 @@ class SiteswapGenerator : Generator() {
                         ++i
                     }
                 }
+
                 "-l" -> {
                     if (i < (args.size - 1) && args[i + 1][0] != '-') {
                         try {
@@ -313,6 +314,7 @@ class SiteswapGenerator : Generator() {
                         ++i
                     }
                 }
+
                 "-x" -> {
                     ++i
                     while (i < args.size && args[i][0] != '-') {
@@ -332,6 +334,7 @@ class SiteswapGenerator : Generator() {
                     }
                     --i
                 }
+
                 "-i" -> {
                     ++i
                     while (i < args.size && args[i][0] != '-') {
@@ -351,6 +354,7 @@ class SiteswapGenerator : Generator() {
                     }
                     --i
                 }
+
                 else -> {
                     val template: String = errorstrings.getString("Error_unrecognized_option")
                     val arguments = arrayOf<Any?>(args[i])
@@ -525,6 +529,7 @@ class SiteswapGenerator : Generator() {
                     ++i
                 }
             }
+
             SYNC -> {
                 rhythmRepunit = Array(2 * jugglers) { IntArray(2) }
                 holdthrow = IntArray(2 * jugglers)
@@ -573,12 +578,6 @@ class SiteswapGenerator : Generator() {
         }
 
         throwsLeft = Array(lMax) { IntArray(hands) }
-
-        if (jugglers > 1) {
-            // passing communication delay variables
-            scratch1 = IntArray(hands)
-            scratch2 = IntArray(hands)
-        }
 
         if (connectedPatternsFlag) {
             connections = BooleanArray(jugglers)
@@ -1022,53 +1021,65 @@ class SiteswapGenerator : Generator() {
 
         // check #3: if passing, look for an adequate communication delay
         if (jugglers > 1 && beat < delaytime) {
-            // Count the number of balls being thrown, assuming no
-            // multiplexing. Also check if leader is forcing others to
-            // multiplex or make no throw.
+            // Count the number of balls being thrown on this beat, assuming no
+            // multiplexing. Also check if leader is forcing others to multiplex
+            // or make no throw.
             var ballsThrown = 0
-            for (i in 0..<hands) {
-                if (rhythm[beat][i][0] != 0) {
+            for (h in 0..<hands) {
+                if (rhythm[beat][h][0] != 0) {
                     ++ballsThrown
-                    if (state[beat][i][0] != 1 && personNumber[i] != leaderPerson) {
+                    if (state[beat][h][0] != 1 && personNumber[h] != leaderPerson) {
                         return false
                     }
                 }
             }
+            assert(ballsThrown <= hands)
+
+            // figure out where the jugglers would throw objects on this beat
+            // in the "base" ground state pattern
+            val basePatternHand = IntArray(hands)
+            val basePatternValue = IntArray(hands)
             var ballsLeft = n
-            for (i in 0..<ht) {
-                if (ballsLeft == 0) break
-                for (j in 0..<hands) {
-                    if (ballsLeft == 0) break
-                    if (rhythm[beat + 1][j][i] != 0) {
-                        if (--ballsLeft < ballsThrown) {
-                            scratch1[ballsLeft] = j // dest hand #
-                            scratch2[ballsLeft] = i + 1 // dest value
-                        }
+            placeballs@ for (i in 0..<ht) {
+                for (h in 0..<hands) {
+                    if (rhythm[beat + 1][h][i] == 0)
+                        continue
+                    --ballsLeft
+                    if (ballsLeft < ballsThrown) {
+                        basePatternHand[ballsLeft] = h  // dest hand #
+                        basePatternValue[ballsLeft] = i + 1  // dest value
+                    }
+                    if (ballsLeft == 0) {
+                        break@placeballs
                     }
                 }
             }
             if (ballsLeft != 0) {
                 return false  // shouldn't happen, but die anyway
             }
-            for (i in 0..<hands) {
-                if (state[beat][i][0] != 0 && personNumber[i] != leaderPerson) {
-                    var foundSpot = false
 
-                    for (j in 0..<ballsThrown) {
-                        if (scratch1[j] == throwTo[beat][i][0] &&
-                            scratch2[j] == throwValue[beat][i][0]
-                        ) {
-                            scratch2[j] = 0  // don't throw to spot again
-                            foundSpot = true
-                            break
-                        }
+            // check whether non-leader jugglers are continuing with their base
+            // pattern throws
+            for (h in 0..<hands) {
+                if (state[beat][h][0] == 0 || personNumber[h] == leaderPerson)
+                    continue
+
+                var foundSpot = false
+                for (b in 0..<ballsThrown) {
+                    if (basePatternHand[b] == throwTo[beat][h][0] &&
+                        basePatternValue[b] == throwValue[beat][h][0]
+                    ) {
+                        basePatternValue[b] = 0  // don't throw to spot again
+                        foundSpot = true
+                        break
                     }
-                    if (!foundSpot) {
-                        return false
-                    }
+                }
+                if (!foundSpot) {
+                    return false
                 }
             }
         }
+
         return true
     }
 
