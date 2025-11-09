@@ -131,10 +131,8 @@ class EditLadderDiagram(
             synchronized(pat) {
                 pat.setNeedsLayout()
                 pat.layoutPattern()
-                if (aep != null) {
-                    aep!!.animator.initAnimator()
-                    aep!!.repaint()
-                }
+                aep?.animator?.initAnimator()
+                aep?.repaint()
             }
 
             if (undo) {
@@ -146,10 +144,8 @@ class EditLadderDiagram(
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
             handleFatalException(je)
-            if (parentFrame != null) {
-                parentFrame!!.dispose()
-                parentFrame = null
-            }
+            parentFrame?.dispose()
+            parentFrame = null
         }
     }
 
@@ -323,6 +319,7 @@ class EditLadderDiagram(
                         }
                     }
                 }
+
                 STATE_MOVING_EVENT -> {}
                 STATE_MOVING_POSITION -> {}
                 STATE_MOVING_TRACKER -> {}
@@ -533,7 +530,9 @@ class EditLadderDiagram(
                     }
                 }
 
-                JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
+                JMLTransition.TRANS_CATCH,
+                JMLTransition.TRANS_SOFTCATCH,
+                JMLTransition.TRANS_GRABCATCH -> {
                     // previous throw is easy to find
                     var ev: JMLEvent? = tr.incomingPathLink!!.startEvent
                     if (!ev!!.hasSameMasterAs(item.event!!)) {
@@ -570,7 +569,6 @@ class EditLadderDiagram(
 
     private fun getClippedEventTime(me: MouseEvent, event: JMLEvent): Int {
         var dy = me.getY() - startY
-
         dy = min(max(dy, deltaYMin), deltaYMax)
 
         val scale =
@@ -676,25 +674,25 @@ class EditLadderDiagram(
             ev = ev.previous
             while (ev != null && ev.t > newt) {
                 if (!ev.hasSameMasterAs(item.event!!) && ev.juggler == item.event!!.juggler && ev.hand == item.event!!.hand) {
-                    run {
-                        var j = 0
-                        while (j < ev.numberOfTransitions) {
-                            val tr = ev.getTransition(j)
-                            when (tr.transType) {
-                                JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = true
-                                JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] =
-                                    false
+                    var j = 0
+                    while (j < ev.numberOfTransitions) {
+                        val tr = ev.getTransition(j)
+                        when (tr.transType) {
+                            JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = true
 
-                                JMLTransition.TRANS_HOLDING -> if (throwpath[tr.path - 1]) {
-                                    ev.removeTransition(j)
-                                    if (!ev.isMaster) {
-                                        ev.master.removeTransition(j)
-                                    }
-                                    j-- // next trans moved into slot
+                            JMLTransition.TRANS_CATCH,
+                            JMLTransition.TRANS_SOFTCATCH,
+                            JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] = false
+
+                            JMLTransition.TRANS_HOLDING -> if (throwpath[tr.path - 1]) {
+                                ev.removeTransition(j)
+                                if (!ev.isMaster) {
+                                    ev.master.removeTransition(j)
                                 }
+                                j--  // next trans moved into slot
                             }
-                            j++
                         }
+                        j++
                     }
 
                     for (j in 0..<pat.numberOfPaths) {
@@ -718,25 +716,25 @@ class EditLadderDiagram(
             ev = ev.next
             while (ev != null && ev.t < newt) {
                 if (!ev.hasSameMasterAs(item.event!!) && ev.juggler == item.event!!.juggler && ev.hand == item.event!!.hand) {
-                    run {
-                        var j = 0
-                        while (j < ev.numberOfTransitions) {
-                            val tr = ev.getTransition(j)
-                            when (tr.transType) {
-                                JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = false
-                                JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] =
-                                    true
+                    var j = 0
+                    while (j < ev.numberOfTransitions) {
+                        val tr = ev.getTransition(j)
+                        when (tr.transType) {
+                            JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = false
 
-                                JMLTransition.TRANS_HOLDING -> if (catchpath[tr.path - 1]) {
-                                    ev.removeTransition(j)
-                                    if (!ev.isMaster) {
-                                        ev.master.removeTransition(j)
-                                    }
-                                    j--
+                            JMLTransition.TRANS_CATCH,
+                            JMLTransition.TRANS_SOFTCATCH,
+                            JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] = true
+
+                            JMLTransition.TRANS_HOLDING -> if (catchpath[tr.path - 1]) {
+                                ev.removeTransition(j)
+                                if (!ev.isMaster) {
+                                    ev.master.removeTransition(j)
                                 }
+                                j--
                             }
-                            j++
                         }
+                        j++
                     }
 
                     for (j in 0..<pat.numberOfPaths) {
@@ -812,7 +810,6 @@ class EditLadderDiagram(
 
     private fun getClippedPositionTime(me: MouseEvent, position: JMLPosition): Int {
         var dy = me.getY() - startY
-
         dy = min(max(dy, deltaYMin), deltaYMax)
 
         val scale =
@@ -872,7 +869,6 @@ class EditLadderDiagram(
 
     private fun movePositionInPattern(item: LadderPositionItem) {
         val pos = item.position
-
         val scale =
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
@@ -893,7 +889,6 @@ class EditLadderDiagram(
 
         for (i in popupItems.indices) {
             val name: String? = popupItems[i]
-
             if (name == null) {
                 popup.addSeparator()
                 continue
@@ -904,7 +899,6 @@ class EditLadderDiagram(
             item.actionCommand = command
             item.addActionListener(this)
             item.setEnabled(isCommandEnabled(laditem, command))
-
             popup.add(item)
         }
 
@@ -915,9 +909,7 @@ class EditLadderDiagram(
                 override fun popupMenuCanceled(e: PopupMenuEvent?) {
                     finishPopup()
                 }
-
                 override fun popupMenuWillBecomeInvisible(e: PopupMenuEvent?) {}
-
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {}
             })
 

@@ -143,7 +143,7 @@ object JugglingLab {
             return
         }
 
-        val modes = mutableListOf<String?>("gen", "trans", "verify", "anim", "togif", "tojml")
+        val modes = mutableListOf("gen", "trans", "verify", "anim", "togif", "tojml")
         val showHelp = !modes.contains(firstarg)
 
         if (showHelp) {
@@ -214,8 +214,7 @@ object JugglingLab {
         if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)) {
             return
         }
-        Desktop.getDesktop()
-            .setAboutHandler { _: AboutEvent? -> showAboutBox() }
+        Desktop.getDesktop().setAboutHandler { _: AboutEvent? -> showAboutBox() }
     }
 
     // Open the JML file(s) whose paths are given as command-line arguments.
@@ -315,8 +314,8 @@ object JugglingLab {
         System.setProperty("java.awt.headless", "true")
         var template = guistrings.getString("Version")
         val arg1 = arrayOf<Any?>(Constants.VERSION)
-        var output = "Juggling Lab " + MessageFormat.format(template, *arg1)
-            .lowercase(Locale.getDefault()) + "\n"
+        var output = "Juggling Lab " +
+            MessageFormat.format(template, *arg1).lowercase(Locale.getDefault()) + "\n"
         template = guistrings.getString("Copyright_message")
         val arg2 = arrayOf<Any?>(Constants.YEAR)
         output += MessageFormat.format(template, *arg2) + "\n"

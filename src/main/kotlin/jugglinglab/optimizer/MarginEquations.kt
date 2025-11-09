@@ -18,16 +18,22 @@ import kotlin.math.abs
 class MarginEquations() {
     // number of variables in margin equations
     var varsNum: Int = 0
+
     // corresponding JMLEvents, one per variable
     lateinit var varsEvents: MutableList<JMLEvent>
+
     // current values of variables
     lateinit var varsValues: DoubleArray
+
     // minimum values of variables
     lateinit var varsMin: DoubleArray
+
     // maximum values of variables
     lateinit var varsMax: DoubleArray
+
     // number of distinct margin equations
     var marginsNum: Int = 0
+
     // array of linear equations
     lateinit var marginsEqs: MutableList<LinearEquation>
 
@@ -422,40 +428,37 @@ class MarginEquations() {
         }
 
         var origRow = 1
+        var i = 1
+        while (i < marginsNum) {
+            var dupoverall = false
+            val rowi = eqns[i]
 
-        run {
-            var i = 1
-            while (i < marginsNum) {
-                var dupoverall = false
-                val rowi = eqns[i]
-
-                var j = 0
-                while (!dupoverall && j < i) {
-                    val rowj = eqns[j]
-                    var duprow = true
-                    for (k in 0..varsNum) {
-                        if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON)) {
-                            duprow = false
-                            break
-                        }
+            var j = 0
+            while (!dupoverall && j < i) {
+                val rowj = eqns[j]
+                var duprow = true
+                for (k in 0..varsNum) {
+                    if (rowi[k] < (rowj[k] - EPSILON) || rowi[k] > (rowj[k] + EPSILON)) {
+                        duprow = false
+                        break
                     }
-                    dupoverall = duprow
-                    j++
                 }
-
-                if (dupoverall) {
-                    if (Constants.DEBUG_OPTIMIZE) {
-                        println("   removed duplicate equation $origRow")
-                    }
-                    eqns.removeAt(i)
-                    --i
-                    --marginsNum
-                }
-                if (Constants.DEBUG_OPTIMIZE) {
-                    ++origRow
-                }
-                ++i
+                dupoverall = duprow
+                ++j
             }
+
+            if (dupoverall) {
+                if (Constants.DEBUG_OPTIMIZE) {
+                    println("   removed duplicate equation $origRow")
+                }
+                eqns.removeAt(i)
+                --i
+                --marginsNum
+            }
+            if (Constants.DEBUG_OPTIMIZE) {
+                ++origRow
+            }
+            ++i
         }
 
         // Step 8: Move the equations into an array, and sort it based on margins at the

@@ -252,7 +252,12 @@ class SiteswapGenerator : Generator() {
                                 val template: String = errorstrings.getString("Error_number_format")
                                 val str: String? = guistrings.getString("simultaneous_throws")
                                 val arguments = arrayOf<Any?>(str)
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                throw JuggleExceptionUser(
+                                    MessageFormat.format(
+                                        template,
+                                        *arguments
+                                    )
+                                )
                             }
                             ++i
                         }
@@ -266,7 +271,12 @@ class SiteswapGenerator : Generator() {
                                 val template: String = errorstrings.getString("Error_number_format")
                                 val str: String? = guistrings.getString("Jugglers")
                                 val arguments = arrayOf<Any?>(str)
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                throw JuggleExceptionUser(
+                                    MessageFormat.format(
+                                        template,
+                                        *arguments
+                                    )
+                                )
                             }
                             ++i
                         }
@@ -278,9 +288,15 @@ class SiteswapGenerator : Generator() {
                                 delaytime = args[i + 1].toInt()
                             } catch (_: NumberFormatException) {
                                 val template: String = errorstrings.getString("Error_number_format")
-                                val str: String? = guistrings.getString("Passing_communication_delay")
+                                val str: String? =
+                                    guistrings.getString("Passing_communication_delay")
                                 val arguments = arrayOf<Any?>(str)
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                throw JuggleExceptionUser(
+                                    MessageFormat.format(
+                                        template,
+                                        *arguments
+                                    )
+                                )
                             }
                             groundflag = 1 // find only ground state tricks
                             ++i
@@ -293,9 +309,15 @@ class SiteswapGenerator : Generator() {
                                 leaderPerson = args[i + 1].toInt()
                             } catch (_: NumberFormatException) {
                                 val template: String = errorstrings.getString("Error_number_format")
-                                val str: String? = guistrings.getString("Error_passing_leader_number")
+                                val str: String? =
+                                    guistrings.getString("Error_passing_leader_number")
                                 val arguments = arrayOf<Any?>(str)
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                throw JuggleExceptionUser(
+                                    MessageFormat.format(
+                                        template,
+                                        *arguments
+                                    )
+                                )
                             }
                             ++i
                         }
@@ -875,7 +897,8 @@ class SiteswapGenerator : Generator() {
                     break
                 }
 
-                state[pos][throwTo[pos - 1][j][k]][v - 1] = state[pos][throwTo[pos - 1][j][k]][v - 1] + 1
+                state[pos][throwTo[pos - 1][j][k]][v - 1] =
+                    state[pos][throwTo[pos - 1][j][k]][v - 1] + 1
             }
         }
     }
@@ -1000,9 +1023,9 @@ class SiteswapGenerator : Generator() {
             if (Constants.DEBUG_GENERATOR) {
                 println(
                     ("test exclusions for string "
-                            + (String(output, 0, outputpos))
-                            + " = "
-                            + regex.matcher(String(output, 0, outputpos)).matches())
+                        + (String(output, 0, outputpos))
+                        + " = "
+                        + regex.matcher(String(output, 0, outputpos)).matches())
                 )
             }
             if (regex.matcher(String(output, 0, outputpos)).matches()) {
@@ -1065,8 +1088,8 @@ class SiteswapGenerator : Generator() {
 
                     for (j in 0..<ballsThrown) {
                         if (scratch1[j] == throwTo[pos][i][0] &&
-                            scratch2[j] == throwValue[pos][i][0])
-                        {
+                            scratch2[j] == throwValue[pos][i][0]
+                        ) {
                             scratch2[j] = 0  // don't throw to spot again
                             foundSpot = true
                             break
@@ -1101,8 +1124,8 @@ class SiteswapGenerator : Generator() {
                     if (throwValue[i][j][0] == 1 &&
                         personNumber[throwTo[i][j][0]] == personNumber[j] &&
                         throwValue[i + 1][j][0] == 1 &&
-                        personNumber[throwTo[i + 1][j][0]] == personNumber[j])
-                    {
+                        personNumber[throwTo[i + 1][j][0]] == personNumber[j]
+                    ) {
                         if (Constants.DEBUG_GENERATOR) {
                             println("  pattern invalid: 11 sequence")
                         }
@@ -1179,7 +1202,7 @@ class SiteswapGenerator : Generator() {
                     permScratch2[i] = false
                     permScratch1[i] = false
                 }
-                repeat (lTarget) {
+                repeat(lTarget) {
                     var scorem = -1
                     var scoremp1 = -1
                     var maxm = 0
@@ -1442,17 +1465,13 @@ class SiteswapGenerator : Generator() {
     // Print the throws for a given beat.
 
     private fun outputBeat(pos: Int, out: CharArray, outpos: Int): Int {
-        var outpos = outpos
-        var noThrow = true
-        for (i in rhythm[pos].indices) if (rhythm[pos][i][0] != 0) {
-            noThrow = false
-            break
-        }
-        if (noThrow) {
-            return outpos // no throw on this beat
+        val canThrow = rhythm[pos].any { it[0] != 0 }
+        if (!canThrow) {
+            return outpos  // skip output for this beat
         }
 
-        var xSpace = (outpos > 0) // for printing 'x'-valued throws
+        var outpos = outpos
+        var xSpace = (outpos > 0)  // for printing 'x'-valued throws
 
         if (jugglers > 1) {
             out[outpos++] = '<'
@@ -1460,25 +1479,14 @@ class SiteswapGenerator : Generator() {
         }
 
         for (i in 1..jugglers) {
-            // first find the hand numbers corresponding to the person
-            var loHand = 0
-            while (personNumber[loHand] != i) {
-                ++loHand
-            }
-
+            // find hand numbers [loHand, hiHand) corresponding to juggler `i`
+            val loHand = personNumber.indexOfFirst { it == i }
             var hiHand = loHand
             while (hiHand < hands && personNumber[hiHand] == i) {
                 ++hiHand
             }
 
-            // check rhythm to see how many hands are throwing
-            var numHandsThrowing = 0
-            for (j in loHand..<hiHand) {
-                if (rhythm[pos][j][0] != 0) {
-                    ++numHandsThrowing
-                }
-            }
-
+            val numHandsThrowing = (loHand..<hiHand).count { rhythm[pos][it][0] != 0 }
             if (numHandsThrowing > 0) {
                 var parens = false
 
@@ -1493,13 +1501,11 @@ class SiteswapGenerator : Generator() {
                         continue  // hand isn't supposed to throw
                     }
 
-                    var isMultiplex = false
-
-                    if (maxOccupancy > 1 && throwValue[pos][j][1] > 0) {
-                        out[outpos++] = '[' // multiplexing?
+                    val isMultiplex = if (maxOccupancy > 1 && throwValue[pos][j][1] > 0) {
+                        out[outpos++] = '['
                         xSpace = false
-                        isMultiplex = true
-                    }
+                        true
+                    } else false
 
                     // loop over the throws coming out of this hand
                     var gotThrow = false
@@ -1512,29 +1518,28 @@ class SiteswapGenerator : Generator() {
                             out[outpos++] = ' '
                         }
 
-                        out[outpos++] = convertNumber(throwValue[pos][j][k]) // print throw value
+                        out[outpos++] = convertNumber(throwValue[pos][j][k])
                         xSpace = true
 
-                        if (hands > 1) {  // potential ambiguity about destination?
+                        if (hands > 1) {
+                            // potential ambiguity about destination
                             val targetJuggler = personNumber[throwTo[pos][j][k]]
 
-                            // print destination hand, if needed
                             if (patternPrintx) {
-                                // find hand # of destination person
+                                // print destination hand
                                 var q = throwTo[pos][j][k] - 1
                                 var destHand = 0
                                 while (q >= 0 && personNumber[q] == targetJuggler) {
                                     --q
                                     ++destHand
                                 }
-
                                 if (destHand != (j - loHand)) {
                                     out[outpos++] = 'x'
                                 }
                             }
 
-                            // print pass modifier and person number, if needed
                             if (targetJuggler != i) {
+                                // print pass modifier and person number
                                 out[outpos++] = 'p'
                                 if (jugglers > 2) {
                                     out[outpos++] = convertNumber(targetJuggler)
@@ -1548,10 +1553,10 @@ class SiteswapGenerator : Generator() {
                               */
                         }
 
-                        // another multiplexed throw?
                         if (isMultiplex && jugglers > 1 && k != (maxOccupancy - 1) &&
                             throwValue[pos][j][k + 1] > 0
                         ) {
+                            // another multiplexed throw in this group
                             out[outpos++] = '/'
                             xSpace = false
                         }
@@ -1568,7 +1573,8 @@ class SiteswapGenerator : Generator() {
                         xSpace = false
                     }
 
-                    if (j < (hiHand - 1) && parens) {  // put comma between hands
+                    if (j < (hiHand - 1) && parens) {
+                        // put comma between hands
                         out[outpos++] = ','
                         xSpace = false
                     }
@@ -1578,7 +1584,8 @@ class SiteswapGenerator : Generator() {
                     xSpace = false
                 }
             }
-            if (i < jugglers) {  // another person throwing next?
+            if (i < jugglers) {
+                // another person throwing next
                 out[outpos++] = '|'
                 xSpace = false
             }
@@ -1638,7 +1645,10 @@ class SiteswapGenerator : Generator() {
             }
         }
 
-        target!!.writePattern(outputline.toString(), "siteswap", outputline2.toString().trim { it <= ' ' })
+        target!!.writePattern(
+            outputline.toString(),
+            "siteswap",
+            outputline2.toString().trim { it <= ' ' })
     }
 
     // Add a throw to a multiplexing filter slot (part of the multiplexing
@@ -1646,7 +1656,13 @@ class SiteswapGenerator : Generator() {
     //
     // Returns 1 if there is a collision, 0 otherwise.
 
-    private fun addThrowMPFilter(destSlot: IntArray, slotHand: Int, type: Int, value: Int, from: Int): Int {
+    private fun addThrowMPFilter(
+        destSlot: IntArray,
+        slotHand: Int,
+        type: Int,
+        value: Int,
+        from: Int
+    ): Int {
         when (type) {
             MP_EMPTY -> return 0
             MP_LOWER_BOUND -> {
@@ -1697,10 +1713,9 @@ class SiteswapGenerator : Generator() {
         // find the number of beats in starting sequence
         var startBeats = 0
 
-        findstarting1@ do {
+        findstarting1@ while (true) {
             for (j in 0..<hands) {
                 for (k in 0..<ht) {
-                    // use p_s[1] as scratch
                     if ((k + startBeats) < groundStateLength) {
                         state[1][j][k] = groundState[j][k + startBeats]
                     } else {
@@ -1715,9 +1730,8 @@ class SiteswapGenerator : Generator() {
                     state[1][j][k] = state[0][j][k] - state[1][j][k]
                 }
             }
-
             break
-        } while (true)
+        }
 
         for (i in 0..<startBeats) {
             for (j in 0..<hands) {
@@ -1818,45 +1832,31 @@ class SiteswapGenerator : Generator() {
 
     private fun findGround() {
         var ballsLeft = n
-
-        run {
-            var i = 0
-            while (ballsLeft != 0) {
-                var j = 0
-                while (j < hands && ballsLeft != 0) {
-                    if (rhythmRepunit[j][i % rhythmPeriod] != 0) {
-                        --ballsLeft
-                        if (ballsLeft == 0) {
-                            groundStateLength = i + 1
-                        }
-                    }
-                    ++j
+        var i = 0
+        findlength@ while (true) {
+            for (j in 0..<hands) {
+                if (rhythmRepunit[j][i % rhythmPeriod] != 0) {
+                    if (--ballsLeft != 0)
+                        continue
+                    groundStateLength = max(i + 1, ht)
+                    break@findlength
                 }
-                ++i
             }
-        }
-
-        if (groundStateLength < ht) {
-            groundStateLength = ht
+            ++i
         }
 
         groundState = Array(hands) { IntArray(groundStateLength) }
-        for (i in 0..<hands) {
-            for (j in 0..<groundStateLength) {
-                groundState[i][j] = 0
-            }
-        }
 
         ballsLeft = n
-        var i = 0
-        while (ballsLeft != 0) {
-            var j = 0
-            while (j < hands && ballsLeft != 0) {
-                if (rhythmRepunit[j][i % rhythmPeriod] != 0) {  // available slots
+        i = 0
+        findstate@ while (true) {
+            for (j in 0..<hands) {
+                if (rhythmRepunit[j][i % rhythmPeriod] != 0) {
+                    // available slot
                     groundState[j][i] = 1
-                    --ballsLeft
+                    if (--ballsLeft == 0)
+                        break@findstate
                 }
-                ++j
             }
             ++i
         }
@@ -1875,7 +1875,7 @@ class SiteswapGenerator : Generator() {
         }
         for (i in 0..lastIndex) {
             for (j in 0..<hands) {
-                println("  s[" + j + "][" + i + "] = " + st[j][i])
+                println("  s[$j][$i] = ${st[j][i]}")
             }
         }
     }
@@ -1897,8 +1897,13 @@ class SiteswapGenerator : Generator() {
         // max. # of chars. printed per throw
         private const val CHARS_PER_THROW = 50
 
-        private val async_rhythm_repunit: Array<IntArray> = arrayOf<IntArray>(intArrayOf(1))
-        private val sync_rhythm_repunit: Array<IntArray> = arrayOf<IntArray>(intArrayOf(1, 0), intArrayOf(1, 0))
+        private val async_rhythm_repunit: Array<IntArray> = arrayOf(
+            intArrayOf(1),
+        )
+        private val sync_rhythm_repunit: Array<IntArray> = arrayOf(
+            intArrayOf(1, 0),
+            intArrayOf(1, 0),
+        )
         private const val LOOP_COUNTER_MAX = 20000
 
         // Return throw value as single character.
@@ -2063,7 +2068,8 @@ class SiteswapGenerator : Generator() {
                 var template: String = guistrings.getString("Version")
                 val arg1 = arrayOf<Any?>(Constants.VERSION)
                 var output: String =
-                    "Juggling Lab " + MessageFormat.format(template, *arg1).lowercase(Locale.getDefault()) + "\n"
+                    "Juggling Lab " + MessageFormat.format(template, *arg1)
+                        .lowercase(Locale.getDefault()) + "\n"
 
                 template = guistrings.getString("Copyright_message")
                 val arg2 = arrayOf<Any?>(Constants.YEAR)
