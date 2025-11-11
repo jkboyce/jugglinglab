@@ -18,22 +18,30 @@ import java.io.PrintStream
 import javax.swing.SwingUtilities
 
 class GeneratorTarget {
-    var ltarget: PatternListPanel? = null
-    var ptarget: PrintStream? = null
-    var btarget: StringBuilder? = null
+    // only one of these is non-null, which defines the target for output
+    var patterns: ArrayList<String>? = null
+    var listTarget: PatternListPanel? = null
+    var printTarget: PrintStream? = null
+    var stringTarget: StringBuilder? = null
+
     var prefix: String? = null
     var suffix: String? = null
 
+    constructor() {
+        // this form is used for testing
+        patterns = ArrayList()
+    }
+
     constructor(target: PatternListPanel) {
-        this.ltarget = target
+        listTarget = target
     }
 
     constructor(ps: PrintStream) {
-        this.ptarget = ps
+        printTarget = ps
     }
 
     constructor(sb: StringBuilder) {
-        this.btarget = sb
+        stringTarget = sb
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -51,7 +59,7 @@ class GeneratorTarget {
 
         @Suppress("KotlinConstantConditions")
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
-            if (ltarget != null || ptarget != null) {
+            if (listTarget != null || printTarget != null) {
                 if (notation.equals("siteswap", ignoreCase = true) && !anim.isEmpty()) {
                     try {
                         SiteswapPattern().fromString(anim)
@@ -65,16 +73,15 @@ class GeneratorTarget {
             }
         }
 
-        if (ltarget != null) {
+        if (anim.isNotEmpty()) {
+            patterns?.add(anim)
+        }
+        if (listTarget != null) {
             // Note we may not be running on the event dispatch thread
-            SwingUtilities.invokeLater { ltarget!!.addPattern(display, null, notation, anim) }
+            SwingUtilities.invokeLater { listTarget?.addPattern(display, null, notation, anim) }
         }
-        if (ptarget != null) {
-            ptarget!!.println(display)
-        }
-        if (btarget != null) {
-            btarget!!.append(display).append('\n')
-        }
+        printTarget?.println(display)
+        stringTarget?.append(display)?.append('\n')
     }
 
     // Set a prefix and suffix for both the displayed string and animation string.
@@ -87,11 +94,9 @@ class GeneratorTarget {
     // Messages like "# of patterns found" come through here.
 
     fun setStatus(display: String?) {
-        if (ltarget != null) {
-            SwingUtilities.invokeLater { ltarget!!.addPattern(display, null, null, null) }
+        if (listTarget != null) {
+            SwingUtilities.invokeLater { listTarget!!.addPattern(display, null, null, null) }
         }
-        if (ptarget != null) {
-            ptarget!!.println(display)
-        }
+        printTarget?.println(display)
     }
 }
