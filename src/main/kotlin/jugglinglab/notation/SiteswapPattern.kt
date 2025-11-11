@@ -89,8 +89,6 @@ class SiteswapPattern : MHNPattern() {
             if (totalperiod != patperiod) {
                 val repeats = totalperiod / patperiod
                 pattern = "($pattern^$repeats)"
-                // pattern = "(" + pattern + ")^" + repeats;
-                // pattern = JLFunc.expandRepeats(pattern);
                 if (Constants.DEBUG_SITESWAP_PARSING) {
                     println("-----------------------------------------------------")
                     println("Repeating pattern to match hand/body period, restarting\n")
@@ -147,14 +145,14 @@ class SiteswapPattern : MHNPattern() {
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             } else {
                 val template = errorstrings.getString("Error_pattern_syntax")
-                val problem = ParseException.add_escapes(pe.currentToken.next.image)
+                val problem = pe.currentToken.next.image
                 val arguments = arrayOf<Any?>(problem, pe.currentToken.next.beginColumn)
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             }
         } catch (tme: TokenMgrError) {
             val template = errorstrings.getString("Error_pattern_syntax")
-            val problem = TokenMgrError.addEscapes(tme.curChar.toString())
-            val arguments = arrayOf<Any?>(problem, tme.errorColumn - 1)
+            val problem = tme.curChar.toChar().toString()
+            val arguments = arrayOf<Any?>(problem, tme.errorColumn)
             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
         }
 
