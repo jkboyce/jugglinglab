@@ -1446,7 +1446,17 @@ class SiteswapGenerator : Generator() {
         return 0
     }
 
-    // Print the throws for a given beat.
+    // Output a single throw value to a StringBuilder.
+
+    private fun outputThrowValue(value: Int, sb: StringBuilder) {
+        if (value < 36) {
+            sb.append(Character.forDigit(value, 36).lowercaseChar())
+        } else {
+            sb.append('{').append(value).append('}')
+        }
+    }
+
+    // Output the throws for a given beat to a StringBuilder.
 
     private fun outputBeat(beat: Int, sb: StringBuilder) {
         val canThrow = rhythm[beat].any { it[0] != 0 }
@@ -1501,7 +1511,7 @@ class SiteswapGenerator : Generator() {
                             sb.append(' ')
                         }
 
-                        sb.append(convertNumber(throwValue[beat][j][k]))
+                        outputThrowValue(throwValue[beat][j][k], sb)
                         xSpace = true
 
                         if (hands > 1) {
@@ -1525,7 +1535,7 @@ class SiteswapGenerator : Generator() {
                                 // print pass modifier and person number
                                 sb.append('p')
                                 if (jugglers > 2) {
-                                    sb.append(convertNumber(targetJuggler))
+                                    sb.append(targetJuggler)
                                 }
                             }
                             /*
@@ -1876,12 +1886,6 @@ class SiteswapGenerator : Generator() {
             intArrayOf(1, 0),
         )
         private const val LOOP_COUNTER_MAX = 20000
-
-        // Return throw value as single character.
-
-        private fun convertNumber(value: Int): Char {
-            return Character.forDigit(value, 36).lowercaseChar()
-        }
 
         /*
           // Read a custom rhythm file and parses it. If there is an error it
