@@ -1331,6 +1331,7 @@ class EditLadderDiagram(
 
             if (activeEventitem != null) {
                 activeEventChanged()
+                addToUndoList()
             } else {
                 layoutPattern(true)
             }
@@ -1447,6 +1448,7 @@ class EditLadderDiagram(
             tr.mod = mod
 
             activeEventChanged()
+            addToUndoList()
             jd.dispose()
         }
 
@@ -1490,6 +1492,7 @@ class EditLadderDiagram(
         val tr = ev.getTransition((popupitem as LadderEventItem).transnum)
         tr.transType = type
         activeEventChanged()
+        addToUndoList()
         repaint()
     }
 
