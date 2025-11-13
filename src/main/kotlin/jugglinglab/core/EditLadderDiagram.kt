@@ -1001,7 +1001,7 @@ class EditLadderDiagram(
         okbutton.addActionListener { _: ActionEvent? ->
             val scale: Double
             try {
-                scale = jlParseDouble(tf.getText()) / 100.0
+                scale = jlParseFiniteDouble(tf.getText()) / 100.0
             } catch (_: NumberFormatException) {
                 handleUserException(
                     this@EditLadderDiagram,
@@ -1683,7 +1683,7 @@ class EditLadderDiagram(
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_FLOAT) {
                     val tf = control as JTextField
                     try {
-                        val value = jlParseDouble(tf.getText())
+                        val value = jlParseFiniteDouble(tf.getText())
                         val defValue = (dialog[i].defaultValue) as Double
                         if (value != defValue) {
                             term = tf.getText().trim { it <= ' ' }

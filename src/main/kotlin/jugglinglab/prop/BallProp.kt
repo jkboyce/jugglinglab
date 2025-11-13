@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.jlParseDouble
+import jugglinglab.util.jlParseFiniteDouble
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Image
@@ -151,7 +151,7 @@ class BallProp : Prop() {
         val diamstr = pl.getParameter("diam")
         if (diamstr != null) {
             try {
-                val temp = jlParseDouble(diamstr.trim { it <= ' ' })
+                val temp = jlParseFiniteDouble(diamstr.trim { it <= ' ' })
                 if (temp > 0) {
                     diam = temp
                 } else {

@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.jlParseDouble
+import jugglinglab.util.jlParseFiniteDouble
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Dimension
@@ -155,7 +155,7 @@ class RingProp : Prop() {
         val outsidestr = pl.getParameter("outside")
         if (outsidestr != null) {
             try {
-                val temp = jlParseDouble(outsidestr)
+                val temp = jlParseFiniteDouble(outsidestr)
                 if (temp > 0) {
                     outsideDiam = temp
                 } else {
@@ -171,7 +171,7 @@ class RingProp : Prop() {
         val insidestr = pl.getParameter("inside")
         if (insidestr != null) {
             try {
-                val temp = jlParseDouble(insidestr)
+                val temp = jlParseFiniteDouble(insidestr)
                 if (temp > 0) {
                     insideDiam = temp
                 } else {

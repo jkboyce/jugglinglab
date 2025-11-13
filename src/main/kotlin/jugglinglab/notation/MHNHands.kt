@@ -76,7 +76,7 @@ class MHNHands(str: String) {
 
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
                             try {
-                                val parts = coordStr.split(',').map { jlParseDouble(it.trim()) }
+                                val parts = coordStr.split(',').map { jlParseFiniteDouble(it.trim()) }
                                 val coord = DoubleArray(3)
                                 coord[0] = parts.getOrElse(0) { 0.0 }
                                 // Note: y and z are swapped from input

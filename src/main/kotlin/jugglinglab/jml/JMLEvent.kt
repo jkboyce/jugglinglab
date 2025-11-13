@@ -263,13 +263,13 @@ class JMLEvent {
             for (i in 0..<at.numberOfAttributes) {
                 // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
                 if (at.getAttributeName(i).equals("x", ignoreCase = true)) {
-                    tempx = jlParseDouble(at.getAttributeValue(i))
+                    tempx = jlParseFiniteDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("y", ignoreCase = true)) {
-                    tempy = jlParseDouble(at.getAttributeValue(i))
+                    tempy = jlParseFiniteDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("z", ignoreCase = true)) {
-                    tempz = jlParseDouble(at.getAttributeValue(i))
+                    tempz = jlParseFiniteDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("t", ignoreCase = true)) {
-                    tempt = jlParseDouble(at.getAttributeValue(i))
+                    tempt = jlParseFiniteDouble(at.getAttributeValue(i))
                 } else if (at.getAttributeName(i).equals("hand", ignoreCase = true)) {
                     handstr = at.getAttributeValue(i)
                 }

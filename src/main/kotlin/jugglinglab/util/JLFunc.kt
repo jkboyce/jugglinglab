@@ -216,10 +216,17 @@ private val nf: NumberFormat by lazy {
     NumberFormat.getInstance(Locale.US)
 }
 
+// Parse a string as a finite-valued Double. Throw an error if there is a
+// number format problem, or if the value is not finite ("NaN", "Infinity", ...)
+
 @Throws(NumberFormatException::class)
-fun jlParseDouble(s: String?): Double {
+fun jlParseFiniteDouble(s: String?): Double {
     try {
-        return nf.parse(s).toDouble()
+        val x = nf.parse(s).toDouble()
+        if (x.isFinite()) {
+            return x
+        }
+        throw java.lang.NumberFormatException("not a finite value")
     } catch (_: ParseException) {
         throw NumberFormatException()
     }

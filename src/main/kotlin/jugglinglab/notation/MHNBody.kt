@@ -59,7 +59,7 @@ class MHNBody(str: String) {
                             }
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
                             try {
-                                val parts = coordStr.split(',').map { jlParseDouble(it.trim()) }
+                                val parts = coordStr.split(',').map { jlParseFiniteDouble(it.trim()) }
                                 // default z (elevation) value is 100.0 cm
                                 val coord = doubleArrayOf(0.0, 0.0, 0.0, 100.0)
                                 for ((partsIndex, partsVal) in parts.withIndex()) {

@@ -112,7 +112,7 @@ class MarginEquations() {
                             val gparam = pl.getParameter("g")
                             if (gparam != null) {
                                 try {
-                                    g = jlParseDouble(gparam)
+                                    g = jlParseFiniteDouble(gparam)
                                 } catch (_: NumberFormatException) {
                                 }
                             }

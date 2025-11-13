@@ -61,7 +61,7 @@ class BouncePath : Path() {
                 hyper = pvalue.toBoolean()
             } else if (pname.equals("bounceplane", ignoreCase = true)) {
                 try {
-                    bounceplane = jlParseDouble(pvalue)
+                    bounceplane = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
                     val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("bounceplane")
@@ -69,7 +69,7 @@ class BouncePath : Path() {
                 }
             } else if (pname.equals("bouncefrac", ignoreCase = true)) {
                 try {
-                    bouncefrac = jlParseDouble(pvalue)
+                    bouncefrac = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
                     val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("bouncefrac")
@@ -77,7 +77,7 @@ class BouncePath : Path() {
                 }
             } else if (pname.equals("g", ignoreCase = true)) {
                 try {
-                    g = jlParseDouble(pvalue)
+                    g = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
                     val template = errorstrings.getString("Error_number_format")
                     val arguments = arrayOf<Any?>("g")
