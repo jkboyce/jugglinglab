@@ -490,7 +490,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 view.writeGIF(f)
             }
 
-            MenuCommand.FILE_DUPLICATE -> PatternWindow(this)
+            MenuCommand.FILE_DUPLICATE -> {
+                val newpw = PatternWindow(this)
+                newpw.pattern?.title = "$title copy"
+                newpw.title = "$title copy"
+            }
             MenuCommand.FILE_TITLE -> changeTitle()
             MenuCommand.FILE_RESCALE -> changeTiming()
             MenuCommand.FILE_OPTIMIZE -> {
