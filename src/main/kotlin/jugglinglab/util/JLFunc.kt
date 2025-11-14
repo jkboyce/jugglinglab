@@ -16,7 +16,7 @@ import jugglinglab.JugglingLab.guistrings
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import java.text.*
-import java.util.*
+import java.util.Locale
 import java.util.prefs.Preferences
 import java.util.regex.Pattern
 import javax.swing.JFileChooser
@@ -226,7 +226,7 @@ fun jlParseFiniteDouble(s: String?): Double {
         if (x.isFinite()) {
             return x
         }
-        throw java.lang.NumberFormatException("not a finite value")
+        throw NumberFormatException("not a finite value")
     } catch (_: ParseException) {
         throw NumberFormatException()
     }
