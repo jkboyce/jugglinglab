@@ -924,8 +924,6 @@ class EditLadderDiagram(
         val command = event.getActionCommand() ?: return
 
         when (command) {
-            "changetitle" -> changeTitle()
-            "changetiming" -> changeTiming()
             "addeventtoleft" -> addEventToHand(HandLink.LEFT_HAND)
             "addeventtoright" -> addEventToHand(HandLink.RIGHT_HAND)
             "removeevent" -> removeEvent()
@@ -943,94 +941,6 @@ class EditLadderDiagram(
         }
 
         finishPopup()
-    }
-
-    private fun changeTitle() {
-        val jd = JDialog(parentFrame, guistrings.getString("Change_title"), true)
-        val gb = GridBagLayout()
-        jd.contentPane.setLayout(gb)
-
-        val tf = JTextField(20)
-        tf.text = pat.title
-
-        val okbutton = JButton(guistrings.getString("OK"))
-        okbutton.addActionListener { _: ActionEvent? ->
-            val newtitle = tf.getText()
-            pat.title = newtitle
-            jd.dispose()
-            addToUndoList()
-        }
-
-        jd.contentPane.add(tf)
-        gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
-        )
-        jd.contentPane.add(okbutton)
-        gb.setConstraints(
-            okbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
-        )
-        jd.getRootPane().setDefaultButton(okbutton) // OK button is default
-        jd.pack()
-        jd.setResizable(false)
-        jd.setLocationRelativeTo(this)
-        jd.isVisible = true
-        parentFrame?.setTitle(pat.title)
-    }
-
-    private fun changeTiming() {
-        val jd = JDialog(parentFrame, guistrings.getString("Change_timing"), true)
-        val gb = GridBagLayout()
-        jd.contentPane.setLayout(gb)
-
-        val p1 = JPanel()
-        p1.setLayout(gb)
-        val lab = JLabel(guistrings.getString("Rescale_percentage"))
-        p1.add(lab)
-        gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
-        )
-        val tf = JTextField(7)
-        tf.text = "100"
-        p1.add(tf)
-        gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
-        )
-
-        val okbutton = JButton(guistrings.getString("OK"))
-        okbutton.addActionListener { _: ActionEvent? ->
-            val scale: Double
-            try {
-                scale = jlParseFiniteDouble(tf.getText()) / 100.0
-            } catch (_: NumberFormatException) {
-                handleUserException(
-                    this@EditLadderDiagram,
-                    "Number format error in rescale percentage"
-                )
-                return@addActionListener
-            }
-            if (scale > 0.0) {
-                pat.scaleTime(scale)
-                aep!!.time = 0.0
-                layoutPattern(true)
-                createView()
-            }
-            jd.dispose()
-        }
-
-        jd.contentPane.add(p1)
-        gb.setConstraints(
-            p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
-        )
-        jd.contentPane.add(okbutton)
-        gb.setConstraints(
-            okbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
-        )
-        jd.getRootPane().setDefaultButton(okbutton) // OK button is default
-        jd.pack()
-        jd.setLocationRelativeTo(this)
-        jd.isVisible = true
     }
 
     private fun addEventToHand(hand: Int): JMLEvent? {
@@ -1854,9 +1764,6 @@ class EditLadderDiagram(
         //----------------------------------------------------------------------
 
         private val popupItems: Array<String?> = arrayOf<String?>(
-            "Change title...",
-            "Change overall timing...",
-            null,
             "Add event to L hand",
             "Add event to R hand",
             "Remove event",
@@ -1872,9 +1779,6 @@ class EditLadderDiagram(
         )
 
         private val popupCommands: Array<String?> = arrayOf<String?>(
-            "changetitle",
-            "changetiming",
-            null,
             "addeventtoleft",
             "addeventtoright",
             "removeevent",
@@ -1907,8 +1811,6 @@ class EditLadderDiagram(
                 ).contains(command)
             } else if (laditem.type == LadderItem.TYPE_EVENT) {
                 if (mutableListOf(
-                        "changetitle",
-                        "changetiming",
                         "addeventtoleft",
                         "addeventtoright",
                         "addposition",
@@ -1953,8 +1855,6 @@ class EditLadderDiagram(
                 }
             } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
                 if (mutableListOf(
-                        "changetitle",
-                        "changetiming",
                         "addeventtoleft",
                         "addeventtoright",
                         "addposition",
@@ -1987,8 +1887,6 @@ class EditLadderDiagram(
                 }
             } else if (laditem.type == LadderItem.TYPE_POSITION) {
                 return !mutableListOf(
-                    "changetitle",
-                    "changetiming",
                     "addeventtoleft",
                     "addeventtoright",
                     "removeevent",

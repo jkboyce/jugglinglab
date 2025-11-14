@@ -338,6 +338,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE)
                 "savegifanim" -> doMenuCommand(MenuCommand.FILE_GIFSAVE)
                 "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE)
+                "changetitle" -> doMenuCommand(MenuCommand.FILE_TITLE)
+                "changetiming" -> doMenuCommand(MenuCommand.FILE_RESCALE)
                 "optimize" -> doMenuCommand(MenuCommand.FILE_OPTIMIZE)
                 "swaphands" -> doMenuCommand(MenuCommand.FILE_SWAPHANDS)
                 "invertx" -> doMenuCommand(MenuCommand.FILE_INVERTX)
@@ -387,6 +389,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         FILE_SAVE,
         FILE_GIFSAVE,
         FILE_DUPLICATE,
+        FILE_TITLE,
+        FILE_RESCALE,
         FILE_OPTIMIZE,
         FILE_SWAPHANDS,
         FILE_INVERTX,
@@ -430,7 +434,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
                 var fname = lastJmlFilename
                 if (fname == null) {
-                    fname = getTitle() + ".jml" // default filename
+                    fname = getTitle() + ".jml"  // default filename
                 }
                 fname = jlSanitizeFilename(fname)
                 jfc.setSelectedFile(File(fname))
@@ -464,7 +468,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     val base = if (index >= 0) fname.take(index) else fname
                     fname = "$base.gif"
                 } else {
-                    fname = "${getTitle()}.gif" // default filename
+                    fname = "${getTitle()}.gif"  // default filename
                 }
 
                 fname = jlSanitizeFilename(fname)
@@ -487,6 +491,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             MenuCommand.FILE_DUPLICATE -> PatternWindow(this)
+            MenuCommand.FILE_TITLE -> changeTitle()
+            MenuCommand.FILE_RESCALE -> changeTiming()
             MenuCommand.FILE_OPTIMIZE -> {
                 if (Constants.DEBUG_OPTIMIZE) {
                     println("-------------------------------------------")
@@ -594,6 +600,95 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.HELP_ABOUT -> ApplicationWindow.showAboutBox()
             MenuCommand.HELP_ONLINE -> ApplicationWindow.showOnlineHelp()
         }
+    }
+
+    private fun changeTitle() {
+        val jd = JDialog(this, guistrings.getString("Change_title"), true)
+        val gb = GridBagLayout()
+        jd.contentPane.setLayout(gb)
+
+        val tf = JTextField(20)
+        tf.text = view.pattern!!.title
+
+        val okbutton = JButton(guistrings.getString("OK"))
+        okbutton.addActionListener { _: ActionEvent? ->
+            val newpat = JMLPattern(view.pattern!!)
+            newpat.title = tf.getText()
+            view.restartView(newpat, null)
+            view.addToUndoList(newpat)
+            jd.dispose()
+        }
+
+        jd.contentPane.add(tf)
+        gb.setConstraints(
+            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+        )
+        jd.contentPane.add(okbutton)
+        gb.setConstraints(
+            okbutton,
+            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+        )
+        jd.getRootPane().setDefaultButton(okbutton)  // OK button is default
+        jd.pack()
+        jd.setResizable(false)
+        jd.setLocationRelativeTo(this)
+        jd.isVisible = true
+        this.setTitle(view.pattern!!.title)
+    }
+
+    private fun changeTiming() {
+        val jd = JDialog(this, guistrings.getString("Change_timing"), true)
+        val gb = GridBagLayout()
+        jd.contentPane.setLayout(gb)
+
+        val p1 = JPanel()
+        p1.setLayout(gb)
+        val lab = JLabel(guistrings.getString("Rescale_percentage"))
+        p1.add(lab)
+        gb.setConstraints(
+            lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+        )
+        val tf = JTextField(7)
+        tf.text = "100"
+        p1.add(tf)
+        gb.setConstraints(
+            tf, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
+        )
+
+        val okbutton = JButton(guistrings.getString("OK"))
+        okbutton.addActionListener { _: ActionEvent? ->
+            val scale: Double
+            try {
+                scale = jlParseFiniteDouble(tf.getText()) / 100.0
+            } catch (_: NumberFormatException) {
+                handleUserException(
+                    this@PatternWindow,
+                    "Number format error in rescale percentage"
+                )
+                return@addActionListener
+            }
+            if (scale > 0.0) {
+                val newpat = JMLPattern(view.pattern!!)
+                newpat.scaleTime(scale)
+                view.restartView(newpat, null)
+                view.addToUndoList(newpat)
+            }
+            jd.dispose()
+        }
+
+        jd.contentPane.add(p1)
+        gb.setConstraints(
+            p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+        )
+        jd.contentPane.add(okbutton)
+        gb.setConstraints(
+            okbutton,
+            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+        )
+        jd.getRootPane().setDefaultButton(okbutton) // OK button is default
+        jd.pack()
+        jd.setLocationRelativeTo(this)
+        jd.isVisible = true
     }
 
     //--------------------------------------------------------------------------
@@ -707,6 +802,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             "Save Animated GIF As...",
             null,
             "Duplicate",
+            null,
+            "Change Title...",
+            "Change Overall Timing...",
             "Optimize",
             "Swap Hands",
             "Flip Pattern in X",
@@ -714,7 +812,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             null,
             "Close",
         )
-        private val fileCommands: Array<String?> = arrayOf<String?>(
+        private val fileCommands: Array<String?> = arrayOf(
             "newpat",
             "newpl",
             "open",
@@ -722,6 +820,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             "savegifanim",
             null,
             "duplicate",
+            null,
+            "changetitle",
+            "changetiming",
             "optimize",
             "swaphands",
             "invertx",
@@ -737,6 +838,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             'G',
             ' ',
             'D',
+            ' ',
+            ' ',
+            ' ',
             'J',
             ' ',
             'M',
@@ -745,7 +849,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             'W',
         )
 
-        private val viewItems: Array<String?> = arrayOf<String?>(
+        private val viewItems: Array<String?> = arrayOf(
             "Simple",
             "Visual Editor",
             "Pattern Editor",
@@ -759,7 +863,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             "Zoom In",
             "Zoom Out",
         )
-        private val viewCommands: Array<String?> = arrayOf<String?>(
+        private val viewCommands: Array<String?> = arrayOf(
             "simple",
             "visual_edit",
             "pattern_edit",
@@ -788,11 +892,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             '-',
         )
 
-        private val helpItems: Array<String?> = arrayOf<String?>(
+        private val helpItems: Array<String?> = arrayOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        private val helpCommands: Array<String?> = arrayOf<String?>(
+        private val helpCommands: Array<String?> = arrayOf(
             "about",
             "online",
         )
