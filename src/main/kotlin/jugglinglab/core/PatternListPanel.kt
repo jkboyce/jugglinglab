@@ -173,7 +173,6 @@ class PatternListPanel private constructor() : JPanel() {
                 when (command) {
                     "inserttext" -> insertText(row1)
                     "insertpattern" -> {}
-                    "title" -> changeTitle()
                     "displaytext" -> changeDisplayText(row1)
                     "remove" -> patternList.model.remove(row1)
                     else -> {
@@ -303,25 +302,6 @@ class PatternListPanel private constructor() : JPanel() {
         dialog!!.isVisible = true
     }
 
-    // Open a dialog to allow the user to change the pattern list's title.
-
-    private fun changeTitle() {
-        makeDialog(guistrings.getString("PLDIALOG_Change_title"), patternList.title)
-
-        okButton!!.addActionListener { _: ActionEvent? ->
-            patternList.title = tf!!.getText()
-            dialog!!.dispose()
-
-            if (parentFrame != null) {
-                parentFrame!!.setTitle(patternList.title)
-            }
-            hasUnsavedChanges = true
-        }
-
-        dialog!!.isVisible = true
-        list.clearSelection()
-    }
-
     // Open a dialog to allow the user to change the display text of a line.
 
     private fun changeDisplayText(row: Int) {
@@ -341,38 +321,39 @@ class PatternListPanel private constructor() : JPanel() {
 
     // Helper to make popup dialog boxes.
 
-    private fun makeDialog(title: String?, defaultText: String?): JDialog? {
+    private fun makeDialog(title: String?, defaultText: String?): JDialog {
         dialog = JDialog(parentFrame, title, true)
+        val d = dialog!!
         val gb = GridBagLayout()
-        dialog!!.contentPane.setLayout(gb)
+        d.contentPane.setLayout(gb)
 
         tf = JTextField(20)
         tf!!.text = defaultText
 
         okButton = JButton(guistrings.getString("OK"))
 
-        dialog!!.contentPane.add(tf)
+        d.contentPane.add(tf)
         gb.setConstraints(
             tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
-        dialog!!.contentPane.add(okButton)
+        d.contentPane.add(okButton)
         gb.setConstraints(
             okButton,
             constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
-        dialog!!.getRootPane().setDefaultButton(okButton) // OK button is default
-        dialog!!.pack()
-        dialog!!.setResizable(false)
-        dialog!!.setLocationRelativeTo(this)
+        d.getRootPane().setDefaultButton(okButton) // OK button is default
+        d.pack()
+        d.setResizable(false)
+        d.setLocationRelativeTo(this)
 
-        dialog!!.addWindowListener(
+        d.addWindowListener(
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent?) {
                     checkSelection()
                 }
             })
 
-        return dialog
+        return d
     }
 
     // Do final cleanup after any mouse-related interaction.
@@ -563,7 +544,6 @@ class PatternListPanel private constructor() : JPanel() {
             null,
             "PLPOPUP Insert pattern",
             null,
-            "PLPOPUP Change title...",
             "PLPOPUP Change display text...",
             null,
             "PLPOPUP Remove line",
@@ -574,7 +554,6 @@ class PatternListPanel private constructor() : JPanel() {
             null,
             "insertpattern",
             null,
-            "title",
             "displaytext",
             null,
             "remove",

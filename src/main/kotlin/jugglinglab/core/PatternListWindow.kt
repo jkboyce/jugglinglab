@@ -9,6 +9,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.jml.JMLNode
+import jugglinglab.jml.JMLParser
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
@@ -21,8 +22,10 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileWriter
 import java.io.IOException
+import java.io.StringReader
+import java.io.StringWriter
 import java.text.MessageFormat
-import java.util.*
+import java.util.Locale
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
@@ -183,9 +186,11 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT)
                 "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL)
                 "open" -> doMenuCommand(MenuCommand.FILE_OPEN)
-                "close" -> doMenuCommand(MenuCommand.FILE_CLOSE)
                 "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE)
                 "savetext" -> doMenuCommand(MenuCommand.FILE_SAVETEXT)
+                "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE)
+                "changetitle" -> doMenuCommand(MenuCommand.FILE_TITLE)
+                "close" -> doMenuCommand(MenuCommand.FILE_CLOSE)
                 "about" -> doMenuCommand(MenuCommand.HELP_ABOUT)
                 "online" -> doMenuCommand(MenuCommand.HELP_ONLINE)
             }
@@ -201,9 +206,11 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         FILE_NEWPAT,
         FILE_NEWPL,
         FILE_OPEN,
-        FILE_CLOSE,
         FILE_SAVE,
         FILE_SAVETEXT,
+        FILE_DUPLICATE,
+        FILE_TITLE,
+        FILE_CLOSE,
         HELP_ABOUT,
         HELP_ONLINE,
     }
@@ -215,7 +222,6 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
             MenuCommand.FILE_NEWPL -> PatternListWindow("").setTitle(null)
             MenuCommand.FILE_OPEN -> ApplicationWindow.openJMLFile()
-            MenuCommand.FILE_CLOSE -> dispose()
             MenuCommand.FILE_SAVE -> try {
                 var fname = lastJmlFilename ?: (getTitle() + ".jml")
                 fname = jlSanitizeFilename(fname)
@@ -284,9 +290,55 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 setCursor(Cursor.getDefaultCursor())
             }
 
+            MenuCommand.FILE_DUPLICATE -> {
+                val sw = StringWriter()
+                patternListPanel.patternList.writeJML(sw)
+                val parser = JMLParser()
+                parser.parse(StringReader(sw.toString()))
+                val newplw = PatternListWindow(parser.tree!!)
+                newplw.patternListPanel.patternList.title = "$title copy"
+                newplw.title = "$title copy"
+            }
+
+            MenuCommand.FILE_TITLE -> changeTitle()
+            MenuCommand.FILE_CLOSE -> dispose()
             MenuCommand.HELP_ABOUT -> ApplicationWindow.showAboutBox()
             MenuCommand.HELP_ONLINE -> ApplicationWindow.showOnlineHelp()
         }
+    }
+
+    // Open a dialog to allow the user to change the pattern list's title.
+
+    private fun changeTitle() {
+        val jd = JDialog(this, guistrings.getString("Change_title"), true)
+        val gb = GridBagLayout()
+        jd.contentPane.setLayout(gb)
+
+        val tf = JTextField(20)
+        tf.text = patternListPanel.patternList.title
+
+        val okbutton = JButton(guistrings.getString("OK"))
+        okbutton.addActionListener { _: ActionEvent? ->
+            val newtitle = tf.getText()
+            patternListPanel.patternList.title = newtitle
+            title = newtitle
+            jd.dispose()
+        }
+
+        jd.contentPane.add(tf)
+        gb.setConstraints(
+            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+        )
+        jd.contentPane.add(okbutton)
+        gb.setConstraints(
+            okbutton,
+            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+        )
+        jd.getRootPane().setDefaultButton(okbutton)  // OK button is default
+        jd.pack()
+        jd.setResizable(false)
+        jd.setLocationRelativeTo(this)
+        jd.isVisible = true
     }
 
     //--------------------------------------------------------------------------
@@ -330,6 +382,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                         return  // user canceled out of save dialog
                     }
                 }
+
                 else -> {}
             }
         }
@@ -366,21 +419,29 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 return loc
             }
 
-        private val fileItems: Array<String?> = arrayOf<String?>(
+        private val fileItems: Array<String?> = arrayOf(
             "New Pattern",
             "New Pattern List",
             "Open JML...",
             "Save JML As...",
             "Save Text As...",
             null,
+            "Duplicate",
+            null,
+            "Change Title...",
+            null,
             "Close",
         )
-        private val fileCommands: Array<String?> = arrayOf<String?>(
+        private val fileCommands: Array<String?> = arrayOf(
             "newpat",
             "newpl",
             "open",
             "saveas",
             "savetext",
+            null,
+            "duplicate",
+            null,
+            "changetitle",
             null,
             "close",
         )
@@ -391,14 +452,18 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             'S',
             'T',
             ' ',
+            'D',
+            ' ',
+            ' ',
+            ' ',
             'W',
         )
 
-        private val helpItems: Array<String?> = arrayOf<String?>(
+        private val helpItems: Array<String?> = arrayOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        private val helpCommands: Array<String?> = arrayOf<String?>(
+        private val helpCommands: Array<String?> = arrayOf(
             "about",
             "online",
         )
