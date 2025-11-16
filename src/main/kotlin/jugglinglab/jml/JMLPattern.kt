@@ -55,7 +55,7 @@ class JMLPattern() {
     private var tags: ArrayList<String> = ArrayList()
     private var numjugglers: Int = 0
     private var numpaths: Int = 0
-    private var props: ArrayList<PropDef> = ArrayList()
+    private var props: ArrayList<JMLProp> = ArrayList()
     private var propassignment: IntArray? = null
 
     // for retaining the base pattern this pattern was created from
@@ -179,7 +179,7 @@ class JMLPattern() {
         return false  // shouldn't happen
     }
 
-    fun addProp(pd: PropDef?) {
+    fun addProp(pd: JMLProp?) {
         props.add(pd!!)
         setNeedsLayout()
     }
@@ -732,7 +732,7 @@ class JMLPattern() {
 
         try {
             if (numberOfProps == 0 && numberOfPaths > 0) {
-                addProp(PropDef("ball", null))
+                addProp(JMLProp("ball", null))
             }
             for (i in 0..<numberOfProps) {
                 props[i].layoutProp()
@@ -1557,7 +1557,7 @@ class JMLPattern() {
         return getPropDef(propnum).prop
     }
 
-    fun getPropDef(propnum: Int): PropDef {
+    fun getPropDef(propnum: Int): JMLProp {
         return props[propnum - 1]
     }
 
@@ -1905,29 +1905,13 @@ class JMLPattern() {
     }
 
     val pathPermutation: Permutation?
-        get() {
-            for (sym in symmetries) {
-                if (sym.getType() == JMLSymmetry.TYPE_DELAY) {
-                    return sym.pathPerm
-                }
-            }
-            return null
-        }
+        get() = symmetries.find { it.getType() == JMLSymmetry.TYPE_DELAY }?.pathPerm
 
-    val period: Int
+    val periodWithProps: Int
         get() = getPeriod(pathPermutation!!, propassignment!!)
 
     val isBouncePattern: Boolean
-        get() {
-            for (path in 1..numberOfPaths) {
-                for (pl in pathlinks!![path - 1]) {
-                    if (pl.path is BouncePath) {
-                        return true
-                    }
-                }
-            }
-            return false
-        }
+        get() = pathlinks!!.any { it.any { it1 -> it1.path is BouncePath } }
 
     //--------------------------------------------------------------------------
     // Reader/writer methods
@@ -1965,7 +1949,7 @@ class JMLPattern() {
                 Pattern.canonicalNotation(current.attributes.getAttribute("notation"))
             this.basePatternConfig = current.nodeValue!!.trim()
         } else if (type.equals("prop", ignoreCase = true)) {
-            val pd = PropDef()
+            val pd = JMLProp()
             pd.readJML(current, loadingversion)
             addProp(pd)
         } else if (type.equals("setup", ignoreCase = true)) {
@@ -2082,9 +2066,9 @@ class JMLPattern() {
                 + this.numberOfPaths
                 + "\" props=\"")
 
-        if (this.numberOfPaths > 0) {
+        if (numberOfPaths > 0) {
             out += getPropAssignment(1)
-            for (i in 2..this.numberOfPaths) {
+            for (i in 2..numberOfPaths) {
                 out += "," + getPropAssignment(i)
             }
         }

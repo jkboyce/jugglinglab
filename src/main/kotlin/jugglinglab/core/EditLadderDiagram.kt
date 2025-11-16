@@ -1187,7 +1187,7 @@ class EditLadderDiagram(
                 mod = this.parameterList
                 // System.out.println("type = " + type + ", mod = " + mod);
                 // fail if prop definition is invalid, before we change the pattern
-                (PropDef(type.lowercase(Locale.getDefault()), mod)).layoutProp()
+                (JMLProp(type.lowercase(Locale.getDefault()), mod)).layoutProp()
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(parentFrame, jeu.message)
                 return@addActionListener
@@ -1234,7 +1234,7 @@ class EditLadderDiagram(
                 pat.setPropAssignment(pn, matchingprop)
             } else {
                 // new prop is different
-                val newprop = PropDef(type.lowercase(Locale.getDefault()), mod)
+                val newprop = JMLProp(type.lowercase(Locale.getDefault()), mod)
                 pat.addProp(newprop)
                 pat.setPropAssignment(pn, pat.numberOfProps)
             }

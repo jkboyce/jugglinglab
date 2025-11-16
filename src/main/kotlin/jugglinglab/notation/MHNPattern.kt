@@ -832,7 +832,7 @@ abstract class MHNPattern : Pattern() {
                 val colorstr = "color=" + color!![i]
                 mod = if (mod == null) colorstr else "$mod;$colorstr"
             }
-            pat.addProp(PropDef(propName, mod))
+            pat.addProp(JMLProp(propName, mod))
         }
         val pa = IntArray(balls)
         for (i in 0..<balls) {

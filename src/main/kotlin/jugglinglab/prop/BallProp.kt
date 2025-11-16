@@ -275,36 +275,6 @@ class BallProp : Prop() {
     }
 
     companion object {
-        private val COLOR_NAMES: Array<String> = arrayOf<String>(
-            "transparent",
-            "black",
-            "blue",
-            "cyan",
-            "gray",
-            "green",
-            "magenta",
-            "orange",
-            "pink",
-            "red",
-            "white",
-            "yellow",
-        )
-
-        private val COLOR_VALS: Array<Color> = arrayOf<Color>(
-            Color(0, 0, 0, 0),
-            Color.black,
-            Color.blue,
-            Color.cyan,
-            Color.gray,
-            Color.green,
-            Color.magenta,
-            Color.orange,
-            Color.pink,
-            Color.red,
-            Color.white,
-            Color.yellow,
-        )
-
         private val COLOR_DEF: Color = Color.red
         private const val COLORNUM_DEF: Int = 9  // red
         private const val DIAM_DEF: Double = 10.0  // in cm

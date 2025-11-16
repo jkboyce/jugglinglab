@@ -1,5 +1,5 @@
 //
-// PropDef.java
+// JMLProp.java
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -10,7 +10,7 @@ import jugglinglab.util.JuggleExceptionUser
 import java.io.IOException
 import java.io.PrintWriter
 
-class PropDef() {
+class JMLProp() {
     var type: String? = null
         private set
     var mod: String? = null

@@ -406,7 +406,7 @@ class Animator {
         val gifSimIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / gifNumFrames
         val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * jc.slowdown).toLong().toDouble()
 
-        val totalframes = pattern.period * gifNumFrames
+        val totalframes = pattern.periodWithProps * gifNumFrames
         var framecount = 0
 
         // delay time is embedded in GIF header in terms of hundredths of a second
@@ -414,7 +414,7 @@ class Animator {
         val iwp = iw.defaultWriteParam
         var metadata: IIOMetadata? = null
 
-        repeat (pattern.period) {
+        repeat (pattern.periodWithProps) {
             var time = pattern.loopStartTime
 
             repeat (gifNumFrames) {

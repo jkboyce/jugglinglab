@@ -55,8 +55,10 @@ abstract class Prop {
 
     companion object {
         @JvmField
-        val builtinProps: Array<String> = arrayOf<String>(
-            "Ball", "Image", "Ring",
+        val builtinProps: Array<String> = arrayOf(
+            "Ball",
+            "Image",
+            "Ring",
         )
 
         // Create a new prop of the given type.
@@ -75,5 +77,48 @@ abstract class Prop {
             val arguments = arrayOf<Any?>(type)
             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
         }
+
+        val COLOR_NAMES: Array<String> = arrayOf(
+            "transparent",
+            "black",
+            "blue",
+            "cyan",
+            "gray",
+            "green",
+            "magenta",
+            "orange",
+            "pink",
+            "red",
+            "white",
+            "yellow",
+        )
+
+        val COLOR_VALS: Array<Color> = arrayOf(
+            Color(0, 0, 0, 0),
+            Color.black,
+            Color.blue,
+            Color.cyan,
+            Color.gray,
+            Color.green,
+            Color.magenta,
+            Color.orange,
+            Color.pink,
+            Color.red,
+            Color.white,
+            Color.yellow,
+        )
+
+        val COLOR_MIXED: Array<Color> = arrayOf(
+            Color.red,
+            Color.green,
+            Color.blue,
+            Color.yellow,
+            Color.cyan,
+            Color.magenta,
+            Color.orange,
+            Color.pink,
+            Color.gray,
+            Color.black,
+        )
     }
 }
