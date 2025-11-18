@@ -1186,7 +1186,7 @@ class EditLadderDiagram(
             try {
                 // fail if prop definition is invalid, before we change the pattern
                 mod = this.parameterList
-                JMLProp(type.lowercase(Locale.getDefault()), mod)
+                JMLProp(type.lowercase(Locale.getDefault()), mod).isColorable
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(parentFrame, jeu.message)
                 return@addActionListener
@@ -1246,6 +1246,7 @@ class EditLadderDiagram(
             }
             jd.dispose()
             repaint()
+            parentView.patternWindow?.updateColorsMenu()
         }
 
         jd.contentPane.add(p1)

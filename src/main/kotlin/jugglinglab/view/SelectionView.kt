@@ -215,6 +215,7 @@ class SelectionView(dim: Dimension) : View() {
 
         if (p != null) {
             patternWindow?.setTitle(p.title)
+            patternWindow?.updateColorsMenu()
         }
     }
 

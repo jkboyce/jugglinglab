@@ -15,6 +15,7 @@ import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.jml.JMLPattern
+import jugglinglab.prop.Prop
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
@@ -33,11 +34,14 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import kotlin.system.exitProcess
 
-class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFrame(title), ActionListener {
+class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFrame(title),
+    ActionListener {
     private lateinit var view: View
-    private lateinit var viewmenu: JMenu
+    private lateinit var colorsMenu: JMenu
+    private lateinit var viewMenu: JMenu
     lateinit var windowMenu: JMenu
         private set
+
     private var undo: ArrayList<JMLPattern> = ArrayList()
     private var lastJmlFilename: String? = null
 
@@ -100,10 +104,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             (jc.view != View.VIEW_NONE) -> jc.view
             (pat.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
                 View.VIEW_SIMPLE
+
             else -> View.VIEW_EDIT
         }
         //viewMode = mode
-        viewmenu.getItem(mode - 1).setSelected(true)
+        viewMenu.getItem(mode - 1).setSelected(true)
 
         val animsize = Dimension(jc.width, jc.height)
 
@@ -140,14 +145,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         }
         set(mode) {
             // `mode` is one of the View.VIEW_X constants.
-            viewmenu.getItem(mode - 1).setSelected(true)
+            viewMenu.getItem(mode - 1).setSelected(true)
 
             // items to carry over from old view to the new
             val pat = view.pattern!!
             val jc = view.animationPrefs
             val paused = view.isPaused
             val undoIndex = view.undoIndex
-
             val animsize = Dimension(jc.width, jc.height)
 
             val newview: View = when (mode) {
@@ -199,49 +203,76 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val mb = JMenuBar()
         mb.add(createFileMenu())
         mb.add(createViewMenu())
-        this.windowMenu = JMenu(guistrings.getString("Window"))
-        mb.add(this.windowMenu)
+        windowMenu = JMenu(guistrings.getString("Window"))
+        mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
 
     private fun createFileMenu(): JMenu {
-        val filemenu = JMenu(guistrings.getString("File"))
+        val fileMenu = JMenu(guistrings.getString("File"))
         for (i in fileItems.indices) {
             if (fileItems[i] == null) {
-                filemenu.addSeparator()
+                fileMenu.addSeparator()
                 continue
             }
 
-            val fileitem = JMenuItem(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
+            if (fileCommands[i] == "colorprops") {
+                colorsMenu = JMenu(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
+                colorsMenu.add(JMenuItem("mixed").apply {
+                    actionCommand = "colors_mixed"
+                    addActionListener(this@PatternWindow)
+                })
+                colorsMenu.add(JMenuItem("orbits").apply {
+                    actionCommand = "colors_orbits"
+                    addActionListener(this@PatternWindow)
+                })
+                colorsMenu.addSeparator()
+                for (colorName in Prop.COLOR_NAMES) {
+                    colorsMenu.add(JMenuItem(colorName).apply {
+                        actionCommand = "colors_$colorName"
+                        addActionListener(this@PatternWindow)
+                    })
+                }
+                fileMenu.add(colorsMenu)
+                continue
+            }
 
+            val fileItem = JMenuItem(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
             if (fileShortcuts[i] != ' ') {
-                fileitem.setAccelerator(
+                fileItem.setAccelerator(
                     KeyStroke.getKeyStroke(
-                        fileShortcuts[i].code, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                        fileShortcuts[i].code,
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
                     )
                 )
             }
-
-            fileitem.actionCommand = fileCommands[i]
-            fileitem.addActionListener(this)
-            filemenu.add(fileitem)
+            fileItem.actionCommand = fileCommands[i]
+            fileItem.addActionListener(this)
+            fileMenu.add(fileItem)
 
             if (fileCommands[i] == "optimize" && optimizer == null) {
-                fileitem.setEnabled(false)
+                fileItem.setEnabled(false)
             }
         }
-        return filemenu
+        return fileMenu
+    }
+
+    // Enable or disable the "Color Props" menu depending on whether the pattern
+    // is colorable. Call this when the pattern changes.
+
+    fun updateColorsMenu() {
+        colorsMenu.isEnabled = (view.pattern?.isColorable ?: false)
     }
 
     private fun createViewMenu(): JMenu {
-        viewmenu = JMenu(guistrings.getString("View"))
+        viewMenu = JMenu(guistrings.getString("View"))
         val buttonGroup = ButtonGroup()
         var addingviews = true
 
         for (i in viewItems.indices) {
             if (viewItems[i] == null) {
-                viewmenu.addSeparator()
+                viewMenu.addSeparator()
                 addingviews = false
                 continue
             }
@@ -253,14 +284,15 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
                         KeyStroke.getKeyStroke(
-                            viewShortcuts[i].code, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                            viewShortcuts[i].code,
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
                         )
                     )
                 }
 
                 viewitem.actionCommand = viewCommands[i]
                 viewitem.addActionListener(this)
-                viewmenu.add(viewitem)
+                viewMenu.add(viewitem)
                 buttonGroup.add(viewitem)
             } else {
                 val viewitem = JMenuItem(guistrings.getString(viewItems[i]!!.replace(' ', '_')))
@@ -268,17 +300,18 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
                         KeyStroke.getKeyStroke(
-                            viewShortcuts[i].code, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                            viewShortcuts[i].code,
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
                         )
                     )
                 }
 
                 viewitem.actionCommand = viewCommands[i]
                 viewitem.addActionListener(this)
-                viewmenu.add(viewitem)
+                viewMenu.add(viewitem)
             }
         }
-        return viewmenu
+        return viewMenu
     }
 
     fun updateUndoMenu() {
@@ -286,8 +319,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val undoEnabled = (undoIndex > 0)
         val redoEnabled = (undoIndex < undo.size - 1)
 
-        for (i in 0..<viewmenu.itemCount) {
-            val jmi = viewmenu.getItem(i)
+        for (i in 0..<viewMenu.itemCount) {
+            val jmi = viewMenu.getItem(i)
             if (jmi == null || jmi.getActionCommand() == null) {
                 continue
             }
@@ -305,7 +338,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         // in JugglingLab.java
         val includeAbout =
             !Desktop.isDesktopSupported()
-                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
+                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = guistrings.getString("Help")
         if (JugglingLab.isMacOS) {
@@ -355,23 +388,45 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                         viewMode = View.VIEW_SIMPLE
                     }
                 }
+
                 "visual_edit" -> {
                     if (viewMode != View.VIEW_EDIT) {
                         viewMode = View.VIEW_EDIT
                     }
                 }
+
                 "pattern_edit" -> {
                     if (viewMode != View.VIEW_PATTERN) {
                         viewMode = View.VIEW_PATTERN
                     }
                 }
+
                 "selection_edit" -> {
                     if (viewMode != View.VIEW_SELECTION) {
                         viewMode = View.VIEW_SELECTION
                     }
                 }
+
                 "about" -> doMenuCommand(MenuCommand.HELP_ABOUT)
                 "online" -> doMenuCommand(MenuCommand.HELP_ONLINE)
+                else -> {
+                    val command = ae.getActionCommand()
+                    if (!command.startsWith("colors_"))
+                        return
+                    val colorString = when (val colorName = command.substring(7)) {
+                        "mixed" -> "mixed"
+                        "orbits" -> "orbits"
+                        else -> "{$colorName}"
+                    }
+                    try {
+                        val newpat = JMLPattern(view.pattern!!)
+                        newpat.setPropColors(colorString)
+                        view.restartView(newpat, null)
+                        view.addToUndoList(newpat)
+                    } catch (_: JuggleExceptionUser) {
+                        throw JuggleExceptionInternal("Error in FILE_PROPCOLORS")
+                    }
+                }
             }
         } catch (je: JuggleExceptionUser) {
             handleUserException(this, je.message)
@@ -495,6 +550,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 newpw.pattern?.title = "$title copy"
                 newpw.title = "$title copy"
             }
+
             MenuCommand.FILE_TITLE -> changeTitle()
             MenuCommand.FILE_RESCALE -> changeTiming()
             MenuCommand.FILE_OPTIMIZE -> {
@@ -590,9 +646,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             MenuCommand.VIEW_UNDO -> view.undoEdit()
-
             MenuCommand.VIEW_REDO -> view.redoEdit()
-
             MenuCommand.VIEW_ZOOMIN -> if (view.zoomLevel < (MAX_ZOOM / ZOOM_PER_STEP)) {
                 view.zoomLevel *= ZOOM_PER_STEP
             }
@@ -700,11 +754,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     //--------------------------------------------------------------------------
 
     override fun setTitle(title: String?) {
-        var title = title
-        if (title == null || title.isEmpty()) {
-            title = guistrings.getString("PWINDOW_Default_window_title")
+        val newTitle = if (title == null || title.isEmpty()) {
+            guistrings.getString("PWINDOW_Default_window_title")
+        } else {
+            title
         }
-        super.setTitle(title)
+        super.setTitle(newTitle)
         ApplicationWindow.updateWindowMenus()
     }
 
@@ -809,6 +864,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             null,
             "Change Title...",
             "Change Overall Timing...",
+            "Color Props",
             "Optimize",
             "Swap Hands",
             "Flip Pattern in X",
@@ -827,6 +883,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             null,
             "changetitle",
             "changetiming",
+            "colorprops",
             "optimize",
             "swaphands",
             "invertx",
@@ -842,6 +899,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             'G',
             ' ',
             'D',
+            ' ',
             ' ',
             ' ',
             ' ',

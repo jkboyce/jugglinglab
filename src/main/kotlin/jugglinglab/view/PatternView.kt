@@ -256,6 +256,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
             updateButtons()
             reloadTextArea()
             patternWindow?.setTitle(p.title)
+            patternWindow?.updateColorsMenu()
         }
     }
 

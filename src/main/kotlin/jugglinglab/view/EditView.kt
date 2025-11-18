@@ -108,6 +108,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
         }
 
         patternWindow?.setTitle(p.title)
+        patternWindow?.updateColorsMenu()
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

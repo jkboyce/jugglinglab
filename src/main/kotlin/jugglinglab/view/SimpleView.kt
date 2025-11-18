@@ -35,6 +35,7 @@ class SimpleView(dim: Dimension?) : View() {
         setAnimationPanelPreferredSize(animationPrefs.size)
         if (p != null) {
             patternWindow?.setTitle(p.title)
+            patternWindow?.updateColorsMenu()
         }
     }
 

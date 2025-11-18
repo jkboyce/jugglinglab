@@ -713,6 +713,22 @@ class JMLPattern() {
         }
     }
 
+    @get:Throws(JuggleExceptionUser::class)
+    val isColorable: Boolean
+        get() = props.all { it.isColorable }
+
+    // Set the colors of props in the pattern, using the information provided
+    // in `colorString`.
+
+    @Throws(JuggleExceptionInternal::class)
+    fun setPropColors(colorString: String) {
+        if (!isColorable) {
+            throw JuggleExceptionInternal("setPropColors(): not colorable")
+        }
+
+        println("colorString: $colorString")
+    }
+
     //--------------------------------------------------------------------------
     // Lay out the spatial paths in the pattern
     //
