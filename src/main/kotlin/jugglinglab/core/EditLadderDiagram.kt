@@ -62,7 +62,7 @@ class EditLadderDiagram(
     private var popupY: Int = 0
 
     private var dialogControls: ArrayList<JComponent>? = null
-    private var dialogPd: Array<ParameterDescriptor>? = null
+    private var dialogPd: List<ParameterDescriptor>? = null
 
     //--------------------------------------------------------------------------
     // Methods to respond to changes made in this object's UI
@@ -1120,7 +1120,7 @@ class EditLadderDiagram(
         // final int propnum = pat.getPropAssignment(pathnum);
         // System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         val startprop = pat.getProp(propnum)
-        val prtypes: Array<String> = Prop.builtinProps
+        val prtypes: List<String> = Prop.builtinProps
 
         val jd = JDialog(parentFrame, guistrings.getString("Define_prop"), true)
         val gb = GridBagLayout()
@@ -1137,7 +1137,7 @@ class EditLadderDiagram(
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox(prtypes)
+        val cb1 = JComboBox(prtypes.toTypedArray())
         p1.add(cb1)
         gb.setConstraints(
             cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
@@ -1157,7 +1157,7 @@ class EditLadderDiagram(
             }
             jd.pack()
         }
-        val bp: Array<String> = Prop.builtinProps
+        val bp: List<String> = Prop.builtinProps
         for (i in bp.indices) {
             if (bp[i].equals(startprop.type, ignoreCase = true)) {
                 cb1.setSelectedIndex(i)
@@ -1433,7 +1433,7 @@ class EditLadderDiagram(
 
     // Helper for defineProp() and defineThrow().
 
-    private fun makeParametersPanel(jp: JPanel, pd: Array<ParameterDescriptor>) {
+    private fun makeParametersPanel(jp: JPanel, pd: List<ParameterDescriptor>) {
         jp.removeAll()
         val gb = GridBagLayout()
         jp.setLayout(gb)
@@ -1472,10 +1472,8 @@ class EditLadderDiagram(
                     val def = (pd[i].value) as Double?
                     tf.text = def.toString()
                 } else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
-                    val choices = arrayOfNulls<String>(pd[i].range!!.size)
-                    pd[i].range!!.toArray<String?>(choices)
-
-                    val jcb = JComboBox<String?>(choices)
+                    val choices = pd[i].range!!.toTypedArray()
+                    val jcb = JComboBox(choices)
                     jcb.setMaximumRowCount(15)
                     pdp.add(jcb)
                     gb.setConstraints(

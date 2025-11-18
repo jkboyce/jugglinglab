@@ -326,7 +326,7 @@ class BouncePath : Path() {
     }
 
     override val parameterDescriptors
-        get() = arrayOf(
+        get() = listOf(
             ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT, null, BOUNCES_DEF, bounces),
             ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN, null, FORCED_DEF, forced),
             ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN, null, HYPER_DEF, hyper),

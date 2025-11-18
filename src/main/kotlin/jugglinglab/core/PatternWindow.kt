@@ -853,7 +853,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             exitOnLastClose = value
         }
 
-        private val fileItems: Array<String?> = arrayOf<String?>(
+        private val fileItems: List<String?> = listOf<String?>(
             "New Pattern",
             "New Pattern List",
             "Open JML...",
@@ -872,7 +872,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             null,
             "Close",
         )
-        private val fileCommands: Array<String?> = arrayOf(
+        private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
             "open",
@@ -911,7 +911,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             'W',
         )
 
-        private val viewItems: Array<String?> = arrayOf(
+        private val viewItems: List<String?> = listOf(
             "Simple",
             "Visual Editor",
             "Pattern Editor",
@@ -925,7 +925,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             "Zoom In",
             "Zoom Out",
         )
-        private val viewCommands: Array<String?> = arrayOf(
+        private val viewCommands: List<String?> = listOf(
             "simple",
             "visual_edit",
             "pattern_edit",
@@ -954,11 +954,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             '-',
         )
 
-        private val helpItems: Array<String?> = arrayOf(
+        private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        private val helpCommands: Array<String?> = arrayOf(
+        private val helpCommands: List<String?> = listOf(
             "about",
             "online",
         )

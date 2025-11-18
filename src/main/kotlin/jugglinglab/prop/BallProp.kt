@@ -17,7 +17,6 @@ import java.awt.Dimension
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
-import java.util.Collections
 import java.util.StringTokenizer
 import kotlin.math.max
 import kotlin.math.min
@@ -42,14 +41,12 @@ class BallProp : Prop() {
         return color
     }
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val colorRange = ArrayList<String>()
-        Collections.addAll(colorRange, *COLOR_NAMES)
-        return arrayOf(
+    override fun getParameterDescriptors(): List<ParameterDescriptor> {
+        return listOf(
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
-                colorRange,
+                COLOR_NAMES,
                 COLOR_NAMES[COLORNUM_DEF],
                 COLOR_NAMES[colornum]
             ),

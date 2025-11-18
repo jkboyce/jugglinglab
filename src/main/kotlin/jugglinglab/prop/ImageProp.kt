@@ -111,8 +111,8 @@ class ImageProp : Prop() {
         return Color.white
     }
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        return arrayOf(
+    override fun getParameterDescriptors(): List<ParameterDescriptor> {
+        return listOf(
             ParameterDescriptor(
                 "image",
                 ParameterDescriptor.TYPE_ICON,

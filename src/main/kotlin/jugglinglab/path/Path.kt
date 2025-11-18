@@ -67,7 +67,7 @@ abstract class Path {
     abstract val minDuration: Double
 
     // Parameters for defining the path in the UI (e.g., EditLadderDiagram)
-    abstract val parameterDescriptors: Array<ParameterDescriptor>
+    abstract val parameterDescriptors: List<ParameterDescriptor>
 
     // Calculated velocity at the start and end of the path, for hand layout
     abstract val startVelocity: Coordinate

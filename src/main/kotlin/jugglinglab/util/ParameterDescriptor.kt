@@ -9,7 +9,7 @@ package jugglinglab.util
 class ParameterDescriptor(
     val name: String,
     val type: Int,
-    val range: ArrayList<String>?,
+    val range: List<String>?,
     val defaultValue: Any?,
     var value: Any?
 ) {

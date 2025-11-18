@@ -18,7 +18,7 @@ import java.awt.Dimension
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
-import java.util.*
+import java.util.StringTokenizer
 import kotlin.math.*
 
 class RingProp : Prop() {
@@ -43,14 +43,12 @@ class RingProp : Prop() {
         return color
     }
 
-    override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val range = ArrayList<String>()
-        Collections.addAll(range, *COLOR_NAMES)
-        return arrayOf(
+    override fun getParameterDescriptors(): List<ParameterDescriptor> {
+        return listOf(
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
-                range,
+                COLOR_NAMES,
                 COLOR_NAMES[COLORNUM_DEF],
                 COLOR_NAMES[colornum]
             ),

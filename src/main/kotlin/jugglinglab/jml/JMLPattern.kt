@@ -720,13 +720,65 @@ class JMLPattern() {
     // Set the colors of props in the pattern, using the information provided
     // in `colorString`.
 
-    @Throws(JuggleExceptionInternal::class)
+    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
     fun setPropColors(colorString: String) {
         if (!isColorable) {
             throw JuggleExceptionInternal("setPropColors(): not colorable")
         }
 
-        println("colorString: $colorString")
+        // compile a list of colors to apply in round-robin fashion to paths
+        val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
+            "mixed" -> {
+                Prop.COLOR_MIXED
+            }
+
+            "orbits" -> {
+                // TODO: fix this
+                Prop.COLOR_MIXED
+            }
+
+            else -> {
+                jlExpandRepeats(trimmedColorString)
+                    .split('}')
+                    .filter { it.isNotBlank() }
+                    .map { it.replace("{", "").trim() }
+                    .map { cs ->
+                        val parts = cs.split(',')
+                        when (parts.size) {
+                            1 -> parts[0].trim()
+                            3 -> "{$cs}"
+                            else -> throw JuggleExceptionUser(
+                                errorstrings.getString("Error_color_format"))
+                        }
+                    }
+            }
+        }
+
+        val newProps = ArrayList<JMLProp>()
+        val newPropAssignments = IntArray(numpaths)
+
+        for (i in 0..<numpaths) {
+            val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
+            val propParameters = ParameterList(oldProp.mod).apply {
+                removeParameter("color")
+                addParameter("color", colorList[i % colorList.size])
+            }
+            val newProp = JMLProp(oldProp.type, propParameters.toString())
+
+            val existingIndex = newProps.indexOf(newProp)
+            if (existingIndex != -1) {
+                // This prop already exists, just point to it
+                newPropAssignments[i] = existingIndex + 1
+            } else {
+                // This is a new prop, add it to the list and point to the new entry
+                newProps.add(newProp)
+                newPropAssignments[i] = newProps.size
+            }
+        }
+
+        props = newProps
+        setPropAssignments(newPropAssignments)
+        setNeedsLayout()
     }
 
     //--------------------------------------------------------------------------

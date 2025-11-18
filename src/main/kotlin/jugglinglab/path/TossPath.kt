@@ -74,7 +74,7 @@ class TossPath : Path() {
     override val minDuration = 0.0
 
     override val parameterDescriptors
-        get() = arrayOf(
+        get() = listOf(
             ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
         )
 

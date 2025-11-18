@@ -36,7 +36,7 @@ abstract class Prop {
 
     abstract fun getEditorColor(): Color
 
-    abstract fun getParameterDescriptors(): Array<ParameterDescriptor>
+    abstract fun getParameterDescriptors(): List<ParameterDescriptor>
 
     @Throws(JuggleExceptionUser::class)
     protected abstract fun init(st: String?)
@@ -57,7 +57,7 @@ abstract class Prop {
 
     companion object {
         @JvmField
-        val builtinProps: Array<String> = arrayOf(
+        val builtinProps: List<String> = listOf(
             "Ball",
             "Image",
             "Ring",
@@ -80,7 +80,7 @@ abstract class Prop {
             throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
         }
 
-        val COLOR_NAMES: Array<String> = arrayOf(
+        val COLOR_NAMES: List<String> = listOf(
             "transparent",
             "black",
             "blue",
@@ -95,7 +95,7 @@ abstract class Prop {
             "yellow",
         )
 
-        val COLOR_VALS: Array<Color> = arrayOf(
+        val COLOR_VALS: List<Color> = listOf(
             Color(0, 0, 0, 0),
             Color.black,
             Color.blue,
@@ -110,17 +110,17 @@ abstract class Prop {
             Color.yellow,
         )
 
-        val COLOR_MIXED: Array<Color> = arrayOf(
-            Color.red,
-            Color.green,
-            Color.blue,
-            Color.yellow,
-            Color.cyan,
-            Color.magenta,
-            Color.orange,
-            Color.pink,
-            Color.gray,
-            Color.black,
+        val COLOR_MIXED: List<String> = listOf(
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "cyan",
+            "magenta",
+            "orange",
+            "pink",
+            "gray",
+            "black",
         )
     }
 }

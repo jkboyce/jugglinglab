@@ -23,12 +23,12 @@ class ParameterList() {
 
     // Return true if parameter already existed, false if it was new.
     fun addParameter(name: String, value: String): Boolean {
-        if (this.numberOfParameters == 0) {
+        if (numberOfParameters == 0) {
             names = ArrayList()
             values = ArrayList()
         }
 
-        for (i in this.numberOfParameters - 1 downTo 0) {
+        for (i in numberOfParameters - 1 downTo 0) {
             if (name.equals(getParameterName(i), ignoreCase = true)) {
                 values[i] = value
                 return true
@@ -37,12 +37,12 @@ class ParameterList() {
 
         names.add(name)
         values.add(value)
-        ++this.numberOfParameters
+        ++numberOfParameters
         return false
     }
 
     fun getParameter(name: String): String? {
-        for (i in this.numberOfParameters - 1 downTo 0) {
+        for (i in numberOfParameters - 1 downTo 0) {
             if (name.equals(getParameterName(i), ignoreCase = true)) {
                 return getParameterValue(i)
             }
@@ -51,9 +51,9 @@ class ParameterList() {
     }
 
     fun removeParameter(name: String): String? {
-        for (i in this.numberOfParameters - 1 downTo 0) {
+        for (i in numberOfParameters - 1 downTo 0) {
             if (name.equals(getParameterName(i), ignoreCase = true)) {
-                --this.numberOfParameters
+                --numberOfParameters
                 names.removeAt(i)
                 return values.removeAt(i)
             }
@@ -97,7 +97,7 @@ class ParameterList() {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        for (i in 0..<this.numberOfParameters) {
+        for (i in 0..<numberOfParameters) {
             if (i != 0) {
                 sb.append(';')
             }
@@ -110,7 +110,7 @@ class ParameterList() {
 
     @Throws(JuggleExceptionUser::class)
     fun errorIfParametersLeft() {
-        val count = this.numberOfParameters
+        val count = numberOfParameters
         if (count == 1) {
             val template: String = errorstrings.getString("Error_unused_param")
             val arguments = arrayOf<Any?>("\"" + getParameterName(0) + "\"")
