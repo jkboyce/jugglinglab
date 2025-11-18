@@ -733,8 +733,20 @@ class JMLPattern() {
             }
 
             "orbits" -> {
-                // TODO: fix this
-                Prop.COLOR_MIXED
+                // the path permutation on the DELAY symmetry determines orbits
+                val delayPerm: Permutation = pathPermutation!!
+                val colorsByOrbit = Array(numpaths) { "" }
+                var colorIndex = 0
+                for (i in 0..<numpaths) {
+                    if (colorsByOrbit[i].isNotEmpty())
+                        continue
+                    val cycle = delayPerm.getCycle(i + 1)
+                    for (j in cycle) {
+                        colorsByOrbit[j - 1] = Prop.COLOR_MIXED[colorIndex % Prop.COLOR_MIXED.size]
+                    }
+                    ++colorIndex
+                }
+                colorsByOrbit.toList()
             }
 
             else -> {
@@ -757,6 +769,7 @@ class JMLPattern() {
         val newProps = ArrayList<JMLProp>()
         val newPropAssignments = IntArray(numpaths)
 
+        // apply colors to get a new list of JMLProps, deduping as we go
         for (i in 0..<numpaths) {
             val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
             val propParameters = ParameterList(oldProp.mod).apply {
@@ -765,14 +778,12 @@ class JMLPattern() {
             }
             val newProp = JMLProp(oldProp.type, propParameters.toString())
 
-            val existingIndex = newProps.indexOf(newProp)
-            if (existingIndex != -1) {
-                // This prop already exists, just point to it
-                newPropAssignments[i] = existingIndex + 1
-            } else {
-                // This is a new prop, add it to the list and point to the new entry
-                newProps.add(newProp)
-                newPropAssignments[i] = newProps.size
+            newPropAssignments[i] = when (val idx = newProps.indexOf(newProp)) {
+                -1 -> {
+                    newProps.add(newProp)
+                    newProps.size
+                }
+                else -> idx + 1  // props are indexed from 1
             }
         }
 
