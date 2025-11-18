@@ -32,9 +32,11 @@ abstract class Prop {
 
     abstract val type: String
 
+    abstract val isColorable: Boolean
+
     abstract fun getEditorColor(): Color
 
-    abstract fun getParameterDescriptors(): Array<ParameterDescriptor>?
+    abstract fun getParameterDescriptors(): Array<ParameterDescriptor>
 
     @Throws(JuggleExceptionUser::class)
     protected abstract fun init(st: String?)

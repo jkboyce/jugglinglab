@@ -1145,12 +1145,12 @@ class EditLadderDiagram(
         cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             try {
-                val pt = if (type.equals(startprop!!.type, ignoreCase = true)) {
+                val pt = if (type.equals(startprop.type, ignoreCase = true)) {
                     startprop
                 } else {
                     newProp(type)
                 }
-                makeParametersPanel(p2, pt.getParameterDescriptors()!!)
+                makeParametersPanel(p2, pt.getParameterDescriptors())
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(jd, jeu.message)
                 return@addActionListener
@@ -1159,7 +1159,7 @@ class EditLadderDiagram(
         }
         val bp: Array<String> = Prop.builtinProps
         for (i in bp.indices) {
-            if (bp[i].equals(startprop!!.type, ignoreCase = true)) {
+            if (bp[i].equals(startprop.type, ignoreCase = true)) {
                 cb1.setSelectedIndex(i)
                 break
             }
@@ -1184,10 +1184,9 @@ class EditLadderDiagram(
             val mod: String?
 
             try {
-                mod = this.parameterList
-                // System.out.println("type = " + type + ", mod = " + mod);
                 // fail if prop definition is invalid, before we change the pattern
-                (JMLProp(type.lowercase(Locale.getDefault()), mod)).layoutProp()
+                mod = this.parameterList
+                JMLProp(type.lowercase(Locale.getDefault()), mod)
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(parentFrame, jeu.message)
                 return@addActionListener

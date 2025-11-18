@@ -46,7 +46,7 @@ abstract class MHNPattern : Pattern() {
     protected var propdiam: Double = PROPDIAM_DEFAULT
     protected var bouncefrac: Double = BOUNCEFRAC_DEFAULT
     protected var squeezebeats: Double = SQUEEZEBEATS_DEFAULT
-    var propName: String? = PROP_DEFAULT
+    var propName: String = PROP_DEFAULT
         protected set
     protected var color: Array<String>? = null
     protected var title: String? = null
@@ -148,7 +148,7 @@ abstract class MHNPattern : Pattern() {
             }
         }
         if ((pl.removeParameter("prop").also { temp = it }) != null) {
-            propName = temp
+            propName = temp!!
         }
         if ((pl.removeParameter("colors").also { temp = it }) != null) {
             temp = if (temp!!.trim() == "mixed") {

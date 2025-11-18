@@ -734,9 +734,6 @@ class JMLPattern() {
             if (numberOfProps == 0 && numberOfPaths > 0) {
                 addProp(JMLProp("ball", null))
             }
-            for (i in 0..<numberOfProps) {
-                props[i].layoutProp()
-            }
 
             buildEventList()
             findMasterEvents()
@@ -1553,7 +1550,7 @@ class JMLPattern() {
     val numberOfProps: Int
         get() = props.size
 
-    fun getProp(propnum: Int): Prop? {
+    fun getProp(propnum: Int): Prop {
         return getPropDef(propnum).prop
     }
 
@@ -1949,9 +1946,7 @@ class JMLPattern() {
                 Pattern.canonicalNotation(current.attributes.getAttribute("notation"))
             this.basePatternConfig = current.nodeValue!!.trim()
         } else if (type.equals("prop", ignoreCase = true)) {
-            val pd = JMLProp()
-            pd.readJML(current, loadingversion)
-            addProp(pd)
+            addProp(JMLProp(current, loadingversion))
         } else if (type.equals("setup", ignoreCase = true)) {
             val at = current.attributes
             val jugglerstring = at.getAttribute("jugglers")

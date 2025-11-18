@@ -37,43 +37,38 @@ class RingProp : Prop() {
 
     override val type = "Ring"
 
+    override val isColorable = true
+
     override fun getEditorColor(): Color {
         return color
     }
 
     override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val result = ArrayList<ParameterDescriptor>()
-
         val range = ArrayList<String>()
         Collections.addAll(range, *COLOR_NAMES)
-        result.add(
+        return arrayOf(
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
                 range,
                 COLOR_NAMES[COLORNUM_DEF],
                 COLOR_NAMES[colornum]
-            )
-        )
-        result.add(
+            ),
             ParameterDescriptor(
                 "outside",
                 ParameterDescriptor.TYPE_FLOAT,
                 null,
                 OUTSIDE_DIAM_DEF,
                 outsideDiam
-            )
-        )
-        result.add(
+            ),
             ParameterDescriptor(
                 "inside",
                 ParameterDescriptor.TYPE_FLOAT,
                 null,
                 INSIDE_DIAM_DEF,
                 insideDiam
-            )
+            ),
         )
-        return result.toTypedArray()
     }
 
     @Throws(JuggleExceptionUser::class)
@@ -293,9 +288,9 @@ class RingProp : Prop() {
         val g = image!!.createGraphics()
 
         /*
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                       RenderingHints.VALUE_ANTIALIAS_ON);
-    */
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_ON);
+        */
         g.color = color
         for (i in 0..<POLYSIDES) {
             px[i] -= pxmin

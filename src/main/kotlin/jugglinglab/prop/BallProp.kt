@@ -17,7 +17,8 @@ import java.awt.Dimension
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
-import java.util.*
+import java.util.Collections
+import java.util.StringTokenizer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -35,43 +36,38 @@ class BallProp : Prop() {
 
     override val type = "Ball"
 
+    override val isColorable = true
+
     override fun getEditorColor(): Color {
         return color
     }
 
     override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val result = ArrayList<ParameterDescriptor>()
         val colorRange = ArrayList<String>()
         Collections.addAll(colorRange, *COLOR_NAMES)
-        result.add(
+        return arrayOf(
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
                 colorRange,
                 COLOR_NAMES[COLORNUM_DEF],
                 COLOR_NAMES[colornum]
-            )
-        )
-        result.add(
+            ),
             ParameterDescriptor(
                 "diam",
                 ParameterDescriptor.TYPE_FLOAT,
                 null,
                 DIAM_DEF,
                 diam
-            )
-        )
-        result.add(
+            ),
             ParameterDescriptor(
                 "highlight",
                 ParameterDescriptor.TYPE_BOOLEAN,
                 null,
                 HIGHLIGHT_DEF,
                 highlight
-            )
+            ),
         )
-
-        return result.toTypedArray()
     }
 
     @Throws(JuggleExceptionUser::class)

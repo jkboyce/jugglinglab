@@ -21,6 +21,7 @@ import java.net.URISyntaxException
 import java.net.URL
 import java.text.MessageFormat
 import javax.imageio.ImageIO
+import kotlin.math.max
 
 class ImageProp : Prop() {
     private var url: URL?
@@ -34,10 +35,8 @@ class ImageProp : Prop() {
     private var lastZoom = 0.0
 
     init {
-        if (imageUrlDefault == null) {
+        url = imageUrlDefault ?:
             throw JuggleExceptionUser("ImageProp error: Default image not set")
-        }
-        url = imageUrlDefault
         loadImage()
         rescaleImage(1.0)
     }
@@ -71,14 +70,8 @@ class ImageProp : Prop() {
     }
 
     private fun rescaleImage(zoom: Double) {
-        var imagePixelWidth = (0.5 + zoom * width).toInt()
-        if (imagePixelWidth < 1) {
-            imagePixelWidth = 1
-        }
-        var imagePixelHeight = (0.5 + zoom * height).toInt()
-        if (imagePixelHeight < 1) {
-            imagePixelHeight = 1
-        }
+        val imagePixelWidth = max((0.5 + zoom * width).toInt(), 1)
+        val imagePixelHeight = max((0.5 + zoom * height).toInt(), 1)
         size = Dimension(imagePixelWidth, imagePixelHeight)
         center = Dimension(imagePixelWidth / 2, imagePixelHeight / 2)
 
@@ -110,6 +103,8 @@ class ImageProp : Prop() {
 
     override val type = "Image"
 
+    override val isColorable = false
+
     override fun getEditorColor(): Color {
         // The color that shows up in the visual editor
         // We could try to get an average color for the image
@@ -117,22 +112,22 @@ class ImageProp : Prop() {
     }
 
     override fun getParameterDescriptors(): Array<ParameterDescriptor> {
-        val result = ArrayList<ParameterDescriptor>()
-        result.add(
+        return arrayOf(
             ParameterDescriptor(
-                "image", ParameterDescriptor.TYPE_ICON, null, imageUrlDefault, url
-            )
-        )
-        result.add(
+                "image",
+                ParameterDescriptor.TYPE_ICON,
+                null,
+                imageUrlDefault,
+                url
+            ),
             ParameterDescriptor(
                 "width",
                 ParameterDescriptor.TYPE_FLOAT,
                 null,
                 WIDTH_DEF,
                 width
-            )
+            ),
         )
-        return result.toTypedArray()
     }
 
     @Throws(JuggleExceptionUser::class)
