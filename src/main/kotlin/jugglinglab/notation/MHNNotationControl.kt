@@ -3,7 +3,7 @@
 //
 // This class is abstract because MHNPattern is abstract; there is no way to
 // implement newPattern(). The UI panel created here is inherited by
-// SiteswapNotationControl and it may be useful for other notations as well.
+// SiteswapNotationControl.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -20,7 +20,6 @@ import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.event.ActionEvent
 import java.util.Locale
 import javax.swing.JComboBox
 import javax.swing.JLabel
@@ -40,8 +39,6 @@ abstract class MHNNotationControl : NotationControl() {
     protected var cb1: JComboBox<String?>
     protected var cb2: JComboBox<String?>
     protected var cb3: JComboBox<String?>
-    protected var cb1Selected: Boolean = false
-    protected var cb2Selected: Boolean = false
 
     init {
         this.setOpaque(false)
@@ -121,46 +118,33 @@ abstract class MHNNotationControl : NotationControl() {
                 GridBagConstraints.LINE_START, 1, 4, Insets(5, 0, 0, BORDER)
             )
         )
-        cb1.addActionListener { _: ActionEvent? ->
-            val index = cb1.getSelectedIndex()
-            cb1Selected = true
-
-            // System.out.println("Selected item number "+index);
-            when (index) {
+        cb1.addActionListener {
+            when (val index = cb1.selectedIndex) {
                 0 -> {
-                    tf4.text = ""
-                    tf4.setEnabled(false)
+                    tf4.programmaticChange { text = "" }
+                    tf4.repaint()
                 }
 
-                (builtinHandsNames.size + 1) -> {
-                    tf4.setEnabled(true)
-                }
+                (builtinHandsNames.size + 1) -> {}
 
                 else -> {
-                    tf4.text = builtinHandsStrings[index - 1]
-                    tf4.setCaretPosition(0)
-                    tf4.setEnabled(true)
+                    tf4.programmaticChange {
+                        text = builtinHandsStrings[index - 1]
+                        caretPosition = 0
+                    }
+                    tf4.repaint()
                 }
             }
         }
-        tf4.document
-            .addDocumentListener(
-                object : DocumentListener {
-                    override fun changedUpdate(de: DocumentEvent?) {}
-
-                    override fun insertUpdate(de: DocumentEvent?) {
-                        if (!cb1Selected) {
-                            cb1.setSelectedIndex(builtinHandsNames.size + 1)
-                        }
-                        cb1Selected = false
-                    }
-
-                    override fun removeUpdate(de: DocumentEvent?) {
-                        if (!cb1Selected) {
-                            cb1.setSelectedIndex(builtinHandsNames.size + 1)
-                        }
-                    }
-                })
+        tf4.document.addDocumentListener(object : DocumentListener {
+            override fun changedUpdate(de: DocumentEvent?) {}
+            override fun insertUpdate(de: DocumentEvent?) = handleUpdate()
+            override fun removeUpdate(de: DocumentEvent?) = handleUpdate()
+            fun handleUpdate() {
+                // set to "default" or "custom"
+                cb1.selectedIndex = if (tf4.text == "") 0 else (builtinHandsNames.size + 1)
+            }
+        })
 
         val lab5 = JLabel(guistrings.getString("Body_movement"))
         p1.add(lab5)
@@ -189,46 +173,32 @@ abstract class MHNNotationControl : NotationControl() {
                 GridBagConstraints.LINE_START, 1, 6, Insets(5, 0, 0, BORDER)
             )
         )
-        cb2.addActionListener { _: ActionEvent? ->
-            val index = cb2.getSelectedIndex()
-            cb2Selected = true
-
-            // System.out.println("Selected item number "+index);
-            when (index) {
+        cb2.addActionListener {
+            when (val index = cb2.selectedIndex) {
                 0 -> {
-                    tf5.text = ""
-                    tf5.setEnabled(false)
+                    tf5.programmaticChange { text = "" }
+                    tf5.repaint()
                 }
 
-                (builtinBodyNames.size + 1) -> {
-                    tf5.setEnabled(true)
-                }
+                (builtinBodyNames.size + 1) -> {}
 
                 else -> {
-                    tf5.text = builtinBodyStrings[index - 1]
-                    tf5.setCaretPosition(0)
-                    tf5.setEnabled(true)
+                    tf5.programmaticChange {
+                        text = builtinBodyStrings[index - 1]
+                        caretPosition = 0
+                    }
+                    tf5.repaint()
                 }
             }
         }
-        tf5.document
-            .addDocumentListener(
-                object : DocumentListener {
-                    override fun changedUpdate(de: DocumentEvent?) {}
-
-                    override fun insertUpdate(de: DocumentEvent?) {
-                        if (!cb2Selected) {
-                            cb2.setSelectedIndex(builtinBodyNames.size + 1)
-                        }
-                        cb2Selected = false
-                    }
-
-                    override fun removeUpdate(de: DocumentEvent?) {
-                        if (!cb2Selected) {
-                            cb2.setSelectedIndex(builtinBodyNames.size + 1)
-                        }
-                    }
-                })
+        tf5.document.addDocumentListener(object : DocumentListener {
+            override fun changedUpdate(e: DocumentEvent?) {}
+            override fun insertUpdate(e: DocumentEvent?) = handleUpdate()
+            override fun removeUpdate(e: DocumentEvent?) = handleUpdate()
+            fun handleUpdate() {
+                cb2.selectedIndex = if (tf5.text == "") 0 else (builtinBodyNames.size + 1)
+            }
+        })
 
         val propLabel = JLabel(guistrings.getString("Prop_type"))
         p1.add(propLabel)
@@ -266,6 +236,20 @@ abstract class MHNNotationControl : NotationControl() {
 
         this.resetControl()
         this.add(p1, BorderLayout.PAGE_START)
+    }
+
+    // Execute a block of code on a JTextField without triggering its DocumentListeners.
+
+    private fun JTextField.programmaticChange(action: JTextField.() -> Unit) {
+        // The getDocumentListeners() method is on AbstractDocument, not the Document interface.
+        val doc = document as? javax.swing.text.AbstractDocument
+        val listeners = doc?.documentListeners ?: emptyArray()
+        listeners.forEach { doc?.removeDocumentListener(it) }
+        try {
+            this.action()
+        } finally {
+            listeners.forEach { doc?.addDocumentListener(it) }
+        }
     }
 
     override fun resetControl() {
