@@ -28,7 +28,6 @@ import jugglinglab.jml.*
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import java.text.MessageFormat
-import java.util.Locale
 import java.util.IllegalFormatException
 import kotlin.math.abs
 import kotlin.math.max
@@ -48,7 +47,7 @@ abstract class MHNPattern : Pattern() {
     protected var squeezebeats: Double = SQUEEZEBEATS_DEFAULT
     var propName: String = PROP_DEFAULT
         protected set
-    protected var color: Array<String>? = null
+    protected var colors: String? = null
     protected var title: String? = null
 
     // hss parameters:
@@ -151,23 +150,7 @@ abstract class MHNPattern : Pattern() {
             propName = temp!!
         }
         if ((pl.removeParameter("colors").also { temp = it }) != null) {
-            temp = if (temp!!.trim() == "mixed") {
-                "{red}{green}{blue}{yellow}{cyan}{magenta}{orange}{pink}{gray}{black}"
-            } else {
-                jlExpandRepeats(temp)
-            }
-
-            color = temp.split('}')
-                .filter { it.isNotBlank() }
-                .map { it.replace("{", "").trim() }
-                .map { colorString ->
-                    val parts = colorString.split(',')
-                    when (parts.size) {
-                        1 -> parts[0].trim().lowercase(Locale.getDefault())
-                        3 -> "{$colorString}"
-                        else -> throw JuggleExceptionUser(errorstrings.getString("Error_color_format"))
-                    }
-                }.toTypedArray()
+            colors = temp
         }
         if ((pl.removeParameter("hss").also { temp = it }) != null) {
             hss = temp
@@ -790,6 +773,9 @@ abstract class MHNPattern : Pattern() {
         }
 
         result.title = if (title == null) pattern else title
+        if (colors != null) {
+            result.setPropColors(colors!!)
+        }
         if (Constants.DEBUG_LAYOUT) {
             println("Pattern in JML format:\n")
             println(result)
@@ -821,23 +807,10 @@ abstract class MHNPattern : Pattern() {
 
     protected fun addPropsToJML(pat: JMLPattern) {
         val balls = numberOfPaths
+        val mod = if (propdiam != PROPDIAM_DEFAULT) "diam=$propdiam" else null
+        val pa = IntArray(balls) { 1 }
         pat.numberOfPaths = balls
-        val props = if (color == null) min(balls, 1) else min(balls, color!!.size)
-        for (i in 0..<props) {
-            var mod: String? = null
-            if (propdiam != PROPDIAM_DEFAULT) {
-                mod = "diam=$propdiam"
-            }
-            if (color != null) {
-                val colorstr = "color=" + color!![i]
-                mod = if (mod == null) colorstr else "$mod;$colorstr"
-            }
-            pat.addProp(JMLProp(propName, mod))
-        }
-        val pa = IntArray(balls)
-        for (i in 0..<balls) {
-            pa[i] = 1 + (i % props)
-        }
+        pat.addProp(JMLProp(propName, mod))
         pat.setPropAssignments(pa)
     }
 
