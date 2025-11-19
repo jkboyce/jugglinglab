@@ -1761,7 +1761,7 @@ class EditLadderDiagram(
         // Popup menu and related handlers
         //----------------------------------------------------------------------
 
-        private val popupItems: Array<String?> = arrayOf(
+        private val popupItems: List<String?> = listOf(
             "Add event to L hand",
             "Add event to R hand",
             "Remove event",
@@ -1776,7 +1776,7 @@ class EditLadderDiagram(
             "Make last in event",
         )
 
-        private val popupCommands: Array<String?> = arrayOf(
+        private val popupCommands: List<String?> = listOf(
             "addeventtoleft",
             "addeventtoright",
             "removeevent",
@@ -1797,7 +1797,7 @@ class EditLadderDiagram(
 
         private fun isCommandEnabled(laditem: LadderItem?, command: String?): Boolean {
             if (laditem == null) {
-                return !mutableListOf(
+                return !listOf(
                     "removeevent",
                     "removeposition",
                     "defineprop",
@@ -1808,7 +1808,7 @@ class EditLadderDiagram(
                     "makelast"
                 ).contains(command)
             } else if (laditem.type == LadderItem.TYPE_EVENT) {
-                if (mutableListOf(
+                if (listOf(
                         "addeventtoleft",
                         "addeventtoright",
                         "addposition",

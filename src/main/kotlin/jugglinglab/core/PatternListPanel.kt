@@ -539,7 +539,7 @@ class PatternListPanel private constructor() : JPanel() {
         // Popup menu and associated handler methods
         //----------------------------------------------------------------------
 
-        private val popupItems: Array<String?> = arrayOf(
+        private val popupItems: List<String?> = listOf(
             "PLPOPUP Insert text...",
             null,
             "PLPOPUP Insert pattern",
@@ -549,7 +549,7 @@ class PatternListPanel private constructor() : JPanel() {
             "PLPOPUP Remove line",
         )
 
-        private val popupCommands: Array<String?> = arrayOf(
+        private val popupCommands: List<String?> = listOf(
             "inserttext",
             null,
             "insertpattern",

@@ -37,7 +37,7 @@ abstract class Pattern {
     @Suppress("unused")
     companion object {
         // The built-in notations
-        val builtinNotations: Array<String> = arrayOf(
+        val builtinNotations: List<String> = listOf(
             "Siteswap",
             )
 

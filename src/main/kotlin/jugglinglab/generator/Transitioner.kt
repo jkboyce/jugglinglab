@@ -48,7 +48,9 @@ abstract class Transitioner {
     companion object {
         // The built-in transitioners
         @Suppress("unused")
-        val builtinTransitioners = arrayOf<String>("Siteswap")
+        val builtinTransitioners: List<String> = listOf(
+            "Siteswap",
+            )
 
         @JvmStatic
         fun newTransitioner(name: String): Transitioner? {

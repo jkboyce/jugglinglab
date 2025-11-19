@@ -610,14 +610,14 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             }
         }
 
-        private val fileItems: Array<String?> = arrayOf<String?>(
+        private val fileItems: List<String?> = listOf(
             "New Pattern",
             "New Pattern List",
             "Open JML...",
             null,
             "Quit",
         )
-        private val fileCommands: Array<String?> = arrayOf<String?>(
+        private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
             "open",
@@ -632,11 +632,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             'Q',
         )
 
-        private val helpItems: Array<String?> = arrayOf<String?>(
+        private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        private val helpCommands: Array<String?> = arrayOf<String?>(
+        private val helpCommands: List<String?> = listOf(
             "about",
             "online",
         )

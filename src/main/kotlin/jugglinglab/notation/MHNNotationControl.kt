@@ -337,27 +337,27 @@ abstract class MHNNotationControl : NotationControl() {
         }
 
     companion object {
-        protected val builtinHandsNames: Array<String> = arrayOf<String>(
+        protected val builtinHandsNames: List<String> = listOf(
             "inside",
             "outside",
             "half",
             "Mills",
         )
-        protected val builtinHandsStrings: Array<String> = arrayOf<String>(
+        protected val builtinHandsStrings: List<String> = listOf(
             "(10)(32.5).",
             "(32.5)(10).",
             "(32.5)(10).(10)(32.5).",
             "(-25)(2.5).(25)(-2.5).(-25)(0).",
         )
 
-        protected val builtinBodyNames: Array<String> = arrayOf<String>(
+        protected val builtinBodyNames: List<String> = listOf(
             "line",
             "feed",
             "backtoback",
             "sidetoside",
             "circles",
         )
-        protected val builtinBodyStrings: Array<String> = arrayOf<String>(
+        protected val builtinBodyStrings: List<String> = listOf(
             "<(90).|(270,-125).|(90,125).|(270,-250).|(90,250).|(270,-375).>",
             "<(90,75).|(270,-75,50).|(270,-75,-50).|(270,-75,150).|(270,-75,-150).>",
             "<(270,35).|(90,-35).|(0,0,35).|(180,0,-35).>",

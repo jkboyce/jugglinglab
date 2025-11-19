@@ -419,7 +419,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 return loc
             }
 
-        private val fileItems: Array<String?> = arrayOf(
+        private val fileItems: List<String?> = listOf(
             "New Pattern",
             "New Pattern List",
             "Open JML...",
@@ -432,7 +432,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             null,
             "Close",
         )
-        private val fileCommands: Array<String?> = arrayOf(
+        private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
             "open",
@@ -459,11 +459,11 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             'W',
         )
 
-        private val helpItems: Array<String?> = arrayOf(
+        private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
         )
-        private val helpCommands: Array<String?> = arrayOf(
+        private val helpCommands: List<String?> = listOf(
             "about",
             "online",
         )
