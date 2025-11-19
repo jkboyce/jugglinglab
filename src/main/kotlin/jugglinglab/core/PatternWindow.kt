@@ -219,17 +219,17 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             if (fileCommands[i] == "colorprops") {
                 colorsMenu = JMenu(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
-                colorsMenu.add(JMenuItem("mixed").apply {
+                colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_mixed")).apply {
                     actionCommand = "colors_mixed"
                     addActionListener(this@PatternWindow)
                 })
-                colorsMenu.add(JMenuItem("orbits").apply {
+                colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_orbits")).apply {
                     actionCommand = "colors_orbits"
                     addActionListener(this@PatternWindow)
                 })
                 colorsMenu.addSeparator()
                 for (colorName in Prop.COLOR_NAMES) {
-                    colorsMenu.add(JMenuItem(colorName).apply {
+                    colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_$colorName")).apply {
                         actionCommand = "colors_$colorName"
                         addActionListener(this@PatternWindow)
                     })
