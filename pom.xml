@@ -15,7 +15,7 @@
     <groupId>org.jugglinglab</groupId>
     <artifactId>jugglinglab</artifactId>
     <packaging>jar</packaging>
-    <version>1.6.6</version>
+    <version>1.6.7</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

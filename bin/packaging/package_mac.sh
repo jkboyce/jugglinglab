@@ -63,7 +63,7 @@ cp -r "ortools-lib/ortools-darwin-${ortools_arch_suffix}/"* target
 jpackage --type app-image \
    --input target/ \
    --name "Juggling Lab" \
-   --app-version "1.6.6" \
+   --app-version "1.6.7" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
    --resource-dir "packaging/macos/" \
@@ -85,7 +85,7 @@ cp "packaging/macos/Juggling Lab.cfg" "Juggling Lab.app/Contents/app/"
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
    --name "Juggling Lab" \
-   --app-version "1.6.6" \
+   --app-version "1.6.7" \
    --verbose
 
 if [[ "$architecture" == "arm64" ]]; then
