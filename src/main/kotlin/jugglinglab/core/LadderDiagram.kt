@@ -652,7 +652,7 @@ open class LadderDiagram(p: JMLPattern) :
                         // color ball representation with the prop's color
                         val tr = item.event!!.getTransition(item.transnum)
                         val propnum = animpropnum[tr.path - 1]
-                        gr.color = pat.getProp(propnum)!!.getEditorColor()
+                        gr.color = pat.getProp(propnum).getEditorColor()
                     }
                     gr.fillOval(
                         item.xlow,

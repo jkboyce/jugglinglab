@@ -288,8 +288,8 @@ class Animator {
         var propmax: Coordinate? = null
         var propmin: Coordinate? = null
         for (i in 1..pattern.numberOfProps) {
-            propmax = max(propmax, pattern.getProp(i)!!.getMax())
-            propmin = min(propmin, pattern.getProp(i)!!.getMin())
+            propmax = max(propmax, pattern.getProp(i).getMax())
+            propmin = min(propmin, pattern.getProp(i).getMin())
         }
 
         // Make sure props are entirely visible along all paths. In principle
