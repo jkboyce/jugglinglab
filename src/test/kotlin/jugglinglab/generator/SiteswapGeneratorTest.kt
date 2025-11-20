@@ -71,12 +71,34 @@ class SiteswapGeneratorTest {
         assertEquals(1663, patterns.size)
     }
 
+    @Test
+    fun `generator regex 1`() {
+        val patterns = runGeneratorTestCase("5 3 4 -j 2 -f -cp -x <3p|.*>")
+        println(patterns)
+        assertEquals(7, patterns.size)
+    }
+
+    @Test
+    fun `generator regex 2`() {
+        val patterns1 = runGeneratorTestCase("5 7 4 -f")
+        val patterns2 = runGeneratorTestCase("5 7 4 -m 2 -f -x [")
+        assertEquals(patterns1.size, patterns2.size)
+        assertEquals(17, patterns1.size)
+    }
+
+    @Test
+    fun `generator multiplexing 1`() {
+        val patterns1 = runGeneratorTestCase("5 5 3 -m 2 -f")
+        val patterns2 = runGeneratorTestCase("5 5 3 -m 2 -f -mt")
+        val patterns3 = runGeneratorTestCase("5 5 3 -m 2 -f -mt -mc")
+        assertEquals(23, patterns1.size)
+        assertEquals(16, patterns2.size)
+        assertEquals(5, patterns3.size)
+    }
+
     // TODO:
-    // - multiplexing
     // - sync mode
     // - passing mode
     // - include, exclude, regular expressions
     // - passing delay
-    // - "true" multiplexing
-    // - no clustered throws
 }
