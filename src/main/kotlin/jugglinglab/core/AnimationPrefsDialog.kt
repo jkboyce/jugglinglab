@@ -78,7 +78,7 @@ class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getStri
             // filter out all the explicit settings above to populate the
             // manual settings box
             val pl = ParameterList(oldjc.toString())
-            val paramsRemove = arrayOf(
+            val paramsRemove = listOf(
                 "width",
                 "height",
                 "fps",
