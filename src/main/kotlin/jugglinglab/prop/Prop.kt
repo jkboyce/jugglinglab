@@ -56,7 +56,6 @@ abstract class Prop {
     abstract fun getProp2DGrip(zoom: Double): Dimension?
 
     companion object {
-        @JvmField
         val builtinProps: List<String> = listOf(
             "Ball",
             "Image",
@@ -64,7 +63,6 @@ abstract class Prop {
         )
 
         // Create a new prop of the given type.
-        @JvmStatic
         @Throws(JuggleExceptionUser::class)
         fun newProp(type: String): Prop {
             if (type.equals("ball", ignoreCase = true)) {

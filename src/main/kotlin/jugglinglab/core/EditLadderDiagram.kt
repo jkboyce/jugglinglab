@@ -1284,7 +1284,7 @@ class EditLadderDiagram(
         }
         val tr = ev.getTransition((popupitem as LadderEventItem).transnum)
 
-        val pptypes: Array<String> = Path.builtinPaths
+        val pptypes: List<String> = Path.builtinPaths
 
         val jd = JDialog(parentFrame, guistrings.getString("Define_throw"), true)
         val gb = GridBagLayout()
@@ -1301,7 +1301,7 @@ class EditLadderDiagram(
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox(pptypes)
+        val cb1 = JComboBox(pptypes.toTypedArray())
         p1.add(cb1)
         gb.setConstraints(
             cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
@@ -1321,7 +1321,7 @@ class EditLadderDiagram(
             }
             jd.pack()
         }
-        val bpp: Array<String> = Path.builtinPaths
+        val bpp: List<String> = Path.builtinPaths
         for (i in bpp.indices) {
             if (bpp[i].equals(tr.throwType, ignoreCase = true)) {
                 cb1.setSelectedIndex(i)

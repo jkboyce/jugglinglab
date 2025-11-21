@@ -96,6 +96,7 @@ abstract class Path {
         if (time2 < this.startTime || time1 > this.endTime) return null
         return getMax2(time1, time2)
     }
+
     fun getMin(time1: Double, time2: Double): Coordinate? {
         if (time2 < this.startTime || time1 > this.endTime) return null
         return getMin2(time1, time2)
@@ -118,11 +119,12 @@ abstract class Path {
 
     companion object {
         // List of the built-in path types
-        @JvmField
-        val builtinPaths: Array<String> = arrayOf<String>("Toss", "Bounce")
+        val builtinPaths: List<String> = listOf(
+            "Toss",
+            "Bounce",
+        )
 
         // Factory method to create paths
-        @JvmStatic
         @Throws(JuggleExceptionUser::class)
         fun newPath(type: String): Path {
             if (type.equals("toss", ignoreCase = true)) {

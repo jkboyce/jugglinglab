@@ -86,16 +86,15 @@ object JMLDefs {
             + "          animprefs  CDATA   #IMPLIED\n"
             + "          notation   CDATA   #IMPLIED>\n")
 
-    @JvmField
-    val jmlprefix: Array<String> = arrayOf(
-        "<?xml version=\"1.0\"?>", "<!DOCTYPE jml SYSTEM \"file://jml.dtd\">"
+    val jmlprefix: List<String> = listOf(
+        "<?xml version=\"1.0\"?>",
+        "<!DOCTYPE jml SYSTEM \"file://jml.dtd\">",
     )
 
-    @JvmField
-    val jmlsuffix: Array<String> = arrayOf()
+    val jmlsuffix: List<String> = listOf()
 
     @Suppress("unused")
-    val taglist: Array<String> = arrayOf(
+    val taglist: List<String> = listOf(
         "jml",
         "pattern",
         "patternlist",

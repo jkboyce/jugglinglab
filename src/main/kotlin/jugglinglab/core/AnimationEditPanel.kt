@@ -1396,7 +1396,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         // points in the juggler's coordinate system that are used for drawing the
         // onscreen representation of a selected event
-        private val EVENT_CONTROL_POINTS: Array<DoubleArray> = arrayOf(
+        private val EVENT_CONTROL_POINTS: List<DoubleArray> = listOf(
             // corners of square representing xz movement control
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, -EVENT_BOX_HW_CM),
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, EVENT_BOX_HW_CM),
@@ -1419,7 +1419,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         private val FACE_XZ: IntArray = intArrayOf(0, 1, 2, 3)
 
         // points for an event that is not selected (active)
-        private val UNSELECTED_EVENT_POINTS: Array<DoubleArray> = arrayOf(
+        private val UNSELECTED_EVENT_POINTS: List<DoubleArray> = listOf(
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, -UNSELECTED_BOX_HW_CM),
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, UNSELECTED_BOX_HW_CM),
             doubleArrayOf(UNSELECTED_BOX_HW_CM, 0.0, UNSELECTED_BOX_HW_CM),
@@ -1429,7 +1429,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         // points in the juggler's coordinate system that are used for drawing the
         // onscreen representation of a selected position
-        private val POS_CONTROL_POINTS: Array<DoubleArray> = arrayOf(
+        private val POS_CONTROL_POINTS: List<DoubleArray> = listOf(
             // corners of square representing xy movement control
             doubleArrayOf(-POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(-POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0.0),

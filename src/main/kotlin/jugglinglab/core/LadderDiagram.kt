@@ -775,31 +775,30 @@ open class LadderDiagram(p: JMLPattern) :
     companion object {
         // overall sizing
         const val MAX_JUGGLERS: Int = 8
-        protected const val LADDER_WIDTH_PER_JUGGLER: Int = 150 // pixels
-        protected const val LADDER_MIN_WIDTH_PER_JUGGLER: Int = 60
-        protected val MSGFONT: Font = Font("SansSerif", Font.PLAIN, 12)
+        const val LADDER_WIDTH_PER_JUGGLER: Int = 150 // pixels
+        const val LADDER_MIN_WIDTH_PER_JUGGLER: Int = 60
+        val MSGFONT: Font = Font("SansSerif", Font.PLAIN, 12)
 
         // geometric constants in pixels
-        protected const val BORDER_TOP: Int = 25
-        protected const val TRANSITION_RADIUS: Int = 5
-        protected const val PATH_SLOP: Int = 5
-        protected const val POSITION_RADIUS: Int = 5
+        const val BORDER_TOP: Int = 25
+        const val TRANSITION_RADIUS: Int = 5
+        const val PATH_SLOP: Int = 5
+        const val POSITION_RADIUS: Int = 5
 
         // geometric constants as fraction of hands separation for each juggler
-        protected const val BORDER_SIDES: Double = 0.15
-        protected const val JUGGLER_SEPARATION: Double = 0.45
-        protected const val SELFTHROW_WIDTH: Double = 0.25
+        const val BORDER_SIDES: Double = 0.15
+        const val JUGGLER_SEPARATION: Double = 0.45
+        const val SELFTHROW_WIDTH: Double = 0.25
 
-        protected val COLOR_BACKGROUND: Color? = Color.white
-        protected val COLOR_HANDS: Color? = Color.black
-        protected val COLOR_POSITIONS: Color? = Color.black
-        protected val COLOR_SYMMETRIES: Color? = Color.lightGray
-        @JvmStatic
-        protected val COLOR_TRACKER: Color? = Color.red
-        protected const val IMAGE_DRAW_WAIT: Int = 5 // frames
+        val COLOR_BACKGROUND: Color? = Color.white
+        val COLOR_HANDS: Color? = Color.black
+        val COLOR_POSITIONS: Color? = Color.black
+        val COLOR_SYMMETRIES: Color? = Color.lightGray
+        val COLOR_TRACKER: Color? = Color.red
+        const val IMAGE_DRAW_WAIT: Int = 5 // frames
 
         // GUI states
-        protected const val STATE_INACTIVE: Int = 0
-        protected const val STATE_MOVING_TRACKER: Int = 1
+        const val STATE_INACTIVE: Int = 0
+        const val STATE_MOVING_TRACKER: Int = 1
     }
 }

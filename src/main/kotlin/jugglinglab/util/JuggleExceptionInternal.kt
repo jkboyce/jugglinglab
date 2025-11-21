@@ -13,7 +13,6 @@ package jugglinglab.util
 import jugglinglab.jml.JMLPattern
 
 class JuggleExceptionInternal : JuggleException {
-    @JvmField
     var pat: JMLPattern? = null
 
     constructor() : super()

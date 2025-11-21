@@ -53,7 +53,6 @@ abstract class Generator {
         @Suppress("unused")
         val builtinGenerators = arrayOf<String>("Siteswap")
 
-        @JvmStatic
         fun newGenerator(name: String): Generator? {
             if (name.equals("siteswap", ignoreCase = true)) return SiteswapGenerator()
             return null

@@ -52,7 +52,6 @@ abstract class Transitioner {
             "Siteswap",
             )
 
-        @JvmStatic
         fun newTransitioner(name: String): Transitioner? {
             if (name.equals("siteswap", ignoreCase = true)) {
                 return SiteswapTransitioner()
