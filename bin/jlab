@@ -34,11 +34,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
                 if [[ $# -ne 0 ]]; then
                     "$_java" -cp "${JL_JAR}" -Xss2048k \
                         -Djava.library.path="${ortools_path}" \
-                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
+                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLabKt ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
-                    "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
+                    "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLabKt help
                     exit 1
                 fi
             fi
@@ -82,11 +82,11 @@ else
                     # JRE will choose correct one at runtime
                     "$_java" -cp "${JL_JAR}" -Xss2048k \
                         -Djava.library.path="${DIR}/ortools-lib/ortools-linux-x86-64:${DIR}/ortools-lib/ortools-linux-aarch64" \
-                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab ${1+"$@"}
+                        --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLabKt ${1+"$@"}
                     exit 1
                 else
                     # print a help message if no command line args
-                    "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLab help
+                    "$_java" -cp "${JL_JAR}" jugglinglab.JugglingLabKt help
                     exit 1
                 fi
             fi

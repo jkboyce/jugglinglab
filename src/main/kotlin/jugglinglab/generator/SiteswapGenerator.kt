@@ -1417,9 +1417,7 @@ class SiteswapGenerator : Generator() {
 
         private const val LOOP_COUNTER_MAX = 20000
 
-        //----------------------------------------------------------------------
-        // Static methods to run the generator from the command line
-        //----------------------------------------------------------------------
+        // Run the generator from command-line input.
 
         fun runGeneratorCLI(args: Array<String>, target: GeneratorTarget) {
             if (args.size < 3) {
@@ -1447,12 +1445,13 @@ class SiteswapGenerator : Generator() {
                 println(errorstrings.getString("Error") + ": " + e.message)
             }
         }
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            runGeneratorCLI(args, GeneratorTarget(System.out))
-        }
     }
+}
+
+// Top-level function to run the generator from command line input.
+
+fun main(args: Array<String>) {
+    SiteswapGenerator.runGeneratorCLI(args, GeneratorTarget(System.out))
 }
 
 //------------------------------------------------------------------------------

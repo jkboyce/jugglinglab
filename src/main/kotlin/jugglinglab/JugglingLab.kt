@@ -4,8 +4,8 @@
 // Juggling Lab is an open-source application for creating and animating
 // juggling patterns. https://jugglinglab.org
 //
-// This class is the entry point into Juggling Lab, whether from a usual
-// application launch or from one of the command line interfaces.
+// This is the entry point into Juggling Lab, whether from a usual application
+// launch or from one of the command line interfaces.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -97,12 +97,9 @@ object JugglingLab {
         baseDir = Paths.get(workingDir)
     }
 
-    //--------------------------------------------------------------------------
-    // Main entry point for Juggling Lab
-    //--------------------------------------------------------------------------
+    // Start the application.
 
-    @JvmStatic
-    fun main(args: Array<String>) {
+    fun startWithArgs(args: Array<String>) {
         if (isMacOS) {
             System.setProperty("apple.laf.useScreenMenuBar", "true")
         }
@@ -656,4 +653,12 @@ object JugglingLab {
             println("Note: Animator prefs not used in jml output mode; ignored")
         }
     }
+}
+
+//------------------------------------------------------------------------------
+// Main entry point for Juggling Lab
+//------------------------------------------------------------------------------
+
+fun main(args: Array<String>) {
+    JugglingLab.startWithArgs(args)
 }

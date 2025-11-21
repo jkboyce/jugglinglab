@@ -183,7 +183,7 @@
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>jugglinglab.JugglingLab</mainClass>
+                                    <mainClass>jugglinglab.JugglingLabKt</mainClass>
                                 </transformer>
                             </transformers>
                             <outputFile>${project.basedir}/bin/JugglingLab.jar</outputFile>

@@ -1137,14 +1137,11 @@ class SiteswapTransitioner : Transitioner() {
 
     companion object {
         private const val LOOP_COUNTER_MAX: Int = 20000
-
-        //----------------------------------------------------------------------
-        // Static methods to run transitioner with command line input
-        //----------------------------------------------------------------------
-
         // Execution limits
         private const val TRANS_MAX_PATTERNS: Int = 1000
         private const val TRANS_MAX_TIME: Double = 15.0
+
+        // Run the transitioner from command-line input.
 
         fun runTransitionerCLI(args: Array<String>, target: GeneratorTarget?) {
             if (args.size < 2) {
@@ -1190,10 +1187,11 @@ class SiteswapTransitioner : Transitioner() {
                 println(errorstrings.getString("Error") + ": " + e.message)
             }
         }
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            runTransitionerCLI(args, GeneratorTarget(System.out))
-        }
     }
+}
+
+// Top-level function to run the transitioner from command-line input.
+
+fun main(args: Array<String>) {
+    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTarget(System.out))
 }
