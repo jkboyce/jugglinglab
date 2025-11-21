@@ -463,7 +463,6 @@ class Animator {
         private const val STEREO_SEPARATION_RADIANS: Double = 0.10
 
         // Helper method for writeGIF() above.
-        // Adapted from https://community.oracle.com/thread/1264385
 
         private fun configureGIFMetadata(meta: IIOMetadata, delayTime: String?, imageIndex: Int) {
             val metaFormat = meta.getNativeMetadataFormatName()
