@@ -74,7 +74,6 @@ class SiteswapGeneratorTest {
     @Test
     fun `generator regex 1`() {
         val patterns = runGeneratorTestCase("5 3 4 -j 2 -f -cp -x <3p|.*>")
-        println(patterns)
         assertEquals(7, patterns.size)
     }
 
