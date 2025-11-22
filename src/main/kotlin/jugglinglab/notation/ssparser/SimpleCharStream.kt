@@ -165,22 +165,6 @@ class SimpleCharStream
         return c
     }
 
-    /**
-     * @see .getEndColumn
-     */
-    @Deprecated(" ")
-    fun getColumn(): Int {
-        return bufcolumn!![bufpos]
-    }
-
-    /**
-     * @see .getEndLine
-     */
-    @Deprecated(" ")
-    fun getLine(): Int {
-        return bufline!![bufpos]
-    }
-
     val endColumn: Int
         /** Get token end column number.  */
         get() = bufcolumn!![bufpos]

@@ -103,7 +103,7 @@ class ParseException : Exception {
                 expected.append(EOL).append("    ")
             }
             var retval = "Encountered \""
-            var tok = currentToken.next
+            var tok = currentToken.next!!
             for (i in 0..<maxSize) {
                 if (i != 0) retval += " "
                 if (tok.kind == 0) {
@@ -112,12 +112,12 @@ class ParseException : Exception {
                 }
                 retval += " " + tokenImage[tok.kind]
                 retval += " \""
-                retval += add_escapes(tok.image)
+                retval += add_escapes(tok.image!!)
                 retval += " \""
-                tok = tok.next
+                tok = tok.next!!
             }
             if (currentToken.next != null) {
-                retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn
+                retval += "\" at line " + currentToken.next!!.beginLine + ", column " + currentToken.next!!.beginColumn
             }
             retval += "." + EOL
 

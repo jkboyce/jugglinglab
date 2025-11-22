@@ -9,11 +9,6 @@ class SiteswapParserTokenManager : SiteswapParserConstants {
     /** Debug output.  */
     var debugStream: PrintStream? = System.out
 
-    /** Set debug output.  */
-    fun setDebugStream(ds: PrintStream?) {
-        debugStream = ds
-    }
-
     private fun jjStopStringLiteralDfa_0(pos: Int, active0: Long): Int {
         when (pos) {
             else -> return -1
