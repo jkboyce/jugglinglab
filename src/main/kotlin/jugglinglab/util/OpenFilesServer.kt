@@ -52,7 +52,6 @@ object OpenFilesServer {
     // the file. If the open command is successfully handed off, return true.
     // Otherwise return false.
 
-    @JvmStatic
     fun tryOpenFile(f: File?): Boolean {
         return when (Constants.OPEN_FILES_METHOD) {
             SERVER_MMF -> OpenFilesServerMMF.tryOpenFile(f)
@@ -62,7 +61,6 @@ object OpenFilesServer {
     }
 
     // Do any needed cleanup when things are closing down.
-    @JvmStatic
     fun cleanup() {
         if (ofs_mmf != null) {
             OpenFilesServerMMF.cleanup()

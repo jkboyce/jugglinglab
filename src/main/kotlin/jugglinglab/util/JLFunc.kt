@@ -6,8 +6,6 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:JvmName("JLFunc")
-
 package jugglinglab.util
 
 import jugglinglab.JugglingLab

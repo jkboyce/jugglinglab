@@ -189,7 +189,7 @@ abstract class MHNPattern : Pattern() {
         var result = ""
         try {
             val pl = ParameterList(config)
-            val keys = arrayOf(
+            val keys = listOf(
                 "pattern",
                 "bps",
                 "dwell",

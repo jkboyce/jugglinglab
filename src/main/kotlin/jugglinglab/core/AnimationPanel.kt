@@ -504,8 +504,7 @@ open class AnimationPanel : JPanel(), Runnable {
     companion object {
         val SNAPANGLE: Double = Math.toRadians(8.0)
 
-        @JvmStatic
-        protected fun anglediff(delta: Double): Double {
+        fun anglediff(delta: Double): Double {
             var delta = delta
             while (delta > Math.PI) {
                 delta -= 2 * Math.PI

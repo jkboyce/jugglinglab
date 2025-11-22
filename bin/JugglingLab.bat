@@ -13,7 +13,7 @@ IF EXIST "%JL_BAT_DIR%\JugglingLab.jar" (
     IF EXIST "%JAVA_HOME%\bin\java.exe" (
         "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" -Xss2048k ^
             -Djava.library.path="%JL_BAT_DIR%\ortools-lib\ortools-win32-x86-64" ^
-            --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLab
+            --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLabKt
     ) ELSE (
         ECHO Java not found. Install Java 11 or higher and ensure JAVA_HOME
         ECHO environment variable is set.

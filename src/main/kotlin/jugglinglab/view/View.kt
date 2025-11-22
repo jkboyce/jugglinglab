@@ -213,8 +213,7 @@ abstract class View : JPanel() {
 
         // used for `view` parameter setting in AnimationPrefs, these must be in the
         // same order as VIEW_ constants above
-        @JvmField
-        val viewNames: Array<String> = arrayOf(
+        val viewNames: List<String> = listOf(
             "simple",
             "visual_editor",
             "pattern_editor",
