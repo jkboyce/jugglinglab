@@ -125,7 +125,7 @@ class SiteswapPattern : MHNPattern() {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parsing pattern \"$pattern\"")
             }
-            tree = SiteswapParser.parsePattern(pattern)
+            tree = SiteswapParser.parsePattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
                 println(tree)
@@ -145,8 +145,8 @@ class SiteswapPattern : MHNPattern() {
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             } else {
                 val template = errorstrings.getString("Error_pattern_syntax")
-                val problem = pe.currentToken.next.image
-                val arguments = arrayOf<Any?>(problem, pe.currentToken.next.beginColumn)
+                val problem = pe.currentToken!!.next?.image
+                val arguments = arrayOf<Any?>(problem, pe.currentToken!!.next?.beginColumn)
                 throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
             }
         } catch (tme: TokenMgrError) {
@@ -516,12 +516,12 @@ class SiteswapPattern : MHNPattern() {
             }
 
             SiteswapTreeItem.TYPE_WILDCARD -> if (sti.transition != null) {
-                sti.transition.beatnum = sti.beatnum
-                doFirstPass(sti.transition)
+                sti.transition!!.beatnum = sti.beatnum
+                doFirstPass(sti.transition!!)
                 // copy variables from sti.transition to sti
-                sti.throw_sum = sti.transition.throw_sum
-                sti.vanilla_async = sti.transition.vanilla_async
-                sti.beats = sti.transition.beats
+                sti.throw_sum = sti.transition!!.throw_sum
+                sti.vanilla_async = sti.transition!!.vanilla_async
+                sti.beats = sti.transition!!.beats
             } else {
                 throw JuggleExceptionInternal("Wildcard not resolved")
             }
