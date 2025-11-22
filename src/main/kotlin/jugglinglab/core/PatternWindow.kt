@@ -46,7 +46,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     private var lastJmlFilename: String? = null
 
     init {
-        loadOptimizer()  // do this before creating menus
         createMenus()
         createInitialView(pat, jc)
         view.addToUndoList(pat)
@@ -251,7 +250,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             fileItem.addActionListener(this)
             fileMenu.add(fileItem)
 
-            if (fileCommands[i] == "optimize" && optimizer == null) {
+            if (fileCommands[i] == "optimize" && optimizerWrapper == null) {
                 fileItem.setEnabled(false)
             }
         }
@@ -555,40 +554,21 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_RESCALE -> changeTiming()
             MenuCommand.FILE_OPTIMIZE -> {
                 if (Constants.DEBUG_OPTIMIZE) {
-                    println("-------------------------------------------")
-                    println("optimizing in PatternWindow.doMenuCommand()")
+                    println("--- Optimizing in PatternWindow ---")
                 }
-                if (optimizer == null) return
-                try {
-                    val optimize: Method = optimizer!!.getMethod("optimize", JMLPattern::class.java)
-                    val pat = view.pattern
-                    val newPat = optimize.invoke(null, pat) as JMLPattern
-                    view.restartView(newPat, null)
-                    view.addToUndoList(newPat)
-                } catch (jeu: JuggleExceptionUser) {
-                    throw JuggleExceptionInternal("optimizer jeu: ${jeu.message}")
-                } catch (ite: InvocationTargetException) {
-                    // exceptions thrown by Optimizer.optimize() land here
-                    val ex: Throwable = ite.cause!!
-                    if (Constants.DEBUG_OPTIMIZE) {
-                        println("ite: ${ex.message}")
+                optimizerWrapper?.let {
+                    try {
+                        val newPat = it.optimize(view.pattern!!)
+                        view.restartView(newPat, null)
+                        view.addToUndoList(newPat)
+                    } catch (ite: InvocationTargetException) {
+                        // Unwrap the actual exception thrown by the optimizer
+                        when (val cause = ite.cause) {
+                            is JuggleExceptionUser -> throw cause
+                            is JuggleExceptionInternal -> throw cause
+                            else -> throw JuggleExceptionInternal("Optimizer failed: ${cause?.message}")
+                        }
                     }
-                    when (ex) {
-                        is JuggleExceptionUser -> throw ex
-                        is JuggleExceptionInternal -> throw ex
-                        else ->
-                            throw JuggleExceptionInternal("optimizer unknown ite: ${ex.message}")
-                    }
-                } catch (nsme: NoSuchMethodException) {
-                    if (Constants.DEBUG_OPTIMIZE) {
-                        println("nsme: ${nsme.message}")
-                    }
-                    throw JuggleExceptionInternal("optimizer nsme: ${nsme.message}")
-                } catch (iae: IllegalAccessException) {
-                    if (Constants.DEBUG_OPTIMIZE) {
-                        println("iae: ${iae.message}")
-                    }
-                    throw JuggleExceptionInternal("optimizer iae: ${iae.message}")
                 }
             }
 
@@ -785,29 +765,30 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         private val TILE_OFFSET: Point = Point(25, 25)
         private var tileLocations: ArrayList<Point> = ArrayList()
         private var nextTileNum: Int = 0
+        
+        /** Defines the contract for the optional optimizer module. */
+        private interface OptimizerWrapper {
+            fun optimize(pat: JMLPattern): JMLPattern
+        }
 
-        private var optimizer: Class<*>? = null
-        private var optimizerLoaded: Boolean = false
+        // Lazily load the Optimizer class via reflection. If successful, it creates
+        // a wrapper that implements the [OptimizerWrapper] interface. If not, it's null.
 
-        // Load the pattern optimizer. Do this using the reflection API so we can
-        // omit the feature by leaving those source files out of the compile.
+        private val optimizerWrapper: OptimizerWrapper? by lazy {
+            runCatching {
+                val optimizerClass = Class.forName("jugglinglab.optimizer.Optimizer")
+                val optimizerAvailableMethod: Method = optimizerClass.getMethod("optimizerAvailable")
+                val canOptimize = optimizerAvailableMethod.invoke(null) as? Boolean ?: false
 
-        private fun loadOptimizer() {
-            if (optimizerLoaded) return
-            try {
-                optimizer = Class.forName("jugglinglab.optimizer.Optimizer")
-                val optimizerAvailable: Method = optimizer!!.getMethod("optimizerAvailable")
-                val canOptimize = optimizerAvailable.invoke(null) as Boolean
-                if (!canOptimize) {
-                    optimizer = null
-                }
-            } catch (e: Exception) {
-                optimizer = null
-                if (Constants.DEBUG_OPTIMIZE) {
-                    println("Exception loading optimizer: $e")
-                }
-            }
-            optimizerLoaded = true
+                if (canOptimize) {
+                    val optimizeMethod: Method = optimizerClass.getMethod("optimize", JMLPattern::class.java)
+                    // Return an object that implements our wrapper interface
+                    object : OptimizerWrapper {
+                        override fun optimize(pat: JMLPattern): JMLPattern =
+                            optimizeMethod.invoke(null, pat) as JMLPattern
+                    }
+                } else null
+            }.getOrNull()
         }
 
         // Return the location (screen pixels) of where the next animation window
