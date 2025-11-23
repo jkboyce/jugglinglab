@@ -6,8 +6,6 @@
 
 package jugglinglab.jml
 
-import java.io.PrintWriter
-
 class JMLNode(
     val nodeType: String?  // from taglist in JMLDefs.java
 ) {
@@ -54,47 +52,40 @@ class JMLNode(
         return null
     }
 
-    fun writeNode(write: PrintWriter, indentlevel: Int) {
-        var sb = StringBuilder()
-        
-        sb.append("<").append(nodeType)
+    fun writeNode(appendable: Appendable, indentlevel: Int) {
+        appendable.append("<").append(nodeType)
         for (i in 0..<attributes.numberOfAttributes) {
-            sb.append(" ").append(attributes.getAttributeName(i))
+            appendable.append(" ").append(attributes.getAttributeName(i))
                 .append("=\"").append(xmlescape(attributes.getAttributeValue(i)))
                 .append("\"")
         }
 
         if (numberOfChildren == 0) {
             if (nodeValue == null) {
-                sb.append("/>")
+                appendable.append("/>")
             } else {
-                sb.append(">").append(xmlescape(nodeValue!!))
+                appendable.append(">").append(xmlescape(nodeValue!!))
                     .append("</").append(nodeType).append(">")
             }
-            write.println(sb)
+            appendable.appendLine()
         } else {
-            sb.append('>')
-            write.println(sb)
-            sb = StringBuilder()
-
+            appendable.append('>')
+            appendable.appendLine()
             if (nodeValue != null) {
-                sb.append(xmlescape(nodeValue!!))
-                write.println(sb)
-                sb = StringBuilder()
+                appendable.append(xmlescape(nodeValue!!))
+                appendable.appendLine()
             }
-            write.flush()
             for (child in childNodes) {
-                child.writeNode(write, indentlevel + 1)
+                child.writeNode(appendable, indentlevel + 1)
             }
-            sb.append("</").append(nodeType).append(">")
-            write.println(sb)
+            appendable.append("</").append(nodeType).append(">")
+            appendable.appendLine()
         }
-        write.flush()
     }
 
     companion object {
-        fun xmlescape(`in`: String): String {
-            var result = `in`.replace("&", "&amp;")
+        fun xmlescape(str: String): String {
+            var result = str.replace("&", "&amp;")
             result = result.replace("<", "&lt;")
             result = result.replace(">", "&gt;")
             result = result.replace("'", "&apos;")
