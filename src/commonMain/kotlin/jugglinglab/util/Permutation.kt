@@ -8,8 +8,6 @@
 
 package jugglinglab.util
 
-import java.util.StringTokenizer
-
 class Permutation {
     var size: Int
         private set
@@ -63,16 +61,16 @@ class Permutation {
 
         if (!perm.contains('(')) {
             // explicit mapping
-            var num: Int
-            val st = StringTokenizer(perm, ",")
+            val tokens = perm.split(',')
 
-            if (st.countTokens() != size) {
+            if (tokens.size != size) {
                 throw JuggleException(
                     "Permutation init error: must have $n elements in mapping"
                 )
             }
-            for (i in 0..<size) {
-                val s = st.nextToken().trim { it <= ' ' }
+            tokens.forEachIndexed { i, token ->
+                val s = token.trim()
+                val num: Int
                 try {
                     num = s.toInt()
                 } catch (_: NumberFormatException) {
@@ -90,19 +88,19 @@ class Permutation {
             }
         } else {
             // cycle notation
-            val st1 = StringTokenizer(perm, ")")
+            val cycleTokens = perm.split(')').filter { it.isNotBlank() }
 
-            while (st1.hasMoreTokens()) {
-                var s1 = st1.nextToken().trim { it <= ' ' }
+            for (cycleToken in cycleTokens) {
+                var s1 = cycleToken.trim()
                 if (s1[0] != '(') {
                     throw JuggleException("Permutation init error: parenthesis not grouped")
                 }
                 s1 = s1.substring(1)
-                var num: Int
                 var lastnum = -(size + 1)
-                val st2 = StringTokenizer(s1, ",")
-                while (st2.hasMoreTokens()) {
-                    var s2 = st2.nextToken().trim { it <= ' ' }
+                val elementTokens = s1.split(',')
+                for (elementToken in elementTokens) {
+                    var s2 = elementToken.trim()
+                    var num: Int
                     try {
                         if (reverses) {
                             var negate = false
