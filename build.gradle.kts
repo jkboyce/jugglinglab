@@ -2,7 +2,7 @@
 // build.gradle.kts
 //
 // Juggling Lab build file for use with the Gradle build system.
-// - `gradlew build` to build JugglingLab.jar
+// - `gradlew build` to build bin/JugglingLab.jar
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
