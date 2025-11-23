@@ -1,5 +1,7 @@
 .DS_Store
-admin/
-target/
 .vscode/
 .idea/
+*.iml
+.gradle/
+admin/
+build/
