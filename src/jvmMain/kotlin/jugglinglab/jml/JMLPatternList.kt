@@ -89,7 +89,7 @@ class JMLPatternList() {
 
             val tagstr = infonode.attributes.getAttribute("tags")
             if (tagstr != null) {
-                tags = ArrayList<String>()
+                tags = ArrayList()
 
                 for (t in tagstr.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
                     var t = t
