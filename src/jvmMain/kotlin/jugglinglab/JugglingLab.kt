@@ -42,6 +42,14 @@ import java.util.*
 import java.util.prefs.Preferences
 import javax.swing.SwingUtilities
 
+//------------------------------------------------------------------------------
+// Main entry point for Juggling Lab
+//------------------------------------------------------------------------------
+
+fun main(args: Array<String>) {
+    JugglingLab.startWithArgs(args)
+}
+
 object JugglingLab {
     // localized strings for UI
     val guistrings: ResourceBundle = ResourceBundle.getBundle("GUIStrings")
@@ -59,7 +67,7 @@ object JugglingLab {
     val baseDir: Path
 
     // command line arguments that we trim as portions are parsed
-    private var jlargs: ArrayList<String> = ArrayList<String>()
+    private var jlargs: ArrayList<String> = ArrayList()
 
     init {
         val osname = System.getProperty("os.name").lowercase(Locale.getDefault())
@@ -653,12 +661,4 @@ object JugglingLab {
             println("Note: Animator prefs not used in jml output mode; ignored")
         }
     }
-}
-
-//------------------------------------------------------------------------------
-// Main entry point for Juggling Lab
-//------------------------------------------------------------------------------
-
-fun main(args: Array<String>) {
-    JugglingLab.startWithArgs(args)
 }
