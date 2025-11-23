@@ -7,11 +7,12 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("unused")
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("jvm") version "2.2.0"
-    application
+    id("org.jetbrains.kotlin.multiplatform") version "2.3.0-RC"
     id("com.github.johnrengelman.shadow") version "8.1.1" // For creating the fat JAR
 }
 
@@ -24,58 +25,70 @@ repositories {
 
 // Define versions in one place
 object Versions {
-    const val junit = "5.10.0"
-    const val commonsMath = "3.6.1"
-    const val orTools = "9.4.1874"
+    const val COMMONS_MATH_VERSION = "3.6.1"
+    const val ORTOOLS_VERSION = "9.4.1874"
 }
 
-dependencies {
-    // Kotlin Standard Library
-    implementation(kotlin("stdlib"))
+kotlin {
+    jvm()
 
-    // Application Dependencies
-    implementation("org.apache.commons:commons-math3:${Versions.commonsMath}")
-    implementation("com.google.ortools:ortools-java:${Versions.orTools}")
-
-    // Testing Dependencies
-    testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
-}
-
-application {
-    // Define the main class for the application
-    mainClass.set("jugglinglab.JugglingLabKt")
-}
-
-java {
-    // Set the Java version for the project
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                // Common dependencies go here. Initially this is empty.
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmMain by getting {
+            dependencies {
+                // JVM-specific dependencies are moved here
+                implementation("org.apache.commons:commons-math3:${Versions.COMMONS_MATH_VERSION}")
+                implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
+
+    jvmToolchain(21)
 }
 
-tasks.withType<Test> {
-    // Enable the JUnit 5 platform for running tests
-    useJUnitPlatform()
-}
+// Register the ShadowJar task manually (required for KMP)
+val shadowJar by tasks.registering(ShadowJar::class) {
+    group = "build"
+    description = "Creates a fat JAR for the JVM target"
 
-tasks.withType<ShadowJar> {
-    // Configure the fat JAR (equivalent to maven-shade-plugin)
+    // 1. Include project's compiled classes
+    val jvmTarget = kotlin.targets.getByName("jvm")
+    val mainCompilation = jvmTarget.compilations.getByName("main")
+    from(mainCompilation.output)
+
+    // 2. Define dependencies
+    configurations = listOf(project.configurations.getByName("jvmRuntimeClasspath"))
+
+    // 3. Configure the JAR attributes
+    manifest.attributes["Main-Class"] = "jugglinglab.JugglingLabKt"
     archiveBaseName.set("JugglingLab")
     archiveVersion.set("")
     archiveClassifier.set("")
     destinationDirectory.set(file("${project.projectDir}/bin"))
 
-    // Exclude the native OR-Tools libraries from the fat JAR
-    configurations = listOf(project.configurations.runtimeClasspath.get())
+    // 4. Excludes
     exclude("com/google/ortools/Loader.class")
     exclude("**/ortools-darwin*")
     exclude("**/ortools-win32*")
     exclude("**/ortools-linux*")
-
-    // Remove signature files to prevent security exceptions
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+
+    // 5. Ensure native libs are unpacked before this runs
+    dependsOn(unpackOrtNatives)
 }
 
 // Custom task to unpack the OR-Tools native libraries
@@ -89,11 +102,11 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
     }
     dependencies {
         // Define the native artifacts to download
-        "ortNatives"("com.google.ortools:ortools-darwin-aarch64:${Versions.orTools}")
-        "ortNatives"("com.google.ortools:ortools-darwin-x86-64:${Versions.orTools}")
-        "ortNatives"("com.google.ortools:ortools-linux-aarch64:${Versions.orTools}")
-        "ortNatives"("com.google.ortools:ortools-linux-x86-64:${Versions.orTools}")
-        "ortNatives"("com.google.ortools:ortools-win32-x86-64:${Versions.orTools}")
+        "ortNatives"("com.google.ortools:ortools-darwin-aarch64:${Versions.ORTOOLS_VERSION}")
+        "ortNatives"("com.google.ortools:ortools-darwin-x86-64:${Versions.ORTOOLS_VERSION}")
+        "ortNatives"("com.google.ortools:ortools-linux-aarch64:${Versions.ORTOOLS_VERSION}")
+        "ortNatives"("com.google.ortools:ortools-linux-x86-64:${Versions.ORTOOLS_VERSION}")
+        "ortNatives"("com.google.ortools:ortools-win32-x86-64:${Versions.ORTOOLS_VERSION}")
     }
 
     into("${project.projectDir}/bin/ortools-lib")
@@ -107,7 +120,7 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
     }
 }
 
-// Make sure the natives are unpacked when the shadow JAR is built
-tasks.shadowJar {
-    dependsOn(unpackOrtNatives)
+// Ensure the `build` task also creates the final executable JAR
+tasks.named("build") {
+    dependsOn(shadowJar)
 }

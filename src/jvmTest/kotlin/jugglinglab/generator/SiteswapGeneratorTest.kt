@@ -8,8 +8,8 @@
 
 package jugglinglab.generator
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SiteswapGeneratorTest {
     private fun runGeneratorTestCase(input: String): ArrayList<String> {
