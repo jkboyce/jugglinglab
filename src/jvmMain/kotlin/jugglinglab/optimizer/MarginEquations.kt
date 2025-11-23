@@ -131,7 +131,7 @@ class MarginEquations() {
 
         // Step 3: Set up the arrays containing the current values of our variables, their
         // minimum and maximum allowed values, and corresponding JMLEvents
-        varsEvents = ArrayList<JMLEvent>(varsNum)
+        varsEvents = ArrayList(varsNum)
         varsValues = DoubleArray(varsNum)
         varsMin = DoubleArray(varsNum)
         varsMax = DoubleArray(varsNum)
@@ -168,7 +168,7 @@ class MarginEquations() {
         // calculation below
         var propradius = 0.0
         for (i in 0..<pat.numberOfProps) {
-            val thisprop = 0.5 * pat.getProp(i + 1)!!.getWidth()
+            val thisprop = 0.5 * pat.getProp(i + 1).getWidth()
             if (thisprop > propradius) {
                 propradius = thisprop
             }
@@ -180,7 +180,7 @@ class MarginEquations() {
         // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting
         // on master events. Put them into a linear array for convenience.
         var masterplNum = 0
-        val masterpl: MutableList<PathLink> = ArrayList<PathLink>()
+        val masterpl: MutableList<PathLink> = ArrayList()
         for (pathlink in pathlinks) {
             for (pl in pathlink) {
                 if (!pl.isInHand && pl.startEvent.isMaster) {
@@ -463,7 +463,7 @@ class MarginEquations() {
 
         // Step 8: Move the equations into an array, and sort it based on margins at the
         // current values of the variables.
-        marginsEqs = ArrayList<LinearEquation>(marginsNum)
+        marginsEqs = ArrayList(marginsNum)
         for (i in 0..<marginsNum) {
             val le = LinearEquation(varsNum)
             le.setCoefficients(eqns[i])

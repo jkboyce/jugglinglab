@@ -8,7 +8,7 @@
 
 package jugglinglab.util
 
-import java.util.*
+import java.util.StringTokenizer
 
 class Permutation {
     var size: Int
