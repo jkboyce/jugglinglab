@@ -11,6 +11,7 @@ package jugglinglab.notation
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import java.text.MessageFormat
 
 class MHNBody(str: String) {

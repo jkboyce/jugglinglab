@@ -6,6 +6,8 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package jugglinglab.util
 
 import jugglinglab.JugglingLab
@@ -23,19 +25,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
-
-// Calculate the binomial coefficient (a choose b).
-
-fun jlBinomial(a: Int, b: Int): Int {
-    var result = 1
-
-    for (i in 0..<b) {
-        result *= (a - i)
-        result /= (i + 1)
-    }
-
-    return result
-}
 
 // Throughout Juggling Lab we use a notation within strings to indicate
 // repeated sections:  `...(stuff)^n...`. This function expands all such
@@ -208,42 +197,36 @@ fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int):
 // Helpers for converting numbers to/from strings
 //------------------------------------------------------------------------------
 
-private val nf: NumberFormat by lazy {
-    // use US-style number formatting for interoperability of JML files across
-    // Locales
-    NumberFormat.getInstance(Locale.US)
-}
+actual object NumberFormatter {
+    private val nf: NumberFormat by lazy {
+        // use US-style number formatting for interoperability of JML files across
+        // Locales
+        NumberFormat.getInstance(Locale.US)
+    }
 
-// Parse a string as a finite-valued Double. Throw an error if there is a
-// number format problem, or if the value is not finite ("NaN", "Infinity", ...)
-
-@Throws(NumberFormatException::class)
-fun jlParseFiniteDouble(s: String?): Double {
-    try {
-        val x = nf.parse(s).toDouble()
-        if (x.isFinite()) {
-            return x
+    @Throws(NumberFormatException::class)
+    actual fun jlParseFiniteDouble(input: String): Double {
+        try {
+            val x = nf.parse(input).toDouble()
+            if (x.isFinite()) {
+                return x
+            }
+            throw NumberFormatException("not a finite value")
+        } catch (_: ParseException) {
+            throw NumberFormatException()
         }
-        throw NumberFormatException("not a finite value")
-    } catch (_: ParseException) {
-        throw NumberFormatException()
-    }
-}
-
-// Convert a double value to a String, rounding to `digits` places after
-// the decimal point, with trailing '.' and '0's suppressed.
-
-fun jlToStringRounded(`val`: Double, digits: Int): String {
-    val fmt = "###.##########".take(if (digits <= 0) 3 else 4 + min(10, digits))
-    val formatter = DecimalFormat(fmt, DecimalFormatSymbols(Locale.US))
-    var result = formatter.format(`val`)
-
-    if (result == "-0") {
-        // strange quirk
-        result = "0"
     }
 
-    return result
+    actual fun jlToStringRounded(value: Double, digits: Int): String {
+        val fmt = "###.##########".take(if (digits <= 0) 3 else 4 + min(10, digits))
+        val formatter = DecimalFormat(fmt, DecimalFormatSymbols(Locale.US))
+        var result = formatter.format(value)
+        if (result == "-0") {
+            // strange quirk
+            result = "0"
+        }
+        return result
+    }
 }
 
 //------------------------------------------------------------------------------

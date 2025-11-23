@@ -10,6 +10,7 @@ package jugglinglab.path
 
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.*
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import java.text.MessageFormat
 import kotlin.math.max
 import kotlin.math.min

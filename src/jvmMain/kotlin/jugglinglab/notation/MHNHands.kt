@@ -10,6 +10,7 @@ package jugglinglab.notation
 
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.*
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import java.text.MessageFormat
 
 class MHNHands(str: String) {

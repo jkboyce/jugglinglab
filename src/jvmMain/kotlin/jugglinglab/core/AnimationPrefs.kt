@@ -11,7 +11,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.jlToStringRounded
+import jugglinglab.util.NumberFormatter.jlToStringRounded
 import jugglinglab.view.View
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment

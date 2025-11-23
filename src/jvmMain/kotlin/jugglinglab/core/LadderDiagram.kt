@@ -13,7 +13,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
-import jugglinglab.util.jlToStringRounded
+import jugglinglab.util.NumberFormatter.jlToStringRounded
 import java.awt.*
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -264,7 +264,7 @@ open class LadderDiagram(p: JMLPattern) :
         val loopEnd = pat.loopEndTime
 
         // first create events (black circles on the vertical lines representing hands)
-        ladderEventItems = ArrayList<LadderEventItem>()
+        ladderEventItems = ArrayList()
         val eventlist = pat.eventList
         var ev = eventlist
 
@@ -292,7 +292,7 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         // create paths (lines and arcs)
-        ladderPathItems = ArrayList<LadderPathItem>()
+        ladderPathItems = ArrayList()
         ev = eventlist
         while (ev!!.t <= loopEnd) {
             for (i in 0..<ev.numberOfTransitions) {
@@ -326,7 +326,7 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         // create juggler positions
-        ladderPositionItems = ArrayList<LadderPositionItem>()
+        ladderPositionItems = ArrayList()
         var pos = pat.positionList
 
         while (pos != null && pos.t < loopStart) {

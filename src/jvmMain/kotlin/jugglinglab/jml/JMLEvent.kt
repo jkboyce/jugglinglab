@@ -8,6 +8,8 @@ package jugglinglab.jml
 
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.*
+import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter

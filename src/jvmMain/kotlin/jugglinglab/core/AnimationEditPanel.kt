@@ -1049,7 +1049,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         g2.color = Color.black
                         g2.drawString(
-                            "z = " + jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
+                            "z = " + NumberFormatter.jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
                         )
                     }
                 }

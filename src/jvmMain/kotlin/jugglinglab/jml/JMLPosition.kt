@@ -9,8 +9,8 @@ package jugglinglab.jml
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.jlParseFiniteDouble
-import jugglinglab.util.jlToStringRounded
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.NumberFormatter.jlToStringRounded
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter

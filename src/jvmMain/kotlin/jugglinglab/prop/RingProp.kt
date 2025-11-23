@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.jlParseFiniteDouble
+import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Dimension
