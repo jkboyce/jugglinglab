@@ -6,8 +6,6 @@
 
 package jugglinglab.util
 
-import java.text.MessageFormat
-import java.util.StringTokenizer
 import jugglinglab.JugglingLab.errorstrings
 
 class ParameterList() {
@@ -71,25 +69,21 @@ class ParameterList() {
 
     @Throws(JuggleExceptionUser::class)
     fun readParameters(source: String?) {
-        var source = source ?: return
-        source = source.replace("\n".toRegex(), "").replace("\r".toRegex(), "")
-        val st1 = StringTokenizer(source, ";")
+        val cleanSource = source?.replace("\n", "")?.replace("\r", "") ?: return
 
-        while (st1.hasMoreTokens()) {
-            var str = st1.nextToken()
-            val index = str.indexOf("=")
+        for (token in cleanSource.split(';')) {
+            val index = token.indexOf("=")
             if (index > 0) {
-                val name = str.take(index).trim { it <= ' ' }
-                val value = str.substring(index + 1).trim { it <= ' ' }
-                if (!name.isEmpty()) {
+                val name = token.take(index).trim()
+                val value = token.substring(index + 1).trim()
+                if (name.isNotEmpty()) {
                     addParameter(name, value)
                 }
             } else {
-                str = str.trim { it <= ' ' }
-                if (!str.isEmpty()) {
+                val str = token.trim()
+                if (str.isNotEmpty()) {
                     val template: String = errorstrings.getString("Error_param_has_no_value")
-                    val arg = arrayOf<Any?>(str)
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arg))
+                    throw JuggleExceptionUser(template.format(str))
                 }
             }
         }
@@ -113,16 +107,15 @@ class ParameterList() {
         val count = numberOfParameters
         if (count == 1) {
             val template: String = errorstrings.getString("Error_unused_param")
-            val arguments = arrayOf<Any?>("\"" + getParameterName(0) + "\"")
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val argument = "\"${getParameterName(0)}\""
+            throw JuggleExceptionUser(template.format(argument))
         } else if (count > 1) {
             val template: String = errorstrings.getString("Error_unused_params")
             val names = ArrayList<String?>()
             for (i in 0..<count) {
                 names.add("\"" + getParameterName(i) + "\"")
             }
-            val arguments = arrayOf<Any?>(names.joinToString(", "))
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            throw JuggleExceptionUser(template.format(names.joinToString(", ")))
         }
     }
 }
