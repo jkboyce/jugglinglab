@@ -6,9 +6,6 @@
 
 package jugglinglab.jml
 
-import java.io.IOException
-import java.io.PrintWriter
-
 class JMLTransition(
     var transType: Int,
     var path: Int,
@@ -20,8 +17,7 @@ class JMLTransition(
 
     fun copy() = JMLTransition(transType, path, throwType, mod)
 
-    @Throws(IOException::class)
-    fun writeJML(wr: PrintWriter) {
+    fun writeJML(wr: Appendable) {
         when (transType) {
             TRANS_THROW -> {
                 var out = "<throw path=\"$path\""
@@ -31,12 +27,12 @@ class JMLTransition(
                 if (mod != null) {
                     out += " mod=\"$mod\""
                 }
-                wr.println("$out/>")
+                wr.append("$out/>\n")
             }
-            TRANS_CATCH -> wr.println("<catch path=\"$path\"/>")
-            TRANS_SOFTCATCH -> wr.println("<catch path=\"$path\" type=\"soft\"/>")
-            TRANS_GRABCATCH -> wr.println("<catch path=\"$path\" type=\"grab\"/>")
-            TRANS_HOLDING -> wr.println("<holding path=\"$path\"/>")
+            TRANS_CATCH -> wr.append("<catch path=\"$path\"/>\n")
+            TRANS_SOFTCATCH -> wr.append("<catch path=\"$path\" type=\"soft\"/>\n")
+            TRANS_GRABCATCH -> wr.append("<catch path=\"$path\" type=\"grab\"/>\n")
+            TRANS_HOLDING -> wr.append("<holding path=\"$path\"/>\n")
         }
     }
 

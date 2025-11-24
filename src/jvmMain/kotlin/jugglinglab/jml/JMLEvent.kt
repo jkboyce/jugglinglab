@@ -6,14 +6,10 @@
 
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.*
 import jugglinglab.util.NumberFormatter.jlToStringRounded
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
-import java.util.*
 
 class JMLEvent {
     var t: Double = 0.0
@@ -80,9 +76,8 @@ class JMLEvent {
             } else if (strhand.equals("right", ignoreCase = true)) {
                 HandLink.RIGHT_HAND
             } else {
-                throw JuggleExceptionUser(
-                    errorstrings.getString("Error_hand_name") + " '" + strhand + "'"
-                )
+                val message = getStringResource(Res.string.error_hand_name)
+                throw JuggleExceptionUser("$message '$strhand'")
             }
         } else {
             juggler = strhand.take(index).toInt()
@@ -92,9 +87,8 @@ class JMLEvent {
             } else if (substr.equals("right", ignoreCase = true)) {
                 HandLink.RIGHT_HAND
             } else {
-                throw JuggleExceptionUser(
-                    errorstrings.getString("Error_hand_name") + " '" + strhand + "'"
-                )
+                val message = getStringResource(Res.string.error_hand_name)
+                throw JuggleExceptionUser("$message '$strhand'")
             }
         }
     }
@@ -277,7 +271,8 @@ class JMLEvent {
                 }
             }
         } catch (_: NumberFormatException) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_event_coordinate"))
+            val message = getStringResource(Res.string.error_event_coordinate)
+            throw JuggleExceptionUser(message)
         }
 
         // JML version 1.0 used a different coordinate system -- convert
@@ -288,11 +283,13 @@ class JMLEvent {
         localCoordinate = Coordinate(tempx, tempy, tempz)
         t = tempt
         if (handstr == null) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_unspecified_hand"))
+            val message = getStringResource(Res.string.error_unspecified_hand)
+            throw JuggleExceptionUser(message)
         }
         setHand(handstr)
         if (juggler !in 1..njugglers) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_juggler_out_of_range"))
+            val message = getStringResource(Res.string.error_juggler_out_of_range)
+            throw JuggleExceptionUser(message)
         }
 
         // process current event node children
@@ -316,12 +313,14 @@ class JMLEvent {
             }
 
             if (childPath == null) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_no_path"))
+                val message = getStringResource(Res.string.error_no_path)
+                throw JuggleExceptionUser(message)
             }
 
             val pnum = childPath.toInt()
             if (pnum !in 1..npaths) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_path_out_of_range"))
+                val message = getStringResource(Res.string.error_path_out_of_range)
+                throw JuggleExceptionUser(message)
             }
 
             if (childNodeType.equals("throw", ignoreCase = true)) {
@@ -348,15 +347,15 @@ class JMLEvent {
             }
 
             if (child.numberOfChildren != 0) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_event_subtag"))
+                val message = getStringResource(Res.string.error_event_subtag)
+                throw JuggleExceptionUser(message)
             }
         }
     }
 
-    @Throws(IOException::class)
-    fun writeJML(wr: PrintWriter) {
+    fun writeJML(wr: Appendable) {
         val c = localCoordinate
-        wr.println(
+        wr.append(
             ("<event x=\""
                 + jlToStringRounded(c.x, 4)
                 + "\" y=\""
@@ -369,20 +368,17 @@ class JMLEvent {
                 + juggler
                 + ":"
                 + (if (hand == HandLink.LEFT_HAND) "left" else "right")
-                + "\">")
+                + "\">\n")
         )
         for (tr in transitions) {
             tr.writeJML(wr)
         }
-        wr.println("</event>")
+        wr.append("</event>\n")
     }
 
     override fun toString(): String {
-        val sw = StringWriter()
-        try {
-            writeJML(PrintWriter(sw))
-        } catch (_: IOException) {
-        }
+        val sw = StringBuilder()
+        writeJML(sw)
         return sw.toString()
     }
 }
