@@ -19,10 +19,9 @@ package jugglinglab.curve
 import jugglinglab.core.Constants
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
-import org.apache.commons.math3.linear.Array2DRowRealMatrix
-import org.apache.commons.math3.linear.ArrayRealVector
-import org.apache.commons.math3.linear.LUDecomposition
-import org.apache.commons.math3.linear.SingularMatrixException
+import org.jetbrains.kotlinx.multik.api.*
+import org.jetbrains.kotlinx.multik.api.linalg.solve
+import org.jetbrains.kotlinx.multik.ndarray.data.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -257,8 +256,8 @@ class SplineCurve : Curve() {
             //    2 for each natural catch (Lagrange multipliers for constraints)
             val dim = 3 * (n - 1) + 2 * numcatches
 
-            val m = Array(dim) { DoubleArray(dim) }
-            val b = DoubleArray(dim)
+            val m = mk.zeros<Double>(dim, dim)  //Array(dim) { DoubleArray(dim) }
+            val b = mk.zeros<Double>(dim)  //DoubleArray(dim)
 
             for (axis in 0..2) {
                 val v0 = v[0]!![axis]
@@ -273,36 +272,36 @@ class SplineCurve : Curve() {
                     when (Constants.SPLINE_LAYOUT_METHOD) {
                         MINIMIZE_RMSACCEL, CONTINUOUS_ACCEL -> {
                             // cases end up being identical
-                            m[index][index] = 2 / t[i] + 2 / t[i + 1]
+                            m[index, index] = 2 / t[i] + 2 / t[i + 1]
                             val offdiag1 = (if (i == n - 2) 0.0 else 1 / t[i + 1])
                             if (index < 3 * (n - 1) - 1) {
-                                m[index][index + 1] = offdiag1
-                                m[index + 1][index] = offdiag1
+                                m[index, index + 1] = offdiag1
+                                m[index + 1, index] = offdiag1
                             }
 
                             b[index] = 3 * (xi2 - xi1) / (t[i + 1] * t[i + 1]) + 3 * (xi1 - xi0) /
                                 (t[i] * t[i])
                             if (i == 0) {
-                                b[index] -= v0 / t[0]
+                                b[index] = b[index] - v0 / t[0]
                             }
                             if (i == (n - 2)) {
-                                b[index] -= vn / t[n - 1]
+                                b[index] = b[index] - vn / t[n - 1]
                             }
                         }
                         MINIMIZE_RMSVEL -> {
-                            m[index][index] = 4 * (t[i] + t[i + 1])
+                            m[index, index] = 4 * (t[i] + t[i + 1])
                             val offdiag2 = (if (i == n - 2) 0.0 else -t[i + 1])
                             if (index < 3 * (n - 1) - 1) {
-                                m[index][index + 1] = offdiag2
-                                m[index + 1][index] = offdiag2
+                                m[index, index + 1] = offdiag2
+                                m[index + 1, index] = offdiag2
                             }
 
                             b[index] = 3 * (xi2 - xi0)
                             if (i == 0) {
-                                b[index] += v0 * t[0]
+                                b[index] = b[index] + v0 * t[0]
                             }
                             if (i == (n - 2)) {
-                                b[index] += vn * t[n - 1]
+                                b[index] = b[index] + vn * t[n - 1]
                             }
                         }
                     }
@@ -340,34 +339,34 @@ class SplineCurve : Curve() {
 
                 when (largeaxis) {
                     0 -> {
-                        m[index][i] = ci2
-                        m[i][index] = ci2
-                        m[index + 1][i] = ci1
-                        m[i][index + 1] = ci1
-                        m[index + 1][i + (n - 1)] = -ci0
-                        m[i + (n - 1)][index + 1] = -ci0
-                        m[index][i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1)][index] = -ci0
+                        m[index, i] = ci2
+                        m[i, index] = ci2
+                        m[index + 1, i] = ci1
+                        m[i, index + 1] = ci1
+                        m[index + 1, i + (n - 1)] = -ci0
+                        m[i + (n - 1), index + 1] = -ci0
+                        m[index, i + 2 * (n - 1)] = -ci0
+                        m[i + 2 * (n - 1), index] = -ci0
                     }
                     1 -> {
-                        m[index + 1][i] = ci1
-                        m[i][index + 1] = ci1
-                        m[index][i + (n - 1)] = ci2
-                        m[i + (n - 1)][index] = ci2
-                        m[index + 1][i + (n - 1)] = -ci0
-                        m[i + (n - 1)][index + 1] = -ci0
-                        m[index][i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1)][index] = -ci1
+                        m[index + 1, i] = ci1
+                        m[i, index + 1] = ci1
+                        m[index, i + (n - 1)] = ci2
+                        m[i + (n - 1), index] = ci2
+                        m[index + 1, i + (n - 1)] = -ci0
+                        m[i + (n - 1), index + 1] = -ci0
+                        m[index, i + 2 * (n - 1)] = -ci1
+                        m[i + 2 * (n - 1), index] = -ci1
                     }
                     2 -> {
-                        m[index + 1][i] = ci2
-                        m[i][index + 1] = ci2
-                        m[index][i + (n - 1)] = ci2
-                        m[i + (n - 1)][index] = ci2
-                        m[index][i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1)][index] = -ci1
-                        m[index + 1][i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1)][index + 1] = -ci0
+                        m[index + 1, i] = ci2
+                        m[i, index + 1] = ci2
+                        m[index, i + (n - 1)] = ci2
+                        m[i + (n - 1), index] = ci2
+                        m[index, i + 2 * (n - 1)] = -ci1
+                        m[i + 2 * (n - 1), index] = -ci1
+                        m[index + 1, i + 2 * (n - 1)] = -ci0
+                        m[i + 2 * (n - 1), index + 1] = -ci0
                     }
                 }
 
@@ -376,17 +375,16 @@ class SplineCurve : Curve() {
             }
 
             try {
-                val solver = LUDecomposition(Array2DRowRealMatrix(m)).solver
-                val solution = solver.solve(ArrayRealVector(b))
+                val solution = mk.linalg.solve(m, b)
 
                 for (i in 0..<n - 1) {
                     v[i + 1] = Coordinate(
-                        solution.getEntry(i),
-                        solution.getEntry(i + (n - 1)),
-                        solution.getEntry(i + 2 * (n - 1))
+                        solution[i],
+                        solution[i + (n - 1)],
+                        solution[i + 2 * (n - 1)]
                     )
                 }
-            } catch (_: SingularMatrixException) {
+            } catch (_: Exception) { // multik can throw different exception types
                 throw JuggleExceptionInternal("Singular matrix in findvelsEdgesKnown()")
             }
         }

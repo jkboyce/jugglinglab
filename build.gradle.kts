@@ -19,8 +19,8 @@ plugins {
 }
 
 object Versions {
-    const val COMMONS_MATH_VERSION = "3.6.1"
     const val ORTOOLS_VERSION = "9.4.1874"
+    const val MULTIK_VERSION = "0.2.3"
 }
 
 kotlin {
@@ -36,6 +36,7 @@ kotlin {
             //implementation(compose.components.uiToolingPreview)
             //implementation(libs.androidx.lifecycle.viewmodelCompose)
             //implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -43,8 +44,8 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation("org.apache.commons:commons-math3:${Versions.COMMONS_MATH_VERSION}")
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
+            implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
