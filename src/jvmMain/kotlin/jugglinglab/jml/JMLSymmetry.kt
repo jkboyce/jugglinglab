@@ -6,13 +6,12 @@
 
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.NumberFormatter.jlToStringRounded
-import java.io.IOException
-import java.io.PrintWriter
+import jugglinglab.util.getStringResource
 
 class JMLSymmetry {
     var symType: Int = 0
@@ -83,12 +82,14 @@ class JMLSymmetry {
             try {
                 delay = jlParseFiniteDouble(delayString)
             } catch (_: NumberFormatException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_symmetry_format"))
+                val message = getStringResource(Res.string.error_symmetry_format)
+                throw JuggleExceptionUser(message)
             }
         }
 
         if (symType == null) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_symmetry_notype"))
+            val message = getStringResource(Res.string.error_symmetry_notype)
+            throw JuggleExceptionUser(message)
         }
         symtypenum = if (symType.equals("delay", ignoreCase = true)) {
             TYPE_DELAY
@@ -97,7 +98,8 @@ class JMLSymmetry {
         } else if (symType.equals("switchdelay", ignoreCase = true)) {
             TYPE_SWITCHDELAY
         } else {
-            throw JuggleExceptionUser(errorstrings.getString("Error_symmetry_type"))
+            val message = getStringResource(Res.string.error_symmetry_type)
+            throw JuggleExceptionUser(message)
         }
 
         this.symType = symtypenum
@@ -106,8 +108,7 @@ class JMLSymmetry {
         this.delay = delay
     }
 
-    @Throws(IOException::class)
-    fun writeJML(wr: PrintWriter) {
+    fun writeJML(wr: Appendable) {
         var out = "<symmetry type=\""
         when (symType) {
             TYPE_DELAY -> out +=
@@ -115,21 +116,21 @@ class JMLSymmetry {
                     + pathPerm!!.toString(true)
                     + "\" delay=\""
                     + jlToStringRounded(this.delay, 4)
-                    + "\"/>")
+                    + "\"/>\n")
             TYPE_SWITCH -> out +=
                 ("switch\" jperm=\""
                     + jugglerPerm!!.toString(true)
                     + "\" pperm=\""
                     + pathPerm!!.toString(true)
-                    + "\"/>")
+                    + "\"/>\n")
             TYPE_SWITCHDELAY -> out +=
                 ("switchdelay\" jperm=\""
                     + jugglerPerm!!.toString(true)
                     + "\" pperm=\""
                     + pathPerm!!.toString(true)
-                    + "\"/>")
+                    + "\"/>\n")
         }
-        wr.println(out)
+        wr.append(out)
     }
 
     companion object {
