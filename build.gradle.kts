@@ -45,7 +45,6 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
-            implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
