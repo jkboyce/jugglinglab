@@ -3,5 +3,6 @@
 .idea/
 *.iml
 .gradle/
+.kotlin/
 admin/
 build/
