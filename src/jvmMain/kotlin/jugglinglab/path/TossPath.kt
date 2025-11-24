@@ -8,10 +8,9 @@
 
 package jugglinglab.path
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.*
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import java.text.MessageFormat
 import kotlin.math.max
 import kotlin.math.min
 
@@ -39,14 +38,12 @@ class TossPath : Path() {
                 try {
                     g = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings.getString("Error_number_format")
-                    val arguments = arrayOf<Any?>("g")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_number_format, "g")
+                    throw JuggleExceptionUser(message)
                 }
             } else {
-                throw JuggleExceptionUser(
-                    errorstrings.getString("Error_path_badmod") + ": '" + pname + "'"
-                )
+                val message = getStringResource(Res.string.error_path_badmod)
+                throw JuggleExceptionUser("$message: '$pname'")
             }
         }
         this.g = g

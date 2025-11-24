@@ -8,10 +8,9 @@
 
 package jugglinglab.path
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.*
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import java.text.MessageFormat
 import kotlin.math.*
 
 class BouncePath : Path() {
@@ -52,9 +51,8 @@ class BouncePath : Path() {
                 try {
                     bounces = pvalue.toInt()
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings.getString("Error_number_format")
-                    val arguments = arrayOf<Any?>("bounces")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_number_format, "bounces")
+                    throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("forced", ignoreCase = true)) {
                 forced = pvalue.toBoolean()
@@ -64,30 +62,26 @@ class BouncePath : Path() {
                 try {
                     bounceplane = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings.getString("Error_number_format")
-                    val arguments = arrayOf<Any?>("bounceplane")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_number_format, "bounceplane")
+                    throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("bouncefrac", ignoreCase = true)) {
                 try {
                     bouncefrac = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings.getString("Error_number_format")
-                    val arguments = arrayOf<Any?>("bouncefrac")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_number_format, "bouncefrac")
+                    throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("g", ignoreCase = true)) {
                 try {
                     g = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val template = errorstrings.getString("Error_number_format")
-                    val arguments = arrayOf<Any?>("g")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_number_format, "g")
+                    throw JuggleExceptionUser(message)
                 }
             } else {
-                throw JuggleExceptionUser(
-                    errorstrings.getString("Error_path_badmod") + ": '" + pname + "'"
-                )
+                val message = getStringResource(Res.string.error_path_badmod)
+                throw JuggleExceptionUser("$message: '$pname'")
             }
         }
 
