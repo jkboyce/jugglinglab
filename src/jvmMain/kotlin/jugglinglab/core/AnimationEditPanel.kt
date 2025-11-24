@@ -18,12 +18,12 @@ import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.ErrorDialog.handleFatalException
+import jugglinglab.util.NumberFormatter.jlToStringRounded
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.Path2D
 import javax.swing.SwingUtilities
 import kotlin.math.*
-import kotlin.math.roundToInt
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
     // for when an event is activated/dragged
@@ -1049,7 +1049,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         g2.color = Color.black
                         g2.drawString(
-                            "z = " + NumberFormatter.jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
+                            "z = " + jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
                         )
                     }
                 }
