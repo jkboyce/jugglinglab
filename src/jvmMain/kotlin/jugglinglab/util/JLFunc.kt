@@ -21,10 +21,7 @@ import java.util.prefs.Preferences
 import java.util.regex.Pattern
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
-import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
 // Throughout Juggling Lab we use a notation within strings to indicate
 // repeated sections:  `...(stuff)^n...`. This function expands all such
@@ -155,42 +152,6 @@ fun jlSplitOnCharOutsideParens(input: String, delimiter: Char): List<String> {
     }
     result.add(input.substring(lastSplit))
     return result.filter { it.isNotEmpty() }
-}
-
-// Compare two version numbers.
-//
-// returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2.
-
-fun jlCompareVersions(v1: String, v2: String): Int {
-    val components1: Array<String?> =
-        v1.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    val components2: Array<String?> =
-        v2.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    val length = min(components1.size, components2.size)
-    for (i in 0..<length) {
-        val result = components1[i]!!.toInt().compareTo(components2[i]!!.toInt())
-        if (result != 0) {
-            return result
-        }
-    }
-    return components1.size.compareTo(components2.size)
-}
-
-// Check if point (x, y) is near a line segment connecting (x1, y1) and
-// (x2, y2). "Near" means shortest distance is less than `slop`.
-
-fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int): Boolean {
-    if (x < (min(x1, x2) - slop) || x > (max(x1, x2) + slop)) {
-        return false
-    }
-    if (y < (min(y1, y2) - slop) || y > (max(y1, y2) + slop)) {
-        return false
-    }
-
-    var d = ((x2 - x1) * (y - y1) - (x - x1) * (y2 - y1)).toDouble()
-    d = abs(d) / sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toDouble())
-
-    return d.toInt() <= slop
 }
 
 //------------------------------------------------------------------------------
