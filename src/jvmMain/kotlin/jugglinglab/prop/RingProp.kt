@@ -6,19 +6,18 @@
 
 package jugglinglab.prop
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.getStringResource
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.text.MessageFormat
-import java.util.StringTokenizer
 import kotlin.math.*
 
 class RingProp : Prop() {
@@ -91,57 +90,36 @@ class RingProp : Prop() {
                     }
                 }
             } else {  // RGB or RGBA
-                // delete the '{' and '}' characters first
-                var str: String? = colorstr
-                var pos: Int
-                while ((str!!.indexOf('{').also { pos = it }) >= 0) {
-                    str = str.take(pos) + str.substring(pos + 1)
-                }
-                while ((str!!.indexOf('}').also { pos = it }) >= 0) {
-                    str = str.take(pos) + str.substring(pos + 1)
-                }
-
-                val st2 = StringTokenizer(str, ",", false)
-                val tokens = st2.countTokens()
-
-                if (tokens == 3 || tokens == 4) {
-                    val red: Int
-                    val green: Int
-                    val blue: Int
-                    var alpha = 255
-                    var token: String? = null
+                val tokens = colorstr.replace("{", "").replace("}", "").split(',')
+                if (tokens.size == 3 || tokens.size == 4) {
                     try {
-                        token = st2.nextToken().trim { it <= ' ' }
-                        red = token.toInt()
-                        token = st2.nextToken().trim { it <= ' ' }
-                        green = token.toInt()
-                        token = st2.nextToken().trim { it <= ' ' }
-                        blue = token.toInt()
-                        if (tokens == 4) {
-                            token = st2.nextToken().trim { it <= ' ' }
-                            alpha = token.toInt()
+                        val intTokens = tokens.map { it.trim().toInt() }
+                        val red = intTokens[0]
+                        val green = intTokens[1]
+                        val blue = intTokens[2]
+                        val alpha = if (tokens.size == 4) intTokens[3] else 255
+
+                        if (listOf(red, green, blue, alpha).any { it !in 0..255 }) {
+                            val message = getStringResource(Res.string.error_prop_color, colorstr)
+                            throw JuggleExceptionUser(message)
                         }
+
+                        temp = Color(red, green, blue, alpha)
                     } catch (_: NumberFormatException) {
-                        val template: String = errorstrings.getString("Error_number_format")
-                        val arguments = arrayOf<Any?>(token)
-                        throw JuggleExceptionUser(
-                            "Ring prop color: " + MessageFormat.format(template, *arguments)
-                        )
+                        val message = getStringResource(Res.string.error_prop_color, colorstr)
+                        throw JuggleExceptionUser(message)
                     }
-                    temp = Color(red, green, blue, alpha)
                 } else {
-                    throw JuggleExceptionUser(
-                        "Ring prop color: " + errorstrings.getString("Error_token_count")
-                    )
+                    val message = getStringResource(Res.string.error_token_count)
+                    throw JuggleExceptionUser(message)
                 }
             }
 
             if (temp != null) {
                 color = temp
             } else {
-                val template: String = errorstrings.getString("Error_prop_color")
-                val arguments = arrayOf<Any?>(colorstr)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_prop_color, colorstr)
+                throw JuggleExceptionUser(message)
             }
         }
 
@@ -152,12 +130,12 @@ class RingProp : Prop() {
                 if (temp > 0) {
                     outsideDiam = temp
                 } else {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"))
+                    val message = getStringResource(Res.string.error_prop_diameter)
+                    throw JuggleExceptionUser(message)
                 }
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("diam")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "outside")
+                throw JuggleExceptionUser(message)
             }
         }
 
@@ -168,12 +146,12 @@ class RingProp : Prop() {
                 if (temp > 0) {
                     insideDiam = temp
                 } else {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_prop_diameter"))
+                    val message = getStringResource(Res.string.error_prop_diameter)
+                    throw JuggleExceptionUser(message)
                 }
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("diam")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "inside")
+                throw JuggleExceptionUser(message)
             }
         }
     }

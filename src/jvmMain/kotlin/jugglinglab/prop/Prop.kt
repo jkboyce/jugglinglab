@@ -8,14 +8,14 @@
 
 package jugglinglab.prop
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
+import jugglinglab.util.getStringResource
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Image
-import java.text.MessageFormat
 
 abstract class Prop {
     protected var initString: String? = null
@@ -73,9 +73,8 @@ abstract class Prop {
                 return RingProp()
             }
 
-            val template = errorstrings.getString("Error_prop_type")
-            val arguments = arrayOf<Any?>(type)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(Res.string.error_prop_type, type)
+            throw JuggleExceptionUser(message)
         }
 
         val COLOR_NAMES: List<String> = listOf(

@@ -6,12 +6,13 @@
 
 package jugglinglab.prop
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.getStringResource
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -19,7 +20,6 @@ import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
-import java.text.MessageFormat
 import javax.imageio.ImageIO
 import kotlin.math.max
 
@@ -56,16 +56,19 @@ class ImageProp : Prop() {
             if (mt.isErrorAny()) {
                 image = null
                 // This could also be bad image data, but it is usually a nonexistent file.
-                throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+                val message = getStringResource(Res.string.error_bad_file)
+                throw JuggleExceptionUser(message)
             }
 
             val aspectRatio = (image!!.height.toDouble()) / (image!!.width.toDouble())
             width = WIDTH_DEF
             height = WIDTH_DEF * aspectRatio
         } catch (_: IOException) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+            val message = getStringResource(Res.string.error_bad_file)
+            throw JuggleExceptionUser(message)
         } catch (_: SecurityException) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_security_restriction"))
+            val message = getStringResource(Res.string.error_security_restriction)
+            throw JuggleExceptionUser(message)
         }
     }
 
@@ -143,9 +146,11 @@ class ImageProp : Prop() {
                 url = URI(sourcestr).toURL()
                 loadImage()
             } catch (_: URISyntaxException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"))
+                val message = getStringResource(Res.string.error_malformed_url)
+                throw JuggleExceptionUser(message)
             } catch (_: MalformedURLException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"))
+                val message = getStringResource(Res.string.error_malformed_url)
+                throw JuggleExceptionUser(message)
             }
         }
 
@@ -161,9 +166,8 @@ class ImageProp : Prop() {
                     throw NumberFormatException()
                 }
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("width")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "width")
+                throw JuggleExceptionUser(message)
             }
         }
     }
