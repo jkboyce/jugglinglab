@@ -60,9 +60,9 @@ object ErrorDialog {
                     + errorstrings.getString("Error_internal_msg_part3")
                     + "\n\n")
         )
-        sw.write("Juggling Lab version: " + Constants.VERSION + "\n\n")
+        sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
         e.printStackTrace(pw)
-        if (e is JuggleExceptionInternal) {
+        if (e is JuggleExceptionInternalWithPattern) {
             val pat = e.pat
             if (pat != null) {
                 sw.write("\nJML pattern:\n")

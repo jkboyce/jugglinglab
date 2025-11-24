@@ -115,7 +115,7 @@ class JMLPattern() {
             } catch (jeu: JuggleExceptionUser) {
                 // can't be a user error since base pattern has already successfully
                 // compiled
-                handleFatalException(JuggleExceptionInternal(jeu.message, this))
+                handleFatalException(JuggleExceptionInternalWithPattern(jeu.message, this))
             }
         }
 
@@ -619,13 +619,13 @@ class JMLPattern() {
                     }
 
                     if (startTr == null || endTr == null) {
-                        throw JuggleExceptionInternal("invertTime() error 1", this)
+                        throw JuggleExceptionInternalWithPattern("invertTime() error 1", this)
                     }
                     if (startTr.outgoingPathLink != pl) {
-                        throw JuggleExceptionInternal("invertTime() error 2", this)
+                        throw JuggleExceptionInternalWithPattern("invertTime() error 2", this)
                     }
                     if (endTr.incomingPathLink != pl) {
-                        throw JuggleExceptionInternal("invertTime() error 3", this)
+                        throw JuggleExceptionInternalWithPattern("invertTime() error 3", this)
                     }
 
                     val startTrType = startTr.transType
@@ -645,7 +645,7 @@ class JMLPattern() {
             }
         } catch (jeu: JuggleExceptionUser) {
             // No user errors here because the pattern has already been animated
-            throw JuggleExceptionInternal("invertTime() error 4: " + jeu.message, this)
+            throw JuggleExceptionInternalWithPattern("invertTime() error 4: " + jeu.message, this)
         } finally {
             setNeedsLayout()
         }
@@ -806,7 +806,7 @@ class JMLPattern() {
         }
 
         if (!isValid) {
-            throw JuggleExceptionInternal("Cannot do layout of invalid pattern", this)
+            throw JuggleExceptionInternalWithPattern("Cannot do layout of invalid pattern", this)
         }
 
         try {
@@ -850,8 +850,7 @@ class JMLPattern() {
             throw jeu
         } catch (jei: JuggleExceptionInternal) {
             isValid = false
-            jei.attachPattern(this)
-            throw jei
+            throw JuggleExceptionInternalWithPattern(jei, this)
         }
         return this
     }
@@ -1017,7 +1016,7 @@ class JMLPattern() {
                             needPathEvent[path] = false
                         }
 
-                        else -> throw JuggleExceptionInternal(
+                        else -> throw JuggleExceptionInternalWithPattern(
                             "Unrecognized transition type in buildEventList()",
                             this
                         )
@@ -1115,7 +1114,7 @@ class JMLPattern() {
                             needPathEvent[path] = false
                         }
 
-                        else -> throw JuggleExceptionInternal(
+                        else -> throw JuggleExceptionInternalWithPattern(
                             "Unrecognized transition type in buildEventList()",
                             this
                         )
@@ -1384,7 +1383,7 @@ class JMLPattern() {
                             pl.setThrow(lasttr.throwType!!, lasttr.mod)
                         }
 
-                        else -> throw JuggleExceptionInternal(
+                        else -> throw JuggleExceptionInternalWithPattern(
                             "unrecognized transition type in buildLinkLists()",
                             this
                         )
@@ -1404,7 +1403,7 @@ class JMLPattern() {
             }
 
             if (pathlinks!![i].isEmpty()) {
-                throw JuggleExceptionInternal("No event found for path " + (i + 1), this)
+                throw JuggleExceptionInternalWithPattern("No event found for path " + (i + 1), this)
             }
         }
 
@@ -1670,7 +1669,7 @@ class JMLPattern() {
                 return
             }
         }
-        throw JuggleExceptionInternal("time t=$time is out of path range", this)
+        throw JuggleExceptionInternalWithPattern("time t=$time is out of path range", this)
     }
 
     // Check if a given hand is holding the path at a given time.
@@ -1790,7 +1789,7 @@ class JMLPattern() {
 
         for (hl in handlinks!![juggler - 1][handindex]) {
             if (time >= hl.startEvent.t && time < hl.endEvent.t) {
-                val hp = hl.handCurve ?: throw JuggleExceptionInternal(
+                val hp = hl.handCurve ?: throw JuggleExceptionInternalWithPattern(
                     "getHandCoordinate() null pointer at t=$time",
                     this
                 )
@@ -1798,7 +1797,7 @@ class JMLPattern() {
                 return
             }
         }
-        throw JuggleExceptionInternal(
+        throw JuggleExceptionInternalWithPattern(
             "time t=$time (j=$juggler,h=$handindex) is out of handpath range",
             this
         )
@@ -2182,9 +2181,9 @@ class JMLPattern() {
                 parser.parse(StringReader(toString()))
                 return parser.tree
             } catch (se: SAXException) {
-                throw JuggleExceptionInternal(se.message, this)
+                throw JuggleExceptionInternalWithPattern(se.message, this)
             } catch (se: IOException) {
-                throw JuggleExceptionInternal(se.message, this)
+                throw JuggleExceptionInternalWithPattern(se.message, this)
             }
         }
 

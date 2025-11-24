@@ -91,7 +91,7 @@ class EditLadderDiagram(
 
         try {
             if (activeEventitem == null) {
-                throw JuggleExceptionInternal("activeEventChanged(): event not found", pat)
+                throw JuggleExceptionInternalWithPattern("activeEventChanged(): event not found", pat)
             } else if (aep != null) {
                 aep!!.activateEvent(activeEventitem!!.event)
             }
@@ -120,7 +120,7 @@ class EditLadderDiagram(
         }
 
         if (activePositionitem == null) {
-            handleFatalException(JuggleExceptionInternal("ELD: position not found", pat))
+            handleFatalException(JuggleExceptionInternalWithPattern("ELD: position not found", pat))
         } else if (aep != null) {
             aep!!.activatePosition(activePositionitem!!.position)
         }
@@ -164,7 +164,7 @@ class EditLadderDiagram(
         createView()  // rebuild ladder diagram (LadderItem arrays)
         activeEventitem = null
         val evInloop = pat.getEventImageInLoop(ev)
-            ?: throw JuggleExceptionInternal("activateEvent(): null event", pat)
+            ?: throw JuggleExceptionInternalWithPattern("activateEvent(): null event", pat)
         for (item in ladderEventItems!!) {
             if (item.event == evInloop) {
                 activeEventitem = item
@@ -172,14 +172,14 @@ class EditLadderDiagram(
             }
         }
         if (activeEventitem == null) {
-            throw JuggleExceptionInternal("activateEvent(): event not found", pat)
+            throw JuggleExceptionInternalWithPattern("activateEvent(): event not found", pat)
         }
     }
 
     @Throws(JuggleExceptionInternal::class)
     fun reactivateEvent(): JMLEvent? {
         if (activeEventitem == null) {
-            throw JuggleExceptionInternal("reactivateEvent(): null eventitem", pat)
+            throw JuggleExceptionInternalWithPattern("reactivateEvent(): null eventitem", pat)
         }
         val hash = activeEventitem!!.hashCode
         createView()  // rebuild ladder diagram (LadderItem arrays)
@@ -193,7 +193,7 @@ class EditLadderDiagram(
             }
         }
         if (activeEventitem == null) {
-            throw JuggleExceptionInternal("reactivateEvent(): event not found", pat)
+            throw JuggleExceptionInternalWithPattern("reactivateEvent(): event not found", pat)
         }
         return activeEventitem!!.event
     }
@@ -236,8 +236,7 @@ class EditLadderDiagram(
                     try {
                         aep2.activateEvent(activeEventitem!!.event)
                     } catch (jei: JuggleExceptionInternal) {
-                        jei.attachPattern(pat)
-                        handleFatalException(jei)
+                        handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                     }
                 }
                 if (activePositionitem != null) {
@@ -264,8 +263,7 @@ class EditLadderDiagram(
                             try {
                                 aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
-                                jei.attachPattern(pat)
-                                handleFatalException(jei)
+                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                             }
                         }
                         if (activeEventitem!!.type == LadderItem.TYPE_TRANSITION) {
@@ -361,8 +359,7 @@ class EditLadderDiagram(
                             try {
                                 aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
-                                jei.attachPattern(pat)
-                                handleFatalException(jei)
+                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                             }
                         }
                         if (activePositionitem != null) {
@@ -389,7 +386,7 @@ class EditLadderDiagram(
                 }
 
                 STATE_POPUP -> handleFatalException(
-                    JuggleExceptionInternal("tried to enter POPUP state while already in it", pat)
+                    JuggleExceptionInternalWithPattern("tried to enter POPUP state while already in it", pat)
                 )
             }
         } else {
@@ -517,7 +514,7 @@ class EditLadderDiagram(
                     }
                     if (ev == null) {
                         handleFatalException(
-                            JuggleExceptionInternal("Null event 1 in mousePressed()", pat)
+                            JuggleExceptionInternalWithPattern("Null event 1 in mousePressed()", pat)
                         )
                         parentFrame?.dispose()
                         parentFrame = null
@@ -551,7 +548,7 @@ class EditLadderDiagram(
                     }
                     if (ev == null) {
                         handleFatalException(
-                            JuggleExceptionInternal("Null event 2 in mousePressed()", pat)
+                            JuggleExceptionInternalWithPattern("Null event 2 in mousePressed()", pat)
                         )
                         parentFrame?.dispose()
                         parentFrame = null
@@ -780,7 +777,7 @@ class EditLadderDiagram(
                         ev.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING)
                     if (tr == null) {
                         handleFatalException(
-                            JuggleExceptionInternal("Null transition in removing hold", pat)
+                            JuggleExceptionInternalWithPattern("Null transition in removing hold", pat)
                         )
                         parentFrame?.dispose()
                         parentFrame = null
@@ -938,7 +935,7 @@ class EditLadderDiagram(
             "changetograbcatch" -> changeCatchStyleTo(JMLTransition.TRANS_GRABCATCH)
             "makelast" -> makeLastInEvent()
             else -> handleFatalException(
-                JuggleExceptionInternal("unknown item in ELD popup", pat)
+                JuggleExceptionInternalWithPattern("unknown item in ELD popup", pat)
             )
         }
 
@@ -1021,7 +1018,7 @@ class EditLadderDiagram(
         // makePopupMenu() ensures that the event only has hold transitions
         if (popupitem !is LadderEventItem) {
             handleFatalException(
-                JuggleExceptionInternal("LadderDiagram illegal remove event", pat)
+                JuggleExceptionInternalWithPattern("LadderDiagram illegal remove event", pat)
             )
             return
         }
@@ -1080,7 +1077,7 @@ class EditLadderDiagram(
     private fun removePosition() {
         if (popupitem !is LadderPositionItem) {
             handleFatalException(
-                JuggleExceptionInternal("LadderDiagram illegal remove position", pat)
+                JuggleExceptionInternalWithPattern("LadderDiagram illegal remove position", pat)
             )
             return
         }
@@ -1095,7 +1092,7 @@ class EditLadderDiagram(
 
     private fun defineProp() {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternal("defineProp() null popupitem", pat))
+            handleFatalException(JuggleExceptionInternalWithPattern("defineProp() null popupitem", pat))
             return
         }
 
@@ -1104,7 +1101,7 @@ class EditLadderDiagram(
         if (popupitem is LadderEventItem) {
             if (popupitem!!.type != LadderItem.TYPE_TRANSITION) {
                 handleFatalException(
-                    JuggleExceptionInternal("defineProp() bad LadderItem type", pat)
+                    JuggleExceptionInternalWithPattern("defineProp() bad LadderItem type", pat)
                 )
                 return
             }
@@ -1277,7 +1274,7 @@ class EditLadderDiagram(
 
     private fun defineThrow() {
         if (popupitem !is LadderEventItem) {
-            handleFatalException(JuggleExceptionInternal("defineThrow() class format", pat))
+            handleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pat))
             return
         }
         var ev = (popupitem as LadderEventItem).event
@@ -1387,12 +1384,12 @@ class EditLadderDiagram(
 
     private fun changeCatchStyleTo(type: Int) {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternal("No popupitem in case 10", pat))
+            handleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 10", pat))
             return
         }
         if (popupitem !is LadderEventItem) {
             handleFatalException(
-                JuggleExceptionInternal("LadderDiagram change to catch class format", pat)
+                JuggleExceptionInternalWithPattern("LadderDiagram change to catch class format", pat)
             )
             return
         }
@@ -1410,12 +1407,12 @@ class EditLadderDiagram(
 
     private fun makeLastInEvent() {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternal("No popupitem in case 8", pat))
+            handleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 8", pat))
             return
         }
         if (popupitem !is LadderEventItem) {
             handleFatalException(
-                JuggleExceptionInternal("LadderDiagram make last transition class format", pat)
+                JuggleExceptionInternalWithPattern("LadderDiagram make last transition class format", pat)
             )
             return
         }

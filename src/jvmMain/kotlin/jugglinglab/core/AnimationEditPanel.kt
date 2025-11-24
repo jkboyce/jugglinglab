@@ -144,8 +144,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                     att.repaintAttachment()
                                 }
                             } catch (jei: JuggleExceptionInternal) {
-                                jei.attachPattern(pattern)
-                                handleFatalException(jei)
+                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                             }
                         }
 
@@ -269,8 +268,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 animator.initAnimator()
                 activateEvent(event)
             } catch (jei: JuggleExceptionInternal) {
-                jei.attachPattern(pattern)
-                handleFatalException(jei)
+                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
 
@@ -464,8 +462,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             try {
                 createEventView()
             } catch (jei: JuggleExceptionInternal) {
-                jei.attachPattern(pattern)
-                handleFatalException(jei)
+                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
 
@@ -501,8 +498,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         try {
                             createEventView()
                         } catch (jei: JuggleExceptionInternal) {
-                            jei.attachPattern(pattern)
-                            handleFatalException(jei)
+                            handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                         }
                     }
                     if (positionActive) {
@@ -597,8 +593,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 try {
                     createEventView()
                 } catch (jei: JuggleExceptionInternal) {
-                    jei.attachPattern(pattern)
-                    handleFatalException(jei)
+                    handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                 }
                 createPositionView()
                 repaint()
@@ -700,7 +695,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 // translate by one pixel and see how far it is in juggler space
                 val c = ev.globalCoordinate
-                    ?: throw JuggleExceptionInternal("AEP: No coord on event $ev", pattern)
+                    ?: throw JuggleExceptionInternalWithPattern("AEP: No coord on event $ev", pattern)
                 val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2) // pixels/cm
 
@@ -1363,8 +1358,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 drawPositions(g)
             } catch (jei: JuggleExceptionInternal) {
                 killAnimationThread()
-                jei.attachPattern(pattern)
-                handleFatalException(jei)
+                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
     }
