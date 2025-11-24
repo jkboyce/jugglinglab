@@ -18,9 +18,6 @@ object Constants {
     const val DOWNLOAD_URL: String = "https://jugglinglab.org/#download"
     const val HELP_URL: String = "https://jugglinglab.org/#help"
 
-    // how splines (e.g., juggler hand movements) are calculated
-    const val SPLINE_LAYOUT_METHOD: Int = SplineCurve.MINIMIZE_RMSACCEL
-
     // how juggler angles are interpolated
     const val ANGLE_LAYOUT_METHOD: Int = Curve.CURVE_LINE
 

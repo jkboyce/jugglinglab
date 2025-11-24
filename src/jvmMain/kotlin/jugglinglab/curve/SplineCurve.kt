@@ -16,7 +16,6 @@
 
 package jugglinglab.curve
 
-import jugglinglab.core.Constants
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import org.jetbrains.kotlinx.multik.api.*
@@ -210,6 +209,9 @@ class SplineCurve : Curve() {
         const val CONTINUOUS_ACCEL: Int = 1
         const val MINIMIZE_RMSVEL: Int = 2
 
+        // Selected method
+        const val SPLINE_LAYOUT_METHOD: Int = MINIMIZE_RMSACCEL
+
         // The next method assigns velocities at the intermediate times from known
         // velocities at the endpoints, and positions at all times.
         //
@@ -269,7 +271,7 @@ class SplineCurve : Curve() {
                     val xi2 = x[i + 2][axis]
                     val index = i + axis * (n - 1)
 
-                    when (Constants.SPLINE_LAYOUT_METHOD) {
+                    when (SPLINE_LAYOUT_METHOD) {
                         MINIMIZE_RMSACCEL, CONTINUOUS_ACCEL -> {
                             // cases end up being identical
                             m[index, index] = 2 / t[i] + 2 / t[i + 1]
@@ -433,7 +435,7 @@ class SplineCurve : Curve() {
                     val xi1 = x[i + 1][axis]
                     val xim1 = if (i == 0) 0.0 else x[i - 1][axis]
 
-                    when (Constants.SPLINE_LAYOUT_METHOD) {
+                    when (SPLINE_LAYOUT_METHOD) {
                         MINIMIZE_RMSACCEL, CONTINUOUS_ACCEL -> {
                             if (i == 0) {
                                 Adiag[i] = 2 / t[n - 1] + 2 / t[0]
