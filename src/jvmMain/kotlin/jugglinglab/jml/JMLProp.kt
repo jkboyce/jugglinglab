@@ -8,8 +8,6 @@ package jugglinglab.jml
 
 import jugglinglab.prop.Prop
 import jugglinglab.util.JuggleExceptionUser
-import java.io.IOException
-import java.io.PrintWriter
 
 data class JMLProp (
     val type: String,
@@ -31,9 +29,8 @@ data class JMLProp (
     val isColorable: Boolean
         get() = prop.isColorable
 
-    @Throws(IOException::class)
-    fun writeJML(wr: PrintWriter) {
+    fun writeJML(wr: Appendable) {
         val modString = if (mod != null) " mod=\"$mod\"" else ""
-        wr.println("<prop type=\"$type\"$modString/>")
+        wr.append("<prop type=\"$type\"$modString/>\n")
     }
 }
