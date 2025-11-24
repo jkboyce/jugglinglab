@@ -6,14 +6,12 @@
 
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.NumberFormatter.jlToStringRounded
-import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
+import jugglinglab.util.getStringResource
 
 class JMLPosition {
     var x: Double = 0.0
@@ -74,7 +72,8 @@ class JMLPosition {
                 }
             }
         } catch (_: NumberFormatException) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_position_coordinate"))
+            val message = getStringResource(Res.string.error_position_coordinate)
+            throw JuggleExceptionUser(message)
         }
 
         coordinate = Coordinate(tempx, tempy, tempz)
@@ -83,14 +82,14 @@ class JMLPosition {
         setJuggler(jugglerstr)
 
         if (current.numberOfChildren != 0) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_position_subtag"))
+            val message = getStringResource(Res.string.error_position_subtag)
+            throw JuggleExceptionUser(message)
         }
     }
 
-    @Throws(IOException::class)
-    fun writeJML(wr: PrintWriter) {
+    fun writeJML(wr: Appendable) {
         val c = this.coordinate
-        wr.println(
+        wr.append(
             ("<position x=\""
                     + jlToStringRounded(c.x, 4)
                     + "\" y=\""
@@ -103,16 +102,13 @@ class JMLPosition {
                     + jlToStringRounded(this.angle, 4)
                     + "\" juggler=\""
                     + this.juggler
-                    + "\"/>")
+                    + "\"/>\n")
         )
     }
 
     override fun toString(): String {
-        val sw = StringWriter()
-        try {
-            writeJML(PrintWriter(sw))
-        } catch (_: IOException) {
-        }
-        return sw.toString()
+        val sb = StringBuilder()
+        writeJML(sb)
+        return sb.toString()
     }
 }
