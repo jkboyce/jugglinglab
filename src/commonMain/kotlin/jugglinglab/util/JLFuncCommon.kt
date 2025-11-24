@@ -26,6 +26,125 @@ fun jlBinomial(a: Int, b: Int): Int {
     return result
 }
 
+// Throughout Juggling Lab we use a notation within strings to indicate
+// repeated sections:  `...(stuff)^n...`. This function expands all such
+// repeats (including nested ones) to produce a fully-expanded string.
+//
+// NOTE: A limitation is that if `stuff` contains parentheses they must
+// be balanced. Otherwise we get ambiguous cases like '(()^5' --> does this
+// expand to '(((((' or '('?
+
+fun jlExpandRepeats(str: String): String {
+    val sb = StringBuilder()
+    addExpansionToBuffer(str, sb)
+    return sb.toString()
+
+    /*
+    System.out.println(JLFunc.expandRepeats("hello"));
+    System.out.println(JLFunc.expandRepeats("he(l)^2o"));
+    System.out.println(JLFunc.expandRepeats("hel(lo)^2"));
+    System.out.println(JLFunc.expandRepeats("(hello)^0world"));
+    System.out.println(JLFunc.expandRepeats("((hello )^2there)^2"));
+    System.out.println(JLFunc.expandRepeats("((hello )there)^2"));
+    System.out.println(JLFunc.expandRepeats("((hello )^2there)"));
+    */
+}
+
+private fun addExpansionToBuffer(str: String, sb: StringBuilder) {
+    var pos = 0
+    while (pos < str.length) {
+        val ch = str[pos]
+
+        if (ch == '(') {
+            val result = tryParseRepeat(str, pos)
+
+            if (result == null) {
+                // no repeat found, treat like a normal character
+                sb.append(ch)
+                ++pos
+            } else {
+                val repeatEnd = result[0]
+                val repeats = result[1]
+                val resumeStart = result[2]
+
+                // snip out the string to be repeated:
+                val str2 = str.substring(pos + 1, repeatEnd)
+
+                repeat(repeats) {
+                    addExpansionToBuffer(str2, sb)
+                }
+
+                pos = resumeStart
+            }
+        } else {
+            sb.append(ch)
+            ++pos
+        }
+    }
+}
+
+// Scan forward in the string to find:
+// (1) the end of the repeat (buffer position of ')' where depth returns to 0)
+// (2) the number of repeats
+//     - if the next non-whitespace char after (a) is not '^' -> no repeat
+//     - if the next non-whitespace char after '^' is not a number -> no repeat
+//     - parse the numbers after '^' up through the first non-number (or end
+//       of string) into an int = `repeats`
+// (3) the buffer position of the first non-numeric character after the
+//     repeat number (i.e. where to resume) = `resume_start`
+//     (=str.length() if hit end of buffer)
+//
+// We always call this function with `fromPos` sitting on the '(' that starts
+// the repeat section.
+
+private fun tryParseRepeat(str: String, fromPos: Int): IntArray? {
+    var depth = 0
+
+    for (pos in fromPos..<str.length) {
+        val ch = str[pos]
+        if (ch == '(') {
+            ++depth
+        } else if (ch == ')') {
+            --depth
+            if (depth == 0) {
+                // see if we match the form '^(int)...' after the closing parenthesis
+                val regex = Regex("^\\s*\\^\\s*(\\d+).*")
+                val match = regex.matchEntire(str.substring(pos + 1)) ?: return null
+
+                val repeats = match.groupValues[1].toInt()
+                val group1Range = match.groups[1]!!.range
+                val resumeStart = group1Range.last + 1 + pos + 1
+                return intArrayOf(pos, repeats, resumeStart)
+            }
+        }
+    }
+    return null
+}
+
+// Split an input string at a given delimiter, but only outside of parentheses.
+
+fun jlSplitOnCharOutsideParens(input: String, delimiter: Char): List<String> {
+    if (input.isEmpty()) return listOf("")
+
+    val result = mutableListOf<String>()
+    var parenLevel = 0
+    var lastSplit = 0
+    for (i in input.indices) {
+        when (input[i]) {
+            '(' -> parenLevel++
+            ')' -> parenLevel--
+            delimiter -> {
+                if (parenLevel == 0) {
+                    result.add(input.substring(lastSplit, i))
+                    lastSplit = i + 1
+                }
+            }
+        }
+    }
+    result.add(input.substring(lastSplit))
+    return result.filter { it.isNotEmpty() }
+}
+
 // Compare two version numbers.
 //
 // returns 0 if equal, less than 0 if v1 < v2, greater than 0 if v1 > v2.
