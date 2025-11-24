@@ -6,7 +6,7 @@
 
 package jugglinglab.util
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 
 class ParameterList() {
     var numberOfParameters: Int = 0
@@ -82,8 +82,8 @@ class ParameterList() {
             } else {
                 val str = token.trim()
                 if (str.isNotEmpty()) {
-                    val template: String = errorstrings.getString("Error_param_has_no_value")
-                    throw JuggleExceptionUser(template.format(str))
+                    val message = getStringResource(Res.string.error_param_has_no_value, str)
+                    throw JuggleExceptionUser(message)
                 }
             }
         }
@@ -106,16 +106,13 @@ class ParameterList() {
     fun errorIfParametersLeft() {
         val count = numberOfParameters
         if (count == 1) {
-            val template: String = errorstrings.getString("Error_unused_param")
             val argument = "\"${getParameterName(0)}\""
-            throw JuggleExceptionUser(template.format(argument))
+            val message = getStringResource(Res.string.error_unused_param, argument)
+            throw JuggleExceptionUser(message)
         } else if (count > 1) {
-            val template: String = errorstrings.getString("Error_unused_params")
-            val names = ArrayList<String?>()
-            for (i in 0..<count) {
-                names.add("\"" + getParameterName(i) + "\"")
-            }
-            throw JuggleExceptionUser(template.format(names.joinToString(", ")))
+            val argument = (0..<count).joinToString(", ") { i -> "\"${getParameterName(i)}\"" }
+            val message = getStringResource(Res.string.error_unused_params, argument)
+            throw JuggleExceptionUser(message)
         }
     }
 }
