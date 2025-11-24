@@ -41,8 +41,8 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
-            //implementation(compose.desktop.currentOs)
-            //implementation(libs.kotlinx.coroutinesSwing)
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutinesSwing)
             implementation("org.apache.commons:commons-math3:${Versions.COMMONS_MATH_VERSION}")
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
         }
@@ -71,29 +71,29 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     group = "build"
     description = "Creates a fat JAR for the JVM target"
 
-    // 1. Include project's compiled classes
+    // Include project's compiled classes
     val jvmTarget = kotlin.targets.getByName("jvm")
     val mainCompilation = jvmTarget.compilations.getByName("main")
     from(mainCompilation.output)
 
-    // 2. Define dependencies
+    // Define dependencies
     configurations = listOf(project.configurations.getByName("jvmRuntimeClasspath"))
 
-    // 3. Configure the JAR attributes
+    // Configure the JAR attributes
     manifest.attributes["Main-Class"] = "jugglinglab.JugglingLabKt"
     archiveBaseName.set("JugglingLab")
     archiveVersion.set("")
     archiveClassifier.set("")
     destinationDirectory.set(file("${project.projectDir}/bin"))
 
-    // 4. Excludes
+    // Excludes
     exclude("com/google/ortools/Loader.class")
     exclude("**/ortools-darwin*")
     exclude("**/ortools-win32*")
     exclude("**/ortools-linux*")
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
-    // 5. Ensure native libs are unpacked before this runs
+    // Ensure native libs are unpacked before this runs
     dependsOn(unpackOrtNatives)
 }
 

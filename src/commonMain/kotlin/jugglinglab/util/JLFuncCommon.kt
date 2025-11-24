@@ -10,6 +10,9 @@
 
 package jugglinglab.util
 
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -180,9 +183,7 @@ fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int):
     return d.toInt() <= slop
 }
 
-//------------------------------------------------------------------------------
-// Helpers for converting numbers to/from strings
-//------------------------------------------------------------------------------
+// Helper object for converting numbers to/from strings
 
 @Suppress("unused")
 expect object NumberFormatter {
@@ -193,4 +194,15 @@ expect object NumberFormatter {
     // Convert a double value to a String, rounding to `digits` places after
     // the decimal point, with trailing '.' and '0's suppressed.
     fun jlToStringRounded(value: Double, digits: Int): String
+}
+
+// Helper object for getting localized string resources (UI, error messages, ...)
+
+fun getStringResource(key: StringResource, vararg args: Any?): String {
+    val message = runBlocking { getString(key) }
+    return if (args.isEmpty()) {
+        message
+    } else {
+        message.format(*args)
+    }
 }
