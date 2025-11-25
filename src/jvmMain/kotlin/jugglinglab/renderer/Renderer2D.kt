@@ -249,8 +249,8 @@ class Renderer2D : Renderer() {
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pat.getProp(pnum[i - 1])
             if (pr.getProp2DImage(zoom, cameraangle) != null) {
-                val center = pr.getProp2DCenter(zoom)
-                val size = pr.getProp2DSize(zoom)
+                val center = pr.getProp2DCenter(zoom, cameraangle)
+                val size = pr.getProp2DSize(zoom, cameraangle)
                 obj[index].boundingbox.x = x - center!!.width
                 obj[index].boundingbox.y = y - center.height
                 obj[index].boundingbox.width = size!!.width
@@ -509,7 +509,7 @@ class Renderer2D : Renderer() {
                     val y = ob.coord[0].y.roundToInt()
                     val propimage = pr.getProp2DImage(zoom, cameraangle)
                     if (propimage != null) {
-                        val grip = pr.getProp2DGrip(zoom)!!
+                        val grip = pr.getProp2DGrip(zoom, cameraangle)!!
                         // TODO: It's inefficient to call toAwtImage() on every draw
                         g.drawImage(propimage.toAwtImage(), x - grip.width, y - grip.height, null)
                     }

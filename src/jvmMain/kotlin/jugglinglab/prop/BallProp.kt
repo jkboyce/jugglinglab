@@ -23,16 +23,17 @@ import kotlin.math.max
 import kotlin.math.min
 
 class BallProp : Prop() {
-    private var diam: Double = DIAM_DEF // diameter, in cm
+    // set by init()
     private var color: Color = COLOR_DEF
     private var colornum: Int = COLORNUM_DEF
+    private var diam: Double = DIAM_DEF // diameter, in cm
     private var highlight: Boolean = HIGHLIGHT_DEF
-
-    private var ballimage: ImageBitmap? = null
-    private var lastzoom: Double = 0.0
+    // recalculated based on zoom
+    private var image: ImageBitmap? = null
     private var size: IntSize? = null
     private var center: IntSize? = null
     private var grip: IntSize? = null
+    private var lastzoom: Double = 0.0
 
     override val type = "Ball"
 
@@ -156,43 +157,43 @@ class BallProp : Prop() {
     }
 
     override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
-        if (ballimage == null || zoom != lastzoom) {
+        if (image == null || zoom != lastzoom) {
             // first call or display resized?
-            recalc2D(zoom)
+            createImage(zoom)
         }
-        return ballimage
+        return image
     }
 
-    override fun getProp2DSize(zoom: Double): IntSize? {
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
         if (size == null || zoom != lastzoom) {
-            // first call or display resized?
-            recalc2D(zoom)
+            createImage(zoom)
         }
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): IntSize? {
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
         if (center == null || zoom != lastzoom) {
-            recalc2D(zoom)
+            createImage(zoom)
         }
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): IntSize? {
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
         if (grip == null || zoom != lastzoom) {
-            // first call or display resized?
-            recalc2D(zoom)
+            createImage(zoom)
         }
         return grip
     }
 
-    private fun recalc2D(zoom: Double) {
+    // Refresh the display image and related variables for a given zoom level.
+
+    private fun createImage(zoom: Double) {
         var ballPixelSize = (0.5 + zoom * diam).toInt()
         ballPixelSize = max(ballPixelSize, 1)
 
         // Create a ball image of diameter ball_pixel_size with a transparent background
-        val image = ImageBitmap(ballPixelSize + 1, ballPixelSize + 1)
-        val canvas = Canvas(image)
+        val newImage = ImageBitmap(ballPixelSize + 1, ballPixelSize + 1)
+        val canvas = Canvas(newImage)
         val paint = Paint()
 
         if (highlight) {
@@ -235,11 +236,10 @@ class BallProp : Prop() {
             )
         }
 
-        ballimage = image
+        image = newImage
         size = IntSize(ballPixelSize, ballPixelSize)
         center = IntSize(ballPixelSize / 2, ballPixelSize / 2)
         grip = IntSize(ballPixelSize / 2, ballPixelSize / 2)
-
         lastzoom = zoom
     }
 

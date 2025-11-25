@@ -45,15 +45,15 @@ abstract class Prop {
 
     abstract fun getMin(): Coordinate? // in cm
 
-    abstract fun getWidth(): Double // prop width in cm
+    abstract fun getWidth(): Double // prop width in cm, in juggler space
 
     abstract fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap?
 
-    abstract fun getProp2DSize(zoom: Double): IntSize?
+    abstract fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize?
 
-    abstract fun getProp2DCenter(zoom: Double): IntSize?
+    abstract fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize?
 
-    abstract fun getProp2DGrip(zoom: Double): IntSize?
+    abstract fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize?
 
     companion object {
         val builtinProps: List<String> = listOf(

@@ -23,18 +23,18 @@ import androidx.compose.ui.graphics.BlendMode
 import kotlin.math.*
 
 class RingProp : Prop() {
-    private var outsideDiam: Double = OUTSIDE_DIAM_DEF
-    private var insideDiam: Double = INSIDE_DIAM_DEF
+    // set by init()
     private var color: Color = COLOR_DEF
     private var colornum: Int = COLORNUM_DEF
+    private var outsideDiam: Double = OUTSIDE_DIAM_DEF
+    private var insideDiam: Double = INSIDE_DIAM_DEF
+    // recalculated based on zoom and camangle
     private var image: ImageBitmap? = null
-    private var lastzoom: Double = 0.0
-    private var lastcamangle: DoubleArray = doubleArrayOf(0.0, 0.0)
     private var size: IntSize? = null
     private var center: IntSize? = null
     private var grip: IntSize? = null
-    private lateinit var px: IntArray
-    private lateinit var py: IntArray
+    private var lastzoom: Double = 0.0
+    private var lastcamangle: DoubleArray = doubleArrayOf(0.0, 0.0)
 
     override val type = "Ring"
 
@@ -72,8 +72,6 @@ class RingProp : Prop() {
 
     @Throws(JuggleExceptionUser::class)
     override fun init(st: String?) {
-        px = IntArray(POLYSIDES)
-        py = IntArray(POLYSIDES)
         if (st == null) {
             return
         }
@@ -167,44 +165,43 @@ class RingProp : Prop() {
     }
 
     override fun getWidth(): Double {
+        // this is for the purposes of default zoom, to fit the juggler into
+        // the view area
         return 0.05 * outsideDiam
     }
 
     override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
-        if (image == null || zoom != lastzoom || camangle[0] != lastcamangle[0] ||
-            camangle[1] != lastcamangle[1]
-        ) {
-            // first call or display resized?
-            redrawImage(zoom, camangle)
+        if (image == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
+            createImage(zoom, camangle)
         }
         return image
     }
 
-    override fun getProp2DSize(zoom: Double): IntSize? {
-        if (size == null || zoom != lastzoom) {
-            // first call or display resized?
-            redrawImage(zoom, lastcamangle)
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
+        if (size == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
+            createImage(zoom, lastcamangle)
         }
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): IntSize? {
-        if (center == null || zoom != lastzoom) {
-            // first call or display resized?
-            redrawImage(zoom, lastcamangle)
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
+        if (center == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
+            createImage(zoom, lastcamangle)
         }
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): IntSize? {
-        if (grip == null || zoom != lastzoom) {
-            // first call or display resized?
-            redrawImage(zoom, lastcamangle)
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
+        if (grip == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
+            createImage(zoom, lastcamangle)
         }
         return grip
     }
 
-    private fun redrawImage(zoom: Double, camangle: DoubleArray) {
+    // Refresh the display image and related variables for a given zoom level
+    // and camera angle.
+
+    private fun createImage(zoom: Double, camangle: DoubleArray) {
         val outsidePixelDiam = (0.5 + zoom * outsideDiam).toInt()
         val insidePixelDiam = (0.5 + zoom * insideDiam).toInt()
 
@@ -234,10 +231,13 @@ class RingProp : Prop() {
         val sa = sin(angle)
         val ca = cos(angle)
 
+        val px = IntArray(POLYSIDES)
+        val py = IntArray(POLYSIDES)
         var pxmin = 0
         var pxmax = 0
         var pymin = 0
         var pymax = 0
+
         for (i in 0..<POLYSIDES) {
             val theta = i.toDouble() * 2 * Math.PI / POLYSIDES.toDouble()
             val x = width.toDouble() * cos(theta) * 0.5

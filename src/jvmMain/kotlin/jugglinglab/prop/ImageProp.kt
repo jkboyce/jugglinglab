@@ -9,6 +9,7 @@ package jugglinglab.prop
 import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
@@ -19,74 +20,28 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.skia.Image
-import java.io.IOException
-import java.net.MalformedURLException
-import java.net.URI
-import java.net.URISyntaxException
-import java.net.URL
 import kotlin.math.max
 
 class ImageProp : Prop() {
-    private var url: URL?
+    // set by constructor and init()
+    private var imageSource: String = IMAGE_DEF
+    private var baseImage: ImageBitmap? = null
+    private var width: Double = WIDTH_DEF
+    // recalculated based on zoom
     private var image: ImageBitmap? = null
-    private var scaledImage: ImageBitmap? = null
-    private var width: Double = 0.0
-    private var height: Double = 0.0
     private var size: IntSize? = null
     private var center: IntSize? = null
     private var grip: IntSize? = null
     private var lastZoom = 0.0
 
     init {
-        url = imageUrlDefault ?:
-            throw JuggleExceptionUser("ImageProp error: Default image not set")
-        loadImage()
-        rescaleImage(1.0)
-    }
-
-    @Throws(JuggleExceptionUser::class)
-    private fun loadImage() {
         try {
-            // Use a pure Kotlin/Skia way to load the image from a URL stream
-            val loadedImage = url!!.openStream().use { Image.makeFromEncoded(it.readBytes()).toComposeImageBitmap() }
-            image = loadedImage
-
-            val aspectRatio = (loadedImage.height.toDouble()) / (loadedImage.width.toDouble())
-            width = WIDTH_DEF
-            height = WIDTH_DEF * aspectRatio
-        } catch (_: IOException) {
-            val message = getStringResource(Res.string.error_bad_file)
-            throw JuggleExceptionUser(message)
-        } catch (_: SecurityException) {
-            val message = getStringResource(Res.string.error_security_restriction)
-            throw JuggleExceptionUser(message)
+            loadImage(IMAGE_DEF)
+        } catch (_: Exception) {
+            throw JuggleExceptionInternal("ImageProp error: Default image not set")
         }
-    }
-
-    private fun rescaleImage(zoom: Double) {
-        val imagePixelWidth = max((0.5 + zoom * width).toInt(), 1)
-        val imagePixelHeight = max((0.5 + zoom * height).toInt(), 1)
-        size = IntSize(imagePixelWidth, imagePixelHeight)
-        center = IntSize(imagePixelWidth / 2, imagePixelHeight / 2)
-        grip = IntSize(imagePixelWidth / 2, imagePixelHeight)
-
-        lastZoom = zoom
-
-        // Create a new ImageBitmap and use a Canvas to draw the scaled original onto it
-        val originalImage = image ?: return
-        val newImage = ImageBitmap(imagePixelWidth, imagePixelHeight)
-        val canvas = Canvas(newImage)
-        val paint = Paint().apply {
-            // Use medium quality for smooth scaling, similar to bilinear interpolation.
-            filterQuality = androidx.compose.ui.graphics.FilterQuality.Medium
-        }
-        canvas.drawImageRect(
-            image = originalImage,
-            dstSize = IntSize(imagePixelWidth, imagePixelHeight),
-            paint = paint
-        )
-        scaledImage = newImage
     }
 
     override val type = "Image"
@@ -94,8 +49,6 @@ class ImageProp : Prop() {
     override val isColorable = false
 
     override fun getEditorColor(): Color {
-        // The color that shows up in the visual editor
-        // We could try to get an average color for the image
         return Color.White
     }
 
@@ -105,8 +58,8 @@ class ImageProp : Prop() {
                 "image",
                 ParameterDescriptor.TYPE_ICON,
                 null,
-                imageUrlDefault,
-                url
+                IMAGE_DEF,
+                imageSource
             ),
             ParameterDescriptor(
                 "width",
@@ -127,16 +80,7 @@ class ImageProp : Prop() {
 
         val sourcestr = pl.getParameter("image")
         if (sourcestr != null) {
-            try {
-                url = URI(sourcestr).toURL()
-                loadImage()
-            } catch (_: URISyntaxException) {
-                val message = getStringResource(Res.string.error_malformed_url)
-                throw JuggleExceptionUser(message)
-            } catch (_: MalformedURLException) {
-                val message = getStringResource(Res.string.error_malformed_url)
-                throw JuggleExceptionUser(message)
-            }
+            loadImage(sourcestr)
         }
 
         val widthstr = pl.getParameter("width")
@@ -145,8 +89,6 @@ class ImageProp : Prop() {
                 val temp = jlParseFiniteDouble(widthstr)
                 if (temp > 0) {
                     width = temp
-                    val aspectRatio = (image!!.height.toDouble()) / (image!!.width.toDouble())
-                    height = width * aspectRatio
                 } else {
                     throw NumberFormatException()
                 }
@@ -155,13 +97,6 @@ class ImageProp : Prop() {
                 throw JuggleExceptionUser(message)
             }
         }
-    }
-
-    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
-        if (zoom != lastZoom) {
-            rescaleImage(zoom)
-        }
-        return scaledImage
     }
 
     override fun getMax(): Coordinate {
@@ -176,29 +111,91 @@ class ImageProp : Prop() {
         return width
     }
 
-    override fun getProp2DSize(zoom: Double): IntSize? {
+    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
+        if (zoom != lastZoom) {
+            createImage(zoom)
+        }
+        return image
+    }
+
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
         if (size == null || zoom != lastZoom) {
-            rescaleImage(zoom)
+            createImage(zoom)
         }
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): IntSize? {
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
         if (center == null || zoom != lastZoom) {
-            rescaleImage(zoom)
+            createImage(zoom)
         }
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): IntSize? {
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
         if (grip == null || zoom != lastZoom) {
-            rescaleImage(zoom)
+            createImage(zoom)
         }
         return grip
     }
 
+    // Load an image from the given source.
+    //
+    // `source` is either a URL or the name of a Compose drawable resource.
+    // URLs may not be loadable in all contexts. In the event of a problem,
+    // throw a JuggleExceptionUser with a relevant error message.
+
+    @Throws(JuggleExceptionUser::class)
+    private fun loadImage(source: String) {
+        try {
+            if (source.contains('/')) {
+                // TODO: assume it's a URL and load accordingly
+            } else {
+                // load from a Compose resource
+                val loadedImage: ImageBitmap = runBlocking {
+                    val imageBytes = Res.readBytes("drawable/$source")
+                    Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
+                }
+                baseImage = loadedImage
+            }
+
+            imageSource = source
+        } catch (e: Exception) {
+            val message = getStringResource(Res.string.error_bad_file, e.message ?: "")
+            throw JuggleExceptionUser(message)
+        }
+    }
+
+    // Refresh the display image and related variables for a given zoom level.
+
+    private fun createImage(zoom: Double) {
+        val aspectRatio = (baseImage!!.height.toDouble()) / (baseImage!!.width.toDouble())
+        val height = width * aspectRatio
+        val imagePixelWidth = max((0.5 + zoom * width).toInt(), 1)
+        val imagePixelHeight = max((0.5 + zoom * height).toInt(), 1)
+        size = IntSize(imagePixelWidth, imagePixelHeight)
+        center = IntSize(imagePixelWidth / 2, imagePixelHeight / 2)
+        grip = IntSize(imagePixelWidth / 2, imagePixelHeight)
+        lastZoom = zoom
+
+        // Create a new ImageBitmap and use a Canvas to draw the scaled original onto it
+        val originalImage = baseImage ?: return
+        val newImage = ImageBitmap(imagePixelWidth, imagePixelHeight)
+        val canvas = Canvas(newImage)
+        val paint = Paint().apply {
+            // Use medium quality for smooth scaling, similar to bilinear interpolation.
+            filterQuality = androidx.compose.ui.graphics.FilterQuality.Medium
+        }
+        canvas.drawImageRect(
+            image = originalImage,
+            dstSize = IntSize(imagePixelWidth, imagePixelHeight),
+            paint = paint
+        )
+        image = newImage
+    }
+
     companion object {
-        private const val WIDTH_DEF: Double = 10.0  // in centimeters
-        private var imageUrlDefault: URL? = ImageProp::class.java.getResource("/ball.png")
+        const val IMAGE_DEF: String = "ball.png"
+        const val WIDTH_DEF: Double = 10.0  // centimeters, in juggler space
     }
 }

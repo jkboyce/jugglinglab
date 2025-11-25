@@ -1434,140 +1434,144 @@ class EditLadderDiagram(
 
     private fun makeParametersPanel(jp: JPanel, pd: List<ParameterDescriptor>) {
         jp.removeAll()
-        val gb = GridBagLayout()
-        jp.setLayout(gb)
-
         dialogControls = ArrayList()
         dialogPd = pd
 
-        if (pd.isNotEmpty()) {
-            val pdp = JPanel()
-            pdp.setLayout(gb)
+        if (pd.isEmpty())
+            return
 
-            for (i in pd.indices) {
-                val lab = JLabel(pd[i].name)
-                pdp.add(lab)
-                gb.setConstraints(
-                    lab, constraints(GridBagConstraints.LINE_START, 0, i, Insets(0, 0, 0, 0))
-                )
-                if (pd[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
-                    // JComboBox jcb = new JComboBox(booleanList);
-                    val jcb = JCheckBox()
-                    pdp.add(jcb)
-                    gb.setConstraints(
-                        jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(2, 5, 2, 0))
-                    )
-                    dialogControls!!.add(jcb)
-                    val def = (pd[i].value) as Boolean
-                    // jcb.setSelectedIndex(def ? 0 : 1);
-                    jcb.setSelected(def)
-                } else if (pd[i].type == ParameterDescriptor.TYPE_FLOAT) {
-                    val tf = JTextField(7)
-                    pdp.add(tf)
-                    gb.setConstraints(
-                        tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
-                    )
-                    dialogControls!!.add(tf)
-                    val def = (pd[i].value) as Double?
-                    tf.text = def.toString()
-                } else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
-                    val choices = pd[i].range!!.toTypedArray()
-                    val jcb = JComboBox(choices)
-                    jcb.setMaximumRowCount(15)
-                    pdp.add(jcb)
-                    gb.setConstraints(
-                        jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
-                    )
-                    dialogControls!!.add(jcb)
+        val pdp = JPanel()
+        val gb = GridBagLayout()
+        jp.setLayout(gb)
+        pdp.setLayout(gb)
 
-                    val `val` = (pd[i].value) as String?
-                    for (j in choices.indices) {
-                        if (`val`.equals(choices[j], ignoreCase = true)) {
-                            jcb.setSelectedIndex(j)
-                            break
-                        }
-                    }
-                } else if (pd[i].type == ParameterDescriptor.TYPE_INT) {
-                    val tf = JTextField(4)
-                    pdp.add(tf)
-                    gb.setConstraints(
-                        tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
-                    )
-                    dialogControls!!.add(tf)
-                    val def = (pd[i].value) as Int?
-                    tf.text = def.toString()
-
-                    tf.addCaretListener { _: CaretEvent? -> }
-                } else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
-                    val fpd = pd[i]
-                    val filename = fpd.value as URL?
-
-                    val icon = ImageIcon(filename, filename.toString())
-                    // Scale the image down if it's too big
-                    val maxHeight = 100f
-                    if (icon.iconHeight > maxHeight) {
-                        val scaleFactor = maxHeight / icon.iconHeight
-                        val height = (scaleFactor * icon.iconHeight).toInt()
-                        val width = (scaleFactor * icon.iconWidth).toInt()
-                        icon.setImage(
-                            icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH)
-                        )
-                    }
-                    val label = JLabel(icon)
-
-                    // Clicking on the icon launches a file chooser for getting a new image
-                    label.addMouseListener(
-                        object : MouseAdapter() {
-                            override fun mouseClicked(e: MouseEvent?) {
-                                jfc.setFileFilter(
-                                    FileNameExtensionFilter(
-                                        "Image file",
-                                        "jpg",
-                                        "jpeg",
-                                        "gif",
-                                        "png"
-                                    )
-                                )
-                                val result = jfc.showOpenDialog(this@EditLadderDiagram)
-                                if (result != JFileChooser.APPROVE_OPTION) {
-                                    return
-                                }
-
-                                try {
-                                    // We have to load the image to get the correct dimensions
-                                    // ImageIcon icon = new ImageIcon(source, source.toString());
-                                    // Rebuild the paramter descriptions
-                                    pd[0].value = jfc.selectedFile.toURI().toURL()
-                                    // fpds[1].value = new Integer(icon.getIconWidth());
-                                    // fpds[2].value = new Integer(icon.getIconHeight());
-                                    // fpds[1].default_value = fpds[1].value;
-                                    // fpds[2].default_value = fpds[2].value;
-                                    // Remake the parameter panal with new default values.
-                                    makeParametersPanel(jp, pd)
-                                    ((jp.getTopLevelAncestor()) as JDialog).pack()
-                                } catch (_: MalformedURLException) {
-                                    // This should never happen
-                                    handleFatalException(
-                                        JuggleExceptionUser(errorstrings.getString("Error_malformed_URL."))
-                                    )
-                                }
-                            }
-                        })
-                    // Add the icon to the panel
-                    pdp.add(label)
-                    gb.setConstraints(
-                        label,
-                        constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 5, 0))
-                    )
-                    dialogControls!!.add(label)
-                }
-            }
-
-            jp.add(pdp)
+        for (i in pd.indices) {
+            val lab = JLabel(pd[i].name)
+            pdp.add(lab)
             gb.setConstraints(
-                pdp, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(10, 10, 0, 10))
+                lab, constraints(GridBagConstraints.LINE_START, 0, i, Insets(0, 0, 0, 0))
             )
+            if (pd[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
+                // JComboBox jcb = new JComboBox(booleanList);
+                val jcb = JCheckBox()
+                pdp.add(jcb)
+                gb.setConstraints(
+                    jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(2, 5, 2, 0))
+                )
+                dialogControls!!.add(jcb)
+                val def = (pd[i].value) as Boolean
+                // jcb.setSelectedIndex(def ? 0 : 1);
+                jcb.setSelected(def)
+            } else if (pd[i].type == ParameterDescriptor.TYPE_FLOAT) {
+                val tf = JTextField(7)
+                pdp.add(tf)
+                gb.setConstraints(
+                    tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                )
+                dialogControls!!.add(tf)
+                val def = (pd[i].value) as Double?
+                tf.text = def.toString()
+            } else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
+                val choices = pd[i].range!!.toTypedArray()
+                val jcb = JComboBox(choices)
+                jcb.setMaximumRowCount(15)
+                pdp.add(jcb)
+                gb.setConstraints(
+                    jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                )
+                dialogControls!!.add(jcb)
+
+                val `val` = (pd[i].value) as String?
+                for (j in choices.indices) {
+                    if (`val`.equals(choices[j], ignoreCase = true)) {
+                        jcb.setSelectedIndex(j)
+                        break
+                    }
+                }
+            } else if (pd[i].type == ParameterDescriptor.TYPE_INT) {
+                val tf = JTextField(4)
+                pdp.add(tf)
+                gb.setConstraints(
+                    tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                )
+                dialogControls!!.add(tf)
+                val def = (pd[i].value) as Int?
+                tf.text = def.toString()
+
+                tf.addCaretListener { _: CaretEvent? -> }
+            } else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
+                val label = JLabel("Hello")
+
+                /*
+                val fpd = pd[i]
+                val filename = fpd.value as URL?
+
+                val icon = ImageIcon(filename, filename.toString())
+                // Scale the image down if it's too big
+                val maxHeight = 100f
+                if (icon.iconHeight > maxHeight) {
+                    val scaleFactor = maxHeight / icon.iconHeight
+                    val height = (scaleFactor * icon.iconHeight).toInt()
+                    val width = (scaleFactor * icon.iconWidth).toInt()
+                    icon.setImage(
+                        icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH)
+                    )
+                }
+                val label = JLabel(icon)
+
+                // Clicking on the icon launches a file chooser for getting a new image
+                label.addMouseListener(
+                    object : MouseAdapter() {
+                        override fun mouseClicked(e: MouseEvent?) {
+                            jfc.setFileFilter(
+                                FileNameExtensionFilter(
+                                    "Image file",
+                                    "jpg",
+                                    "jpeg",
+                                    "gif",
+                                    "png"
+                                )
+                            )
+                            val result = jfc.showOpenDialog(this@EditLadderDiagram)
+                            if (result != JFileChooser.APPROVE_OPTION) {
+                                return
+                            }
+
+                            try {
+                                // We have to load the image to get the correct dimensions
+                                // ImageIcon icon = new ImageIcon(source, source.toString());
+                                // Rebuild the paramter descriptions
+                                pd[0].value = jfc.selectedFile.toURI().toURL()
+                                // fpds[1].value = new Integer(icon.getIconWidth());
+                                // fpds[2].value = new Integer(icon.getIconHeight());
+                                // fpds[1].default_value = fpds[1].value;
+                                // fpds[2].default_value = fpds[2].value;
+                                // Remake the parameter panal with new default values.
+                                makeParametersPanel(jp, pd)
+                                ((jp.getTopLevelAncestor()) as JDialog).pack()
+                            } catch (_: MalformedURLException) {
+                                // This should never happen
+                                handleFatalException(
+                                    JuggleExceptionUser(errorstrings.getString("Error_malformed_URL."))
+                                )
+                            }
+                        }
+                    })
+                  */
+                // Add the icon to the panel
+                pdp.add(label)
+                gb.setConstraints(
+                    label,
+                    constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 5, 0))
+                )
+                dialogControls!!.add(label)
+            }
         }
+
+        jp.add(pdp)
+        gb.setConstraints(
+            pdp, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(10, 10, 0, 10))
+        )
     }
 
     @get:Throws(JuggleExceptionUser::class)
@@ -1624,12 +1628,14 @@ class EditLadderDiagram(
                         throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_ICON) {
+                    /*
                     val label = control as JLabel
                     val icon = label.icon as ImageIcon
                     val def: String = dialog[i].defaultValue.toString()
                     if (icon.getDescription() != def) {
                         term = icon.getDescription() // This contains the URL string
-                    }
+                    }*/
+                    term = dialog[i].defaultValue.toString()
                 }
 
                 if (term != null) {
