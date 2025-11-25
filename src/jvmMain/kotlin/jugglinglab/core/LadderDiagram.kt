@@ -14,6 +14,7 @@ import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
 import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.toAwtColor
 import java.awt.*
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -652,7 +653,7 @@ open class LadderDiagram(p: JMLPattern) :
                         // color ball representation with the prop's color
                         val tr = item.event!!.getTransition(item.transnum)
                         val propnum = animpropnum[tr.path - 1]
-                        gr.color = pat.getProp(propnum).getEditorColor()
+                        gr.color = pat.getProp(propnum).getEditorColor().toAwtColor()
                     }
                     gr.fillOval(
                         item.xlow,

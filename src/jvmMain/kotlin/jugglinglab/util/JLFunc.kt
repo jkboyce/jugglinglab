@@ -13,6 +13,8 @@ package jugglinglab.util
 import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.JugglingLab.guistrings
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import java.text.*
@@ -21,6 +23,14 @@ import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.math.min
+
+// Helper extension function to convert Compose Color to AWT Color.
+
+fun Color.toAwtColor(): java.awt.Color {
+    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
+    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
+    return java.awt.Color(this.toArgb(), true)
+}
 
 //------------------------------------------------------------------------------
 // Helpers for converting numbers to/from strings

@@ -12,6 +12,7 @@
 
 package jugglinglab.renderer
 
+import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.Coordinate
@@ -508,12 +509,10 @@ class Renderer2D : Renderer() {
                     val y = ob.coord[0].y.roundToInt()
                     val propimage = pr.getProp2DImage(zoom, cameraangle)
                     if (propimage != null) {
-                        val grip = pr.getProp2DGrip(zoom)
-                        g.drawImage(propimage, x - grip!!.width, y - grip.height, null)
-                    } /* else {
-                        g.setColor(pr.getEditorColor());
-                        draw3DProp(ob.object, g);
-                    } */
+                        val grip = pr.getProp2DGrip(zoom)!!
+                        // TODO: It's inefficient to call toAwtImage() on every draw
+                        g.drawImage(propimage.toAwtImage(), x - grip.width, y - grip.height, null)
+                    }
                 }
 
                 DrawObject2D.TYPE_BODY -> {

@@ -13,10 +13,12 @@ import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Image
-import java.awt.image.BufferedImage
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.geometry.Rect
 import kotlin.math.max
 import kotlin.math.min
 
@@ -26,11 +28,11 @@ class BallProp : Prop() {
     private var colornum: Int = COLORNUM_DEF
     private var highlight: Boolean = HIGHLIGHT_DEF
 
-    private var ballimage: BufferedImage? = null
+    private var ballimage: ImageBitmap? = null
     private var lastzoom: Double = 0.0
-    private var size: Dimension? = null
-    private var center: Dimension? = null
-    private var grip: Dimension? = null
+    private var size: IntSize? = null
+    private var center: IntSize? = null
+    private var grip: IntSize? = null
 
     override val type = "Ball"
 
@@ -153,7 +155,7 @@ class BallProp : Prop() {
         return diam
     }
 
-    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): Image? {
+    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
         if (ballimage == null || zoom != lastzoom) {
             // first call or display resized?
             recalc2D(zoom)
@@ -161,7 +163,7 @@ class BallProp : Prop() {
         return ballimage
     }
 
-    override fun getProp2DSize(zoom: Double): Dimension? {
+    override fun getProp2DSize(zoom: Double): IntSize? {
         if (size == null || zoom != lastzoom) {
             // first call or display resized?
             recalc2D(zoom)
@@ -169,14 +171,14 @@ class BallProp : Prop() {
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): Dimension? {
+    override fun getProp2DCenter(zoom: Double): IntSize? {
         if (center == null || zoom != lastzoom) {
             recalc2D(zoom)
         }
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): Dimension? {
+    override fun getProp2DGrip(zoom: Double): IntSize? {
         if (grip == null || zoom != lastzoom) {
             // first call or display resized?
             recalc2D(zoom)
@@ -188,63 +190,61 @@ class BallProp : Prop() {
         var ballPixelSize = (0.5 + zoom * diam).toInt()
         ballPixelSize = max(ballPixelSize, 1)
 
-        // create a ball image of diameter ball_pixel_size, and transparent background
-        ballimage = BufferedImage(
-            ballPixelSize + 1, ballPixelSize + 1, BufferedImage.TYPE_INT_ARGB_PRE
-        )
-        val ballg = ballimage!!.createGraphics()
+        // Create a ball image of diameter ball_pixel_size with a transparent background
+        val image = ImageBitmap(ballPixelSize + 1, ballPixelSize + 1)
+        val canvas = Canvas(image)
+        val paint = Paint()
 
-        /*
-        ballg.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                               RenderingHints.VALUE_ANTIALIAS_ON);
-        */
         if (highlight) {
             val highlightOvals = ballPixelSize / 1.2f // Number of concentric circles to draw.
-            val rgb = FloatArray(4)
-            rgb[0] = color.red.toFloat() / 255f
-            rgb[1] = color.green.toFloat() / 255f
-            rgb[2] = color.blue.toFloat() / 255f
-            rgb[3] = color.alpha.toFloat() / 255f
+            // Make the base color a little darker for contrast
+            var currentColor = Color(
+                red = color.red / 2.5f,
+                green = color.green / 2.5f,
+                blue = color.blue / 2.5f,
+                alpha = color.alpha
+            )
 
-            // make the color a little darker so that there is some contrast
-            for (i in 0..2) {
-                rgb[i] = rgb[i] / 2.5f
-            }
+            paint.color = currentColor
+            canvas.drawOval(
+                rect = Rect(0f, 0f, ballPixelSize.toFloat(), ballPixelSize.toFloat()),
+                paint = paint
+            )
 
-            ballg.color = Color(rgb[0], rgb[1], rgb[2], rgb[3])
-            ballg.fillOval(0, 0, ballPixelSize, ballPixelSize) // Full sized ellipse.
+            // Draw the highlight as a series of concentric, lighter ovals
+            for (i in 0 until highlightOvals.toInt()) {
+                // Progressively lighten the color towards white
+                currentColor = Color(
+                    red = min(currentColor.red + (1f / highlightOvals), 1f),
+                    green = min(currentColor.green + (1f / highlightOvals), 1f),
+                    blue = min(currentColor.blue + (1f / highlightOvals), 1f),
+                    alpha = currentColor.alpha
+                )
+                paint.color = currentColor
 
-            // draw the highlight on the ball
-            var i = 0
-            while (i < highlightOvals) {
-                // Calculate the new color
-                for (j in 0..2) {
-                    rgb[j] = min(rgb[j] + (1f / highlightOvals), 1f)
-                }
-                ballg.color = Color(rgb[0], rgb[1], rgb[2], rgb[3])
-                ballg.fillOval(
-                    (i / 1.1).toInt(),
-                    (i / 2.5).toInt(),  // literals control how fast highlight
-                    // moves right and down respectively.
-                    ballPixelSize - (i * 1.3).toInt(),  // these control how fast the
-                    ballPixelSize - (i * 1.3).toInt()
-                ) // highlight converges to a point.
-                i++
+                val left = (i / 1.1f)
+                val top = (i / 2.5f)
+                val size = ballPixelSize - (i * 1.3f)
+                canvas.drawOval(Rect(left, top, left + size, top + size), paint)
             }
         } else {
-            ballg.color = color
-            ballg.fillOval(0, 0, ballPixelSize, ballPixelSize)
+            paint.color = color
+            canvas.drawOval(
+                rect = Rect(0f, 0f, ballPixelSize.toFloat(), ballPixelSize.toFloat()),
+                paint = paint
+            )
         }
 
-        size = Dimension(ballPixelSize, ballPixelSize)
-        center = Dimension(ballPixelSize / 2, ballPixelSize / 2)
-        grip = Dimension(ballPixelSize / 2, ballPixelSize / 2)
+        ballimage = image
+        size = IntSize(ballPixelSize, ballPixelSize)
+        center = IntSize(ballPixelSize / 2, ballPixelSize / 2)
+        grip = IntSize(ballPixelSize / 2, ballPixelSize / 2)
 
         lastzoom = zoom
     }
 
     companion object {
-        private val COLOR_DEF: Color = Color.red
+        private val COLOR_DEF: Color = Color.Red
         private const val COLORNUM_DEF: Int = 9  // red
         private const val DIAM_DEF: Double = 10.0  // in cm
         private const val HIGHLIGHT_DEF: Boolean = false

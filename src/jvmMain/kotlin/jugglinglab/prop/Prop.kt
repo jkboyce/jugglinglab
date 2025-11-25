@@ -13,9 +13,9 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.getStringResource
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Image
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.ImageBitmap
 
 abstract class Prop {
     protected var initString: String? = null
@@ -47,13 +47,13 @@ abstract class Prop {
 
     abstract fun getWidth(): Double // prop width in cm
 
-    abstract fun getProp2DImage(zoom: Double, camangle: DoubleArray): Image?
+    abstract fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap?
 
-    abstract fun getProp2DSize(zoom: Double): Dimension?
+    abstract fun getProp2DSize(zoom: Double): IntSize?
 
-    abstract fun getProp2DCenter(zoom: Double): Dimension?
+    abstract fun getProp2DCenter(zoom: Double): IntSize?
 
-    abstract fun getProp2DGrip(zoom: Double): Dimension?
+    abstract fun getProp2DGrip(zoom: Double): IntSize?
 
     companion object {
         val builtinProps: List<String> = listOf(
@@ -93,18 +93,18 @@ abstract class Prop {
         )
 
         val COLOR_VALS: List<Color> = listOf(
-            Color(0, 0, 0, 0),
-            Color.black,
-            Color.blue,
-            Color.cyan,
-            Color.gray,
-            Color.green,
-            Color.magenta,
-            Color.orange,
-            Color.pink,
-            Color.red,
-            Color.white,
-            Color.yellow,
+            Color(0x00000000),
+            Color.Black,
+            Color.Blue,
+            Color.Cyan,
+            Color.Gray,
+            Color.Green,
+            Color.Magenta,
+            Color(0xFFFFC800),
+            Color(0xFFFFAFAF),
+            Color.Red,
+            Color.White,
+            Color.Yellow,
         )
 
         val COLOR_MIXED: List<String> = listOf(

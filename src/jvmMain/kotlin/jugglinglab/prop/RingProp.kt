@@ -13,11 +13,13 @@ import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
-import java.awt.AlphaComposite
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Image
-import java.awt.image.BufferedImage
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.BlendMode
 import kotlin.math.*
 
 class RingProp : Prop() {
@@ -25,12 +27,12 @@ class RingProp : Prop() {
     private var insideDiam: Double = INSIDE_DIAM_DEF
     private var color: Color = COLOR_DEF
     private var colornum: Int = COLORNUM_DEF
-    private var image: BufferedImage? = null
+    private var image: ImageBitmap? = null
     private var lastzoom: Double = 0.0
     private var lastcamangle: DoubleArray = doubleArrayOf(0.0, 0.0)
-    private var size: Dimension? = null
-    private var center: Dimension? = null
-    private var grip: Dimension? = null
+    private var size: IntSize? = null
+    private var center: IntSize? = null
+    private var grip: IntSize? = null
     private lateinit var px: IntArray
     private lateinit var py: IntArray
 
@@ -168,7 +170,7 @@ class RingProp : Prop() {
         return 0.05 * outsideDiam
     }
 
-    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): Image? {
+    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
         if (image == null || zoom != lastzoom || camangle[0] != lastcamangle[0] ||
             camangle[1] != lastcamangle[1]
         ) {
@@ -178,7 +180,7 @@ class RingProp : Prop() {
         return image
     }
 
-    override fun getProp2DSize(zoom: Double): Dimension? {
+    override fun getProp2DSize(zoom: Double): IntSize? {
         if (size == null || zoom != lastzoom) {
             // first call or display resized?
             redrawImage(zoom, lastcamangle)
@@ -186,7 +188,7 @@ class RingProp : Prop() {
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): Dimension? {
+    override fun getProp2DCenter(zoom: Double): IntSize? {
         if (center == null || zoom != lastzoom) {
             // first call or display resized?
             redrawImage(zoom, lastcamangle)
@@ -194,7 +196,7 @@ class RingProp : Prop() {
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): Dimension? {
+    override fun getProp2DGrip(zoom: Double): IntSize? {
         if (grip == null || zoom != lastzoom) {
             // first call or display resized?
             redrawImage(zoom, lastcamangle)
@@ -258,36 +260,49 @@ class RingProp : Prop() {
 
         val bbwidth = pxmax - pxmin + 1
         val bbheight = pymax - pymin + 1
-        size = Dimension(bbwidth, bbheight)
+        size = IntSize(bbwidth, bbheight)
 
-        image = BufferedImage(bbwidth, bbheight, BufferedImage.TYPE_INT_ARGB_PRE)
-        val g = image!!.createGraphics()
+        val resultImage = ImageBitmap(bbwidth, bbheight)
+        val canvas = Canvas(resultImage)
+        val paint = Paint()  /*.apply {
+            isAntiAlias = true
+        } */
 
-        /*
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                           RenderingHints.VALUE_ANTIALIAS_ON);
-        */
-        g.color = color
+        // Draw the outer ring polygon
+        paint.color = color
+        val outerPath = Path()
         for (i in 0..<POLYSIDES) {
             px[i] -= pxmin
             py[i] -= pymin
+            if (i == 0) {
+                outerPath.moveTo(px[i].toFloat(), py[i].toFloat())
+            } else {
+                outerPath.lineTo(px[i].toFloat(), py[i].toFloat())
+            }
         }
-        g.fillPolygon(px, py, POLYSIDES)
+        canvas.drawPath(outerPath, paint)
 
-        // make the transparent hole in the center
-        g.composite = AlphaComposite.Src
-        g.color = Color(1f, 1f, 1f, 0f)
+        // Draw the transparent hole in the center
+        paint.color = Color.Transparent
+        paint.blendMode = BlendMode.Src
 
+        val innerPath = Path()
         for (i in 0..<POLYSIDES) {
             val theta = i.toDouble() * 2.0 * Math.PI / POLYSIDES.toDouble()
             val x = insideWidth.toDouble() * cos(theta) * 0.5
             val y = insideHeight.toDouble() * sin(theta) * 0.5
             px[i] = (ca * x - sa * y + 0.5).toInt() - pxmin
             py[i] = (ca * y + sa * x + 0.5).toInt() - pymin
+            if (i == 0) {
+                innerPath.moveTo(px[i].toFloat(), py[i].toFloat())
+            } else {
+                innerPath.lineTo(px[i].toFloat(), py[i].toFloat())
+            }
         }
-        g.fillPolygon(px, py, POLYSIDES)
+        canvas.drawPath(innerPath, paint)
 
-        center = Dimension(bbwidth / 2, bbheight / 2)
+        image = resultImage
+        center = IntSize(bbwidth / 2, bbheight / 2)
 
         val gripx = if (s0 < 0) (bbwidth - 1) else 0
         val bbw = sa * sa + ca * ca * abs(s0 * s1)
@@ -297,14 +312,14 @@ class RingProp : Prop() {
             d = -d
         }
         val gripy = (outsidePixelDiam.toDouble() * d).toInt() + bbheight / 2
-        grip = Dimension(gripx, gripy)
+        grip = IntSize(gripx, gripy)
 
         lastzoom = zoom
         lastcamangle = doubleArrayOf(camangle[0], camangle[1])
     }
 
     companion object {
-        private val COLOR_DEF: Color = Color.red
+        private val COLOR_DEF: Color = Color.Red
         private const val COLORNUM_DEF: Int = 9 // red
         private const val OUTSIDE_DIAM_DEF: Double = 25.0 // in cm
         private const val INSIDE_DIAM_DEF: Double = 20.0 // in cm

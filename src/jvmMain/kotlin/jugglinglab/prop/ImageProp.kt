@@ -13,25 +13,29 @@ import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
-import java.awt.*
-import java.awt.image.BufferedImage
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.Image
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
-import javax.imageio.ImageIO
 import kotlin.math.max
 
 class ImageProp : Prop() {
     private var url: URL?
-    private var image: BufferedImage? = null
-    private var scaledImage: BufferedImage? = null
+    private var image: ImageBitmap? = null
+    private var scaledImage: ImageBitmap? = null
     private var width: Double = 0.0
     private var height: Double = 0.0
-    private var size: Dimension? = null
-    private var center: Dimension? = null
-    private var grip: Dimension? = null
+    private var size: IntSize? = null
+    private var center: IntSize? = null
+    private var grip: IntSize? = null
     private var lastZoom = 0.0
 
     init {
@@ -44,23 +48,11 @@ class ImageProp : Prop() {
     @Throws(JuggleExceptionUser::class)
     private fun loadImage() {
         try {
-            val mt = MediaTracker(object : Component() {})
-            image = ImageIO.read(url)
-            mt.addImage(image, 0)
-            // Try to laod the image
-            try {
-                mt.waitForAll()
-            } catch (_: InterruptedException) {
-            }
+            // Use a pure Kotlin/Skia way to load the image from a URL stream
+            val loadedImage = url!!.openStream().use { Image.makeFromEncoded(it.readBytes()).toComposeImageBitmap() }
+            image = loadedImage
 
-            if (mt.isErrorAny()) {
-                image = null
-                // This could also be bad image data, but it is usually a nonexistent file.
-                val message = getStringResource(Res.string.error_bad_file)
-                throw JuggleExceptionUser(message)
-            }
-
-            val aspectRatio = (image!!.height.toDouble()) / (image!!.width.toDouble())
+            val aspectRatio = (loadedImage.height.toDouble()) / (loadedImage.width.toDouble())
             width = WIDTH_DEF
             height = WIDTH_DEF * aspectRatio
         } catch (_: IOException) {
@@ -75,33 +67,26 @@ class ImageProp : Prop() {
     private fun rescaleImage(zoom: Double) {
         val imagePixelWidth = max((0.5 + zoom * width).toInt(), 1)
         val imagePixelHeight = max((0.5 + zoom * height).toInt(), 1)
-        size = Dimension(imagePixelWidth, imagePixelHeight)
-        center = Dimension(imagePixelWidth / 2, imagePixelHeight / 2)
-
-        val offsetx = imagePixelWidth / 2
-        val offsety = imagePixelHeight
-        grip = Dimension(offsetx, offsety)
+        size = IntSize(imagePixelWidth, imagePixelHeight)
+        center = IntSize(imagePixelWidth / 2, imagePixelHeight / 2)
+        grip = IntSize(imagePixelWidth / 2, imagePixelHeight)
 
         lastZoom = zoom
 
-        scaledImage = BufferedImage(imagePixelWidth, imagePixelHeight, image!!.type)
-        val g = scaledImage!!.createGraphics()
-        g.setRenderingHint(
-            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR
+        // Create a new ImageBitmap and use a Canvas to draw the scaled original onto it
+        val originalImage = image ?: return
+        val newImage = ImageBitmap(imagePixelWidth, imagePixelHeight)
+        val canvas = Canvas(newImage)
+        val paint = Paint().apply {
+            // Use medium quality for smooth scaling, similar to bilinear interpolation.
+            filterQuality = androidx.compose.ui.graphics.FilterQuality.Medium
+        }
+        canvas.drawImageRect(
+            image = originalImage,
+            dstSize = IntSize(imagePixelWidth, imagePixelHeight),
+            paint = paint
         )
-        g.drawImage(
-            image,
-            0,
-            0,
-            imagePixelWidth,
-            imagePixelHeight,
-            0,
-            0,
-            image!!.width,
-            image!!.height,
-            null
-        )
-        g.dispose()
+        scaledImage = newImage
     }
 
     override val type = "Image"
@@ -111,7 +96,7 @@ class ImageProp : Prop() {
     override fun getEditorColor(): Color {
         // The color that shows up in the visual editor
         // We could try to get an average color for the image
-        return Color.white
+        return Color.White
     }
 
     override fun getParameterDescriptors(): List<ParameterDescriptor> {
@@ -160,7 +145,7 @@ class ImageProp : Prop() {
                 val temp = jlParseFiniteDouble(widthstr)
                 if (temp > 0) {
                     width = temp
-                    val aspectRatio = (image!!.getHeight(null).toDouble()) / (image!!.getWidth(null).toDouble())
+                    val aspectRatio = (image!!.height.toDouble()) / (image!!.width.toDouble())
                     height = width * aspectRatio
                 } else {
                     throw NumberFormatException()
@@ -172,7 +157,7 @@ class ImageProp : Prop() {
         }
     }
 
-    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): Image? {
+    override fun getProp2DImage(zoom: Double, camangle: DoubleArray): ImageBitmap? {
         if (zoom != lastZoom) {
             rescaleImage(zoom)
         }
@@ -191,21 +176,21 @@ class ImageProp : Prop() {
         return width
     }
 
-    override fun getProp2DSize(zoom: Double): Dimension? {
+    override fun getProp2DSize(zoom: Double): IntSize? {
         if (size == null || zoom != lastZoom) {
             rescaleImage(zoom)
         }
         return size
     }
 
-    override fun getProp2DCenter(zoom: Double): Dimension? {
+    override fun getProp2DCenter(zoom: Double): IntSize? {
         if (center == null || zoom != lastZoom) {
             rescaleImage(zoom)
         }
         return center
     }
 
-    override fun getProp2DGrip(zoom: Double): Dimension? {
+    override fun getProp2DGrip(zoom: Double): IntSize? {
         if (grip == null || zoom != lastZoom) {
             rescaleImage(zoom)
         }
