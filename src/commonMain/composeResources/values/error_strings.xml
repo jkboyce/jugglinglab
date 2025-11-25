@@ -98,7 +98,7 @@
     <string name="error_badpattern_delay">Pattern is not valid: delay symmetry not valid</string>
     <string name="error_badpattern_switchdelay">Pattern is not valid: switchdelay symmetry not valid</string>
     <string name="error_unknown_symmetry">Unrecognized symmetry type</string>
-    <string name="error_modifier_on_0">Can"t add modifier "%1$s" to 0 throw on beat %2$d</string>
+    <string name="error_modifier_on_0">Can't add modifier "%1$s" to 0 throw on beat %2$d</string>
     <string name="error_bps_value">Number format error in "bps" value</string>
     <string name="error_dwell_value">Number format error in "dwell" value</string>
     <string name="error_dwell_range">"Dwell" value should be between 0 and 2</string>
@@ -141,7 +141,7 @@
     <string name="error_could_not_launch_editor">Could not launch editor</string>
     <string name="error_no_pattern_specified">No pattern specified</string>
     <string name="error_malformed_url">Malformed URL</string>
-    <string name="error_bad_file">Unable to open file</string>
+    <string name="error_bad_file">Problem opening file: %1$s</string>
     <string name="error_security_restriction">Java security manager will not allow Juggling Lab to access the remote file</string>
     <string name="error_pattern_parsing">Pattern error: %1$s</string>
     <string name="error_pattern_syntax">Cannot parse character "%1$s" at position %2$d in the pattern</string>

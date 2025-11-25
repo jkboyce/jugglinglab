@@ -28,7 +28,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // Compose Multiplatform dependencies
+            // Compose Multiplatform
             implementation(compose.runtime)
             //implementation(compose.foundation)
             //implementation(compose.material3)
@@ -37,19 +37,17 @@ kotlin {
             //implementation(compose.components.uiToolingPreview)
             //implementation(libs.androidx.lifecycle.viewmodelCompose)
             //implementation(libs.androidx.lifecycle.runtimeCompose)
-
-            // Juggling Lab specific dependencies
+            // Juggling Lab specific
             implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
-            // Compose Multiplatform dependencies
+            // Compose Multiplatform
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-
-            // Juggling Lab specific dependencies
+            // Juggling Lab specific
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
         }
         jvmTest.dependencies {
