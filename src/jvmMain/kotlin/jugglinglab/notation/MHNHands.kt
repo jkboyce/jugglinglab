@@ -8,10 +8,9 @@
 
 package jugglinglab.notation
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.*
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import java.text.MessageFormat
 
 class MHNHands(str: String) {
     var numberOfJugglers: Int
@@ -49,10 +48,12 @@ class MHNHands(str: String) {
                         'T', 't' -> {
                             // marks a throw
                             if (coordTokens.isNotEmpty()) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_Tnotstart"))
+                                val message = getStringResource(Res.string.error_hands_tnotstart)
+                                throw JuggleExceptionUser(message)
                             }
                             if (gotThrow) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycoords"))
+                                val message = getStringResource(Res.string.error_hands_toomanycoords)
+                                throw JuggleExceptionUser(message)
                             }
                             gotThrow = true
                             ++pos
@@ -60,10 +61,12 @@ class MHNHands(str: String) {
                         'C', 'c' -> {
                             // marks a catch
                             if (coordTokens.isEmpty()) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_Catstart"))
+                                val message = getStringResource(Res.string.error_hands_catstart)
+                                throw JuggleExceptionUser(message)
                             }
                             if (catchIndex != -1) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_toomanycatches"))
+                                val message = getStringResource(Res.string.error_hands_toomanycatches)
+                                throw JuggleExceptionUser(message)
                             }
                             catchIndex = coordTokens.size
                             ++pos
@@ -72,7 +75,8 @@ class MHNHands(str: String) {
                             // position coordinate specified
                             val closeIndex = beatStr.indexOf(')', pos + 1)
                             if (closeIndex < 0) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_noparen"))
+                                val message = getStringResource(Res.string.error_hands_noparen)
+                                throw JuggleExceptionUser(message)
                             }
 
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
@@ -85,28 +89,31 @@ class MHNHands(str: String) {
                                 coord[1] = parts.getOrElse(2) { 0.0 }
                                 coordTokens.add(coord)
                             } catch (_: NumberFormatException) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_hands_coordinate"))
+                                val message = getStringResource(Res.string.error_hands_coordinate)
+                                throw JuggleExceptionUser(message)
                             }
                             pos = closeIndex + 1
                         }
                         else -> {
-                            val template: String = errorstrings.getString("Error_hands_character")
-                            val arguments = arrayOf<Any?>(ch.toString())
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(Res.string.error_hands_character, ch.toString())
+                            throw JuggleExceptionUser(message)
                         }
                     }
                 }
 
                 if (coordTokens.size < 2) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_hands_toofewcoords"))
+                    val message = getStringResource(Res.string.error_hands_toofewcoords)
+                    throw JuggleExceptionUser(message)
                 }
                 if (coordTokens[0] == null) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_hands_nothrow"))
+                    val message = getStringResource(Res.string.error_hands_nothrow)
+                    throw JuggleExceptionUser(message)
                 }
 
                 val finalCatchIndex = if (catchIndex != -1) catchIndex else coordTokens.size - 1
                 if (coordTokens[finalCatchIndex] == null) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_hands_nocatch"))
+                    val message = getStringResource(Res.string.error_hands_nocatch)
+                    throw JuggleExceptionUser(message)
                 }
 
                 Triple(coordTokens.size, finalCatchIndex, coordTokens.toTypedArray())
