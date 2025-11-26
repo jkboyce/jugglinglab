@@ -258,8 +258,8 @@ class SplineCurve : Curve() {
             //    2 for each natural catch (Lagrange multipliers for constraints)
             val dim = 3 * (n - 1) + 2 * numcatches
 
-            val m = mk.zeros<Double>(dim, dim)  //Array(dim) { DoubleArray(dim) }
-            val b = mk.zeros<Double>(dim)  //DoubleArray(dim)
+            val m = mk.zeros<Double>(dim, dim)
+            val b = mk.zeros<Double>(dim)
 
             for (axis in 0..2) {
                 val v0 = v[0]!![axis]
@@ -378,7 +378,6 @@ class SplineCurve : Curve() {
 
             try {
                 val solution = mk.linalg.solve(m, b)
-
                 for (i in 0..<n - 1) {
                     v[i + 1] = Coordinate(
                         solution[i],
@@ -387,7 +386,7 @@ class SplineCurve : Curve() {
                     )
                 }
             } catch (_: Exception) { // multik can throw different exception types
-                throw JuggleExceptionInternal("Singular matrix in findvelsEdgesKnown()")
+                throw JuggleExceptionInternal("Multik exception in findvelsEdgesKnown()")
             }
         }
 
@@ -464,9 +463,6 @@ class SplineCurve : Curve() {
                     }
                 }
 
-                // System.out.println("\nBeginning solution.  RHS:");
-                // for (int i = 0; i < n; i++)
-                //     System.out.println("  b["+i+"] = "+b[i]);
                 val vel = DoubleArray(n) { v[it]!![axis] }
 
                 // Woodbury's formula: First solve the problem ignoring A's nonzero corners
