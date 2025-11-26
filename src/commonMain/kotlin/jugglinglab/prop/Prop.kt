@@ -36,7 +36,7 @@ abstract class Prop {
 
     abstract fun getEditorColor(): Color
 
-    abstract fun getParameterDescriptors(): List<ParameterDescriptor>
+    abstract val parameterDescriptors: List<ParameterDescriptor>
 
     @Throws(JuggleExceptionUser::class)
     protected abstract fun init(st: String?)

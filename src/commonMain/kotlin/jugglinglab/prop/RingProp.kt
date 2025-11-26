@@ -44,8 +44,8 @@ class RingProp : Prop() {
         return color
     }
 
-    override fun getParameterDescriptors(): List<ParameterDescriptor> {
-        return listOf(
+    override val parameterDescriptors
+        get() = listOf(
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
@@ -68,7 +68,6 @@ class RingProp : Prop() {
                 insideDiam
             ),
         )
-    }
 
     @Throws(JuggleExceptionUser::class)
     override fun init(st: String?) {

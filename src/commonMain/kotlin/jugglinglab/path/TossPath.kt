@@ -73,7 +73,13 @@ class TossPath : Path() {
 
     override val parameterDescriptors
         get() = listOf(
-            ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
+            ParameterDescriptor(
+                "g",
+                ParameterDescriptor.TYPE_FLOAT,
+                null,
+                G_DEF,
+                g
+            ),
         )
 
     override val startVelocity

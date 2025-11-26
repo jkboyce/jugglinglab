@@ -322,12 +322,48 @@ class BouncePath : Path() {
 
     override val parameterDescriptors
         get() = listOf(
-            ParameterDescriptor("bounces", ParameterDescriptor.TYPE_INT, null, BOUNCES_DEF, bounces),
-            ParameterDescriptor("forced", ParameterDescriptor.TYPE_BOOLEAN, null, FORCED_DEF, forced),
-            ParameterDescriptor("hyper", ParameterDescriptor.TYPE_BOOLEAN, null, HYPER_DEF, hyper),
-            ParameterDescriptor("bounceplane", ParameterDescriptor.TYPE_FLOAT, null, BOUNCEPLANE_DEF, bounceplane),
-            ParameterDescriptor("bouncefrac", ParameterDescriptor.TYPE_FLOAT, null, BOUNCEFRAC_DEF, bouncefrac),
-            ParameterDescriptor("g", ParameterDescriptor.TYPE_FLOAT, null, G_DEF, g)
+            ParameterDescriptor(
+                "bounces",
+                ParameterDescriptor.TYPE_INT,
+                null,
+                BOUNCES_DEF,
+                bounces
+            ),
+            ParameterDescriptor(
+                "forced",
+                ParameterDescriptor.TYPE_BOOLEAN,
+                null,
+                FORCED_DEF,
+                forced
+            ),
+            ParameterDescriptor(
+                "hyper",
+                ParameterDescriptor.TYPE_BOOLEAN,
+                null,
+                HYPER_DEF,
+                hyper
+            ),
+            ParameterDescriptor(
+                "bounceplane",
+                ParameterDescriptor.TYPE_FLOAT,
+                null,
+                BOUNCEPLANE_DEF,
+                bounceplane
+            ),
+            ParameterDescriptor(
+                "bouncefrac",
+                ParameterDescriptor.TYPE_FLOAT,
+                null,
+                BOUNCEFRAC_DEF,
+                bouncefrac
+            ),
+            ParameterDescriptor(
+                "g",
+                ParameterDescriptor.TYPE_FLOAT,
+                null,
+                G_DEF,
+                g
+            ),
         )
 
     override val startVelocity

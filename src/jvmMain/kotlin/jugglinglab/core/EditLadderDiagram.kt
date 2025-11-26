@@ -1149,7 +1149,7 @@ class EditLadderDiagram(
                 } else {
                     newProp(type)
                 }
-                makeParametersPanel(p2, pt.getParameterDescriptors())
+                makeParametersPanel(p2, pt.parameterDescriptors)
             } catch (jeu: JuggleExceptionUser) {
                 handleUserException(jd, jeu.message)
                 return@addActionListener

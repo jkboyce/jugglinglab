@@ -50,8 +50,8 @@ class ImageProp : Prop() {
         return Color.White
     }
 
-    override fun getParameterDescriptors(): List<ParameterDescriptor> {
-        return listOf(
+    override val parameterDescriptors
+        get() = listOf(
             ParameterDescriptor(
                 "image",
                 ParameterDescriptor.TYPE_ICON,
@@ -67,7 +67,6 @@ class ImageProp : Prop() {
                 width
             ),
         )
-    }
 
     @Throws(JuggleExceptionUser::class)
     override fun init(st: String?) {
