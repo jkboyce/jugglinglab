@@ -2104,8 +2104,8 @@ class JMLPattern() {
     fun writeJML(wr: Writer, writeTitle: Boolean, writeInfo: Boolean) {
         val write = PrintWriter(wr)
 
-        for (i in JMLDefs.jmlprefix.indices) {
-            write.println(JMLDefs.jmlprefix[i])
+        for (i in JMLDefs.jmlPrefix.indices) {
+            write.println(JMLDefs.jmlPrefix[i])
         }
         write.println("<jml version=\"${xmlescape(version)}\">")
         write.println("<pattern>")
@@ -2174,8 +2174,8 @@ class JMLPattern() {
         write.println("</pattern>")
 
         write.println("</jml>")
-        for (i in JMLDefs.jmlsuffix.indices) {
-            write.println(JMLDefs.jmlsuffix[i])
+        for (i in JMLDefs.jmlSuffix.indices) {
+            write.println(JMLDefs.jmlSuffix[i])
         }
         write.flush()
     }

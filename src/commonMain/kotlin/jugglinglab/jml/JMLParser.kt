@@ -8,8 +8,11 @@
 
 package jugglinglab.jml
 
+import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
+import jugglinglab.jml.JMLDefs.jmlTaglist
 import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.getStringResource
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.parser.Parser
 import com.fleeksoft.ksoup.nodes.Node
@@ -41,7 +44,13 @@ class JMLParser {
 
         if (Constants.DEBUG_JML_PARSING) {
             println("JML parsing complete")
+            if (builder.error != null) {
+                println("*** Error: " + builder.error)
+            }
             println("--------------------------------------------")
+        }
+        if (builder.error != null) {
+            throw JuggleExceptionUser(builder.error!!)
         }
     }
 
@@ -92,6 +101,7 @@ class JMLParser {
 
 class JMLTreeBuilder : NodeVisitor {
     var root: JMLNode? = null
+    var error: String? = null
 
     // stack to track the current parent Element
     private val stack = ArrayDeque<JMLNode>()
@@ -101,9 +111,18 @@ class JMLTreeBuilder : NodeVisitor {
             if (Constants.DEBUG_JML_PARSING) {
                 val start = node.sourceRange().start()
                 println(
-                    "Read element: <${node.tagName()}> at line " +
+                    "Starting element: <${node.tagName()}> at line " +
                         "${start.lineNumber()}, column ${start.columnNumber()}"
                 )
+            }
+            if (node.tagName() != "#root" && node.tagName() !in jmlTaglist) {
+                if (error == null) {
+                    error = getStringResource(
+                        Res.string.error_unknown_tag_at_line,
+                        node.tagName(),
+                        node.sourceRange().start().lineNumber()
+                    )
+                }
             }
 
             val myNode = JMLNode(node.tagName())
@@ -153,6 +172,13 @@ class JMLTreeBuilder : NodeVisitor {
 
     override fun tail(node: Node, depth: Int) {
         if (node is Element) {
+            if (Constants.DEBUG_JML_PARSING) {
+                val end = node.sourceRange().end()
+                println(
+                    "Ending element: <${node.tagName()}> at line " +
+                        "${end.lineNumber()}, column ${end.columnNumber()}"
+                )
+            }
             stack.removeLast()
         }
     }

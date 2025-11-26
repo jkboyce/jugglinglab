@@ -68,7 +68,8 @@
     <string name="error_prop_assignments">Wrong number of prop assignments in &lt;setup&gt; tag</string>
     <string name="error_prop_number">Prop number out of range in &lt;setup&gt; tag</string>
     <string name="error_prop_format">Number format error prop assignment in &lt;setup&gt; tag</string>
-    <string name="error_unknown_tag">Unknown tag "%1$s"</string>
+    <string name="error_unknown_tag">Unknown tag &lt;%1$s&gt;</string>
+    <string name="error_unknown_tag_at_line">Unknown tag &lt;%1$s&gt; at line %2$d</string>
     <string name="error_position_coordinate">Number format error in &lt;position&gt; coordinate value</string>
     <string name="error_position_nojuggler">Must specify juggler in &lt;position&gt; tag</string>
     <string name="error_position_subtag">&lt;position&gt; tag cannot have subtags</string>

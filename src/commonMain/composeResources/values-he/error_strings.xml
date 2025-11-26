@@ -68,7 +68,8 @@
     <string name="error_prop_assignments">����� �� ����� �� ���� ������ ��� &lt;setup&gt;</string>
     <string name="error_prop_number">���� ����� ���� ����� ��� &lt;setup&gt;</string>
     <string name="error_prop_format">����� ������ ������ �� ����� ��� &lt;setup&gt;</string>
-    <string name="error_unknown_tag">�� ���� ���� "%1$s"</string>
+    <string name="error_unknown_tag">�� ���� ���� &lt;%1$s&gt;</string>
+    <string name="error_unknown_tag_at_line">�� ���� ���� &lt;%1$s&gt; at line %2$d</string>
     <string name="error_position_coordinate">����� ������ ����� ����������� � &lt;position&gt;</string>
     <string name="error_position_nojuggler">���� ����� �\'���� ��� &lt;position&gt;</string>
     <string name="error_position_subtag">��� &lt;position&gt; �� ���� ����� ��� ����</string>

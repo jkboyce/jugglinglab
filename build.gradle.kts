@@ -51,7 +51,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             // Juggling Lab specific
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
-            implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)

@@ -9,6 +9,7 @@ package jugglinglab.jml
 object JMLDefs {
     const val CURRENT_JML_VERSION: String = "3"
 
+    @Suppress("unused")
     const val JML_DTD: String = ("<!ELEMENT jml (pattern|patternlist)>\n"
             + "<!ATTLIST jml\n"
             + "          version  CDATA   \""
@@ -86,15 +87,15 @@ object JMLDefs {
             + "          animprefs  CDATA   #IMPLIED\n"
             + "          notation   CDATA   #IMPLIED>\n")
 
-    val jmlprefix: List<String> = listOf(
+    val jmlPrefix: List<String> = listOf(
         "<?xml version=\"1.0\"?>",
         "<!DOCTYPE jml SYSTEM \"file://jml.dtd\">",
     )
 
-    val jmlsuffix: List<String> = listOf()
+    val jmlSuffix: List<String> = listOf()
 
     @Suppress("unused")
-    val taglist: List<String> = listOf(
+    val jmlTaglist: List<String> = listOf(
         "jml",
         "pattern",
         "patternlist",

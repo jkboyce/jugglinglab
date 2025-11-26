@@ -12,7 +12,6 @@ package jugglinglab.jml
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLNode.Companion.xmlescape
-import jugglinglab.jml.JMLParser.Companion.JML_INVALID
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
@@ -243,8 +242,8 @@ class JMLPatternList() {
     @Throws(IOException::class)
     fun writeJML(wr: Writer) {
         val write = PrintWriter(wr)
-        for (i in JMLDefs.jmlprefix.indices) {
-            write.println(JMLDefs.jmlprefix[i])
+        for (i in JMLDefs.jmlPrefix.indices) {
+            write.println(JMLDefs.jmlPrefix[i])
         }
 
         write.println("<jml version=\"${xmlescape(version)}\">")
@@ -322,8 +321,8 @@ class JMLPatternList() {
 
         write.println("</patternlist>")
         write.println("</jml>")
-        for (i in JMLDefs.jmlsuffix.indices) {
-            write.println(JMLDefs.jmlsuffix[i])
+        for (i in JMLDefs.jmlSuffix.indices) {
+            write.println(JMLDefs.jmlSuffix[i])
         }
         write.flush()
     }
