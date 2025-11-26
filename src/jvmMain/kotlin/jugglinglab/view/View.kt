@@ -20,6 +20,7 @@ import jugglinglab.jml.JMLPattern
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
+import jugglinglab.util.JuggleExceptionInternalWithPattern
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.Dimension
 import java.io.File
@@ -69,9 +70,13 @@ abstract class View : JPanel() {
             patternWindow?.updateUndoMenu()
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
-            handleFatalException(JuggleExceptionInternal(jeu.message))
+            handleFatalException(
+                JuggleExceptionInternalWithPattern(jeu.message, p)
+            )
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            handleFatalException(
+                JuggleExceptionInternalWithPattern(jei.message, p)
+            )
         }
     }
 
