@@ -22,13 +22,15 @@
 
 package jugglinglab.util
 
-import jugglinglab.core.Constants
 import java.io.File
 
 object OpenFilesServer {
     // implemented types
     const val SERVER_MMF: Int = 1
     const val SERVER_SOCKETS: Int = 2
+
+    // type selected for use in Juggling Lab
+    const val OPEN_FILES_METHOD: Int = SERVER_MMF
 
     private var ofs_mmf: OpenFilesServerMMF? = null
     private var ofs_sockets: OpenFilesServerSockets? = null
@@ -37,7 +39,7 @@ object OpenFilesServer {
     // from other instances of Juggling Lab.
 
     fun startOpenFilesServer() {
-        when (Constants.OPEN_FILES_METHOD) {
+        when (OPEN_FILES_METHOD) {
             SERVER_MMF -> if (ofs_mmf == null) {
                 ofs_mmf = OpenFilesServerMMF()
             }
@@ -53,7 +55,7 @@ object OpenFilesServer {
     // Otherwise return false.
 
     fun tryOpenFile(f: File?): Boolean {
-        return when (Constants.OPEN_FILES_METHOD) {
+        return when (OPEN_FILES_METHOD) {
             SERVER_MMF -> OpenFilesServerMMF.tryOpenFile(f)
             SERVER_SOCKETS -> OpenFilesServerSockets.tryOpenFile(f)
             else -> false
