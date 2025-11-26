@@ -30,7 +30,6 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.OpenFilesServer
 import jugglinglab.util.ParameterList
-import org.xml.sax.SAXException
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.desktop.AboutEvent
@@ -471,11 +470,8 @@ object JugglingLab {
 
             val parser = JMLParser()
             try {
-                parser.parse(FileReader(file))
-            } catch (_: SAXException) {
-                ps.println("   Error: Formatting error in JML file")
-                ++errorCountCurrentFile
-            } catch (_: IOException) {
+                parser.parse(file.readText())
+            } catch (_: Exception) {
                 ps.println("   Error: Problem reading JML file")
                 ++errorCountCurrentFile
             }
@@ -573,7 +569,7 @@ object JugglingLab {
 
             try {
                 val parser = JMLParser()
-                parser.parse(FileReader(inpath.toFile()))
+                parser.parse(inpath.toFile().readText())
 
                 when (parser.fileType) {
                     JMLParser.JML_PATTERN -> return JMLPattern(parser.tree!!)
@@ -582,9 +578,7 @@ object JugglingLab {
                 }
             } catch (jeu: JuggleExceptionUser) {
                 println("Error parsing JML: ${jeu.message}")
-            } catch (_: SAXException) {
-                println("Error: Formatting error in JML file")
-            } catch (_: IOException) {
+            } catch (_: Exception) {
                 println("Error: Problem reading JML file from path $inpath")
             }
             return null

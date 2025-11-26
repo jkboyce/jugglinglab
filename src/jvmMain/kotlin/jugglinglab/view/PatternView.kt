@@ -19,7 +19,6 @@ import jugglinglab.util.constraints
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.File
-import java.io.StringReader
 import java.text.MessageFormat
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -213,7 +212,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
                 restartView(newpat, null)
                 addToUndoList(newpat)
             } else if (rbJml.isSelected) {
-                val newpat = JMLPattern(StringReader(ta.getText()))
+                val newpat = JMLPattern(ta.getText())
                 restartView(newpat, null)
                 addToUndoList(newpat)
             }

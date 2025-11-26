@@ -21,6 +21,7 @@ plugins {
 object Versions {
     const val ORTOOLS_VERSION = "9.4.1874"
     const val MULTIK_VERSION = "0.2.3"
+    const val KSOUP_VERSION = "0.2.5"
 }
 
 kotlin {
@@ -39,6 +40,7 @@ kotlin {
             //implementation(libs.androidx.lifecycle.runtimeCompose)
             // Juggling Lab specific
             implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
+            implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -49,6 +51,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             // Juggling Lab specific
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
+            implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)

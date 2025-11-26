@@ -22,7 +22,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileWriter
 import java.io.IOException
-import java.io.StringReader
 import java.io.StringWriter
 import java.text.MessageFormat
 import java.util.Locale
@@ -294,7 +293,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 val sw = StringWriter()
                 patternListPanel.patternList.writeJML(sw)
                 val parser = JMLParser()
-                parser.parse(StringReader(sw.toString()))
+                parser.parse(sw.toString())
                 val newplw = PatternListWindow(parser.tree!!)
                 newplw.patternListPanel.patternList.title = "$title copy"
                 newplw.title = "$title copy"

@@ -12,6 +12,7 @@ package jugglinglab.jml
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLNode.Companion.xmlescape
+import jugglinglab.jml.JMLParser.Companion.JML_INVALID
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
@@ -174,11 +175,19 @@ class JMLPatternList() {
 
     @Throws(JuggleExceptionUser::class)
     fun readJML(root: JMLNode) {
-        if (!root.nodeType.equals("jml", ignoreCase = true)) {
+        var current: JMLNode = root
+
+        if (current.nodeType.equals("#root")) {
+            current = current.children.find {
+                it.nodeType.equals("jml", ignoreCase = true)
+            } ?: throw JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"))
+        }
+
+        if (!current.nodeType.equals("jml", ignoreCase = true)) {
             throw JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"))
         }
 
-        val vers = root.attributes.getAttribute("version")
+        val vers = current.attributes.getAttribute("version")
         if (vers != null) {
             if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
@@ -186,7 +195,7 @@ class JMLPatternList() {
             loadingversion = vers
         }
 
-        val listnode = root.getChildNode(0)
+        val listnode = current.getChildNode(0)
         if (!listnode.nodeType.equals("patternlist", ignoreCase = true)) {
             throw JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"))
         }

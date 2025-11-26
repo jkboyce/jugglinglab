@@ -26,8 +26,6 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
 import jugglinglab.view.View
-import org.xml.sax.SAXException
-import org.xml.sax.SAXParseException
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -36,7 +34,6 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.FileReader
 import java.io.IOException
 import java.net.URI
 import java.text.MessageFormat
@@ -445,7 +442,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         fun openJMLFile(jmlf: File) {
             try {
                 val parser = JMLParser()
-                parser.parse(FileReader(jmlf))
+                parser.parse(jmlf.readText())
 
                 when (parser.fileType) {
                     JMLParser.JML_PATTERN -> {
@@ -462,7 +459,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         plw.setJmlFilename(jmlf.getName())
                     }
 
-                    else -> throw JuggleExceptionUser(errorstrings.getString("Error_invalid_JML"))
+                    else -> {
+                        val message = errorstrings.getString("Error_invalid_JML")
+                        throw JuggleExceptionUser(message)
+                    }
                 }
             } catch (fnfe: FileNotFoundException) {
                 throw JuggleExceptionUser(
@@ -470,15 +470,6 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 )
             } catch (ioe: IOException) {
                 throw JuggleExceptionUser(errorstrings.getString("Error_IO") + ": " + ioe.message)
-            } catch (spe: SAXParseException) {
-                val template: String = errorstrings.getString("Error_JML_parsing")
-                val arguments = arrayOf<Any?>(
-                    spe.lineNumber,
-                    if (!spe.message!!.isEmpty()) (":\n" + spe.message) else ""
-                )
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
-            } catch (se: SAXException) {
-                throw JuggleExceptionUser(se.message)
             }
         }
 

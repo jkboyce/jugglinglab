@@ -13,23 +13,23 @@ class JMLNode(
     var attributes = JMLAttributes()
         private set
     var parentNode: JMLNode? = null
-    private var childNodes: MutableList<JMLNode> = ArrayList<JMLNode>()
     var previousSibling: JMLNode? = null
     var nextSibling: JMLNode? = null
-    
+    var children: MutableList<JMLNode> = ArrayList<JMLNode>()
+
     fun addAttribute(name: String, value: String) {
         attributes.addAttribute(name, value)
     }
     
     val numberOfChildren: Int
-        get() = childNodes.size
+        get() = children.size
 
-    fun getChildNode(index: Int) = childNodes[index]
+    fun getChildNode(index: Int) = children[index]
     
     fun addChildNode(newChild: JMLNode) {
-        val lastNode = childNodes.lastOrNull()
+        val lastNode = children.lastOrNull()
         lastNode?.nextSibling = newChild
-        childNodes.add(newChild)
+        children.add(newChild)
         newChild.previousSibling = lastNode
         newChild.nextSibling = null
         newChild.parentNode = this
@@ -75,7 +75,7 @@ class JMLNode(
                 appendable.append(xmlescape(nodeValue!!))
                 appendable.appendLine()
             }
-            for (child in childNodes) {
+            for (child in children) {
                 child.writeNode(appendable, indentlevel + 1)
             }
             appendable.append("</").append(nodeType).append(">")

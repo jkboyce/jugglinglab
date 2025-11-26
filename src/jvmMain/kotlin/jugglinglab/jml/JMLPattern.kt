@@ -40,11 +40,9 @@ import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.Permutation.Companion.lcm
-import org.xml.sax.SAXException
 import java.io.*
 import java.text.MessageFormat
 import java.util.Locale
-import java.util.StringTokenizer
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.max
@@ -138,21 +136,19 @@ class JMLPattern() {
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    constructor(read: Reader?) : this() {
+    constructor(xmlString: String) : this() {
         try {
             val parser = JMLParser()
-            parser.parse(read)
+            parser.parse(xmlString)
             readJML(parser.tree!!)
             isValid = true
-        } catch (se: SAXException) {
-            throw JuggleExceptionUser(se.message)
         } catch (ioe: IOException) {
             throw JuggleExceptionInternal(ioe.message)
         }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    constructor(pat: JMLPattern) : this(StringReader(pat.toString()))
+    constructor(pat: JMLPattern) : this(pat.toString())
 
     //--------------------------------------------------------------------------
     // Methods to define the pattern
@@ -1995,91 +1991,102 @@ class JMLPattern() {
     @Throws(JuggleExceptionUser::class)
     private fun readJML(current: JMLNode) {
         // process current node, then treat subnodes recursively
+        when (val type = current.nodeType?.lowercase(Locale.getDefault())) {
+            "#root" -> {
+                // skip over
+            }
 
-        val type = current.nodeType
-
-        if (type.equals("jml", ignoreCase = true)) {
-            val vers = current.attributes.getAttribute("version")
-            if (vers != null) {
+            "jml" -> {
+                val vers = current.attributes.getAttribute("version") ?: return
                 if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                     throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
                 }
                 loadingversion = vers
             }
-        } else if (type.equals("pattern", ignoreCase = true)) {
-            // do nothing
-        } else if (type.equals("title", ignoreCase = true)) {
-            title = current.nodeValue
-        } else if (type.equals("info", ignoreCase = true)) {
-            info = current.nodeValue
-            val tagstr = current.attributes.getAttribute("tags")
-            if (tagstr != null) {
-                for (t in tagstr.split(",".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()) {
-                    addTag(t.trim())
-                }
-            }
-        } else if (type.equals("basepattern", ignoreCase = true)) {
-            this.basePatternNotation =
-                Pattern.canonicalNotation(current.attributes.getAttribute("notation"))
-            this.basePatternConfig = current.nodeValue!!.trim()
-        } else if (type.equals("prop", ignoreCase = true)) {
-            addProp(JMLProp(current, loadingversion))
-        } else if (type.equals("setup", ignoreCase = true)) {
-            val at = current.attributes
-            val jugglerstring = at.getAttribute("jugglers")
-            val pathstring: String? = at.getAttribute("paths")
-            val propstring = at.getAttribute("props")
 
-            try {
-                numberOfJugglers = jugglerstring?.toInt() ?: 1
-                numberOfPaths = pathstring!!.toInt()
-            } catch (_: Exception) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_setup_tag"))
+            "pattern" -> {
+                // do nothing
             }
 
-            val pa = IntArray(numpaths)
-            if (propstring != null) {
-                val st = StringTokenizer(propstring, ",")
-                if (st.countTokens() != numpaths) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_prop_assignments"))
-                }
+            "title" -> title = current.nodeValue
+            "info" -> {
+                info = current.nodeValue
+                current.attributes.getAttribute("tags")
+                    ?.split(',')
+                    ?.forEach { addTag(it.trim()) }
+            }
+
+            "basepattern" -> {
+                basePatternNotation =
+                    Pattern.canonicalNotation(current.attributes.getAttribute("notation"))
+                basePatternConfig = current.nodeValue!!.trim()
+            }
+
+            "prop" -> addProp(JMLProp(current, loadingversion))
+            "setup" -> {
+                val at = current.attributes
+                val jugglerstring = at.getAttribute("jugglers")
+                val pathstring: String? = at.getAttribute("paths")
+                val propstring = at.getAttribute("props")
+
                 try {
-                    for (i in 0..<numpaths) {
-                        pa[i] = st.nextToken().toInt()
-                        if (pa[i] < 1 || pa[i] > this.numberOfProps) {
-                            throw JuggleExceptionUser(errorstrings.getString("Error_prop_number"))
-                        }
+                    numberOfJugglers = jugglerstring?.toInt() ?: 1
+                    numberOfPaths = pathstring!!.toInt()
+                } catch (_: Exception) {
+                    throw JuggleExceptionUser(errorstrings.getString("Error_setup_tag"))
+                }
+
+                val pa = if (propstring != null) {
+                    val tokens = propstring.split(',')
+                    if (tokens.size != numpaths) {
+                        throw JuggleExceptionUser(errorstrings.getString("Error_prop_assignments"))
                     }
-                } catch (_: NumberFormatException) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_prop_format"))
+                    try {
+                        tokens.map {
+                            val propNum = it.trim().toInt()
+                            if (propNum < 1 || propNum > this.numberOfProps) {
+                                throw JuggleExceptionUser(errorstrings.getString("Error_prop_number"))
+                            }
+                            propNum
+                        }.toIntArray()
+                    } catch (_: NumberFormatException) {
+                        throw JuggleExceptionUser(errorstrings.getString("Error_prop_format"))
+                    }
+                } else {
+                    IntArray(numpaths) { 1 }
                 }
-            } else {
-                for (i in 0..<numpaths) {
-                    pa[i] = 1
-                }
+                setPropAssignments(pa)
             }
-            setPropAssignments(pa)
-        } else if (type.equals("symmetry", ignoreCase = true)) {
-            val sym = JMLSymmetry()
-            sym.readJML(current, numjugglers, numpaths, loadingversion)
-            addSymmetry(sym)
-        } else if (type.equals("event", ignoreCase = true)) {
-            val ev = JMLEvent()
-            ev.readJML(
-                current, loadingversion, numberOfJugglers, numberOfPaths
-            ) // look at subnodes
-            addEvent(ev)
-            return  // stop recursion
-        } else if (type.equals("position", ignoreCase = true)) {
-            val pos = JMLPosition()
-            pos.readJML(current, loadingversion)
-            addPosition(pos)
-            return
-        } else {
-            val template: String = errorstrings.getString("Error_unknown_tag")
-            val arguments = arrayOf<Any?>(type)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+
+            "symmetry" -> {
+                val sym = JMLSymmetry()
+                sym.readJML(current, numjugglers, numpaths, loadingversion)
+                addSymmetry(sym)
+            }
+
+            "event" -> {
+                val ev = JMLEvent()
+                ev.readJML(current, loadingversion, numberOfJugglers, numberOfPaths)
+                addEvent(ev)
+                return  // stop recursion
+            }
+
+            "position" -> {
+                val pos = JMLPosition()
+                pos.readJML(current, loadingversion)
+                addPosition(pos)
+                return
+            }
+
+            "comment" -> {
+                // TODO: figure out a way to retain comments
+            }
+
+            else -> {
+                val template: String = errorstrings.getString("Error_unknown_tag")
+                val arguments = arrayOf<Any?>(type)
+                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            }
         }
 
         for (i in 0..<current.numberOfChildren) {
@@ -2122,8 +2129,8 @@ class JMLPattern() {
         if (basePatternNotation != null && basePatternConfig != null) {
             write.println(
                 ("<basepattern notation=\""
-                    + xmlescape(basePatternNotation!!.lowercase(Locale.getDefault()))
-                    + "\">")
+                        + xmlescape(basePatternNotation!!.lowercase(Locale.getDefault()))
+                        + "\">")
             )
             write.println(xmlescape(basePatternConfig!!.replace(";".toRegex(), ";\n")))
             write.println("</basepattern>")
@@ -2134,10 +2141,10 @@ class JMLPattern() {
 
         var out =
             ("<setup jugglers=\""
-                + this.numberOfJugglers
-                + "\" paths=\""
-                + this.numberOfPaths
-                + "\" props=\"")
+                    + this.numberOfJugglers
+                    + "\" paths=\""
+                    + this.numberOfPaths
+                    + "\" props=\"")
 
         if (numberOfPaths > 0) {
             out += getPropAssignment(1)
@@ -2178,10 +2185,8 @@ class JMLPattern() {
         get() {
             try {
                 val parser = JMLParser()
-                parser.parse(StringReader(toString()))
+                parser.parse(toString())
                 return parser.tree
-            } catch (se: SAXException) {
-                throw JuggleExceptionInternalWithPattern(se.message, this)
             } catch (se: IOException) {
                 throw JuggleExceptionInternalWithPattern(se.message, this)
             }
