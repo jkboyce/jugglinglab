@@ -422,6 +422,7 @@ open class AnimationPanel : JPanel(), Runnable {
             enginePaused = wanttopause
         }
 
+    @set:Synchronized
     var time: Double
         get() = simTime
         set(time) {
