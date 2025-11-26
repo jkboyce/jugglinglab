@@ -23,7 +23,7 @@
 
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
@@ -40,9 +40,6 @@ import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.Permutation.Companion.lcm
-import java.io.*
-import java.text.MessageFormat
-import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.max
@@ -94,7 +91,7 @@ class JMLPattern() {
 
     var title: String? = null
         set(title) {
-            val t = title?.replace(";".toRegex(), "")  // filter out semicolons
+            val t = title?.replace(";", "")  // filter out semicolons
             field = if (t != null && !t.isBlank()) t.trim() else null
 
             if (!hasBasePattern) return
@@ -135,6 +132,11 @@ class JMLPattern() {
         isValid = true
     }
 
+    // Construct from a string of XML data.
+    //
+    // Treat any errors as internal errors since this is not how user-inputted
+    // patterns are created.
+
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     constructor(xmlString: String) : this() {
         try {
@@ -142,8 +144,8 @@ class JMLPattern() {
             parser.parse(xmlString)
             readJML(parser.tree!!)
             isValid = true
-        } catch (ioe: IOException) {
-            throw JuggleExceptionInternal(ioe.message)
+        } catch (e: Exception) {
+            throw JuggleExceptionInternal(e.message)
         }
     }
 
@@ -316,22 +318,18 @@ class JMLPattern() {
 
     @Suppress("unused")
     private fun printEventList() {
+        val sb = StringBuilder()
         var current = this.eventList
-        val pw = PrintWriter(System.out)
         while (current != null) {
             if (current.isMaster) {
-                println("  Master event:")
+                sb.append("  Master event:\n")
             } else {
-                println("  Slave event; master at t=" + current.master.t)
+                sb.append("  Slave event; master at t=" + current.master.t + "\n")
             }
-
-            try {
-                current.writeJML(pw)
-            } catch (ioe: IOException) {
-            }
-            pw.flush()
+            current.writeJML(sb)
             current = current.next
         }
+        println(sb.toString())
     }
 
     val pathLinks: ArrayList<ArrayList<PathLink>>
@@ -394,15 +392,13 @@ class JMLPattern() {
 
     val hashCode: Int
         get() {
-            val sw = StringWriter()
-            try {
-                // Omit <info> tag metadata for the purposes of evaluating hash code.
-                // Two patterns that differ only by metadata are treated as identical.
-                writeJML(sw, writeTitle = true, writeInfo = false)
-            } catch (_: IOException) {
-            }
+            val sb = StringBuilder()
 
-            return sw.toString().hashCode()
+            // Omit <info> tag metadata for the purposes of evaluating hash code.
+            // Two patterns that differ only by metadata are treated as identical.
+            writeJML(sb, writeTitle = true, writeInfo = false)
+
+            return sb.toString().hashCode()
         }
 
     //--------------------------------------------------------------------------
@@ -755,8 +751,10 @@ class JMLPattern() {
                         when (parts.size) {
                             1 -> parts[0].trim()
                             3 -> "{$cs}"
-                            else -> throw JuggleExceptionUser(
-                                errorstrings.getString("Error_color_format"))
+                            else -> {
+                                val message = getStringResource(Res.string.error_color_format)
+                                throw JuggleExceptionUser(message)
+                            }
                         }
                     }
             }
@@ -867,7 +865,8 @@ class JMLPattern() {
         var current = this.eventList
         while (current != null) {
             if (current.juggler !in 1..numjugglers) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_juggler_outofrange"))
+                val message = getStringResource(Res.string.error_juggler_outofrange)
+                throw JuggleExceptionUser(message)
             }
             if (current.isMaster) {
                 ++numevents
@@ -918,14 +917,12 @@ class JMLPattern() {
                 }
             }
             if (!hasJMLTransitionForLeft) {
-                val template: String = errorstrings.getString("Error_no_left_events")
-                val arguments = arrayOf<Any?>(i + 1)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_no_left_events, i + 1)
+                throw JuggleExceptionUser(message)
             }
             if (!hasJMLTransitionForRight) {
-                val template: String = errorstrings.getString("Error_no_right_events")
-                val arguments = arrayOf<Any?>(i + 1)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_no_right_events, i + 1)
+                throw JuggleExceptionUser(message)
             }
             needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0] // set up for later
             needVDHandEvent[i][1] = hasVDHandJMLTransition[i][1]
@@ -945,9 +942,8 @@ class JMLPattern() {
                 }
             }
             if (!hasPathJMLTransition) {
-                val template: String = errorstrings.getString("Error_no_path_events")
-                val arguments = arrayOf<Any?>(i + 1)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_no_path_events, i + 1)
+                throw JuggleExceptionUser(message)
             }
             needPathEvent[i] = true // set up for later
             needSpecialPathEvent[i] = false
@@ -1330,51 +1326,24 @@ class JMLPattern() {
                     when (tr.transType) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
                             if (lasttr!!.transType == JMLTransition.TRANS_THROW) {
-                                val template: String =
-                                    errorstrings.getString("Error_successive_throws")
-                                val arguments = arrayOf<Any?>(i + 1)
-                                throw JuggleExceptionUser(
-                                    MessageFormat.format(
-                                        template,
-                                        *arguments
-                                    )
-                                )
+                                val message = getStringResource(Res.string.error_successive_throws, i + 1)
+                                throw JuggleExceptionUser(message)
                             }
                             if (lastev.juggler != ev.juggler) {
-                                val template: String =
-                                    errorstrings.getString("Error_juggler_changed")
-                                val arguments = arrayOf<Any?>(i + 1)
-                                throw JuggleExceptionUser(
-                                    MessageFormat.format(
-                                        template,
-                                        *arguments
-                                    )
-                                )
+                                val message = getStringResource(Res.string.error_juggler_changed, i + 1)
+                                throw JuggleExceptionUser(message)
                             }
                             if (lastev.hand != ev.hand) {
-                                val template: String = errorstrings.getString("Error_hand_changed")
-                                val arguments = arrayOf<Any?>(i + 1)
-                                throw JuggleExceptionUser(
-                                    MessageFormat.format(
-                                        template,
-                                        *arguments
-                                    )
-                                )
+                                val message = getStringResource(Res.string.error_hand_changed, i + 1)
+                                throw JuggleExceptionUser(message)
                             }
                             pl.setInHand(ev.juggler, ev.hand)
                         }
 
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
                             if (lasttr!!.transType != JMLTransition.TRANS_THROW) {
-                                val template: String =
-                                    errorstrings.getString("Error_successive_catches")
-                                val arguments = arrayOf<Any?>(i + 1)
-                                throw JuggleExceptionUser(
-                                    MessageFormat.format(
-                                        template,
-                                        *arguments
-                                    )
-                                )
+                                val message = getStringResource(Res.string.error_successive_catches, i + 1)
+                                throw JuggleExceptionUser(message)
                             }
                             pl.setThrow(lasttr.throwType!!, lasttr.mod)
                         }
@@ -1991,7 +1960,7 @@ class JMLPattern() {
     @Throws(JuggleExceptionUser::class)
     private fun readJML(current: JMLNode) {
         // process current node, then treat subnodes recursively
-        when (val type = current.nodeType?.lowercase(Locale.getDefault())) {
+        when (val type = current.nodeType?.lowercase()) {
             "#root" -> {
                 // skip over
             }
@@ -1999,7 +1968,8 @@ class JMLPattern() {
             "jml" -> {
                 val vers = current.attributes.getAttribute("version") ?: return
                 if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
+                    val message = getStringResource(Res.string.error_jml_version)
+                    throw JuggleExceptionUser(message)
                 }
                 loadingversion = vers
             }
@@ -2033,24 +2003,28 @@ class JMLPattern() {
                     numberOfJugglers = jugglerstring?.toInt() ?: 1
                     numberOfPaths = pathstring!!.toInt()
                 } catch (_: Exception) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_setup_tag"))
+                    val message = getStringResource(Res.string.error_setup_tag)
+                    throw JuggleExceptionUser(message)
                 }
 
                 val pa = if (propstring != null) {
                     val tokens = propstring.split(',')
                     if (tokens.size != numpaths) {
-                        throw JuggleExceptionUser(errorstrings.getString("Error_prop_assignments"))
+                        val message = getStringResource(Res.string.error_prop_assignments)
+                        throw JuggleExceptionUser(message)
                     }
                     try {
                         tokens.map {
                             val propNum = it.trim().toInt()
                             if (propNum < 1 || propNum > this.numberOfProps) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_prop_number"))
+                                val message = getStringResource(Res.string.error_prop_number)
+                                throw JuggleExceptionUser(message)
                             }
                             propNum
                         }.toIntArray()
                     } catch (_: NumberFormatException) {
-                        throw JuggleExceptionUser(errorstrings.getString("Error_prop_format"))
+                        val message = getStringResource(Res.string.error_prop_format)
+                        throw JuggleExceptionUser(message)
                     }
                 } else {
                     IntArray(numpaths) { 1 }
@@ -2083,9 +2057,8 @@ class JMLPattern() {
             }
 
             else -> {
-                val template: String = errorstrings.getString("Error_unknown_tag")
-                val arguments = arrayOf<Any?>(type)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_unknown_tag, type)
+                throw JuggleExceptionUser(message)
             }
         }
 
@@ -2100,43 +2073,40 @@ class JMLPattern() {
         }
     }
 
-    @Throws(IOException::class)
-    fun writeJML(wr: Writer, writeTitle: Boolean, writeInfo: Boolean) {
-        val write = PrintWriter(wr)
-
+    fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
         for (i in JMLDefs.jmlPrefix.indices) {
-            write.println(JMLDefs.jmlPrefix[i])
+            wr.append(JMLDefs.jmlPrefix[i] + '\n')
         }
-        write.println("<jml version=\"${xmlescape(version)}\">")
-        write.println("<pattern>")
+        wr.append("<jml version=\"${xmlescape(version)}\">\n")
+        wr.append("<pattern>\n")
         if (writeTitle && title != null) {
-            write.println("<title>${xmlescape(title!!)}</title>")
+            wr.append("<title>${xmlescape(title!!)}</title>\n")
         }
         if (writeInfo && (info != null || !tags.isEmpty())) {
             val tagstr = tags.joinToString(",")
             if (info != null) {
                 if (tagstr.isEmpty()) {
-                    write.println("<info>${xmlescape(info!!)}</info>")
+                    wr.append("<info>${xmlescape(info!!)}</info>\n")
                 } else {
-                    write.println(
-                        ("<info tags=\"${xmlescape(tagstr)}\">${xmlescape(info!!)}</info>")
+                    wr.append(
+                        ("<info tags=\"${xmlescape(tagstr)}\">${xmlescape(info!!)}</info>\n")
                     )
                 }
             } else {
-                write.println("<info tags=\"${xmlescape(tagstr)}\"/>")
+                wr.append("<info tags=\"${xmlescape(tagstr)}\"/>\n")
             }
         }
         if (basePatternNotation != null && basePatternConfig != null) {
-            write.println(
+            wr.append(
                 ("<basepattern notation=\""
-                        + xmlescape(basePatternNotation!!.lowercase(Locale.getDefault()))
-                        + "\">")
+                        + xmlescape(basePatternNotation!!.lowercase())
+                        + "\">\n")
             )
-            write.println(xmlescape(basePatternConfig!!.replace(";".toRegex(), ";\n")))
-            write.println("</basepattern>")
+            wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n")) + '\n')
+            wr.append("</basepattern>\n")
         }
         for (prop in props) {
-            prop.writeJML(write)
+            prop.writeJML(wr)
         }
 
         var out =
@@ -2152,32 +2122,31 @@ class JMLPattern() {
                 out += "," + getPropAssignment(i)
             }
         }
-        write.println("$out\"/>")
+        wr.append("$out\"/>\n")
 
         for (symmetry in symmetries) {
-            symmetry.writeJML(write)
+            symmetry.writeJML(wr)
         }
 
         var pos = this.positionList
         while (pos != null) {
-            pos.writeJML(write)
+            pos.writeJML(wr)
             pos = pos.next
         }
 
         var ev = this.eventList
         while (ev != null) {
             if (ev.isMaster) {
-                ev.writeJML(write)
+                ev.writeJML(wr)
             }
             ev = ev.next
         }
-        write.println("</pattern>")
+        wr.append("</pattern>\n")
 
-        write.println("</jml>")
+        wr.append("</jml>\n")
         for (i in JMLDefs.jmlSuffix.indices) {
-            write.println(JMLDefs.jmlSuffix[i])
+            wr.append(JMLDefs.jmlSuffix[i] + '\n')
         }
-        write.flush()
     }
 
     @get:Throws(JuggleExceptionInternal::class)
@@ -2187,18 +2156,15 @@ class JMLPattern() {
                 val parser = JMLParser()
                 parser.parse(toString())
                 return parser.tree
-            } catch (se: IOException) {
-                throw JuggleExceptionInternalWithPattern(se.message, this)
+            } catch (e: Exception) {
+                throw JuggleExceptionInternalWithPattern(e.message, this)
             }
         }
 
     override fun toString(): String {
-        val sw = StringWriter()
-        try {
-            writeJML(sw, writeTitle = true, writeInfo = true)
-        } catch (_: IOException) {
-        }
-        return sw.toString()
+        val sb = StringBuilder()
+        writeJML(sb, writeTitle = true, writeInfo = true)
+        return sb.toString()
     }
 
     companion object {
