@@ -9,10 +9,10 @@
 
 package jugglinglab.notation
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation.Companion.lcm
-import java.text.MessageFormat
+import jugglinglab.util.getStringResource
 import kotlin.math.max
 
 object HSS {
@@ -55,7 +55,8 @@ object HSS {
             convertNotation(ossPat, hssPat, hssOrb, handmap, numJug, hld, dwlmax, dwl, ossinfo.bnc)
 
         if (patinfo.newPat == null) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_no_pattern"))
+            val message = getStringResource(Res.string.error_no_pattern)
+            throw JuggleExceptionUser(message)
         }
         return ModParms(patinfo.newPat!!, patinfo.dwellBt)
     }
@@ -108,9 +109,8 @@ object HSS {
                         b3 = false
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (Character.isWhitespace(c)) {
                     b1 = false
@@ -124,9 +124,8 @@ object HSS {
                         b2 = true
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (c == 'F' || c == 'L') {
                     if (b2) {
@@ -138,9 +137,8 @@ object HSS {
                         b3 = false
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (c == 'H') {
                     if (b2) {
@@ -148,14 +146,12 @@ object HSS {
                         b2 = false
                         b3 = true
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else {
-                    val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                    val arguments = arrayOf<Any?>(i + 1)
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                    throw JuggleExceptionUser(message)
                 }
             } else {
                 if (c.toString().matches("[0-9,a-z]".toRegex())) {
@@ -191,9 +187,8 @@ object HSS {
                         b2 = true
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (c == 'F' || c == 'L') {
                     if (b2) {
@@ -205,9 +200,8 @@ object HSS {
                         b3 = false
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (c == 'H') {
                     if (b2) {
@@ -215,14 +209,12 @@ object HSS {
                         b2 = false
                         b3 = true
                     } else {
-                        val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else {
-                    val template = errorstrings.getString("Error_hss_object_syntax_error_at_pos")
-                    val arguments = arrayOf<Any?>(i + 1)
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_hss_object_syntax_error_at_pos, i + 1)
+                    throw JuggleExceptionUser(message)
                 }
             }
         }
@@ -231,10 +223,12 @@ object HSS {
             if (throwSum % numBeats == 0) {
                 numObj = throwSum / numBeats
             } else {
-                throw JuggleExceptionUser(errorstrings.getString("Error_hss_bad_average_object"))
+                val message = getStringResource(Res.string.error_hss_bad_average_object)
+                throw JuggleExceptionUser(message)
             }
         } else {
-            throw JuggleExceptionUser(errorstrings.getString("Error_hss_syntax_error"))
+            val message = getStringResource(Res.string.error_hss_syntax_error)
+            throw JuggleExceptionUser(message)
         }
         // append a space after setting the bounceinfo arraylist. Eventually bouncinfo
         // is appended to iph so the space will get transferred there.
@@ -279,15 +273,15 @@ object HSS {
             } else if (Character.isWhitespace(c)) {
                 continue
             } else {
-                val template = errorstrings.getString("Error_hss_hand_syntax_error_at_pos")
-                val arguments = arrayOf<Any?>(i + 1)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_hss_hand_syntax_error_at_pos, i + 1)
+                throw JuggleExceptionUser(message)
             }
         }
         if (throwSum % numBeats == 0) {
             nHnds = throwSum / numBeats
         } else {
-            throw JuggleExceptionUser(errorstrings.getString("Error_hss_bad_average_hand"))
+            val message = getStringResource(Res.string.error_hss_bad_average_hand)
+            throw JuggleExceptionUser(message)
         }
         return HssParms(hPat, nHnds)
     }
@@ -310,7 +304,8 @@ object HSS {
 
         for (i in 0..<op) {
             if (cmp[i] != os[i].size) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_hss_object_pattern_invalid"))
+                val message = getStringResource(Res.string.error_hss_object_pattern_invalid)
+                throw JuggleExceptionUser(message)
             }
         }
     }
@@ -335,7 +330,8 @@ object HSS {
 
         for (i in 0..<hp) {
             if (cmp[i] != 1) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_hss_hand_pattern_invalid"))
+                val message = getStringResource(Res.string.error_hss_hand_pattern_invalid)
+                throw JuggleExceptionUser(message)
             }
         }
         ho = 1
@@ -390,9 +386,8 @@ object HSS {
                 } else if (Character.isWhitespace(c)) {
                     continue
                 } else {
-                    val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
-                    val arguments = arrayOf<Any?>(i + 1)
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_hss_handspec_syntax_error_at_pos, i + 1)
+                    throw JuggleExceptionUser(message)
                 }
             } else {
                 if (assignLeftHand) {
@@ -405,9 +400,8 @@ object HSS {
                             }
                             continue
                         } else {
-                            val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
-                            val arguments = arrayOf<Any?>(i + 1)
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(Res.string.error_hss_handspec_syntax_error_at_pos, i + 1)
+                            throw JuggleExceptionUser(message)
                         }
                     } else if (Character.isWhitespace(c)) {
                         if (buildHandNumber?.isNotEmpty() ?: false) {
@@ -427,15 +421,18 @@ object HSS {
                                     hmap[buildHandNumber.toInt() - 1][1] = 0
                                     handPresent = true
                                 } else {
-                                    val template =
-                                        errorstrings.getString("Error_hss_hand_assigned_more_than_once")
-                                    val arguments = arrayOf<Any?>(buildHandNumber.toInt())
-                                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                    val message = getStringResource(
+                                        Res.string.error_hss_hand_assigned_more_than_once,
+                                        buildHandNumber.toInt()
+                                    )
+                                    throw JuggleExceptionUser(message)
                                 }
                             } else {
-                                val template = errorstrings.getString("Error_hss_hand_number_out_of_range")
-                                val arguments = arrayOf<Any?>(buildHandNumber.toInt())
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                val message = getStringResource(
+                                    Res.string.error_hss_hand_number_out_of_range,
+                                    buildHandNumber.toInt()
+                                )
+                                throw JuggleExceptionUser(message)
                             }
                         } else {
                             handPresent = false
@@ -443,9 +440,8 @@ object HSS {
                         buildHandNumber = null  // reset bhn string
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.error_hss_handspec_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (assignRightHand) {
                     if (c.toString().matches("[0-9]".toRegex())) {
@@ -457,9 +453,8 @@ object HSS {
                             }
                             continue
                         } else {
-                            val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
-                            val arguments = arrayOf<Any?>(i + 1)
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(Res.string.error_hss_handspec_syntax_error_at_pos, i + 1)
+                            throw JuggleExceptionUser(message)
                         }
                     } else if (Character.isWhitespace(c)) {
                         if (buildHandNumber?.isNotEmpty()?: false) {
@@ -476,22 +471,25 @@ object HSS {
                                 hmap[buildHandNumberInt - 1][0] = jugglerNumber
                                 hmap[buildHandNumberInt - 1][1] = 1
                             } else {
-                                val template = errorstrings.getString("Error_hss_hand_number_out_of_range")
-                                val arguments = arrayOf<Any?>(buildHandNumber.toInt())
-                                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                                val message = getStringResource(
+                                    Res.string.error_hss_hand_number_out_of_range,
+                                    buildHandNumber.toInt()
+                                )
+                                throw JuggleExceptionUser(message)
                             }
                         } else if (!handPresent) {  // if left hand was also not present
-                            throw JuggleExceptionUser(
-                                errorstrings.getString("Error_hss_at_least_one_hand_per_juggler")
+                            val message = getStringResource(
+                                Res.string.error_hss_at_least_one_hand_per_juggler
                             )
+                            throw JuggleExceptionUser(message)
                         }
                         buildHandNumber = null  // reset bhn string
                         pass = true
                         continue
                     } else {
-                        val template = errorstrings.getString("Error_hss_handspec_syntax_error_at_pos")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(
+                            Res.string.error_hss_handspec_syntax_error_at_pos, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 }
             }
@@ -499,9 +497,9 @@ object HSS {
 
         // check various error conditions
         if (jugglerNumber > nh) {  // will this ever happen?
-            val template = errorstrings.getString("Error_hss_handspec_too_many_jugglers")
-            val arguments = arrayOf<Any?>(nh)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_hss_handspec_too_many_jugglers, nh)
+            throw JuggleExceptionUser(message)
         }
         if (pass) {
             for (i in 0..<nh) {  // what is this for?
@@ -509,19 +507,20 @@ object HSS {
                     break
                 }
                 if (!matchFound) {
-                    val template = errorstrings.getString("Error_hss_handspec_hand_missing")
-                    val arguments = arrayOf<Any?>(i + 1)
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(
+                        Res.string.error_hss_handspec_hand_missing, i + 1)
+                    throw JuggleExceptionUser(message)
                 }
             }
         } else {
-            throw JuggleExceptionUser(errorstrings.getString("Error_hss_handspec_syntax_error"))
+            val message = getStringResource(Res.string.error_hss_handspec_syntax_error)
+            throw JuggleExceptionUser(message)
         }
         for (i in 0..<nh) {
             if (hmap[i][0] == 0) {
-                val template = errorstrings.getString("Error_hss_juggler_not_assigned_to_hand")
-                val arguments = arrayOf<Any?>(i + 1)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(
+                    Res.string.error_hss_juggler_not_assigned_to_hand, i + 1)
+                throw JuggleExceptionUser(message)
             }
         }
 
@@ -613,9 +612,9 @@ object HSS {
             if (hs[i] == '0') {
                 for (j in os[i].indices) {
                     if (os[i][j] != '0') {
-                        val template = errorstrings.getString("Error_hss_no_hand_to_throw_at_beat")
-                        val arguments = arrayOf<Any?>(i + 1)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(
+                            Res.string.error_hss_no_hand_to_throw_at_beat, i + 1)
+                        throw JuggleExceptionUser(message)
                     }
                 }
                 ji[i][0] = 0 // assign juggler number 0 for no hand
