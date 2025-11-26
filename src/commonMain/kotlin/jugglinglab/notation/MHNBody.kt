@@ -8,11 +8,10 @@
 
 package jugglinglab.notation
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import java.text.MessageFormat
 
 class MHNBody(str: String) {
     var numberOfJugglers: Int
@@ -56,7 +55,8 @@ class MHNBody(str: String) {
                             // position coordinate specified
                             val closeIndex = beatStr.indexOf(')', pos + 1)
                             if (closeIndex < 0) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_body_noparen"))
+                                val message = getStringResource(Res.string.error_body_noparen)
+                                throw JuggleExceptionUser(message)
                             }
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
                             try {
@@ -68,14 +68,14 @@ class MHNBody(str: String) {
                                 }
                                 coordTokens.add(coord)
                             } catch (_: NumberFormatException) {
-                                throw JuggleExceptionUser(errorstrings.getString("Error_body_coordinate"))
+                                val message = getStringResource(Res.string.error_body_coordinate)
+                                throw JuggleExceptionUser(message)
                             }
                             pos = closeIndex + 1
                         }
                         else -> {
-                            val template: String = errorstrings.getString("Error_body_character")
-                            val arguments = arrayOf<Any?>(ch.toString())
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(Res.string.error_body_character, ch.toString())
+                            throw JuggleExceptionUser(message)
                         }
                     }
                 }
