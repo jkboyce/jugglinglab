@@ -7,8 +7,6 @@
 package jugglinglab.core
 
 import jugglinglab.curve.Curve
-import jugglinglab.curve.SplineCurve
-import jugglinglab.util.OpenFilesServer
 
 object Constants {
     const val VERSION: String = "1.6.7"
@@ -20,10 +18,6 @@ object Constants {
 
     // how juggler angles are interpolated
     const val ANGLE_LAYOUT_METHOD: Int = Curve.CURVE_LINE
-
-    // method for communicating open-file messages between two running instances
-    // of Juggling Lab (used on Windows when the user double-clicks a JML file)
-    const val OPEN_FILES_METHOD: Int = OpenFilesServer.SERVER_MMF
 
     // for positioning windows on screen; scale to a box of this pixel width,
     // centered on the screen
