@@ -10,13 +10,23 @@
 
 package jugglinglab.util
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import jugglinglab.generated.resources.Res
+import jugglinglab.generated.resources.error_bad_file
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.skia.Image
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+
+
+//------------------------------------------------------------------------------
+// Mathematical conveniences
+//------------------------------------------------------------------------------
 
 // Calculate the binomial coefficient (a choose b).
 
@@ -28,6 +38,25 @@ fun jlBinomial(a: Int, b: Int): Int {
     }
     return result
 }
+
+// Check if point (x, y) is near a line segment connecting (x1, y1) and
+// (x2, y2). "Near" means shortest distance is less than `slop`.
+
+fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int): Boolean {
+    if (x < (min(x1, x2) - slop) || x > (max(x1, x2) + slop)) {
+        return false
+    }
+    if (y < (min(y1, y2) - slop) || y > (max(y1, y2) + slop)) {
+        return false
+    }
+    var d = ((x2 - x1) * (y - y1) - (x - x1) * (y2 - y1)).toDouble()
+    d = abs(d) / sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toDouble())
+    return d.toInt() <= slop
+}
+
+//------------------------------------------------------------------------------
+// Helpers for string processing
+//------------------------------------------------------------------------------
 
 // Throughout Juggling Lab we use a notation within strings to indicate
 // repeated sections:  `...(stuff)^n...`. This function expands all such
@@ -168,22 +197,9 @@ fun jlCompareVersions(v1: String, v2: String): Int {
     return components1.size.compareTo(components2.size)
 }
 
-// Check if point (x, y) is near a line segment connecting (x1, y1) and
-// (x2, y2). "Near" means shortest distance is less than `slop`.
-
-fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int): Boolean {
-    if (x < (min(x1, x2) - slop) || x > (max(x1, x2) + slop)) {
-        return false
-    }
-    if (y < (min(y1, y2) - slop) || y > (max(y1, y2) + slop)) {
-        return false
-    }
-    var d = ((x2 - x1) * (y - y1) - (x - x1) * (y2 - y1)).toDouble()
-    d = abs(d) / sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toDouble())
-    return d.toInt() <= slop
-}
-
-// Helper object for converting numbers to/from strings
+//------------------------------------------------------------------------------
+// Helper for converting numbers to/from strings
+//------------------------------------------------------------------------------
 
 @Suppress("unused")
 expect object NumberFormatter {
@@ -196,7 +212,11 @@ expect object NumberFormatter {
     fun jlToStringRounded(value: Double, digits: Int): String
 }
 
-// Helper object for getting localized string resources (UI, error messages, ...)
+//------------------------------------------------------------------------------
+// Helpers for loading resources (UI strings, error messages, images, ...)
+//------------------------------------------------------------------------------
+
+// Load a string resource.
 
 fun getStringResource(key: StringResource, vararg args: Any?): String {
     val message = runBlocking { getString(key) }
@@ -206,3 +226,30 @@ fun getStringResource(key: StringResource, vararg args: Any?): String {
         message.format(*args)
     }
 }
+
+// Load an image from the given source.
+//
+// `source` is either a URL or the name of a Compose drawable resource.
+// URLs may not be loadable in all contexts. In the event of a problem,
+// throw a JuggleExceptionUser with a relevant error message.
+
+@Throws(JuggleExceptionUser::class)
+fun getImageResource(source: String): ImageBitmap {
+    return try {
+        if (source.contains('/')) {
+            // assume it's a URL and load accordingly
+            loadComposeImageFromUrl(source)
+        } else {
+            // load from a Compose resource
+            runBlocking {
+                val imageBytes = Res.readBytes("drawable/$source")
+                Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
+            }
+        }
+    } catch (e: Exception) {
+        val message = getStringResource(Res.string.error_bad_file, e.message ?: "")
+        throw JuggleExceptionUser(message)
+    }
+}
+
+expect fun loadComposeImageFromUrl(urlString: String): ImageBitmap

@@ -21,13 +21,13 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.NumberFormatter.jlToStringRounded
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.view.View
+import androidx.compose.ui.graphics.toAwtImage
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.MalformedURLException
-import java.net.URL
 import java.text.MessageFormat
 import java.util.*
 import javax.swing.*
@@ -1500,14 +1500,10 @@ class EditLadderDiagram(
 
                 tf.addCaretListener { _: CaretEvent? -> }
             } else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
-                val label = JLabel("Hello")
+                val fileSource = pd[i].value as String
+                val composeImage = getImageResource(fileSource)
 
-                /*
-                val fpd = pd[i]
-                val filename = fpd.value as URL?
-
-                val icon = ImageIcon(filename, filename.toString())
-                // Scale the image down if it's too big
+                val icon = ImageIcon(composeImage.toAwtImage(), fileSource)
                 val maxHeight = 100f
                 if (icon.iconHeight > maxHeight) {
                     val scaleFactor = maxHeight / icon.iconHeight
@@ -1538,26 +1534,18 @@ class EditLadderDiagram(
                             }
 
                             try {
-                                // We have to load the image to get the correct dimensions
-                                // ImageIcon icon = new ImageIcon(source, source.toString());
-                                // Rebuild the paramter descriptions
-                                pd[0].value = jfc.selectedFile.toURI().toURL()
-                                // fpds[1].value = new Integer(icon.getIconWidth());
-                                // fpds[2].value = new Integer(icon.getIconHeight());
-                                // fpds[1].default_value = fpds[1].value;
-                                // fpds[2].default_value = fpds[2].value;
-                                // Remake the parameter panal with new default values.
+                                // Rebuild the parameter panel
+                                pd[0].value = jfc.selectedFile.toURI().toURL().toString()
                                 makeParametersPanel(jp, pd)
                                 ((jp.getTopLevelAncestor()) as JDialog).pack()
                             } catch (_: MalformedURLException) {
-                                // This should never happen
+                                // this should never happen
                                 handleFatalException(
-                                    JuggleExceptionUser(errorstrings.getString("Error_malformed_URL."))
+                                    JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"))
                                 )
                             }
                         }
                     })
-                  */
                 // Add the icon to the panel
                 pdp.add(label)
                 gb.setConstraints(
@@ -1628,14 +1616,12 @@ class EditLadderDiagram(
                         throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_ICON) {
-                    /*
                     val label = control as JLabel
                     val icon = label.icon as ImageIcon
                     val def: String = dialog[i].defaultValue.toString()
                     if (icon.getDescription() != def) {
                         term = icon.getDescription() // This contains the URL string
-                    }*/
-                    term = dialog[i].defaultValue.toString()
+                    }
                 }
 
                 if (term != null) {

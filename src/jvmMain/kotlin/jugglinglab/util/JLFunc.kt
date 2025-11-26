@@ -14,12 +14,19 @@ import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.JugglingLab.guistrings
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import java.awt.Component
 import java.awt.GridBagConstraints
 import java.awt.Insets
+import java.awt.MediaTracker
+import java.net.URI
 import java.text.*
+import java.io.IOException
 import java.util.Locale
 import java.util.prefs.Preferences
+import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.math.min
@@ -92,7 +99,7 @@ fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagCon
 }
 
 //------------------------------------------------------------------------------
-// Helpers for file opening/saving
+// Helpers for file opening/saving files
 //------------------------------------------------------------------------------
 
 val jfc: JFileChooser by lazy {
@@ -198,4 +205,34 @@ fun jlErrorIfNotSanitized(fname: String) {
         return
     }
     throw JuggleExceptionUser(errorstrings.getString("Error_saving_disallowed_character"))
+}
+
+//------------------------------------------------------------------------------
+// Helpers for loading resources (UI strings, error messages, images, ...)
+//------------------------------------------------------------------------------
+
+// Load an image from a URL string.
+//
+// In the event of a problem, throw a JuggleExceptionUser with a relevant message.
+
+@Throws(JuggleExceptionUser::class)
+actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
+    try {
+        val awtImage = ImageIO.read(URI(urlString).toURL())
+        val mt = MediaTracker(object : Component() {})
+        try {
+            mt.addImage(awtImage, 0)
+            mt.waitForAll()
+        } catch (_: InterruptedException) {
+        }
+        if (mt.isErrorAny()) {
+            // could be bad image data, but is usually a nonexistent file
+            throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+        }
+        return awtImage.toComposeImageBitmap()
+    } catch (_: IOException) {
+        throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+    } catch (_: SecurityException) {
+        throw JuggleExceptionUser(errorstrings.getString("Error_security_restriction"))
+    }
 }

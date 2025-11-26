@@ -14,20 +14,18 @@ import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
+import jugglinglab.util.getImageResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.toComposeImageBitmap
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.skia.Image
 import kotlin.math.max
 
 class ImageProp : Prop() {
     // set by constructor and init()
     private var imageSource: String = IMAGE_DEF
-    private var baseImage: ImageBitmap? = null
+    private var baseImage: ImageBitmap
     private var width: Double = WIDTH_DEF
     // recalculated based on zoom
     private var image: ImageBitmap? = null
@@ -38,9 +36,9 @@ class ImageProp : Prop() {
 
     init {
         try {
-            loadImage(IMAGE_DEF)
-        } catch (_: Exception) {
-            throw JuggleExceptionInternal("ImageProp error: Default image not set")
+            baseImage = getImageResource(IMAGE_DEF)
+        } catch (e: Exception) {
+            throw JuggleExceptionInternal("ImageProp init error (${e.message})")
         }
     }
 
@@ -80,7 +78,8 @@ class ImageProp : Prop() {
 
         val sourcestr = pl.getParameter("image")
         if (sourcestr != null) {
-            loadImage(sourcestr)
+            baseImage = getImageResource(sourcestr)
+            imageSource = sourcestr
         }
 
         val widthstr = pl.getParameter("width")
@@ -139,37 +138,10 @@ class ImageProp : Prop() {
         return grip
     }
 
-    // Load an image from the given source.
-    //
-    // `source` is either a URL or the name of a Compose drawable resource.
-    // URLs may not be loadable in all contexts. In the event of a problem,
-    // throw a JuggleExceptionUser with a relevant error message.
-
-    @Throws(JuggleExceptionUser::class)
-    private fun loadImage(source: String) {
-        try {
-            if (source.contains('/')) {
-                // TODO: assume it's a URL and load accordingly
-            } else {
-                // load from a Compose resource
-                val loadedImage: ImageBitmap = runBlocking {
-                    val imageBytes = Res.readBytes("drawable/$source")
-                    Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
-                }
-                baseImage = loadedImage
-            }
-
-            imageSource = source
-        } catch (e: Exception) {
-            val message = getStringResource(Res.string.error_bad_file, e.message ?: "")
-            throw JuggleExceptionUser(message)
-        }
-    }
-
     // Refresh the display image and related variables for a given zoom level.
 
     private fun createImage(zoom: Double) {
-        val aspectRatio = (baseImage!!.height.toDouble()) / (baseImage!!.width.toDouble())
+        val aspectRatio = (baseImage.height.toDouble()) / (baseImage.width.toDouble())
         val height = width * aspectRatio
         val imagePixelWidth = max((0.5 + zoom * width).toInt(), 1)
         val imagePixelHeight = max((0.5 + zoom * height).toInt(), 1)
@@ -179,7 +151,7 @@ class ImageProp : Prop() {
         lastZoom = zoom
 
         // Create a new ImageBitmap and use a Canvas to draw the scaled original onto it
-        val originalImage = baseImage ?: return
+        val originalImage = baseImage
         val newImage = ImageBitmap(imagePixelWidth, imagePixelHeight)
         val canvas = Canvas(newImage)
         val paint = Paint().apply {
