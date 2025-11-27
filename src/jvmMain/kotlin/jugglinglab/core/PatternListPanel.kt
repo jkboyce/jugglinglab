@@ -43,6 +43,7 @@ class PatternListPanel private constructor() : JPanel() {
     private var tf: JTextField? = null
     private var okButton: JButton? = null
 
+    private lateinit var listModel: PatternListModel
     // for drag and drop operations
     private var draggingOut: Boolean = false
 
@@ -64,7 +65,8 @@ class PatternListPanel private constructor() : JPanel() {
     //--------------------------------------------------------------------------
 
     private fun makePanel() {
-        list = JList(patternList.model)
+        listModel = PatternListModel()
+        list = JList(listModel)
         list.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.setCellRenderer(PatternCellRenderer())
 
@@ -112,8 +114,8 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun launchAnimation() {
         try {
-            val row = list.selectedIndex
-            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == patternList.model.size() - 1)) {
+            val row = list.selectedIndex.takeIf { it >= 0 && it < listModel.size } ?: return
+            if (JMLPatternList.BLANK_AT_END && row == listModel.size) {
                 return
             }
 
@@ -138,10 +140,10 @@ class PatternListPanel private constructor() : JPanel() {
     }
 
     fun clearList() {
-        if (patternList.model.size() > (if (JMLPatternList.BLANK_AT_END) 1 else 0)) {
+        if (listModel.size > 0) {
             hasUnsavedChanges = true
         }
-        patternList.clearModel()
+        listModel.clearModel()
     }
 
     fun setTargetView(target: View?) {
@@ -150,8 +152,14 @@ class PatternListPanel private constructor() : JPanel() {
 
     // Used by GeneratorTarget.
 
-    fun addPattern(display: String?, animprefs: String?, notation: String?, anim: String?) {
-        patternList.addLine(-1, display, animprefs, notation, anim, null, null)
+    fun addPattern(display: String, animprefs: String?, notation: String?, anim: String?) {
+        listModel.add(PatternRecord(display, animprefs, notation, anim, null, null, null))
+    }
+
+    // Sync the view with the underlying JMLPatternList. Used during JML load.
+
+    fun updateView() {
+        listModel.updateAll()
     }
 
     private fun makePopupMenu(): JPopupMenu {
@@ -173,8 +181,8 @@ class PatternListPanel private constructor() : JPanel() {
                 when (command) {
                     "inserttext" -> insertText(row1)
                     "insertpattern" -> {}
-                    "displaytext" -> changeDisplayText(row1)
-                    "remove" -> patternList.model.remove(row1)
+                    "displaytext" -> if (row1 >= 0) changeDisplayText(row1)
+                    "remove" -> if (row1 >= 0) listModel.remove(row1)
                     else -> {
                         // inserting a pattern
                         val patnum = command.substring(3).toInt()
@@ -199,7 +207,7 @@ class PatternListPanel private constructor() : JPanel() {
                 item.setEnabled(false)
             }
             if ((popupCommands[i] == "displaytext" || popupCommands[i] == "remove")
-                && JMLPatternList.BLANK_AT_END && row == patternList.model.size() - 1
+                && JMLPatternList.BLANK_AT_END && row == listModel.size
             ) {
                 item.setEnabled(false)
             }
@@ -266,13 +274,15 @@ class PatternListPanel private constructor() : JPanel() {
             patnode = null
         }
 
-        patternList.addLine(row, display, animprefs, notation, anim, patnode, infonode)
+        val rec = PatternRecord(
+            display, animprefs, notation, anim, patnode, infonode)
+        listModel.add(row, rec)
 
         if (row < 0) {
             if (JMLPatternList.BLANK_AT_END) {
-                list.setSelectedIndex(patternList.model.size() - 2)
+                list.setSelectedIndex(listModel.size - 1)
             } else {
-                list.setSelectedIndex(patternList.model.size() - 1)
+                list.setSelectedIndex(listModel.size)
             }
         } else {
             list.setSelectedIndex(row)
@@ -290,9 +300,9 @@ class PatternListPanel private constructor() : JPanel() {
             val display = tf!!.getText()
             dialog!!.dispose()
 
-            patternList.addLine(row, display, null, null, null, null, null)
+            listModel.add(row, PatternRecord(display, null, null, null, null, null, null))
             if (row < 0) {
-                list.setSelectedIndex(patternList.size - 1)
+                list.setSelectedIndex(listModel.size - 1)
             } else {
                 list.setSelectedIndex(row)
             }
@@ -305,14 +315,13 @@ class PatternListPanel private constructor() : JPanel() {
     // Open a dialog to allow the user to change the display text of a line.
 
     private fun changeDisplayText(row: Int) {
-        val rec = patternList.model.get(row)
+        val rec = listModel.getElementAt(row)
         makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display)
 
         okButton!!.addActionListener { _: ActionEvent? ->
             rec.display = tf!!.getText()
             dialog!!.dispose()
-
-            patternList.model.set(row, rec)
+            listModel.update(row)
             hasUnsavedChanges = true
         }
 
@@ -359,7 +368,7 @@ class PatternListPanel private constructor() : JPanel() {
     // Do final cleanup after any mouse-related interaction.
 
     private fun checkSelection() {
-        if (JMLPatternList.BLANK_AT_END && list.selectedIndex == patternList.model.size() - 1) {
+        if (JMLPatternList.BLANK_AT_END && list.selectedIndex == listModel.size) {
             list.clearSelection()
         }
         popupPatterns = null
@@ -379,12 +388,12 @@ class PatternListPanel private constructor() : JPanel() {
 
         override fun createTransferable(c: JComponent?): Transferable? {
             val row = list.selectedIndex
-            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == patternList.model.size() - 1)) {
+            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == listModel.size)) {
                 return null
             }
 
             draggingOut = true
-            val rec = patternList.model.get(row)
+            val rec = listModel.getElementAt(row)
             return PatternTransferable(rec)
         }
 
@@ -414,7 +423,7 @@ class PatternListPanel private constructor() : JPanel() {
             val dl = info.getDropLocation() as JList.DropLocation
             var index = dl.index
             if (index < 0) {
-                index = (if (JMLPatternList.BLANK_AT_END) patternList.model.size() - 1 else patternList.model.size())
+                index = listModel.size
             }
 
             // Get the record that is being dropped
@@ -422,8 +431,9 @@ class PatternListPanel private constructor() : JPanel() {
 
             try {
                 if (t.isDataFlavorSupported(PATTERN_FLAVOR)) {
+                    // Drop from another PatternListPanel
                     val rec = t.getTransferData(PATTERN_FLAVOR) as PatternRecord
-                    patternList.model.add(index, PatternRecord(rec))
+                    listModel.add(index, PatternRecord(rec))
                     list.setSelectedIndex(index)
                     hasUnsavedChanges = true
                     return true
@@ -438,7 +448,7 @@ class PatternListPanel private constructor() : JPanel() {
 
                     for (i in lines.indices.reversed()) {
                         val rec = PatternRecord(lines[i]!!, null, null, null, null, null, null)
-                        patternList.model.add(index, rec)
+                        listModel.add(index, rec)
                     }
                     list.setSelectedIndex(index)
                     hasUnsavedChanges = true
@@ -457,7 +467,7 @@ class PatternListPanel private constructor() : JPanel() {
                     return
                 }
 
-                if (!patternList.model.removeElement(data.rec)) {
+                if (!listModel.remove(data.rec)) {
                     handleFatalException(JuggleExceptionInternal("PLP: exportDone()"))
                 }
 
@@ -524,6 +534,47 @@ class PatternListPanel private constructor() : JPanel() {
             setEnabled(list.isEnabled)
             setOpaque(true)
             return this
+        }
+    }
+
+    // This inner class acts as a bridge between the JList (View) and the
+    // JMLPatternList (Model), following the MVC pattern.
+
+    private inner class PatternListModel : AbstractListModel<PatternRecord>() {
+        override fun getSize(): Int = patternList.model.size
+
+        override fun getElementAt(index: Int): PatternRecord = patternList.model[index]
+
+        fun add(index: Int, element: PatternRecord) {
+            val insertIndex = patternList.addLine(index, element)
+            fireIntervalAdded(this, insertIndex, insertIndex)
+        }
+
+        fun add(element: PatternRecord) {
+            val insertIndex = patternList.addLine(-1, element)
+            fireIntervalAdded(this, insertIndex, insertIndex)
+        }
+
+        fun remove(index: Int) {
+            patternList.model.removeAt(index)
+            fireIntervalRemoved(this, index, index)
+        }
+
+        fun remove(element: PatternRecord): Boolean {
+            val index = patternList.model.indexOf(element)
+            return if (index != -1) {
+                remove(index)
+                true
+            } else false
+        }
+
+        fun update(index: Int) = fireContentsChanged(this, index, index)
+
+        fun updateAll() = fireContentsChanged(this, 0, size)
+
+        fun clearModel() {
+            patternList.clearModel()
+            fireContentsChanged(this, 0, size)
         }
     }
 

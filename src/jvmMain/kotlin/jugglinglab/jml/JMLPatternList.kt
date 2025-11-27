@@ -17,7 +17,6 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlCompareVersions
-import javax.swing.DefaultListModel
 
 class JMLPatternList() {
     var version: String = JMLDefs.CURRENT_JML_VERSION
@@ -33,10 +32,10 @@ class JMLPatternList() {
     var info: String? = null
         private set
 
-    val model = DefaultListModel<PatternRecord>()
+    val model = mutableListOf<PatternRecord>()
 
     val size: Int
-        get() = if (BLANK_AT_END) model.size() - 1 else model.size()
+        get() = if (BLANK_AT_END) model.size - 1 else model.size
 
     init {
         clearModel()
@@ -56,77 +55,37 @@ class JMLPatternList() {
     fun clearModel() {
         model.clear()
         if (BLANK_AT_END) {
-            model.addElement(PatternRecord(" ", null, null, null, null, null, null))
+            model.add(PatternRecord(" ", null, null, null, null, null, null))
         }
     }
 
-    // Add a pattern at a specific row in the list. When `row` < 0, add it at
-    // the end.
-
     fun addLine(
         row: Int,
-        display: String?,
-        animprefs: String?,
-        notation: String?,
-        anim: String?,
-        patnode: JMLNode?,
-        infonode: JMLNode?
-    ) {
-        val display = display ?: ""
-        val animprefs = animprefs?.trim()
-        val notation = notation?.trim()
-        val anim = anim?.trim()
-        var info: String? = null
-        var tags: ArrayList<String>? = null
-
-        if (infonode != null) {
-            info = infonode.nodeValue
-            info = if (info != null && !info.isBlank()) info.trim() else null
-
-            val tagstr = infonode.attributes.getAttribute("tags")
-            if (tagstr != null) {
-                tags = ArrayList()
-
-                for (t in tagstr.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
-                    var t = t
-                    t = t.trim()
-                    var isNew = true
-
-                    for (t2 in tags) {
-                        if (t2.equals(t, ignoreCase = true)) {
-                            isNew = false
-                            break
-                        }
-                    }
-
-                    if (isNew) {
-                        tags.add(t)
-                    }
-                }
-            }
-        }
-
-        val rec = PatternRecord(display, animprefs, notation, anim, patnode, info, tags)
-
+        rec: PatternRecord
+    ): Int {
+        var index = row
         if (row < 0) {
             if (BLANK_AT_END) {
-                model.add(model.size() - 1, rec)
+                index = model.size - 1
+                model.add(model.size - 1, rec)
             } else {
-                model.addElement(rec)  // adds at end
+                index = model.size
+                model.add(rec)  // adds at end
             }
         } else {
             model.add(row, rec)
         }
+        return index
     }
 
     @Suppress("unused")
     fun getLine(row: Int): PatternRecord? {
-        return if (row in 0..<size) model.get(row) else null
+        return if (row in 0..<size) model[row] else null
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun getPatternForLine(row: Int): JMLPattern? {
-        val rec = model.get(row)
+        val rec = model[row]
         if (rec.notation == null) {
             return null
         }
@@ -153,7 +112,7 @@ class JMLPatternList() {
 
     @Throws(JuggleExceptionUser::class)
     fun getAnimationPrefsForLine(row: Int): AnimationPrefs? {
-        val rec = model.get(row)
+        val rec = model[row]
         if (rec.animprefs == null) {
             return null
         }
@@ -234,7 +193,9 @@ class JMLPatternList() {
                     }
                 }
 
-                addLine(-1, display, animprefs, notation, anim, patnode, infonode)
+                val rec = PatternRecord(
+                    display, animprefs, notation, anim, patnode, infonode)
+                addLine(-1, rec)
             } else {
                 val message = getStringResource(Res.string.error_illegal_tag)
                 throw JuggleExceptionUser(message)
@@ -256,15 +217,15 @@ class JMLPatternList() {
             wr.append("<info>${xmlescape(info!!)}</info>\n")
         }
 
-        val empty = (model.size() == (if (BLANK_AT_END) 1 else 0))
+        val empty = (model.size == (if (BLANK_AT_END) 1 else 0))
         if (!empty) {
             wr.append('\n')
         }
 
         var previousLineWasAnimation = false
 
-        for (i in 0..<(if (BLANK_AT_END) model.size() - 1 else model.size())) {
-            val rec = model.get(i)
+        for (i in 0..<(if (BLANK_AT_END) model.size - 1 else model.size)) {
+            val rec = model[i]
             var line = "<line display=\"${xmlescape(rec.display.trimEnd())}\""
             var hasAnimation = false
 
@@ -328,8 +289,8 @@ class JMLPatternList() {
     }
 
     fun writeText(wr: Appendable) {
-        for (i in 0..<(if (BLANK_AT_END) model.size() - 1 else model.size())) {
-            val rec = model.get(i)
+        for (i in 0..<(if (BLANK_AT_END) model.size - 1 else model.size)) {
+            val rec = model[i]
             wr.append(rec.display).append('\n')
         }
     }
@@ -365,6 +326,8 @@ class JMLPatternList() {
             tags = t
         }
 
+        // Copy constructor.
+
         constructor(pr: PatternRecord) {
             display = pr.display
             animprefs = pr.animprefs
@@ -379,6 +342,51 @@ class JMLPatternList() {
             } else {
                 tags = null
             }
+        }
+
+        // Convenience constructor for during JML parsing.
+
+        constructor(
+            dis: String?,
+            ap: String?,
+            not: String?,
+            ani: String?,
+            pnode: JMLNode?,
+            inode: JMLNode?
+        ) {
+            display = dis ?: ""
+            animprefs = ap?.trim()
+            notation = not?.trim()
+            anim = ani?.trim()
+            patnode = pnode
+            
+            if (inode == null) {
+                info = null
+                tags = null
+                return
+            }
+            
+            val infoString = inode.nodeValue
+            info = if (infoString != null && infoString.isNotBlank()) {
+                infoString.trim()
+            } else null
+
+            val tagstr = inode.attributes.getAttribute("tags")
+            if (tagstr == null) {
+                tags = null
+                return
+            }
+            
+            val infotags: ArrayList<String> = ArrayList()
+            tagstr.split(',')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .forEach { t ->
+                    if (infotags.none { it.equals(t, ignoreCase = true) }) {
+                        infotags.add(t)
+                    }
+                }
+            tags = infotags
         }
     }
 

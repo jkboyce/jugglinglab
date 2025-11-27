@@ -69,25 +69,24 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     constructor(root: JMLNode?) : this("") {
         if (root != null) {
             patternListPanel.patternList.readJML(root)
+            patternListPanel.updateView()
             setTitle(patternListPanel.patternList.title)
         }
     }
 
     // Target of a (running) pattern generator.
 
-    constructor(title: String?, gen: Thread?) : this(title) {
-        if (gen != null) {
-            val generator: Thread = gen
-            addWindowListener(
-                object : WindowAdapter() {
-                    override fun windowClosing(e: WindowEvent?) {
-                        try {
-                            generator.interrupt()
-                        } catch (_: Exception) {
-                        }
+    constructor(title: String?, gen: Thread) : this(title) {
+        val generator: Thread = gen
+        addWindowListener(
+            object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent?) {
+                    try {
+                        generator.interrupt()
+                    } catch (_: Exception) {
                     }
-                })
-        }
+                }
+            })
     }
 
     //--------------------------------------------------------------------------

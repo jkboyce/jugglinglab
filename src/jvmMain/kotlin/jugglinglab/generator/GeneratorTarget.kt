@@ -93,7 +93,7 @@ class GeneratorTarget {
 
     // Messages like "# of patterns found" come through here.
 
-    fun setStatus(display: String?) {
+    fun setStatus(display: String) {
         if (listTarget != null) {
             SwingUtilities.invokeLater { listTarget!!.addPattern(display, null, null, null) }
         }
