@@ -26,7 +26,6 @@ import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.getStringResource
 import kotlin.math.abs
 import kotlin.math.max
@@ -223,7 +222,7 @@ abstract class MHNPattern : Pattern() {
             }
         } catch (jeu: JuggleExceptionUser) {
             // can't be a user error since config has already been successfully read
-            handleFatalException(JuggleExceptionInternal(jeu.message))
+            throw JuggleExceptionInternal(jeu.message)
         }
         return result
     }
