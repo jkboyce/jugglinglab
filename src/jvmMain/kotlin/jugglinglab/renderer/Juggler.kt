@@ -12,8 +12,6 @@ import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
-import kotlin.Array
-import kotlin.Throws
 import kotlin.math.*
 
 object Juggler {
