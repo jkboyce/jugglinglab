@@ -38,7 +38,6 @@ import jugglinglab.util.*
 import jugglinglab.util.Coordinate.Companion.max
 import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.Coordinate.Companion.sub
-import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.Permutation.Companion.lcm
 import kotlin.math.cos
 import kotlin.math.sin
@@ -110,7 +109,7 @@ class JMLPattern() {
             } catch (jeu: JuggleExceptionUser) {
                 // can't be a user error since base pattern has already successfully
                 // compiled
-                handleFatalException(JuggleExceptionInternalWithPattern(jeu.message, this))
+                throw JuggleExceptionInternalWithPattern(jeu.message, this)
             }
         }
 
