@@ -9,18 +9,14 @@
 
 package jugglinglab.jml
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
+import jugglinglab.util.getStringResource
 import jugglinglab.util.jlCompareVersions
-import java.io.IOException
-import java.io.PrintWriter
-import java.io.Writer
-import java.text.MessageFormat
-import java.util.*
 import javax.swing.DefaultListModel
 
 class JMLPatternList() {
@@ -179,24 +175,27 @@ class JMLPatternList() {
         if (current.nodeType.equals("#root")) {
             current = current.children.find {
                 it.nodeType.equals("jml", ignoreCase = true)
-            } ?: throw JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"))
+            } ?: throw JuggleExceptionUser(getStringResource(Res.string.error_missing_jml_tag))
         }
 
         if (!current.nodeType.equals("jml", ignoreCase = true)) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_missing_JML_tag"))
+            val message = getStringResource(Res.string.error_missing_jml_tag)
+            throw JuggleExceptionUser(message)
         }
 
         val vers = current.attributes.getAttribute("version")
         if (vers != null) {
             if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_JML_version"))
+                val message = getStringResource(Res.string.error_jml_version)
+                throw JuggleExceptionUser(message)
             }
             loadingversion = vers
         }
 
         val listnode = current.getChildNode(0)
         if (!listnode.nodeType.equals("patternlist", ignoreCase = true)) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_missing_patternlist_tag"))
+            val message = getStringResource(Res.string.error_missing_patternlist_tag)
+            throw JuggleExceptionUser(message)
         }
 
         var linenumber = 0
@@ -221,9 +220,12 @@ class JMLPatternList() {
                     if (notation.equals("jml", ignoreCase = true)) {
                         patnode = child.findNode("pattern")
                         if (patnode == null) {
-                            val template: String = errorstrings.getString("Error_missing_pattern")
-                            val arguments = arrayOf<Any?>(linenumber)
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(
+                                Res.string.error_missing_pattern,
+                                linenumber
+                            )
+                            throw JuggleExceptionUser(message)
+
                         }
                         infonode = patnode.findNode("info")
                     } else {
@@ -234,30 +236,29 @@ class JMLPatternList() {
 
                 addLine(-1, display, animprefs, notation, anim, patnode, infonode)
             } else {
-                throw JuggleExceptionUser(errorstrings.getString("Error_illegal_tag"))
+                val message = getStringResource(Res.string.error_illegal_tag)
+                throw JuggleExceptionUser(message)
             }
         }
     }
 
-    @Throws(IOException::class)
-    fun writeJML(wr: Writer) {
-        val write = PrintWriter(wr)
+    fun writeJML(wr: Appendable) {
         for (i in JMLDefs.jmlPrefix.indices) {
-            write.println(JMLDefs.jmlPrefix[i])
+            wr.append(JMLDefs.jmlPrefix[i]).append('\n')
         }
 
-        write.println("<jml version=\"${xmlescape(version)}\">")
-        write.println("<patternlist>")
+        wr.append("<jml version=\"${xmlescape(version)}\">\n")
+        wr.append("<patternlist>\n")
         if (title != null && !title!!.isEmpty()) {
-            write.println("<title>${xmlescape(title!!)}</title>")
+            wr.append("<title>${xmlescape(title!!)}</title>\n")
         }
         if (info != null && !info!!.isEmpty()) {
-            write.println("<info>${xmlescape(info!!)}</info>")
+            wr.append("<info>${xmlescape(info!!)}</info>\n")
         }
 
         val empty = (model.size() == (if (BLANK_AT_END) 1 else 0))
         if (!empty) {
-            write.println()
+            wr.append('\n')
         }
 
         var previousLineWasAnimation = false
@@ -268,7 +269,7 @@ class JMLPatternList() {
             var hasAnimation = false
 
             if (rec.notation != null) {
-                line += " notation=\"${xmlescape(rec.notation!!.lowercase(Locale.getDefault()))}\""
+                line += " notation=\"${xmlescape(rec.notation!!.lowercase())}\""
                 hasAnimation = true
             }
             if (rec.animprefs != null) {
@@ -279,62 +280,58 @@ class JMLPatternList() {
             if (hasAnimation) {
                 line += ">"
                 if (i > 0) {
-                    write.println()
+                    wr.append('\n')
                 }
-                write.println(line)
+                wr.append(line).append('\n')
 
                 if (rec.notation != null && rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-                    rec.patnode!!.writeNode(write, 0)
+                    rec.patnode!!.writeNode(wr, 0)
                 } else if (rec.anim != null) {
-                    write.println(xmlescape(rec.anim!!))
+                    wr.append(xmlescape(rec.anim!!)).append('\n')
                     if (rec.info != null || (rec.tags != null && !rec.tags!!.isEmpty())) {
                         val tagstr = rec.tags?.joinToString(",") ?: ""
                         if (rec.info != null) {
                             if (tagstr.isEmpty()) {
-                                write.println("<info>${xmlescape(rec.info!!)}</info>")
+                                wr.append("<info>${xmlescape(rec.info!!)}</info>\n")
                             } else {
-                                write.println(
-                                    "<info tags=\"${xmlescape(tagstr)}\">${xmlescape(rec.info!!)}</info>"
+                                wr.append(
+                                    "<info tags=\"${xmlescape(tagstr)}\">${xmlescape(rec.info!!)}</info>\n"
                                 )
                             }
                         } else {
-                            write.println("<info tags=\"${xmlescape(tagstr)}\"/>")
+                            wr.append("<info tags=\"${xmlescape(tagstr)}\"/>\n")
                         }
                     }
                 }
 
-                write.println("</line>")
+                wr.append("</line>\n")
             } else {
                 line += "/>"
                 if (previousLineWasAnimation && i > 0) {
-                    write.println()
+                    wr.append('\n')
                 }
-                write.println(line)
+                wr.append(line).append('\n')
             }
 
             previousLineWasAnimation = hasAnimation
         }
 
         if (!empty) {
-            write.println()
+            wr.append('\n')
         }
 
-        write.println("</patternlist>")
-        write.println("</jml>")
+        wr.append("</patternlist>\n")
+        wr.append("</jml>\n")
         for (i in JMLDefs.jmlSuffix.indices) {
-            write.println(JMLDefs.jmlSuffix[i])
+            wr.append(JMLDefs.jmlSuffix[i]).append('\n')
         }
-        write.flush()
     }
 
-    @Throws(IOException::class)
-    fun writeText(wr: Writer) {
-        val write = PrintWriter(wr)
+    fun writeText(wr: Appendable) {
         for (i in 0..<(if (BLANK_AT_END) model.size() - 1 else model.size())) {
             val rec = model.get(i)
-            write.println(rec.display)
+            wr.append(rec.display).append('\n')
         }
-        write.flush()
     }
 
     //--------------------------------------------------------------------------
