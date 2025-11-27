@@ -66,7 +66,8 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
             (p != null && pattern != null && p.numberOfJugglers != pattern!!.numberOfJugglers)
 
         ap.restartJuggle(p, c)
-        setAnimationPanelPreferredSize(animationPrefs.size)
+        setAnimationPanelPreferredSize(
+            Dimension(animationPrefs.size.width, animationPrefs.size.height))
 
         if (p == null) {
             return

@@ -25,6 +25,7 @@ import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import kotlin.math.abs
+import androidx.compose.ui.unit.IntSize
 
 open class AnimationPanel : JPanel(), Runnable {
     val animator: Animator = Animator()
@@ -216,7 +217,7 @@ open class AnimationPanel : JPanel(), Runnable {
                     }
 
                     if (hasResized) {
-                        jc.size = size
+                        jc.size = IntSize(size.width, size.height)
                     }
                     hasResized = true
                 }

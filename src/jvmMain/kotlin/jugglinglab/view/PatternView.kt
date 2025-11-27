@@ -236,7 +236,8 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
         ja.restartJuggle(p, c)
-        setAnimationPanelPreferredSize(animationPrefs.size)
+        setAnimationPanelPreferredSize(
+            Dimension(animationPrefs.size.width, animationPrefs.size.height))
 
         if (p != null) {
             val notation = p.basePatternNotation

@@ -15,8 +15,7 @@ import jugglinglab.util.getScreenFps
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.view.View
-import java.awt.Dimension
-import java.util.StringTokenizer
+import androidx.compose.ui.unit.IntSize
 
 class AnimationPrefs {
     var width: Int = WIDTH_DEF
@@ -154,25 +153,19 @@ class AnimationPrefs {
         if ((pl.removeParameter("camangle").also { value = it }) != null) {
             try {
                 val ca = DoubleArray(2)
-                ca[1] = 90.0 // default if second angle isn't given
+                ca[1] = 90.0  // default if second angle isn't given
 
-                value = value!!.replace("(", "").replace(")", "")
-                value = value.replace("{", "").replace("}", "")
-
-                val st = StringTokenizer(value, ",")
-                val numangles = st.countTokens()
-                if (numangles > 2) {
+                val tokens = value!!.replace(Regex("[(){}]"), "").split(',')
+                if (tokens.size > 2) {
                     val message = getStringResource(Res.string.error_too_many_elements, "camangle")
                     throw JuggleExceptionUser(message)
                 }
-
-                for (i in 0..<numangles) {
-                    ca[i] = st.nextToken().trim { it <= ' ' }.toDouble()
+                tokens.forEachIndexed { i, token ->
+                    if (token.isNotBlank()) {
+                        ca[i] = token.trim().toDouble()
+                    }
                 }
-
-                camangle = DoubleArray(2)
-                camangle!![0] = ca[0]
-                camangle!![1] = ca[1]
+                camangle = ca
             } catch (_: NumberFormatException) {
                 val message = getStringResource(Res.string.error_number_format, "camangle")
                 throw JuggleExceptionUser(message)
@@ -192,16 +185,11 @@ class AnimationPrefs {
             }
         }
         if ((pl.removeParameter("hidejugglers").also { value = it }) != null) {
-            value = value!!.replace("(", "").replace(")", "")
-
-            val st = StringTokenizer(value, ",")
-            val numjugglers = st.countTokens()
-            hideJugglers = IntArray(numjugglers)
-
             try {
-                for (i in 0..<numjugglers) {
-                    hideJugglers!![i] = st.nextToken().trim { it <= ' ' }.toInt()
-                }
+                val tokens = value!!.replace(Regex("[()]"), "").split(',')
+                hideJugglers = tokens.mapNotNull { token ->
+                    token.trim().takeIf { it.isNotEmpty() }?.toInt()
+                }.toIntArray()
             } catch (_: NumberFormatException) {
                 val message = getStringResource(Res.string.error_number_format, "hidejugglers")
                 throw JuggleExceptionUser(message)
@@ -218,8 +206,8 @@ class AnimationPrefs {
         return this
     }
 
-    var size: Dimension
-        get() = Dimension(width, height)
+    var size: IntSize
+        get() = IntSize(width, height)
         set(dim) {
             width = dim.width
             height = dim.height

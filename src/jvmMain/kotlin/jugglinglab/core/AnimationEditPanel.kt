@@ -23,6 +23,7 @@ import java.awt.event.*
 import java.awt.geom.Path2D
 import javax.swing.SwingUtilities
 import kotlin.math.*
+import androidx.compose.ui.unit.IntSize
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
     // for when an event is activated/dragged
@@ -517,7 +518,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
 
                     if (hasResized) {
-                        jc.size = size
+                        jc.size = IntSize(size.width, size.height)
                     }
                     hasResized = true
                 }
