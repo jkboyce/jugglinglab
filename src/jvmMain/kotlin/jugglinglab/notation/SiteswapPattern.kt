@@ -12,7 +12,7 @@
 
 package jugglinglab.notation
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.ParseException
 import jugglinglab.notation.ssparser.SiteswapParser
@@ -22,7 +22,7 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
-import java.text.MessageFormat
+import jugglinglab.util.getStringResource
 
 class SiteswapPattern : MHNPattern() {
     private var oddperiod: Boolean = false
@@ -140,20 +140,26 @@ class SiteswapPattern : MHNPattern() {
             }
 
             if (pe.currentToken == null) {
-                val template = errorstrings.getString("Error_pattern_parsing")
-                val arguments = arrayOf<Any?>(pe.message)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_pattern_parsing, pe.message)
+                throw JuggleExceptionUser(message)
+
             } else {
-                val template = errorstrings.getString("Error_pattern_syntax")
                 val problem = pe.currentToken!!.next?.image
-                val arguments = arrayOf<Any?>(problem, pe.currentToken!!.next?.beginColumn)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(
+                    Res.string.error_pattern_syntax,
+                    problem,
+                    pe.currentToken!!.next?.beginColumn
+                )
+                throw JuggleExceptionUser(message)
             }
         } catch (tme: TokenMgrError) {
-            val template = errorstrings.getString("Error_pattern_syntax")
             val problem = tme.curChar.toChar().toString()
-            val arguments = arrayOf<Any?>(problem, tme.errorColumn)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_pattern_syntax,
+                problem,
+                tme.errorColumn
+            )
+            throw JuggleExceptionUser(message)
         }
 
         // Use tree to fill in MHNPattern internal variables:
@@ -194,7 +200,8 @@ class SiteswapPattern : MHNPattern() {
 
         period = tree.beats
         if (tree.throw_sum % tree.beats != 0) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_siteswap_bad_average"))
+            val message = getStringResource(Res.string.error_siteswap_bad_average)
+            throw JuggleExceptionUser(message)
         }
         numberOfPaths = tree.throw_sum / tree.beats
         indexes = maxThrow + period + 1
@@ -226,7 +233,8 @@ class SiteswapPattern : MHNPattern() {
 
         // Random error check, not sure where this should go
         if (bodies != null && bodies!!.numberOfJugglers < numberOfJugglers) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_jugglers_body"))
+            val message = getStringResource(Res.string.error_jugglers_body)
+            throw JuggleExceptionUser(message)
         }
 
         if (Constants.DEBUG_SITESWAP_PARSING) {

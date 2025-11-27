@@ -22,13 +22,12 @@
 
 package jugglinglab.notation
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
-import java.text.MessageFormat
-import java.util.IllegalFormatException
+import jugglinglab.util.getStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -91,11 +90,8 @@ abstract class MHNPattern : Pattern() {
     override fun fromParameters(pl: ParameterList): MHNPattern {
         config = pl.toString()
         // `pattern` is the only required parameter
-        pattern = pl.removeParameter("pattern") ?: throw JuggleExceptionUser(
-            errorstrings.getString(
-                "Error_no_pattern"
-            )
-        )
+        pattern = pl.removeParameter("pattern") ?:
+            throw JuggleExceptionUser(getStringResource(Res.string.error_no_pattern))
 
         var temp: String?
         if ((pl.removeParameter("bps").also { temp = it }) != null) {
@@ -103,17 +99,20 @@ abstract class MHNPattern : Pattern() {
                 bpsSet = temp!!.toDouble()
                 bps = bpsSet
             } catch (_: NumberFormatException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_bps_value"))
+                val message = getStringResource(Res.string.error_bps_value)
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("dwell").also { temp = it }) != null) {
             try {
                 dwell = temp!!.toDouble()
                 if (dwell <= 0 || dwell >= 2) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_dwell_range"))
+                    val message = getStringResource(Res.string.error_dwell_range)
+                    throw JuggleExceptionUser(message)
                 }
             } catch (_: NumberFormatException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_dwell_value"))
+                val message = getStringResource(Res.string.error_dwell_value)
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("hands").also { temp = it }) != null) {
@@ -157,18 +156,24 @@ abstract class MHNPattern : Pattern() {
         }
         if (hss != null) {
             if ((pl.removeParameter("hold").also { temp = it }) != null) {
-                try {
-                    hold = temp.toBoolean()
-                } catch (_: IllegalFormatException) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_hss_hold_value_error"))
+                hold = when (temp?.lowercase()) {
+                    "true" -> true
+                    "false" -> false
+                    else -> {
+                        val message = getStringResource(Res.string.error_hss_hold_value_error)
+                        throw JuggleExceptionUser(message)
+                    }
                 }
             }
 
             if ((pl.removeParameter("dwellmax").also { temp = it }) != null) {
-                try {
-                    dwellmax = temp.toBoolean()
-                } catch (_: IllegalFormatException) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_hss_dwellmax_value_error"))
+                dwellmax = when (temp?.lowercase()) {
+                    "true" -> true
+                    "false" -> false
+                    else -> {
+                        val message = getStringResource(Res.string.error_hss_dwellmax_value_error)
+                        throw JuggleExceptionUser(message)
+                    }
                 }
             }
 
@@ -421,16 +426,17 @@ abstract class MHNPattern : Pattern() {
                             + (if (sst.targethand == 0) "right hand" else "left hand"))
                     )
                 }
-                val template: String =
-                    errorstrings.getString("Error_badpattern_landings")
-                val hand: String = (if (sst.targethand == 0)
-                    errorstrings.getString("Error_right_hand")
+                val hand = if (sst.targethand == 0)
+                    getStringResource(Res.string.error_right_hand)
                 else
-                    errorstrings.getString("Error_left_hand"))
-                val arguments = arrayOf<Any?>(
-                    sst.targetindex + 1, sst.targetjuggler, hand
+                    getStringResource(Res.string.error_left_hand)
+                val message = getStringResource(
+                    Res.string.error_badpattern_landings,
+                    sst.targetindex + 1,
+                    sst.targetjuggler,
+                    hand
                 )
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                throw JuggleExceptionUser(message)
             }
 
             // loop again over all throws that have sst as master,
@@ -485,7 +491,8 @@ abstract class MHNPattern : Pattern() {
                         println("---------------------------")
                     }
                 }
-                throw JuggleExceptionUser(errorstrings.getString("Error_badpattern"))
+                val message = getStringResource(Res.string.error_badpattern)
+                throw JuggleExceptionUser(message)
             }
             sst.pathnum = currentpath
             ++currentpath
@@ -833,18 +840,18 @@ abstract class MHNPattern : Pattern() {
                                     if (sst != null && sst.pathnum != -1) {
                                         val sst2 = th[j][h][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_paths")
+                                                getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         if ((sst.pathnum == 0) || (sst2.pathnum == 0)) {
                                             throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_paths")
+                                                getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         }
                                         if (pathmap[sst.pathnum] == 0) {
                                             pathmap[sst.pathnum] = sst2.pathnum
                                         } else if (pathmap[sst.pathnum] != sst2.pathnum) {
                                             throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_delay")
+                                                getStringResource(Res.string.error_badpattern_delay)
                                             )
                                         }
                                     }
@@ -871,18 +878,18 @@ abstract class MHNPattern : Pattern() {
                                         val newh = (if (map > 0) h else 1 - h)
                                         val sst2 = th[newj][newh][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_paths")
+                                                getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         if (sst.pathnum == 0 || sst2.pathnum == 0) {
                                             throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_paths")
+                                                getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         }
                                         if (pathmap[sst.pathnum] == 0) {
                                             pathmap[sst.pathnum] = sst2.pathnum
                                         } else if (pathmap[sst.pathnum] != sst2.pathnum) {
                                             throw JuggleExceptionUser(
-                                                errorstrings.getString("Error_badpattern_switchdelay")
+                                                getStringResource(Res.string.error_badpattern_switchdelay)
                                             )
                                         }
                                     }
@@ -893,7 +900,9 @@ abstract class MHNPattern : Pattern() {
                     }
                 }
 
-                else -> throw JuggleExceptionUser(errorstrings.getString("Error_unknown_symmetry"))
+                else -> throw JuggleExceptionUser(
+                    getStringResource(Res.string.error_unknown_symmetry)
+                )
             }
             // convert path mapping to a string
             var pathmapstring = ""
@@ -1165,15 +1174,12 @@ abstract class MHNPattern : Pattern() {
 
                         if (sst2.mod!![0] != 'H') {
                             if (sst2.isZero) {
-                                val template: String =
-                                    errorstrings.getString("Error_modifier_on_0")
-                                val arguments = arrayOf<Any?>(sst2.mod, k + 1)
-                                throw JuggleExceptionUser(
-                                    MessageFormat.format(
-                                        template,
-                                        *arguments
-                                    )
+                                val message = getStringResource(
+                                    Res.string.error_modifier_on_0,
+                                    sst2.mod,
+                                    k + 1
                                 )
+                                throw JuggleExceptionUser(message)
                             }
                             ev.addTransition(
                                 JMLTransition(
