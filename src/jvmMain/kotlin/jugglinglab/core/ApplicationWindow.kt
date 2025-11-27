@@ -25,7 +25,6 @@ import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
-import jugglinglab.view.View
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -408,7 +407,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             try {
                 val pat = fromBasePattern("Siteswap", "pattern=3")
                 val pw = PatternWindow("3", pat, AnimationPrefs())
-                pw.viewMode = View.VIEW_PATTERN
+                pw.viewMode = AnimationPrefs.VIEW_PATTERN
             } catch (jeu: JuggleExceptionUser) {
                 throw JuggleExceptionInternal(jeu.message)
             }

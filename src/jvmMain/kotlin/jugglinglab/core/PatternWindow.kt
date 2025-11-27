@@ -100,11 +100,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     private fun createInitialView(pat: JMLPattern, jc: AnimationPrefs?) {
         val jc = jc ?: AnimationPrefs()
         val mode = when {
-            (jc.view != View.VIEW_NONE) -> jc.view
+            (jc.view != AnimationPrefs.VIEW_NONE) -> jc.view
             (pat.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
-                View.VIEW_SIMPLE
+                AnimationPrefs.VIEW_SIMPLE
 
-            else -> View.VIEW_EDIT
+            else -> AnimationPrefs.VIEW_EDIT
         }
         //viewMode = mode
         viewMenu.getItem(mode - 1).setSelected(true)
@@ -112,11 +112,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val animsize = Dimension(jc.width, jc.height)
 
         when (mode) {
-            View.VIEW_NONE -> {}
-            View.VIEW_SIMPLE -> view = SimpleView(animsize)
-            View.VIEW_EDIT -> view = EditView(animsize, pat)
-            View.VIEW_PATTERN -> view = PatternView(animsize)
-            View.VIEW_SELECTION -> view = SelectionView(animsize)
+            AnimationPrefs.VIEW_NONE -> {}
+            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(animsize)
+            AnimationPrefs.VIEW_EDIT -> view = EditView(animsize, pat)
+            AnimationPrefs.VIEW_PATTERN -> view = PatternView(animsize)
+            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(animsize)
         }
 
         view.patternWindow = this
@@ -136,11 +136,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     @set:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     var viewMode: Int
         get() = when (view) {
-            is SimpleView -> View.VIEW_SIMPLE
-            is EditView -> View.VIEW_EDIT
-            is PatternView -> View.VIEW_PATTERN
-            is SelectionView -> View.VIEW_SELECTION
-            else -> View.VIEW_NONE
+            is SimpleView -> AnimationPrefs.VIEW_SIMPLE
+            is EditView -> AnimationPrefs.VIEW_EDIT
+            is PatternView -> AnimationPrefs.VIEW_PATTERN
+            is SelectionView -> AnimationPrefs.VIEW_SELECTION
+            else -> AnimationPrefs.VIEW_NONE
         }
         set(mode) {
             // `mode` is one of the View.VIEW_X constants.
@@ -154,10 +154,10 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             val animsize = Dimension(jc.width, jc.height)
 
             val newview: View = when (mode) {
-                View.VIEW_SIMPLE -> SimpleView(animsize)
-                View.VIEW_EDIT -> EditView(animsize, pat)
-                View.VIEW_PATTERN -> PatternView(animsize)
-                View.VIEW_SELECTION -> SelectionView(animsize)
+                AnimationPrefs.VIEW_SIMPLE -> SimpleView(animsize)
+                AnimationPrefs.VIEW_EDIT -> EditView(animsize, pat)
+                AnimationPrefs.VIEW_PATTERN -> PatternView(animsize)
+                AnimationPrefs.VIEW_SELECTION -> SelectionView(animsize)
                 else -> throw JuggleExceptionInternal("setViewMode: problem creating view")
             }
 
@@ -383,26 +383,26 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 "zoomin" -> doMenuCommand(MenuCommand.VIEW_ZOOMIN)
                 "zoomout" -> doMenuCommand(MenuCommand.VIEW_ZOOMOUT)
                 "simple" -> {
-                    if (viewMode != View.VIEW_SIMPLE) {
-                        viewMode = View.VIEW_SIMPLE
+                    if (viewMode != AnimationPrefs.VIEW_SIMPLE) {
+                        viewMode = AnimationPrefs.VIEW_SIMPLE
                     }
                 }
 
                 "visual_edit" -> {
-                    if (viewMode != View.VIEW_EDIT) {
-                        viewMode = View.VIEW_EDIT
+                    if (viewMode != AnimationPrefs.VIEW_EDIT) {
+                        viewMode = AnimationPrefs.VIEW_EDIT
                     }
                 }
 
                 "pattern_edit" -> {
-                    if (viewMode != View.VIEW_PATTERN) {
-                        viewMode = View.VIEW_PATTERN
+                    if (viewMode != AnimationPrefs.VIEW_PATTERN) {
+                        viewMode = AnimationPrefs.VIEW_PATTERN
                     }
                 }
 
                 "selection_edit" -> {
-                    if (viewMode != View.VIEW_SELECTION) {
-                        viewMode = View.VIEW_SELECTION
+                    if (viewMode != AnimationPrefs.VIEW_SELECTION) {
+                        viewMode = AnimationPrefs.VIEW_SELECTION
                     }
                 }
 

@@ -206,23 +206,4 @@ abstract class View : JPanel() {
             }
         }
     }
-
-    companion object {
-        // these should be sequential and in the same order as in the View menu,
-        // because of assumptions in PatternWindow's constructor
-        const val VIEW_NONE: Int = 0
-        const val VIEW_SIMPLE: Int = 1
-        const val VIEW_EDIT: Int = 2
-        const val VIEW_PATTERN: Int = 3
-        const val VIEW_SELECTION: Int = 4
-
-        // used for `view` parameter setting in AnimationPrefs, these must be in the
-        // same order as VIEW_ constants above
-        val viewNames: List<String> = listOf(
-            "simple",
-            "visual_editor",
-            "pattern_editor",
-            "selection_editor",
-        )
-    }
 }

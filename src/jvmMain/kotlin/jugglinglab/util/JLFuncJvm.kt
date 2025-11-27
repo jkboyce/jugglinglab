@@ -246,7 +246,7 @@ actual fun getScreenFps(): Double {
     var fpsScreen = 0.0
     try {
         val devices = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
-        if (!devices.isEmpty()) {
+        if (devices.isNotEmpty()) {
             fpsScreen = devices[0]!!.getDisplayMode().refreshRate.toDouble()
             // refreshRate returns 0 when refresh is unknown
         }

@@ -14,7 +14,6 @@ import jugglinglab.util.ParameterList
 import jugglinglab.util.getScreenFps
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
-import jugglinglab.view.View
 import androidx.compose.ui.unit.IntSize
 
 class AnimationPrefs {
@@ -173,8 +172,8 @@ class AnimationPrefs {
         }
         if ((pl.removeParameter("view").also { value = it }) != null) {
             view = -1
-            for (viewIndex in View.viewNames.indices) {
-                if (value.equals(View.viewNames[viewIndex], ignoreCase = true)) {
+            for (viewIndex in viewNames.indices) {
+                if (value.equals(viewNames[viewIndex], ignoreCase = true)) {
                     view = viewIndex + 1
                 }
             }
@@ -257,7 +256,7 @@ class AnimationPrefs {
             sb.append("camangle=(").append(camangle!![0]).append(",").append(camangle!![1]).append(");")
         }
         if (view != VIEW_DEF) {
-            sb.append("view=").append(View.viewNames[view - 1]).append(";")
+            sb.append("view=").append(viewNames[view - 1]).append(";")
         }
         if (hideJugglers != null) {
             sb.append("hidejugglers=(")
@@ -276,11 +275,31 @@ class AnimationPrefs {
     }
 
     companion object {
+        // showground options
         const val GROUND_AUTO: Int = 0 // must be sequential
         const val GROUND_ON: Int = 1 // starting from 0
         const val GROUND_OFF: Int = 2
 
-        // default values of all items
+        // view options
+        //
+        // these should be sequential and in the same order as in the View menu,
+        // because of assumptions in PatternWindow's constructor
+        const val VIEW_NONE: Int = 0
+        const val VIEW_SIMPLE: Int = 1
+        const val VIEW_EDIT: Int = 2
+        const val VIEW_PATTERN: Int = 3
+        const val VIEW_SELECTION: Int = 4
+
+        // in the same order as the VIEW_ constants above, used for `view`
+        // parameter setting in AnimationPrefs
+        val viewNames: List<String> = listOf(
+            "simple",
+            "visual_editor",
+            "pattern_editor",
+            "selection_editor",
+        )
+
+        // default values of all AnimationPrefs items
         const val WIDTH_DEF: Int = 400
         const val HEIGHT_DEF: Int = 450
         val FPS_DEF: Double = getScreenFps()
@@ -292,6 +311,6 @@ class AnimationPrefs {
         const val MOUSEPAUSE_DEF: Boolean = false
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false
-        const val VIEW_DEF: Int = View.VIEW_NONE
+        const val VIEW_DEF: Int = VIEW_NONE
     }
 }
