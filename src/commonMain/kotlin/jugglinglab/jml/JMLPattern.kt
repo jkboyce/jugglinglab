@@ -2074,7 +2074,7 @@ class JMLPattern() {
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
         for (i in JMLDefs.jmlPrefix.indices) {
-            wr.append(JMLDefs.jmlPrefix[i] + '\n')
+            wr.append(JMLDefs.jmlPrefix[i]).append('\n')
         }
         wr.append("<jml version=\"${xmlescape(version)}\">\n")
         wr.append("<pattern>\n")
@@ -2101,7 +2101,7 @@ class JMLPattern() {
                         + xmlescape(basePatternNotation!!.lowercase())
                         + "\">\n")
             )
-            wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n")) + '\n')
+            wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n"))).append('\n')
             wr.append("</basepattern>\n")
         }
         for (prop in props) {
@@ -2109,11 +2109,7 @@ class JMLPattern() {
         }
 
         var out =
-            ("<setup jugglers=\""
-                    + this.numberOfJugglers
-                    + "\" paths=\""
-                    + this.numberOfPaths
-                    + "\" props=\"")
+            ("<setup jugglers=\"$numberOfJugglers\" paths=\"$numberOfPaths\" props=\"")
 
         if (numberOfPaths > 0) {
             out += getPropAssignment(1)
@@ -2144,7 +2140,7 @@ class JMLPattern() {
 
         wr.append("</jml>\n")
         for (i in JMLDefs.jmlSuffix.indices) {
-            wr.append(JMLDefs.jmlSuffix[i] + '\n')
+            wr.append(JMLDefs.jmlSuffix[i]).append('\n')
         }
     }
 
