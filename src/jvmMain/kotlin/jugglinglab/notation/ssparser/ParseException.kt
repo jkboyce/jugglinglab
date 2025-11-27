@@ -74,7 +74,7 @@ class ParseException : Exception {
         /**
          * The end of line string for this machine.
          */
-        protected var EOL: String? = System.getProperty("line.separator", "\n")
+        private const val EOL: String = "\n"
 
         /**
          * It uses "currentToken" and "expectedTokenSequences" to generate a parse

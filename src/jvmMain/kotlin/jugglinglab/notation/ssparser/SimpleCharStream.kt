@@ -36,32 +36,32 @@ class SimpleCharStream
 
     protected fun ExpandBuff(wrapAround: Boolean) {
         val newbuffer = CharArray(bufsize + 2048)
-        val newbufline: IntArray? = IntArray(bufsize + 2048)
-        val newbufcolumn: IntArray? = IntArray(bufsize + 2048)
+        val newbufline: IntArray = IntArray(bufsize + 2048)
+        val newbufcolumn: IntArray = IntArray(bufsize + 2048)
 
         try {
             if (wrapAround) {
-                System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin)
-                System.arraycopy(buffer, 0, newbuffer, bufsize - tokenBegin, bufpos)
+                buffer!!.copyInto(newbuffer, 0, tokenBegin, bufsize)
+                buffer!!.copyInto(newbuffer, bufsize - tokenBegin, 0, bufpos)
                 buffer = newbuffer
 
-                System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin)
-                System.arraycopy(bufline, 0, newbufline, bufsize - tokenBegin, bufpos)
+                bufline!!.copyInto(newbufline, 0, tokenBegin, bufsize)
+                bufline!!.copyInto(newbufline, bufsize - tokenBegin, 0, bufpos)
                 bufline = newbufline
 
-                System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin)
-                System.arraycopy(bufcolumn, 0, newbufcolumn, bufsize - tokenBegin, bufpos)
+                bufcolumn!!.copyInto(newbufcolumn, 0, tokenBegin, bufsize)
+                bufcolumn!!.copyInto(newbufcolumn, bufsize - tokenBegin, 0, bufpos)
                 bufcolumn = newbufcolumn
 
                 maxNextCharInd = (bufsize - tokenBegin.let { bufpos += it; bufpos })
             } else {
-                System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin)
+                buffer!!.copyInto(newbuffer, 0, tokenBegin, bufsize)
                 buffer = newbuffer
 
-                System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin)
+                bufline!!.copyInto(newbufline, 0, tokenBegin, bufsize)
                 bufline = newbufline
 
-                System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin)
+                bufcolumn!!.copyInto(newbufcolumn, 0, tokenBegin, bufsize)
                 bufcolumn = newbufcolumn
 
                 maxNextCharInd = (tokenBegin.let { bufpos -= it; bufpos })
@@ -280,8 +280,8 @@ class SimpleCharStream
 
     /** Get token literal value.  */
     fun GetImage(): String {
-        if (bufpos >= tokenBegin) return kotlin.text.String(buffer!!, tokenBegin, bufpos - tokenBegin + 1)
-        else return kotlin.text.String(buffer!!, tokenBegin, bufsize - tokenBegin) + kotlin.text.String(
+        if (bufpos >= tokenBegin) return String(buffer!!, tokenBegin, bufpos - tokenBegin + 1)
+        else return String(buffer!!, tokenBegin, bufsize - tokenBegin) + String(
             buffer!!,
             0,
             bufpos + 1
@@ -292,13 +292,13 @@ class SimpleCharStream
     fun GetSuffix(len: Int): CharArray {
         val ret = CharArray(len)
 
-        if ((bufpos + 1) >= len) System.arraycopy(buffer, bufpos - len + 1, ret, 0, len)
+        if ((bufpos + 1) >= len) buffer!!.copyInto(ret, 0, bufpos - len + 1, bufpos + 1)
         else {
-            System.arraycopy(
-                buffer, bufsize - (len - bufpos - 1), ret, 0,
+            buffer!!.copyInto(
+                ret, 0, bufsize - (len - bufpos - 1),
                 len - bufpos - 1
             )
-            System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1)
+            buffer!!.copyInto(ret, len - bufpos - 1, 0, bufpos + 1)
         }
 
         return ret
