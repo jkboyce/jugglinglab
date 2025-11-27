@@ -18,7 +18,6 @@ import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.NumberFormatter.jlToStringRounded
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.Path2D

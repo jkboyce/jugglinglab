@@ -12,7 +12,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
 import jugglinglab.util.getImageResource
 import androidx.compose.ui.graphics.Color

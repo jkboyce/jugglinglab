@@ -8,8 +8,8 @@ package jugglinglab.jml
 
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlToStringRounded
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.jlToStringRounded
+import jugglinglab.util.jlParseFiniteDouble
 
 class JMLEvent {
     var t: Double = 0.0

@@ -11,7 +11,7 @@ package jugglinglab.notation
 import jugglinglab.generated.resources.*
 import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.jlParseFiniteDouble
 
 class MHNBody(str: String) {
     var numberOfJugglers: Int

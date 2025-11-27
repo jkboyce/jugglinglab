@@ -14,7 +14,7 @@ import jugglinglab.JugglingLab.guistrings
 import jugglinglab.prop.Prop
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.constraints
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints

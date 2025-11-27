@@ -18,8 +18,6 @@ import jugglinglab.prop.Prop.Companion.newProp
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
-import jugglinglab.util.NumberFormatter.jlToStringRounded
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.view.View
 import androidx.compose.ui.graphics.toAwtImage
 import java.awt.*

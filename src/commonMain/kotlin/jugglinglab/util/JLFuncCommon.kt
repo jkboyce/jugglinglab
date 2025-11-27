@@ -10,10 +10,9 @@
 
 package jugglinglab.util
 
+import jugglinglab.generated.resources.*
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import jugglinglab.generated.resources.Res
-import jugglinglab.generated.resources.error_bad_file
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
@@ -22,7 +21,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
-
 
 //------------------------------------------------------------------------------
 // Mathematical conveniences
@@ -201,16 +199,15 @@ fun jlCompareVersions(v1: String, v2: String): Int {
 // Helper for converting numbers to/from strings
 //------------------------------------------------------------------------------
 
-@Suppress("unused")
-expect object NumberFormatter {
-    // Parse a string as a finite-valued Double. Throw an error if there is a
-    // number format problem, or if the value is not finite ("NaN", "Infinity", ...)
-    fun jlParseFiniteDouble(input: String): Double
+// Parse a string as a finite-valued Double. Throw an error if there is a
+// number format problem, or if the value is not finite ("NaN", "Infinity", ...)
 
-    // Convert a double value to a String, rounding to `digits` places after
-    // the decimal point, with trailing '.' and '0's suppressed.
-    fun jlToStringRounded(value: Double, digits: Int): String
-}
+expect fun jlParseFiniteDouble(input: String): Double
+
+// Convert a double value to a String, rounding to `digits` places after
+// the decimal point, with trailing '.' and '0's suppressed.
+
+expect fun jlToStringRounded(value: Double, digits: Int): String
 
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
@@ -253,3 +250,11 @@ fun getImageResource(source: String): ImageBitmap {
 }
 
 expect fun loadComposeImageFromUrl(urlString: String): ImageBitmap
+
+//------------------------------------------------------------------------------
+// Other
+//------------------------------------------------------------------------------
+
+// Return the native screen refresh rate.
+
+expect fun getScreenFps(): Double

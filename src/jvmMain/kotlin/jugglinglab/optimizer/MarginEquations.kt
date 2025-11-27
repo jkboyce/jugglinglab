@@ -12,8 +12,6 @@ import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import jugglinglab.util.NumberFormatter.jlToStringRounded
 import java.util.*
 import kotlin.math.abs
 

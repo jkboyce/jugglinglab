@@ -10,7 +10,6 @@ package jugglinglab.notation
 
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 
 class MHNHands(str: String) {
     var numberOfJugglers: Int

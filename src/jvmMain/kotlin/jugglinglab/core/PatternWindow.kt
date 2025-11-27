@@ -19,7 +19,6 @@ import jugglinglab.prop.Prop
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import jugglinglab.view.*
 import java.awt.*
 import java.awt.event.*

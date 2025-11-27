@@ -13,7 +13,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
 import java.awt.*
 import java.awt.event.MouseEvent

@@ -10,7 +10,6 @@ package jugglinglab.path
 
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import kotlin.math.*
 
 class BouncePath : Path() {

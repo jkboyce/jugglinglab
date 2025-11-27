@@ -8,15 +8,15 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.getScreenFps
+import jugglinglab.util.getStringResource
+import jugglinglab.util.jlToStringRounded
 import jugglinglab.view.View
 import java.awt.Dimension
-import java.awt.GraphicsEnvironment
-import java.text.MessageFormat
-import java.util.*
+import java.util.StringTokenizer
 
 class AnimationPrefs {
     var width: Int = WIDTH_DEF
@@ -93,9 +93,8 @@ class AnimationPrefs {
                 tempdouble = value!!.toDouble()
                 fps = tempdouble
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("fps")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "fps")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("slowdown").also { value = it }) != null) {
@@ -103,9 +102,8 @@ class AnimationPrefs {
                 tempdouble = value!!.toDouble()
                 slowdown = tempdouble
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("slowdown")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "slowdown")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("border").also { value = it }) != null) {
@@ -113,9 +111,8 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 border = tempint
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("border")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "border")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("width").also { value = it }) != null) {
@@ -123,9 +120,8 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 width = tempint
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("width")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "width")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("height").also { value = it }) != null) {
@@ -133,26 +129,26 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 height = tempint
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("height")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "height")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("showground").also { value = it }) != null) {
             showGround = if (value.equals("auto", ignoreCase = true)) {
                 GROUND_AUTO
-            } else if (value.equals("true", ignoreCase = true) || value.equals("on", ignoreCase = true)
+            } else if (value.equals("true", ignoreCase = true)
+                || value.equals("on", ignoreCase = true)
                 || value.equals("yes", ignoreCase = true)
             ) {
                 GROUND_ON
-            } else if (value.equals("false", ignoreCase = true) || value.equals("off", ignoreCase = true)
+            } else if (value.equals("false", ignoreCase = true)
+                || value.equals("off", ignoreCase = true)
                 || value.equals("no", ignoreCase = true)
             ) {
                 GROUND_OFF
             } else {
-                val template: String = errorstrings.getString("Error_showground_value")
-                val arguments = arrayOf<Any?>(value)
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_showground_value, value)
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("camangle").also { value = it }) != null) {
@@ -166,9 +162,8 @@ class AnimationPrefs {
                 val st = StringTokenizer(value, ",")
                 val numangles = st.countTokens()
                 if (numangles > 2) {
-                    val template: String = errorstrings.getString("Error_too_many_elements")
-                    val arguments = arrayOf<Any?>("camangle")
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_too_many_elements, "camangle")
+                    throw JuggleExceptionUser(message)
                 }
 
                 for (i in 0..<numangles) {
@@ -179,9 +174,8 @@ class AnimationPrefs {
                 camangle!![0] = ca[0]
                 camangle!![1] = ca[1]
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("camangle")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "camangle")
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("view").also { value = it }) != null) {
@@ -193,9 +187,8 @@ class AnimationPrefs {
             }
 
             if (view == -1) {
-                val template: String = errorstrings.getString("Error_unrecognized_view")
-                val arguments = arrayOf<Any?>("'$value'")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_unrecognized_view, value)
+                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("hidejugglers").also { value = it }) != null) {
@@ -210,9 +203,8 @@ class AnimationPrefs {
                     hideJugglers!![i] = st.nextToken().trim { it <= ' ' }.toInt()
                 }
             } catch (_: NumberFormatException) {
-                val template: String = errorstrings.getString("Error_number_format")
-                val arguments = arrayOf<Any?>("hidejugglers")
-                throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                val message = getStringResource(Res.string.error_number_format, "hidejugglers")
+                throw JuggleExceptionUser(message)
             }
         }
         return this
@@ -303,7 +295,7 @@ class AnimationPrefs {
         // default values of all items
         const val WIDTH_DEF: Int = 400
         const val HEIGHT_DEF: Int = 450
-        val FPS_DEF: Double  // initialized below
+        val FPS_DEF: Double = getScreenFps()
         const val SLOWDOWN_DEF: Double = 2.0
         const val BORDER_DEF: Int = 0
         const val SHOWGROUND_DEF: Int = GROUND_AUTO
@@ -313,20 +305,5 @@ class AnimationPrefs {
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false
         const val VIEW_DEF: Int = View.VIEW_NONE
-
-        init {
-            // set `FPS_DEF` to screen refresh rate, if possible
-            var fpsScreen = 0.0
-            try {
-                val devices = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
-                if (!devices.isEmpty()) {
-                    fpsScreen = devices[0]!!.getDisplayMode().refreshRate.toDouble()
-                    // refreshRate returns 0 when refresh is unknown
-                }
-            } catch (_: Exception) {
-                // HeadlessException when running headless (from CLI)
-            }
-            FPS_DEF = if (fpsScreen < 20) 60.0 else fpsScreen
-        }
     }
 }

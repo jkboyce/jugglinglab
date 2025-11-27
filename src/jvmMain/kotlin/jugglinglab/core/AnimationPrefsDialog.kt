@@ -17,7 +17,7 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.jlToStringRounded
 import java.awt.ComponentOrientation
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout

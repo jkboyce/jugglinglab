@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
+import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.getStringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize

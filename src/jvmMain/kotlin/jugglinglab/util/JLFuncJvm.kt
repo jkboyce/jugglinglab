@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import java.awt.Component
+import java.awt.GraphicsEnvironment
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import java.awt.MediaTracker
@@ -43,36 +44,34 @@ fun Color.toAwtColor(): java.awt.Color {
 // Helpers for converting numbers to/from strings
 //------------------------------------------------------------------------------
 
-actual object NumberFormatter {
-    private val nf: NumberFormat by lazy {
-        // use US-style number formatting for interoperability of JML files across
-        // Locales
-        NumberFormat.getInstance(Locale.US)
-    }
+private val nf: NumberFormat by lazy {
+    // use US-style number formatting for interoperability of JML files across
+    // Locales
+    NumberFormat.getInstance(Locale.US)
+}
 
-    @Throws(NumberFormatException::class)
-    actual fun jlParseFiniteDouble(input: String): Double {
-        try {
-            val x = nf.parse(input).toDouble()
-            if (x.isFinite()) {
-                return x
-            }
-            throw NumberFormatException("not a finite value")
-        } catch (_: ParseException) {
-            throw NumberFormatException()
+@Throws(NumberFormatException::class)
+actual fun jlParseFiniteDouble(input: String): Double {
+    try {
+        val x = nf.parse(input).toDouble()
+        if (x.isFinite()) {
+            return x
         }
+        throw NumberFormatException("not a finite value")
+    } catch (_: ParseException) {
+        throw NumberFormatException()
     }
+}
 
-    actual fun jlToStringRounded(value: Double, digits: Int): String {
-        val fmt = "###.##########".take(if (digits <= 0) 3 else 4 + min(10, digits))
-        val formatter = DecimalFormat(fmt, DecimalFormatSymbols(Locale.US))
-        var result = formatter.format(value)
-        if (result == "-0") {
-            // strange quirk
-            result = "0"
-        }
-        return result
+actual fun jlToStringRounded(value: Double, digits: Int): String {
+    val fmt = "###.##########".take(if (digits <= 0) 3 else 4 + min(10, digits))
+    val formatter = DecimalFormat(fmt, DecimalFormatSymbols(Locale.US))
+    var result = formatter.format(value)
+    if (result == "-0") {
+        // strange quirk
+        result = "0"
     }
+    return result
 }
 
 //------------------------------------------------------------------------------
@@ -235,4 +234,24 @@ actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
     } catch (_: SecurityException) {
         throw JuggleExceptionUser(errorstrings.getString("Error_security_restriction"))
     }
+}
+
+//------------------------------------------------------------------------------
+// Other
+//------------------------------------------------------------------------------
+
+// Return the native screen refresh rate.
+
+actual fun getScreenFps(): Double {
+    var fpsScreen = 0.0
+    try {
+        val devices = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
+        if (!devices.isEmpty()) {
+            fpsScreen = devices[0]!!.getDisplayMode().refreshRate.toDouble()
+            // refreshRate returns 0 when refresh is unknown
+        }
+    } catch (_: Exception) {
+        // HeadlessException when running headless (from CLI)
+    }
+    return if (fpsScreen < 20) 60.0 else fpsScreen
 }

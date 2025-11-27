@@ -8,7 +8,7 @@
 
 package jugglinglab.util
 
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.jlToStringRounded
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

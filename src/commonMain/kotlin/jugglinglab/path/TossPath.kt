@@ -10,7 +10,6 @@ package jugglinglab.path
 
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
 import kotlin.math.max
 import kotlin.math.min
 

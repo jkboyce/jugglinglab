@@ -9,8 +9,8 @@ package jugglinglab.jml
 import jugglinglab.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.NumberFormatter.jlParseFiniteDouble
-import jugglinglab.util.NumberFormatter.jlToStringRounded
+import jugglinglab.util.jlParseFiniteDouble
+import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.getStringResource
 
 class JMLPosition {
