@@ -65,13 +65,6 @@ class ParseException : Exception {
 
     companion object {
         /**
-         * The version identifier for this Serializable class.
-         * Increment only if the *serialized* form of the
-         * class changes.
-         */
-        private const val serialVersionUID = 1L
-
-        /**
          * The end of line string for this machine.
          */
         private const val EOL: String = "\n"

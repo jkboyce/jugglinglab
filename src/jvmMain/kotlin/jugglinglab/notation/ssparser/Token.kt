@@ -90,13 +90,6 @@ class Token {
 
     companion object {
         /**
-         * The version identifier for this Serializable class.
-         * Increment only if the *serialized* form of the
-         * class changes.
-         */
-        private const val serialVersionUID = 1L
-
-        /**
          * Returns a new Token object, by default. However, if you want, you
          * can create and return subclass objects based on the value of ofKind.
          * Simply add the cases to the switch for all those special cases.
