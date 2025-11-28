@@ -402,7 +402,7 @@ object JugglingLab {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapGenerator.runGeneratorCLI(genargs, GeneratorTarget(ps))
+            SiteswapGenerator.runGeneratorCLI(genargs, GeneratorTarget { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }
@@ -423,7 +423,7 @@ object JugglingLab {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapTransitioner.runTransitionerCLI(transargs, GeneratorTarget(ps))
+            SiteswapTransitioner.runTransitionerCLI(transargs, GeneratorTarget { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }

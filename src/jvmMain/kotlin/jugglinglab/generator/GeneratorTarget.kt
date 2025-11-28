@@ -14,15 +14,14 @@ import jugglinglab.core.PatternListPanel
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.util.JuggleException
 import jugglinglab.util.JuggleExceptionInternal
-import java.io.PrintStream
 import javax.swing.SwingUtilities
 
 class GeneratorTarget {
     // only one of these is non-null, which defines the target for output
     var patterns: ArrayList<String>? = null
-    var listTarget: PatternListPanel? = null
-    var printTarget: PrintStream? = null
+    var lambdaTarget: ((String) -> Unit)? = null
     var stringTarget: StringBuilder? = null
+    var listTarget: PatternListPanel? = null
 
     constructor() {
         // this form is used for testing
@@ -33,8 +32,8 @@ class GeneratorTarget {
         listTarget = target
     }
 
-    constructor(ps: PrintStream) {
-        printTarget = ps
+    constructor(target: (String) -> Unit) {
+        lambdaTarget = target
     }
 
     constructor(sb: StringBuilder) {
@@ -45,17 +44,15 @@ class GeneratorTarget {
     fun writePattern(display: String, notation: String, anim: String) {
         @Suppress("KotlinConstantConditions")
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
-            if (listTarget != null || printTarget != null) {
-                if (notation.equals("siteswap", ignoreCase = true) && anim.isNotEmpty()) {
-                    try {
-                        SiteswapPattern().fromString(anim)
-                    } catch (_: JuggleException) {
-                        val msg = "Error: pattern \"$anim\" did not validate"
-                        println(msg)
-                        throw JuggleExceptionInternal(msg)
-                    }
-                    println("pattern \"$anim\" validated")
+            if (notation.equals("siteswap", ignoreCase = true) && anim.isNotEmpty()) {
+                try {
+                    SiteswapPattern().fromString(anim)
+                } catch (_: JuggleException) {
+                    val msg = "Error: pattern \"$anim\" did not validate"
+                    println(msg)
+                    throw JuggleExceptionInternal(msg)
                 }
+                println("pattern \"$anim\" validated")
             }
         }
 
@@ -66,7 +63,7 @@ class GeneratorTarget {
             // Note we may not be running on the event dispatch thread
             SwingUtilities.invokeLater { listTarget?.addPattern(display, null, notation, anim) }
         }
-        printTarget?.println(display)
+        lambdaTarget?.invoke(display)
         stringTarget?.append(display)?.append('\n')
     }
 
@@ -76,6 +73,6 @@ class GeneratorTarget {
         if (listTarget != null) {
             SwingUtilities.invokeLater { listTarget!!.addPattern(display, null, null, null) }
         }
-        printTarget?.println(display)
+        lambdaTarget?.invoke(display)
     }
 }

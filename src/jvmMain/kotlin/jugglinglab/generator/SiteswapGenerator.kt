@@ -1438,7 +1438,7 @@ class SiteswapGenerator : Generator() {
 // Top-level function to run the generator from command line input.
 
 fun main(args: Array<String>) {
-    SiteswapGenerator.runGeneratorCLI(args, GeneratorTarget(System.out))
+    SiteswapGenerator.runGeneratorCLI(args, GeneratorTarget { println(it) })
 }
 
 //------------------------------------------------------------------------------

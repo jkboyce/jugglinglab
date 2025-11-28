@@ -1198,5 +1198,5 @@ class SiteswapTransitioner : Transitioner() {
 // Top-level function to run the transitioner from command-line input.
 
 fun main(args: Array<String>) {
-    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTarget(System.out))
+    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTarget { println(it) })
 }
