@@ -32,11 +32,8 @@
 package jugglinglab.generator
 
 import jugglinglab.core.Constants
-import jugglinglab.JugglingLab.errorstrings
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import java.text.MessageFormat
-import java.util.Locale
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 import javax.swing.JPanel
@@ -126,11 +123,10 @@ class SiteswapGenerator : Generator() {
 
             if (config.numflag != 0) {
                 if (num == 1) {
-                    target!!.setStatus(guistrings.getString("Generator_patterns_1"))
+                    target!!.setStatus(getStringResource(Res.string.gui_generator_patterns_1))
                 } else {
-                    val template: String = guistrings.getString("Generator_patterns_ne1")
-                    val arguments = arrayOf<Any?>(num)
-                    target!!.setStatus(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.gui_generator_patterns_ne1, num)
+                    target!!.setStatus(message)
                 }
             }
 
@@ -335,9 +331,8 @@ class SiteswapGenerator : Generator() {
             if (loopCounter++ > LOOP_COUNTER_MAX) {
                 loopCounter = 0
                 if ((System.currentTimeMillis() - startTimeMillis) > maxTimeMillis) {
-                    val template: String = guistrings.getString("Generator_timeout")
-                    val arguments = arrayOf<Any?>(maxTime.toInt())
-                    throw JuggleExceptionDone(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
+                    throw JuggleExceptionDone(message)
                 }
             }
         }
@@ -433,9 +428,8 @@ class SiteswapGenerator : Generator() {
                 ++holes[k][ti]
 
                 if (maxNum in 0..num) {
-                    val template: String = guistrings.getString("Generator_spacelimit")
-                    val arguments = arrayOf<Any?>(maxNum)
-                    throw JuggleExceptionDone(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                    throw JuggleExceptionDone(message)
                 }
                 ++k
             }
@@ -1421,18 +1415,12 @@ class SiteswapGenerator : Generator() {
 
         fun runGeneratorCLI(args: Array<String>, target: GeneratorTarget) {
             if (args.size < 3) {
-                var template: String = guistrings.getString("Version")
-                val arg1 = arrayOf<Any?>(Constants.VERSION)
-                var output: String =
-                    "Juggling Lab " + MessageFormat.format(template, *arg1)
-                        .lowercase(Locale.getDefault()) + "\n"
-
-                template = guistrings.getString("Copyright_message")
-                val arg2 = arrayOf<Any?>(Constants.YEAR)
-                output += MessageFormat.format(template, *arg2) + "\n"
-                output += guistrings.getString("GPL_message") + "\n\n"
-                output += guistrings.getString("Generator_intro")
-
+                val version = getStringResource(Res.string.gui_version, Constants.VERSION)
+                val copyright = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+                var output = "Juggling Lab ${version.lowercase()}\n"
+                output += "$copyright\n"
+                output += getStringResource(Res.string.gui_gpl_message) + "\n\n"
+                output += getStringResource(Res.string.gui_generator_intro)
                 println(output)
                 return
             }
@@ -1442,7 +1430,8 @@ class SiteswapGenerator : Generator() {
                 ssg.initGenerator(args)
                 ssg.runGenerator(target)
             } catch (e: Exception) {
-                println(errorstrings.getString("Error") + ": " + e.message)
+                val message = getStringResource(Res.string.error) + ": " + e.message
+                println(message)
             }
         }
     }
@@ -1509,7 +1498,8 @@ class SiteswapGeneratorConfig {
             print("\n")
         }
         if (args.size < 3) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_generator_insufficient_input"))
+            val message = getStringResource(Res.string.error_generator_insufficient_input)
+            throw JuggleExceptionUser(message)
         }
 
         val trueMultiplex = parseInputFlags(args)
@@ -1551,15 +1541,11 @@ class SiteswapGeneratorConfig {
                         try {
                             multiplex = args[i + 1].toInt()
                         } catch (_: NumberFormatException) {
-                            val template: String = errorstrings.getString("Error_number_format")
-                            val str: String? = guistrings.getString("simultaneous_throws")
-                            val arguments = arrayOf<Any?>(str)
-                            throw JuggleExceptionUser(
-                                MessageFormat.format(
-                                    template,
-                                    *arguments
-                                )
+                            val message = getStringResource(
+                                Res.string.error_number_format,
+                                getStringResource(Res.string.gui_simultaneous_throws)
                             )
+                            throw JuggleExceptionUser(message)
                         }
                         ++i
                     }
@@ -1570,15 +1556,11 @@ class SiteswapGeneratorConfig {
                         try {
                             jugglers = args[i + 1].toInt()
                         } catch (_: NumberFormatException) {
-                            val template: String = errorstrings.getString("Error_number_format")
-                            val str: String? = guistrings.getString("Jugglers")
-                            val arguments = arrayOf<Any?>(str)
-                            throw JuggleExceptionUser(
-                                MessageFormat.format(
-                                    template,
-                                    *arguments
-                                )
+                            val message = getStringResource(
+                                Res.string.error_number_format,
+                                getStringResource(Res.string.gui_jugglers)
                             )
+                            throw JuggleExceptionUser(message)
                         }
                         ++i
                     }
@@ -1589,16 +1571,11 @@ class SiteswapGeneratorConfig {
                         try {
                             delaytime = args[i + 1].toInt()
                         } catch (_: NumberFormatException) {
-                            val template: String = errorstrings.getString("Error_number_format")
-                            val str: String? =
-                                guistrings.getString("Passing_communication_delay")
-                            val arguments = arrayOf<Any?>(str)
-                            throw JuggleExceptionUser(
-                                MessageFormat.format(
-                                    template,
-                                    *arguments
-                                )
+                            val message = getStringResource(
+                                Res.string.error_number_format,
+                                getStringResource(Res.string.gui_passing_communication_delay)
                             )
+                            throw JuggleExceptionUser(message)
                         }
                         groundflag = 1 // find only ground state tricks
                         ++i
@@ -1610,16 +1587,11 @@ class SiteswapGeneratorConfig {
                         try {
                             leaderPerson = args[i + 1].toInt()
                         } catch (_: NumberFormatException) {
-                            val template: String = errorstrings.getString("Error_number_format")
-                            val str: String? =
-                                guistrings.getString("Error_passing_leader_number")
-                            val arguments = arrayOf<Any?>(str)
-                            throw JuggleExceptionUser(
-                                MessageFormat.format(
-                                    template,
-                                    *arguments
-                                )
+                            val message = getStringResource(
+                                Res.string.error_number_format,
+                                getStringResource(Res.string.error_passing_leader_number)
                             )
+                            throw JuggleExceptionUser(message)
                         }
                         ++i
                     }
@@ -1638,7 +1610,8 @@ class SiteswapGeneratorConfig {
                             }
                             exclude.add(Pattern.compile(re))
                         } catch (_: PatternSyntaxException) {
-                            throw JuggleExceptionUser(errorstrings.getString("Error_excluded_throws"))
+                            val message = getStringResource(Res.string.error_excluded_throws)
+                            throw JuggleExceptionUser(message)
                         }
                         ++i
                     }
@@ -1658,7 +1631,8 @@ class SiteswapGeneratorConfig {
                             }
                             include.add(Pattern.compile(re))
                         } catch (_: PatternSyntaxException) {
-                            throw JuggleExceptionUser(errorstrings.getString("Error_included_throws"))
+                            val message = getStringResource(Res.string.error_included_throws)
+                            throw JuggleExceptionUser(message)
                         }
                         ++i
                     }
@@ -1666,9 +1640,8 @@ class SiteswapGeneratorConfig {
                 }
 
                 else -> {
-                    val template: String = errorstrings.getString("Error_unrecognized_option")
-                    val arguments = arrayOf<Any?>(args[i])
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_unrecognized_option, args[i])
+                    throw JuggleExceptionUser(message)
                 }
             }
             ++i
@@ -1728,10 +1701,11 @@ class SiteswapGeneratorConfig {
         try {
             n = args[0].toInt()
         } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val str: String? = guistrings.getString("balls")
-            val arguments = arrayOf<Any?>(str)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_number_format,
+                getStringResource(Res.string.gui_balls)
+            )
+            throw JuggleExceptionUser(message)
         }
         ht = try {
             if (args[1] == "-") {
@@ -1743,10 +1717,11 @@ class SiteswapGeneratorConfig {
                 args[1].toInt(36)  // 'a' = 10, 'b' = 11, ...
             }
         } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val str: String? = guistrings.getString("max._throw")
-            val arguments = arrayOf<Any?>(str)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_number_format,
+                getStringResource(Res.string.gui_max__throw)
+            )
+            throw JuggleExceptionUser(message)
         }
         try {
             if (args[2] == "-") {
@@ -1769,21 +1744,25 @@ class SiteswapGeneratorConfig {
                 }
             }
         } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val str: String? = guistrings.getString("period")
-            val arguments = arrayOf<Any?>(str)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_number_format,
+                getStringResource(Res.string.gui_period)
+            )
+            throw JuggleExceptionUser(message)
         }
 
         if (n < 1) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_generator_too_few_balls"))
+            val message = getStringResource(Res.string.error_generator_too_few_balls)
+            throw JuggleExceptionUser(message)
         }
         if (lMax == -1) {
             if (fullflag != 2) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_generator_must_be_prime_mode"))
+                val message = getStringResource(Res.string.error_generator_must_be_prime_mode)
+                throw JuggleExceptionUser(message)
             }
             if (ht == -1) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_generator_underspecified"))
+                val message = getStringResource(Res.string.error_generator_underspecified)
+                throw JuggleExceptionUser(message)
             }
             lMax = jlBinomial(ht * hands, n)
             lMax -= (lMax % rhythmPeriod)
@@ -1792,20 +1771,22 @@ class SiteswapGeneratorConfig {
             ht = n * lMax
         }
         if (ht < 1) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_generator_height_too_small"))
+            val message = getStringResource(Res.string.error_generator_height_too_small)
+            throw JuggleExceptionUser(message)
         }
         if (lMin < 1 || lMax < 1 || lMin > lMax) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_generator_period_problem"))
+            val message = getStringResource(Res.string.error_generator_period_problem)
+            throw JuggleExceptionUser(message)
         }
 
         if (jugglers > 1 && !jugglerPermutationsFlag && groundflag != 0) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_juggler_permutations"))
+            val message = getStringResource(Res.string.error_juggler_permutations)
+            throw JuggleExceptionUser(message)
         }
 
         if ((lMin % rhythmPeriod) != 0 || (lMax % rhythmPeriod) != 0) {
-            val template: String = errorstrings.getString("Error_period_multiple")
-            val arguments = arrayOf<Any?>(rhythmPeriod)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(Res.string.error_period_multiple, rhythmPeriod)
+            throw JuggleExceptionUser(message)
         }
 
         if (Constants.DEBUG_GENERATOR) {
