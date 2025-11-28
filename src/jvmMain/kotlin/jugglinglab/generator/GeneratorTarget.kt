@@ -46,7 +46,7 @@ class GeneratorTarget {
         @Suppress("KotlinConstantConditions")
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
             if (listTarget != null || printTarget != null) {
-                if (notation.equals("siteswap", ignoreCase = true) && !anim.isEmpty()) {
+                if (notation.equals("siteswap", ignoreCase = true) && anim.isNotEmpty()) {
                     try {
                         SiteswapPattern().fromString(anim)
                     } catch (_: JuggleException) {

@@ -331,10 +331,10 @@ class SiteswapTransitioner : Transitioner() {
 
         // if we added a hands modifier at the end, such as 'R' or '<R|R>',
         // then remove it (unneeded at end of overall pattern)
-        val returnTrans =
-            sb.toString().replace("\n".toRegex(), "")
-                .replace("R$".toRegex(), "")
-                .replace("<(R\\|)+R>$".toRegex(), "")
+        val returnTrans = sb.toString()
+            .replace("\n", "")
+            .removeSuffix("R")
+            .replace(Regex("<(R\\|)+R>$"), "")
 
         if (Constants.DEBUG_TRANSITIONS) {
             println("return trans = $returnTrans")
