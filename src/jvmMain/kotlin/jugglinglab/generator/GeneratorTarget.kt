@@ -24,9 +24,6 @@ class GeneratorTarget {
     var printTarget: PrintStream? = null
     var stringTarget: StringBuilder? = null
 
-    var prefix: String? = null
-    var suffix: String? = null
-
     constructor() {
         // this form is used for testing
         patterns = ArrayList()
@@ -46,17 +43,6 @@ class GeneratorTarget {
 
     @Throws(JuggleExceptionInternal::class)
     fun writePattern(display: String, notation: String, anim: String) {
-        var display = display
-        var anim = anim
-        if (prefix != null) {
-            display = prefix + display
-            anim = prefix + anim
-        }
-        if (suffix != null) {
-            display += suffix
-            anim += suffix
-        }
-
         @Suppress("KotlinConstantConditions")
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
             if (listTarget != null || printTarget != null) {
@@ -82,13 +68,6 @@ class GeneratorTarget {
         }
         printTarget?.println(display)
         stringTarget?.append(display)?.append('\n')
-    }
-
-    // Set a prefix and suffix for both the displayed string and animation string.
-
-    fun setPrefixSuffix(pr: String?, su: String?) {
-        prefix = pr
-        suffix = su
     }
 
     // Messages like "# of patterns found" come through here.

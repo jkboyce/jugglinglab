@@ -64,6 +64,8 @@ class SiteswapTransitioner : Transitioner() {
 
     // other state variables
     private var target: GeneratorTarget? = null
+    private var prefix: String = ""
+    private var suffix: String = ""
     private val control: SiteswapTransitionerControl by lazy { SiteswapTransitionerControl() }
 
     //--------------------------------------------------------------------------
@@ -107,17 +109,16 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         try {
-            t.setPrefixSuffix(
-                "($patternFrom^2)",
-                "(" + patternTo + "^2)" + findReturnTrans()
-            )
+            val returnTrans = findReturnTrans()
+            prefix = "($patternFrom^2)"
+            suffix = "($patternTo^2)$returnTrans"
 
             var num = 0
             target = t
 
             if (lMin == 0) {
                 // no transitions needed
-                target!!.writePattern("", "siteswap", "")
+                target!!.writePattern(prefix + suffix, "siteswap", prefix + suffix)
                 num = 1
             } else {
                 siteswapPrev = siteswapFrom
@@ -795,7 +796,11 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         try {
-            target!!.writePattern(sb.toString(), "siteswap", sb.toString().trim { it <= ' ' })
+            target!!.writePattern(
+                prefix + sb.toString() + suffix,
+                "siteswap",
+                prefix + sb.toString().trim { it <= ' ' } + suffix
+            )
         } catch (jei: JuggleExceptionInternal) {
             if (Constants.VALIDATE_GENERATED_PATTERNS) {
                 println("#################")
