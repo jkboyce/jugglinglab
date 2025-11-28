@@ -179,7 +179,7 @@ object JugglingLab {
 
         // Any remaining arguments that parsing didn't consume?
         if (jlargs.isNotEmpty()) {
-            System.setProperty("java.awt.headless", "true")
+            //System.setProperty("java.awt.headless", "true")
             val arglist = jlargs.joinToString(", ")
             println("Error: Unrecognized input: $arglist")
             return
@@ -191,7 +191,7 @@ object JugglingLab {
         }
 
         // All remaining modes are headless (no GUI)
-        System.setProperty("java.awt.headless", "true")
+        //System.setProperty("java.awt.headless", "true")
 
         if (firstarg == "togif") {
             doTogif(pat, outpath, jc)
@@ -245,7 +245,7 @@ object JugglingLab {
             files.removeIf { OpenFilesServer.tryOpenFile(it) }
 
             if (files.isEmpty()) {
-                System.setProperty("java.awt.headless", "true")
+                //System.setProperty("java.awt.headless", "true")
                 if (Constants.DEBUG_OPEN_SERVER) {
                     println("Open file command handed off; quitting")
                 }
@@ -303,7 +303,7 @@ object JugglingLab {
         if (files.isEmpty()) {
             val output = "Error: Expected file path(s), none provided"
             if (isCLI) {
-                System.setProperty("java.awt.headless", "true")
+                //System.setProperty("java.awt.headless", "true")
                 println(output)
             } else {
                 handleUserException(null, output) // should never happen
@@ -315,7 +315,7 @@ object JugglingLab {
     // Show the help message.
 
     private fun doHelp(firstarg: String?) {
-        System.setProperty("java.awt.headless", "true")
+        //System.setProperty("java.awt.headless", "true")
         var template = guistrings.getString("Version")
         val arg1 = arrayOf<Any?>(Constants.VERSION)
         var output = "Juggling Lab " +
@@ -394,7 +394,7 @@ object JugglingLab {
     // Run the siteswap generator.
 
     private fun doGen(outpath: Path?, jc: AnimationPrefs?) {
-        System.setProperty("java.awt.headless", "true")
+        //System.setProperty("java.awt.headless", "true")
         val genargs = jlargs.toTypedArray<String>()
 
         try {
@@ -415,7 +415,7 @@ object JugglingLab {
     // Run the siteswap transitioner.
 
     private fun doTrans(outpath: Path?, jc: AnimationPrefs?) {
-        System.setProperty("java.awt.headless", "true")
+        //System.setProperty("java.awt.headless", "true")
         val transargs = jlargs.toTypedArray<String>()
 
         try {
@@ -438,7 +438,7 @@ object JugglingLab {
     // verified.
 
     private fun doVerify(outpath: Path?, jc: AnimationPrefs?) {
-        System.setProperty("java.awt.headless", "true")
+        //System.setProperty("java.awt.headless", "true")
         val files = parseFilelist()
         if (files.isEmpty()) {
             return
