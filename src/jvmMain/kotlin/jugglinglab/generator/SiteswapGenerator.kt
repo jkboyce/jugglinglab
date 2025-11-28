@@ -34,8 +34,6 @@ package jugglinglab.generator
 import jugglinglab.core.Constants
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 import javax.swing.JPanel
 import kotlin.math.max
 
@@ -586,11 +584,11 @@ class SiteswapGenerator : Generator() {
             if (Constants.DEBUG_GENERATOR) {
                 println(
                     "test exclusions for string $patternString = ${
-                        regex.matcher(patternString).matches()
+                        patternString.matches(regex)
                     }"
                 )
             }
-            if (regex.matcher(patternString).matches()) {
+            if (patternString.matches(regex)) {
                 return false
             }
         }
@@ -683,7 +681,7 @@ class SiteswapGenerator : Generator() {
     private fun isPatternValid(patternString: String): Boolean {
         // check #1: verify against inclusions.
         for (regex in config.include) {
-            if (!regex.matcher(patternString).matches()) {
+            if (!patternString.matches(regex)) {
                 if (Constants.DEBUG_GENERATOR) {
                     println("   pattern invalid: missing inclusion")
                 }
@@ -1455,8 +1453,8 @@ class SiteswapGeneratorConfig {
     var ht: Int = 0
     var lMin: Int = 0
     var lMax: Int = 0
-    var exclude: ArrayList<Pattern> = ArrayList()
-    var include: ArrayList<Pattern> = ArrayList()
+    var exclude: ArrayList<Regex> = ArrayList()
+    var include: ArrayList<Regex> = ArrayList()
     var numflag: Int = 0
     var groundflag: Int = 0
     var rotflag: Int = 0
@@ -1608,8 +1606,8 @@ class SiteswapGeneratorConfig {
                             if (Constants.DEBUG_GENERATOR) {
                                 println("adding exclusion $re")
                             }
-                            exclude.add(Pattern.compile(re))
-                        } catch (_: PatternSyntaxException) {
+                            exclude.add(Regex(re))
+                        } catch (_: IllegalArgumentException) {
                             val message = getStringResource(Res.string.error_excluded_throws)
                             throw JuggleExceptionUser(message)
                         }
@@ -1629,8 +1627,8 @@ class SiteswapGeneratorConfig {
                             if (!re.contains("$")) {
                                 re = "$re.*"
                             }
-                            include.add(Pattern.compile(re))
-                        } catch (_: PatternSyntaxException) {
+                            include.add(Regex(re))
+                        } catch (_: IllegalArgumentException) {
                             val message = getStringResource(Res.string.error_included_throws)
                             throw JuggleExceptionUser(message)
                         }
@@ -1882,7 +1880,7 @@ class SiteswapGeneratorConfig {
             }
 
             if (includeRe != null) {
-                include.add(Pattern.compile(includeRe))
+                include.add(Regex(includeRe))
             }
         }
     }
@@ -2046,23 +2044,23 @@ class SiteswapGeneratorConfig {
         // with siteswap notation: []()|
 
         private fun makeStandardRegex(term: String): String {
-            var res: String = Pattern.compile("\\\\\\[").matcher(term).replaceAll("@")
-            res = Pattern.compile("\\[").matcher(res).replaceAll("\\\\[")
-            res = Pattern.compile("@").matcher(res).replaceAll("[")
-            res = Pattern.compile("\\\\]").matcher(res).replaceAll("@")
-            res = Pattern.compile("]").matcher(res).replaceAll("\\\\]")
-            res = Pattern.compile("@").matcher(res).replaceAll("]")
+            var res = term.replace("\\[", "@")
+            res = res.replace("[", "\\[")
+            res = res.replace("@", "[")
+            res = res.replace("\\]", "@")
+            res = res.replace("]", "\\]")
+            res = res.replace("@", "]")
 
-            res = Pattern.compile("\\\\\\(").matcher(res).replaceAll("@")
-            res = Pattern.compile("\\(").matcher(res).replaceAll("\\\\(")
-            res = Pattern.compile("@").matcher(res).replaceAll("(")
-            res = Pattern.compile("\\\\\\)").matcher(res).replaceAll("@")
-            res = Pattern.compile("\\)").matcher(res).replaceAll("\\\\)")
-            res = Pattern.compile("@").matcher(res).replaceAll(")")
+            res = res.replace("\\(", "@")
+            res = res.replace("(", "\\(")
+            res = res.replace("@", "(")
+            res = res.replace("\\)", "@")
+            res = res.replace(")", "\\)")
+            res = res.replace("@", ")")
 
-            res = Pattern.compile("\\\\\\|").matcher(res).replaceAll("@")
-            res = Pattern.compile("\\|").matcher(res).replaceAll("\\\\|")
-            res = Pattern.compile("@").matcher(res).replaceAll("|")
+            res = res.replace("\\|", "@")
+            res = res.replace("|", "\\|")
+            res = res.replace("@", "|")
             return res
         }
     }
