@@ -13,8 +13,7 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.guistrings
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
@@ -25,6 +24,7 @@ import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
+import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -35,7 +35,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URI
-import java.text.MessageFormat
 import java.util.*
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -114,7 +113,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true)
         }
 
-        this.windowMenu = JMenu(guistrings.getString("Window"))
+        this.windowMenu = JMenu(getStringResource(Res.string.gui_window))
         mb.add(this.windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
@@ -136,7 +135,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 }
         }
 
-        val filemenu = JMenu(guistrings.getString("File"))
+        val filemenu = JMenu(getStringResource(Res.string.gui_file))
 
         for (i in 0..<(if (quitHandler) fileItems.size - 2 else fileItems.size)) {
             if (fileItems[i] == null) {
@@ -144,7 +143,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 continue
             }
 
-            val fileitem = JMenuItem(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
+            val fileitem = JMenuItem(getStringResource(fileItemsRes[i]!!))
             if (fileShortcuts[i] != ' ') {
                 fileitem.setAccelerator(
                     KeyStroke.getKeyStroke(
@@ -160,7 +159,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     }
 
     private fun createNotationMenu(): JMenu {
-        val notationmenu = JMenu(guistrings.getString("Notation"))
+        val notationmenu = JMenu(getStringResource(Res.string.gui_notation))
         val buttonGroup = ButtonGroup()
 
         for (i in Pattern.builtinNotations.indices) {
@@ -181,13 +180,13 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             !Desktop.isDesktopSupported()
                     || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        val helpmenu = JMenu(guistrings.getString("Help"))
+        val helpmenu = JMenu(getStringResource(Res.string.gui_help))
 
         for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(guistrings.getString(helpItems[i]!!.replace(' ', '_')))
+                val helpitem = JMenuItem(getStringResource(helpItemsRes[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -274,11 +273,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                             try {
                                 openJMLFile(file)
                             } catch (jeu: JuggleExceptionUser) {
-                                val template: String = errorstrings.getString("Error_reading_file")
-                                val arguments = arrayOf<Any?>(file.getName())
-                                val msg =
-                                    MessageFormat.format(template, *arguments) + ":\n" + jeu.message
-                                handleUserException(null, msg)
+                                val message = getStringResource(Res.string.error_reading_file, file.getName())
+                                handleUserException(null, message + ":\n" + jeu.message)
                             }
                         }
                     } catch (jei: JuggleExceptionInternal) {
@@ -365,7 +361,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             for (wm in menus) {
                 wm.removeAll()
 
-                val alltofront = JMenuItem(guistrings.getString("Bring_All_To_Front"))
+                val alltofront = JMenuItem(getStringResource(Res.string.gui_bring_all_to_front))
                 alltofront.actionCommand = "front"
                 alltofront.addActionListener(al)
                 wm.add(alltofront)
@@ -427,10 +423,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 try {
                     openJMLFile(file)
                 } catch (jeu: JuggleExceptionUser) {
-                    val template: String = errorstrings.getString("Error_reading_file")
-                    val arguments = arrayOf<Any?>(file.getName())
-                    val msg = MessageFormat.format(template, *arguments) + ":\n" + jeu.message
-                    handleUserException(null, msg)
+                    val message = getStringResource(Res.string.error_reading_file, file.getName())
+                    handleUserException(null, message + ":\n" + jeu.message)
                 }
             }
         }
@@ -459,16 +453,16 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     }
 
                     else -> {
-                        val message = errorstrings.getString("Error_invalid_JML")
+                        val message = getStringResource(Res.string.error_invalid_jml)
                         throw JuggleExceptionUser(message)
                     }
                 }
             } catch (fnfe: FileNotFoundException) {
-                throw JuggleExceptionUser(
-                    errorstrings.getString("Error_file_not_found") + ": " + fnfe.message
-                )
+                val message = getStringResource(Res.string.error_file_not_found)
+                throw JuggleExceptionUser("$message: ${fnfe.message}")
             } catch (ioe: IOException) {
-                throw JuggleExceptionUser(errorstrings.getString("Error_IO") + ": " + ioe.message)
+                val message = getStringResource(Res.string.error_io)
+                throw JuggleExceptionUser("$message: ${ioe.message}")
             }
         }
 
@@ -476,7 +470,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         @Suppress("AssignedValueIsNeverRead")
         fun showAboutBox() {
-            val aboutBox = JFrame(guistrings.getString("About_Juggling_Lab"))
+            val aboutBox = JFrame(getStringResource(Res.string.gui_about_juggling_lab))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
             val aboutPanel = JPanel(BorderLayout())
@@ -502,9 +496,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 constraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 15, 0, 15))
             )
 
-            val template: String = guistrings.getString("Version")
-            val arguments = arrayOf<Any?>(Constants.VERSION)
-            val abouttext5 = JLabel(MessageFormat.format(template, *arguments))
+            val message5 = getStringResource(Res.string.gui_version, Constants.VERSION)
+            val abouttext5 = JLabel(message5)
             abouttext5.setFont(Font("SansSerif", Font.PLAIN, 16))
             textPanel.add(abouttext5)
             gb.setConstraints(
@@ -512,9 +505,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 15, 0, 15))
             )
 
-            val template2: String = guistrings.getString("Copyright_message")
-            val arguments2 = arrayOf<Any?>(Constants.YEAR)
-            val abouttext6 = JLabel(MessageFormat.format(template2, *arguments2))
+            val message6 = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+            val abouttext6 = JLabel(message6)
             abouttext6.setFont(Font("SansSerif", Font.PLAIN, 14))
             textPanel.add(abouttext6)
             gb.setConstraints(
@@ -522,7 +514,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 constraints(GridBagConstraints.LINE_START, 0, 2, Insets(15, 15, 15, 15))
             )
 
-            val abouttext3 = JLabel(guistrings.getString("GPL_message"))
+            val abouttext3 = JLabel(getStringResource(Res.string.gui_gpl_message))
             abouttext3.setFont(Font("SansSerif", Font.PLAIN, 12))
             textPanel.add(abouttext3)
             gb.setConstraints(
@@ -558,7 +550,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 )
             }
 
-            val okbutton = JButton(guistrings.getString("OK"))
+            val okbutton = JButton(getStringResource(Res.string.gui_ok))
             textPanel.add(okbutton)
             gb.setConstraints(
                 okbutton,
@@ -607,6 +599,13 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             null,
             "Quit",
         )
+        private val fileItemsRes: List<StringResource?> = listOf(
+            Res.string.gui_new_pattern,
+            Res.string.gui_new_pattern_list,
+            Res.string.gui_open_jml___,
+            null,
+            Res.string.gui_quit,
+        )
         private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
@@ -625,6 +624,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
+        )
+        private val helpItemsRes: List<StringResource?> = listOf(
+            Res.string.gui_about_juggling_lab,
+            Res.string.gui_juggling_lab_online_help,
         )
         private val helpCommands: List<String?> = listOf(
             "about",
