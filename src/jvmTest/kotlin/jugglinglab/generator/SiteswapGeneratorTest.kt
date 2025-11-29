@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SiteswapGeneratorTest {
-    private fun runGeneratorTestCase(input: String): ArrayList<String> {
+    private fun runGeneratorTestCase(input: String): List<String> {
         val patterns = ArrayList<String>()
         val gen = SiteswapGenerator()
         gen.initGenerator(input.split(" "))
