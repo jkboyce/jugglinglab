@@ -13,6 +13,7 @@
 
 package jugglinglab.core
 
+import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.generated.resources.*
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.jml.JMLParser
@@ -476,12 +477,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             val aboutPanel = JPanel(BorderLayout())
             aboutPanel.setOpaque(true)
 
-            val url = ApplicationWindow::class.java.getResource("/about.png")
-            if (url != null) {
-                val aboutPicture = ImageIcon(url, "A lab")
-                val aboutLabel = JLabel(aboutPicture)
-                aboutPanel.add(aboutLabel, BorderLayout.LINE_START)
-            }
+            val composeImage = getImageResource("about.png")
+            val aboutPicture = ImageIcon(composeImage.toAwtImage(), "A lab")
+            val aboutLabel = JLabel(aboutPicture)
+            aboutPanel.add(aboutLabel, BorderLayout.LINE_START)
 
             val textPanel = JPanel()
             aboutPanel.add(textPanel, BorderLayout.LINE_END)
