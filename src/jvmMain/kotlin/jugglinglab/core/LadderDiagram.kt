@@ -88,9 +88,10 @@ open class LadderDiagram(p: JMLPattern) :
         }
     }
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     override fun mousePressed(me: MouseEvent) {
         if (ap != null && (ap!!.writingGIF || !ap!!.engineAnimating)) {
             return
@@ -134,9 +135,10 @@ open class LadderDiagram(p: JMLPattern) :
 
     override fun mouseExited(e: MouseEvent?) {}
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // java.awt.event.MouseMotionListener methods
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     override fun mouseDragged(me: MouseEvent) {
         if (ap != null && (ap!!.writingGIF || !ap!!.engineAnimating)) {
             return
@@ -158,9 +160,10 @@ open class LadderDiagram(p: JMLPattern) :
 
     override fun mouseMoved(e: MouseEvent?) {}
 
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Methods to interact with ladder items
-    //----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+
     protected fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
         for (item in ladderEventItems!!) {
             if (x >= item.xlow && x <= item.xhigh && y >= item.ylow && y <= item.yhigh) {
@@ -195,8 +198,8 @@ open class LadderDiagram(p: JMLPattern) :
                 if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
                     continue
                 }
-                d =
-                    ((x - item.xCenter) * (x - item.xCenter) + (y - item.yCenter) * (y - item.yCenter)).toDouble()
+                d = ((x - item.xCenter) * (x - item.xCenter) +
+                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
                 d = abs(sqrt(d) - item.radius)
             } else {
                 val xmin = min(item.xStart, item.xEnd)
@@ -227,14 +230,14 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     /*
-  public void setPathColor(int path, Color color) {
-    for (LadderPathItem item : ladderpathitems) {
-      if (item.pathnum == path) {
-        item.color = color;
+      public void setPathColor(int path, Color color) {
+        for (LadderPathItem item : ladderpathitems) {
+          if (item.pathnum == path) {
+            item.color = color;
+          }
+        }
       }
-    }
-  }
-  */
+      */
     protected fun updateTrackerPosition() {
         val loopStart = pat.loopStartTime
         val loopEnd = pat.loopEndTime
@@ -520,7 +523,8 @@ open class LadderDiagram(p: JMLPattern) :
             g.drawLine(0, BORDER_TOP, ladderWidth, BORDER_TOP)
             g.drawLine(0, ladderHeight - BORDER_TOP, ladderWidth, ladderHeight - BORDER_TOP)
             if (hasSwitchSymmetry) {
-                g.drawLine(leftX, ladderHeight - BORDER_TOP / 2, ladderWidth - leftX, ladderHeight - BORDER_TOP / 2)
+                g.drawLine(leftX, ladderHeight - BORDER_TOP / 2,
+                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2)
                 g.drawLine(
                     leftX,
                     ladderHeight - BORDER_TOP / 2,

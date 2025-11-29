@@ -810,12 +810,7 @@ class Renderer2D : Renderer() {
         }
     }
 
-    @Suppress("unused")
     companion object {
-        const val RENDER_POINT_FIELD: Int = 0
-        const val RENDER_WIRE_FRAME: Int = 1
-        const val RENDER_FLAT_SOLID: Int = 2
-
         const val ORIGINAL_ZOOM = true
     }
 }
