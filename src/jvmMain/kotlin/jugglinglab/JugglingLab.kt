@@ -395,14 +395,12 @@ object JugglingLab {
 
     private fun doGen(outpath: Path?, jc: AnimationPrefs?) {
         //System.setProperty("java.awt.headless", "true")
-        val genargs = jlargs.toTypedArray<String>()
-
         try {
             var ps = System.out
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapGenerator.runGeneratorCLI(genargs, GeneratorTargetBasic { ps.println(it) })
+            SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }
@@ -416,14 +414,12 @@ object JugglingLab {
 
     private fun doTrans(outpath: Path?, jc: AnimationPrefs?) {
         //System.setProperty("java.awt.headless", "true")
-        val transargs = jlargs.toTypedArray<String>()
-
         try {
             var ps = System.out
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapTransitioner.runTransitionerCLI(transargs, GeneratorTargetBasic { ps.println(it) })
+            SiteswapTransitioner.runTransitionerCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }

@@ -17,7 +17,7 @@ abstract class Generator {
     @Throws(JuggleExceptionUser::class)
     fun initGenerator(arg: String) {
         val args: List<String> = arg.split(' ', '\n').filter { it.isNotEmpty() }
-        initGenerator(args.toTypedArray())
+        initGenerator(args)
     }
 
     // return the notation name
@@ -38,7 +38,7 @@ abstract class Generator {
 
     // use command line args
     @Throws(JuggleExceptionUser::class)
-    abstract fun initGenerator(args: Array<String>)
+    abstract fun initGenerator(args: List<String>)
 
     // run the generator with no limits
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

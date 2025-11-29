@@ -84,7 +84,7 @@ class SiteswapGenerator : Generator() {
     }
 
     @Throws(JuggleExceptionUser::class)
-    override fun initGenerator(args: Array<String>) {
+    override fun initGenerator(args: List<String>) {
         config = SiteswapGeneratorConfig(args)
         allocateWorkspace()
     }
@@ -1413,7 +1413,7 @@ class SiteswapGenerator : Generator() {
 
         // Run the generator from command-line input.
 
-        fun runGeneratorCLI(args: Array<String>, target: GeneratorTarget) {
+        fun runGeneratorCLI(args: List<String>, target: GeneratorTarget) {
             if (args.size < 3) {
                 val version = getStringResource(Res.string.gui_version, Constants.VERSION)
                 val copyright = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
@@ -1435,12 +1435,6 @@ class SiteswapGenerator : Generator() {
             }
         }
     }
-}
-
-// Top-level function to run the generator from command line input.
-
-fun main(args: Array<String>) {
-    SiteswapGenerator.runGeneratorCLI(args, GeneratorTargetBasic { println(it) })
 }
 
 //------------------------------------------------------------------------------
@@ -1488,7 +1482,7 @@ class SiteswapGeneratorConfig {
     // relevant error message.
 
     @Throws(JuggleExceptionUser::class)
-    constructor(args: Array<String>) {
+    constructor(args: List<String>) {
         if (Constants.DEBUG_GENERATOR) {
             println("-----------------------------------------------------")
             println("initializing generator with args:")
@@ -1515,7 +1509,7 @@ class SiteswapGeneratorConfig {
     // relevant error message.
 
     @Throws(JuggleExceptionUser::class)
-    private fun parseInputFlags(args: Array<String>): Boolean {
+    private fun parseInputFlags(args: List<String>): Boolean {
         var trueMultiplex = false
         var i = 3
         while (i < args.size) {
@@ -1697,7 +1691,7 @@ class SiteswapGeneratorConfig {
     // relevant error message.
 
     @Throws(JuggleExceptionUser::class)
-    private fun parseInputConfig(args: Array<String>) {
+    private fun parseInputConfig(args: List<String>) {
         try {
             n = args[0].toInt()
         } catch (_: NumberFormatException) {

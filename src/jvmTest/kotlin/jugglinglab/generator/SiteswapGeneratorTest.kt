@@ -15,7 +15,7 @@ class SiteswapGeneratorTest {
     private fun runGeneratorTestCase(input: String): ArrayList<String> {
         val patterns = ArrayList<String>()
         val gen = SiteswapGenerator()
-        gen.initGenerator(input.split(" ").toTypedArray())
+        gen.initGenerator(input.split(" "))
         gen.runGenerator(GeneratorTargetBasic(patterns))
         return patterns
     }

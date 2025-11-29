@@ -87,7 +87,7 @@ class SiteswapTransitioner : Transitioner() {
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun initTransitioner(args: Array<String>) {
+    override fun initTransitioner(args: List<String>) {
         configTransitioner(args)
         allocateWorkspace()
     }
@@ -156,7 +156,7 @@ class SiteswapTransitioner : Transitioner() {
     // Set the transitioner configuration variables based on arguments.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun configTransitioner(args: Array<String>) {
+    private fun configTransitioner(args: List<String>) {
         if (Constants.DEBUG_TRANSITIONS) {
             println("-----------------------------------------------------")
             println("initializing transitioner with args:")
@@ -1154,7 +1154,7 @@ class SiteswapTransitioner : Transitioner() {
 
         // Run the transitioner from command-line input.
 
-        fun runTransitionerCLI(args: Array<String>, target: GeneratorTargetBasic?) {
+        fun runTransitionerCLI(args: List<String>, target: GeneratorTargetBasic?) {
             if (args.size < 2) {
                 var template: String = guistrings.getString("Version")
                 val arg1 = arrayOf<Any?>(Constants.VERSION)
@@ -1199,10 +1199,4 @@ class SiteswapTransitioner : Transitioner() {
             }
         }
     }
-}
-
-// Top-level function to run the transitioner from command-line input.
-
-fun main(args: Array<String>) {
-    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTargetBasic { println(it) })
 }

@@ -17,7 +17,7 @@ abstract class Transitioner {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun initTransitioner(arg: String) {
         val args: List<String> = arg.split(' ', '\n').filter { it.isNotEmpty() }
-        initTransitioner(args.toTypedArray())
+        initTransitioner(args)
     }
 
     // return the notation name
@@ -35,7 +35,7 @@ abstract class Transitioner {
 
     // use command line args
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun initTransitioner(args: Array<String>)
+    abstract fun initTransitioner(args: List<String>)
 
     // run the transitioner with no limits
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
