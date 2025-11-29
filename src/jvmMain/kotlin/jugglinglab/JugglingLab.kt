@@ -16,7 +16,7 @@ import jugglinglab.core.*
 import jugglinglab.core.ApplicationWindow.Companion.openJMLFile
 import jugglinglab.core.ApplicationWindow.Companion.showAboutBox
 import jugglinglab.core.PatternWindow.Companion.setExitOnLastClose
-import jugglinglab.generator.GeneratorTarget
+import jugglinglab.generator.GeneratorTargetBasic
 import jugglinglab.generator.SiteswapGenerator
 import jugglinglab.generator.SiteswapTransitioner
 import jugglinglab.jml.JMLParser
@@ -402,7 +402,7 @@ object JugglingLab {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapGenerator.runGeneratorCLI(genargs, GeneratorTarget { ps.println(it) })
+            SiteswapGenerator.runGeneratorCLI(genargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }
@@ -423,7 +423,7 @@ object JugglingLab {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapTransitioner.runTransitionerCLI(transargs, GeneratorTarget { ps.println(it) })
+            SiteswapTransitioner.runTransitionerCLI(transargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         }

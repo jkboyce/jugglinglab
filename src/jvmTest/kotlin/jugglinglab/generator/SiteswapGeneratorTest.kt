@@ -13,11 +13,11 @@ import kotlin.test.assertEquals
 
 class SiteswapGeneratorTest {
     private fun runGeneratorTestCase(input: String): ArrayList<String> {
+        val patterns = ArrayList<String>()
         val gen = SiteswapGenerator()
         gen.initGenerator(input.split(" ").toTypedArray())
-        val target = GeneratorTarget()
-        gen.runGenerator(target)
-        return target.patterns!!
+        gen.runGenerator(GeneratorTargetBasic(patterns))
+        return patterns
     }
 
     private fun Int.pow(b: Int): Int {

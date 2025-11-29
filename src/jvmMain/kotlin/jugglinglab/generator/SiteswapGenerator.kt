@@ -121,12 +121,14 @@ class SiteswapGenerator : Generator() {
 
             if (config.numflag != 0) {
                 if (num == 1) {
-                    target!!.setStatus(getStringResource(Res.string.gui_generator_patterns_1))
+                    val message = getStringResource(Res.string.gui_generator_patterns_1)
+                    target?.addResult(message, null, null)
                 } else {
                     val message = getStringResource(Res.string.gui_generator_patterns_ne1, num)
-                    target!!.setStatus(message)
+                    target?.addResult(message, null, null)
                 }
             }
+            target?.completed()
 
             return num
         } finally {
@@ -1228,7 +1230,7 @@ class SiteswapGenerator : Generator() {
             }
         }
 
-        target!!.writePattern(
+        target!!.addResult(
             outputline.toString(),
             "siteswap",
             outputline2.toString().trim { it <= ' ' })
@@ -1438,7 +1440,7 @@ class SiteswapGenerator : Generator() {
 // Top-level function to run the generator from command line input.
 
 fun main(args: Array<String>) {
-    SiteswapGenerator.runGeneratorCLI(args, GeneratorTarget { println(it) })
+    SiteswapGenerator.runGeneratorCLI(args, GeneratorTargetBasic { println(it) })
 }
 
 //------------------------------------------------------------------------------

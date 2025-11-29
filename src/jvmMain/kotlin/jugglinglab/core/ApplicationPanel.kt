@@ -14,7 +14,7 @@ import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
 import jugglinglab.generator.Generator.Companion.newGenerator
-import jugglinglab.generator.GeneratorTarget
+import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.Transitioner
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
@@ -186,16 +186,16 @@ class ApplicationPanel
                             var pw: PatternListWindow? = null
                             try {
                                 trans.initTransitioner()
-                                val pwot: GeneratorTarget?
+                                val pwot: GeneratorTargetPatternList
                                 if (plp != null) {
                                     plp.clearList()
-                                    pwot = GeneratorTarget(plp)
+                                    pwot = GeneratorTargetPatternList(plp)
                                     // jtp.setSelectedComponent(plp);
                                 } else {
                                     val title =
                                         trans.notationName + " " + guistrings.getString("Patterns")
                                     pw = PatternListWindow(title, this)
-                                    pwot = GeneratorTarget(pw.patternListPanel)
+                                    pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 }
                                 trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
                                 if (plp != null) {
@@ -261,16 +261,16 @@ class ApplicationPanel
                             var pw: PatternListWindow? = null
                             try {
                                 gen.initGenerator()
-                                val pwot: GeneratorTarget?
+                                val pwot: GeneratorTargetPatternList?
                                 if (plp != null) {
                                     plp.clearList()
-                                    pwot = GeneratorTarget(plp)
+                                    pwot = GeneratorTargetPatternList(plp)
                                     // jtp.setSelectedComponent(plp);
                                 } else {
                                     val title =
                                         gen.notationName + " " + guistrings.getString("Patterns")
                                     pw = PatternListWindow(title, this)
-                                    pwot = GeneratorTarget(pw.patternListPanel)
+                                    pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 }
                                 gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME)
                                 if (plp != null) {

@@ -118,7 +118,7 @@ class SiteswapTransitioner : Transitioner() {
 
             if (lMin == 0) {
                 // no transitions needed
-                target!!.writePattern(prefix + suffix, "siteswap", prefix + suffix)
+                target?.addResult(prefix + suffix, "siteswap", prefix + suffix)
                 num = 1
             } else {
                 siteswapPrev = siteswapFrom
@@ -130,12 +130,15 @@ class SiteswapTransitioner : Transitioner() {
             }
 
             if (num == 1) {
-                target!!.setStatus(guistrings.getString("Generator_patterns_1"))
+                val message = guistrings.getString("Generator_patterns_1")
+                target?.addResult(message, null, null)
             } else {
                 val template: String = guistrings.getString("Generator_patterns_ne1")
                 val arguments = arrayOf<Any?>(num)
-                target!!.setStatus(MessageFormat.format(template, *arguments))
+                val message = MessageFormat.format(template, *arguments)
+                target?.addResult(message, null, null)
             }
+            target?.completed()
 
             return num
         } finally {
@@ -197,6 +200,7 @@ class SiteswapTransitioner : Transitioner() {
                         i++
                     }
                 }
+
                 "-limits" -> noLimitsFlag = true
                 else -> {
                     val template: String = errorstrings.getString("Error_unrecognized_option")
@@ -297,7 +301,7 @@ class SiteswapTransitioner : Transitioner() {
         asyncHandRight = Array(jugglers) { BooleanArray(size + 1) }
     }
 
-    // Find the shortest possible return transition from `to` back to `from`.
+    // Find the shortest return transition from `to` back to `from`.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun findReturnTrans(): String {
@@ -306,27 +310,28 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         val sb = StringBuilder()
-        target = GeneratorTarget(sb)
+        target = GeneratorTargetBasic { sb.append(it) }
         siteswapPrev = siteswapTo
 
         while (true) {
             val num = findTrans(stateTo, stateFrom, lReturn, false)
-
             if (Constants.DEBUG_TRANSITIONS) {
                 println("l_return = $lReturn --> num = $num")
             }
+            when (num) {
+                0 -> {
+                    ++lReturn
+                    allocateWorkspace()
+                    continue
+                }
 
-            if (num == 0) {
-                ++lReturn
-                allocateWorkspace()
-                continue
+                1 -> {
+                    target?.completed()
+                    break
+                }
+
+                else -> throw JuggleExceptionInternal("Too many transitions in findReturnTrans()")
             }
-
-            if (num == 1) {
-                break
-            }
-
-            throw JuggleExceptionInternal("Too many transitions in findReturnTrans()")
         }
 
         // if we added a hands modifier at the end, such as 'R' or '<R|R>',
@@ -611,8 +616,8 @@ class SiteswapTransitioner : Transitioner() {
 
                             if (mhnt2.targetjuggler == mhnt.juggler &&
                                 mhnt2.targethand == mhnt.hand &&
-                                mhnt2.targetindex == pos && !mhnt2.isHold)
-                            {
+                                mhnt2.targetindex == pos && !mhnt2.isHold
+                            ) {
                                 ++numNotHolds
                             }
                         }
@@ -646,8 +651,8 @@ class SiteswapTransitioner : Transitioner() {
                                 (indexOvershoot >= 0 && (indexOvershoot % period == 0))
 
                             if (correctIndex && mhnt2.targetjuggler == mhnt.juggler &&
-                                mhnt2.targethand == mhnt.hand && !mhnt2.isHold)
-                            {
+                                mhnt2.targethand == mhnt.hand && !mhnt2.isHold
+                            ) {
                                 // System.out.println("got a fill from previous pattern");
                                 ++numNotHolds
                             }
@@ -796,7 +801,7 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         try {
-            target!!.writePattern(
+            target!!.addResult(
                 prefix + sb.toString() + suffix,
                 "siteswap",
                 prefix + sb.toString().trim { it <= ' ' } + suffix
@@ -1142,13 +1147,14 @@ class SiteswapTransitioner : Transitioner() {
 
     companion object {
         private const val LOOP_COUNTER_MAX: Int = 20000
+
         // Execution limits
         private const val TRANS_MAX_PATTERNS: Int = 1000
         private const val TRANS_MAX_TIME: Double = 15.0
 
         // Run the transitioner from command-line input.
 
-        fun runTransitionerCLI(args: Array<String>, target: GeneratorTarget?) {
+        fun runTransitionerCLI(args: Array<String>, target: GeneratorTargetBasic?) {
             if (args.size < 2) {
                 var template: String = guistrings.getString("Version")
                 val arg1 = arrayOf<Any?>(Constants.VERSION)
@@ -1198,5 +1204,5 @@ class SiteswapTransitioner : Transitioner() {
 // Top-level function to run the transitioner from command-line input.
 
 fun main(args: Array<String>) {
-    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTarget { println(it) })
+    SiteswapTransitioner.runTransitionerCLI(args, GeneratorTargetBasic { println(it) })
 }
