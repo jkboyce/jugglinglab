@@ -8,9 +8,7 @@
 
 package jugglinglab.generator
 
-import jugglinglab.JugglingLab
-import jugglinglab.JugglingLab.errorstrings
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.notation.MHNThrow
 import jugglinglab.notation.SiteswapPattern
@@ -18,8 +16,8 @@ import jugglinglab.util.JuggleExceptionDone
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionInterrupted
 import jugglinglab.util.JuggleExceptionUser
-import java.text.MessageFormat
-import java.util.*
+import jugglinglab.util.getStringResource
+import jugglinglab.util.getCurrentPlatform
 import kotlin.math.max
 import kotlin.math.min
 
@@ -116,12 +114,10 @@ class SiteswapTransitioner : Transitioner() {
             }
 
             if (num == 1) {
-                val message = guistrings.getString("Generator_patterns_1")
+                val message = getStringResource(Res.string.gui_generator_patterns_1)
                 target?.addResult(message, null, null)
             } else {
-                val template: String = guistrings.getString("Generator_patterns_ne1")
-                val arguments = arrayOf<Any?>(num)
-                val message = MessageFormat.format(template, *arguments)
+                val message = getStringResource(Res.string.gui_generator_patterns_ne1, num)
                 target?.addResult(message, null, null)
             }
             target?.completed()
@@ -153,13 +149,16 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         if (args.size < 2) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_trans_too_few_args"))
+            val message = getStringResource(Res.string.error_trans_too_few_args)
+            throw JuggleExceptionUser(message)
         }
         if (args[0] == "-") {
-            throw JuggleExceptionUser(errorstrings.getString("Error_trans_from_pattern"))
+            val message = getStringResource(Res.string.error_trans_from_pattern)
+            throw JuggleExceptionUser(message)
         }
         if (args[1] == "-") {
-            throw JuggleExceptionUser(errorstrings.getString("Error_trans_to_pattern"))
+            val message = getStringResource(Res.string.error_trans_to_pattern)
+            throw JuggleExceptionUser(message)
         }
 
         targetOccupancy = 1
@@ -178,10 +177,11 @@ class SiteswapTransitioner : Transitioner() {
                         try {
                             targetOccupancy = args[i + 1].toInt()
                         } catch (_: NumberFormatException) {
-                            val template: String = errorstrings.getString("Error_number_format")
-                            val str: String? = guistrings.getString("simultaneous_throws")
-                            val arguments = arrayOf<Any?>(str)
-                            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                            val message = getStringResource(
+                                Res.string.error_number_format,
+                                getStringResource(Res.string.gui_simultaneous_throws)
+                            )
+                            throw JuggleExceptionUser(message)
                         }
                         i++
                     }
@@ -189,9 +189,8 @@ class SiteswapTransitioner : Transitioner() {
 
                 "-limits" -> noLimitsFlag = true
                 else -> {
-                    val template: String = errorstrings.getString("Error_unrecognized_option")
-                    val arguments = arrayOf<Any?>(args[i])
-                    throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(Res.string.error_unrecognized_option, args[i])
+                    throw JuggleExceptionUser(message)
                 }
             }
             ++i
@@ -207,34 +206,34 @@ class SiteswapTransitioner : Transitioner() {
         try {
             siteswapFrom.fromString(patternFrom!!)
         } catch (jeu: JuggleExceptionUser) {
-            val template: String = errorstrings.getString("Error_trans_in_from_pattern")
-            val arguments = arrayOf<Any?>(jeu.message)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(Res.string.error_trans_in_from_pattern, jeu.message)
+            throw JuggleExceptionUser(message)
         }
         try {
             siteswapTo.fromString(patternTo!!)
         } catch (jeu: JuggleExceptionUser) {
-            val template: String = errorstrings.getString("Error_trans_in_to_pattern")
-            val arguments = arrayOf<Any?>(jeu.message)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(Res.string.error_trans_in_to_pattern, jeu.message)
+            throw JuggleExceptionUser(message)
         }
 
         // work out number of objects and jugglers, and beats (indexes) in states
         val fromN = siteswapFrom.numberOfPaths
         val toN = siteswapTo.numberOfPaths
         if (fromN != toN) {
-            val template: String = errorstrings.getString("Error_trans_unequal_objects")
-            val arguments = arrayOf<Any?>(fromN, toN)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(Res.string.error_trans_unequal_objects, fromN, toN)
+            throw JuggleExceptionUser(message)
         }
         n = fromN
 
         val fromJugglers = siteswapFrom.numberOfJugglers
         val toJugglers = siteswapTo.numberOfJugglers
         if (fromJugglers != toJugglers) {
-            val template: String = errorstrings.getString("Error_trans_unequal_jugglers")
-            val arguments = arrayOf<Any?>(fromJugglers, toJugglers)
-            throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+            val message = getStringResource(
+                Res.string.error_trans_unequal_jugglers,
+                fromJugglers,
+                toJugglers
+            )
+            throw JuggleExceptionUser(message)
         }
         jugglers = fromJugglers
 
@@ -393,9 +392,11 @@ class SiteswapTransitioner : Transitioner() {
             if (++loopCounter > LOOP_COUNTER_MAX) {
                 loopCounter = 0
                 if ((System.currentTimeMillis() - startTimeMillis) > maxTimeMillis) {
-                    val template: String = guistrings.getString("Generator_timeout")
-                    val arguments = arrayOf<Any?>(maxTime.toInt())
-                    throw JuggleExceptionDone(MessageFormat.format(template, *arguments))
+                    val message = getStringResource(
+                        Res.string.gui_generator_timeout,
+                        maxTime.toInt()
+                    )
+                    throw JuggleExceptionDone(message)
                 }
             }
         }
@@ -497,9 +498,8 @@ class SiteswapTransitioner : Transitioner() {
                     }
 
                     if (maxNum in 1..num) {
-                        val template: String = guistrings.getString("Generator_spacelimit")
-                        val arguments = arrayOf<Any?>(maxNum)
-                        throw JuggleExceptionDone(MessageFormat.format(template, *arguments))
+                        val message = getStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                        throw JuggleExceptionDone(message)
                     }
                 }
             }
@@ -1142,25 +1142,18 @@ class SiteswapTransitioner : Transitioner() {
 
         fun runTransitionerCLI(args: List<String>, target: GeneratorTargetBasic?) {
             if (args.size < 2) {
-                var template: String = guistrings.getString("Version")
-                val arg1 = arrayOf<Any?>(Constants.VERSION)
-                var output: String? =
-                    "Juggling Lab " + MessageFormat.format(template, *arg1)
-                        .lowercase(Locale.getDefault()) + "\n"
+                val version = getStringResource(Res.string.gui_version, Constants.VERSION)
+                val copyright = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+                var output = "Juggling Lab ${version.lowercase()}\n"
+                output += "$copyright\n"
+                output += getStringResource(Res.string.gui_gpl_message) + "\n\n"
 
-                template = guistrings.getString("Copyright_message")
-                val arg2 = arrayOf<Any?>(Constants.YEAR)
-                output += MessageFormat.format(template, *arg2) + "\n"
-
-                output += guistrings.getString("GPL_message") + "\n\n"
-
-                var intro: String = guistrings.getString("Transitioner_intro")
-                if (JugglingLab.isWindows) {
+                var intro = getStringResource(Res.string.gui_transitioner_intro)
+                if (getCurrentPlatform().startsWith("windows", ignoreCase = true)) {
                     // replace single quotes with double quotes in Windows examples
-                    intro = intro.replace("'".toRegex(), "\"")
+                    intro = intro.replace("'", "\"")
                 }
                 output += intro
-
                 println(output)
                 return
             }
@@ -1181,7 +1174,8 @@ class SiteswapTransitioner : Transitioner() {
             } catch (e: JuggleExceptionDone) {
                 println(e.message)
             } catch (e: Exception) {
-                println(errorstrings.getString("Error") + ": " + e.message)
+                val message = getStringResource(Res.string.error) + ": " + e.message
+                println(message)
             }
         }
     }
