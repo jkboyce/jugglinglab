@@ -69,5 +69,5 @@ interface GeneratorTarget {
     fun addResult(display: String, notation: String?, anim: String?)
 
     // called when the generator is done
-    fun completed()
+    fun completed() {}
 }

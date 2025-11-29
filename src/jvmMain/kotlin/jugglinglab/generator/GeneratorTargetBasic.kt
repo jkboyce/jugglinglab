@@ -29,6 +29,4 @@ class GeneratorTargetBasic: GeneratorTarget {
             patternsTarget?.add(anim)
         }
     }
-
-    override fun completed() {}
 }
