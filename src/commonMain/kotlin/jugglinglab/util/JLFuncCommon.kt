@@ -258,3 +258,7 @@ expect fun loadComposeImageFromUrl(urlString: String): ImageBitmap
 // Return the native screen refresh rate.
 
 expect fun getScreenFps(): Double
+
+// Return platform information.
+
+expect fun getCurrentPlatform(): String

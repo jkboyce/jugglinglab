@@ -255,3 +255,9 @@ actual fun getScreenFps(): Double {
     }
     return if (fpsScreen < 20) 60.0 else fpsScreen
 }
+
+// Return platform information.
+
+actual fun getCurrentPlatform(): String {
+    return System.getProperty("os.name") + " " + System.getProperty("os.version")
+}
