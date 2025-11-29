@@ -11,7 +11,6 @@ package jugglinglab.generator
 
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import javax.swing.JPanel
 
 abstract class Generator {
     @Throws(JuggleExceptionUser::class)
@@ -25,16 +24,6 @@ abstract class Generator {
 
     // return a startup text message
     abstract val startupMessage: String
-
-    // return a JPanel to be used by ApplicationPanel in the UI
-    abstract val generatorControl: JPanel
-
-    // reset control values to defaults
-    abstract fun resetGeneratorControl()
-
-    // use parameters from generator control
-    @Throws(JuggleExceptionUser::class)
-    abstract fun initGenerator()
 
     // use command line args
     @Throws(JuggleExceptionUser::class)

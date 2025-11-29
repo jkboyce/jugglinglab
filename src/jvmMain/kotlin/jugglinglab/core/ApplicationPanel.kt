@@ -15,6 +15,8 @@ import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
+import jugglinglab.generator.SiteswapGeneratorControl
+import jugglinglab.generator.SiteswapTransitionerControl
 import jugglinglab.generator.Transitioner
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
@@ -172,8 +174,13 @@ class ApplicationPanel
     }
 
     private fun addTransitionerControl(trans: Transitioner, plp: PatternListPanel?) {
+        val transControl: SiteswapTransitionerControl? = when (trans.notationName) {
+            "Siteswap" -> SiteswapTransitionerControl()
+            else -> null
+        }
+
         val but1 = JButton(guistrings.getString("Defaults")).apply {
-            addActionListener { _: ActionEvent? -> trans.resetTransitionerControl() }
+            addActionListener { _: ActionEvent? -> transControl?.resetControl() }
         }
 
         transButton = JButton(guistrings.getString("Run")).apply {
@@ -185,7 +192,9 @@ class ApplicationPanel
                             transButton!!.setEnabled(false)
                             var pw: PatternListWindow? = null
                             try {
-                                trans.initTransitioner()
+                                if (transControl != null) {
+                                    trans.initTransitioner(transControl.params)
+                                }
                                 val pwot: GeneratorTargetPatternList
                                 if (plp != null) {
                                     plp.clearList()
@@ -239,7 +248,9 @@ class ApplicationPanel
         }
         val p1 = JPanel().apply {
             setLayout(BorderLayout())
-            add(trans.transitionerControl, BorderLayout.PAGE_START)
+            if (transControl != null) {
+                add(transControl, BorderLayout.PAGE_START)
+            }
             add(p3, BorderLayout.PAGE_END)
         }
 
@@ -247,8 +258,12 @@ class ApplicationPanel
     }
 
     private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
+        val genControl: SiteswapGeneratorControl? = when (gen.notationName) {
+            "Siteswap" -> SiteswapGeneratorControl()
+            else -> null
+        }
         val but1 = JButton(guistrings.getString("Defaults")).apply {
-            addActionListener { _: ActionEvent? -> gen.resetGeneratorControl() }
+            addActionListener { _: ActionEvent? -> genControl?.resetControl() }
         }
 
         genButton = JButton(guistrings.getString("Run")).apply {
@@ -260,19 +275,21 @@ class ApplicationPanel
                             genButton!!.setEnabled(false)
                             var pw: PatternListWindow? = null
                             try {
-                                gen.initGenerator()
-                                val pwot: GeneratorTargetPatternList?
+                                if (genControl != null) {
+                                    gen.initGenerator(genControl.params)
+                                }
+                                val gtpl: GeneratorTargetPatternList?
                                 if (plp != null) {
                                     plp.clearList()
-                                    pwot = GeneratorTargetPatternList(plp)
+                                    gtpl = GeneratorTargetPatternList(plp)
                                     // jtp.setSelectedComponent(plp);
                                 } else {
                                     val title =
                                         gen.notationName + " " + guistrings.getString("Patterns")
                                     pw = PatternListWindow(title, this)
-                                    pwot = GeneratorTargetPatternList(pw.patternListPanel)
+                                    gtpl = GeneratorTargetPatternList(pw.patternListPanel)
                                 }
-                                gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME)
+                                gen.runGenerator(gtpl, MAX_PATTERNS, MAX_TIME)
                                 if (plp != null) {
                                     jtp!!.setSelectedComponent(plp)
                                 }
@@ -329,7 +346,9 @@ class ApplicationPanel
         }
         val p1 = JPanel().apply {
             setLayout(BorderLayout())
-            add(gen.generatorControl, BorderLayout.PAGE_START)
+            if (genControl != null) {
+                add(genControl, BorderLayout.PAGE_START)
+            }
             add(p3, BorderLayout.PAGE_END)
         }
 

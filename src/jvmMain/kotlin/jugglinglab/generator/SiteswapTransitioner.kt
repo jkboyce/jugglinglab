@@ -20,7 +20,6 @@ import jugglinglab.util.JuggleExceptionInterrupted
 import jugglinglab.util.JuggleExceptionUser
 import java.text.MessageFormat
 import java.util.*
-import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
 
@@ -66,25 +65,12 @@ class SiteswapTransitioner : Transitioner() {
     private var target: GeneratorTarget? = null
     private var prefix: String = ""
     private var suffix: String = ""
-    private val control: SiteswapTransitionerControl by lazy { SiteswapTransitionerControl() }
 
     //--------------------------------------------------------------------------
     // Transitioner overrides
     //--------------------------------------------------------------------------
 
     override val notationName: String = "Siteswap"
-
-    override val transitionerControl: JPanel
-        get() = control
-
-    override fun resetTransitionerControl() {
-        control.resetControl()
-    }
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun initTransitioner() {
-        initTransitioner(control.params)
-    }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun initTransitioner(args: List<String>) {

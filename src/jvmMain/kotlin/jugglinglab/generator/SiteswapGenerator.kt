@@ -34,7 +34,6 @@ package jugglinglab.generator
 import jugglinglab.core.Constants
 import jugglinglab.generated.resources.*
 import jugglinglab.util.*
-import javax.swing.JPanel
 import kotlin.math.max
 
 class SiteswapGenerator : Generator() {
@@ -61,7 +60,6 @@ class SiteswapGenerator : Generator() {
 
     // other state variables
     private var target: GeneratorTarget? = null
-    private val control: SiteswapGeneratorControl by lazy { SiteswapGeneratorControl() }
 
     //--------------------------------------------------------------------------
     // Generator overrides
@@ -70,18 +68,6 @@ class SiteswapGenerator : Generator() {
     override val notationName: String = "Siteswap"
 
     override val startupMessage: String = "Welcome to the J2 Siteswap Generator"
-
-    override val generatorControl: JPanel
-        get() = control
-
-    override fun resetGeneratorControl() {
-        control.resetControl()
-    }
-
-    @Throws(JuggleExceptionUser::class)
-    override fun initGenerator() {
-        initGenerator(control.params)
-    }
 
     @Throws(JuggleExceptionUser::class)
     override fun initGenerator(args: List<String>) {
