@@ -13,7 +13,19 @@
 
 package jugglinglab.core
 
-import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.ui.graphics.Color
 import jugglinglab.generated.resources.*
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.jml.JMLParser
@@ -26,6 +38,7 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -37,6 +50,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URI
 import java.util.*
+import androidx.compose.ui.unit.dp
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
@@ -95,7 +109,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         val loc = Locale.getDefault()
         applyComponentOrientation(ComponentOrientation.getOrientation(loc))
 
-        setBackground(Color(0.9f, 0.9f, 0.9f))
+        setBackground(java.awt.Color(0.9f, 0.9f, 0.9f))
         pack()
     }
 
@@ -469,106 +483,92 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         // Show the user the "About" dialog box.
 
-        @Suppress("AssignedValueIsNeverRead")
         fun showAboutBox() {
             val aboutBox = JFrame(getStringResource(Res.string.gui_about_juggling_lab))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
-            val aboutPanel = JPanel(BorderLayout())
-            aboutPanel.setOpaque(true)
-
-            val composeImage = getImageResource("about.png")
-            val aboutPicture = ImageIcon(composeImage.toAwtImage(), "A lab")
-            val aboutLabel = JLabel(aboutPicture)
-            aboutPanel.add(aboutLabel, BorderLayout.LINE_START)
-
-            val textPanel = JPanel()
-            aboutPanel.add(textPanel, BorderLayout.LINE_END)
-            val gb = GridBagLayout()
-            textPanel.setLayout(gb)
-
-            val abouttext1 = JLabel("Juggling Lab")
-            abouttext1.setFont(Font("SansSerif", Font.BOLD, 18))
-            textPanel.add(abouttext1)
-            gb.setConstraints(
-                abouttext1,
-                constraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 15, 0, 15))
-            )
-
-            val message5 = getStringResource(Res.string.gui_version, Constants.VERSION)
-            val abouttext5 = JLabel(message5)
-            abouttext5.setFont(Font("SansSerif", Font.PLAIN, 16))
-            textPanel.add(abouttext5)
-            gb.setConstraints(
-                abouttext5,
-                constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 15, 0, 15))
-            )
-
-            val message6 = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
-            val abouttext6 = JLabel(message6)
-            abouttext6.setFont(Font("SansSerif", Font.PLAIN, 14))
-            textPanel.add(abouttext6)
-            gb.setConstraints(
-                abouttext6,
-                constraints(GridBagConstraints.LINE_START, 0, 2, Insets(15, 15, 15, 15))
-            )
-
-            val abouttext3 = JLabel(getStringResource(Res.string.gui_gpl_message))
-            abouttext3.setFont(Font("SansSerif", Font.PLAIN, 12))
-            textPanel.add(abouttext3)
-            gb.setConstraints(
-                abouttext3,
-                constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 15, 15, 15))
-            )
-
-            val javaversion = System.getProperty("java.version")
-            val javavmname = System.getProperty("java.vm.name")
-            val javavmversion = System.getProperty("java.vm.version")
-
-            var gridrow = 4
-            if (javaversion != null) {
-                val java1 = JLabel("Java version $javaversion")
-                java1.setFont(Font("SansSerif", Font.PLAIN, 12))
-                textPanel.add(java1)
-                gb.setConstraints(
-                    java1,
-                    constraints(
-                        GridBagConstraints.LINE_START, 0, gridrow++, Insets(0, 15, 0, 15)
-                    )
-                )
+            val composePanel = ComposePanel()
+            composePanel.setContent {
+                MaterialTheme {
+                    AboutContent(onCloseRequest = { aboutBox.dispose() })
+                }
             }
-            if (javavmname != null && javavmversion != null) {
-                val java2 = JLabel("$javavmname ($javavmversion)")
-                java2.setFont(Font("SansSerif", Font.PLAIN, 12))
-                textPanel.add(java2)
-                gb.setConstraints(
-                    java2,
-                    constraints(
-                        GridBagConstraints.LINE_START, 0, gridrow++, Insets(0, 15, 0, 15)
-                    )
-                )
-            }
-
-            val okbutton = JButton(getStringResource(Res.string.gui_ok))
-            textPanel.add(okbutton)
-            gb.setConstraints(
-                okbutton,
-                constraints(GridBagConstraints.LINE_END, 0, gridrow++, Insets(15, 15, 15, 15))
-            )
-            okbutton.addActionListener { _: ActionEvent? ->
-                aboutBox.isVisible = false
-                aboutBox.dispose()
-            }
-
-            aboutBox.contentPane = aboutPanel
-
-            val loc = Locale.getDefault()
-            aboutBox.applyComponentOrientation(ComponentOrientation.getOrientation(loc))
+            aboutBox.contentPane = composePanel
 
             aboutBox.pack()
             aboutBox.setResizable(false)
             aboutBox.setLocationRelativeTo(null) // center frame on screen
             aboutBox.isVisible = true
+        }
+
+        @Composable
+        private fun AboutContent(onCloseRequest: () -> Unit) {
+            // Set height to IntrinsicSize.Min so the Row height is defined by its children.
+            // This allows the Image to stretch to match the height of the Column.
+            Row(modifier = Modifier.padding(16.dp).height(IntrinsicSize.Min)) {
+                Image(
+                    painter = painterResource(Res.drawable.about),
+                    contentDescription = "Juggling Lab Logo",
+                    // Crop ensures the image fills the height without distortion
+                    contentScale = ContentScale.Crop,
+                    // Fill the height determined by the text column
+                    modifier = Modifier.fillMaxHeight()
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text("Juggling Lab", style = MaterialTheme.typography.h5)
+                    Text(
+                        text = getStringResource(Res.string.gui_version, Constants.VERSION),
+                        style = MaterialTheme.typography.subtitle1
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = getStringResource(Res.string.gui_copyright_message, Constants.YEAR),
+                        style = MaterialTheme.typography.body2
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = getStringResource(Res.string.gui_gpl_message),
+                        style = MaterialTheme.typography.caption
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // System properties
+                    val javaVersion = System.getProperty("java.version")
+                    val javaVmName = System.getProperty("java.vm.name")
+                    val javaVmVersion = System.getProperty("java.vm.version")
+
+                    if (javaVersion != null) {
+                        Text(
+                            "Java version $javaVersion",
+                            style = MaterialTheme.typography.caption
+                        )
+                    }
+                    if (javaVmName != null && javaVmVersion != null) {
+                        Text(
+                            "$javaVmName ($javaVmVersion)",
+                            style = MaterialTheme.typography.caption
+                        )
+                    }
+
+                    Button(
+                        onClick = onCloseRequest,
+                        modifier = Modifier.align(Alignment.End),
+                        // Set colors to White background/Black text to match target.jpg
+                        // This also helps resolve default font padding issues that clip text.
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                    ) {
+                        Text(getStringResource(Res.string.gui_ok), color = Color.Black)
+                    }
+                }
+            }
         }
 
         // Bring the user to the online help page.
