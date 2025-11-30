@@ -19,9 +19,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jugglinglab.JugglingLab.guistrings
 import java.awt.BorderLayout
+import java.awt.Dimension
 import javax.swing.JPanel
 
 internal class SiteswapTransitionerControl : JPanel() {
+
     // State lifted to class level so legacy methods (params, resetControl) can access it
     private val fromPattern = mutableStateOf("")
     private val toPattern = mutableStateOf("")
@@ -38,7 +40,7 @@ internal class SiteswapTransitionerControl : JPanel() {
 
         // Set a preferred size so that pack() on the parent JFrame works correctly,
         // shrinking the window to fit the content instead of using a default large size.
-        composePanel.preferredSize = java.awt.Dimension(500, 450)
+        composePanel.preferredSize = Dimension(500, 450)
 
         composePanel.setContent {
             MaterialTheme {
@@ -96,9 +98,8 @@ internal class SiteswapTransitionerControl : JPanel() {
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
 
             // --- Pattern Entry Section ---
             // Using a grid-like layout for labels and fields
@@ -175,8 +176,7 @@ internal class SiteswapTransitionerControl : JPanel() {
                             onValueChange = { simultaneousThrows.value = it },
                             enabled = enabled,
                             singleLine = true,
-                            modifier = Modifier.width(50.dp).height(32.dp),
-                            //contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                            modifier = Modifier.width(50.dp),
                             textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black,
@@ -221,14 +221,8 @@ internal class SiteswapTransitionerControl : JPanel() {
             OutlinedTextField(
                 value = textState.value,
                 onValueChange = { textState.value = it },
-                modifier = Modifier.width(200.dp).height(40.dp),
+                modifier = Modifier.width(250.dp),
                 singleLine = true,
-                //contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    textColor = Color.Black,
-                    cursorColor = Color.Black,
-                    backgroundColor = Color.White
-                )
             )
         }
     }
