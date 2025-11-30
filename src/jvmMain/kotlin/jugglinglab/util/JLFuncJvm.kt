@@ -10,6 +10,8 @@
 
 package jugglinglab.util
 
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.JugglingLab.guistrings
@@ -232,6 +234,14 @@ actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
 // Other
 //------------------------------------------------------------------------------
 
+// Helper extension function to convert Compose Color to AWT Color.
+
+fun Color.toAwtColor(): java.awt.Color {
+    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
+    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
+    return java.awt.Color(this.toArgb(), true)
+}
+
 // Return the native screen refresh rate.
 
 actual fun getScreenFps(): Double {
@@ -254,10 +264,10 @@ actual fun getCurrentPlatform(): String {
     return System.getProperty("os.name") + " " + System.getProperty("os.version")
 }
 
-// Helper extension function to convert Compose Color to AWT Color.
+actual fun getAboutBoxPlatform(): String {
+    val javaVersion = System.getProperty("java.version")
+    val javaVmName = System.getProperty("java.vm.name")
+    val javaVmVersion = System.getProperty("java.vm.version")
 
-fun Color.toAwtColor(): java.awt.Color {
-    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
-    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
-    return java.awt.Color(this.toArgb(), true)
+    return "Java version $javaVersion\n$javaVmName ($javaVmVersion)"
 }

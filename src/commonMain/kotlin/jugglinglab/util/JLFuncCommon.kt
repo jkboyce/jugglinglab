@@ -262,3 +262,5 @@ expect fun getScreenFps(): Double
 // Return platform information.
 
 expect fun getCurrentPlatform(): String
+
+expect fun getAboutBoxPlatform(): String
