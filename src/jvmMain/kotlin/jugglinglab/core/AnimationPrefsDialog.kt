@@ -25,16 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jugglinglab.generated.resources.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
-import java.awt.Dimension
 import javax.swing.JDialog
 import javax.swing.JFrame
-import javax.swing.JOptionPane
 
 class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
     parentFrame,
@@ -44,36 +40,17 @@ class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
     private var result: AnimationPrefs? = null
 
     init {
-        // Basic dialog setup
         isResizable = false
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
     }
 
+    @Throws(JuggleExceptionUser::class)
     fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
-        // Calculate the "manual settings" string (extra parameters not covered by UI)
-        val manualSettingsInitial = try {
-            val pl = ParameterList(oldPrefs.toString())
-            val paramsRemove = listOf(
-                "width", "height", "fps", "slowdown", "border",
-                "showground", "stereo", "startpaused", "mousepause",
-                "catchsound", "bouncesound"
-            )
-            for (param in paramsRemove) {
-                pl.removeParameter(param)
-            }
-            pl.toString()
-        } catch (jeu: JuggleExceptionUser) {
-            handleFatalException(JuggleExceptionInternal("Anim Prefs Dialog error: " + jeu.message))
-            ""
-        }
-
-        // Setup the Compose content
         val composePanel = ComposePanel()
         composePanel.setContent {
             MaterialTheme {
                 AnimationPrefsContent(
                     initialPrefs = oldPrefs,
-                    initialManualSettings = manualSettingsInitial,
                     onConfirm = { newPrefs ->
                         result = newPrefs
                         isVisible = false
@@ -88,14 +65,8 @@ class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
 
         contentPane = composePanel
         pack()
-        // Ensure reasonable size if pack is too small, though pack usually works fine with Compose
-        if (width < 300) size = Dimension(350, 600)
-
         setLocationRelativeTo(parentFrame)
-
-        // This blocks until isVisible = false is called in the callbacks above
-        isVisible = true
-
+        isVisible = true  // blocks until isVisible=false is called above
         return result ?: oldPrefs
     }
 }
@@ -103,77 +74,82 @@ class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
 @Composable
 fun AnimationPrefsContent(
     initialPrefs: AnimationPrefs,
-    initialManualSettings: String,
     onConfirm: (AnimationPrefs) -> Unit,
     onCancel: () -> Unit
 ) {
+    // Extra parameters not covered by UI fields
+    val initialManualSettings = try {
+        val pl = ParameterList(initialPrefs.toString())
+        val paramsRemove = listOf(
+            "width", "height", "fps", "slowdown", "border",
+            "showground", "startpaused", "mousepause", "stereo",
+            "catchsound", "bouncesound"
+        )
+        for (param in paramsRemove) {
+            pl.removeParameter(param)
+        }
+        pl.toString()
+    } catch (_: Exception) { "" }
+
     // State holders
     var width by remember { mutableStateOf(initialPrefs.width.toString()) }
     var height by remember { mutableStateOf(initialPrefs.height.toString()) }
     var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
     var border by remember { mutableStateOf(initialPrefs.border.toString()) }
-
     var showGround by remember { mutableStateOf(initialPrefs.showGround) }
-
     var startPaused by remember { mutableStateOf(initialPrefs.startPause) }
     var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
     var stereo by remember { mutableStateOf(initialPrefs.stereo) }
     var catchSound by remember { mutableStateOf(initialPrefs.catchSound) }
     var bounceSound by remember { mutableStateOf(initialPrefs.bounceSound) }
-
     var manualSettings by remember { mutableStateOf(initialManualSettings) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     // Helper for creating the return object
     fun tryCreatePrefs() {
-        try {
-            val newPrefs = AnimationPrefs(initialPrefs)
+        val newPrefs = AnimationPrefs(initialPrefs)
 
-            // Validate and set numeric fields
-            // We use helper functions to throw exceptions that match the original logic
-            // or we can use the original logic's approach of ignoring invalid inputs
-            // but showing an error dialog is better user experience.
-
-            fun parseDouble(valStr: String, name: String): Double {
-                return valStr.toDoubleOrNull()?.takeIf { it > 0.0 }
-                    ?: throw NumberFormatException(name)
-            }
-
-            fun parseInt(valStr: String, name: String): Int {
-                return valStr.toIntOrNull()?.takeIf { it >= 0 }
-                    ?: throw NumberFormatException(name)
-            }
-
-            try { newPrefs.width = parseInt(width, "width") } catch(_: Exception) { showError("width") ; return }
-            try { newPrefs.height = parseInt(height, "height") } catch(_: Exception) { showError("height") ; return }
-            try { newPrefs.fps = parseDouble(fps, "fps") } catch(_: Exception) { showError("fps") ; return }
-            try { newPrefs.slowdown = parseDouble(slowdown, "slowdown") } catch(_: Exception) { showError("slowdown") ; return }
-            try { newPrefs.border = parseInt(border, "border") } catch(_: Exception) { showError("border") ; return }
-
-            newPrefs.showGround = showGround
-            newPrefs.startPause = startPaused
-            newPrefs.mousePause = mousePause
-            newPrefs.stereo = stereo
-            newPrefs.catchSound = catchSound
-            newPrefs.bounceSound = bounceSound
-
-            // Process manual settings
-            if (manualSettings.isNotBlank()) {
-                try {
-                    // We effectively merge the current object state with the manual string
-                    newPrefs.fromString("$newPrefs;$manualSettings")
-                } catch (jeu: JuggleExceptionUser) {
-                    JOptionPane.showMessageDialog(null, jeu.message, "Error", JOptionPane.ERROR_MESSAGE)
-                    return
-                }
-            }
-
-            onConfirm(newPrefs)
-
-        } catch (e: Exception) {
-            // Fallback catch-all
-            JOptionPane.showMessageDialog(null, e.message, "Error", JOptionPane.ERROR_MESSAGE)
+        // Validate and set numeric fields
+        fun parseDouble(valStr: String, name: String): Double {
+            return valStr.toDoubleOrNull()?.takeIf { it > 0.0 }
+                ?: throw NumberFormatException(name)
         }
+        fun parseInt(valStr: String, name: String): Int {
+            return valStr.toIntOrNull()?.takeIf { it >= 0 }
+                ?: throw NumberFormatException(name)
+        }
+
+        try {
+            newPrefs.width = parseInt(width, "width")
+            newPrefs.height = parseInt(height, "height")
+            newPrefs.fps = parseDouble(fps, "fps")
+            newPrefs.slowdown = parseDouble(slowdown, "slowdown")
+            newPrefs.border = parseInt(border, "border")
+        } catch (e: Exception) {
+            errorMessage = getStringResource(Res.string.error_number_format, e.message)
+            return
+        }
+
+        newPrefs.showGround = showGround
+        newPrefs.startPause = startPaused
+        newPrefs.mousePause = mousePause
+        newPrefs.stereo = stereo
+        newPrefs.catchSound = catchSound
+        newPrefs.bounceSound = bounceSound
+
+        // Process manual settings
+        if (manualSettings.isNotBlank()) {
+            try {
+                // We effectively merge the current object state with the manual string
+                newPrefs.fromString("$newPrefs;$manualSettings")
+            } catch (jeu: JuggleExceptionUser) {
+                errorMessage = jeu.message
+                return
+            }
+        }
+
+        onConfirm(newPrefs)
     }
 
     Column(
@@ -182,18 +158,20 @@ fun AnimationPrefsContent(
             .width(IntrinsicSize.Max) // Fit width to content
             .verticalScroll(rememberScrollState())
     ) {
-        // --- Number Inputs Section ---
-        // Layout: [TextField] [Label]
-
+        // Number inputs section
         PrefsInputRow(width, { width = it }, getStringResource(Res.string.gui_width))
         PrefsInputRow(height, { height = it }, getStringResource(Res.string.gui_height))
         PrefsInputRow(fps, { fps = it }, getStringResource(Res.string.gui_frames_per_second))
-        PrefsInputRow(slowdown, { slowdown = it }, getStringResource(Res.string.gui_slowdown_factor))
+        PrefsInputRow(
+            slowdown,
+            { slowdown = it },
+            getStringResource(Res.string.gui_slowdown_factor)
+        )
         PrefsInputRow(border, { border = it }, getStringResource(Res.string.gui_border__pixels_))
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // --- Dropdown Section ---
+        // Dropdown section
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 4.dp)
@@ -216,7 +194,11 @@ fun AnimationPrefsContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(selectedText, style = MaterialTheme.typography.body2, maxLines = 1)
                         Spacer(Modifier.weight(1f))
-                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Filled.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -232,21 +214,40 @@ fun AnimationPrefsContent(
             }
 
             Spacer(modifier = Modifier.width(8.dp))
-            Text(getStringResource(Res.string.gui_prefs_show_ground), style = MaterialTheme.typography.body1)
+            Text(
+                getStringResource(Res.string.gui_prefs_show_ground),
+                style = MaterialTheme.typography.body1
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // --- Checkboxes Section ---
-        PrefsCheckbox(startPaused, { startPaused = it }, getStringResource(Res.string.gui_start_paused))
-        PrefsCheckbox(mousePause, { mousePause = it }, getStringResource(Res.string.gui_pause_on_mouse_away))
+        // Checkboxes section
+        PrefsCheckbox(
+            startPaused,
+            { startPaused = it },
+            getStringResource(Res.string.gui_start_paused)
+        )
+        PrefsCheckbox(
+            mousePause,
+            { mousePause = it },
+            getStringResource(Res.string.gui_pause_on_mouse_away)
+        )
         PrefsCheckbox(stereo, { stereo = it }, getStringResource(Res.string.gui_stereo_display))
-        PrefsCheckbox(catchSound, { catchSound = it }, getStringResource(Res.string.gui_catch_sounds))
-        PrefsCheckbox(bounceSound, { bounceSound = it }, getStringResource(Res.string.gui_bounce_sounds))
+        PrefsCheckbox(
+            catchSound,
+            { catchSound = it },
+            getStringResource(Res.string.gui_catch_sounds)
+        )
+        PrefsCheckbox(
+            bounceSound,
+            { bounceSound = it },
+            getStringResource(Res.string.gui_bounce_sounds)
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Manual Settings ---
+        // Manual Settings section
         Text("Manual settings", style = MaterialTheme.typography.body1)
         OutlinedTextField(
             value = manualSettings,
@@ -257,7 +258,7 @@ fun AnimationPrefsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Buttons ---
+        // Button section
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -273,10 +274,25 @@ fun AnimationPrefsContent(
                 Text(getStringResource(Res.string.gui_ok))
             }
         }
+
+        if (errorMessage != null) {
+            // Error dialog in case of a problem
+            AlertDialog(
+                onDismissRequest = { errorMessage = null },
+                title = { Text("Error") },
+                text = { Text(errorMessage!!) },
+                confirmButton = {
+                    Button(onClick = { errorMessage = null }) {
+                        Text("OK")
+                    }
+                },
+            )
+        }
     }
 }
 
 // Helper Composable for [TextField] [Label] rows
+
 @Composable
 private fun PrefsInputRow(
     value: String,
@@ -290,7 +306,7 @@ private fun PrefsInputRow(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.width(80.dp).height(48.dp), // Fixed width to match screenshot look
+            modifier = Modifier.width(80.dp).height(48.dp),
             singleLine = true,
             textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -304,6 +320,7 @@ private fun PrefsInputRow(
 }
 
 // Helper Composable for Checkboxes
+
 @Composable
 private fun PrefsCheckbox(
     checked: Boolean,
@@ -325,10 +342,4 @@ private fun PrefsCheckbox(
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = label, style = MaterialTheme.typography.body1)
     }
-}
-
-// Helper for error dialogs (bridging to Swing for the modal error popup)
-private fun showError(fieldName: String) {
-    val template = getStringResource(Res.string.error_number_format, fieldName)
-    JOptionPane.showMessageDialog(null, template, "Error", JOptionPane.ERROR_MESSAGE)
 }
