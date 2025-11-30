@@ -26,6 +26,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AnimationPrefsContent(
@@ -115,11 +116,11 @@ fun AnimationPrefsContent(
             .verticalScroll(rememberScrollState())
     ) {
         // Number inputs section
-        PrefsInputRow(width, { width = it }, getStringResource(Res.string.gui_width))
-        PrefsInputRow(height, { height = it }, getStringResource(Res.string.gui_height))
-        PrefsInputRow(fps, { fps = it }, getStringResource(Res.string.gui_frames_per_second))
-        PrefsInputRow(slowdown, { slowdown = it }, getStringResource(Res.string.gui_slowdown_factor))
-        PrefsInputRow(border, { border = it }, getStringResource(Res.string.gui_border__pixels_))
+        PrefsInputRow(width, { width = it }, stringResource(Res.string.gui_width))
+        PrefsInputRow(height, { height = it }, stringResource(Res.string.gui_height))
+        PrefsInputRow(fps, { fps = it }, stringResource(Res.string.gui_frames_per_second))
+        PrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
+        PrefsInputRow(border, { border = it }, stringResource(Res.string.gui_border__pixels_))
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -131,9 +132,9 @@ fun AnimationPrefsContent(
             // Use a Box to simulate the dropdown behavior
             var expanded by remember { mutableStateOf(false) }
             val options = listOf(
-                AnimationPrefs.GROUND_AUTO to getStringResource(Res.string.gui_prefs_show_ground_auto),
-                AnimationPrefs.GROUND_ON to getStringResource(Res.string.gui_prefs_show_ground_yes),
-                AnimationPrefs.GROUND_OFF to getStringResource(Res.string.gui_prefs_show_ground_no)
+                AnimationPrefs.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
+                AnimationPrefs.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
+                AnimationPrefs.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
             )
             val selectedText = options.find { it.first == showGround }?.second ?: ""
 
@@ -167,7 +168,7 @@ fun AnimationPrefsContent(
 
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                getStringResource(Res.string.gui_prefs_show_ground),
+                stringResource(Res.string.gui_prefs_show_ground),
                 style = MaterialTheme.typography.body1
             )
         }
@@ -178,27 +179,27 @@ fun AnimationPrefsContent(
         PrefsCheckbox(
             startPaused,
             { startPaused = it },
-            getStringResource(Res.string.gui_start_paused)
+            stringResource(Res.string.gui_start_paused)
         )
         PrefsCheckbox(
             mousePause,
             { mousePause = it },
-            getStringResource(Res.string.gui_pause_on_mouse_away)
+            stringResource(Res.string.gui_pause_on_mouse_away)
         )
         PrefsCheckbox(
             stereo,
             { stereo = it },
-            getStringResource(Res.string.gui_stereo_display)
+            stringResource(Res.string.gui_stereo_display)
         )
         PrefsCheckbox(
             catchSound,
             { catchSound = it },
-            getStringResource(Res.string.gui_catch_sounds)
+            stringResource(Res.string.gui_catch_sounds)
         )
         PrefsCheckbox(
             bounceSound,
             { bounceSound = it },
-            getStringResource(Res.string.gui_bounce_sounds)
+            stringResource(Res.string.gui_bounce_sounds)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -223,11 +224,11 @@ fun AnimationPrefsContent(
                 onClick = onCancel,
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
             ) {
-                Text(getStringResource(Res.string.gui_cancel), color = Color.Black)
+                Text(stringResource(Res.string.gui_cancel), color = Color.Black)
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = { tryCreatePrefs() }) {
-                Text(getStringResource(Res.string.gui_ok))
+                Text(stringResource(Res.string.gui_ok))
             }
         }
 
@@ -293,7 +294,7 @@ private fun PrefsCheckbox(
         Checkbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            modifier = Modifier.size(20.dp) // Slightly smaller compact look
+            modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = label, style = MaterialTheme.typography.body1)
