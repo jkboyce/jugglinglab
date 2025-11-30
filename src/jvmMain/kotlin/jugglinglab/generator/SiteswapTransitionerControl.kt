@@ -17,6 +17,7 @@ import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import jugglinglab.JugglingLab.guistrings
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -128,7 +129,11 @@ internal class SiteswapTransitionerControl : JPanel() {
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
             ) {
-                Text("\u2195", color = Color.Black) // Up/Down arrow
+                Text(text = "\u2195",  // up/down arrow
+                    color = Color.Black,
+                    fontSize = 25.sp,
+                    textAlign = TextAlign.Center
+                )
             }
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -176,8 +181,8 @@ internal class SiteswapTransitionerControl : JPanel() {
                             onValueChange = { simultaneousThrows.value = it },
                             enabled = enabled,
                             singleLine = true,
-                            modifier = Modifier.width(50.dp),
-                            textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
+                            modifier = Modifier.width(50.dp).height(56.dp),
+                            textStyle = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black,
                                 cursorColor = Color.Black,
@@ -221,8 +226,9 @@ internal class SiteswapTransitionerControl : JPanel() {
             OutlinedTextField(
                 value = textState.value,
                 onValueChange = { textState.value = it },
-                modifier = Modifier.width(250.dp),
+                modifier = Modifier.width(250.dp).height(56.dp),
                 singleLine = true,
+                textStyle = MaterialTheme.typography.body1
             )
         }
     }
