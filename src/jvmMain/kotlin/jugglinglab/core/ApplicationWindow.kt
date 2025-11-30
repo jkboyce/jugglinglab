@@ -13,19 +13,8 @@
 
 package jugglinglab.core
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.ui.graphics.Color
 import jugglinglab.generated.resources.*
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.jml.JMLParser
@@ -38,7 +27,6 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -50,7 +38,6 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URI
 import java.util.*
-import androidx.compose.ui.unit.dp
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
@@ -109,7 +96,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         val loc = Locale.getDefault()
         applyComponentOrientation(ComponentOrientation.getOrientation(loc))
 
-        setBackground(java.awt.Color(0.9f, 0.9f, 0.9f))
+        setBackground(Color(0.9f, 0.9f, 0.9f))
         pack()
     }
 
@@ -494,81 +481,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 }
             }
             aboutBox.contentPane = composePanel
-
             aboutBox.pack()
             aboutBox.setResizable(false)
             aboutBox.setLocationRelativeTo(null) // center frame on screen
             aboutBox.isVisible = true
-        }
-
-        @Composable
-        private fun AboutContent(onCloseRequest: () -> Unit) {
-            // Set height to IntrinsicSize.Min so the Row height is defined by its children.
-            // This allows the Image to stretch to match the height of the Column.
-            Row(modifier = Modifier.padding(16.dp).height(IntrinsicSize.Min)) {
-                Image(
-                    painter = painterResource(Res.drawable.about),
-                    contentDescription = "Juggling Lab Logo",
-                    // Crop ensures the image fills the height without distortion
-                    contentScale = ContentScale.Crop,
-                    // Fill the height determined by the text column
-                    modifier = Modifier.fillMaxHeight()
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text("Juggling Lab", style = MaterialTheme.typography.h5)
-                    Text(
-                        text = getStringResource(Res.string.gui_version, Constants.VERSION),
-                        style = MaterialTheme.typography.subtitle1
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = getStringResource(Res.string.gui_copyright_message, Constants.YEAR),
-                        style = MaterialTheme.typography.body2
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = getStringResource(Res.string.gui_gpl_message),
-                        style = MaterialTheme.typography.caption
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // System properties
-                    val javaVersion = System.getProperty("java.version")
-                    val javaVmName = System.getProperty("java.vm.name")
-                    val javaVmVersion = System.getProperty("java.vm.version")
-
-                    if (javaVersion != null) {
-                        Text(
-                            "Java version $javaVersion",
-                            style = MaterialTheme.typography.caption
-                        )
-                    }
-                    if (javaVmName != null && javaVmVersion != null) {
-                        Text(
-                            "$javaVmName ($javaVmVersion)",
-                            style = MaterialTheme.typography.caption
-                        )
-                    }
-
-                    Button(
-                        onClick = onCloseRequest,
-                        modifier = Modifier.align(Alignment.End),
-                        // Set colors to White background/Black text to match target.jpg
-                        // This also helps resolve default font padding issues that clip text.
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-                    ) {
-                        Text(getStringResource(Res.string.gui_ok), color = Color.Black)
-                    }
-                }
-            }
         }
 
         // Bring the user to the online help page.
