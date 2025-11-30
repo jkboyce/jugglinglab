@@ -10,368 +10,325 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.guistrings
-import jugglinglab.JugglingLab.errorstrings
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import jugglinglab.generated.resources.*
 import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
+import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
-import java.awt.ComponentOrientation
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
-import java.awt.event.ActionEvent
-import java.text.MessageFormat
-import java.util.Locale
-import javax.swing.*
+import java.awt.Dimension
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JOptionPane
 
-class AnimationPrefsDialog(parent: JFrame?) : JDialog(parent, guistrings.getString("Animation_Preferences"), true) {
-    private lateinit var tfWidth: JTextField
-    private lateinit var tfHeight: JTextField
-    private lateinit var tfFps: JTextField
-    private lateinit var tfSlowdown: JTextField
-    private lateinit var tfBorder: JTextField
-    private lateinit var comboShowground: JComboBox<String>
-    private lateinit var cbPaused: JCheckBox
-    private lateinit var cbMousepause: JCheckBox
-    private lateinit var cbStereo: JCheckBox
-    private lateinit var cbCatchsounds: JCheckBox
-    private lateinit var cbBouncesounds: JCheckBox
-    private lateinit var tfOther: JTextField
-    private lateinit var butCancel: JButton
-    private lateinit var butOk: JButton
-
-    private var okSelected: Boolean = false
+class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
+    parentFrame,
+    getStringResource(Res.string.gui_animation_preferences),
+    true
+) {
+    private var result: AnimationPrefs? = null
 
     init {
-        createContents()
-        setLocationRelativeTo(parent)
-        butCancel.addActionListener { _: ActionEvent? ->
-            isVisible = false
-            okSelected = false
-        }
-        butOk.addActionListener { _: ActionEvent? ->
-            isVisible = false
-            okSelected = true
-        }
+        // Basic dialog setup
+        isResizable = false
+        defaultCloseOperation = DO_NOTHING_ON_CLOSE
     }
 
-    // Show dialog box and return the new preferences.
-
-    fun getPrefs(oldjc: AnimationPrefs): AnimationPrefs {
-        // Fill in UI elements with current prefs
-        tfWidth.text = oldjc.width.toString()
-        tfHeight.text = oldjc.height.toString()
-        tfFps.text = jlToStringRounded(oldjc.fps, 2)
-        tfSlowdown.text = jlToStringRounded(oldjc.slowdown, 2)
-        tfBorder.text = oldjc.border.toString()
-        comboShowground.setSelectedIndex(oldjc.showGround)
-        cbPaused.setSelected(oldjc.startPause)
-        cbMousepause.setSelected(oldjc.mousePause)
-        cbStereo.setSelected(oldjc.stereo)
-        cbCatchsounds.setSelected(oldjc.catchSound)
-        cbBouncesounds.setSelected(oldjc.bounceSound)
-
-        try {
-            // filter out all the explicit settings above to populate the
-            // manual settings box
-            val pl = ParameterList(oldjc.toString())
+    fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
+        // Calculate the "manual settings" string (extra parameters not covered by UI)
+        val manualSettingsInitial = try {
+            val pl = ParameterList(oldPrefs.toString())
             val paramsRemove = listOf(
-                "width",
-                "height",
-                "fps",
-                "slowdown",
-                "border",
-                "showground",
-                "stereo",
-                "startpaused",
-                "mousepause",
-                "catchsound",
-                "bouncesound",
+                "width", "height", "fps", "slowdown", "border",
+                "showground", "stereo", "startpaused", "mousepause",
+                "catchsound", "bouncesound"
             )
             for (param in paramsRemove) {
                 pl.removeParameter(param)
             }
-            tfOther.text = pl.toString()
-            tfOther.setCaretPosition(0)
+            pl.toString()
         } catch (jeu: JuggleExceptionUser) {
-            // any error here can't be a user error
-            handleFatalException(
-                JuggleExceptionInternal("Anim Prefs Dialog error: " + jeu.message)
-            )
+            handleFatalException(JuggleExceptionInternal("Anim Prefs Dialog error: " + jeu.message))
+            ""
         }
 
-        okSelected = false
-        isVisible = true // Blocks until user clicks OK or Cancel
-        if (okSelected) {
-            return readDialogBox(oldjc)
+        // Setup the Compose content
+        val composePanel = ComposePanel()
+        composePanel.setContent {
+            MaterialTheme {
+                AnimationPrefsContent(
+                    initialPrefs = oldPrefs,
+                    initialManualSettings = manualSettingsInitial,
+                    onConfirm = { newPrefs ->
+                        result = newPrefs
+                        isVisible = false
+                    },
+                    onCancel = {
+                        result = null
+                        isVisible = false
+                    }
+                )
+            }
         }
-        return oldjc
-    }
 
-    private fun createContents() {
-        // panel of text boxes at the top
-        val lab1 = JLabel(guistrings.getString("Width"))
-        tfWidth = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab2 = JLabel(guistrings.getString("Height"))
-        tfHeight = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab3 = JLabel(guistrings.getString("Frames_per_second"))
-        tfFps = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab4 = JLabel(guistrings.getString("Slowdown_factor"))
-        tfSlowdown = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab5 = JLabel(guistrings.getString("Border_(pixels)"))
-        tfBorder = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab6 = JLabel(guistrings.getString("Prefs_show_ground"))
-        comboShowground = JComboBox<String>().apply {
-            addItem(guistrings.getString("Prefs_show_ground_auto"))
-            addItem(guistrings.getString("Prefs_show_ground_yes"))
-            addItem(guistrings.getString("Prefs_show_ground_no"))
-        }
-        // checkboxes farther down
-        cbPaused = JCheckBox(guistrings.getString("Start_paused"))
-        cbMousepause = JCheckBox(guistrings.getString("Pause_on_mouse_away"))
-        cbStereo = JCheckBox(guistrings.getString("Stereo_display"))
-        cbCatchsounds = JCheckBox(guistrings.getString("Catch_sounds"))
-        cbBouncesounds = JCheckBox(guistrings.getString("Bounce_sounds"))
-        val labOther = JLabel("Manual settings")
-        tfOther = JTextField(15)
-        // buttons at the bottom
-        butCancel = JButton(guistrings.getString("Cancel"))
-        butOk = JButton(guistrings.getString("OK"))
-
-        // assemble subpanels
-        val gb = GridBagLayout()
-
-        val p1 = JPanel().apply {
-            setLayout(gb)
-            add(lab1)
-            add(tfWidth)
-            add(lab2)
-            add(tfHeight)
-            add(lab3)
-            add(tfFps)
-            add(lab4)
-            add(tfSlowdown)
-            add(lab5)
-            add(tfBorder)
-            add(lab6)
-            add(comboShowground)
-        }
-        gb.setConstraints(
-            lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfWidth, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab2, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfHeight, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab3, constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfFps, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab4, constraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfSlowdown, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab5, constraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfBorder, constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab6, constraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            comboShowground,
-            constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
-        )
-
-        val p2 = JPanel().apply {
-            setLayout(gb)
-            add(butCancel)
-            add(butOk)
-        }
-        gb.setConstraints(
-            butCancel, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            butOk, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
-        )
-
-        // whole window
-        contentPane.apply {
-            setLayout(gb)
-            add(p1)
-            add(cbPaused)
-            add(cbMousepause)
-            add(cbStereo)
-            add(cbCatchsounds)
-            add(cbBouncesounds)
-            add(labOther)
-            add(tfOther)
-            add(p2)
-        }
-        gb.setConstraints(
-            p1,
-            constraints(GridBagConstraints.LINE_START, 0, 0, Insets(3, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            cbPaused,
-            constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            cbMousepause,
-            constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            cbStereo,
-            constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            cbCatchsounds,
-            constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            cbBouncesounds,
-            constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, BORDER, 8, BORDER))
-        )
-        gb.setConstraints(
-            labOther,
-            constraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, BORDER, 0, BORDER))
-        )
-        gb.setConstraints(
-            tfOther,
-            constraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, BORDER, 3, BORDER))
-        )
-        gb.setConstraints(
-            p2,
-            constraints(GridBagConstraints.LINE_END, 0, 8, Insets(0, BORDER, BORDER, BORDER))
-        )
-
-        getRootPane().setDefaultButton(butOk)  // OK button is default
-
-        val loc = Locale.getDefault()
-        applyComponentOrientation(ComponentOrientation.getOrientation(loc))
+        contentPane = composePanel
         pack()
-        setResizable(false)
+        // Ensure reasonable size if pack is too small, though pack usually works fine with Compose
+        if (width < 300) size = Dimension(350, 600)
+
+        setLocationRelativeTo(parentFrame)
+
+        // This blocks until isVisible = false is called in the callbacks above
+        isVisible = true
+
+        return result ?: oldPrefs
+    }
+}
+
+@Composable
+fun AnimationPrefsContent(
+    initialPrefs: AnimationPrefs,
+    initialManualSettings: String,
+    onConfirm: (AnimationPrefs) -> Unit,
+    onCancel: () -> Unit
+) {
+    // State holders
+    var width by remember { mutableStateOf(initialPrefs.width.toString()) }
+    var height by remember { mutableStateOf(initialPrefs.height.toString()) }
+    var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
+    var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
+    var border by remember { mutableStateOf(initialPrefs.border.toString()) }
+
+    var showGround by remember { mutableStateOf(initialPrefs.showGround) }
+
+    var startPaused by remember { mutableStateOf(initialPrefs.startPause) }
+    var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
+    var stereo by remember { mutableStateOf(initialPrefs.stereo) }
+    var catchSound by remember { mutableStateOf(initialPrefs.catchSound) }
+    var bounceSound by remember { mutableStateOf(initialPrefs.bounceSound) }
+
+    var manualSettings by remember { mutableStateOf(initialManualSettings) }
+
+    // Helper for creating the return object
+    fun tryCreatePrefs() {
+        try {
+            val newPrefs = AnimationPrefs(initialPrefs)
+
+            // Validate and set numeric fields
+            // We use helper functions to throw exceptions that match the original logic
+            // or we can use the original logic's approach of ignoring invalid inputs
+            // but showing an error dialog is better user experience.
+
+            fun parseDouble(valStr: String, name: String): Double {
+                return valStr.toDoubleOrNull()?.takeIf { it > 0.0 }
+                    ?: throw NumberFormatException(name)
+            }
+
+            fun parseInt(valStr: String, name: String): Int {
+                return valStr.toIntOrNull()?.takeIf { it >= 0 }
+                    ?: throw NumberFormatException(name)
+            }
+
+            try { newPrefs.width = parseInt(width, "width") } catch(_: Exception) { showError("width") ; return }
+            try { newPrefs.height = parseInt(height, "height") } catch(_: Exception) { showError("height") ; return }
+            try { newPrefs.fps = parseDouble(fps, "fps") } catch(_: Exception) { showError("fps") ; return }
+            try { newPrefs.slowdown = parseDouble(slowdown, "slowdown") } catch(_: Exception) { showError("slowdown") ; return }
+            try { newPrefs.border = parseInt(border, "border") } catch(_: Exception) { showError("border") ; return }
+
+            newPrefs.showGround = showGround
+            newPrefs.startPause = startPaused
+            newPrefs.mousePause = mousePause
+            newPrefs.stereo = stereo
+            newPrefs.catchSound = catchSound
+            newPrefs.bounceSound = bounceSound
+
+            // Process manual settings
+            if (manualSettings.isNotBlank()) {
+                try {
+                    // We effectively merge the current object state with the manual string
+                    newPrefs.fromString("$newPrefs;$manualSettings")
+                } catch (jeu: JuggleExceptionUser) {
+                    JOptionPane.showMessageDialog(null, jeu.message, "Error", JOptionPane.ERROR_MESSAGE)
+                    return
+                }
+            }
+
+            onConfirm(newPrefs)
+
+        } catch (e: Exception) {
+            // Fallback catch-all
+            JOptionPane.showMessageDialog(null, e.message, "Error", JOptionPane.ERROR_MESSAGE)
+        }
     }
 
-    // Read prefs out of UI elements.
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .width(IntrinsicSize.Max) // Fit width to content
+            .verticalScroll(rememberScrollState())
+    ) {
+        // --- Number Inputs Section ---
+        // Layout: [TextField] [Label]
 
-    private fun readDialogBox(oldjc: AnimationPrefs): AnimationPrefs {
-        var tempint: Int
-        var tempdouble: Double
+        PrefsInputRow(width, { width = it }, getStringResource(Res.string.gui_width))
+        PrefsInputRow(height, { height = it }, getStringResource(Res.string.gui_height))
+        PrefsInputRow(fps, { fps = it }, getStringResource(Res.string.gui_frames_per_second))
+        PrefsInputRow(slowdown, { slowdown = it }, getStringResource(Res.string.gui_slowdown_factor))
+        PrefsInputRow(border, { border = it }, getStringResource(Res.string.gui_border__pixels_))
 
-        // Clone the old preferences so if we get an error we retain as much of
-        // it as possible
-        var newjc = AnimationPrefs(oldjc)
+        Spacer(modifier = Modifier.height(4.dp))
 
-        try {
-            tempint = tfWidth.getText().toInt()
-            if (tempint >= 0) {
-                newjc.width = tempint
+        // --- Dropdown Section ---
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 4.dp)
+        ) {
+            // Use a Box to simulate the dropdown behavior
+            var expanded by remember { mutableStateOf(false) }
+            val options = listOf(
+                AnimationPrefs.GROUND_AUTO to getStringResource(Res.string.gui_prefs_show_ground_auto),
+                AnimationPrefs.GROUND_ON to getStringResource(Res.string.gui_prefs_show_ground_yes),
+                AnimationPrefs.GROUND_OFF to getStringResource(Res.string.gui_prefs_show_ground_no)
+            )
+            val selectedText = options.find { it.first == showGround }?.second ?: ""
+
+            Box {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                    modifier = Modifier.width(80.dp).height(32.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(selectedText, style = MaterialTheme.typography.body2, maxLines = 1)
+                        Spacer(Modifier.weight(1f))
+                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null, modifier = Modifier.size(16.dp))
+                    }
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    options.forEach { (value, label) ->
+                        DropdownMenuItem(onClick = {
+                            showGround = value
+                            expanded = false
+                        }) {
+                            Text(text = label)
+                        }
+                    }
+                }
             }
-        } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val arguments = arrayOf<Any?>("width")
-            handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
-        }
-        try {
-            tempint = tfHeight.getText().toInt()
-            if (tempint >= 0) {
-                newjc.height = tempint
-            }
-        } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val arguments = arrayOf<Any?>("height")
-            handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
-        }
-        try {
-            tempdouble = tfFps.getText().toDouble()
-            if (tempdouble > 0.0) {
-                newjc.fps = tempdouble
-            }
-        } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val arguments = arrayOf<Any?>("fps")
-            handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
-        }
-        try {
-            tempdouble = tfSlowdown.getText().toDouble()
-            if (tempdouble > 0.0) {
-                newjc.slowdown = tempdouble
-            }
-        } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val arguments = arrayOf<Any?>("slowdown")
-            handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
-        }
-        try {
-            tempint = tfBorder.getText().toInt()
-            if (tempint >= 0) {
-                newjc.border = tempint
-            }
-        } catch (_: NumberFormatException) {
-            val template: String = errorstrings.getString("Error_number_format")
-            val arguments = arrayOf<Any?>("border")
-            handleUserException(this@AnimationPrefsDialog, MessageFormat.format(template, *arguments))
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(getStringResource(Res.string.gui_prefs_show_ground), style = MaterialTheme.typography.body1)
         }
 
-        newjc.showGround = comboShowground.getSelectedIndex()
-        newjc.startPause = cbPaused.isSelected
-        newjc.mousePause = cbMousepause.isSelected
-        newjc.stereo = cbStereo.isSelected
-        newjc.catchSound = cbCatchsounds.isSelected
-        newjc.bounceSound = cbBouncesounds.isSelected
+        Spacer(modifier = Modifier.height(8.dp))
 
-        if (!tfOther.getText().trim { it <= ' ' }.isEmpty()) {
-            try {
-                newjc = AnimationPrefs().fromString(newjc.toString() + ";" + tfOther.getText())
-            } catch (jeu: JuggleExceptionUser) {
-                handleUserException(this@AnimationPrefsDialog, jeu.message)
+        // --- Checkboxes Section ---
+        PrefsCheckbox(startPaused, { startPaused = it }, getStringResource(Res.string.gui_start_paused))
+        PrefsCheckbox(mousePause, { mousePause = it }, getStringResource(Res.string.gui_pause_on_mouse_away))
+        PrefsCheckbox(stereo, { stereo = it }, getStringResource(Res.string.gui_stereo_display))
+        PrefsCheckbox(catchSound, { catchSound = it }, getStringResource(Res.string.gui_catch_sounds))
+        PrefsCheckbox(bounceSound, { bounceSound = it }, getStringResource(Res.string.gui_bounce_sounds))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- Manual Settings ---
+        Text("Manual settings", style = MaterialTheme.typography.body1)
+        OutlinedTextField(
+            value = manualSettings,
+            onValueChange = { manualSettings = it },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // --- Buttons ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(
+                onClick = onCancel,
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+            ) {
+                Text(getStringResource(Res.string.gui_cancel), color = Color.Black)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = { tryCreatePrefs() }) {
+                Text(getStringResource(Res.string.gui_ok))
             }
         }
-        return newjc
     }
+}
 
-    companion object {
-        private const val BORDER: Int = 10
-
-        private fun constraints(
-            location: Int, gridx: Int, gridy: Int, ins: Insets?
-        ): GridBagConstraints {
-            val gbc = GridBagConstraints()
-            gbc.anchor = location
-            gbc.fill = GridBagConstraints.HORIZONTAL
-            gbc.gridwidth = 1
-            gbc.gridheight = 1
-            gbc.gridx = gridx
-            gbc.gridy = gridy
-            gbc.insets = ins
-            gbc.weighty = 0.0
-            gbc.weightx = 0.0
-            return gbc
-        }
+// Helper Composable for [TextField] [Label] rows
+@Composable
+private fun PrefsInputRow(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.width(80.dp).height(48.dp), // Fixed width to match screenshot look
+            singleLine = true,
+            textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                cursorColor = Color.Black
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, style = MaterialTheme.typography.body1)
     }
+}
+
+// Helper Composable for Checkboxes
+@Composable
+private fun PrefsCheckbox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(vertical = 2.dp)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(20.dp) // Slightly smaller compact look
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, style = MaterialTheme.typography.body1)
+    }
+}
+
+// Helper for error dialogs (bridging to Swing for the modal error popup)
+private fun showError(fieldName: String) {
+    val template = getStringResource(Res.string.error_number_format, fieldName)
+    JOptionPane.showMessageDialog(null, template, "Error", JOptionPane.ERROR_MESSAGE)
 }

@@ -41,6 +41,7 @@ kotlin {
             // Juggling Lab specific
             implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
             implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
+            implementation(compose.materialIconsExtended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
