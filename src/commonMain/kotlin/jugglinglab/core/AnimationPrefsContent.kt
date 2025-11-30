@@ -118,11 +118,7 @@ fun AnimationPrefsContent(
         PrefsInputRow(width, { width = it }, getStringResource(Res.string.gui_width))
         PrefsInputRow(height, { height = it }, getStringResource(Res.string.gui_height))
         PrefsInputRow(fps, { fps = it }, getStringResource(Res.string.gui_frames_per_second))
-        PrefsInputRow(
-            slowdown,
-            { slowdown = it },
-            getStringResource(Res.string.gui_slowdown_factor)
-        )
+        PrefsInputRow(slowdown, { slowdown = it }, getStringResource(Res.string.gui_slowdown_factor))
         PrefsInputRow(border, { border = it }, getStringResource(Res.string.gui_border__pixels_))
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -189,7 +185,11 @@ fun AnimationPrefsContent(
             { mousePause = it },
             getStringResource(Res.string.gui_pause_on_mouse_away)
         )
-        PrefsCheckbox(stereo, { stereo = it }, getStringResource(Res.string.gui_stereo_display))
+        PrefsCheckbox(
+            stereo,
+            { stereo = it },
+            getStringResource(Res.string.gui_stereo_display)
+        )
         PrefsCheckbox(
             catchSound,
             { catchSound = it },
