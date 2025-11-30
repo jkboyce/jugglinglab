@@ -10,8 +10,6 @@
 
 package jugglinglab.util
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import jugglinglab.JugglingLab
 import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.JugglingLab.guistrings
