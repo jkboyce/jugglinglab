@@ -32,14 +32,6 @@ import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.math.min
 
-// Helper extension function to convert Compose Color to AWT Color.
-
-fun Color.toAwtColor(): java.awt.Color {
-    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
-    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
-    return java.awt.Color(this.toArgb(), true)
-}
-
 //------------------------------------------------------------------------------
 // Helpers for converting numbers to/from strings
 //------------------------------------------------------------------------------
@@ -260,4 +252,12 @@ actual fun getScreenFps(): Double {
 
 actual fun getCurrentPlatform(): String {
     return System.getProperty("os.name") + " " + System.getProperty("os.version")
+}
+
+// Helper extension function to convert Compose Color to AWT Color.
+
+fun Color.toAwtColor(): java.awt.Color {
+    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
+    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
+    return java.awt.Color(this.toArgb(), true)
 }
