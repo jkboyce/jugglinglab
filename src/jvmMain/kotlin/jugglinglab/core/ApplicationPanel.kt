@@ -76,6 +76,8 @@ class ApplicationPanel
     // Input is for example Pattern.NOTATION_SITESWAP.
 
     fun setNotation(num: Int) {
+        setLayout(BorderLayout())
+        /*
         if (num > Pattern.builtinNotations.size) return
         if (jtp != null) {
             remove(jtp)
@@ -85,7 +87,7 @@ class ApplicationPanel
         when (num) {
             Pattern.NOTATION_SITESWAP -> addPatternEntryControl(SiteswapNotationControl())
         }
-
+        */
         var pl = patlist
         if (pl == null && patlisttab) {
             pl = PatternListPanel(animtarget)
@@ -93,13 +95,15 @@ class ApplicationPanel
 
         val trans = newTransitioner(Pattern.builtinNotations[num - 1])
         if (trans != null) {
-            addTransitionerControl(trans, pl)
+            val transControl = makeTransitionerControl(trans, pl)
+            add(transControl, BorderLayout.CENTER)
         }
-
+        /*
         val gen = newGenerator(Pattern.builtinNotations[num - 1])
         if (gen != null) {
             addGeneratorControl(gen, pl)
         }
+
 
         if (pl != null) {
             jtp!!.addTab(guistrings.getString("Pattern_list_tab"), pl)
@@ -110,9 +114,8 @@ class ApplicationPanel
 
         // change the default button when the tab changes
         jtp!!.addChangeListener { _: ChangeEvent? -> rootPane.defaultButton = defaultButton }
-
-        setLayout(BorderLayout())
-        add(jtp!!, BorderLayout.CENTER)
+        */
+        //add(jtp!!, BorderLayout.CENTER)
         parentFrame?.rootPane?.defaultButton = defaultButton
     }
 
@@ -173,7 +176,7 @@ class ApplicationPanel
         jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
     }
 
-    private fun addTransitionerControl(trans: Transitioner, plp: PatternListPanel?) {
+    private fun makeTransitionerControl(trans: Transitioner, plp: PatternListPanel?): JPanel {
         val transControl: SiteswapTransitionerControl? = when (trans.notationName) {
             "Siteswap" -> SiteswapTransitionerControl()
             else -> null
@@ -254,7 +257,8 @@ class ApplicationPanel
             add(p3, BorderLayout.PAGE_END)
         }
 
-        jtp!!.addTab(guistrings.getString("Transitions"), p1)
+        //jtp!!.addTab(guistrings.getString("Transitions"), p1)
+        return p1
     }
 
     private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
