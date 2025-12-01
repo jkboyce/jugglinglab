@@ -1,5 +1,5 @@
 //
-// AnimationPrefsContent.kt
+// AnimationPrefsControl.kt
 //
 // Composable UI for the animation preferences dialog.
 //
@@ -8,6 +8,11 @@
 
 package jugglinglab.core
 
+import jugglinglab.generated.resources.*
+import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.ParameterList
+import jugglinglab.util.getStringResource
+import jugglinglab.util.jlToStringRounded
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,15 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import jugglinglab.generated.resources.*
-import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.ParameterList
-import jugglinglab.util.getStringResource
-import jugglinglab.util.jlToStringRounded
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun AnimationPrefsContent(
+fun AnimationPrefsControl(
     initialPrefs: AnimationPrefs,
     onConfirm: (AnimationPrefs) -> Unit,
     onCancel: () -> Unit

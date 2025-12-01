@@ -33,7 +33,7 @@ class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
         val composePanel = ComposePanel()
         composePanel.setContent {
             MaterialTheme {
-                AnimationPrefsContent(
+                AnimationPrefsControl(
                     initialPrefs = oldPrefs,
                     onConfirm = { newPrefs ->
                         result = newPrefs
