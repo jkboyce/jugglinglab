@@ -1,6 +1,8 @@
 //
 // SiteswapTransitionerControl.kt
 //
+// Composable UI for the siteswap transitioner control.
+//
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
@@ -11,22 +13,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
-    // State lifted to class level so legacy methods (params, resetControl) can access it
+    // state variables for control
     val fromPattern = mutableStateOf("")
     val toPattern = mutableStateOf("")
-
-    // Multiplexing section
     val multiplexing = mutableStateOf(false)
     val simultaneousThrows = mutableStateOf("2")
     val noSimultaneousCatches = mutableStateOf(true)
@@ -40,8 +43,6 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
         noSimultaneousCatches.value = true
         noClusteredThrows.value = false
     }
-
-    resetControl()
 
     fun params(): String {
         val sb = StringBuilder(256)
@@ -79,34 +80,49 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
             textState = fromPattern
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // swap button row: aligned to match the structure of PatternInputRow
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Invisible spacer matching the Label width (100.dp)
+            Spacer(modifier = Modifier.width(100.dp))
+
+            // Invisible spacer matching the gap (10.dp)
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Container matching the TextField width (250.dp) to center the button inside it
+            Box(
+                modifier = Modifier.width(250.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        val temp = fromPattern.value
+                        fromPattern.value = toPattern.value
+                        toPattern.value = temp
+                    },
+                    modifier = Modifier.width(60.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapVert,
+                        contentDescription = "Swap patterns",
+                        modifier = Modifier.size(32.dp),
+                        tint = Color.Black
+                    )
+                }
+            }
+        }
 
         PatternInputRow(
             label = stringResource(Res.string.gui_to_pattern),
             textState = toPattern
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // swap button
-        Button(
-            onClick = {
-                val temp = fromPattern.value
-                fromPattern.value = toPattern.value
-                toPattern.value = temp
-            },
-            modifier = Modifier.width(60.dp),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-        ) {
-            Text(text = "\u2195",  // up/down arrow
-                color = Color.Black,
-                fontSize = 25.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         // multiplexing section
         Column(
@@ -115,7 +131,13 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
             // main checkbox
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .clickable(
+                        role = Role.Checkbox,
+                        onClick = { multiplexing.value = !multiplexing.value }
+                    )
+                    .padding(vertical = 4.dp) // Add some padding for a larger click target
             ) {
                 Checkbox(
                     checked = multiplexing.value,
@@ -129,13 +151,13 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
                 )
             }
 
-            // bub-options (indented)
+            // sub-options (indented)
             // we use 'enabled' state based on the parent checkbox
             val enabled = multiplexing.value
             val contentColor = if (enabled) Color.Unspecified else Color.Gray
 
             Column(modifier = Modifier.padding(start = 32.dp)) {
-                // Simultaneous throws row
+                // simultaneous throws row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 4.dp)
