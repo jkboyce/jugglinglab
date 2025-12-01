@@ -16,13 +16,16 @@ import androidx.compose.ui.awt.ComposePanel
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
+import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.SiteswapGeneratorControl
 import jugglinglab.generator.Transitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.generator.SiteswapTransitionerControl
+import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.notation.SiteswapNotationControl
+import jugglinglab.notation.Pattern
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
@@ -104,13 +107,15 @@ class ApplicationPanel
         }*/
 
 
-        /*
         val gen = newGenerator(Pattern.builtinNotations[num - 1])
         if (gen != null) {
-            addGeneratorControl(gen, pl)
+            val genControl = makeGeneratorControlPanel(gen, pl)
+            add(genControl, BorderLayout.CENTER)
+
+            // jtp!!.addTab(guistrings.getString("Generator"), genControl)
         }
 
-
+        /*
         if (pl != null) {
             jtp!!.addTab(guistrings.getString("Pattern_list_tab"), pl)
             if (patlist != null) {
@@ -162,7 +167,6 @@ class ApplicationPanel
 
             setContent {
                 MaterialTheme {
-                    // Surface color matching the dialog background in the screenshot usually
                     Surface(color = MaterialTheme.colors.surface) {
                         // Pass the class-level callback to the Composable
                         SiteswapNotationControl(onConfirm = onRunCallback)
@@ -237,7 +241,6 @@ class ApplicationPanel
 
             setContent {
                 MaterialTheme {
-                    // Surface color matching the dialog background in the screenshot usually
                     Surface(color = MaterialTheme.colors.surface) {
                         // Pass the class-level callback to the Composable
                         SiteswapTransitionerControl(onConfirm = onRunCallback)
@@ -252,70 +255,82 @@ class ApplicationPanel
         }
     }
 
-    private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
-        val genControl: SiteswapGeneratorControl? = when (gen.notationName) {
-            "Siteswap" -> SiteswapGeneratorControl()
-            else -> null
-        }
-        val but1 = JButton(guistrings.getString("Defaults")).apply {
-            addActionListener { _: ActionEvent? -> genControl?.resetControl() }
-        }
-
-        genButton = JButton(guistrings.getString("Run")).apply {
-            addActionListener {
-                val t: Thread =
-                    object : Thread() {
-                        override fun run() {
-                            genBusy!!.isVisible = true
-                            genButton!!.setEnabled(false)
-                            var pw: PatternListWindow? = null
-                            try {
-                                if (genControl != null) {
-                                    gen.initGenerator(genControl.params)
-                                }
-                                val gtpl: GeneratorTargetPatternList?
-                                if (plp != null) {
-                                    plp.clearList()
-                                    gtpl = GeneratorTargetPatternList(plp)
-                                    // jtp.setSelectedComponent(plp);
-                                } else {
-                                    val title =
-                                        gen.notationName + " " + guistrings.getString("Patterns")
-                                    pw = PatternListWindow(title, this)
-                                    gtpl = GeneratorTargetPatternList(pw.patternListPanel)
-                                }
-                                gen.runGenerator(gtpl, MAX_PATTERNS, MAX_TIME)
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                            } catch (ex: JuggleExceptionDone) {
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                                val parentComponent = pw ?: plp
-                                LabelDialog(
-                                    parentComponent,
-                                    guistrings.getString("Generator_stopped_title"),
-                                    ex.message
-                                )
-                            } catch (_: JuggleExceptionInterrupted) {
-                                // System.out.println("generator thread quit");
-                            } catch (ex: JuggleExceptionUser) {
-                                pw?.dispose()
-                                handleUserException(this@ApplicationPanel, ex.message)
-                            } catch (e: Exception) {
-                                pw?.dispose()
-                                handleFatalException(e)
+    private fun makeGeneratorControlPanel(
+        gen: Generator,
+        plp: PatternListPanel?
+    ): JPanel {
+        val onRunCallback: (String) -> Unit = { params ->
+            val t: Thread =
+                object : Thread() {
+                    override fun run() {
+                        //genBusy!!.isVisible = true
+                        //genButton!!.setEnabled(false)
+                        var pw: PatternListWindow? = null
+                        try {
+                            gen.initGenerator(params)
+                            val gtpl: GeneratorTargetPatternList?
+                            if (plp != null) {
+                                plp.clearList()
+                                gtpl = GeneratorTargetPatternList(plp)
+                                // jtp.setSelectedComponent(plp);
+                            } else {
+                                val title =
+                                    gen.notationName + " " + guistrings.getString("Patterns")
+                                pw = PatternListWindow(title, this)
+                                gtpl = GeneratorTargetPatternList(pw.patternListPanel)
                             }
-
-                            genBusy!!.isVisible = false
-                            genButton!!.setEnabled(true)
+                            gen.runGenerator(gtpl, MAX_PATTERNS, MAX_TIME)
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                        } catch (ex: JuggleExceptionDone) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                            val parentComponent = pw ?: plp
+                            LabelDialog(
+                                parentComponent,
+                                guistrings.getString("Generator_stopped_title"),
+                                ex.message
+                            )
+                        } catch (_: JuggleExceptionInterrupted) {
+                            // System.out.println("generator thread quit");
+                        } catch (ex: JuggleExceptionUser) {
+                            pw?.dispose()
+                            handleUserException(this@ApplicationPanel, ex.message)
+                        } catch (e: Exception) {
+                            pw?.dispose()
+                            handleFatalException(e)
                         }
+
+                        //genBusy!!.isVisible = false
+                        //genButton!!.setEnabled(true)
                     }
-                t.start()
+                }
+            t.start()
+        }
+
+        val composePanel = ComposePanel().apply {
+            // Set a preferred size so that pack() on the parent JFrame works correctly,
+            // shrinking the window to fit the content instead of using a default large size.
+            preferredSize = Dimension(700, 1000)
+
+            setContent {
+                MaterialTheme {
+                    Surface(color = MaterialTheme.colors.surface) {
+                        // Pass the class-level callback to the Composable
+                        SiteswapGeneratorControl(onConfirm = onRunCallback)
+                    }
+                }
             }
         }
 
+        return JPanel().apply {
+            layout = BorderLayout()
+            add(composePanel, BorderLayout.CENTER)
+        }
+
+        /*
         genBusy = JLabel(guistrings.getString("Processing")).apply {
             isVisible = false
         }
@@ -348,6 +363,7 @@ class ApplicationPanel
         }
 
         jtp!!.addTab(guistrings.getString("Generator"), p1)
+        */
     }
 
     companion object {
