@@ -6,6 +6,7 @@
 
 package jugglinglab.generator
 
+import jugglinglab.generated.resources.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,48 +14,23 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import jugglinglab.JugglingLab.guistrings
-import java.awt.BorderLayout
-import java.awt.Dimension
-import javax.swing.JPanel
+import org.jetbrains.compose.resources.stringResource
 
-internal class SiteswapTransitionerControl : JPanel() {
-
+@Composable
+fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
     // State lifted to class level so legacy methods (params, resetControl) can access it
-    private val fromPattern = mutableStateOf("")
-    private val toPattern = mutableStateOf("")
+    val fromPattern = mutableStateOf("")
+    val toPattern = mutableStateOf("")
 
     // Multiplexing section
-    private val multiplexing = mutableStateOf(false)
-    private val simultaneousThrows = mutableStateOf("2")
-    private val noSimultaneousCatches = mutableStateOf(true)
-    private val noClusteredThrows = mutableStateOf(false)
-
-    init {
-        layout = BorderLayout()
-        val composePanel = ComposePanel()
-
-        // Set a preferred size so that pack() on the parent JFrame works correctly,
-        // shrinking the window to fit the content instead of using a default large size.
-        composePanel.preferredSize = Dimension(500, 450)
-
-        composePanel.setContent {
-            MaterialTheme {
-                // Surface color matching the dialog background in the screenshot usually
-                Surface(color = MaterialTheme.colors.surface) {
-                    TransitionerContent()
-                }
-            }
-        }
-        add(composePanel, BorderLayout.CENTER)
-
-        resetControl() // apply defaults
-    }
+    val multiplexing = mutableStateOf(false)
+    val simultaneousThrows = mutableStateOf("2")
+    val noSimultaneousCatches = mutableStateOf(true)
+    val noClusteredThrows = mutableStateOf(false)
 
     fun resetControl() {
         fromPattern.value = ""
@@ -65,192 +41,209 @@ internal class SiteswapTransitionerControl : JPanel() {
         noClusteredThrows.value = false
     }
 
-    val params: String
-        get() {
-            val sb = StringBuilder(256)
+    resetControl()
 
-            var fromPat = fromPattern.value
-            if (fromPat.trim().isEmpty()) {
-                fromPat = "-"
+    fun params(): String {
+        val sb = StringBuilder(256)
+        var fromPat = fromPattern.value
+        if (fromPat.trim().isEmpty()) {
+            fromPat = "-"
+        }
+        var toPat = toPattern.value
+        if (toPat.trim().isEmpty()) {
+            toPat = "-"
+        }
+        sb.append(fromPat).append(" ").append(toPat)
+        if (multiplexing.value && simultaneousThrows.value.isNotEmpty()) {
+            sb.append(" -m ").append(simultaneousThrows.value)
+            if (!noSimultaneousCatches.value) {
+                sb.append(" -mf")
             }
-            var toPat = toPattern.value
-            if (toPat.trim().isEmpty()) {
-                toPat = "-"
+            if (noClusteredThrows.value) {
+                sb.append(" -mc")
             }
-            sb.append(fromPat).append(" ").append(toPat)
+        }
+        return sb.toString()
+    }
 
-            if (multiplexing.value && simultaneousThrows.value.isNotEmpty()) {
-                sb.append(" -m ").append(simultaneousThrows.value)
-                if (!noSimultaneousCatches.value) {
-                    sb.append(" -mf")
-                }
-                if (noClusteredThrows.value) {
-                    sb.append(" -mc")
-                }
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // pattern entry section
+        PatternInputRow(
+            label = stringResource(Res.string.gui_from_pattern),
+            textState = fromPattern
+        )
 
-            return sb.toString()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        PatternInputRow(
+            label = stringResource(Res.string.gui_to_pattern),
+            textState = toPattern
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // swap button
+        Button(
+            onClick = {
+                val temp = fromPattern.value
+                fromPattern.value = toPattern.value
+                toPattern.value = temp
+            },
+            modifier = Modifier.width(60.dp),
+            contentPadding = PaddingValues(0.dp),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+        ) {
+            Text(text = "\u2195",  // up/down arrow
+                color = Color.Black,
+                fontSize = 25.sp,
+                textAlign = TextAlign.Center
+            )
         }
 
-    @Composable
-    fun TransitionerContent() {
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // multiplexing section
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-
-            // --- Pattern Entry Section ---
-            // Using a grid-like layout for labels and fields
-            PatternInputRow(
-                label = guistrings.getString("from_pattern"),
-                textState = fromPattern
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            PatternInputRow(
-                label = guistrings.getString("to_pattern"),
-                textState = toPattern
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Swap Button
-            Button(
-                onClick = {
-                    val temp = fromPattern.value
-                    fromPattern.value = toPattern.value
-                    toPattern.value = temp
-                },
-                modifier = Modifier.width(60.dp),
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+            // main checkbox
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                Text(text = "\u2195",  // up/down arrow
-                    color = Color.Black,
-                    fontSize = 25.sp,
-                    textAlign = TextAlign.Center
+                Checkbox(
+                    checked = multiplexing.value,
+                    onCheckedChange = { multiplexing.value = it },
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(Res.string.gui_multiplexing_in_transitions),
+                    style = MaterialTheme.typography.body1
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            // bub-options (indented)
+            // we use 'enabled' state based on the parent checkbox
+            val enabled = multiplexing.value
+            val contentColor = if (enabled) Color.Unspecified else Color.Gray
 
-            // --- Multiplexing Section ---
-            Column(
-                modifier = Modifier.width(IntrinsicSize.Max)
-            ) {
-                // Main Checkbox
+            Column(modifier = Modifier.padding(start = 32.dp)) {
+                // Simultaneous throws row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 ) {
-                    Checkbox(
-                        checked = multiplexing.value,
-                        onCheckedChange = { multiplexing.value = it },
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = stringResource(Res.string.gui_simultaneous_throws),
+                        style = MaterialTheme.typography.body1,
+                        color = contentColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = guistrings.getString("multiplexing_in_transitions"),
-                        style = MaterialTheme.typography.body1
+                    OutlinedTextField(
+                        value = simultaneousThrows.value,
+                        onValueChange = { simultaneousThrows.value = it },
+                        enabled = enabled,
+                        singleLine = true,
+                        modifier = Modifier.width(50.dp).height(56.dp),
+                        textStyle = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black,
+                            cursorColor = Color.Black,
+                            disabledTextColor = Color.Gray,
+                            disabledBorderColor = Color.LightGray
+                        )
                     )
                 }
 
-                // Sub-options (Indented)
-                // We use 'enabled' state based on the parent checkbox
-                val enabled = multiplexing.value
-                val contentColor = if (enabled) Color.Unspecified else Color.Gray
+                // checkboxes
+                SubOptionCheckbox(
+                    label = stringResource(Res.string.gui_no_simultaneous_catches),
+                    state = noSimultaneousCatches,
+                    enabled = enabled
+                )
 
-                Column(modifier = Modifier.padding(start = 32.dp)) {
-                    // Simultaneous throws row
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    ) {
-                        Text(
-                            text = guistrings.getString("simultaneous_throws"),
-                            style = MaterialTheme.typography.body1,
-                            color = contentColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
-                            value = simultaneousThrows.value,
-                            onValueChange = { simultaneousThrows.value = it },
-                            enabled = enabled,
-                            singleLine = true,
-                            modifier = Modifier.width(50.dp).height(56.dp),
-                            textStyle = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center),
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black,
-                                cursorColor = Color.Black,
-                                disabledTextColor = Color.Gray,
-                                disabledBorderColor = Color.LightGray
-                            )
-                        )
-                    }
+                SubOptionCheckbox(
+                    label = stringResource(Res.string.gui_no_clustered_throws),
+                    state = noClusteredThrows,
+                    enabled = enabled
+                )
+            }
+        }
 
-                    // Checkboxes
-                    SubOptionCheckbox(
-                        label = guistrings.getString("no_simultaneous_catches"),
-                        state = noSimultaneousCatches,
-                        enabled = enabled
-                    )
+        Spacer(modifier = Modifier.weight(1f))
 
-                    SubOptionCheckbox(
-                        label = guistrings.getString("no_clustered_throws"),
-                        state = noClusteredThrows,
-                        enabled = enabled
-                    )
-                }
+        // action buttons (Defaults / Run)
+        Row(
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = { resetControl() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+            ) {
+                Text("Defaults", color = Color.Black)
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(
+                onClick = { onConfirm(params()) }
+            ) {
+                Text("Run")
             }
         }
     }
+}
 
-    @Composable
-    private fun PatternInputRow(label: String, textState: MutableState<String>) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = label,
-                modifier = Modifier.width(100.dp), // Fixed width for alignment
-                textAlign = TextAlign.End,
-                style = MaterialTheme.typography.body1
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            OutlinedTextField(
-                value = textState.value,
-                onValueChange = { textState.value = it },
-                modifier = Modifier.width(250.dp).height(56.dp),
-                singleLine = true,
-                textStyle = MaterialTheme.typography.body1
-            )
-        }
+@Composable
+private fun PatternInputRow(label: String, textState: MutableState<String>) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.width(100.dp), // Fixed width for alignment
+            textAlign = TextAlign.End,
+            style = MaterialTheme.typography.body1
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        OutlinedTextField(
+            value = textState.value,
+            onValueChange = { textState.value = it },
+            modifier = Modifier.width(250.dp).height(56.dp),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.body1
+        )
     }
+}
 
-    @Composable
-    private fun SubOptionCheckbox(label: String, state: MutableState<Boolean>, enabled: Boolean) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 2.dp)
-        ) {
-            Checkbox(
-                checked = state.value,
-                onCheckedChange = { if (enabled) state.value = it },
-                enabled = enabled,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.body1,
-                color = if (enabled) Color.Unspecified else Color.Gray
-            )
-        }
+@Composable
+private fun SubOptionCheckbox(label: String, state: MutableState<Boolean>, enabled: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Checkbox(
+            checked = state.value,
+            onCheckedChange = { if (enabled) state.value = it },
+            enabled = enabled,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.body1,
+            color = if (enabled) Color.Unspecified else Color.Gray
+        )
     }
 }

@@ -10,19 +10,20 @@
 
 package jugglinglab.core
 
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.ui.awt.ComposePanel
 import jugglinglab.JugglingLab.guistrings
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
-import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.SiteswapGeneratorControl
-import jugglinglab.generator.SiteswapTransitionerControl
 import jugglinglab.generator.Transitioner
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.notation.NotationControl
 import jugglinglab.notation.Pattern
-import jugglinglab.notation.SiteswapNotationControl
+import jugglinglab.generator.SiteswapTransitionerControl
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
@@ -31,7 +32,6 @@ import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing.*
-import javax.swing.event.ChangeEvent
 
 class ApplicationPanel
     (
@@ -46,7 +46,7 @@ class ApplicationPanel
 
     private var currentnum: Int = -1
     private var juggleButton: JButton? = null
-    private var transButton: JButton? = null
+    //private var transButton: JButton? = null
     private var genButton: JButton? = null
     private var genBusy: JLabel? = null
 
@@ -95,7 +95,7 @@ class ApplicationPanel
 
         val trans = newTransitioner(Pattern.builtinNotations[num - 1])
         if (trans != null) {
-            val transControl = makeTransitionerControl(trans, pl)
+            val transControl = makeTransitionerControlPanel(trans, pl)
             add(transControl, BorderLayout.CENTER)
         }
         /*
@@ -116,7 +116,6 @@ class ApplicationPanel
         jtp!!.addChangeListener { _: ChangeEvent? -> rootPane.defaultButton = defaultButton }
         */
         //add(jtp!!, BorderLayout.CENTER)
-        parentFrame?.rootPane?.defaultButton = defaultButton
     }
 
     private fun addPatternEntryControl(control: NotationControl) {
@@ -176,89 +175,84 @@ class ApplicationPanel
         jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
     }
 
-    private fun makeTransitionerControl(trans: Transitioner, plp: PatternListPanel?): JPanel {
+    private fun makeTransitionerControlPanel(trans: Transitioner, plp: PatternListPanel?): JPanel {
+        // Callback lambda for when the "Run" button is clicked
+        val onRunCallback: (String) -> Unit = { params ->
+            val t: Thread =
+                object : Thread() {
+                    override fun run() {
+                        var pw: PatternListWindow? = null
+                        try {
+                            trans.initTransitioner(params)
+                            val pwot: GeneratorTargetPatternList
+                            if (plp != null) {
+                                plp.clearList()
+                                pwot = GeneratorTargetPatternList(plp)
+                                // jtp.setSelectedComponent(plp);
+                            } else {
+                                val title =
+                                    trans.notationName + " " + guistrings.getString("Patterns")
+                                pw = PatternListWindow(title, this)
+                                pwot = GeneratorTargetPatternList(pw.patternListPanel)
+                            }
+                            trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                        } catch (ex: JuggleExceptionDone) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                            val parentComponent = pw ?: plp
+                            LabelDialog(
+                                parentComponent,
+                                guistrings.getString("Generator_stopped_title"),
+                                ex.message
+                            )
+                        } catch (_: JuggleExceptionInterrupted) {
+                            // System.out.println("generator thread quit");
+                        } catch (ex: JuggleExceptionUser) {
+                            pw?.dispose()
+                            handleUserException(this@ApplicationPanel, ex.message)
+                        } catch (e: Exception) {
+                            pw?.dispose()
+                            handleFatalException(e)
+                        }
+                    }
+                }
+            t.start()
+        }
+
+        val composePanel = ComposePanel().apply {
+            // Set a preferred size so that pack() on the parent JFrame works correctly,
+            // shrinking the window to fit the content instead of using a default large size.
+            preferredSize = Dimension(500, 500)
+
+            setContent {
+                MaterialTheme {
+                    // Surface color matching the dialog background in the screenshot usually
+                    Surface(color = MaterialTheme.colors.surface) {
+                        // Pass the class-level callback to the Composable
+                        SiteswapTransitionerControl(onConfirm = onRunCallback)
+                    }
+                }
+            }
+        }
+
+        return JPanel().apply {
+            layout = BorderLayout()
+            add(composePanel, BorderLayout.CENTER)
+        }
+
+        /*
         val transControl: SiteswapTransitionerControl? = when (trans.notationName) {
             "Siteswap" -> SiteswapTransitionerControl()
             else -> null
         }
-
-        val but1 = JButton(guistrings.getString("Defaults")).apply {
-            addActionListener { _: ActionEvent? -> transControl?.resetControl() }
-        }
-
-        transButton = JButton(guistrings.getString("Run")).apply {
-            setDefaultCapable(true)
-            addActionListener {
-                val t: Thread =
-                    object : Thread() {
-                        override fun run() {
-                            transButton!!.setEnabled(false)
-                            var pw: PatternListWindow? = null
-                            try {
-                                if (transControl != null) {
-                                    trans.initTransitioner(transControl.params)
-                                }
-                                val pwot: GeneratorTargetPatternList
-                                if (plp != null) {
-                                    plp.clearList()
-                                    pwot = GeneratorTargetPatternList(plp)
-                                    // jtp.setSelectedComponent(plp);
-                                } else {
-                                    val title =
-                                        trans.notationName + " " + guistrings.getString("Patterns")
-                                    pw = PatternListWindow(title, this)
-                                    pwot = GeneratorTargetPatternList(pw.patternListPanel)
-                                }
-                                trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                            } catch (ex: JuggleExceptionDone) {
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                                val parentComponent = pw ?: plp
-                                LabelDialog(
-                                    parentComponent,
-                                    guistrings.getString("Generator_stopped_title"),
-                                    ex.message
-                                )
-                            } catch (_: JuggleExceptionInterrupted) {
-                                // System.out.println("generator thread quit");
-                            } catch (ex: JuggleExceptionUser) {
-                                pw?.dispose()
-                                handleUserException(this@ApplicationPanel, ex.message)
-                            } catch (e: Exception) {
-                                pw?.dispose()
-                                handleFatalException(e)
-                            }
-
-                            transButton!!.setEnabled(true)
-                        }
-                    }
-                t.start()
-            }
-        }
-
-        val p2 = JPanel().apply {
-            setLayout(FlowLayout(FlowLayout.TRAILING))
-            add(but1)
-            add(transButton)
-        }
-        val p3 = JPanel().apply {
-            setLayout(BorderLayout())
-            add(p2, BorderLayout.LINE_END)
-        }
-        val p1 = JPanel().apply {
-            setLayout(BorderLayout())
-            if (transControl != null) {
-                add(transControl, BorderLayout.PAGE_START)
-            }
-            add(p3, BorderLayout.PAGE_END)
-        }
+        transControl?.onRunCallback = { params -> println(params)
+        }*/
 
         //jtp!!.addTab(guistrings.getString("Transitions"), p1)
-        return p1
     }
 
     private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
@@ -358,18 +352,6 @@ class ApplicationPanel
 
         jtp!!.addTab(guistrings.getString("Generator"), p1)
     }
-
-    private val defaultButton: JButton?
-        get() {
-            if (jtp == null) {
-                return null
-            }
-            return when (jtp!!.selectedIndex) {
-                0 -> juggleButton
-                1 -> transButton
-                else -> genButton
-            }
-        }
 
     companion object {
         // execution limits for generator
