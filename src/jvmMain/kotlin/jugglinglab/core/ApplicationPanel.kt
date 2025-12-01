@@ -178,7 +178,6 @@ class ApplicationPanel
     private fun makeTransitionerControlPanel(trans: Transitioner, plp: PatternListPanel?): JPanel {
         // Callback lambda for when the "Run" button is clicked
         val onRunCallback: (String) -> Unit = { params ->
-            println("params = $params")
             val t: Thread =
                 object : Thread() {
                     override fun run() {

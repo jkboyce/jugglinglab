@@ -10,8 +10,6 @@ package jugglinglab.generator
 
 import jugglinglab.generated.resources.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SwapVert
@@ -20,48 +18,46 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.onClick
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
     // state variables for control
-    val fromPattern = mutableStateOf("")
-    val toPattern = mutableStateOf("")
-    val multiplexing = mutableStateOf(false)
-    val simultaneousThrows = mutableStateOf("2")
-    val noSimultaneousCatches = mutableStateOf(true)
-    val noClusteredThrows = mutableStateOf(false)
+    var fromPattern by remember { mutableStateOf("") }
+    var toPattern by remember { mutableStateOf("") }
+    var multiplexing by remember { mutableStateOf(false) }
+    var simultaneousThrows by remember { mutableStateOf("2") }
+    var noSimultaneousCatches by remember { mutableStateOf(true) }
+    var noClusteredThrows by remember { mutableStateOf(false) }
 
     fun resetControl() {
-        fromPattern.value = ""
-        toPattern.value = ""
-        multiplexing.value = false
-        simultaneousThrows.value = "2"
-        noSimultaneousCatches.value = true
-        noClusteredThrows.value = false
+        fromPattern = ""
+        toPattern = ""
+        multiplexing = false
+        simultaneousThrows = "2"
+        noSimultaneousCatches = true
+        noClusteredThrows = false
     }
 
     fun params(): String {
         val sb = StringBuilder()
-        var fromPat = fromPattern.value
+        var fromPat = fromPattern
         if (fromPat.trim().isEmpty()) {
             fromPat = "-"
         }
-        var toPat = toPattern.value
+        var toPat = toPattern
         if (toPat.trim().isEmpty()) {
             toPat = "-"
         }
         sb.append(fromPat).append(" ").append(toPat)
-        if (multiplexing.value && simultaneousThrows.value.isNotEmpty()) {
-            sb.append(" -m ").append(simultaneousThrows.value)
-            if (!noSimultaneousCatches.value) {
+        if (multiplexing && simultaneousThrows.isNotEmpty()) {
+            sb.append(" -m ").append(simultaneousThrows)
+            if (!noSimultaneousCatches) {
                 sb.append(" -mf")
             }
-            if (noClusteredThrows.value) {
+            if (noClusteredThrows) {
                 sb.append(" -mc")
             }
         }
@@ -78,7 +74,8 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
         // pattern entry section
         PatternInputRow(
             label = stringResource(Res.string.gui_from_pattern),
-            textState = fromPattern
+            value = fromPattern,
+            onValueChange = { fromPattern = it }
         )
 
         // swap button row: aligned to match the structure of PatternInputRow
@@ -100,9 +97,9 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
             ) {
                 Button(
                     onClick = {
-                        val temp = fromPattern.value
-                        fromPattern.value = toPattern.value
-                        toPattern.value = temp
+                        val temp = fromPattern
+                        fromPattern = toPattern
+                        toPattern = temp
                     },
                     modifier = Modifier.width(60.dp),
                     contentPadding = PaddingValues(0.dp),
@@ -120,7 +117,8 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
 
         PatternInputRow(
             label = stringResource(Res.string.gui_to_pattern),
-            textState = toPattern
+            value = toPattern,
+            onValueChange = { toPattern = it }
         )
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -133,20 +131,12 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    /*
-                    .clickable(
-                        role = Role.Checkbox,
-                        onClick = {
-                            println("got a click")
-                            multiplexing.value = !multiplexing.value
-                        }
-                    )*/
-                    .padding(vertical = 4.dp) // add some padding for a larger click target
+                    .clickable { multiplexing = !multiplexing }
+                    .padding(vertical = 4.dp)
             ) {
                 Checkbox(
-                    checked = multiplexing.value,
-                    onCheckedChange = { multiplexing.value = it },
+                    checked = multiplexing,
+                    onCheckedChange = { multiplexing = it },
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -158,7 +148,7 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
 
             // sub-options (indented)
             // we use 'enabled' state based on the parent checkbox
-            val enabled = multiplexing.value
+            val enabled = multiplexing
             val contentColor = if (enabled) Color.Unspecified else Color.Gray
 
             Column(modifier = Modifier.padding(start = 32.dp)) {
@@ -174,8 +164,8 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
-                        value = simultaneousThrows.value,
-                        onValueChange = { simultaneousThrows.value = it },
+                        value = simultaneousThrows,
+                        onValueChange = { simultaneousThrows = it },
                         enabled = enabled,
                         singleLine = true,
                         modifier = Modifier.width(50.dp).height(56.dp),
@@ -192,13 +182,15 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
                 // checkboxes
                 SubOptionCheckbox(
                     label = stringResource(Res.string.gui_no_simultaneous_catches),
-                    state = noSimultaneousCatches,
+                    checked = noSimultaneousCatches,
+                    onCheckedChange = { noSimultaneousCatches = it },
                     enabled = enabled
                 )
 
                 SubOptionCheckbox(
                     label = stringResource(Res.string.gui_no_clustered_throws),
-                    state = noClusteredThrows,
+                    checked = noClusteredThrows,
+                    onCheckedChange = { noClusteredThrows = it },
                     enabled = enabled
                 )
             }
@@ -214,7 +206,7 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
         ) {
             Button(
                 onClick = { resetControl() },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
             ) {
                 Text("Defaults", color = Color.Black)
             }
@@ -231,7 +223,7 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
 }
 
 @Composable
-private fun PatternInputRow(label: String, textState: MutableState<String>) {
+private fun PatternInputRow(label: String, value: String, onValueChange: (String) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -245,8 +237,8 @@ private fun PatternInputRow(label: String, textState: MutableState<String>) {
         )
         Spacer(modifier = Modifier.width(10.dp))
         OutlinedTextField(
-            value = textState.value,
-            onValueChange = { textState.value = it },
+            value = value,
+            onValueChange = onValueChange,
             modifier = Modifier.width(250.dp).height(56.dp),
             singleLine = true,
             textStyle = MaterialTheme.typography.body1
@@ -255,14 +247,16 @@ private fun PatternInputRow(label: String, textState: MutableState<String>) {
 }
 
 @Composable
-private fun SubOptionCheckbox(label: String, state: MutableState<Boolean>, enabled: Boolean) {
+private fun SubOptionCheckbox(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, enabled: Boolean) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier
+            .padding(vertical = 2.dp)
+            .clickable { onCheckedChange(!checked) }
     ) {
         Checkbox(
-            checked = state.value,
-            onCheckedChange = { if (enabled) state.value = it },
+            checked = checked,
+            onCheckedChange = onCheckedChange,
             enabled = enabled,
             modifier = Modifier.size(20.dp)
         )
