@@ -36,13 +36,13 @@
     <string name="gui_pattern_rotations">permutações do padrão</string>
     <string name="gui_juggler_permutations">permutacões de malabarista</string>
     <string name="gui_connected_patterns">padrões conectados somente</string>
-    <string name="gui_symmetric_patterns">symmetric patterns only</string>
+    <string name="gui_symmetric_patterns">symmetric patterns</string>
     <string name="gui_multiplexing">Multiplexação</string>
     <string name="gui_enable">permitir*</string>
     <string name="gui_simultaneous_throws">tiros simultâneos</string>
     <string name="gui_no_simultaneous_catches">sem capturas simultâneas</string>
     <string name="gui_no_clustered_throws">sem tiros agrupados</string>
-    <string name="gui_true_multiplexing">multiplexação verdadeiro somente</string>
+    <string name="gui_true_multiplexing">multiplexação verdadeiro</string>
     <string name="gui_exclude_these_throws">Excluir estas expressões</string>
     <string name="gui_include_these_throws">Incluir estas expressões</string>
     <string name="gui_passing_communication_delay">Retraso de comunicação ao passar</string>

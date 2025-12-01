@@ -36,7 +36,7 @@
     <string name="gui_pattern_rotations">��� ������</string>
     <string name="gui_juggler_permutations">juggler permutations</string>
     <string name="gui_connected_patterns">������ ������� ����</string>
-    <string name="gui_symmetric_patterns">symmetric patterns only</string>
+    <string name="gui_symmetric_patterns">symmetric patterns</string>
     <string name="gui_multiplexing">���������</string>
     <string name="gui_enable">�����*</string>
     <string name="gui_simultaneous_throws">������ ����������</string>
@@ -45,7 +45,7 @@
     <string name="gui_true_multiplexing">��������� ����� ����</string>
     <string name="gui_exclude_these_throws">���� �� �������� �����</string>
     <string name="gui_include_these_throws">���� �� �������� ����</string>
-    <string name="gui_passing_communication_delay">Passing communication delay</string>
+    <string name="gui_passing_communication_delay">Passing comm. delay</string>
     <string name="gui_file">����</string>
     <string name="gui_notation">��� �����</string>
     <string name="gui_window">Window</string>

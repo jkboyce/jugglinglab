@@ -8,6 +8,7 @@
 
 package jugglinglab.generator
 
+import jugglinglab.composeapp.generated.resources.*
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,29 +25,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SiteswapGeneratorControl(
     onConfirm: (String) -> Unit
 ) {
-    // --- State Variables ---
-
-    // Top Row
+    // state variables
     var balls by remember { mutableStateOf("") }
     var maxThrow by remember { mutableStateOf("") }
     var period by remember { mutableStateOf("") }
-
-    // Column 1: Settings
+    // column 1: settings
     var jugglersIndex by remember { mutableStateOf(0) } // 0..5 maps to 1..6 jugglers
     var rhythmAsync by remember { mutableStateOf(true) } // true = async, false = sync
     var compositionIndex by remember { mutableStateOf(0) } // 0=all, 1=non-obvious, 2=prime
-
-    // Multiplexing (Now a dropdown index in Column 1)
-    // 0="none", 1="2", 2="3", 3="4"
+    // multiplexing: 0="none", 1="2", 2="3", 3="4"
     var multiplexingIndex by remember { mutableStateOf(0) }
     val multiplexingOptions = listOf("none", "2", "3", "4")
-
-    // Column 2: Filters
+    // column 2: filters
     var groundState by remember { mutableStateOf(true) }
     var excitedState by remember { mutableStateOf(true) }
     var transitionThrows by remember { mutableStateOf(false) }
@@ -57,17 +53,16 @@ fun SiteswapGeneratorControl(
     var noSqueezeCatches by remember { mutableStateOf(true) }
     var noClusteredThrows by remember { mutableStateOf(false) }
     var trueMultiplexing by remember { mutableStateOf(true) }
-
-    // Bottom Section
+    // bottom
     var excludeExpressions by remember { mutableStateOf("") }
     var includeExpressions by remember { mutableStateOf("") }
     var passingDelay by remember { mutableStateOf("") }
 
-    // --- Logic Helpers ---
+    // logic helpers
     val isPassing = jugglersIndex > 0 // 0 index = 1 juggler
     val isMultiplexing = multiplexingIndex > 0 // 0 is "none"
 
-    // Enablement Logic
+    // enablement logic
     val passingDelayEnabled = isPassing && groundState && !excitedState
     val jugglerPermutationsEnabled = isPassing && groundState && excitedState
     val transitionThrowsEnabled = excitedState
@@ -102,40 +97,33 @@ fun SiteswapGeneratorControl(
         resetControl()
     }
 
-    fun buildParams(): String {
+    fun params(): String {
         val sb = StringBuilder()
-        // Basic Params
         val maxThrowVal = if (maxThrow.trim().isEmpty()) "-" else maxThrow
         val periodVal = if (period.trim().isEmpty()) "-" else period
         sb.append(balls).append(" ").append(maxThrowVal).append(" ").append(periodVal)
-        // Rhythm
         if (!rhythmAsync) {
             sb.append(" -s")
         }
-        // Jugglers
         val jugglerCount = jugglersIndex + 1
         if (jugglerCount > 1) {
             sb.append(" -j ").append(jugglerCount)
             if (passingDelayEnabled && passingDelay.isNotEmpty()) {
                 sb.append(" -d ").append(passingDelay).append(" -l 1")
             }
-
             if (jugglerPermutationsEnabled) {
                 if (jugglerPermutations) sb.append(" -jp")
             } else {
                 sb.append(" -jp")
             }
-
             if (connectedPatterns) sb.append(" -cp")
             if (symmetricPatterns) sb.append(" -sym")
         }
-        // Compositions
         // 0 = all (-f), 1 = non-obvious (default), 2 = prime (-prime)
         when (compositionIndex) {
             0 -> sb.append(" -f")
             2 -> sb.append(" -prime")
         }
-        // Find Options
         if (groundState && !excitedState) {
             sb.append(" -g")
         } else if (!groundState && excitedState) {
@@ -147,7 +135,6 @@ fun SiteswapGeneratorControl(
         if (patternRotations) {
             sb.append(" -rot")
         }
-        // Multiplexing
         if (isMultiplexing) {
             val simultThrows = multiplexingOptions[multiplexingIndex]
             sb.append(" -m ").append(simultThrows)
@@ -155,7 +142,6 @@ fun SiteswapGeneratorControl(
             if (noClusteredThrows) sb.append(" -mc")
             if (trueMultiplexing) sb.append(" -mt")
         }
-        // Include/Exclude
         if (excludeExpressions.isNotEmpty()) {
             sb.append(" -x ").append(excludeExpressions)
         }
@@ -173,20 +159,20 @@ fun SiteswapGeneratorControl(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // --- Top Row: Balls, Max Throw, Period ---
+        // Top Row: Balls, Max Throw, Period
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CompactInput(label = "Balls", value = balls, onValueChange = { balls = it })
-            CompactInput(label = "Max. throw", value = maxThrow, onValueChange = { maxThrow = it })
-            CompactInput(label = "Period", value = period, onValueChange = { period = it })
+            CompactInput(label = stringResource(Res.string.gui_balls), value = balls, onValueChange = { balls = it })
+            CompactInput(label = stringResource(Res.string.gui_max__throw), value = maxThrow, onValueChange = { maxThrow = it })
+            CompactInput(label = stringResource(Res.string.gui_period), value = period, onValueChange = { period = it })
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Split Section: Settings (Left) vs Filters (Right) ---
+        // Split Section: Settings (Left) vs Filters (Right)
         Row(
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -195,7 +181,7 @@ fun SiteswapGeneratorControl(
                 modifier = Modifier.weight(1f).padding(end = 16.dp)
             ) {
                 // Jugglers
-                Text(text = "Jugglers", style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_jugglers), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = (1..6).map { it.toString() },
@@ -206,7 +192,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Rhythm
-                Text(text = "Rhythm", style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_rhythm), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = listOf("async", "sync"),
@@ -217,7 +203,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Multiplexing (Dropdown)
-                Text(text = "Multiplexing", style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_multiplexing), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = multiplexingOptions,
@@ -228,7 +214,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Compositions
-                Text(text = "Compositions", style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_compositions), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = listOf("all", "non-obvious", "none (prime only)"),
@@ -239,25 +225,25 @@ fun SiteswapGeneratorControl(
 
             // RIGHT COLUMN (Filters)
             Column(modifier = Modifier.weight(1.3f)) {
-                Text(text = "Filters", style = MaterialTheme.typography.body1)
-                CompactCheckbox("ground state patterns", groundState) { groundState = it }
-                CompactCheckbox("excited state patterns", excitedState) { excitedState = it }
-                CompactCheckbox("transition throws", transitionThrows, enabled = transitionThrowsEnabled) { transitionThrows = it }
-                CompactCheckbox("pattern rotations", patternRotations) { patternRotations = it }
+                Text(text = stringResource(Res.string.gui_find), style = MaterialTheme.typography.body1)
+                CompactCheckbox(stringResource(Res.string.gui_ground_state_patterns), groundState) { groundState = it }
+                CompactCheckbox(stringResource(Res.string.gui_excited_state_patterns), excitedState) { excitedState = it }
+                CompactCheckbox(stringResource(Res.string.gui_transition_throws), transitionThrows, enabled = transitionThrowsEnabled) { transitionThrows = it }
+                CompactCheckbox(stringResource(Res.string.gui_pattern_rotations), patternRotations) { patternRotations = it }
 
                 // Passing options
                 Spacer(modifier = Modifier.height(4.dp))
                 val pColor = if (isPassing) Color.Unspecified else Color.LightGray
-                CompactCheckbox("juggler permutations", jugglerPermutations, enabled = jugglerPermutationsEnabled, color = pColor) { jugglerPermutations = it }
-                CompactCheckbox("connected patterns", connectedPatterns, enabled = isPassing, color = pColor) { connectedPatterns = it }
-                CompactCheckbox("symmetric patterns", symmetricPatterns, enabled = isPassing, color = pColor) { symmetricPatterns = it }
+                CompactCheckbox(stringResource(Res.string.gui_juggler_permutations), jugglerPermutations, enabled = jugglerPermutationsEnabled, color = pColor) { jugglerPermutations = it }
+                CompactCheckbox(stringResource(Res.string.gui_connected_patterns), connectedPatterns, enabled = isPassing, color = pColor) { connectedPatterns = it }
+                CompactCheckbox(stringResource(Res.string.gui_symmetric_patterns), symmetricPatterns, enabled = isPassing, color = pColor) { symmetricPatterns = it }
 
                 // Multiplexing checkboxes
                 Spacer(modifier = Modifier.height(4.dp))
                 val mxColor = if (isMultiplexing) Color.Unspecified else Color.LightGray
-                CompactCheckbox("no squeeze catches", noSqueezeCatches, enabled = isMultiplexing, color = mxColor) { noSqueezeCatches = it }
-                CompactCheckbox("no clustered throws", noClusteredThrows, enabled = isMultiplexing, color = mxColor) { noClusteredThrows = it }
-                CompactCheckbox("true multiplexing", trueMultiplexing, enabled = isMultiplexing, color = mxColor) { trueMultiplexing = it }
+                CompactCheckbox(stringResource(Res.string.gui_no_simultaneous_catches), noSqueezeCatches, enabled = isMultiplexing, color = mxColor) { noSqueezeCatches = it }
+                CompactCheckbox(stringResource(Res.string.gui_no_clustered_throws), noClusteredThrows, enabled = isMultiplexing, color = mxColor) { noClusteredThrows = it }
+                CompactCheckbox(stringResource(Res.string.gui_true_multiplexing), trueMultiplexing, enabled = isMultiplexing, color = mxColor) { trueMultiplexing = it }
             }
         }
 
@@ -271,13 +257,13 @@ fun SiteswapGeneratorControl(
             contentAlignment = Alignment.Center
         ) {
             Column {
-                AlignedInputRow(label = "Exclude expressions", value = excludeExpressions, onValueChange = { excludeExpressions = it })
+                AlignedInputRow(label = stringResource(Res.string.gui_exclude_these_throws), value = excludeExpressions, onValueChange = { excludeExpressions = it })
                 Spacer(modifier = Modifier.height(8.dp))
-                AlignedInputRow(label = "Include expressions", value = includeExpressions, onValueChange = { includeExpressions = it })
+                AlignedInputRow(label = stringResource(Res.string.gui_include_these_throws), value = includeExpressions, onValueChange = { includeExpressions = it })
                 Spacer(modifier = Modifier.height(8.dp))
                 // Passing communication delay (Left aligned within the group)
                 AlignedInputRow(
-                    label = "Passing comm. delay",
+                    label = stringResource(Res.string.gui_passing_communication_delay),
                     value = passingDelay,
                     onValueChange = { passingDelay = it },
                     enabled = passingDelayEnabled,
@@ -288,7 +274,7 @@ fun SiteswapGeneratorControl(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // --- Buttons (Defaults / Run) ---
+        // Buttons (Defaults / Run)
         Row(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
@@ -298,15 +284,15 @@ fun SiteswapGeneratorControl(
                 onClick = { resetControl() },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
             ) {
-                Text("Defaults", color = Color.Black)
+                Text(stringResource(Res.string.gui_defaults), color = Color.Black)
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(
-                onClick = { onConfirm(buildParams()) }
+                onClick = { onConfirm(params()) }
             ) {
-                Text("Run")
+                Text(stringResource(Res.string.gui_run))
             }
         }
     }
@@ -377,8 +363,6 @@ private fun AlignedInputRow(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        // Removed Arrangement.Center so items start from left.
-        // The container Column handles the centering of the whole block.
     ) {
         Text(
             text = label,

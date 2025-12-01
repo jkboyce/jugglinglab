@@ -35,8 +35,8 @@
     <string name="gui_transition_throws">tiros transitorios</string>
     <string name="gui_pattern_rotations">permutaciones del patrón</string>
     <string name="gui_juggler_permutations">permutaciónes de los malabaristas</string>
-    <string name="gui_connected_patterns">patrones conectados solamente</string>
-    <string name="gui_symmetric_patterns">symmetric patterns only</string>
+    <string name="gui_connected_patterns">patrones conectados</string>
+    <string name="gui_symmetric_patterns">symmetric patterns</string>
     <string name="gui_multiplexing">Multiplexación</string>
     <string name="gui_enable">permitir*</string>
     <string name="gui_simultaneous_throws">tiros simultáneos</string>
