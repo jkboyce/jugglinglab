@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.onClick
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,7 +46,7 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
     }
 
     fun params(): String {
-        val sb = StringBuilder(256)
+        val sb = StringBuilder()
         var fromPat = fromPattern.value
         if (fromPat.trim().isEmpty()) {
             fromPat = "-"
@@ -70,8 +71,8 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(16.dp),
+            //.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // pattern entry section
@@ -133,11 +134,15 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(bottom = 8.dp)
+                    /*
                     .clickable(
                         role = Role.Checkbox,
-                        onClick = { multiplexing.value = !multiplexing.value }
-                    )
-                    .padding(vertical = 4.dp) // Add some padding for a larger click target
+                        onClick = {
+                            println("got a click")
+                            multiplexing.value = !multiplexing.value
+                        }
+                    )*/
+                    .padding(vertical = 4.dp) // add some padding for a larger click target
             ) {
                 Checkbox(
                     checked = multiplexing.value,
@@ -234,7 +239,7 @@ private fun PatternInputRow(label: String, textState: MutableState<String>) {
     ) {
         Text(
             text = label,
-            modifier = Modifier.width(100.dp), // Fixed width for alignment
+            modifier = Modifier.width(100.dp), // fixed width for alignment
             textAlign = TextAlign.End,
             style = MaterialTheme.typography.body1
         )
