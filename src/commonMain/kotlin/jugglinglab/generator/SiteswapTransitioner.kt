@@ -93,6 +93,8 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         try {
+            prefix = ""
+            suffix = ""
             val returnTrans = findReturnTrans()
             prefix = "($patternFrom^2)"
             suffix = "($patternTo^2)$returnTrans"
