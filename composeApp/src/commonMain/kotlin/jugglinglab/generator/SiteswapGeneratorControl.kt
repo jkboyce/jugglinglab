@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -64,7 +65,7 @@ fun SiteswapGeneratorControl(
     // --- Logic Helpers ---
     val isPassing = jugglersIndex > 0 // 0 index = 1 juggler
 
-    // Enablement Logic (Mirrored from Swing ActionListeners)
+    // Enablement Logic
     val passingDelayEnabled = isPassing && groundState && !excitedState
     val jugglerPermutationsEnabled = isPassing && groundState && excitedState
     val transitionThrowsEnabled = excitedState
@@ -123,10 +124,6 @@ fun SiteswapGeneratorControl(
                 sb.append(" -d ").append(passingDelay).append(" -l 1")
             }
 
-            // Logic note: Swing code appends -jp if enabled and selected, OR if disabled (implied default?)
-            // Re-reading Swing: "else sb.append(" -jp")".
-            // If cb17 (permutations) is NOT enabled, it appends -jp.
-            // If it IS enabled, it checks if selected.
             if (jugglerPermutationsEnabled) {
                 if (jugglerPermutations) sb.append(" -jp")
             } else {
@@ -137,7 +134,7 @@ fun SiteswapGeneratorControl(
             if (symmetricPatterns) sb.append(" -sym")
         }
 
-        // Compositions (Converted from Radio to Dropdown logic)
+        // Compositions
         // 0 = all (-f), 1 = non-obvious (default), 2 = prime (-prime)
         when (compositionIndex) {
             0 -> sb.append(" -f")
@@ -151,10 +148,6 @@ fun SiteswapGeneratorControl(
             sb.append(" -ng")
         }
 
-        // Transition Throws (Swing: cb9)
-        // Swing Logic: if !enabled or !selected -> -se.
-        // Logic check: cb9 enabled only if excitedState is true.
-        // So if (!excited) OR (!selected) -> append -se
         if (!transitionThrowsEnabled || !transitionThrows) {
             sb.append(" -se")
         }
@@ -206,43 +199,40 @@ fun SiteswapGeneratorControl(
         // --- Split Section: Settings (Left) vs Find (Right) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            //crossAxisAlignment = CrossAxisAlignment.Start
         ) {
             // LEFT COLUMN
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f).padding(end = 16.dp)
+            ) {
                 // Jugglers
                 Text(text = "Jugglers", style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
-                SimpleDropdown(
+                StyledDropdown(
                     items = (1..6).map { it.toString() },
                     selectedIndex = jugglersIndex,
-                    onIndexChange = { jugglersIndex = it },
-                    modifier = Modifier.width(80.dp)
+                    onIndexChange = { jugglersIndex = it }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Rhythm
+                // Rhythm (Converted to Dropdown)
                 Text(text = "Rhythm", style = MaterialTheme.typography.body1)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = rhythmAsync, onClick = { rhythmAsync = true })
-                    Text("async", style = MaterialTheme.typography.body2)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = !rhythmAsync, onClick = { rhythmAsync = false })
-                    Text("sync", style = MaterialTheme.typography.body2)
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                StyledDropdown(
+                    items = listOf("async", "sync"),
+                    selectedIndex = if (rhythmAsync) 0 else 1,
+                    onIndexChange = { rhythmAsync = (it == 0) }
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Compositions (Changed to Dropdown)
+                // Compositions
                 Text(text = "Compositions", style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
-                SimpleDropdown(
+                StyledDropdown(
                     items = listOf("all", "non-obvious", "none (prime only)"),
                     selectedIndex = compositionIndex,
-                    onIndexChange = { compositionIndex = it },
-                    modifier = Modifier.fillMaxWidth(0.9f)
+                    onIndexChange = { compositionIndex = it }
                 )
             }
 
@@ -284,9 +274,14 @@ fun SiteswapGeneratorControl(
                         value = simultaneousThrows,
                         onValueChange = { simultaneousThrows = it },
                         enabled = multiplexing,
-                        modifier = Modifier.width(50.dp).height(50.dp),
+                        modifier = Modifier
+                            .width(50.dp)
+                            .height(50.dp)
+                            .padding(PaddingValues(0.dp)),
                         singleLine = true,
-                        textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center)
+                        textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
+                        // Fix for input clipping
+                        //contentPadding = PaddingValues(0.dp)
                     )
                 }
                 CompactCheckbox("no simultaneous catches", noSimultaneousCatches, enabled = multiplexing) { noSimultaneousCatches = it }
@@ -297,20 +292,24 @@ fun SiteswapGeneratorControl(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Bottom Inputs ---
-        LabelledInputRow(label = "Exclude these expressions", value = excludeExpressions, onValueChange = { excludeExpressions = it })
-        Spacer(modifier = Modifier.height(8.dp))
-        LabelledInputRow(label = "Include these expressions", value = includeExpressions, onValueChange = { includeExpressions = it })
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Passing communication delay (only enabled under specific find conditions)
-        LabelledInputRow(
-            label = "Passing communication delay",
-            value = passingDelay,
-            onValueChange = { passingDelay = it },
-            enabled = passingDelayEnabled,
-            width = 60.dp
-        )
+        // --- Bottom Inputs (Aligned & Centered) ---
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AlignedInputRow(label = "Exclude these expressions", value = excludeExpressions, onValueChange = { excludeExpressions = it })
+            Spacer(modifier = Modifier.height(8.dp))
+            AlignedInputRow(label = "Include these expressions", value = includeExpressions, onValueChange = { includeExpressions = it })
+            Spacer(modifier = Modifier.height(8.dp))
+            // Passing communication delay
+            AlignedInputRow(
+                label = "Passing communication delay",
+                value = passingDelay,
+                onValueChange = { passingDelay = it },
+                enabled = passingDelayEnabled,
+                inputWidth = 60.dp
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -352,9 +351,14 @@ private fun CompactInput(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.width(50.dp).height(50.dp).padding(4.dp),
+            modifier = Modifier
+                .width(50.dp)
+                .height(50.dp)
+                .padding(PaddingValues(0.dp)),
             singleLine = true,
             textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
+            // Padding fix for top inputs
+            //contentPadding = PaddingValues(0.dp)
         )
     }
 }
@@ -390,38 +394,43 @@ private fun CompactCheckbox(
 }
 
 @Composable
-private fun LabelledInputRow(
+private fun AlignedInputRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
-    width: androidx.compose.ui.unit.Dp = 200.dp
+    inputWidth: Dp = 200.dp,
+    labelWidth: Dp = 220.dp // Fixed width for alignment
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End,
-        modifier = Modifier.fillMaxWidth()
+        horizontalArrangement = Arrangement.Center
     ) {
         Text(
             text = label,
             textAlign = TextAlign.End,
             style = MaterialTheme.typography.body2,
             color = if (enabled) Color.Unspecified else Color.Gray,
-            modifier = Modifier.padding(end = 10.dp)
+            modifier = Modifier.width(labelWidth).padding(end = 10.dp)
         )
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
-            modifier = Modifier.width(width).height(50.dp),
+            modifier = Modifier
+                .width(inputWidth)
+                .height(50.dp)
+                .padding(PaddingValues(horizontal = 8.dp, vertical = 0.dp)),
             singleLine = true,
-            textStyle = MaterialTheme.typography.body2
+            textStyle = MaterialTheme.typography.body2,
+            // Padding fix for vertical centering
+            //contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
         )
     }
 }
 
 @Composable
-private fun SimpleDropdown(
+private fun StyledDropdown(
     items: List<String>,
     selectedIndex: Int,
     onIndexChange: (Int) -> Unit,
@@ -431,7 +440,8 @@ private fun SimpleDropdown(
 
     Box(
         modifier = modifier
-            .height(40.dp) // Slightly smaller than inputs
+            .fillMaxWidth() // Enforces identical width logic in the column
+            .height(40.dp)
             .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
             .clickable { expanded = true }
             .padding(horizontal = 8.dp),

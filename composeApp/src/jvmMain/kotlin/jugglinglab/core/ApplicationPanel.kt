@@ -313,7 +313,7 @@ class ApplicationPanel
         val composePanel = ComposePanel().apply {
             // Set a preferred size so that pack() on the parent JFrame works correctly,
             // shrinking the window to fit the content instead of using a default large size.
-            preferredSize = Dimension(700, 1000)
+            preferredSize = Dimension(540, 810)
 
             setContent {
                 MaterialTheme {
