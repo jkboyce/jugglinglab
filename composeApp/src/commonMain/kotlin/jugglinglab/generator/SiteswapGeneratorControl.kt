@@ -41,7 +41,12 @@ fun SiteswapGeneratorControl(
     var rhythmAsync by remember { mutableStateOf(true) } // true = async, false = sync
     var compositionIndex by remember { mutableStateOf(0) } // 0=all, 1=non-obvious, 2=prime
 
-    // Column 2: Find Options
+    // Multiplexing (Now a dropdown index in Column 1)
+    // 0="none", 1="2", 2="3", 3="4"
+    var multiplexingIndex by remember { mutableStateOf(0) }
+    val multiplexingOptions = listOf("none", "2", "3", "4")
+
+    // Column 2: Filters
     var groundState by remember { mutableStateOf(true) }
     var excitedState by remember { mutableStateOf(true) }
     var transitionThrows by remember { mutableStateOf(false) }
@@ -49,13 +54,9 @@ fun SiteswapGeneratorControl(
     var jugglerPermutations by remember { mutableStateOf(false) }
     var connectedPatterns by remember { mutableStateOf(true) }
     var symmetricPatterns by remember { mutableStateOf(false) }
-
-    // Multiplexing
-    var multiplexing by remember { mutableStateOf(false) }
-    var simultaneousThrows by remember { mutableStateOf("") }
-    var noSimultaneousCatches by remember { mutableStateOf(true) }
+    var noSqueezeCatches by remember { mutableStateOf(true) }
     var noClusteredThrows by remember { mutableStateOf(false) }
-    var trueMultiplexing by remember { mutableStateOf(false) }
+    var trueMultiplexing by remember { mutableStateOf(true) }
 
     // Bottom Section
     var excludeExpressions by remember { mutableStateOf("") }
@@ -64,6 +65,7 @@ fun SiteswapGeneratorControl(
 
     // --- Logic Helpers ---
     val isPassing = jugglersIndex > 0 // 0 index = 1 juggler
+    val isMultiplexing = multiplexingIndex > 0 // 0 is "none"
 
     // Enablement Logic
     val passingDelayEnabled = isPassing && groundState && !excitedState
@@ -77,6 +79,7 @@ fun SiteswapGeneratorControl(
         jugglersIndex = 0
         rhythmAsync = true
         compositionIndex = 0 // "all"
+        multiplexingIndex = 0 // "none"
 
         groundState = true
         excitedState = true
@@ -85,12 +88,9 @@ fun SiteswapGeneratorControl(
         jugglerPermutations = false
         connectedPatterns = true
         symmetricPatterns = false
-
-        multiplexing = false
-        simultaneousThrows = "2"
-        noSimultaneousCatches = true
+        noSqueezeCatches = true
         noClusteredThrows = false
-        trueMultiplexing = false
+        trueMultiplexing = true
 
         excludeExpressions = ""
         includeExpressions = ""
@@ -103,19 +103,15 @@ fun SiteswapGeneratorControl(
     }
 
     fun buildParams(): String {
-        val sb = StringBuilder(256)
-
+        val sb = StringBuilder()
         // Basic Params
         val maxThrowVal = if (maxThrow.trim().isEmpty()) "-" else maxThrow
         val periodVal = if (period.trim().isEmpty()) "-" else period
-
         sb.append(balls).append(" ").append(maxThrowVal).append(" ").append(periodVal)
-
         // Rhythm
         if (!rhythmAsync) {
             sb.append(" -s")
         }
-
         // Jugglers
         val jugglerCount = jugglersIndex + 1
         if (jugglerCount > 1) {
@@ -133,37 +129,32 @@ fun SiteswapGeneratorControl(
             if (connectedPatterns) sb.append(" -cp")
             if (symmetricPatterns) sb.append(" -sym")
         }
-
         // Compositions
         // 0 = all (-f), 1 = non-obvious (default), 2 = prime (-prime)
         when (compositionIndex) {
             0 -> sb.append(" -f")
             2 -> sb.append(" -prime")
         }
-
         // Find Options
         if (groundState && !excitedState) {
             sb.append(" -g")
         } else if (!groundState && excitedState) {
             sb.append(" -ng")
         }
-
         if (!transitionThrowsEnabled || !transitionThrows) {
             sb.append(" -se")
         }
-
         if (patternRotations) {
             sb.append(" -rot")
         }
-
         // Multiplexing
-        if (multiplexing && simultaneousThrows.isNotEmpty()) {
-            sb.append(" -m ").append(simultaneousThrows)
-            if (!noSimultaneousCatches) sb.append(" -mf")
+        if (isMultiplexing) {
+            val simultThrows = multiplexingOptions[multiplexingIndex]
+            sb.append(" -m ").append(simultThrows)
+            if (!noSqueezeCatches) sb.append(" -mf")
             if (noClusteredThrows) sb.append(" -mc")
             if (trueMultiplexing) sb.append(" -mt")
         }
-
         // Include/Exclude
         if (excludeExpressions.isNotEmpty()) {
             sb.append(" -x ").append(excludeExpressions)
@@ -171,7 +162,6 @@ fun SiteswapGeneratorControl(
         if (includeExpressions.isNotEmpty()) {
             sb.append(" -i ").append(includeExpressions)
         }
-
         sb.append(" -n")
         return sb.toString()
     }
@@ -196,11 +186,11 @@ fun SiteswapGeneratorControl(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Split Section: Settings (Left) vs Find (Right) ---
+        // --- Split Section: Settings (Left) vs Filters (Right) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
         ) {
-            // LEFT COLUMN
+            // LEFT COLUMN (Settings)
             Column(
                 modifier = Modifier.weight(1f).padding(end = 16.dp)
             ) {
@@ -215,13 +205,24 @@ fun SiteswapGeneratorControl(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Rhythm (Converted to Dropdown)
+                // Rhythm
                 Text(text = "Rhythm", style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = listOf("async", "sync"),
                     selectedIndex = if (rhythmAsync) 0 else 1,
                     onIndexChange = { rhythmAsync = (it == 0) }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Multiplexing (Dropdown)
+                Text(text = "Multiplexing", style = MaterialTheme.typography.body1)
+                Spacer(modifier = Modifier.height(4.dp))
+                StyledDropdown(
+                    items = multiplexingOptions,
+                    selectedIndex = multiplexingIndex,
+                    onIndexChange = { multiplexingIndex = it }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -236,79 +237,53 @@ fun SiteswapGeneratorControl(
                 )
             }
 
-            // RIGHT COLUMN (Find)
+            // RIGHT COLUMN (Filters)
             Column(modifier = Modifier.weight(1.3f)) {
-                Text(text = "Find", style = MaterialTheme.typography.body1)
+                Text(text = "Filters", style = MaterialTheme.typography.body1)
                 CompactCheckbox("ground state patterns", groundState) { groundState = it }
                 CompactCheckbox("excited state patterns", excitedState) { excitedState = it }
                 CompactCheckbox("transition throws", transitionThrows, enabled = transitionThrowsEnabled) { transitionThrows = it }
                 CompactCheckbox("pattern rotations", patternRotations) { patternRotations = it }
 
-                // Indented / Separated Passing Options
+                // Passing options
                 Spacer(modifier = Modifier.height(4.dp))
-                CompactCheckbox("juggler permutations", jugglerPermutations, enabled = jugglerPermutationsEnabled, color = Color.Gray) { jugglerPermutations = it }
-                CompactCheckbox("connected patterns only", connectedPatterns, enabled = isPassing, color = Color.Gray) { connectedPatterns = it }
-                CompactCheckbox("symmetric patterns only", symmetricPatterns, enabled = isPassing, color = Color.Gray) { symmetricPatterns = it }
+                val pColor = if (isPassing) Color.Unspecified else Color.LightGray
+                CompactCheckbox("juggler permutations", jugglerPermutations, enabled = jugglerPermutationsEnabled, color = pColor) { jugglerPermutations = it }
+                CompactCheckbox("connected patterns", connectedPatterns, enabled = isPassing, color = pColor) { connectedPatterns = it }
+                CompactCheckbox("symmetric patterns", symmetricPatterns, enabled = isPassing, color = pColor) { symmetricPatterns = it }
+
+                // Multiplexing checkboxes
+                Spacer(modifier = Modifier.height(4.dp))
+                val mxColor = if (isMultiplexing) Color.Unspecified else Color.LightGray
+                CompactCheckbox("no squeeze catches", noSqueezeCatches, enabled = isMultiplexing, color = mxColor) { noSqueezeCatches = it }
+                CompactCheckbox("no clustered throws", noClusteredThrows, enabled = isMultiplexing, color = mxColor) { noClusteredThrows = it }
+                CompactCheckbox("true multiplexing", trueMultiplexing, enabled = isMultiplexing, color = mxColor) { trueMultiplexing = it }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // --- Multiplexing Section ---
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { multiplexing = !multiplexing }
-            ) {
-                Checkbox(checked = multiplexing, onCheckedChange = { multiplexing = it })
-                Text("Multiplexing", style = MaterialTheme.typography.body1)
-            }
-
-            // Sub-options
-            val mxColor = if (multiplexing) Color.Unspecified else Color.Gray
-            Column(modifier = Modifier.padding(start = 32.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("simultaneous throws", color = mxColor, style = MaterialTheme.typography.body2)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedTextField(
-                        value = simultaneousThrows,
-                        onValueChange = { simultaneousThrows = it },
-                        enabled = multiplexing,
-                        modifier = Modifier
-                            .width(50.dp)
-                            .height(50.dp)
-                            .padding(PaddingValues(0.dp)),
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
-                        // Fix for input clipping
-                        //contentPadding = PaddingValues(0.dp)
-                    )
-                }
-                CompactCheckbox("no simultaneous catches", noSimultaneousCatches, enabled = multiplexing) { noSimultaneousCatches = it }
-                CompactCheckbox("no clustered throws", noClusteredThrows, enabled = multiplexing) { noClusteredThrows = it }
-                CompactCheckbox("true multiplexing only", trueMultiplexing, enabled = multiplexing) { trueMultiplexing = it }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // --- Bottom Inputs (Aligned & Centered) ---
-        Column(
+        // --- Bottom Inputs (Aligned & Centered Block) ---
+        // We use a Box with center alignment to center the group,
+        // but inside the column, rows naturally align left.
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center
         ) {
-            AlignedInputRow(label = "Exclude these expressions", value = excludeExpressions, onValueChange = { excludeExpressions = it })
-            Spacer(modifier = Modifier.height(8.dp))
-            AlignedInputRow(label = "Include these expressions", value = includeExpressions, onValueChange = { includeExpressions = it })
-            Spacer(modifier = Modifier.height(8.dp))
-            // Passing communication delay
-            AlignedInputRow(
-                label = "Passing communication delay",
-                value = passingDelay,
-                onValueChange = { passingDelay = it },
-                enabled = passingDelayEnabled,
-                inputWidth = 60.dp
-            )
+            Column {
+                AlignedInputRow(label = "Exclude expressions", value = excludeExpressions, onValueChange = { excludeExpressions = it })
+                Spacer(modifier = Modifier.height(8.dp))
+                AlignedInputRow(label = "Include expressions", value = includeExpressions, onValueChange = { includeExpressions = it })
+                Spacer(modifier = Modifier.height(8.dp))
+                // Passing communication delay (Left aligned within the group)
+                AlignedInputRow(
+                    label = "Passing comm. delay",
+                    value = passingDelay,
+                    onValueChange = { passingDelay = it },
+                    enabled = passingDelayEnabled,
+                    inputWidth = 60.dp
+                )
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -357,8 +332,6 @@ private fun CompactInput(
                 .padding(PaddingValues(0.dp)),
             singleLine = true,
             textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
-            // Padding fix for top inputs
-            //contentPadding = PaddingValues(0.dp)
         )
     }
 }
@@ -388,7 +361,7 @@ private fun CompactCheckbox(
         Text(
             text = label,
             style = MaterialTheme.typography.body2,
-            color = if (enabled) color else Color.Gray
+            color = if (enabled) color else Color.LightGray
         )
     }
 }
@@ -404,13 +377,14 @@ private fun AlignedInputRow(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        // Removed Arrangement.Center so items start from left.
+        // The container Column handles the centering of the whole block.
     ) {
         Text(
             text = label,
             textAlign = TextAlign.End,
             style = MaterialTheme.typography.body2,
-            color = if (enabled) Color.Unspecified else Color.Gray,
+            color = if (enabled) Color.Unspecified else Color.LightGray,
             modifier = Modifier.width(labelWidth).padding(end = 10.dp)
         )
         OutlinedTextField(
@@ -423,8 +397,6 @@ private fun AlignedInputRow(
                 .padding(PaddingValues(horizontal = 8.dp, vertical = 0.dp)),
             singleLine = true,
             textStyle = MaterialTheme.typography.body2,
-            // Padding fix for vertical centering
-            //contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
         )
     }
 }
@@ -440,7 +412,7 @@ private fun StyledDropdown(
 
     Box(
         modifier = modifier
-            .fillMaxWidth() // Enforces identical width logic in the column
+            .fillMaxWidth()
             .height(40.dp)
             .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
             .clickable { expanded = true }
@@ -459,7 +431,7 @@ private fun StyledDropdown(
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = "Dropdown",
-                tint = Color.Gray
+                tint = Color.LightGray
             )
         }
 
