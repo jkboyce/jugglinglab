@@ -19,11 +19,10 @@ import jugglinglab.generator.Generator
 import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.SiteswapGeneratorControl
 import jugglinglab.generator.Transitioner
-import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
-import jugglinglab.notation.NotationControl
-import jugglinglab.notation.Pattern
 import jugglinglab.generator.SiteswapTransitionerControl
+import jugglinglab.notation.SiteswapPattern
+import jugglinglab.notation.SiteswapNotationControl
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
@@ -45,8 +44,7 @@ class ApplicationPanel
     private var patlisttab: Boolean = false
 
     private var currentnum: Int = -1
-    private var juggleButton: JButton? = null
-    //private var transButton: JButton? = null
+
     private var genButton: JButton? = null
     private var genBusy: JLabel? = null
 
@@ -93,11 +91,19 @@ class ApplicationPanel
             pl = PatternListPanel(animtarget)
         }
 
+        val patternControl = makePatternEntryControlPanel()
+        add(patternControl, BorderLayout.CENTER)
+
+        /*
         val trans = newTransitioner(Pattern.builtinNotations[num - 1])
         if (trans != null) {
             val transControl = makeTransitionerControlPanel(trans, pl)
             add(transControl, BorderLayout.CENTER)
-        }
+
+            //jtp!!.addTab(guistrings.getString("Transitions"), transControl)
+        }*/
+
+
         /*
         val gen = newGenerator(Pattern.builtinNotations[num - 1])
         if (gen != null) {
@@ -118,64 +124,65 @@ class ApplicationPanel
         //add(jtp!!, BorderLayout.CENTER)
     }
 
-    private fun addPatternEntryControl(control: NotationControl) {
-        val nbut1 = JButton(guistrings.getString("Defaults")).apply {
-            addActionListener { _: ActionEvent? ->
-                try {
-                    control.resetControl()
-                } catch (e: Exception) {
-                    handleFatalException(e)
+    private fun makePatternEntryControlPanel(): JPanel {
+
+        val onRunCallback: (String) -> Unit = { params ->
+            try {
+                val pl = ParameterList(params)
+                val p = SiteswapPattern().fromParameters(pl)
+                val jc = (AnimationPrefs()).fromParameters(pl)
+                pl.errorIfParametersLeft()
+
+                val notation = p.notationName
+                val config: String = p.toString()
+                val pat = fromBasePattern(notation, config)
+                pat.layoutPattern()
+
+                if (bringToFront(pat.hashCode)) {
+                    // TODO fix this:
+                    //return
                 }
+
+                if (animtarget != null) {
+                    animtarget.restartView(pat, jc)
+                } else {
+                    PatternWindow(pat.title, pat, jc)
+                }
+            } catch (je: JuggleExceptionUser) {
+                handleUserException(this@ApplicationPanel, je.message)
+            } catch (e: Exception) {
+                handleFatalException(e)
             }
         }
 
-        juggleButton =
-            JButton(guistrings.getString("Juggle")).apply {
-                setDefaultCapable(true)
-                addActionListener { _: ActionEvent? ->
-                    try {
-                        val pl = control.parameterList
-                        val p = control.newPattern().fromParameters(pl)
-                        val jc = (AnimationPrefs()).fromParameters(pl)
-                        pl.errorIfParametersLeft()
+        val composePanel = ComposePanel().apply {
+            // Set a preferred size so that pack() on the parent JFrame works correctly,
+            // shrinking the window to fit the content instead of using a default large size.
+            preferredSize = Dimension(500, 700)
 
-                        val notation = p.notationName
-                        val config: String = p.toString()
-                        val pat = fromBasePattern(notation, config)
-                        pat.layoutPattern()
-
-                        if (bringToFront(pat.hashCode)) {
-                            return@addActionListener
-                        }
-
-                        if (animtarget != null) {
-                            animtarget.restartView(pat, jc)
-                        } else {
-                            PatternWindow(pat.title, pat, jc)
-                        }
-                    } catch (je: JuggleExceptionUser) {
-                        handleUserException(this@ApplicationPanel, je.message)
-                    } catch (e: Exception) {
-                        handleFatalException(e)
+            setContent {
+                MaterialTheme {
+                    // Surface color matching the dialog background in the screenshot usually
+                    Surface(color = MaterialTheme.colors.surface) {
+                        // Pass the class-level callback to the Composable
+                        SiteswapNotationControl(onConfirm = onRunCallback)
                     }
                 }
             }
-
-        val np2 = JPanel().apply {
-            setLayout(FlowLayout(FlowLayout.TRAILING))
-            add(nbut1)
-            add(juggleButton)
-        }
-        val np1 = JPanel().apply {
-            setLayout(BorderLayout())
-            add(control, BorderLayout.PAGE_START)
-            add(np2, BorderLayout.PAGE_END)
         }
 
-        jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
+        return JPanel().apply {
+            layout = BorderLayout()
+            add(composePanel, BorderLayout.CENTER)
+        }
+
+        //jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
     }
 
-    private fun makeTransitionerControlPanel(trans: Transitioner, plp: PatternListPanel?): JPanel {
+    private fun makeTransitionerControlPanel(
+        trans: Transitioner,
+        plp: PatternListPanel?
+    ): JPanel {
         // Callback lambda for when the "Run" button is clicked
         val onRunCallback: (String) -> Unit = { params ->
             val t: Thread =
@@ -243,16 +250,6 @@ class ApplicationPanel
             layout = BorderLayout()
             add(composePanel, BorderLayout.CENTER)
         }
-
-        /*
-        val transControl: SiteswapTransitionerControl? = when (trans.notationName) {
-            "Siteswap" -> SiteswapTransitionerControl()
-            else -> null
-        }
-        transControl?.onRunCallback = { params -> println(params)
-        }*/
-
-        //jtp!!.addTab(guistrings.getString("Transitions"), p1)
     }
 
     private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
