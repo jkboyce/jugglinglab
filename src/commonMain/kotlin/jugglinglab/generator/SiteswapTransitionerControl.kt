@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
+fun SiteswapTransitionerControl(
+    onConfirm: (String) -> Unit
+) {
     // state variables for control
     var fromPattern by remember { mutableStateOf("") }
     var toPattern by remember { mutableStateOf("") }
@@ -78,19 +80,15 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
             onValueChange = { fromPattern = it }
         )
 
-        // swap button row: aligned to match the structure of PatternInputRow
+        // swap button row, aligned to match the structure of PatternInputRow
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Invisible spacer matching the Label width (100.dp)
             Spacer(modifier = Modifier.width(100.dp))
-
-            // Invisible spacer matching the gap (10.dp)
             Spacer(modifier = Modifier.width(10.dp))
 
-            // Container matching the TextField width (250.dp) to center the button inside it
             Box(
                 modifier = Modifier.width(250.dp),
                 contentAlignment = Alignment.Center
@@ -223,7 +221,11 @@ fun SiteswapTransitionerControl(onConfirm: (String) -> Unit) {
 }
 
 @Composable
-private fun PatternInputRow(label: String, value: String, onValueChange: (String) -> Unit) {
+private fun PatternInputRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -247,7 +249,12 @@ private fun PatternInputRow(label: String, value: String, onValueChange: (String
 }
 
 @Composable
-private fun SubOptionCheckbox(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, enabled: Boolean) {
+private fun SubOptionCheckbox(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
