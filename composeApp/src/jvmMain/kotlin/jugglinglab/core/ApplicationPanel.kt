@@ -38,21 +38,17 @@ import javax.swing.*
 class ApplicationPanel
     (
     private val parentFrame: JFrame?,
-    // fields below are currently unused; they supported the applet version
+    // the fields below are currently unused; they supported the applet version
     // of Juggling Lab
-    private val animtarget: View?,
-    private val patlist: PatternListPanel?
+    private val animtarget: View? = null,
+    private val patlist: PatternListPanel? = null
 ) : JPanel(), ActionListener {
     private var jtp: JTabbedPane? = null
     private var patlisttab: Boolean = false
 
     private var currentnum: Int = -1
 
-    private var genButton: JButton? = null
-    private var genBusy: JLabel? = null
-
-    constructor(parentFrame: JFrame?) :
-        this(parentFrame, animtarget = null, patlist = null)
+    //private var genBusy: JLabel? = null
 
     override fun actionPerformed(ae: ActionEvent) {
         val command = ae.getActionCommand()
@@ -77,7 +73,7 @@ class ApplicationPanel
     // Input is for example Pattern.NOTATION_SITESWAP.
 
     fun setNotation(num: Int) {
-        setLayout(BorderLayout())
+        layout = BorderLayout()
         /*
         if (num > Pattern.builtinNotations.size) return
         if (jtp != null) {
@@ -89,16 +85,40 @@ class ApplicationPanel
             Pattern.NOTATION_SITESWAP -> addPatternEntryControl(SiteswapNotationControl())
         }
         */
+
         var pl = patlist
         if (pl == null && patlisttab) {
             pl = PatternListPanel(animtarget)
         }
-
-        val patternControl = makePatternEntryControlPanel()
-        add(patternControl, BorderLayout.CENTER)
-
-        /*
         val trans = newTransitioner(Pattern.builtinNotations[num - 1])
+        val gen = newGenerator(Pattern.builtinNotations[num - 1])
+
+        val composePanel = ComposePanel().apply {
+            // Set a preferred size so that pack() on the parent JFrame works correctly,
+            // shrinking the window to fit the content instead of using a default large size.
+            preferredSize = Dimension(500, 700)  // pattern entry
+            //preferredSize = Dimension(475, 500)  // transitioner
+            //preferredSize = Dimension(400, 710)  // generator
+
+            setContent {
+                MaterialTheme {
+                    Surface(color = MaterialTheme.colors.surface) {
+                        SiteswapNotationControl(onConfirm = onRunPatternEntry())
+
+                        //SiteswapTransitionerControl(onConfirm = onRunTransitioner(trans!!, pl))
+
+                        //SiteswapGeneratorControl(onConfirm = onRunGenerator(gen!!, pl))
+
+                    }
+                }
+            }
+        }
+
+        layout = BorderLayout()
+        add(composePanel, BorderLayout.CENTER)
+
+        //jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
+        /*
         if (trans != null) {
             val transControl = makeTransitionerControlPanel(trans, pl)
             add(transControl, BorderLayout.CENTER)
@@ -106,14 +126,13 @@ class ApplicationPanel
             //jtp!!.addTab(guistrings.getString("Transitions"), transControl)
         }*/
 
-
-        val gen = newGenerator(Pattern.builtinNotations[num - 1])
+/*
         if (gen != null) {
             val genControl = makeGeneratorControlPanel(gen, pl)
             add(genControl, BorderLayout.CENTER)
 
             // jtp!!.addTab(guistrings.getString("Generator"), genControl)
-        }
+        }*/
 
         /*
         if (pl != null) {
@@ -129,29 +148,29 @@ class ApplicationPanel
         //add(jtp!!, BorderLayout.CENTER)
     }
 
-    private fun makePatternEntryControlPanel(): JPanel {
+    // Return the callback function to invoke when the user clicks
+    // "Run" on the pattern entry control.
 
-        val onRunCallback: (String) -> Unit = { params ->
+    private fun onRunPatternEntry(): (String) -> Unit {
+        return { params ->
             try {
                 val pl = ParameterList(params)
                 val p = SiteswapPattern().fromParameters(pl)
                 val jc = (AnimationPrefs()).fromParameters(pl)
                 pl.errorIfParametersLeft()
 
+                // make the JML pattern
                 val notation = p.notationName
                 val config: String = p.toString()
                 val pat = fromBasePattern(notation, config)
                 pat.layoutPattern()
 
-                if (bringToFront(pat.hashCode)) {
-                    // TODO fix this:
-                    //return
-                }
-
-                if (animtarget != null) {
-                    animtarget.restartView(pat, jc)
-                } else {
-                    PatternWindow(pat.title, pat, jc)
+                if (!bringToFront(pat.hashCode)) {
+                    if (animtarget != null) {
+                        animtarget.restartView(pat, jc)
+                    } else {
+                        PatternWindow(pat.title, pat, jc)
+                    }
                 }
             } catch (je: JuggleExceptionUser) {
                 handleUserException(this@ApplicationPanel, je.message)
@@ -159,36 +178,15 @@ class ApplicationPanel
                 handleFatalException(e)
             }
         }
-
-        val composePanel = ComposePanel().apply {
-            // Set a preferred size so that pack() on the parent JFrame works correctly,
-            // shrinking the window to fit the content instead of using a default large size.
-            preferredSize = Dimension(500, 700)
-
-            setContent {
-                MaterialTheme {
-                    Surface(color = MaterialTheme.colors.surface) {
-                        // Pass the class-level callback to the Composable
-                        SiteswapNotationControl(onConfirm = onRunCallback)
-                    }
-                }
-            }
-        }
-
-        return JPanel().apply {
-            layout = BorderLayout()
-            add(composePanel, BorderLayout.CENTER)
-        }
-
-        //jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
     }
 
-    private fun makeTransitionerControlPanel(
+    // Callback function to invoke on "Run" on the transitioner control
+
+    private fun onRunTransitioner(
         trans: Transitioner,
         plp: PatternListPanel?
-    ): JPanel {
-        // Callback lambda for when the "Run" button is clicked
-        val onRunCallback: (String) -> Unit = { params ->
+    ): (String) -> Unit {
+        return { params ->
             val t: Thread =
                 object : Thread() {
                     override fun run() {
@@ -233,33 +231,15 @@ class ApplicationPanel
                 }
             t.start()
         }
-
-        val composePanel = ComposePanel().apply {
-            // Set a preferred size so that pack() on the parent JFrame works correctly,
-            // shrinking the window to fit the content instead of using a default large size.
-            preferredSize = Dimension(475, 500)
-
-            setContent {
-                MaterialTheme {
-                    Surface(color = MaterialTheme.colors.surface) {
-                        // Pass the class-level callback to the Composable
-                        SiteswapTransitionerControl(onConfirm = onRunCallback)
-                    }
-                }
-            }
-        }
-
-        return JPanel().apply {
-            layout = BorderLayout()
-            add(composePanel, BorderLayout.CENTER)
-        }
     }
 
-    private fun makeGeneratorControlPanel(
+    // Callback function to invoke on "Run" on the generator control
+
+    private fun onRunGenerator(
         gen: Generator,
         plp: PatternListPanel?
-    ): JPanel {
-        val onRunCallback: (String) -> Unit = { params ->
+    ): (String) -> Unit {
+        return { params ->
             val t: Thread =
                 object : Thread() {
                     override fun run() {
@@ -310,58 +290,10 @@ class ApplicationPanel
             t.start()
         }
 
-        val composePanel = ComposePanel().apply {
-            // Set a preferred size so that pack() on the parent JFrame works correctly,
-            // shrinking the window to fit the content instead of using a default large size.
-            preferredSize = Dimension(400, 710)
-
-            setContent {
-                MaterialTheme {
-                    Surface(color = MaterialTheme.colors.surface) {
-                        // Pass the class-level callback to the Composable
-                        SiteswapGeneratorControl(onConfirm = onRunCallback)
-                    }
-                }
-            }
-        }
-
-        return JPanel().apply {
-            layout = BorderLayout()
-            add(composePanel, BorderLayout.CENTER)
-        }
-
         /*
         genBusy = JLabel(guistrings.getString("Processing")).apply {
             isVisible = false
         }
-
-        val gb = GridBagLayout().apply {
-            setConstraints(
-                genBusy, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 10, 0, 0))
-            )
-        }
-        val p4 = JPanel().apply {
-            setLayout(gb)
-            add(genBusy)
-        }
-        val p2 = JPanel().apply {
-            setLayout(FlowLayout(FlowLayout.TRAILING))
-            add(but1)
-            add(genButton)
-        }
-        val p3 = JPanel().apply {
-            setLayout(BorderLayout())
-            add(p4, BorderLayout.LINE_START)
-            add(p2, BorderLayout.LINE_END)
-        }
-        val p1 = JPanel().apply {
-            setLayout(BorderLayout())
-            if (genControl != null) {
-                add(genControl, BorderLayout.PAGE_START)
-            }
-            add(p3, BorderLayout.PAGE_END)
-        }
-
         jtp!!.addTab(guistrings.getString("Generator"), p1)
         */
     }
