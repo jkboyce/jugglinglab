@@ -10,10 +10,7 @@
 
 package jugglinglab.core
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.ui.awt.ComposePanel
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
 import jugglinglab.generator.Generator.Companion.newGenerator
@@ -34,21 +31,25 @@ import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 
-class ApplicationPanel
-    (
+class ApplicationPanel(
     private val parentFrame: JFrame?,
-    // the fields below are currently unused; they supported the applet version
-    // of Juggling Lab
+    // the fields below are currently unused; they supported the applet
+    // version of Juggling Lab but may be useful in the future
     private val animtarget: View? = null,
     private val patlist: PatternListPanel? = null
 ) : JPanel(), ActionListener {
-    private var jtp: JTabbedPane? = null
-    private var patlisttab: Boolean = false
-
-    private var currentnum: Int = -1
-
-    //private var genBusy: JLabel? = null
+    var havePatternListTab: Boolean = false
+    var currentNotationNum: Int = -1
+    //var genBusy: JLabel? = null
 
     override fun actionPerformed(ae: ActionEvent) {
         val command = ae.getActionCommand()
@@ -56,10 +57,10 @@ class ApplicationPanel
             if (command.startsWith("notation")) {
                 try {
                     val num = command.substring(8).toInt()
-                    if (num != currentnum) {
+                    if (num != currentNotationNum) {
                         setNotation(num)
                         parentFrame?.pack()
-                        currentnum = num
+                        currentNotationNum = num
                     }
                 } catch (_: NumberFormatException) {
                     throw JuggleExceptionInternal("Error in notation number coding")
@@ -70,45 +71,57 @@ class ApplicationPanel
         }
     }
 
-    // Input is for example Pattern.NOTATION_SITESWAP.
+    // Set panel contents for a given notation.
+    //
+    // Parameter `notationNum` is for example Pattern.NOTATION_SITESWAP.
 
-    fun setNotation(num: Int) {
-        layout = BorderLayout()
-        /*
-        if (num > Pattern.builtinNotations.size) return
-        if (jtp != null) {
-            remove(jtp)
-        }
-        jtp = JTabbedPane()
-
-        when (num) {
-            Pattern.NOTATION_SITESWAP -> addPatternEntryControl(SiteswapNotationControl())
-        }
-        */
-
+    fun setNotation(notationNum: Int) {
+        // resources needed by the control panels
         var pl = patlist
-        if (pl == null && patlisttab) {
+        if (pl == null && havePatternListTab) {
             pl = PatternListPanel(animtarget)
         }
-        val trans = newTransitioner(Pattern.builtinNotations[num - 1])
-        val gen = newGenerator(Pattern.builtinNotations[num - 1])
+        val trans = newTransitioner(Pattern.builtinNotations[notationNum - 1])
+        val gen = newGenerator(Pattern.builtinNotations[notationNum - 1])
 
         val composePanel = ComposePanel().apply {
-            // Set a preferred size so that pack() on the parent JFrame works correctly,
-            // shrinking the window to fit the content instead of using a default large size.
-            preferredSize = Dimension(500, 700)  // pattern entry
-            //preferredSize = Dimension(475, 500)  // transitioner
-            //preferredSize = Dimension(400, 710)  // generator
+            // Set a preferred size so pack() on the parent JFrame works correctly
+            preferredSize = Dimension(500, 800)
 
             setContent {
                 MaterialTheme {
                     Surface(color = MaterialTheme.colors.surface) {
-                        SiteswapNotationControl(onConfirm = onRunPatternEntry())
+                        // state variable for tabbed interface
+                        var selectedTabIndex by remember { mutableStateOf(0) }
 
-                        //SiteswapTransitionerControl(onConfirm = onRunTransitioner(trans!!, pl))
+                        val tabs = listOf(
+                            stringResource(Res.string.gui_pattern_entry),
+                            stringResource(Res.string.gui_transitions),
+                            stringResource(Res.string.gui_generator)
+                        )
 
-                        //SiteswapGeneratorControl(onConfirm = onRunGenerator(gen!!, pl))
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            TabRow(selectedTabIndex = selectedTabIndex) {
+                                tabs.forEachIndexed { index, title ->
+                                    Tab(
+                                        selected = selectedTabIndex == index,
+                                        onClick = { selectedTabIndex = index },
+                                        text = { Text(title) }
+                                    )
+                                }
+                            }
 
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                when (selectedTabIndex) {
+                                    0 -> SiteswapNotationControl(onConfirm = onRunPatternEntry())
+                                    1 -> SiteswapTransitionerControl(onConfirm = onRunTransitioner(trans!!, pl))
+                                    2 -> SiteswapGeneratorControl(onConfirm = onRunGenerator(gen!!, pl))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -117,35 +130,13 @@ class ApplicationPanel
         layout = BorderLayout()
         add(composePanel, BorderLayout.CENTER)
 
-        //jtp!!.addTab(guistrings.getString("Pattern_entry"), np1)
-        /*
-        if (trans != null) {
-            val transControl = makeTransitionerControlPanel(trans, pl)
-            add(transControl, BorderLayout.CENTER)
-
-            //jtp!!.addTab(guistrings.getString("Transitions"), transControl)
-        }*/
-
-/*
-        if (gen != null) {
-            val genControl = makeGeneratorControlPanel(gen, pl)
-            add(genControl, BorderLayout.CENTER)
-
-            // jtp!!.addTab(guistrings.getString("Generator"), genControl)
-        }*/
-
         /*
         if (pl != null) {
             jtp!!.addTab(guistrings.getString("Pattern_list_tab"), pl)
             if (patlist != null) {
                 jtp!!.setSelectedComponent(pl) // if we loaded from a file
             }
-        }
-
-        // change the default button when the tab changes
-        jtp!!.addChangeListener { _: ChangeEvent? -> rootPane.defaultButton = defaultButton }
-        */
-        //add(jtp!!, BorderLayout.CENTER)
+        }*/
     }
 
     // Return the callback function to invoke when the user clicks
@@ -200,22 +191,24 @@ class ApplicationPanel
                                 // jtp.setSelectedComponent(plp);
                             } else {
                                 val title =
-                                    trans.notationName + " " + guistrings.getString("Patterns")
+                                    trans.notationName + " " + getStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 pwot = GeneratorTargetPatternList(pw.patternListPanel)
                             }
                             trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
+                            /*
                             if (plp != null) {
                                 jtp!!.setSelectedComponent(plp)
-                            }
+                            }*/
                         } catch (ex: JuggleExceptionDone) {
+                            /*
                             if (plp != null) {
                                 jtp!!.setSelectedComponent(plp)
-                            }
+                            }*/
                             val parentComponent = pw ?: plp
                             LabelDialog(
                                 parentComponent,
-                                guistrings.getString("Generator_stopped_title"),
+                                getStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
                             )
                         } catch (_: JuggleExceptionInterrupted) {
@@ -255,26 +248,27 @@ class ApplicationPanel
                                 // jtp.setSelectedComponent(plp);
                             } else {
                                 val title =
-                                    gen.notationName + " " + guistrings.getString("Patterns")
+                                    gen.notationName + " " + getStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 gtpl = GeneratorTargetPatternList(pw.patternListPanel)
                             }
                             gen.runGenerator(gtpl, MAX_PATTERNS, MAX_TIME)
+                            /*
                             if (plp != null) {
                                 jtp!!.setSelectedComponent(plp)
-                            }
+                            }*/
                         } catch (ex: JuggleExceptionDone) {
+                            /*
                             if (plp != null) {
                                 jtp!!.setSelectedComponent(plp)
-                            }
+                            }*/
                             val parentComponent = pw ?: plp
                             LabelDialog(
                                 parentComponent,
-                                guistrings.getString("Generator_stopped_title"),
+                                getStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
                             )
                         } catch (_: JuggleExceptionInterrupted) {
-                            // System.out.println("generator thread quit");
                         } catch (ex: JuggleExceptionUser) {
                             pw?.dispose()
                             handleUserException(this@ApplicationPanel, ex.message)
@@ -282,7 +276,6 @@ class ApplicationPanel
                             pw?.dispose()
                             handleFatalException(e)
                         }
-
                         //genBusy!!.isVisible = false
                         //genButton!!.setEnabled(true)
                     }
@@ -300,7 +293,7 @@ class ApplicationPanel
 
     companion object {
         // execution limits for generator
-        private const val MAX_PATTERNS: Int = 1000
-        private const val MAX_TIME: Double = 15.0
+        const val MAX_PATTERNS: Int = 1000
+        const val MAX_TIME: Double = 15.0
     }
 }
