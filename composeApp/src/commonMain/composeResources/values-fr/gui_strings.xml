@@ -38,6 +38,7 @@
     <string name="gui_connected_patterns">au moins une passe</string>
     <string name="gui_symmetric_patterns">symmetric patterns</string>
     <string name="gui_multiplexing">Multiplex</string>
+    <string name="gui_multiplexing_none">none</string>
     <string name="gui_enable">activer*</string>
     <string name="gui_simultaneous_throws">lancers simultanés</string>
     <string name="gui_no_simultaneous_catches">pas de réceptions simultanées</string>

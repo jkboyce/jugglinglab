@@ -206,7 +206,7 @@ fun SiteswapTransitionerControl(
                 onClick = { resetControl() },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
             ) {
-                Text("Defaults", color = Color.Black)
+                Text(stringResource(Res.string.gui_defaults), color = Color.Black)
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -214,7 +214,7 @@ fun SiteswapTransitionerControl(
             Button(
                 onClick = { onConfirm(params()) }
             ) {
-                Text("Run")
+                Text(stringResource(Res.string.gui_run))
             }
         }
     }

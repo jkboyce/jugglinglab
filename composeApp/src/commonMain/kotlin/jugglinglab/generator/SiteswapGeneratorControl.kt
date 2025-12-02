@@ -41,7 +41,6 @@ fun SiteswapGeneratorControl(
     var compositionIndex by remember { mutableStateOf(0) } // 0=all, 1=non-obvious, 2=prime
     // multiplexing: 0="none", 1="2", 2="3", 3="4"
     var multiplexingIndex by remember { mutableStateOf(0) }
-    val multiplexingOptions = listOf("none", "2", "3", "4")
     // column 2: filters
     var groundState by remember { mutableStateOf(true) }
     var excitedState by remember { mutableStateOf(true) }
@@ -67,14 +66,16 @@ fun SiteswapGeneratorControl(
     val jugglerPermutationsEnabled = isPassing && groundState && excitedState
     val transitionThrowsEnabled = excitedState
 
+    val multiplexingOptions = listOf(stringResource(Res.string.gui_multiplexing_none), "2", "3", "4")
+
     fun resetControl() {
         balls = "5"
         maxThrow = "7"
         period = "5"
         jugglersIndex = 0
         rhythmAsync = true
-        compositionIndex = 0 // "all"
         multiplexingIndex = 0 // "none"
+        compositionIndex = 0 // "all"
 
         groundState = true
         excitedState = true
@@ -195,7 +196,10 @@ fun SiteswapGeneratorControl(
                 Text(text = stringResource(Res.string.gui_rhythm), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
-                    items = listOf("async", "sync"),
+                    items = listOf(
+                        stringResource(Res.string.gui_asynch),
+                        stringResource(Res.string.gui_synch)
+                    ),
                     selectedIndex = if (rhythmAsync) 0 else 1,
                     onIndexChange = { rhythmAsync = (it == 0) }
                 )
@@ -217,7 +221,11 @@ fun SiteswapGeneratorControl(
                 Text(text = stringResource(Res.string.gui_compositions), style = MaterialTheme.typography.body1)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
-                    items = listOf("all", "non-obvious", "none (prime only)"),
+                    items = listOf(
+                        stringResource(Res.string.gui_all),
+                        stringResource(Res.string.gui_non_obvious),
+                        stringResource(Res.string.gui_none__prime_only_)
+                    ),
                     selectedIndex = compositionIndex,
                     onIndexChange = { compositionIndex = it }
                 )

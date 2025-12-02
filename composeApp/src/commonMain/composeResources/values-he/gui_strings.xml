@@ -38,6 +38,7 @@
     <string name="gui_connected_patterns">������ ������� ����</string>
     <string name="gui_symmetric_patterns">symmetric patterns</string>
     <string name="gui_multiplexing">���������</string>
+    <string name="gui_multiplexing_none">none</string>
     <string name="gui_enable">�����*</string>
     <string name="gui_simultaneous_throws">������ ����������</string>
     <string name="gui_no_simultaneous_catches">��� ������ ����������</string>
