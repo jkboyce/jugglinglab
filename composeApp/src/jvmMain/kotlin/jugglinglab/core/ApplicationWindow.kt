@@ -86,8 +86,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     //--------------------------------------------------------------------------
 
     private fun createContents() {
-        val ap = ApplicationPanel(this)
-        ap.isDoubleBuffered = true
+        val ap = if (isSwing()) ApplicationPanelSwing(this) else ApplicationPanel(this)
         contentPane = ap // entire contents of window
 
         // does the real work of adding controls etc.

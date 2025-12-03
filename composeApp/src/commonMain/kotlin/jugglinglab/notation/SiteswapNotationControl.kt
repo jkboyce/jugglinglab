@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -466,3 +467,48 @@ private fun SimpleDropdown(
         }
     }
 }
+
+//------------------------------------------------------------------------------
+// Content for dropdowns in UI
+//------------------------------------------------------------------------------
+
+val builtinHandsNames: List<String> = listOf(
+    "inside",
+    "outside",
+    "half",
+    "Mills",
+)
+val builtinHandsStrings: List<String> = listOf(
+    "(10)(32.5).",
+    "(32.5)(10).",
+    "(32.5)(10).(10)(32.5).",
+    "(-25)(2.5).(25)(-2.5).(-25)(0).",
+)
+val builtinHandsStringResources: List<StringResource> = listOf(
+    Res.string.gui_mhnhands_name_inside,
+    Res.string.gui_mhnhands_name_outside,
+    Res.string.gui_mhnhands_name_half,
+    Res.string.gui_mhnhands_name_mills,
+)
+
+val builtinBodyNames: List<String> = listOf(
+    "line",
+    "feed",
+    "backtoback",
+    "sidetoside",
+    "circles",
+)
+val builtinBodyStrings: List<String> = listOf(
+    "<(90).|(270,-125).|(90,125).|(270,-250).|(90,250).|(270,-375).>",
+    "<(90,75).|(270,-75,50).|(270,-75,-50).|(270,-75,150).|(270,-75,-150).>",
+    "<(270,35).|(90,-35).|(0,0,35).|(180,0,-35).>",
+    "<(0).|(0,100).|(0,-100).|(0,200).|(0,-200).|(0,300).>",
+    "(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)...",
+)
+val builtinBodyStringResources: List<StringResource> = listOf(
+    Res.string.gui_mhnbody_name_line,
+    Res.string.gui_mhnbody_name_feed,
+    Res.string.gui_mhnbody_name_backtoback,
+    Res.string.gui_mhnbody_name_sidetoside,
+    Res.string.gui_mhnbody_name_circles,
+)

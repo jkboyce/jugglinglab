@@ -17,7 +17,7 @@ import androidx.compose.ui.awt.ComposePanel
 import javax.swing.JDialog
 import javax.swing.JFrame
 
-class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
+open class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
     parentFrame,
     getStringResource(Res.string.gui_animation_preferences),
     true
@@ -29,7 +29,7 @@ class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
     }
 
-    fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
+    open fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
         val composePanel = ComposePanel()
         composePanel.setContent {
             MaterialTheme {

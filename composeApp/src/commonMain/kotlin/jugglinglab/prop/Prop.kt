@@ -16,6 +16,7 @@ import jugglinglab.util.getStringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
+import org.jetbrains.compose.resources.StringResource
 
 abstract class Prop {
     protected var initString: String? = null
@@ -60,6 +61,11 @@ abstract class Prop {
             "Ball",
             "Image",
             "Ring",
+        )
+        val builtinPropsStringResources: List<StringResource> = listOf(
+            Res.string.gui_prop_name_ball,
+            Res.string.gui_prop_name_image,
+            Res.string.gui_prop_name_ring,
         )
 
         // Create a new prop of the given type.

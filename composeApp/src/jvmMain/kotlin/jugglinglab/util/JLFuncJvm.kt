@@ -269,3 +269,10 @@ actual fun getAboutBoxPlatform(): String {
 
     return "Java version $javaVersion\n$javaVmName ($javaVmVersion)"
 }
+
+// Return true if Swing-based UI should be used.
+
+fun isSwing(): Boolean {
+    val isCompose = System.getProperty("JL_compose_ui")
+    return !(isCompose?.equals("true", ignoreCase = true) ?: false)
+}

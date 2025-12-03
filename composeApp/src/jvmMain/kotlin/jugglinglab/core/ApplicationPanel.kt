@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
-class ApplicationPanel(
+open class ApplicationPanel(
     private val parentFrame: JFrame?,
     // the fields below are currently unused; they supported the applet
     // version of Juggling Lab but may be useful in the future
@@ -75,7 +75,7 @@ class ApplicationPanel(
     //
     // Parameter `notationNum` is for example Pattern.NOTATION_SITESWAP.
 
-    fun setNotation(notationNum: Int) {
+    open fun setNotation(notationNum: Int) {
         // resources needed by the control panels
         var pl = patlist
         if (pl == null && havePatternListTab) {

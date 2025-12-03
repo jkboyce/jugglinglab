@@ -609,7 +609,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.VIEW_ANIMPREFS -> {
                 val jc = view.animationPrefs
-                val japd = AnimationPrefsDialog(this)
+                val japd = if (isSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
                 val newjc = japd.getPrefs(jc)
 
                 if (newjc != jc) {
