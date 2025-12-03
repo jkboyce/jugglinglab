@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import jugglinglab.notation.ssparser.SiteswapParser
+import jugglinglab.notation.ssparser.SiteswapTreeItem
 import java.awt.Component
 import java.awt.GraphicsEnvironment
 import java.awt.GridBagConstraints
@@ -272,4 +274,8 @@ actual fun getAboutBoxPlatform(): String {
 fun isSwing(): Boolean {
     val isCompose = System.getProperty("JL_compose_ui")
     return !(isCompose?.equals("true", ignoreCase = true) ?: false)
+}
+
+actual fun parseSiteswapPattern(pattern: String): SiteswapTreeItem {
+    return SiteswapParser.parsePattern(pattern)
 }

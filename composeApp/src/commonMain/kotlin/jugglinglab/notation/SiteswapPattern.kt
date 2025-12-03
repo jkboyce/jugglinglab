@@ -15,7 +15,6 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.ParseException
-import jugglinglab.notation.ssparser.SiteswapParser
 import jugglinglab.notation.ssparser.SiteswapTreeItem
 import jugglinglab.notation.ssparser.TokenMgrError
 import jugglinglab.util.JuggleExceptionInternal
@@ -23,6 +22,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.getStringResource
+import jugglinglab.util.parseSiteswapPattern
 
 class SiteswapPattern : MHNPattern() {
     private var oddperiod: Boolean = false
@@ -125,7 +125,7 @@ class SiteswapPattern : MHNPattern() {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parsing pattern \"$pattern\"")
             }
-            tree = SiteswapParser.parsePattern(pattern!!)
+            tree = parseSiteswapPattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
                 println(tree)
