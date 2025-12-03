@@ -8,8 +8,7 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.guistrings
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.*
 import jugglinglab.path.Path
 import jugglinglab.path.Path.Companion.newPath
@@ -20,13 +19,13 @@ import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.view.View
 import androidx.compose.ui.graphics.toAwtImage
+import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.MalformedURLException
-import java.text.MessageFormat
 import java.util.*
 import javax.swing.*
 import javax.swing.border.BevelBorder
@@ -891,7 +890,7 @@ class EditLadderDiagram(
                 continue
             }
 
-            val item = JMenuItem(guistrings.getString(name.replace(' ', '_')))
+            val item = JMenuItem(getStringResource(popupItemsStringResources[i]!!))
             val command: String? = popupCommands[i]
             item.actionCommand = command
             item.addActionListener(this)
@@ -1119,13 +1118,13 @@ class EditLadderDiagram(
         val startprop = pat.getProp(propnum)
         val prtypes: List<String> = Prop.builtinProps
 
-        val jd = JDialog(parentFrame, guistrings.getString("Define_prop"), true)
+        val jd = JDialog(parentFrame, getStringResource(Res.string.gui_define_prop), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(guistrings.getString("Prop_type"))
+        val lab = JLabel(getStringResource(Res.string.gui_prop_type))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -1164,14 +1163,14 @@ class EditLadderDiagram(
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton = JButton(guistrings.getString("Cancel"))
+        val cancelbutton = JButton(getStringResource(Res.string.gui_cancel))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
-        val okbutton = JButton(guistrings.getString("OK"))
+        val okbutton = JButton(getStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
@@ -1283,13 +1282,13 @@ class EditLadderDiagram(
 
         val pptypes: List<String> = Path.builtinPaths
 
-        val jd = JDialog(parentFrame, guistrings.getString("Define_throw"), true)
+        val jd = JDialog(parentFrame, getStringResource(Res.string.gui_define_throw), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(guistrings.getString("Throw_type"))
+        val lab = JLabel(getStringResource(Res.string.gui_throw_type))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -1328,14 +1327,14 @@ class EditLadderDiagram(
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton = JButton(guistrings.getString("Cancel"))
+        val cancelbutton = JButton(getStringResource(Res.string.gui_cancel))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
-        val okbutton = JButton(guistrings.getString("OK"))
+        val okbutton = JButton(getStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
@@ -1539,7 +1538,7 @@ class EditLadderDiagram(
                             } catch (_: MalformedURLException) {
                                 // this should never happen
                                 handleFatalException(
-                                    JuggleExceptionUser(errorstrings.getString("Error_malformed_URL"))
+                                    JuggleExceptionUser(getStringResource(Res.string.error_malformed_url))
                                 )
                             }
                         }
@@ -1586,10 +1585,9 @@ class EditLadderDiagram(
                             term = tf.getText().trim { it <= ' ' }
                         }
                     } catch (_: NumberFormatException) {
-                        val template: String =
-                            errorstrings.getString("Error_number_format")
-                        val arguments = arrayOf<Any?>(dialog[i].name)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message =
+                            getStringResource(Res.string.error_number_format, dialog[i].name)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_CHOICE) {
                     val jcb = control as JComboBox<*>
@@ -1608,10 +1606,9 @@ class EditLadderDiagram(
                             term = tf.getText().trim { it <= ' ' }
                         }
                     } catch (_: NumberFormatException) {
-                        val template: String =
-                            errorstrings.getString("Error_number_format")
-                        val arguments = arrayOf<Any?>(dialog[i].name)
-                        throw JuggleExceptionUser(MessageFormat.format(template, *arguments))
+                        val message =
+                            getStringResource(Res.string.error_number_format, dialog[i].name)
+                        throw JuggleExceptionUser(message)
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_ICON) {
                     val label = control as JLabel
@@ -1763,6 +1760,20 @@ class EditLadderDiagram(
             "Change to soft catch",
             "Change to grab catch",
             "Make last in event",
+        )
+        private val popupItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_add_event_to_l_hand,
+            Res.string.gui_add_event_to_r_hand,
+            Res.string.gui_remove_event,
+            Res.string.gui_add_position_to_juggler,
+            Res.string.gui_remove_position,
+            null,
+            Res.string.gui_define_prop,
+            Res.string.gui_define_throw,
+            Res.string.gui_change_to_normal_catch,
+            Res.string.gui_change_to_soft_catch,
+            Res.string.gui_change_to_grab_catch,
+            Res.string.gui_make_last_in_event,
         )
 
         private val popupCommands: List<String?> = listOf(

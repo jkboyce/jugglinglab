@@ -10,9 +10,10 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
+import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
 import java.awt.*
@@ -20,7 +21,6 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
 import java.awt.image.BufferedImage
-import java.text.MessageFormat
 import java.util.*
 import javax.swing.JPanel
 import kotlin.math.abs
@@ -61,9 +61,7 @@ open class LadderDiagram(p: JMLPattern) :
         val jugglers = pat.numberOfJugglers
         if (jugglers > MAX_JUGGLERS) {
             // allocate enough space for a "too many jugglers" message; see paintLadder()
-            val template: String = guistrings.getString("Too_many_jugglers")
-            val arguments = arrayOf<Any?>(MAX_JUGGLERS)
-            val message = MessageFormat.format(template, *arguments)
+            val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
             val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
             preferredSize = Dimension(mwidth, 1)
             minimumSize = Dimension(mwidth, 1)
@@ -475,9 +473,7 @@ open class LadderDiagram(p: JMLPattern) :
             val dim = size
             gr.font = MSGFONT
             val fm = gr.fontMetrics
-            val template: String = guistrings.getString("Too_many_jugglers")
-            val arguments = arrayOf<Any?>(MAX_JUGGLERS)
-            val message = MessageFormat.format(template, *arguments)
+            val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
             val mwidth = fm.stringWidth(message)
             val x = max((dim.width - mwidth) / 2, 0)
             val y = (dim.height + fm.height) / 2

@@ -15,16 +15,17 @@
 
 package jugglinglab.optimizer
 
-import com.google.ortools.linearsolver.MPConstraint
-import com.google.ortools.linearsolver.MPSolver
-import com.google.ortools.linearsolver.MPSolver.ResultStatus
-import com.google.ortools.linearsolver.MPVariable
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.JugglingLab
-import jugglinglab.JugglingLab.errorstrings
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
+import com.google.ortools.linearsolver.MPConstraint
+import com.google.ortools.linearsolver.MPSolver
+import com.google.ortools.linearsolver.MPSolver.ResultStatus
+import com.google.ortools.linearsolver.MPVariable
+import jugglinglab.util.getStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -357,6 +358,7 @@ class Optimizer private constructor(val pat: JMLPattern) {
         //
         // This is the main entry point into the optimizer.
 
+        @Suppress("unused")
         @JvmStatic
         @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
         fun optimize(pat: JMLPattern): JMLPattern {
@@ -364,7 +366,7 @@ class Optimizer private constructor(val pat: JMLPattern) {
                 if (Constants.DEBUG_OPTIMIZE) {
                     println("---- Optimizer not loaded, bailing")
                 }
-                throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_unavailable"))
+                throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_unavailable))
             }
 
             val opt = Optimizer(pat)
@@ -374,7 +376,7 @@ class Optimizer private constructor(val pat: JMLPattern) {
                 if (success) {
                     opt.updatePattern()
                 } else {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_failed"))
+                    throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_failed))
                 }
             } else if (Constants.DEBUG_OPTIMIZE) {
                 // do nothing if no margin equations

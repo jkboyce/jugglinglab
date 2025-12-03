@@ -12,7 +12,7 @@
 package jugglinglab.util
 
 import jugglinglab.core.ApplicationWindow
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import java.awt.Desktop
@@ -23,7 +23,6 @@ import java.nio.channels.FileChannel
 import java.nio.channels.FileChannel.MapMode
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
-import java.text.MessageFormat
 import javax.swing.SwingUtilities
 
 class OpenFilesServerMMF : Thread() {
@@ -86,10 +85,8 @@ class OpenFilesServerMMF : Thread() {
                         try {
                             ApplicationWindow.openJMLFile(file)
                         } catch (jeu: JuggleExceptionUser) {
-                            val template: String = errorstrings.getString("Error_reading_file")
-                            val arguments = arrayOf<Any?>(file.getName())
-                            val msg =
-                                MessageFormat.format(template, *arguments) + ":\n" + jeu.message
+                            val message = getStringResource(Res.string.error_reading_file, file.getName())
+                            val msg = message + ":\n" + jeu.message
                             handleUserException(null, msg)
                         } catch (jei: JuggleExceptionInternal) {
                             handleFatalException(jei)

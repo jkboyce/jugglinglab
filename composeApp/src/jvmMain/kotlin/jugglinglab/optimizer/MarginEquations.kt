@@ -8,7 +8,7 @@
 
 package jugglinglab.optimizer
 
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.util.*
@@ -74,10 +74,10 @@ class MarginEquations() {
             println("finding margin equations")
         }
         if (pat.numberOfJugglers > 1) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_passing"))
+            throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_passing))
         }
         if (pat.isBouncePattern) {
-            throw JuggleExceptionUser(errorstrings.getString("Error_optimizer_no_bouncing"))
+            throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_bouncing))
         }
 
         // Step 1: Lay out the pattern. This generates two things we need, the pattern event
@@ -214,7 +214,8 @@ class MarginEquations() {
             when (sym.getType()) {
                 JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
                 JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
-                JMLSymmetry.TYPE_SWITCH -> throw JuggleExceptionUser(errorstrings.getString("Error_no_optimize_switch"))
+                JMLSymmetry.TYPE_SWITCH ->
+                    throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_switch))
             }
         }
 

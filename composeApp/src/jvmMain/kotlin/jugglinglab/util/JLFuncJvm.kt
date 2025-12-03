@@ -11,8 +11,7 @@
 package jugglinglab.util
 
 import jugglinglab.JugglingLab
-import jugglinglab.JugglingLab.errorstrings
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
@@ -99,10 +98,8 @@ val jfc: JFileChooser by lazy {
             val f = selectedFile
 
             if (f.exists() && dialogType == SAVE_DIALOG) {
-                val template = guistrings.getString("JFC_File_exists_message")
-                val arguments = arrayOf<Any?>(f.getName())
-                val msg = MessageFormat.format(template, *arguments)
-                val title = guistrings.getString("JFC_File_exists_title")
+                val msg = getStringResource(Res.string.gui_jfc_file_exists_message, f.getName())
+                val title = getStringResource(Res.string.gui_jfc_file_exists_title)
 
                 val result = JOptionPane.showConfirmDialog(
                     this, msg, title, JOptionPane.YES_NO_CANCEL_OPTION
@@ -195,7 +192,7 @@ fun jlErrorIfNotSanitized(fname: String) {
     if (fname == jlSanitizeFilename(fname)) {
         return
     }
-    throw JuggleExceptionUser(errorstrings.getString("Error_saving_disallowed_character"))
+    throw JuggleExceptionUser(getStringResource(Res.string.error_saving_disallowed_character))
 }
 
 //------------------------------------------------------------------------------
@@ -218,13 +215,13 @@ actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
         }
         if (mt.isErrorAny()) {
             // could be bad image data, but is usually a nonexistent file
-            throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+            throw JuggleExceptionUser(getStringResource(Res.string.error_bad_file))
         }
         return awtImage.toComposeImageBitmap()
     } catch (_: IOException) {
-        throw JuggleExceptionUser(errorstrings.getString("Error_bad_file"))
+        throw JuggleExceptionUser(getStringResource(Res.string.error_bad_file))
     } catch (_: SecurityException) {
-        throw JuggleExceptionUser(errorstrings.getString("Error_security_restriction"))
+        throw JuggleExceptionUser(getStringResource(Res.string.error_security_restriction))
     }
 }
 

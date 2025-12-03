@@ -10,8 +10,7 @@
 
 package jugglinglab.view
 
-import jugglinglab.JugglingLab.errorstrings
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Animator.WriteGIFMonitor
@@ -22,11 +21,11 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionInternalWithPattern
 import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.getStringResource
 import java.awt.Dimension
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.text.MessageFormat
 import java.util.*
 import javax.swing.JPanel
 import javax.swing.ProgressMonitor
@@ -161,7 +160,13 @@ abstract class View : JPanel() {
         private val cleanup: Runnable?
     ) : Thread() {
         private val pm =
-            ProgressMonitor(patternWindow, guistrings.getString("Saving_animated_GIF"), "", 0, 1)
+            ProgressMonitor(
+                patternWindow,
+                getStringResource(Res.string.gui_saving_animated_gif),
+                "",
+                0,
+                1
+            )
         private val wgm: WriteGIFMonitor
         private val fps: Double
 
@@ -194,9 +199,8 @@ abstract class View : JPanel() {
             try {
                 ap.animator.writeGIF(FileOutputStream(file), wgm, fps)
             } catch (_: IOException) {
-                val template: String = errorstrings.getString("Error_writing_file")
-                val arg = arrayOf<Any?>(file.toString())
-                handleUserException(parent, MessageFormat.format(template, *arg))
+                val message = getStringResource(Res.string.error_writing_file, file.toString())
+                handleUserException(parent, message)
             } catch (jei: JuggleExceptionInternal) {
                 handleFatalException(jei)
             } finally {

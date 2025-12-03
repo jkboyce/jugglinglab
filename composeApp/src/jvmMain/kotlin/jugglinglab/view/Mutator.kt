@@ -33,7 +33,7 @@
 
 package jugglinglab.view
 
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
@@ -42,6 +42,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.constraints
+import jugglinglab.util.getStringResource
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -450,28 +451,28 @@ class Mutator {
         controls.setLayout(gb)
         controls.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15))
 
-        var lab = JLabel(guistrings.getString("Mutator_header1"))
+        var lab = JLabel(getStringResource(Res.string.gui_mutator_header1))
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 10, 0))
         )
         controls.add(lab)
 
         this.cb = ArrayList<JCheckBox>(5)
-        this.cb.add(JCheckBox(guistrings.getString("Mutator_type1"), true))
+        this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type1), true))
         gb.setConstraints(cb[0], constraints(GridBagConstraints.LINE_START, 0, 1, null))
-        this.cb.add(JCheckBox(guistrings.getString("Mutator_type2"), true))
+        this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type2), true))
         gb.setConstraints(cb[1], constraints(GridBagConstraints.LINE_START, 0, 2, null))
-        this.cb.add(JCheckBox(guistrings.getString("Mutator_type3"), true))
+        this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type3), true))
         gb.setConstraints(cb[2], constraints(GridBagConstraints.LINE_START, 0, 3, null))
-        this.cb.add(JCheckBox(guistrings.getString("Mutator_type4"), true))
+        this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type4), true))
         gb.setConstraints(cb[3], constraints(GridBagConstraints.LINE_START, 0, 4, null))
-        this.cb.add(JCheckBox(guistrings.getString("Mutator_type5"), true))
+        this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type5), true))
         gb.setConstraints(cb[4], constraints(GridBagConstraints.LINE_START, 0, 5, null))
         for (checkbox in cb) {
             controls.add(checkbox)
         }
 
-        lab = JLabel(guistrings.getString("Mutator_header2"))
+        lab = JLabel(getStringResource(Res.string.gui_mutator_header2))
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_START, 0, 6, Insets(20, 0, 10, 0))
         )
@@ -485,9 +486,9 @@ class Mutator {
         sliderRate.setPaintTicks(true)
         sliderRate.setSnapToTicks(true)
         val labels = Hashtable<Int?, JComponent?>()
-        labels[0] = JLabel(guistrings.getString("Mutation_rate_low"))
-        labels[3] = JLabel(guistrings.getString("Mutation_rate_medium"))
-        labels[6] = JLabel(guistrings.getString("Mutation_rate_high"))
+        labels[0] = JLabel(getStringResource(Res.string.gui_mutation_rate_low))
+        labels[3] = JLabel(getStringResource(Res.string.gui_mutation_rate_medium))
+        labels[6] = JLabel(getStringResource(Res.string.gui_mutation_rate_high))
         sliderRate.setLabelTable(labels)
         sliderRate.setPaintLabels(true)
         controls.add(sliderRate)

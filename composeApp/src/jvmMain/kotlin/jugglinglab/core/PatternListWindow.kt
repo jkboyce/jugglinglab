@@ -7,12 +7,13 @@
 package jugglinglab.core
 
 import jugglinglab.JugglingLab
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLParser
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
+import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -23,7 +24,6 @@ import java.io.FileNotFoundException
 import java.io.FileWriter
 import java.io.IOException
 import java.io.StringWriter
-import java.text.MessageFormat
 import java.util.Locale
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -118,21 +118,21 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     private fun createMenus() {
         val mb = JMenuBar()
         mb.add(createFileMenu())
-        this.windowMenu = JMenu(guistrings.getString("Window"))
+        this.windowMenu = JMenu(getStringResource(Res.string.gui_window))
         mb.add(this.windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
 
     private fun createFileMenu(): JMenu {
-        val filemenu = JMenu(guistrings.getString("File"))
+        val filemenu = JMenu(getStringResource(Res.string.gui_file))
         for (i in fileItems.indices) {
             if (fileItems[i] == null) {
                 filemenu.addSeparator()
                 continue
             }
 
-            val fileitem = JMenuItem(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
+            val fileitem = JMenuItem(getStringResource(fileItemsStringResources[i]!!))
 
             if (fileShortcuts[i] != ' ') {
                 fileitem.setAccelerator(
@@ -157,7 +157,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             !Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        var menuname: String = guistrings.getString("Help")
+        var menuname: String = getStringResource(Res.string.gui_help)
         // Menus titled "Help" are handled differently by macOS; only want to
         // have one of them across the entire app.
         if (JugglingLab.isMacOS) {
@@ -169,7 +169,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(guistrings.getString(helpItems[i]!!.replace(' ', '_')))
+                val helpitem = JMenuItem(getStringResource(helpItemsStringResources[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -308,14 +308,14 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     // Open a dialog to allow the user to change the pattern list's title.
 
     private fun changeTitle() {
-        val jd = JDialog(this, guistrings.getString("Change_title"), true)
+        val jd = JDialog(this, getStringResource(Res.string.gui_change_title), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
         tf.text = patternListPanel.patternList.title
 
-        val okbutton = JButton(guistrings.getString("OK"))
+        val okbutton = JButton(getStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val newtitle = tf.getText()
             patternListPanel.patternList.title = newtitle
@@ -346,7 +346,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     override fun setTitle(newTitle: String?) {
         var title = newTitle
         if (title == null || title.isEmpty()) {
-            title = guistrings.getString("PLWINDOW_Default_window_title")
+            title = getStringResource(Res.string.gui_plwindow_default_window_title)
         }
         super.setTitle(title)
         ApplicationWindow.updateWindowMenus()
@@ -358,10 +358,8 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
     override fun dispose() {
         if (patternListPanel.hasUnsavedChanges) {
-            val template: String = guistrings.getString("PLWINDOW_Unsaved_changes_message")
-            val arguments = arrayOf<Any?>(getTitle())
-            val message = MessageFormat.format(template, *arguments)
-            val title: String = guistrings.getString("PLWINDOW_Unsaved_changes_title")
+            val message = getStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
+            val title = getStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
             val res = JOptionPane.showConfirmDialog(
                 patternListPanel, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
@@ -430,6 +428,19 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             null,
             "Close",
         )
+        private val fileItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_new_pattern,
+            Res.string.gui_new_pattern_list,
+            Res.string.gui_open_jml___,
+            Res.string.gui_save_jml_as___,
+            Res.string.gui_save_text_as___,
+            null,
+            Res.string.gui_duplicate,
+            null,
+            Res.string.gui_change_title___,
+            null,
+            Res.string.gui_close,
+        )
         private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
@@ -460,6 +471,10 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
+        )
+        private val helpItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_about_juggling_lab,
+            Res.string.gui_juggling_lab_online_help,
         )
         private val helpCommands: List<String?> = listOf(
             "about",

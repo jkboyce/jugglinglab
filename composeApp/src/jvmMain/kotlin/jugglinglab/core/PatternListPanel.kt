@@ -8,7 +8,7 @@
 
 package jugglinglab.core
 
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.jml.JMLPatternList.PatternRecord
@@ -17,7 +17,9 @@ import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.constraints
+import jugglinglab.util.getStringResource
 import jugglinglab.view.View
+import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
@@ -199,7 +201,7 @@ class PatternListPanel private constructor() : JPanel() {
                 continue
             }
 
-            val item = JMenuItem(guistrings.getString(name.replace(' ', '_')))
+            val item = JMenuItem(getStringResource(popupItemsStringResources[i]!!))
             item.actionCommand = popupCommands[i]
             item.addActionListener(al)
 
@@ -294,7 +296,7 @@ class PatternListPanel private constructor() : JPanel() {
     // Open a dialog to allow the user to insert a line of text.
 
     private fun insertText(row: Int) {
-        makeDialog(guistrings.getString("PLDIALOG_Insert_text"), "")
+        makeDialog(getStringResource(Res.string.gui_pldialog_insert_text), "")
 
         okButton!!.addActionListener { _: ActionEvent? ->
             val display = tf!!.getText()
@@ -316,7 +318,7 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun changeDisplayText(row: Int) {
         val rec = listModel.getElementAt(row)
-        makeDialog(guistrings.getString("PLDIALOG_Change_display_text"), rec.display)
+        makeDialog(getStringResource(Res.string.gui_pldialog_change_display_text), rec.display)
 
         okButton!!.addActionListener { _: ActionEvent? ->
             rec.display = tf!!.getText()
@@ -339,7 +341,7 @@ class PatternListPanel private constructor() : JPanel() {
         tf = JTextField(20)
         tf!!.text = defaultText
 
-        okButton = JButton(guistrings.getString("OK"))
+        okButton = JButton(getStringResource(Res.string.gui_ok))
 
         d.contentPane.add(tf)
         gb.setConstraints(
@@ -599,7 +601,15 @@ class PatternListPanel private constructor() : JPanel() {
             null,
             "PLPOPUP Remove line",
         )
-
+        private val popupItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_plpopup_insert_text___,
+            null,
+            Res.string.gui_plpopup_insert_pattern,
+            null,
+            Res.string.gui_plpopup_change_display_text___,
+            null,
+            Res.string.gui_plpopup_remove_line,
+        )
         private val popupCommands: List<String?> = listOf(
             "inserttext",
             null,

@@ -164,6 +164,7 @@
     <string name="error_optimizer_failed">Optimizer failed to find solution</string>
     <string name="error_optimizer_no_passing">Optimizer does not support passing patterns</string>
     <string name="error_optimizer_no_bouncing">Optimizer does not support bounce patterns</string>
+    <string name="error_optimizer_no_switch">Optimizer does not support switch symmetry</string>
     <string name="error_hss_bad_average_object">Bad average for object pattern</string>
     <string name="error_hss_syntax_error">Syntax error in object pattern</string>
     <string name="error_hss_bad_average_hand">Bad average for hand pattern</string>

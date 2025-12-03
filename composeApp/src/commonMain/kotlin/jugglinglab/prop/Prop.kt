@@ -97,7 +97,20 @@ abstract class Prop {
             "white",
             "yellow",
         )
-
+        val colorStringResources: List<StringResource> = listOf(
+            Res.string.gui_pcmenu_transparent,
+            Res.string.gui_pcmenu_black,
+            Res.string.gui_pcmenu_blue,
+            Res.string.gui_pcmenu_cyan,
+            Res.string.gui_pcmenu_gray,
+            Res.string.gui_pcmenu_green,
+            Res.string.gui_pcmenu_magenta,
+            Res.string.gui_pcmenu_orange,
+            Res.string.gui_pcmenu_pink,
+            Res.string.gui_pcmenu_red,
+            Res.string.gui_pcmenu_white,
+            Res.string.gui_pcmenu_yellow,
+        )
         val COLOR_VALS: List<Color> = listOf(
             Color(0x00000000),
             Color.Black,

@@ -8,18 +8,18 @@
 
 package jugglinglab.view
 
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLPattern
-import jugglinglab.JugglingLab.guistrings
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.constraints
+import jugglinglab.util.getStringResource
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.File
-import java.text.MessageFormat
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -53,7 +53,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         val gb = GridBagLayout()
         controls.setLayout(gb)
 
-        val labView = JLabel(guistrings.getString("PatternView_heading"))
+        val labView = JLabel(getStringResource(Res.string.gui_patternview_heading))
         gb.setConstraints(
             labView,
             constraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 4, 10, 0))
@@ -63,7 +63,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         val bg = ButtonGroup()
         val bppanel = JPanel()
         bppanel.setLayout(FlowLayout(FlowLayout.LEFT, 0, 0))
-        rbBp = JRadioButton(guistrings.getString("PatternView_rb1_default"))
+        rbBp = JRadioButton(getStringResource(Res.string.gui_patternview_rb1_default))
         bg.add(rbBp)
         bppanel.add(rbBp)
         val url = PatternView::class.java.getResource("/alert.png")
@@ -74,7 +74,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
                     editedIcon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH)
                 )
             bpEditedIcon = JLabel(editedIconScaled)
-            bpEditedIcon?.setToolTipText(guistrings.getString("PatternView_alert"))
+            bpEditedIcon?.setToolTipText(getStringResource(Res.string.gui_patternview_alert))
             bppanel.add(Box.createHorizontalStrut(10))
             bppanel.add(bpEditedIcon)
         }
@@ -83,7 +83,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
             bppanel, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0))
         )
 
-        rbJml = JRadioButton(guistrings.getString("PatternView_rb2"))
+        rbJml = JRadioButton(getStringResource(Res.string.gui_patternview_rb2))
         bg.add(rbJml)
         controls.add(rbJml)
         gb.setConstraints(
@@ -113,12 +113,12 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         val lower = JPanel()
         val gb2 = GridBagLayout()
         lower.setLayout(gb2)
-        compile = JButton(guistrings.getString("PatternView_compile_button"))
+        compile = JButton(getStringResource(Res.string.gui_patternview_compile_button))
         gb2.setConstraints(
             compile, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(8, 8, 8, 0))
         )
         lower.add(compile)
-        revert = JButton(guistrings.getString("PatternView_revert_button"))
+        revert = JButton(getStringResource(Res.string.gui_patternview_revert_button))
         gb2.setConstraints(
             revert, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(8, 5, 8, 12))
         )
@@ -241,9 +241,8 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
 
         if (p != null) {
             val notation = p.basePatternNotation
-            val template = guistrings.getString("PatternView_rb1")
-            val arg = arrayOf<Any?>(notation ?: "none set")
-            rbBp.setText(MessageFormat.format(template, *arg))
+            val message = getStringResource(Res.string.gui_patternview_rb1, "none set")
+            rbBp.setText(message)
 
             if (!(rbBp.isSelected || rbJml.isSelected)) {
                 if (notation == null) {

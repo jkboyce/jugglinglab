@@ -10,7 +10,7 @@
 
 package jugglinglab.util
 
-import jugglinglab.JugglingLab
+import jugglinglab.composeapp.generated.resources.*
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.BufferedReader
@@ -54,8 +54,6 @@ class UpdateChecker : Thread() {
     }
 
     companion object {
-        val guistrings: ResourceBundle = JugglingLab.guistrings
-
         private val line: String?
             // Download the Juggling Lab home page and return the line with version
             get() {
@@ -88,7 +86,7 @@ class UpdateChecker : Thread() {
             }
 
         private fun showUpdateBox(version: String?) {
-            val title: String = guistrings.getString("New_version_available")
+            val title = getStringResource(Res.string.gui_new_version_available)
             val updateBox = JFrame(title)
             updateBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
@@ -96,25 +94,23 @@ class UpdateChecker : Thread() {
             val gb = GridBagLayout()
             updatePanel.setLayout(gb)
 
-            val template1: String = guistrings.getString("New_version_text1")
-            val arguments1 = arrayOf<Any?>(version)
-            val text1 = JLabel(MessageFormat.format(template1, *arguments1))
+            val message = getStringResource(Res.string.gui_new_version_text1, version)
+            val text1 = JLabel(message)
             text1.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text1)
             gb.setConstraints(
                 text1, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, 25, 0, 25))
             )
 
-            val template2: String = guistrings.getString("New_version_text2")
-            val arguments2 = arrayOf<Any?>(jugglinglab.core.Constants.VERSION)
-            val text2 = JLabel(MessageFormat.format(template2, *arguments2))
+            val message2 = getStringResource(Res.string.gui_new_version_text2, jugglinglab.core.Constants.VERSION)
+            val text2 = JLabel(message2)
             text2.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text2)
             gb.setConstraints(
                 text2, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 25))
             )
 
-            val text3 = JLabel(guistrings.getString("New_version_text3"))
+            val text3 = JLabel(getStringResource(Res.string.gui_new_version_text3))
             text3.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text3)
             gb.setConstraints(
@@ -123,11 +119,11 @@ class UpdateChecker : Thread() {
 
             val butp = JPanel()
             butp.setLayout(FlowLayout(FlowLayout.LEADING))
-            val cancelbutton = JButton(guistrings.getString("Update_cancel"))
+            val cancelbutton = JButton(getStringResource(Res.string.gui_update_cancel))
             cancelbutton.addActionListener { _: ActionEvent? -> updateBox.dispose() }
             butp.add(cancelbutton)
 
-            val yesbutton = JButton(guistrings.getString("Update_yes"))
+            val yesbutton = JButton(getStringResource(Res.string.gui_update_yes))
             yesbutton.setDefaultCapable(true)
             yesbutton.addActionListener { _: ActionEvent? ->
                 val browseSupported =
@@ -144,7 +140,7 @@ class UpdateChecker : Thread() {
                 }
 
                 if (!browseSupported || browseProblem) {
-                    val template3 = guistrings.getString("Download_message")
+                    val template3 = getStringResource(Res.string.gui_download_message)
                     val arguments3 = arrayOf<Any?>(jugglinglab.core.Constants.DOWNLOAD_URL)
                     val message = MessageFormat.format(template3, *arguments3)
                     LabelDialog(updateBox, title, message)

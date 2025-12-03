@@ -12,14 +12,15 @@
 package jugglinglab.core
 
 import jugglinglab.JugglingLab
-import jugglinglab.JugglingLab.guistrings
-import jugglinglab.JugglingLab.errorstrings
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
 import jugglinglab.prop.Prop
+import jugglinglab.prop.Prop.Companion.colorStringResources
 import jugglinglab.util.*
 import jugglinglab.util.ErrorDialog.handleFatalException
 import jugglinglab.util.ErrorDialog.handleUserException
 import jugglinglab.view.*
+import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.*
 import java.io.File
@@ -202,14 +203,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val mb = JMenuBar()
         mb.add(createFileMenu())
         mb.add(createViewMenu())
-        windowMenu = JMenu(guistrings.getString("Window"))
+        windowMenu = JMenu(getStringResource(Res.string.gui_window))
         mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
 
     private fun createFileMenu(): JMenu {
-        val fileMenu = JMenu(guistrings.getString("File"))
+        val fileMenu = JMenu(getStringResource(Res.string.gui_file))
         for (i in fileItems.indices) {
             if (fileItems[i] == null) {
                 fileMenu.addSeparator()
@@ -217,19 +218,19 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             if (fileCommands[i] == "colorprops") {
-                colorsMenu = JMenu(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
-                colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_mixed")).apply {
+                colorsMenu = JMenu(getStringResource(fileItemsStringResources[i]!!))
+                colorsMenu.add(JMenuItem(getStringResource(Res.string.gui_pcmenu_mixed)).apply {
                     actionCommand = "colors_mixed"
                     addActionListener(this@PatternWindow)
                 })
-                colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_orbits")).apply {
+                colorsMenu.add(JMenuItem(getStringResource(Res.string.gui_pcmenu_orbits)).apply {
                     actionCommand = "colors_orbits"
                     addActionListener(this@PatternWindow)
                 })
                 colorsMenu.addSeparator()
-                for (colorName in Prop.COLOR_NAMES) {
-                    colorsMenu.add(JMenuItem(guistrings.getString("PCMENU_$colorName")).apply {
-                        actionCommand = "colors_$colorName"
+                for (i in Prop.COLOR_NAMES.indices) {
+                    colorsMenu.add(JMenuItem(getStringResource(colorStringResources[i])).apply {
+                        actionCommand = "colors_${Prop.COLOR_NAMES[i]}"
                         addActionListener(this@PatternWindow)
                     })
                 }
@@ -237,7 +238,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 continue
             }
 
-            val fileItem = JMenuItem(guistrings.getString(fileItems[i]!!.replace(' ', '_')))
+            val fileItem = JMenuItem(getStringResource(fileItemsStringResources[i]!!))
             if (fileShortcuts[i] != ' ') {
                 fileItem.setAccelerator(
                     KeyStroke.getKeyStroke(
@@ -265,7 +266,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun createViewMenu(): JMenu {
-        viewMenu = JMenu(guistrings.getString("View"))
+        viewMenu = JMenu(getStringResource(Res.string.gui_view))
         val buttonGroup = ButtonGroup()
         var addingviews = true
 
@@ -278,7 +279,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             if (addingviews) {
                 val viewitem =
-                    JRadioButtonMenuItem(guistrings.getString(viewItems[i]!!.replace(' ', '_')))
+                    JRadioButtonMenuItem(getStringResource(viewItemsStringResources[i]!!))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -294,7 +295,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 viewMenu.add(viewitem)
                 buttonGroup.add(viewitem)
             } else {
-                val viewitem = JMenuItem(guistrings.getString(viewItems[i]!!.replace(' ', '_')))
+                val viewitem = JMenuItem(getStringResource(viewItemsStringResources[i]!!))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -339,7 +340,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             !Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        var menuname: String = guistrings.getString("Help")
+        var menuname: String = getStringResource(Res.string.gui_help)
         if (JugglingLab.isMacOS) {
             // Menus titled "Help" are handled differently by macOS; only want
             // to have one of them across the entire app.
@@ -351,7 +352,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(guistrings.getString(helpItems[i]!!.replace(' ', '_')))
+                val helpitem = JMenuItem(getStringResource(helpItemsStringResources[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -483,7 +484,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_SAVE -> {
                 if (!view.pattern!!.isValid) {
-                    throw JuggleExceptionUser(errorstrings.getString("Error_saving_invalid_pattern"))
+                    val message = getStringResource(Res.string.error_saving_invalid_pattern)
+                    throw JuggleExceptionUser(message)
                 }
 
                 var fname = lastJmlFilename
@@ -641,14 +643,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun changeTitle() {
-        val jd = JDialog(this, guistrings.getString("Change_title"), true)
+        val jd = JDialog(this, getStringResource(Res.string.gui_change_title), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
         tf.text = view.pattern!!.title
 
-        val okbutton = JButton(guistrings.getString("OK"))
+        val okbutton = JButton(getStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val newpat = JMLPattern(view.pattern!!)
             newpat.title = tf.getText()
@@ -675,13 +677,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun changeTiming() {
-        val jd = JDialog(this, guistrings.getString("Change_timing"), true)
+        val jd = JDialog(this, getStringResource(Res.string.gui_change_timing), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(guistrings.getString("Rescale_percentage"))
+        val lab = JLabel(getStringResource(Res.string.gui_rescale_percentage))
         p1.add(lab)
         gb.setConstraints(
             lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -693,7 +695,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             tf, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
         )
 
-        val okbutton = JButton(guistrings.getString("OK"))
+        val okbutton = JButton(getStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val scale: Double
             try {
@@ -735,7 +737,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
     override fun setTitle(title: String?) {
         val newTitle = if (title == null || title.isEmpty()) {
-            guistrings.getString("PWINDOW_Default_window_title")
+            getStringResource(Res.string.gui_pwindow_default_window_title)
         } else {
             title
         }
@@ -853,6 +855,25 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             null,
             "Close",
         )
+        private val fileItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_new_pattern,
+            Res.string.gui_new_pattern_list,
+            Res.string.gui_open_jml___,
+            Res.string.gui_save_jml_as___,
+            Res.string.gui_save_animated_gif_as___,
+            null,
+            Res.string.gui_duplicate,
+            null,
+            Res.string.gui_change_title___,
+            Res.string.gui_change_overall_timing___,
+            Res.string.gui_color_props,
+            Res.string.gui_optimize,
+            Res.string.gui_swap_hands,
+            Res.string.gui_flip_pattern_in_x,
+            Res.string.gui_flip_pattern_in_time,
+            null,
+            Res.string.gui_close,
+        )
         private val fileCommands: List<String?> = listOf(
             "newpat",
             "newpl",
@@ -906,6 +927,20 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             "Zoom In",
             "Zoom Out",
         )
+        private val viewItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_simple,
+            Res.string.gui_visual_editor,
+            Res.string.gui_pattern_editor,
+            Res.string.gui_selection_editor,
+            null,
+            Res.string.gui_undo,
+            Res.string.gui_redo,
+            null,
+            Res.string.gui_restart,
+            Res.string.gui_animation_preferences___,
+            Res.string.gui_zoom_in,
+            Res.string.gui_zoom_out,
+        )
         private val viewCommands: List<String?> = listOf(
             "simple",
             "visual_edit",
@@ -938,6 +973,10 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         private val helpItems: List<String?> = listOf(
             "About Juggling Lab",
             "Juggling Lab Online Help",
+        )
+        private val helpItemsStringResources: List<StringResource?> = listOf(
+            Res.string.gui_about_juggling_lab,
+            Res.string.gui_juggling_lab_online_help,
         )
         private val helpCommands: List<String?> = listOf(
             "about",

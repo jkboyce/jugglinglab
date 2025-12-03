@@ -10,8 +10,7 @@
 package jugglinglab.util
 
 import jugglinglab.core.Constants
-import jugglinglab.JugglingLab.errorstrings
-import jugglinglab.JugglingLab.guistrings
+import jugglinglab.composeapp.generated.resources.*
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.PrintWriter
@@ -44,20 +43,20 @@ object ErrorDialog {
     }
 
     private fun showInternalErrorWindow(e: Exception) {
-        val exmsg1 = errorstrings.getString("Error_internal_part1")
-        val exmsg2 = errorstrings.getString("Error_internal_part2")
-        val exmsg3 = errorstrings.getString("Error_internal_part3")
-        val exmsg4 = errorstrings.getString("Error_internal_part4")
-        val exmsg5 = errorstrings.getString("Error_internal_part5")
+        val exmsg1 = getStringResource(Res.string.error_internal_part1)
+        val exmsg2 = getStringResource(Res.string.error_internal_part2)
+        val exmsg3 = getStringResource(Res.string.error_internal_part3)
+        val exmsg4 = getStringResource(Res.string.error_internal_part4)
+        val exmsg5 = getStringResource(Res.string.error_internal_part5)
 
         // diagnostic information displayed in the window
         val sw = StringWriter()
         val pw = PrintWriter(sw)
-        sw.write(errorstrings.getString("Error_internal_msg_part1") + "\n\n")
+        sw.write(getStringResource(Res.string.error_internal_msg_part1) + "\n\n")
         sw.write(
-            (errorstrings.getString("Error_internal_msg_part2")
+            (getStringResource(Res.string.error_internal_msg_part2)
                     + "\n"
-                    + errorstrings.getString("Error_internal_msg_part3")
+                    + getStringResource(Res.string.error_internal_msg_part3)
                     + "\n\n")
         )
         sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
@@ -71,7 +70,7 @@ object ErrorDialog {
         }
         sw.write("\n")
 
-        val exframe = JFrame(errorstrings.getString("Error_internal_title"))
+        val exframe = JFrame(getStringResource(Res.string.error_internal_title))
         exframe.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
 
         val exp = JPanel()
@@ -126,10 +125,10 @@ object ErrorDialog {
 
         val butp = JPanel()
         butp.setLayout(FlowLayout(FlowLayout.LEADING))
-        val quitbutton = JButton(guistrings.getString("Quit"))
+        val quitbutton = JButton(getStringResource(Res.string.gui_quit))
         quitbutton.addActionListener { _: ActionEvent? -> exitProcess(0) }
         butp.add(quitbutton)
-        val okbutton = JButton(guistrings.getString("Continue"))
+        val okbutton = JButton(getStringResource(Res.string.gui_continue))
         okbutton.addActionListener { _: ActionEvent? ->
             exframe.isVisible = false
             exframe.dispose()
