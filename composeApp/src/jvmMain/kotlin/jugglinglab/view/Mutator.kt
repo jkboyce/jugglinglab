@@ -206,12 +206,13 @@ class Mutator {
             pos = pos.next
         }
 
-        for (sym in pat.symmetries) {
-            val delay = sym.delay
-            if (delay > 0) {
-                sym.delay = delay * scale
+        pat.symmetries = pat.symmetries.map { sym ->
+            if (sym.delay > 0) {
+                sym.copy(delay = sym.delay * scale)
+            } else {
+                sym
             }
-        }
+        }.toMutableList()
 
         pat.setNeedsLayout()
         return pat

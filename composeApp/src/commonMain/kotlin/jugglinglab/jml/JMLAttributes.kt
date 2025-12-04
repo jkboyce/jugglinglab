@@ -6,28 +6,26 @@
 
 package jugglinglab.jml
 
-class JMLAttributes() {
-    var numberOfAttributes: Int = 0
-        private set
-    private var names: MutableList<String> = ArrayList()
-    private var values: MutableList<String> = ArrayList()
+data class JMLAttributes(
+    private val attributes: List<Pair<String, String>> = emptyList()
+) {
+    val numberOfAttributes: Int
+        get() = attributes.size
 
-    fun addAttribute(name: String, value: String) {
-        names.add(name)
-        values.add(value)
-        ++numberOfAttributes
-    }
+    /**
+     * Returns a new `JMLAttributes` instance with the new attribute added.
+     */
+    fun addAttribute(name: String, value: String): JMLAttributes =
+        copy(attributes = this.attributes + (name to value))
 
-    fun getAttributeName(index: Int) = names[index]
+    fun getAttributeName(index: Int): String = attributes[index].first
 
-    fun getAttributeValue(index: Int) = values[index]
+    fun getAttributeValue(index: Int): String = attributes[index].second
 
+    /**
+     * Finds the value of the first attribute with the given name (case-insensitive).
+     */
     fun getAttribute(name: String): String? {
-        for (i in 0..<numberOfAttributes) {
-            if (name.equals(names[i], ignoreCase = true)) {
-                return values[i]
-            }
-        }
-        return null
+        return attributes.firstOrNull { (key, _) -> key.equals(name, ignoreCase = true) }?.second
     }
 }

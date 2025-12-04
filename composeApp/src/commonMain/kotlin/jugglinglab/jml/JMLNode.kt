@@ -18,7 +18,7 @@ class JMLNode(
     var children: MutableList<JMLNode> = ArrayList<JMLNode>()
 
     fun addAttribute(name: String, value: String) {
-        attributes.addAttribute(name, value)
+        attributes = attributes.addAttribute(name, value)
     }
     
     val numberOfChildren: Int

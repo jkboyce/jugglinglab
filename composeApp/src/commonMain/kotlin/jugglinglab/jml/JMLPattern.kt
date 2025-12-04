@@ -60,12 +60,9 @@ class JMLPattern() {
     private var basePatternHashcode: Int = 0
     private var basePatternHashcodeValid: Boolean = false
 
-    var symmetries: ArrayList<JMLSymmetry> = ArrayList()
-        private set
+    var symmetries: MutableList<JMLSymmetry> = ArrayList()
     var eventList: JMLEvent? = null
-        private set
     var positionList: JMLPosition? = null
-        private set
 
     // list of PathLink objects for each path
     private var pathlinks: ArrayList<ArrayList<PathLink>>? = null
@@ -446,12 +443,13 @@ class JMLPattern() {
             pos = pos.next
         }
 
-        for (sym in symmetries) {
-            val delay = sym.delay
-            if (delay > 0) {
-                sym.delay = delay * scale
+        symmetries = symmetries.map { sym ->
+            if (sym.delay > 0) {
+                sym.copy(delay = sym.delay * scale)
+            } else {
+                sym
             }
-        }
+        }.toMutableList()
 
         setNeedsLayout()
     }
@@ -577,11 +575,13 @@ class JMLPattern() {
 
             // for each symmetry (besides type SWITCH):
             //     - invert pperm
-            for (sym in symmetries) {
-                if (sym.getType() == JMLSymmetry.TYPE_SWITCH) continue
-                val newpathperm = sym.pathPerm!!.inverse
-                sym.setPathPerm(sym.numberOfPaths, newpathperm.toString())
-            }
+            symmetries = symmetries.map { sym ->
+                if (sym.symType == JMLSymmetry.TYPE_SWITCH) {
+                    sym
+                } else {
+                    sym.copy(pathPerm = sym.pathPerm!!.inverse)
+                }
+            }.toMutableList()
 
             // for each PathLink:
             //     - find corresponding throw-type JMLTransition in startevent
@@ -2037,8 +2037,7 @@ class JMLPattern() {
             }
 
             "symmetry" -> {
-                val sym = JMLSymmetry()
-                sym.readJML(current, numjugglers, numpaths, loadingversion)
+                val sym = JMLSymmetry.fromJMLNode(current, numjugglers, numpaths)
                 addSymmetry(sym)
             }
 

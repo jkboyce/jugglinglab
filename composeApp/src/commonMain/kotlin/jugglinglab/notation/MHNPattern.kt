@@ -913,12 +913,12 @@ abstract class MHNPattern : Pattern() {
             }
 
             val sym = JMLSymmetry(
-                symtype,
-                sss.numberOfJugglers,
-                sss.jugglerPerm.toString(),
-                numberOfPaths,
-                pathmapstring,
-                sss.delay.toDouble() / bps
+                symType = symtype,
+                numberOfJugglers = sss.numberOfJugglers,
+                numberOfPaths = numberOfPaths,
+                jugglerPerm = sss.jugglerPerm,
+                pathPerm = Permutation(numberOfPaths, pathmapstring, false),
+                delay = sss.delay.toDouble() / bps
             )
 
             pat.addSymmetry(sym)
