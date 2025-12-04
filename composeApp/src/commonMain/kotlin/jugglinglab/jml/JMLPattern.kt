@@ -720,7 +720,7 @@ class JMLPattern() {
         // compile a list of colors to apply in round-robin fashion to paths
         val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
             "mixed" -> {
-                Prop.COLOR_MIXED
+                Prop.colorMixed
             }
 
             "orbits" -> {
@@ -733,7 +733,7 @@ class JMLPattern() {
                         continue
                     val cycle = delayPerm.getCycle(i + 1)
                     for (j in cycle) {
-                        colorsByOrbit[j - 1] = Prop.COLOR_MIXED[colorIndex % Prop.COLOR_MIXED.size]
+                        colorsByOrbit[j - 1] = Prop.colorMixed[colorIndex % Prop.colorMixed.size]
                     }
                     ++colorIndex
                 }

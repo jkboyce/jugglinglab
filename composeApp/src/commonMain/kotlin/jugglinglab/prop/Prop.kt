@@ -83,7 +83,7 @@ abstract class Prop {
             throw JuggleExceptionUser(message)
         }
 
-        val COLOR_NAMES: List<String> = listOf(
+        val colorNames: List<String> = listOf(
             "transparent",
             "black",
             "blue",
@@ -111,7 +111,7 @@ abstract class Prop {
             Res.string.gui_pcmenu_white,
             Res.string.gui_pcmenu_yellow,
         )
-        val COLOR_VALS: List<Color> = listOf(
+        val colorValues: List<Color> = listOf(
             Color(0x00000000),
             Color.Black,
             Color.Blue,
@@ -126,7 +126,7 @@ abstract class Prop {
             Color.Yellow,
         )
 
-        val COLOR_MIXED: List<String> = listOf(
+        val colorMixed: List<String> = listOf(
             "red",
             "green",
             "blue",

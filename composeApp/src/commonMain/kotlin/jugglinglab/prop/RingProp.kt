@@ -49,9 +49,9 @@ class RingProp : Prop() {
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
-                COLOR_NAMES,
-                COLOR_NAMES[COLORNUM_DEF],
-                COLOR_NAMES[colornum]
+                colorNames,
+                colorNames[COLORNUM_DEF],
+                colorNames[colornum]
             ),
             ParameterDescriptor(
                 "outside",
@@ -81,9 +81,9 @@ class RingProp : Prop() {
             var temp: Color? = null
 
             if (colorstr.indexOf(',') == -1) {  // color name
-                for (i in COLOR_NAMES.indices) {
-                    if (COLOR_NAMES[i].equals(colorstr, ignoreCase = true)) {
-                        temp = COLOR_VALS[i]
+                for (i in colorNames.indices) {
+                    if (colorNames[i].equals(colorstr, ignoreCase = true)) {
+                        temp = colorValues[i]
                         colornum = i
                         break
                     }

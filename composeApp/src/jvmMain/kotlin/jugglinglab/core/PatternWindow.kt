@@ -228,9 +228,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     addActionListener(this@PatternWindow)
                 })
                 colorsMenu.addSeparator()
-                for (i in Prop.COLOR_NAMES.indices) {
+                for (i in Prop.colorNames.indices) {
                     colorsMenu.add(JMenuItem(getStringResource(colorStringResources[i])).apply {
-                        actionCommand = "colors_${Prop.COLOR_NAMES[i]}"
+                        actionCommand = "colors_${Prop.colorNames[i]}"
                         addActionListener(this@PatternWindow)
                     })
                 }
