@@ -46,7 +46,7 @@ data class JMLSymmetry(
         fun fromJMLNode(current: JMLNode, numberOfJugglers: Int, numberOfPaths: Int): JMLSymmetry {
             val at = current.attributes
 
-            val symTypeString = at.getAttribute("type")
+            val symTypeString = at.getValueOf("type")
                 ?: throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_notype))
 
             val symType = when {
@@ -56,7 +56,7 @@ data class JMLSymmetry(
                 else -> throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_type))
             }
 
-            val delay = at.getAttribute("delay")?.let {
+            val delay = at.getValueOf("delay")?.let {
                 try {
                     jlParseFiniteDouble(it)
                 } catch (_: NumberFormatException) {
@@ -64,8 +64,8 @@ data class JMLSymmetry(
                 }
             } ?: -1.0
 
-            val jugglerPerm = createPermutation(numberOfJugglers, at.getAttribute("jperm"), true)
-            val pathPerm = createPermutation(numberOfPaths, at.getAttribute("pperm"), false)
+            val jugglerPerm = createPermutation(numberOfJugglers, at.getValueOf("jperm"), true)
+            val pathPerm = createPermutation(numberOfPaths, at.getValueOf("pperm"), false)
 
             return JMLSymmetry(
                 type = symType,

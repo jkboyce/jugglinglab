@@ -31,8 +31,8 @@ data class JMLProp (
         @Suppress("unused")
         fun fromJMLNode(current: JMLNode, version: String?): JMLProp {
             return JMLProp(
-                type = current.attributes.getAttribute("type")!!,
-                mod = current.attributes.getAttribute("mod")
+                type = current.attributes.getValueOf("type")!!,
+                mod = current.attributes.getValueOf("mod")
             )
         }
     }

@@ -142,7 +142,7 @@ class JMLPatternList() {
             throw JuggleExceptionUser(message)
         }
 
-        val vers = current.attributes.getAttribute("version")
+        val vers = current.attributes.getValueOf("version")
         if (vers != null) {
             if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                 val message = getStringResource(Res.string.error_jml_version)
@@ -168,9 +168,9 @@ class JMLPatternList() {
             } else if (child.nodeType.equals("line", ignoreCase = true)) {
                 ++linenumber
                 val attr = child.attributes
-                val display = attr.getAttribute("display")
-                val animprefs = attr.getAttribute("animprefs")
-                val notation = attr.getAttribute("notation")
+                val display = attr.getValueOf("display")
+                val animprefs = attr.getValueOf("animprefs")
+                val notation = attr.getValueOf("notation")
                 var anim: String? = null
                 var patnode: JMLNode? = null
                 var infonode: JMLNode? = null
@@ -371,7 +371,7 @@ class JMLPatternList() {
                 infoString.trim()
             } else null
 
-            val tagstr = inode.attributes.getAttribute("tags")
+            val tagstr = inode.attributes.getValueOf("tags")
             if (tagstr == null) {
                 tags = null
                 return
