@@ -489,7 +489,7 @@ class EditLadderDiagram(
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         for (tr in item.event!!.transitions) {
-            when (tr.transType) {
+            when (tr.type) {
                 JMLTransition.TRANS_THROW -> {
                     // find out when the ball being thrown was last caught
                     var ev = item.event!!.previous
@@ -654,7 +654,7 @@ class EditLadderDiagram(
         val holdpathorig = BooleanArray(pat.numberOfPaths)
         val holdpathnew = BooleanArray(pat.numberOfPaths)
         for (tr in ev!!.transitions) {
-            when (tr.transType) {
+            when (tr.type) {
                 JMLTransition.TRANS_THROW -> throwpath[tr.path - 1] = true
                 JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> catchpath[tr.path - 1] =
                     true
@@ -673,7 +673,7 @@ class EditLadderDiagram(
                     var j = 0
                     while (j < ev.numberOfTransitions) {
                         val tr = ev.getTransition(j)
-                        when (tr.transType) {
+                        when (tr.type) {
                             JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = true
 
                             JMLTransition.TRANS_CATCH,
@@ -715,7 +715,7 @@ class EditLadderDiagram(
                     var j = 0
                     while (j < ev.numberOfTransitions) {
                         val tr = ev.getTransition(j)
-                        when (tr.transType) {
+                        when (tr.type) {
                             JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = false
 
                             JMLTransition.TRANS_CATCH,
@@ -988,7 +988,7 @@ class EditLadderDiagram(
                     if (evt.juggler != ev.juggler || evt.hand != ev.hand) {
                         break
                     }
-                    if (tr.transType == JMLTransition.TRANS_THROW) {
+                    if (tr.type == JMLTransition.TRANS_THROW) {
                         break
                     }
                     holding = true
@@ -1341,7 +1341,6 @@ class EditLadderDiagram(
         )
         okbutton.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
-            tr.throwType = type.lowercase(Locale.getDefault())
 
             val mod: String?
             try {
@@ -1351,7 +1350,10 @@ class EditLadderDiagram(
                 return@addActionListener
             }
 
-            tr.mod = mod
+            ev.transitions[(popupitem as LadderEventItem).transnum] = tr.copy(
+                throwType = type.lowercase(Locale.getDefault()),
+                throwMod = mod
+            )
 
             activeEventChanged()
             addToUndoList()
@@ -1396,7 +1398,7 @@ class EditLadderDiagram(
         }
         // int transnum = ((LadderEventItem)popupitem).transnum;
         val tr = ev.getTransition((popupitem as LadderEventItem).transnum)
-        tr.transType = type
+        ev.transitions[(popupitem as LadderEventItem).transnum] = tr.copy(type = type)
         activeEventChanged()
         addToUndoList()
         repaint()
@@ -1827,7 +1829,7 @@ class EditLadderDiagram(
                     val evitem = laditem as LadderEventItem
 
                     for (tr in evitem.event!!.transitions) {
-                        if (tr.transType != JMLTransition.TRANS_HOLDING) {
+                        if (tr.type != JMLTransition.TRANS_HOLDING) {
                             return false
                         }
                     }
@@ -1869,19 +1871,19 @@ class EditLadderDiagram(
                         return evitem.transnum != (evitem.event!!.numberOfTransitions - 1)
 
                     "definethrow" ->
-                        return tr.transType == JMLTransition.TRANS_THROW
+                        return tr.type == JMLTransition.TRANS_THROW
 
                     "changetocatch" ->
-                        return tr.transType == JMLTransition.TRANS_SOFTCATCH
-                            || tr.transType == JMLTransition.TRANS_GRABCATCH
+                        return tr.type == JMLTransition.TRANS_SOFTCATCH
+                            || tr.type == JMLTransition.TRANS_GRABCATCH
 
                     "changetosoftcatch" ->
-                        return tr.transType == JMLTransition.TRANS_CATCH
-                            || tr.transType == JMLTransition.TRANS_GRABCATCH
+                        return tr.type == JMLTransition.TRANS_CATCH
+                            || tr.type == JMLTransition.TRANS_GRABCATCH
 
                     "changetograbcatch" ->
-                        return tr.transType == JMLTransition.TRANS_CATCH
-                            || tr.transType == JMLTransition.TRANS_SOFTCATCH
+                        return tr.type == JMLTransition.TRANS_CATCH
+                            || tr.type == JMLTransition.TRANS_SOFTCATCH
                 }
             } else if (laditem.type == LadderItem.TYPE_POSITION) {
                 return !mutableListOf(

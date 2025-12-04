@@ -96,11 +96,10 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
             p = p!!.apply(lp)
             --pow
         }
-        for (i in 0..<evtransitions) {
-            val tr = newevent.getTransition(i)
-            val masterpath = ev.getTransition(i).path
-            tr.path = p!!.getMapping(masterpath)
-        }
+        newevent.transitions = newevent.transitions.mapIndexed { i, tr ->
+            tr.copy(path = p!!.getMapping(ev.transitions[i].path))
+        }.toMutableList()
+
         newevent.pathPermFromMaster = p
 
         val t = (evtime
@@ -249,7 +248,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         ea[evjuggler][evhand][0] = idperm
         for (i in 0..<evtransitions) {
             val tr = ev.getTransition(i)
-            transitiontype[i] = tr.transType
+            transitiontype[i] = tr.type
         }
 
         var changed: Boolean

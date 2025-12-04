@@ -43,7 +43,7 @@ data class JMLSymmetry(
          * Factory method to create a JMLSymmetry instance by parsing a JMLNode.
          */
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(current: JMLNode, numjug: Int, numpat: Int): JMLSymmetry {
+        fun fromJMLNode(current: JMLNode, numberOfJugglers: Int, numberOfPaths: Int): JMLSymmetry {
             val at = current.attributes
 
             val symTypeString = at.getAttribute("type")
@@ -64,13 +64,13 @@ data class JMLSymmetry(
                 }
             } ?: -1.0
 
-            val jugglerPerm = createPermutation(numjug, at.getAttribute("jperm"), true)
-            val pathPerm = createPermutation(numpat, at.getAttribute("pperm"), false)
+            val jugglerPerm = createPermutation(numberOfJugglers, at.getAttribute("jperm"), true)
+            val pathPerm = createPermutation(numberOfPaths, at.getAttribute("pperm"), false)
 
             return JMLSymmetry(
                 type = symType,
-                numberOfJugglers = numjug,
-                numberOfPaths = numpat,
+                numberOfJugglers = numberOfJugglers,
+                numberOfPaths = numberOfPaths,
                 jugglerPerm = jugglerPerm,
                 pathPerm = pathPerm,
                 delay = delay

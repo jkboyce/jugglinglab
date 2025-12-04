@@ -6,26 +6,25 @@
 
 package jugglinglab.jml
 
-class JMLTransition(
-    var transType: Int,
-    var path: Int,
-    var throwType: String?,
-    var mod: String?
+data class JMLTransition(
+    val type: Int,
+    val path: Int,
+    val throwType: String?,
+    val throwMod: String?
 ) {
+    // TODO: remove these later; part of layout
     var incomingPathLink: PathLink? = null
     var outgoingPathLink: PathLink? = null
 
-    fun copy() = JMLTransition(transType, path, throwType, mod)
-
     fun writeJML(wr: Appendable) {
-        when (transType) {
+        when (type) {
             TRANS_THROW -> {
                 var out = "<throw path=\"$path\""
                 if (throwType != null) {
                     out += " type=\"$throwType\""
                 }
-                if (mod != null) {
-                    out += " mod=\"$mod\""
+                if (throwMod != null) {
+                    out += " mod=\"$throwMod\""
                 }
                 wr.append("$out/>\n")
             }

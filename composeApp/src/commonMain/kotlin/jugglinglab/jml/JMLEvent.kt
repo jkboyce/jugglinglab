@@ -17,8 +17,7 @@ class JMLEvent {
         private set
     var hand: Int = 0
         private set
-    var transitions = ArrayList<JMLTransition>()
-        private set
+    var transitions: MutableList<JMLTransition> = ArrayList()
     var delay: Int = 0
     var delayunits: Int = 0
     var pathPermFromMaster: Permutation? = null
@@ -156,16 +155,16 @@ class JMLEvent {
 
     fun getPathTransition(path: Int, transType: Int): JMLTransition? {
         return transitions.firstOrNull {
-            it.path == path && (transType == JMLTransition.TRANS_ANY || transType == it.transType)
+            it.path == path && (transType == JMLTransition.TRANS_ANY || transType == it.type)
         }
     }
 
     val hasThrow: Boolean
-        get() = transitions.any { it.transType == JMLTransition.TRANS_THROW }
+        get() = transitions.any { it.type == JMLTransition.TRANS_THROW }
 
     val hasThrowOrCatch: Boolean
         get() = transitions.any {
-            when (it.transType) {
+            when (it.type) {
                 JMLTransition.TRANS_THROW,
                 JMLTransition.TRANS_CATCH,
                 JMLTransition.TRANS_SOFTCATCH,
@@ -180,7 +179,7 @@ class JMLEvent {
 
     val hasPassingThrow: Boolean
         get() = transitions.any { tr ->
-            tr.transType == JMLTransition.TRANS_THROW &&
+            tr.type == JMLTransition.TRANS_THROW &&
                 tr.outgoingPathLink?.endEvent?.juggler != juggler
         }
 
@@ -190,7 +189,7 @@ class JMLEvent {
 
     val hasPassingCatch: Boolean
         get() = transitions.any { tr ->
-            when (tr.transType) {
+            when (tr.type) {
                 JMLTransition.TRANS_CATCH,
                 JMLTransition.TRANS_SOFTCATCH,
                 JMLTransition.TRANS_GRABCATCH -> true

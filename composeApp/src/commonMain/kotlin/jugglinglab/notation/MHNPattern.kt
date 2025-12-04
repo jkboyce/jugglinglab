@@ -1723,7 +1723,7 @@ abstract class MHNPattern : Pattern() {
             while (ev != null) {
                 val tr = ev.getPathTransition((k + 1), JMLTransition.TRANS_ANY)
                 if (tr != null) {
-                    when (tr.transType) {
+                    when (tr.type) {
                         JMLTransition.TRANS_THROW -> {
                             if (!foundEvent && !addMode) {
                                 // first event mentioning path is a throw

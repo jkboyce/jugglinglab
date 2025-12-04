@@ -98,7 +98,7 @@ class MarginEquations() {
         while (ev != null) {
             if (ev.isMaster) {
                 for (tr in ev.transitions) {
-                    val type = tr.transType
+                    val type = tr.type
                     if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
                         type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH
                     ) {
@@ -108,7 +108,7 @@ class MarginEquations() {
                         if (abs(coord.x) > maxValue) maxValue = abs(coord.x)
 
                         if (type == JMLTransition.TRANS_THROW) {
-                            val pl = ParameterList(tr.mod)
+                            val pl = ParameterList(tr.throwMod)
                             val gparam = pl.getParameter("g")
                             if (gparam != null) {
                                 try {
@@ -139,7 +139,7 @@ class MarginEquations() {
         for (i in 0..<varsNum) {
             ev = variableEvents[i]
             val coord = ev.localCoordinate
-            val type = ev.getTransition(0).transType
+            val type = ev.getTransition(0).type
 
             varsEvents.add(ev)
             varsValues[i] = coord.x
