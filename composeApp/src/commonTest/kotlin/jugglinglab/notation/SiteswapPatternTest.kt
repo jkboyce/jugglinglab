@@ -88,4 +88,11 @@ class SiteswapPatternTest {
         assertEquals(2, pattern.numberOfJugglers)
         assertEquals(7, pattern.numberOfPaths)
     }
+
+    @Test
+    fun `pattern parsing modifiers 4`() {
+        val pattern = SiteswapPattern().fromString("(4,5x)(4,1x)!R5x41x")
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(4, pattern.numberOfPaths)
+    }
 }
