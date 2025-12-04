@@ -378,7 +378,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 while (finalAngle < 0) {
                     finalAngle += 360.0
                 }
-                position!!.angle = finalAngle
+                pattern?.removePosition(position!!)
+                position = position!!.copy(angle = finalAngle)
+                pattern?.addPosition(position!!)
                 dolayout = true
             } else {
                 deltax = mx - startx
@@ -406,7 +408,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
 
                 if (positionActive) {
-                    position!!.coordinate = cc
+                    pattern?.removePosition(position!!)
+                    position = position!!.copy(x = cc.x, y = cc.y, z = cc.z)
+                    pattern?.addPosition(position!!)
                     dolayout = true
                 }
             }

@@ -202,7 +202,8 @@ class Mutator {
         }
         var pos = pat.positionList
         while (pos != null) {
-            pos.t = pos.t * scale
+            pat.removePosition(pos)
+            pat.addPosition(pos.copy(t = pos.t * scale))
             pos = pos.next
         }
 

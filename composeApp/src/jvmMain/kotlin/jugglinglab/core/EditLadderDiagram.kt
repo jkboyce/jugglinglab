@@ -875,9 +875,10 @@ class EditLadderDiagram(
             newt = pat.loopEndTime - 0.0001
         }
 
-        pat.removePosition(pos!!)
-        pos.t = newt
-        pat.addPosition(pos) // remove/add keeps positions sorted
+        val newPosition = pos!!.copy(t = newt)
+        pat.removePosition(pos)
+        pat.addPosition(newPosition)
+        item.position = newPosition
     }
 
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
@@ -1054,13 +1055,16 @@ class EditLadderDiagram(
             (pat.loopEndTime - pat.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
         val postime = (popupY - BORDER_TOP).toDouble() * scale
 
-        val pos = JMLPosition()
         val loc = Coordinate()
         pat.getJugglerPosition(juggler, postime, loc)
-        pos.coordinate = loc
-        pos.angle = pat.getJugglerAngle(juggler, postime)
-        pos.t = postime
-        pos.juggler = juggler
+        val pos = JMLPosition(
+            x = loc.x,
+            y = loc.y,
+            z = loc.z,
+            t = postime,
+            angle = pat.getJugglerAngle(juggler, postime),
+            juggler = juggler
+        )
         pat.addPosition(pos)
 
         activeEventitem = null

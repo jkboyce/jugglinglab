@@ -1505,8 +1505,9 @@ abstract class MHNPattern : Pattern() {
                 for (z in 0..<coords) {
                     val jmlp = bodies!!.getPosition(j + 1, index, z)
                     if (jmlp != null) {
-                        jmlp.t = (k.toDouble() + z.toDouble() / coords.toDouble()) / bps
-                        pat.addPosition(jmlp)
+                        val newTime = (k.toDouble() + z.toDouble() / coords.toDouble()) / bps
+                        val newPosition = jmlp.copy(t = newTime)
+                        pat.addPosition(newPosition)
                     }
                 }
             }

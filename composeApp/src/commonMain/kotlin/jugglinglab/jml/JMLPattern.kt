@@ -46,10 +46,10 @@ import kotlin.math.max
 class JMLPattern() {
     private var version: String = JMLDefs.CURRENT_JML_VERSION
     private var loadingversion: String = JMLDefs.CURRENT_JML_VERSION
-    private var tags: ArrayList<String> = ArrayList()
+    private var tags: MutableList<String> = mutableListOf()
     private var numjugglers: Int = 0
     private var numpaths: Int = 0
-    private var props: ArrayList<JMLProp> = ArrayList()
+    private var props: MutableList<JMLProp> = mutableListOf()
     private var propassignment: IntArray? = null
 
     // for retaining the base pattern this pattern was created from
@@ -60,15 +60,15 @@ class JMLPattern() {
     private var basePatternHashcode: Int = 0
     private var basePatternHashcodeValid: Boolean = false
 
-    var symmetries: MutableList<JMLSymmetry> = ArrayList()
+    var symmetries: MutableList<JMLSymmetry> = mutableListOf()
     var eventList: JMLEvent? = null
     var positionList: JMLPosition? = null
 
     // list of PathLink objects for each path
-    private var pathlinks: ArrayList<ArrayList<PathLink>>? = null
+    private var pathlinks: MutableList<MutableList<PathLink>>? = null
 
     // list of HandLink objects for each juggler/hand combination
-    private var handlinks: ArrayList<ArrayList<ArrayList<HandLink>>>? = null
+    private var handlinks: MutableList<MutableList<MutableList<HandLink>>>? = null
 
     // for layout
     private lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
@@ -328,7 +328,7 @@ class JMLPattern() {
         println(sb.toString())
     }
 
-    val pathLinks: ArrayList<ArrayList<PathLink>>
+    val pathLinks: MutableList<MutableList<PathLink>>
         get() = pathlinks!!
 
     fun addPosition(pos: JMLPosition) {
@@ -437,9 +437,11 @@ class JMLPattern() {
             }
             ev = ev.next
         }
+
         var pos = positionList
         while (pos != null) {
-            pos.t = pos.t * scale
+            removePosition(pos)
+            addPosition(pos.copy(t = pos.t * scale))
             pos = pos.next
         }
 
@@ -565,12 +567,9 @@ class JMLPattern() {
             while (pos != null) {
                 // no notion analagous to master events, so have to keep
                 // position time within [0, looptime).
-                if (pos.t != 0.0) {
-                    pos.t = looptime - pos.t
-                }
-                val next = pos.next
-                addPosition(pos)
-                pos = next
+                val newTime = if (pos.t != 0.0) { looptime - pos.t } else 0.0
+                addPosition(pos.copy(t = newTime))
+                pos = pos.next
             }
 
             // for each symmetry (besides type SWITCH):
@@ -749,7 +748,7 @@ class JMLPattern() {
             }
         }
 
-        val newProps = ArrayList<JMLProp>()
+        val newProps: MutableList<JMLProp> = mutableListOf()
         val newPropAssignments = IntArray(numpaths)
 
         // apply colors to get a new list of JMLProps, deduping as we go
@@ -1286,11 +1285,9 @@ class JMLPattern() {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun buildLinkLists() {
-        pathlinks = ArrayList(numberOfPaths)
+        pathlinks = MutableList(numberOfPaths) { mutableListOf() }
 
         for (i in 0..<numberOfPaths) {
-            // build the PathLink list for the ith path
-            pathlinks!!.add(ArrayList())
             var ev = this.eventList
             var lastev: JMLEvent? = null
             var lasttr: JMLTransition? = null
@@ -1362,17 +1359,17 @@ class JMLPattern() {
         }
 
         // now build the HandLink lists
-        handlinks = ArrayList()
+        handlinks = mutableListOf()
 
         for (i in 0..<numberOfJugglers) {
             // build the HandLink list for the ith juggler
 
-            handlinks!!.add(ArrayList())
+            handlinks!!.add(mutableListOf())
 
             for (j in 0..1) {
                 val handnum = if (j == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
 
-                handlinks!![i].add(ArrayList())
+                handlinks!![i].add(mutableListOf())
 
                 var ev = this.eventList
                 var lastev: JMLEvent? = null
@@ -1955,7 +1952,7 @@ class JMLPattern() {
             }
 
             "jml" -> {
-                val vers = current.attributes.getAttribute("version") ?: return
+                val vers = current.attributes.getValueOf("version") ?: return
                 if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
                     val message = getStringResource(Res.string.error_jml_version)
                     throw JuggleExceptionUser(message)
@@ -1970,23 +1967,23 @@ class JMLPattern() {
             "title" -> title = current.nodeValue
             "info" -> {
                 info = current.nodeValue
-                current.attributes.getAttribute("tags")
+                current.attributes.getValueOf("tags")
                     ?.split(',')
                     ?.forEach { addTag(it.trim()) }
             }
 
             "basepattern" -> {
                 basePatternNotation =
-                    Pattern.canonicalNotation(current.attributes.getAttribute("notation"))
+                    Pattern.canonicalNotation(current.attributes.getValueOf("notation"))
                 basePatternConfig = current.nodeValue!!.trim()
             }
 
             "prop" -> addProp(JMLProp.fromJMLNode(current, loadingversion))
             "setup" -> {
                 val at = current.attributes
-                val jugglerstring = at.getAttribute("jugglers")
-                val pathstring: String? = at.getAttribute("paths")
-                val propstring = at.getAttribute("props")
+                val jugglerstring = at.getValueOf("jugglers")
+                val pathstring: String? = at.getValueOf("paths")
+                val propstring = at.getValueOf("props")
 
                 try {
                     numberOfJugglers = jugglerstring?.toInt() ?: 1
@@ -2034,8 +2031,7 @@ class JMLPattern() {
             }
 
             "position" -> {
-                val pos = JMLPosition()
-                pos.readJML(current, loadingversion)
+                val pos = JMLPosition.fromJMLNode(current, loadingversion)
                 addPosition(pos)
                 return
             }

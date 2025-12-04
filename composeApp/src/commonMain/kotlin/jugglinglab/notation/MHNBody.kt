@@ -112,12 +112,12 @@ class MHNBody(str: String) {
         if (bodypath[j][pos][index] == null) {
             return null
         }
-        val result = JMLPosition()
-        result.juggler = juggler
-        result.coordinate = Coordinate(
-            bodypath[j][pos][index]!![1], bodypath[j][pos][index]!![2], bodypath[j][pos][index]!![3]
+        return JMLPosition(
+            x = bodypath[j][pos][index]!![1],
+            y = bodypath[j][pos][index]!![2],
+            z = bodypath[j][pos][index]!![3],
+            angle = bodypath[j][pos][index]!![0],
+            juggler = juggler
         )
-        result.angle = bodypath[j][pos][index]!![0]
-        return result
     }
 }

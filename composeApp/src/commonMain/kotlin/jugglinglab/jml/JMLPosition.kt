@@ -13,79 +13,23 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.getStringResource
 
-class JMLPosition {
-    var x: Double = 0.0
-    var y: Double = 0.0
-    var z: Double = 0.0
-    var t: Double = 0.0
-    var angle: Double = 0.0
-    var juggler: Int = 0
-
+data class JMLPosition(
+    val x: Double = 0.0,
+    val y: Double = 0.0,
+    val z: Double = 0.0,
+    val t: Double = 0.0,
+    val angle: Double = 0.0,
+    val juggler: Int = 0,
+) {
+    // for doubly-linked event list during layout
     var previous: JMLPosition? = null
-    var next: JMLPosition? = null // for doubly-linked event list
+    var next: JMLPosition? = null
 
-    var coordinate: Coordinate
+    val coordinate: Coordinate
         get() = Coordinate(x, y, z)
-        set(c) {
-            x = c.x
-            y = c.y
-            z = c.z
-        }
-
-    fun setJuggler(strjuggler: String) {
-        juggler = strjuggler.toInt()
-    }
 
     val hashCode: Int
         get() = toString().hashCode()
-
-    //--------------------------------------------------------------------------
-    //  Reader/writer methods
-    //--------------------------------------------------------------------------
-
-    @Suppress("unused")
-    @Throws(JuggleExceptionUser::class)
-    fun readJML(current: JMLNode, jmlvers: String?) {
-        val at = current.attributes
-        var tempx = 0.0
-        var tempy = 0.0
-        var tempz = 0.0
-        var tempt = 0.0
-        var tempangle = 0.0
-        var jugglerstr = "1"
-
-        try {
-            for (i in 0..<at.numberOfAttributes) {
-                // System.out.println("att. "+i+" = "+at.getAttributeValue(i));
-                if (at.getAttributeName(i).equals("x", ignoreCase = true)) {
-                    tempx = jlParseFiniteDouble(at.getAttributeValue(i))
-                } else if (at.getAttributeName(i).equals("y", ignoreCase = true)) {
-                    tempy = jlParseFiniteDouble(at.getAttributeValue(i))
-                } else if (at.getAttributeName(i).equals("z", ignoreCase = true)) {
-                    tempz = jlParseFiniteDouble(at.getAttributeValue(i))
-                } else if (at.getAttributeName(i).equals("t", ignoreCase = true)) {
-                    tempt = jlParseFiniteDouble(at.getAttributeValue(i))
-                } else if (at.getAttributeName(i).equals("angle", ignoreCase = true)) {
-                    tempangle = jlParseFiniteDouble(at.getAttributeValue(i))
-                } else if (at.getAttributeName(i).equals("juggler", ignoreCase = true)) {
-                    jugglerstr = at.getAttributeValue(i)
-                }
-            }
-        } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_position_coordinate)
-            throw JuggleExceptionUser(message)
-        }
-
-        coordinate = Coordinate(tempx, tempy, tempz)
-        t = tempt
-        angle = tempangle
-        setJuggler(jugglerstr)
-
-        if (current.numberOfChildren != 0) {
-            val message = getStringResource(Res.string.error_position_subtag)
-            throw JuggleExceptionUser(message)
-        }
-    }
 
     fun writeJML(wr: Appendable) {
         val c = this.coordinate
@@ -110,5 +54,59 @@ class JMLPosition {
         val sb = StringBuilder()
         writeJML(sb)
         return sb.toString()
+    }
+
+    companion object {
+        @Suppress("unused")
+        @Throws(JuggleExceptionUser::class)
+        fun fromJMLNode(current: JMLNode, version: String?): JMLPosition {
+            var tempx = 0.0
+            var tempy = 0.0
+            var tempz = 0.0
+            var tempt = 0.0
+            var tempangle = 0.0
+            var jugglerstr = "1"
+
+            try {
+                for ((name, value) in current.attributes.entries) {
+                    if (name.equals("x", ignoreCase = true)) {
+                        tempx = jlParseFiniteDouble(value)
+                    } else if (name.equals("y", ignoreCase = true)) {
+                        tempy = jlParseFiniteDouble(value)
+                    } else if (name.equals("z", ignoreCase = true)) {
+                        tempz = jlParseFiniteDouble(value)
+                    } else if (name.equals("t", ignoreCase = true)) {
+                        tempt = jlParseFiniteDouble(value)
+                    } else if (name.equals("angle", ignoreCase = true)) {
+                        tempangle = jlParseFiniteDouble(value)
+                    } else if (name.equals("juggler", ignoreCase = true)) {
+                        jugglerstr = value
+                    }
+                }
+            } catch (_: NumberFormatException) {
+                val message = getStringResource(Res.string.error_position_coordinate)
+                throw JuggleExceptionUser(message)
+            }
+            val tempjuggler = try {
+                jugglerstr.toInt()
+            } catch (_: NumberFormatException) {
+                val message = getStringResource(Res.string.error_number_format, "juggler")
+                throw JuggleExceptionUser(message)
+            }
+
+            if (current.numberOfChildren != 0) {
+                val message = getStringResource(Res.string.error_position_subtag)
+                throw JuggleExceptionUser(message)
+            }
+
+            return JMLPosition(
+                x = tempx,
+                y = tempy,
+                z = tempz,
+                t = tempt,
+                angle = tempangle,
+                juggler = tempjuggler
+            )
+        }
     }
 }
