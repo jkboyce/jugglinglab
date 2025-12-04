@@ -67,4 +67,25 @@ class SiteswapPatternTest {
         assertEquals(1, pattern.numberOfJugglers)
         assertEquals(25, pattern.numberOfPaths)
     }
+
+    @Test
+    fun `pattern parsing modifiers 1`() {
+        val pattern = SiteswapPattern().fromString("3BB")
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(3, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing modifiers 2`() {
+        val pattern = SiteswapPattern().fromString("R3R3xL3L3x")
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(3, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing modifiers 3`() {
+        val pattern = SiteswapPattern().fromString("<R|L><4xp|3><3|4xp>")
+        assertEquals(2, pattern.numberOfJugglers)
+        assertEquals(7, pattern.numberOfPaths)
+    }
 }
