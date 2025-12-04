@@ -13,13 +13,6 @@ data class JMLProp (
     val type: String,
     val mod: String?
 ) {
-    // constructor for reading JML
-    @Suppress("unused")
-    constructor(current: JMLNode, version: String?) : this(
-        type = current.attributes.getAttribute("type")!!,
-        mod = current.attributes.getAttribute("mod")
-    )
-
     @get:Throws(JuggleExceptionUser::class)
     val prop: Prop by lazy {
         Prop.newProp(type).apply { initProp(mod) }
@@ -32,5 +25,15 @@ data class JMLProp (
     fun writeJML(wr: Appendable) {
         val modString = if (mod != null) " mod=\"$mod\"" else ""
         wr.append("<prop type=\"$type\"$modString/>\n")
+    }
+
+    companion object {
+        @Suppress("unused")
+        fun fromJMLNode(current: JMLNode, version: String?): JMLProp {
+            return JMLProp(
+                type = current.attributes.getAttribute("type")!!,
+                mod = current.attributes.getAttribute("mod")
+            )
+        }
     }
 }

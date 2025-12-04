@@ -1996,7 +1996,7 @@ class JMLPattern() {
                 basePatternConfig = current.nodeValue!!.trim()
             }
 
-            "prop" -> addProp(JMLProp(current, loadingversion))
+            "prop" -> addProp(JMLProp.fromJMLNode(current, loadingversion))
             "setup" -> {
                 val at = current.attributes
                 val jugglerstring = at.getAttribute("jugglers")
