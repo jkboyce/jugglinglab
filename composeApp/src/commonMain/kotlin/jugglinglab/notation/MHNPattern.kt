@@ -913,7 +913,7 @@ abstract class MHNPattern : Pattern() {
             }
 
             val sym = JMLSymmetry(
-                symType = symtype,
+                type = symtype,
                 numberOfJugglers = sss.numberOfJugglers,
                 numberOfPaths = numberOfPaths,
                 jugglerPerm = sss.jugglerPerm,

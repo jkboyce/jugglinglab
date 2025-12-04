@@ -17,17 +17,15 @@ import jugglinglab.util.getStringResource
  * An immutable data class representing a symmetry definition in a JML pattern.
  */
 data class JMLSymmetry(
-    val symType: Int,
+    val type: Int,
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
     val jugglerPerm: Permutation?,
     val pathPerm: Permutation?,
     val delay: Double = -1.0
 ) {
-    fun getType() = symType
-
     fun writeJML(wr: Appendable) {
-        val output = when (symType) {
+        val output = when (type) {
             TYPE_DELAY -> "<symmetry type=\"delay\" pperm=\"${pathPerm!!.toString(true)}\" delay=\"${jlToStringRounded(delay, 4)}\"/>\n"
             TYPE_SWITCH -> "<symmetry type=\"switch\" jperm=\"${jugglerPerm!!.toString(true)}\" pperm=\"${pathPerm!!.toString(true)}\"/>\n"
             TYPE_SWITCHDELAY -> "<symmetry type=\"switchdelay\" jperm=\"${jugglerPerm!!.toString(true)}\" pperm=\"${pathPerm!!.toString(true)}\"/>\n"
@@ -70,7 +68,7 @@ data class JMLSymmetry(
             val pathPerm = createPermutation(numpat, at.getAttribute("pperm"), false)
 
             return JMLSymmetry(
-                symType = symType,
+                type = symType,
                 numberOfJugglers = numjug,
                 numberOfPaths = numpat,
                 jugglerPerm = jugglerPerm,

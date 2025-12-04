@@ -576,7 +576,7 @@ class JMLPattern() {
             // for each symmetry (besides type SWITCH):
             //     - invert pperm
             symmetries = symmetries.map { sym ->
-                if (sym.symType == JMLSymmetry.TYPE_SWITCH) {
+                if (sym.type == JMLSymmetry.TYPE_SWITCH) {
                     sym
                 } else {
                     sym.copy(pathPerm = sym.pathPerm!!.inverse)
@@ -1615,7 +1615,7 @@ class JMLPattern() {
     val loopEndTime: Double
         get() {
             for (sym in symmetries) {
-                if (sym.getType() == JMLSymmetry.TYPE_DELAY) {
+                if (sym.type == JMLSymmetry.TYPE_DELAY) {
                     return sym.delay
                 }
             }
@@ -1949,7 +1949,7 @@ class JMLPattern() {
     }
 
     val pathPermutation: Permutation?
-        get() = symmetries.find { it.getType() == JMLSymmetry.TYPE_DELAY }?.pathPerm
+        get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
 
     val periodWithProps: Int
         get() = getPeriod(pathPermutation!!, propassignment!!)

@@ -256,7 +256,7 @@ open class LadderDiagram(p: JMLPattern) :
         hasSwitchSymmetry = false
 
         for (sym in pat.symmetries) {
-            when (sym.getType()) {
+            when (sym.type) {
                 JMLSymmetry.TYPE_SWITCH -> hasSwitchSymmetry = true
                 JMLSymmetry.TYPE_SWITCHDELAY -> hasSwitchdelaySymmetry = true
             }

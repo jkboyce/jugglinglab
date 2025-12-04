@@ -211,7 +211,7 @@ class MarginEquations() {
         var symDelay = -1.0
         var symSwitchdelay = false
         for (sym in pat.symmetries) {
-            when (sym.getType()) {
+            when (sym.type) {
                 JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
                 JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
                 JMLSymmetry.TYPE_SWITCH ->
