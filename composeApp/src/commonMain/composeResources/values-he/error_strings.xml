@@ -104,6 +104,7 @@
     <string name="error_dwell_value">����� ������ ���� ���� ��  "����� ���"</string>
     <string name="error_dwell_range">"Dwell" value should be between 0 and 2</string>
     <string name="error_color_format">����� ������ ������</string>
+    <string name="error_color_empty">Color format string is empty</string>
     <string name="error_notation_bad">����� ���� ������</string>
     <string name="error_notation_notfound">��� ����� �� ����</string>
     <string name="error_notation_cantaccess">�� ���� ����� ���� ������ (����� ��������)</string>

@@ -740,6 +740,11 @@ class JMLPattern() {
                 colorsByOrbit.toList()
             }
 
+            "" -> {
+                val message = getStringResource(Res.string.error_color_empty)
+                throw JuggleExceptionUser(message)
+            }
+
             else -> {
                 jlExpandRepeats(trimmedColorString)
                     .split('}')
