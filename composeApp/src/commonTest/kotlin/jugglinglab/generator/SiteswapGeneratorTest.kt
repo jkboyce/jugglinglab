@@ -14,9 +14,10 @@ import kotlin.test.assertEquals
 class SiteswapGeneratorTest {
     private fun runGeneratorTestCase(input: String): List<String> {
         val patterns = ArrayList<String>()
-        val gen = SiteswapGenerator()
-        gen.initGenerator(input.split(" "))
-        gen.runGenerator(GeneratorTargetBasic(patterns))
+        SiteswapGenerator().apply {
+            initGenerator(input.split(" "))
+            runGenerator(GeneratorTargetBasic(patterns))
+        }
         return patterns
     }
 
