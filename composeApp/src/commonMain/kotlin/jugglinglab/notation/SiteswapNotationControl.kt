@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import jugglinglab.prop.Prop.Companion.builtinPropsStringResources
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -32,57 +33,6 @@ import org.jetbrains.compose.resources.stringResource
 fun SiteswapNotationControl(
     onConfirm: (String) -> Unit
 ) {
-    // Constants and Data Sources
-    val builtinHandsNames = listOf(
-        "inside",
-        "outside",
-        "half",
-        "Mills"
-    )
-    val builtinHandsStrings = listOf(
-        "(10)(32.5).",
-        "(32.5)(10).",
-        "(32.5)(10).(10)(32.5).",
-        "(-25)(2.5).(25)(-2.5).(-25)(0)."
-    )
-    val builtinBodyNames = listOf(
-        "line",
-        "feed",
-        "backtoback",
-        "sidetoside",
-        "circles"
-    )
-    val builtinBodyStrings = listOf(
-        "<(90).|(270,-125).|(90,125).|(270,-250).|(90,250).|(270,-375).>",
-        "<(90,75).|(270,-75,50).|(270,-75,-50).|(270,-75,150).|(270,-75,-150).>",
-        "<(270,35).|(90,-35).|(0,0,35).|(180,0,-35).>",
-        "<(0).|(0,100).|(0,-100).|(0,200).|(0,-200).|(0,300).>",
-        "(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)..."
-    )
-
-    // Helper to get display strings for Dropdowns
-    @Composable
-    fun getLabel(resourceKey: String): String {
-        // TODO: map these keys to stringResource(Res.string.x)
-        // so they can be localized
-        return when(resourceKey) {
-            "MHNHands_name_default" -> "default"
-            "MHNHands_name_custom" -> "custom"
-            "MHNHands_name_inside" -> "inside throws"
-            "MHNHands_name_outside" -> "outside throws"
-            "MHNHands_name_half" -> "half shower"
-            "MHNHands_name_Mills" -> "Mills Mess"
-            "MHNBody_name_default" -> "default"
-            "MHNBody_name_custom" -> "custom"
-            "MHNBody_name_line" -> "line"
-            "MHNBody_name_feed" -> "feed"
-            "MHNBody_name_backtoback" -> "back to back"
-            "MHNBody_name_sidetoside" -> "side to side"
-            "MHNBody_name_circles" -> "circles"
-            else -> resourceKey.removePrefix("Prop_name_")
-        }
-    }
-
     // State Variables
     var pattern by remember { mutableStateOf("") }
     var beatsPerSecond by remember { mutableStateOf("") }
@@ -181,9 +131,9 @@ fun SiteswapNotationControl(
         // Hand Movement Complex Control
         MovementControlRow(
             label = stringResource(Res.string.gui_hand_movement),
-            dropdownItems = listOf("MHNHands_name_default") +
-                builtinHandsNames.map { "MHNHands_name_$it" } +
-                listOf("MHNHands_name_custom"),
+            dropdownItems = listOf(Res.string.gui_mhnhands_name_default) +
+                builtinHandsStringResources +
+                listOf(Res.string.gui_mhnhands_name_custom),
             selectedIndex = handDropdownIndex,
             textValue = handParams,
             onDropdownChange = { index ->
@@ -199,7 +149,6 @@ fun SiteswapNotationControl(
                 // Logic: if text empty -> default, else -> custom
                 handDropdownIndex = if (text.isEmpty()) 0 else (builtinHandsNames.size + 1)
             },
-            getLabel = { getLabel(it) }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -207,9 +156,9 @@ fun SiteswapNotationControl(
         // Body Movement
         MovementControlRow(
             label = stringResource(Res.string.gui_body_movement),
-            dropdownItems = listOf("MHNBody_name_default") +
-                builtinBodyNames.map { "MHNBody_name_$it" } +
-                listOf("MHNBody_name_custom"),
+            dropdownItems = listOf(Res.string.gui_mhnbody_name_default) +
+                builtinBodyStringResources +
+                listOf(Res.string.gui_mhnbody_name_custom),
             selectedIndex = bodyDropdownIndex,
             textValue = bodyParams,
             onDropdownChange = { index ->
@@ -224,20 +173,16 @@ fun SiteswapNotationControl(
                 bodyParams = text
                 bodyDropdownIndex = if (text.isEmpty()) 0 else (builtinBodyNames.size + 1)
             },
-            getLabel = { getLabel(it) }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Prop Type Dropdown
-        val propItems = Prop.builtinProps.map { "Prop_name_" + it.lowercase() }
-
         DropdownRow(
             label = stringResource(Res.string.gui_prop_type),
-            items = propItems,
+            items = builtinPropsStringResources,
             selectedIndex = propIndex,
             onIndexChange = { propIndex = it },
-            getLabel = { getLabel(it) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -329,10 +274,9 @@ private fun LabelledInputRow(
 @Composable
 private fun DropdownRow(
     label: String,
-    items: List<String>,
+    items: List<StringResource>,
     selectedIndex: Int,
     onIndexChange: (Int) -> Unit,
-    getLabel: @Composable (String) -> String
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +296,6 @@ private fun DropdownRow(
                 items = items,
                 selectedIndex = selectedIndex,
                 onIndexChange = onIndexChange,
-                getLabel = getLabel,
                 modifier = Modifier.width(160.dp)
             )
         }
@@ -362,12 +305,11 @@ private fun DropdownRow(
 @Composable
 private fun MovementControlRow(
     label: String,
-    dropdownItems: List<String>,
+    dropdownItems: List<StringResource>,
     selectedIndex: Int,
     textValue: String,
     onDropdownChange: (Int) -> Unit,
     onTextChange: (String) -> Unit,
-    getLabel: @Composable (String) -> String
 ) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         // Row 1: Label + Dropdown
@@ -388,7 +330,6 @@ private fun MovementControlRow(
                     items = dropdownItems,
                     selectedIndex = selectedIndex,
                     onIndexChange = onDropdownChange,
-                    getLabel = getLabel,
                     modifier = Modifier.width(160.dp)
                 )
             }
@@ -418,10 +359,9 @@ private fun MovementControlRow(
 
 @Composable
 private fun SimpleDropdown(
-    items: List<String>,
+    items: List<StringResource>,
     selectedIndex: Int,
     onIndexChange: (Int) -> Unit,
-    getLabel: @Composable (String) -> String,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -440,7 +380,7 @@ private fun SimpleDropdown(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (selectedIndex in items.indices) getLabel(items[selectedIndex]) else "",
+                text = if (selectedIndex in items.indices) stringResource(items[selectedIndex]) else "",
                 style = MaterialTheme.typography.body1
             )
             Icon(
@@ -461,7 +401,7 @@ private fun SimpleDropdown(
                         expanded = false
                     }
                 ) {
-                    Text(text = getLabel(item))
+                    Text(text = stringResource(item))
                 }
             }
         }
