@@ -24,8 +24,8 @@ import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -123,9 +123,9 @@ object JugglingLab {
                     registerAboutHandler()
                     ApplicationWindow("Juggling Lab")
                 } catch (jeu: JuggleExceptionUser) {
-                    handleUserException(null, jeu.message)
+                    jlHandleUserException(null, jeu.message)
                 } catch (jei: JuggleExceptionInternal) {
-                    handleFatalException(jei)
+                    jlHandleFatalException(jei)
                 }
             }
             return
@@ -263,13 +263,13 @@ object JugglingLab {
                     } catch (jeu: JuggleExceptionUser) {
                         val message = getStringResource(Res.string.error_reading_file, file.getName())
                         val msg = message + ":\n" + jeu.message
-                        handleUserException(null, msg)
+                        jlHandleUserException(null, msg)
                     }
                 }
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(null, jeu.message)
+                jlHandleUserException(null, jeu.message)
             } catch (jei: JuggleExceptionInternal) {
-                handleFatalException(jei)
+                jlHandleFatalException(jei)
             }
         }
     }
@@ -302,7 +302,7 @@ object JugglingLab {
                 //System.setProperty("java.awt.headless", "true")
                 println(output)
             } else {
-                handleUserException(null, output) // should never happen
+                jlHandleUserException(null, output) // should never happen
             }
         }
         return files

@@ -16,8 +16,8 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Animator.WriteGIFMonitor
 import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionInternalWithPattern
 import jugglinglab.util.JuggleExceptionUser
@@ -69,11 +69,11 @@ abstract class View : JPanel() {
             patternWindow?.updateUndoMenu()
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern(jeu.message, p)
             )
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern(jei.message, p)
             )
         }
@@ -200,9 +200,9 @@ abstract class View : JPanel() {
                 ap.animator.writeGIF(FileOutputStream(file), wgm, fps)
             } catch (_: IOException) {
                 val message = getStringResource(Res.string.error_writing_file, file.toString())
-                handleUserException(parent, message)
+                jlHandleUserException(parent, message)
             } catch (jei: JuggleExceptionInternal) {
-                handleFatalException(jei)
+                jlHandleFatalException(jei)
             } finally {
                 if (cleanup != null) {
                     SwingUtilities.invokeLater(cleanup)

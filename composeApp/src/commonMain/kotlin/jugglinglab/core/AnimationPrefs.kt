@@ -11,7 +11,7 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.getScreenFps
+import jugglinglab.util.jlGetScreenFps
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
 import androidx.compose.ui.unit.IntSize
@@ -302,7 +302,7 @@ class AnimationPrefs {
         // default values of all AnimationPrefs items
         const val WIDTH_DEF: Int = 400
         const val HEIGHT_DEF: Int = 450
-        val FPS_DEF: Double = getScreenFps()
+        val FPS_DEF: Double = jlGetScreenFps()
         const val SLOWDOWN_DEF: Double = 2.0
         const val BORDER_DEF: Int = 0
         const val SHOWGROUND_DEF: Int = GROUND_AUTO

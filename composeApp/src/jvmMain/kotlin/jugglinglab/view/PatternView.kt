@@ -12,10 +12,10 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLPattern
-import jugglinglab.util.ErrorDialog.handleFatalException
+import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.constraints
+import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -56,7 +56,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         val labView = JLabel(getStringResource(Res.string.gui_patternview_heading))
         gb.setConstraints(
             labView,
-            constraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 4, 10, 0))
+            jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 4, 10, 0))
         )
         controls.add(labView)
 
@@ -80,14 +80,14 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         }
         controls.add(bppanel)
         gb.setConstraints(
-            bppanel, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0))
+            bppanel, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0))
         )
 
         rbJml = JRadioButton(getStringResource(Res.string.gui_patternview_rb2))
         bg.add(rbJml)
         controls.add(rbJml)
         gb.setConstraints(
-            rbJml, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 4, 0, 0))
+            rbJml, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 4, 0, 0))
         )
 
         ta = JTextArea()
@@ -97,7 +97,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
         controls.add(jscroll)
         val gbc =
-            constraints(GridBagConstraints.LINE_START, 0, 3, Insets(15, 0, 0, 0))
+            jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(15, 0, 0, 0))
         gbc.fill = GridBagConstraints.BOTH
         gbc.weighty = 1.0
         gbc.weightx = gbc.weighty
@@ -115,16 +115,16 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         lower.setLayout(gb2)
         compile = JButton(getStringResource(Res.string.gui_patternview_compile_button))
         gb2.setConstraints(
-            compile, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(8, 8, 8, 0))
+            compile, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(8, 8, 8, 0))
         )
         lower.add(compile)
         revert = JButton(getStringResource(Res.string.gui_patternview_revert_button))
         gb2.setConstraints(
-            revert, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(8, 5, 8, 12))
+            revert, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(8, 5, 8, 12))
         )
         lower.add(revert)
         lab = JLabel(" ")
-        val gbc2 = constraints(GridBagConstraints.LINE_START, 2, 0)
+        val gbc2 = jlConstraints(GridBagConstraints.LINE_START, 2, 0)
         gbc2.fill = GridBagConstraints.HORIZONTAL
         gbc2.weightx = 1.0
         gb2.setConstraints(lab, gbc2)
@@ -220,7 +220,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
             lab.setText(jeu.message)
             setTextEdited(true)
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
             setTextEdited(true)
         }
     }

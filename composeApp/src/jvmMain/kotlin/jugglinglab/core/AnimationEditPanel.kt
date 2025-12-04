@@ -17,7 +17,7 @@ import jugglinglab.util.*
 import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
-import jugglinglab.util.ErrorDialog.handleFatalException
+import jugglinglab.util.jlHandleFatalException
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.Path2D
@@ -144,7 +144,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                     att.repaintAttachment()
                                 }
                             } catch (jei: JuggleExceptionInternal) {
-                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                             }
                         }
 
@@ -268,7 +268,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 animator.initAnimator()
                 activateEvent(event)
             } catch (jei: JuggleExceptionInternal) {
-                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
 
@@ -423,7 +423,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 } catch (je: JuggleException) {
                     // The editing operations here should never put the pattern
                     // into an invalid state, so we shouldn't ever get here
-                    handleFatalException(je)
+                    jlHandleFatalException(je)
                 }
                 repaint()
             }
@@ -462,7 +462,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             try {
                 createEventView()
             } catch (jei: JuggleExceptionInternal) {
-                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
 
@@ -498,7 +498,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         try {
                             createEventView()
                         } catch (jei: JuggleExceptionInternal) {
-                            handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                         }
                     }
                     if (positionActive) {
@@ -593,7 +593,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 try {
                     createEventView()
                 } catch (jei: JuggleExceptionInternal) {
-                    handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                    jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                 }
                 createPositionView()
                 repaint()
@@ -1358,7 +1358,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 drawPositions(g)
             } catch (jei: JuggleExceptionInternal) {
                 killAnimationThread()
-                handleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
         }
     }

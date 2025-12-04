@@ -11,10 +11,8 @@
 
 package jugglinglab.util
 
-import jugglinglab.core.ApplicationWindow
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.core.ApplicationWindow
 import java.awt.Desktop
 import java.io.*
 import java.net.ServerSocket
@@ -69,7 +67,7 @@ class OpenFilesServerSockets : Thread() {
                 }
             }
         } catch (e: IOException) {
-            handleFatalException(e)
+            jlHandleFatalException(e)
         } finally {
             try {
                 listenSocket!!.close()
@@ -185,7 +183,7 @@ internal class Connection(var client: Socket) : Thread() {
                 client.close()
             } catch (_: IOException) {
             }
-            handleFatalException(ioe)
+            jlHandleFatalException(ioe)
         }
     }
 
@@ -215,9 +213,9 @@ internal class Connection(var client: Socket) : Thread() {
                         } catch (jeu: JuggleExceptionUser) {
                             val message = getStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message
-                            handleUserException(null, msg)
+                            jlHandleUserException(null, msg)
                         } catch (jei: JuggleExceptionInternal) {
-                            handleFatalException(jei)
+                            jlHandleFatalException(jei)
                         }
                     }
                 } else if (line.startsWith("identify")) {

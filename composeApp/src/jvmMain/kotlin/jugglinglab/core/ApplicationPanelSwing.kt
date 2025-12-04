@@ -17,8 +17,8 @@ import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.notation.Pattern
 import jugglinglab.notation.SiteswapNotationControlSwing
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -90,7 +90,7 @@ class ApplicationPanelSwing
                 try {
                     control.resetControl()
                 } catch (e: Exception) {
-                    handleFatalException(e)
+                    jlHandleFatalException(e)
                 }
             }
         }
@@ -120,9 +120,9 @@ class ApplicationPanelSwing
                             PatternWindow(pat.title, pat, jc)
                         }
                     } catch (je: JuggleExceptionUser) {
-                        handleUserException(this@ApplicationPanelSwing, je.message)
+                        jlHandleUserException(this@ApplicationPanelSwing, je.message)
                     } catch (e: Exception) {
-                        handleFatalException(e)
+                        jlHandleFatalException(e)
                     }
                 }
             }
@@ -171,7 +171,7 @@ class ApplicationPanelSwing
                                     jtp!!.setSelectedComponent(plp)
                                 }
                                 val parentComponent = pw ?: plp
-                                LabelDialog(
+                                jlHandleUserMessage(
                                     parentComponent,
                                     getStringResource(Res.string.gui_generator_stopped_title),
                                     ex.message
@@ -180,10 +180,10 @@ class ApplicationPanelSwing
                                 // System.out.println("generator thread quit");
                             } catch (ex: JuggleExceptionUser) {
                                 pw?.dispose()
-                                handleUserException(this@ApplicationPanelSwing, ex.message)
+                                jlHandleUserException(this@ApplicationPanelSwing, ex.message)
                             } catch (e: Exception) {
                                 pw?.dispose()
-                                handleFatalException(e)
+                                jlHandleFatalException(e)
                             }
 
                             transButton!!.setEnabled(true)
@@ -241,7 +241,7 @@ class ApplicationPanelSwing
                                     jtp!!.setSelectedComponent(plp)
                                 }
                                 val parentComponent = pw ?: plp
-                                LabelDialog(
+                                jlHandleUserMessage(
                                     parentComponent,
                                     getStringResource(Res.string.gui_generator_stopped_title),
                                     ex.message
@@ -250,10 +250,10 @@ class ApplicationPanelSwing
                                 // System.out.println("generator thread quit");
                             } catch (ex: JuggleExceptionUser) {
                                 pw?.dispose()
-                                handleUserException(this@ApplicationPanelSwing, ex.message)
+                                jlHandleUserException(this@ApplicationPanelSwing, ex.message)
                             } catch (e: Exception) {
                                 pw?.dispose()
-                                handleFatalException(e)
+                                jlHandleFatalException(e)
                             }
 
                             genBusy!!.isVisible = false
@@ -270,7 +270,7 @@ class ApplicationPanelSwing
 
         val gb = GridBagLayout().apply {
             setConstraints(
-                genBusy, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 10, 0, 0))
+                genBusy, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 10, 0, 0))
             )
         }
         val p4 = JPanel().apply {

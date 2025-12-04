@@ -12,11 +12,11 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.jml.JMLPatternList.PatternRecord
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.constraints
+import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import jugglinglab.view.View
 import org.jetbrains.compose.resources.StringResource
@@ -135,9 +135,9 @@ class PatternListPanel private constructor() : JPanel() {
                 PatternWindow(pat.title, pat, ap)
             }
         } catch (jeu: JuggleExceptionUser) {
-            handleUserException(this@PatternListPanel, jeu.message)
+            jlHandleUserException(this@PatternListPanel, jeu.message)
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
         }
     }
 
@@ -264,7 +264,7 @@ class PatternListPanel private constructor() : JPanel() {
         } catch (jei: JuggleExceptionInternal) {
             // any error here cannot be user error since pattern is
             // already animating in another window
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
             return
         }
         val infonode = patnode!!.findNode("info")
@@ -345,12 +345,12 @@ class PatternListPanel private constructor() : JPanel() {
 
         d.contentPane.add(tf)
         gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            tf, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         d.contentPane.add(okButton)
         gb.setConstraints(
             okButton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
         d.getRootPane().setDefaultButton(okButton) // OK button is default
         d.pack()
@@ -457,7 +457,7 @@ class PatternListPanel private constructor() : JPanel() {
                     return true
                 }
             } catch (e: Exception) {
-                handleFatalException(e)
+                jlHandleFatalException(e)
             }
 
             return false
@@ -470,7 +470,7 @@ class PatternListPanel private constructor() : JPanel() {
                 }
 
                 if (!listModel.remove(data.rec)) {
-                    handleFatalException(JuggleExceptionInternal("PLP: exportDone()"))
+                    jlHandleFatalException(JuggleExceptionInternal("PLP: exportDone()"))
                 }
 
                 hasUnsavedChanges = true

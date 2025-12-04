@@ -11,10 +11,8 @@
 
 package jugglinglab.util
 
-import jugglinglab.core.ApplicationWindow
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.core.ApplicationWindow
 import java.awt.Desktop
 import java.io.File
 import java.io.IOException
@@ -87,9 +85,9 @@ class OpenFilesServerMMF : Thread() {
                         } catch (jeu: JuggleExceptionUser) {
                             val message = getStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message
-                            handleUserException(null, msg)
+                            jlHandleUserException(null, msg)
                         } catch (jei: JuggleExceptionInternal) {
-                            handleFatalException(jei)
+                            jlHandleFatalException(jei)
                         }
                     }
                 } else if (line.startsWith("identify")) {
@@ -104,7 +102,7 @@ class OpenFilesServerMMF : Thread() {
                 }
             }
         } catch (ioe: IOException) {
-            handleFatalException(ioe)
+            jlHandleFatalException(ioe)
         } catch (_: InterruptedException) {
             if (jugglinglab.core.Constants.DEBUG_OPEN_SERVER) {
                 println("thread interrupted, deleting temp file")
@@ -192,9 +190,9 @@ class OpenFilesServerMMF : Thread() {
                 writeMessage(bufToserver, "done\u0000")
                 return true
             } catch (ioe: IOException) {
-                handleFatalException(ioe)
+                jlHandleFatalException(ioe)
             } catch (ioe: InterruptedException) {
-                handleFatalException(ioe)
+                jlHandleFatalException(ioe)
             }
 
             return false

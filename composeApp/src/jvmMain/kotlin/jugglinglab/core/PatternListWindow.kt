@@ -11,8 +11,8 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLParser
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -52,7 +52,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                     try {
                         doMenuCommand(MenuCommand.FILE_CLOSE)
                     } catch (je: JuggleException) {
-                        handleFatalException(je)
+                        jlHandleFatalException(je)
                     }
                 }
             })
@@ -193,9 +193,9 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 "online" -> doMenuCommand(MenuCommand.HELP_ONLINE)
             }
         } catch (je: JuggleExceptionUser) {
-            handleUserException(this, je.message)
+            jlHandleUserException(this, je.message)
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
         }
     }
 
@@ -223,13 +223,13 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             MenuCommand.FILE_SAVE -> try {
                 var fname = lastJmlFilename ?: (getTitle() + ".jml")
                 fname = jlSanitizeFilename(fname)
-                jfc.setSelectedFile(File(fname))
-                jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
-                if (jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+                jlJfc.setSelectedFile(File(fname))
+                jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
+                if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
 
-                var f = jfc.selectedFile ?: return
+                var f = jlJfc.selectedFile ?: return
                 if (!f.absolutePath.endsWith(".jml")) {
                     f = File(f.absolutePath + ".jml")
                 }
@@ -260,14 +260,14 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 }
 
                 fname = jlSanitizeFilename(fname)
-                jfc.setSelectedFile(File(fname))
-                jfc.setFileFilter(FileNameExtensionFilter("Text file", "txt"))
+                jlJfc.setSelectedFile(File(fname))
+                jlJfc.setFileFilter(FileNameExtensionFilter("Text file", "txt"))
 
-                if (jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+                if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
 
-                var f = jfc.selectedFile ?: return
+                var f = jlJfc.selectedFile ?: return
                 if (!f.absolutePath.endsWith(".txt")) {
                     f = File(f.absolutePath + ".txt")
                 }
@@ -325,12 +325,12 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
         jd.contentPane.add(tf)
         gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            tf, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         jd.contentPane.add(okbutton)
         gb.setConstraints(
             okbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
         jd.getRootPane().setDefaultButton(okbutton)  // OK button is default
         jd.pack()
@@ -371,7 +371,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                     try {
                         doMenuCommand(MenuCommand.FILE_SAVE)
                     } catch (je: JuggleException) {
-                        handleFatalException(je)
+                        jlHandleFatalException(je)
                         return
                     }
                     if (patternListPanel.hasUnsavedChanges) {

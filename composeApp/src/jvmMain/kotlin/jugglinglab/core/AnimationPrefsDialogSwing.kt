@@ -9,8 +9,8 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
@@ -95,7 +95,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             tfOther.setCaretPosition(0)
         } catch (jeu: JuggleExceptionUser) {
             // any error here can't be a user error
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternal("Anim Prefs Dialog error: " + jeu.message)
             )
         }
@@ -291,7 +291,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             }
         } catch (_: NumberFormatException) {
             val message = getStringResource(Res.string.error_number_format, "width")
-            handleUserException(this@AnimationPrefsDialogSwing, message)
+            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
             tempint = tfHeight.getText().toInt()
@@ -300,7 +300,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             }
         } catch (_: NumberFormatException) {
             val message = getStringResource(Res.string.error_number_format, "height")
-            handleUserException(this@AnimationPrefsDialogSwing, message)
+            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
             tempdouble = tfFps.getText().toDouble()
@@ -309,7 +309,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             }
         } catch (_: NumberFormatException) {
             val message = getStringResource(Res.string.error_number_format, "fps")
-            handleUserException(this@AnimationPrefsDialogSwing, message)
+            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
             tempdouble = tfSlowdown.getText().toDouble()
@@ -318,7 +318,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             }
         } catch (_: NumberFormatException) {
             val message = getStringResource(Res.string.error_number_format, "slowdown")
-            handleUserException(this@AnimationPrefsDialogSwing, message)
+            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
             tempint = tfBorder.getText().toInt()
@@ -327,7 +327,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             }
         } catch (_: NumberFormatException) {
             val message = getStringResource(Res.string.error_number_format, "border")
-            handleUserException(this@AnimationPrefsDialogSwing, message)
+            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
 
         newjc.showGround = comboShowground.getSelectedIndex()
@@ -341,7 +341,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             try {
                 newjc = AnimationPrefs().fromString(newjc.toString() + ";" + tfOther.getText())
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(this@AnimationPrefsDialogSwing, jeu.message)
+                jlHandleUserException(this@AnimationPrefsDialogSwing, jeu.message)
             }
         }
         return newjc

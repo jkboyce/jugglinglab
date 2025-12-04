@@ -15,8 +15,8 @@ import jugglinglab.path.Path.Companion.newPath
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.newProp
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
@@ -93,7 +93,7 @@ class EditLadderDiagram(
                 aep!!.activateEvent(activeEventitem!!.event)
             }
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
         }
     }
 
@@ -117,7 +117,7 @@ class EditLadderDiagram(
         }
 
         if (activePositionitem == null) {
-            handleFatalException(JuggleExceptionInternalWithPattern("ELD: position not found", pat))
+            jlHandleFatalException(JuggleExceptionInternalWithPattern("ELD: position not found", pat))
         } else if (aep != null) {
             aep!!.activatePosition(activePositionitem!!.position)
         }
@@ -142,7 +142,7 @@ class EditLadderDiagram(
             // should never put the pattern into an invalid state -- it is their
             // responsibility to validate input and handle errors. So we
             // shouldn't ever get here.
-            handleFatalException(je)
+            jlHandleFatalException(je)
             parentFrame?.dispose()
             parentFrame = null
         }
@@ -233,7 +233,7 @@ class EditLadderDiagram(
                     try {
                         aep2.activateEvent(activeEventitem!!.event)
                     } catch (jei: JuggleExceptionInternal) {
-                        handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
+                        jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                     }
                 }
                 if (activePositionitem != null) {
@@ -260,7 +260,7 @@ class EditLadderDiagram(
                             try {
                                 aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
-                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
+                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                             }
                         }
                         if (activeEventitem!!.type == LadderItem.TYPE_TRANSITION) {
@@ -356,7 +356,7 @@ class EditLadderDiagram(
                             try {
                                 aep2.activateEvent(activeEventitem!!.event)
                             } catch (jei: JuggleExceptionInternal) {
-                                handleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
+                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
                             }
                         }
                         if (activePositionitem != null) {
@@ -382,7 +382,7 @@ class EditLadderDiagram(
                     makePopupMenu(popupitem).show(this@EditLadderDiagram, me.getX(), me.getY())
                 }
 
-                STATE_POPUP -> handleFatalException(
+                STATE_POPUP -> jlHandleFatalException(
                     JuggleExceptionInternalWithPattern("tried to enter POPUP state while already in it", pat)
                 )
             }
@@ -510,7 +510,7 @@ class EditLadderDiagram(
                         ev = ev.previous
                     }
                     if (ev == null) {
-                        handleFatalException(
+                        jlHandleFatalException(
                             JuggleExceptionInternalWithPattern("Null event 1 in mousePressed()", pat)
                         )
                         parentFrame?.dispose()
@@ -544,7 +544,7 @@ class EditLadderDiagram(
                         ev = ev.next
                     }
                     if (ev == null) {
-                        handleFatalException(
+                        jlHandleFatalException(
                             JuggleExceptionInternalWithPattern("Null event 2 in mousePressed()", pat)
                         )
                         parentFrame?.dispose()
@@ -773,7 +773,7 @@ class EditLadderDiagram(
                     val tr =
                         ev.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING)
                     if (tr == null) {
-                        handleFatalException(
+                        jlHandleFatalException(
                             JuggleExceptionInternalWithPattern("Null transition in removing hold", pat)
                         )
                         parentFrame?.dispose()
@@ -931,7 +931,7 @@ class EditLadderDiagram(
             "changetosoftcatch" -> changeCatchStyleTo(JMLTransition.TRANS_SOFTCATCH)
             "changetograbcatch" -> changeCatchStyleTo(JMLTransition.TRANS_GRABCATCH)
             "makelast" -> makeLastInEvent()
-            else -> handleFatalException(
+            else -> jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("unknown item in ELD popup", pat)
             )
         }
@@ -966,7 +966,7 @@ class EditLadderDiagram(
         try {
             pat.getHandCoordinate(juggler, hand, evtime, evpos)
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
             parentFrame?.dispose()
             parentFrame = null
             return null
@@ -1014,7 +1014,7 @@ class EditLadderDiagram(
     private fun removeEvent() {
         // makePopupMenu() ensures that the event only has hold transitions
         if (popupitem !is LadderEventItem) {
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram illegal remove event", pat)
             )
             return
@@ -1073,7 +1073,7 @@ class EditLadderDiagram(
 
     private fun removePosition() {
         if (popupitem !is LadderPositionItem) {
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram illegal remove position", pat)
             )
             return
@@ -1089,7 +1089,7 @@ class EditLadderDiagram(
 
     private fun defineProp() {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternalWithPattern("defineProp() null popupitem", pat))
+            jlHandleFatalException(JuggleExceptionInternalWithPattern("defineProp() null popupitem", pat))
             return
         }
 
@@ -1097,7 +1097,7 @@ class EditLadderDiagram(
         val pn: Int
         if (popupitem is LadderEventItem) {
             if (popupitem!!.type != LadderItem.TYPE_TRANSITION) {
-                handleFatalException(
+                jlHandleFatalException(
                     JuggleExceptionInternalWithPattern("defineProp() bad LadderItem type", pat)
                 )
                 return
@@ -1127,7 +1127,7 @@ class EditLadderDiagram(
         val lab = JLabel(getStringResource(Res.string.gui_prop_type))
         p1.add(lab)
         gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
 
         val p2 = JPanel()
@@ -1136,7 +1136,7 @@ class EditLadderDiagram(
         val cb1 = JComboBox(prtypes.toTypedArray())
         p1.add(cb1)
         gb.setConstraints(
-            cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
+            cb1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
         cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
@@ -1148,7 +1148,7 @@ class EditLadderDiagram(
                 }
                 makeParametersPanel(p2, pt.parameterDescriptors)
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(jd, jeu.message)
+                jlHandleUserException(jd, jeu.message)
                 return@addActionListener
             }
             jd.pack()
@@ -1167,13 +1167,13 @@ class EditLadderDiagram(
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
         val okbutton = JButton(getStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
-            okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
+            okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
         okbutton.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
@@ -1184,7 +1184,7 @@ class EditLadderDiagram(
                 mod = this.parameterList
                 JMLProp(type.lowercase(Locale.getDefault()), mod).isColorable
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(parentFrame, jeu.message)
+                jlHandleUserException(parentFrame, jeu.message)
                 return@addActionListener
             }
 
@@ -1247,15 +1247,15 @@ class EditLadderDiagram(
 
         jd.contentPane.add(p1)
         gb.setConstraints(
-            p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            p1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         jd.contentPane.add(p2)
         gb.setConstraints(
-            p2, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
+            p2, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
         jd.contentPane.add(p3)
         gb.setConstraints(
-            p3, constraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
+            p3, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
         )
         jd.getRootPane().setDefaultButton(okbutton) // OK button is default
 
@@ -1271,7 +1271,7 @@ class EditLadderDiagram(
 
     private fun defineThrow() {
         if (popupitem !is LadderEventItem) {
-            handleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pat))
+            jlHandleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pat))
             return
         }
         var ev = (popupitem as LadderEventItem).event
@@ -1291,7 +1291,7 @@ class EditLadderDiagram(
         val lab = JLabel(getStringResource(Res.string.gui_throw_type))
         p1.add(lab)
         gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
 
         val p2 = JPanel()
@@ -1300,7 +1300,7 @@ class EditLadderDiagram(
         val cb1 = JComboBox(pptypes.toTypedArray())
         p1.add(cb1)
         gb.setConstraints(
-            cb1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
+            cb1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
         cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
@@ -1312,7 +1312,7 @@ class EditLadderDiagram(
                 }
                 makeParametersPanel(p2, ppt!!.parameterDescriptors)
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(jd, jeu.message)
+                jlHandleUserException(jd, jeu.message)
                 return@addActionListener
             }
             jd.pack()
@@ -1331,13 +1331,13 @@ class EditLadderDiagram(
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
         val okbutton = JButton(getStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
-            okbutton, constraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
+            okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
         okbutton.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
@@ -1347,7 +1347,7 @@ class EditLadderDiagram(
             try {
                 mod = this.parameterList
             } catch (jeu: JuggleExceptionUser) {
-                handleUserException(parentFrame, jeu.message)
+                jlHandleUserException(parentFrame, jeu.message)
                 return@addActionListener
             }
 
@@ -1360,15 +1360,15 @@ class EditLadderDiagram(
 
         jd.contentPane.add(p1)
         gb.setConstraints(
-            p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            p1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         jd.contentPane.add(p2)
         gb.setConstraints(
-            p2, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
+            p2, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
         jd.contentPane.add(p3)
         gb.setConstraints(
-            p3, constraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
+            p3, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(10, 10, 10, 10))
         )
         jd.getRootPane().setDefaultButton(okbutton) // OK button is default
 
@@ -1381,11 +1381,11 @@ class EditLadderDiagram(
 
     private fun changeCatchStyleTo(type: Int) {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 10", pat))
+            jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 10", pat))
             return
         }
         if (popupitem !is LadderEventItem) {
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram change to catch class format", pat)
             )
             return
@@ -1404,11 +1404,11 @@ class EditLadderDiagram(
 
     private fun makeLastInEvent() {
         if (popupitem == null) {
-            handleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 8", pat))
+            jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 8", pat))
             return
         }
         if (popupitem !is LadderEventItem) {
-            handleFatalException(
+            jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram make last transition class format", pat)
             )
             return
@@ -1446,14 +1446,14 @@ class EditLadderDiagram(
             val lab = JLabel(pd[i].name)
             pdp.add(lab)
             gb.setConstraints(
-                lab, constraints(GridBagConstraints.LINE_START, 0, i, Insets(0, 0, 0, 0))
+                lab, jlConstraints(GridBagConstraints.LINE_START, 0, i, Insets(0, 0, 0, 0))
             )
             if (pd[i].type == ParameterDescriptor.TYPE_BOOLEAN) {
                 // JComboBox jcb = new JComboBox(booleanList);
                 val jcb = JCheckBox()
                 pdp.add(jcb)
                 gb.setConstraints(
-                    jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(2, 5, 2, 0))
+                    jcb, jlConstraints(GridBagConstraints.LINE_START, 1, i, Insets(2, 5, 2, 0))
                 )
                 dialogControls!!.add(jcb)
                 val def = (pd[i].value) as Boolean
@@ -1463,7 +1463,7 @@ class EditLadderDiagram(
                 val tf = JTextField(7)
                 pdp.add(tf)
                 gb.setConstraints(
-                    tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                    tf, jlConstraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                 )
                 dialogControls!!.add(tf)
                 val def = (pd[i].value) as Double?
@@ -1474,7 +1474,7 @@ class EditLadderDiagram(
                 jcb.setMaximumRowCount(15)
                 pdp.add(jcb)
                 gb.setConstraints(
-                    jcb, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                    jcb, jlConstraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                 )
                 dialogControls!!.add(jcb)
 
@@ -1489,7 +1489,7 @@ class EditLadderDiagram(
                 val tf = JTextField(4)
                 pdp.add(tf)
                 gb.setConstraints(
-                    tf, constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
+                    tf, jlConstraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 0, 0))
                 )
                 dialogControls!!.add(tf)
                 val def = (pd[i].value) as Int?
@@ -1516,7 +1516,7 @@ class EditLadderDiagram(
                 label.addMouseListener(
                     object : MouseAdapter() {
                         override fun mouseClicked(e: MouseEvent?) {
-                            jfc.setFileFilter(
+                            jlJfc.setFileFilter(
                                 FileNameExtensionFilter(
                                     "Image file",
                                     "jpg",
@@ -1525,19 +1525,19 @@ class EditLadderDiagram(
                                     "png"
                                 )
                             )
-                            val result = jfc.showOpenDialog(this@EditLadderDiagram)
+                            val result = jlJfc.showOpenDialog(this@EditLadderDiagram)
                             if (result != JFileChooser.APPROVE_OPTION) {
                                 return
                             }
 
                             try {
                                 // Rebuild the parameter panel
-                                pd[0].value = jfc.selectedFile.toURI().toURL().toString()
+                                pd[0].value = jlJfc.selectedFile.toURI().toURL().toString()
                                 makeParametersPanel(jp, pd)
                                 ((jp.getTopLevelAncestor()) as JDialog).pack()
                             } catch (_: MalformedURLException) {
                                 // this should never happen
-                                handleFatalException(
+                                jlHandleFatalException(
                                     JuggleExceptionUser(getStringResource(Res.string.error_malformed_url))
                                 )
                             }
@@ -1547,7 +1547,7 @@ class EditLadderDiagram(
                 pdp.add(label)
                 gb.setConstraints(
                     label,
-                    constraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 5, 0))
+                    jlConstraints(GridBagConstraints.LINE_START, 1, i, Insets(0, 5, 5, 0))
                 )
                 dialogControls!!.add(label)
             }
@@ -1555,7 +1555,7 @@ class EditLadderDiagram(
 
         jp.add(pdp)
         gb.setConstraints(
-            pdp, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(10, 10, 0, 10))
+            pdp, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(10, 10, 0, 10))
         )
     }
 

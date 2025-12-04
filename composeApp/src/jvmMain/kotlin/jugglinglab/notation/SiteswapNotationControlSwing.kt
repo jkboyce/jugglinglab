@@ -13,7 +13,7 @@ import jugglinglab.prop.Prop
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlToStringRounded
-import jugglinglab.util.constraints
+import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
@@ -49,42 +49,42 @@ class SiteswapNotationControlSwing: JPanel() {
         val lab1 = JLabel(getStringResource(Res.string.gui_pattern))
         p1.add(lab1)
         gb.setConstraints(
-            lab1, constraints(
+            lab1, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 0, Insets(BORDER, BORDER, 0, HSPACING)
             )
         )
         tf1 = JTextField(15)
         p1.add(tf1)
         gb.setConstraints(
-            tf1, constraints(
+            tf1, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 0, Insets(BORDER, 0, 0, BORDER)
             )
         )
         val lab3 = JLabel(getStringResource(Res.string.gui_beats_per_second))
         p1.add(lab3)
         gb.setConstraints(
-            lab3, constraints(
+            lab3, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 1, Insets(2 * VSPACING, BORDER, 0, HSPACING)
             )
         )
         tf3 = JTextField(4)
         p1.add(tf3)
         gb.setConstraints(
-            tf3, constraints(
+            tf3, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 1, Insets(2 * VSPACING, 0, 0, BORDER)
             )
         )
         val lab2 = JLabel(getStringResource(Res.string.gui_dwell_beats))
         p1.add(lab2)
         gb.setConstraints(
-            lab2, constraints(
+            lab2, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 2, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
         tf2 = JTextField(4)
         p1.add(tf2)
         gb.setConstraints(
-            tf2, constraints(
+            tf2, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 2, Insets(VSPACING, 0, 0, BORDER)
             )
         )
@@ -92,7 +92,7 @@ class SiteswapNotationControlSwing: JPanel() {
         val lab4 = JLabel(getStringResource(Res.string.gui_hand_movement))
         p1.add(lab4)
         gb.setConstraints(
-            lab4, constraints(
+            lab4, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 3, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
@@ -104,14 +104,14 @@ class SiteswapNotationControlSwing: JPanel() {
         cb1.addItem(getStringResource(Res.string.gui_mhnhands_name_custom))
         p1.add(cb1)
         gb.setConstraints(
-            cb1, constraints(
+            cb1, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 3, Insets(VSPACING, 0, 0, BORDER)
             )
         )
         tf4 = JTextField(15)
         p1.add(tf4)
         gb.setConstraints(
-            tf4, constraints(
+            tf4, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 4, Insets(5, 0, 0, BORDER)
             )
         )
@@ -146,7 +146,7 @@ class SiteswapNotationControlSwing: JPanel() {
         val lab5 = JLabel(getStringResource(Res.string.gui_body_movement))
         p1.add(lab5)
         gb.setConstraints(
-            lab5, constraints(
+            lab5, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 5, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
@@ -158,14 +158,14 @@ class SiteswapNotationControlSwing: JPanel() {
         cb2.addItem(getStringResource(Res.string.gui_mhnbody_name_custom))
         p1.add(cb2)
         gb.setConstraints(
-            cb2, constraints(
+            cb2, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 5, Insets(VSPACING, 0, 0, BORDER)
             )
         )
         tf5 = JTextField(15)
         p1.add(tf5)
         gb.setConstraints(
-            tf5, constraints(
+            tf5, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 6, Insets(5, 0, 0, BORDER)
             )
         )
@@ -199,7 +199,7 @@ class SiteswapNotationControlSwing: JPanel() {
         val propLabel = JLabel(getStringResource(Res.string.gui_prop_type))
         p1.add(propLabel)
         gb.setConstraints(
-            propLabel, constraints(
+            propLabel, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 7, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
@@ -209,7 +209,7 @@ class SiteswapNotationControlSwing: JPanel() {
         }
         p1.add(cb3)
         gb.setConstraints(
-            cb3, constraints(
+            cb3, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 7, Insets(VSPACING, 0, 0, BORDER)
             )
         )
@@ -217,13 +217,13 @@ class SiteswapNotationControlSwing: JPanel() {
         val lab6 = JLabel(getStringResource(Res.string.gui_manual_settings))
         p1.add(lab6)
         gb.setConstraints(
-            lab6, constraints(
+            lab6, jlConstraints(
                 GridBagConstraints.LINE_START, 0, 8, Insets(2 * VSPACING, BORDER, 0, HSPACING)
             )
         )
         tf6 = JTextField(25)
         p1.add(tf6)
-        val gbc6: GridBagConstraints = constraints(
+        val gbc6: GridBagConstraints = jlConstraints(
             GridBagConstraints.LINE_END, 0, 9, Insets(5, BORDER + HSPACING, 0, BORDER)
         )
         gbc6.gridwidth = 2

@@ -9,8 +9,8 @@ package jugglinglab.view
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLPattern
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.*
@@ -90,9 +90,9 @@ class SelectionView(dim: Dimension) : View() {
                             addToUndoList(ja[CENTER].pattern!!)
                         }
                     } catch (jeu: JuggleExceptionUser) {
-                        handleUserException(parent, jeu.message)
+                        jlHandleUserException(parent, jeu.message)
                     } catch (jei: JuggleExceptionInternal) {
-                        handleFatalException(jei)
+                        jlHandleFatalException(jei)
                     }
                 }
             })

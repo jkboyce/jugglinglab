@@ -236,7 +236,7 @@ fun getImageResource(source: String): ImageBitmap {
     return try {
         if (source.contains('/')) {
             // assume it's a URL and load accordingly
-            loadComposeImageFromUrl(source)
+            jlLoadComposeImageFromUrl(source)
         } else {
             // load from a Compose resource
             runBlocking {
@@ -250,7 +250,7 @@ fun getImageResource(source: String): ImageBitmap {
     }
 }
 
-expect fun loadComposeImageFromUrl(urlString: String): ImageBitmap
+expect fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap
 
 //------------------------------------------------------------------------------
 // Other
@@ -258,14 +258,14 @@ expect fun loadComposeImageFromUrl(urlString: String): ImageBitmap
 
 // Return the native screen refresh rate.
 
-expect fun getScreenFps(): Double
+expect fun jlGetScreenFps(): Double
 
 // Return platform information.
 
-expect fun getCurrentPlatform(): String
+expect fun jlGetCurrentPlatform(): String
 
-expect fun getAboutBoxPlatform(): String
+expect fun jlGetAboutBoxPlatform(): String
 
 // Parse a siteswap pattern.
 
-expect fun parseSiteswapPattern(pattern: String): SiteswapTreeItem
+expect fun jlParseSiteswapPattern(pattern: String): SiteswapTreeItem

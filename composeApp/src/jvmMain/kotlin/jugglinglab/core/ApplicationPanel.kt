@@ -24,8 +24,8 @@ import jugglinglab.notation.SiteswapPattern
 import jugglinglab.notation.SiteswapNotationControl
 import jugglinglab.notation.Pattern
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -67,7 +67,7 @@ open class ApplicationPanel(
                 }
             }
         } catch (e: Exception) {
-            handleFatalException(e)
+            jlHandleFatalException(e)
         }
     }
 
@@ -164,9 +164,9 @@ open class ApplicationPanel(
                     }
                 }
             } catch (je: JuggleExceptionUser) {
-                handleUserException(this@ApplicationPanel, je.message)
+                jlHandleUserException(this@ApplicationPanel, je.message)
             } catch (e: Exception) {
-                handleFatalException(e)
+                jlHandleFatalException(e)
             }
         }
     }
@@ -206,7 +206,7 @@ open class ApplicationPanel(
                                 jtp!!.setSelectedComponent(plp)
                             }*/
                             val parentComponent = pw ?: plp
-                            LabelDialog(
+                            jlHandleUserMessage(
                                 parentComponent,
                                 getStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
@@ -215,10 +215,10 @@ open class ApplicationPanel(
                             // System.out.println("generator thread quit");
                         } catch (ex: JuggleExceptionUser) {
                             pw?.dispose()
-                            handleUserException(this@ApplicationPanel, ex.message)
+                            jlHandleUserException(this@ApplicationPanel, ex.message)
                         } catch (e: Exception) {
                             pw?.dispose()
-                            handleFatalException(e)
+                            jlHandleFatalException(e)
                         }
                     }
                 }
@@ -263,7 +263,7 @@ open class ApplicationPanel(
                                 jtp!!.setSelectedComponent(plp)
                             }*/
                             val parentComponent = pw ?: plp
-                            LabelDialog(
+                            jlHandleUserMessage(
                                 parentComponent,
                                 getStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
@@ -271,10 +271,10 @@ open class ApplicationPanel(
                         } catch (_: JuggleExceptionInterrupted) {
                         } catch (ex: JuggleExceptionUser) {
                             pw?.dispose()
-                            handleUserException(this@ApplicationPanel, ex.message)
+                            jlHandleUserException(this@ApplicationPanel, ex.message)
                         } catch (e: Exception) {
                             pw?.dispose()
-                            handleFatalException(e)
+                            jlHandleFatalException(e)
                         }
                         //genBusy!!.isVisible = false
                         //genButton!!.setEnabled(true)

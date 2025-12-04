@@ -19,7 +19,6 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.URI
 import java.net.URISyntaxException
-import java.text.MessageFormat
 import java.util.*
 import javax.swing.*
 
@@ -99,7 +98,7 @@ class UpdateChecker : Thread() {
             text1.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text1)
             gb.setConstraints(
-                text1, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, 25, 0, 25))
+                text1, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, 25, 0, 25))
             )
 
             val message2 = getStringResource(Res.string.gui_new_version_text2, jugglinglab.core.Constants.VERSION)
@@ -107,14 +106,14 @@ class UpdateChecker : Thread() {
             text2.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text2)
             gb.setConstraints(
-                text2, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 25))
+                text2, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 25))
             )
 
             val text3 = JLabel(getStringResource(Res.string.gui_new_version_text3))
             text3.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text3)
             gb.setConstraints(
-                text3, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(20, 25, 5, 25))
+                text3, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(20, 25, 5, 25))
             )
 
             val butp = JPanel()
@@ -140,10 +139,11 @@ class UpdateChecker : Thread() {
                 }
 
                 if (!browseSupported || browseProblem) {
-                    val template3 = getStringResource(Res.string.gui_download_message)
-                    val arguments3 = arrayOf<Any?>(jugglinglab.core.Constants.DOWNLOAD_URL)
-                    val message = MessageFormat.format(template3, *arguments3)
-                    LabelDialog(updateBox, title, message)
+                    val message = getStringResource(
+                        Res.string.gui_download_message,
+                        jugglinglab.core.Constants.DOWNLOAD_URL
+                    )
+                    jlHandleUserMessage(updateBox, title, message)
                 }
                 updateBox.dispose()
             }
@@ -151,7 +151,7 @@ class UpdateChecker : Thread() {
 
             updatePanel.add(butp)
             gb.setConstraints(
-                butp, constraints(GridBagConstraints.LINE_END, 0, 4, Insets(10, 10, 10, 10))
+                butp, jlConstraints(GridBagConstraints.LINE_END, 0, 4, Insets(10, 10, 10, 10))
             )
 
             updatePanel.setOpaque(true)

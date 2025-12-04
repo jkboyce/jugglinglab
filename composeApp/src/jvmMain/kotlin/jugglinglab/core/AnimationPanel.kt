@@ -12,7 +12,7 @@ package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
-import jugglinglab.util.ErrorDialog.handleFatalException
+import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.Color
@@ -485,7 +485,7 @@ open class AnimationPanel : JPanel(), Runnable {
                 animator.drawFrame(this.time, g, draggingCamera, true)
             } catch (jei: JuggleExceptionInternal) {
                 killAnimationThread()
-                handleFatalException(jei)
+                jlHandleFatalException(jei)
             }
         }
     }

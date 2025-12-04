@@ -9,7 +9,7 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.getAboutBoxPlatform
+import jugglinglab.util.jlGetAboutBoxPlatform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -70,7 +70,7 @@ fun AboutContent(onCloseRequest: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                getAboutBoxPlatform(),
+                jlGetAboutBoxPlatform(),
                 style = MaterialTheme.typography.caption
             )
 

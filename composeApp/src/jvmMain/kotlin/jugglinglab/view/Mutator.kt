@@ -41,7 +41,7 @@ import jugglinglab.jml.JMLTransition
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.constraints
+import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -453,33 +453,33 @@ class Mutator {
 
         var lab = JLabel(getStringResource(Res.string.gui_mutator_header1))
         gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 10, 0))
+            lab, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 10, 0))
         )
         controls.add(lab)
 
         this.cb = ArrayList<JCheckBox>(5)
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type1), true))
-        gb.setConstraints(cb[0], constraints(GridBagConstraints.LINE_START, 0, 1, null))
+        gb.setConstraints(cb[0], jlConstraints(GridBagConstraints.LINE_START, 0, 1, null))
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type2), true))
-        gb.setConstraints(cb[1], constraints(GridBagConstraints.LINE_START, 0, 2, null))
+        gb.setConstraints(cb[1], jlConstraints(GridBagConstraints.LINE_START, 0, 2, null))
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type3), true))
-        gb.setConstraints(cb[2], constraints(GridBagConstraints.LINE_START, 0, 3, null))
+        gb.setConstraints(cb[2], jlConstraints(GridBagConstraints.LINE_START, 0, 3, null))
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type4), true))
-        gb.setConstraints(cb[3], constraints(GridBagConstraints.LINE_START, 0, 4, null))
+        gb.setConstraints(cb[3], jlConstraints(GridBagConstraints.LINE_START, 0, 4, null))
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type5), true))
-        gb.setConstraints(cb[4], constraints(GridBagConstraints.LINE_START, 0, 5, null))
+        gb.setConstraints(cb[4], jlConstraints(GridBagConstraints.LINE_START, 0, 5, null))
         for (checkbox in cb) {
             controls.add(checkbox)
         }
 
         lab = JLabel(getStringResource(Res.string.gui_mutator_header2))
         gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_START, 0, 6, Insets(20, 0, 10, 0))
+            lab, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(20, 0, 10, 0))
         )
         controls.add(lab)
 
         this.sliderRate = JSlider(SwingConstants.HORIZONTAL, 0, 6, 3)
-        val gbc: GridBagConstraints = constraints(GridBagConstraints.LINE_START, 0, 7, null)
+        val gbc: GridBagConstraints = jlConstraints(GridBagConstraints.LINE_START, 0, 7, null)
         gbc.fill = GridBagConstraints.HORIZONTAL
         gb.setConstraints(sliderRate, gbc)
         sliderRate.setMajorTickSpacing(1)

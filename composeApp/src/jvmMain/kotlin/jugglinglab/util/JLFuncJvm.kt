@@ -10,28 +10,28 @@
 
 package jugglinglab.util
 
-import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.JugglingLab
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.SiteswapParser
 import jugglinglab.notation.ssparser.SiteswapTreeItem
-import java.awt.Component
-import java.awt.GraphicsEnvironment
-import java.awt.GridBagConstraints
-import java.awt.Insets
-import java.awt.MediaTracker
+import java.awt.*
+import java.awt.event.ActionEvent
 import java.net.URI
 import java.text.*
 import java.io.IOException
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Locale
 import java.util.prefs.Preferences
 import javax.imageio.ImageIO
-import javax.swing.JFileChooser
-import javax.swing.JOptionPane
+import javax.swing.*
 import kotlin.math.min
+import kotlin.system.exitProcess
 
 //------------------------------------------------------------------------------
 // Helpers for converting numbers to/from strings
@@ -68,10 +68,138 @@ actual fun jlToStringRounded(value: Double, digits: Int): String {
 }
 
 //------------------------------------------------------------------------------
+// Helpers for message display and error handling
+//------------------------------------------------------------------------------
+
+// Show an informational message dialog.
+
+fun jlHandleUserMessage(parent: Component?, title: String?, msg: String?) {
+    SwingUtilities.invokeLater {
+        JOptionPane.showMessageDialog(
+            parent,
+            msg,
+            title,
+            JOptionPane.INFORMATION_MESSAGE
+        )
+    }
+}
+
+// Show a message dialog for a recoverable user error.
+
+fun jlHandleUserException(parent: Component?, msg: String?) {
+    SwingUtilities.invokeLater {
+        JOptionPane.showMessageDialog(
+            parent,
+            msg,
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        )
+    }
+}
+
+// Handle a fatal exception by presenting a window to the user with detailed
+// debugging information. The intent is that these exceptions only happen in
+// the event of a bug in Juggling Lab, and so we invite users to email us this
+// information.
+
+fun jlHandleFatalException(e: Exception) {
+    SwingUtilities.invokeLater { showInternalErrorWindow(e) }
+}
+
+private fun showInternalErrorWindow(e: Exception) {
+    // diagnostic information displayed in the window
+    val message = run {
+        val sw = StringWriter()
+        sw.write(getStringResource(Res.string.error_internal_msg_part1) + "\n\n")
+        sw.write(getStringResource(Res.string.error_internal_msg_part2) + "\n")
+        sw.write(getStringResource(Res.string.error_internal_msg_part3) + "\n\n")
+        sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
+        e.printStackTrace(PrintWriter(sw))
+        if (e is JuggleExceptionInternalWithPattern) {
+            val pat = e.pat
+            if (pat != null) {
+                sw.write("\nJML pattern:\n")
+                sw.write(pat.toString())
+            }
+        }
+        sw.write("\n")
+        sw.toString()
+    }
+
+    val exframe = JFrame(getStringResource(Res.string.error_internal_title))
+
+    val exmsg1 = getStringResource(Res.string.error_internal_part1)
+    val exmsg2 = getStringResource(Res.string.error_internal_part2)
+    val exmsg3 = getStringResource(Res.string.error_internal_part3)
+    val exmsg4 = getStringResource(Res.string.error_internal_part4)
+    val exmsg5 = getStringResource(Res.string.error_internal_part5)
+
+    val text1 = JLabel(exmsg1).apply { setFont(Font("SansSerif", Font.BOLD, 12)) }
+    val text2 = JLabel(exmsg2).apply { setFont(Font("SansSerif", Font.PLAIN, 12)) }
+    val text3 = JLabel(exmsg3).apply { setFont(Font("SansSerif", Font.PLAIN, 12)) }
+    val text4 = JLabel(exmsg4).apply { setFont(Font("SansSerif", Font.PLAIN, 12)) }
+    val text5 = JLabel(exmsg5).apply { setFont(Font("SansSerif", Font.BOLD, 12)) }
+
+    val dumpta = JTextArea().apply {
+        text = message
+        setCaretPosition(0)
+    }
+    val jsp = JScrollPane(dumpta).apply {
+        preferredSize = Dimension(450, 300)
+    }
+    val quitbutton = JButton(getStringResource(Res.string.gui_quit)).apply {
+        addActionListener { _: ActionEvent? -> exitProcess(0) }
+    }
+    val okbutton = JButton(getStringResource(Res.string.gui_continue)).apply {
+        addActionListener { _: ActionEvent? ->
+            exframe.isVisible = false
+            exframe.dispose()
+        }
+    }
+    val butp = JPanel().apply {
+        setLayout(FlowLayout(FlowLayout.LEADING))
+        add(quitbutton)
+        add(okbutton)
+    }
+
+    val gb = GridBagLayout().apply {
+        setConstraints(text1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10)))
+        setConstraints(text2, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(10, 10, 0, 10)))
+        setConstraints(text3, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 10)))
+        setConstraints(text4, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 10)))
+        setConstraints(text5, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(10, 10, 10, 10)))
+        setConstraints(jsp, jlConstraints(GridBagConstraints.CENTER, 0, 5, Insets(10, 10, 10, 10)))
+        setConstraints(butp, jlConstraints(GridBagConstraints.LINE_END, 0, 6, Insets(10, 10, 10, 10)))
+    }
+
+    val exp = JPanel().apply {
+        setOpaque(true)
+        setLayout(gb)
+        add(text1)
+        add(text2)
+        add(text3)
+        add(text4)
+        add(text5)
+        add(jsp)
+        add(butp)
+    }
+
+    exframe.apply {
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
+        contentPane = exp
+        applyComponentOrientation(ComponentOrientation.getOrientation(Locale.getDefault()))
+        pack()
+        isResizable = false
+        setLocationRelativeTo(null)  // center frame on screen
+        isVisible = true
+    }
+}
+
+//------------------------------------------------------------------------------
 // Helpers for GridBagLayout
 //------------------------------------------------------------------------------
 
-fun constraints(location: Int, gridX: Int, gridY: Int): GridBagConstraints {
+fun jlConstraints(location: Int, gridX: Int, gridY: Int): GridBagConstraints {
     return GridBagConstraints().apply {
         anchor = location
         fill = GridBagConstraints.NONE
@@ -84,8 +212,8 @@ fun constraints(location: Int, gridX: Int, gridY: Int): GridBagConstraints {
     }
 }
 
-fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagConstraints {
-    return constraints(location, gridx, gridy).apply {
+fun jlConstraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagConstraints {
+    return jlConstraints(location, gridx, gridy).apply {
         insets = ins ?: Insets(0, 0, 0, 0)
     }
 }
@@ -94,7 +222,7 @@ fun constraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagCon
 // Helpers for file opening/saving files
 //------------------------------------------------------------------------------
 
-val jfc: JFileChooser by lazy {
+val jlJfc: JFileChooser by lazy {
     object : JFileChooser() {
         override fun approveSelection() {
             val f = selectedFile
@@ -206,7 +334,7 @@ fun jlErrorIfNotSanitized(fname: String) {
 // In the event of a problem, throw a JuggleExceptionUser with a relevant message.
 
 @Throws(JuggleExceptionUser::class)
-actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
+actual fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap {
     try {
         val awtImage = ImageIO.read(URI(urlString).toURL())
         val mt = MediaTracker(object : Component() {})
@@ -236,12 +364,12 @@ actual fun loadComposeImageFromUrl(urlString: String): ImageBitmap {
 fun Color.toAwtColor(): java.awt.Color {
     // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
     // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
-    return java.awt.Color(this.toArgb(), true)
+    return Color(this.toArgb(), true)
 }
 
 // Return the native screen refresh rate.
 
-actual fun getScreenFps(): Double {
+actual fun jlGetScreenFps(): Double {
     var fpsScreen = 0.0
     try {
         val devices = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
@@ -257,11 +385,11 @@ actual fun getScreenFps(): Double {
 
 // Return platform information.
 
-actual fun getCurrentPlatform(): String {
+actual fun jlGetCurrentPlatform(): String {
     return System.getProperty("os.name") + " " + System.getProperty("os.version")
 }
 
-actual fun getAboutBoxPlatform(): String {
+actual fun jlGetAboutBoxPlatform(): String {
     val javaVersion = System.getProperty("java.version")
     val javaVmName = System.getProperty("java.vm.name")
     val javaVmVersion = System.getProperty("java.vm.version")
@@ -271,11 +399,11 @@ actual fun getAboutBoxPlatform(): String {
 
 // Return true if Swing-based UI should be used.
 
-fun isSwing(): Boolean {
+fun jlIsSwing(): Boolean {
     val isCompose = System.getProperty("JL_compose_ui")
     return !(isCompose?.equals("true", ignoreCase = true) ?: false)
 }
 
-actual fun parseSiteswapPattern(pattern: String): SiteswapTreeItem {
+actual fun jlParseSiteswapPattern(pattern: String): SiteswapTreeItem {
     return SiteswapParser.parsePattern(pattern)
 }

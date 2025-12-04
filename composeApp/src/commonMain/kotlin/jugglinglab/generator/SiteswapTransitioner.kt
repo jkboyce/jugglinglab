@@ -17,7 +17,7 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionInterrupted
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.getStringResource
-import jugglinglab.util.getCurrentPlatform
+import jugglinglab.util.jlGetCurrentPlatform
 import kotlin.math.max
 import kotlin.math.min
 
@@ -1151,7 +1151,7 @@ class SiteswapTransitioner : Transitioner() {
                 output += getStringResource(Res.string.gui_gpl_message) + "\n\n"
 
                 var intro = getStringResource(Res.string.gui_transitioner_intro)
-                if (getCurrentPlatform().startsWith("windows", ignoreCase = true)) {
+                if (jlGetCurrentPlatform().startsWith("windows", ignoreCase = true)) {
                     // replace single quotes with double quotes in Windows examples
                     intro = intro.replace("'", "\"")
                 }

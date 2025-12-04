@@ -17,8 +17,8 @@ import jugglinglab.jml.JMLPattern
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.*
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -61,7 +61,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     try {
                         doMenuCommand(MenuCommand.FILE_CLOSE)
                     } catch (je: JuggleException) {
-                        handleFatalException(je)
+                        jlHandleFatalException(je)
                     }
                 }
             })
@@ -76,7 +76,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     doMenuCommand(MenuCommand.VIEW_ZOOMOUT)
                 }
             } catch (je: JuggleException) {
-                handleFatalException(je)
+                jlHandleFatalException(je)
             }
         }
 
@@ -429,9 +429,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 }
             }
         } catch (je: JuggleExceptionUser) {
-            handleUserException(this, je.message)
+            jlHandleUserException(this, je.message)
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
         }
     }
 
@@ -493,14 +493,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     fname = getTitle() + ".jml"  // default filename
                 }
                 fname = jlSanitizeFilename(fname)
-                jfc.setSelectedFile(File(fname))
-                jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
+                jlJfc.setSelectedFile(File(fname))
+                jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
 
-                if (jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+                if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
 
-                var f = jfc.selectedFile ?: return
+                var f = jlJfc.selectedFile ?: return
                 if (!f.absolutePath.endsWith(".jml")) {
                     f = File(f.absolutePath + ".jml")
                 }
@@ -528,14 +528,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 }
 
                 fname = jlSanitizeFilename(fname)
-                jfc.setSelectedFile(File(fname))
-                jfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
+                jlJfc.setSelectedFile(File(fname))
+                jlJfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
 
-                if (jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+                if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
 
-                var f = jfc.selectedFile ?: return
+                var f = jlJfc.selectedFile ?: return
                 if (!f.absolutePath.endsWith(".gif")) {
                     f = File(f.absolutePath + ".gif")
                 }
@@ -611,7 +611,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.VIEW_ANIMPREFS -> {
                 val jc = view.animationPrefs
-                val japd = if (isSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
+                val japd = if (jlIsSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
                 val newjc = japd.getPrefs(jc)
 
                 if (newjc != jc) {
@@ -661,12 +661,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         jd.contentPane.add(tf)
         gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            tf, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         jd.contentPane.add(okbutton)
         gb.setConstraints(
             okbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
         jd.getRootPane().setDefaultButton(okbutton)  // OK button is default
         jd.pack()
@@ -686,13 +686,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val lab = JLabel(getStringResource(Res.string.gui_rescale_percentage))
         p1.add(lab)
         gb.setConstraints(
-            lab, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
+            lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         val tf = JTextField(7)
         tf.text = "100"
         p1.add(tf)
         gb.setConstraints(
-            tf, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
+            tf, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
         )
 
         val okbutton = JButton(getStringResource(Res.string.gui_ok))
@@ -701,7 +701,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             try {
                 scale = jlParseFiniteDouble(tf.getText()) / 100.0
             } catch (_: NumberFormatException) {
-                handleUserException(
+                jlHandleUserException(
                     this@PatternWindow,
                     "Number format error in rescale percentage"
                 )
@@ -718,12 +718,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         jd.contentPane.add(p1)
         gb.setConstraints(
-            p1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
+            p1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(10, 10, 0, 10))
         )
         jd.contentPane.add(okbutton)
         gb.setConstraints(
             okbutton,
-            constraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
+            jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(10, 10, 10, 10))
         )
         jd.getRootPane().setDefaultButton(okbutton) // OK button is default
         jd.pack()

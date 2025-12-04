@@ -20,8 +20,8 @@ import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.notation.Pattern
 import jugglinglab.util.*
-import jugglinglab.util.ErrorDialog.handleFatalException
-import jugglinglab.util.ErrorDialog.handleUserException
+import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.OpenFilesServer.cleanup
 import jugglinglab.util.OpenFilesServer.startOpenFilesServer
 import androidx.compose.material.MaterialTheme
@@ -86,7 +86,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     //--------------------------------------------------------------------------
 
     private fun createContents() {
-        val ap = if (isSwing()) ApplicationPanelSwing(this) else ApplicationPanel(this)
+        val ap = if (jlIsSwing()) ApplicationPanelSwing(this) else ApplicationPanel(this)
         contentPane = ap // entire contents of window
 
         // does the real work of adding controls etc.
@@ -207,7 +207,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 "online" -> doMenuCommand(MenuCommand.HELP_ONLINE)
             }
         } catch (jei: JuggleExceptionInternal) {
-            handleFatalException(jei)
+            jlHandleFatalException(jei)
         }
     }
 
@@ -275,11 +275,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                                 openJMLFile(file)
                             } catch (jeu: JuggleExceptionUser) {
                                 val message = getStringResource(Res.string.error_reading_file, file.getName())
-                                handleUserException(null, message + ":\n" + jeu.message)
+                                jlHandleUserException(null, message + ":\n" + jeu.message)
                             }
                         }
                     } catch (jei: JuggleExceptionInternal) {
-                        handleFatalException(jei)
+                        jlHandleFatalException(jei)
                     }
                 }
             return true
@@ -353,7 +353,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                             return@ActionListener
                         }
 
-                        handleFatalException(
+                        jlHandleFatalException(
                             JuggleExceptionInternal("Window number out of range: $command")
                         )
                     }
@@ -414,18 +414,18 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         @Throws(JuggleExceptionInternal::class)
         fun openJMLFile() {
-            jfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
-            if (jfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+            jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
+            if (jlJfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
                 return
             }
 
-            val file = jfc.selectedFile
+            val file = jlJfc.selectedFile
             if (file != null) {
                 try {
                     openJMLFile(file)
                 } catch (jeu: JuggleExceptionUser) {
                     val message = getStringResource(Res.string.error_reading_file, file.getName())
-                    handleUserException(null, message + ":\n" + jeu.message)
+                    jlHandleUserException(null, message + ":\n" + jeu.message)
                 }
             }
         }
@@ -502,7 +502,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             }
 
             if (!browseSupported || browseProblem) {
-                LabelDialog(null, "Help", "Find online help at " + Constants.HELP_URL)
+                jlHandleUserMessage(null, "Help", "Find online help at " + Constants.HELP_URL)
             }
         }
 

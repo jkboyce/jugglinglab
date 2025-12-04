@@ -22,7 +22,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.getStringResource
-import jugglinglab.util.parseSiteswapPattern
+import jugglinglab.util.jlParseSiteswapPattern
 
 class SiteswapPattern : MHNPattern() {
     private var oddperiod: Boolean = false
@@ -125,7 +125,7 @@ class SiteswapPattern : MHNPattern() {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parsing pattern \"$pattern\"")
             }
-            tree = parseSiteswapPattern(pattern!!)
+            tree = jlParseSiteswapPattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
                 println(tree)

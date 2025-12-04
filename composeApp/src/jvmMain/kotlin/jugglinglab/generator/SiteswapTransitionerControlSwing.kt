@@ -7,7 +7,7 @@
 package jugglinglab.generator
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.constraints
+import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -36,23 +36,23 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         val lab1 = JLabel(getStringResource(Res.string.gui_from_pattern))
         p1.add(lab1)
         gb.setConstraints(
-            lab1, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 10, 3))
+            lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 10, 3))
         )
         tf1 = JTextField(15)
         p1.add(tf1)
         gb.setConstraints(
-            tf1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 0, 10, 0))
+            tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 0, 10, 0))
         )
 
         val lab2 = JLabel(getStringResource(Res.string.gui_to_pattern))
         p1.add(lab2)
         gb.setConstraints(
-            lab2, constraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 10, 3))
+            lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 10, 3))
         )
         tf2 = JTextField(15)
         p1.add(tf2)
         gb.setConstraints(
-            tf2, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 0, 10, 0))
+            tf2, jlConstraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 0, 10, 0))
         )
 
         val but1 = JButton("\u2195")
@@ -62,7 +62,7 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
             tf2.text = temp
         }
         p1.add(but1)
-        gb.setConstraints(but1, constraints(GridBagConstraints.LINE_START, 1, 2))
+        gb.setConstraints(but1, jlConstraints(GridBagConstraints.LINE_START, 1, 2))
 
         val p2 = JPanel() // multiplexing section
         p2.setLayout(gb)
@@ -70,35 +70,35 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         cb1 = JCheckBox(getStringResource(Res.string.gui_multiplexing_in_transitions), null)
         p2.add(cb1)
         gb.setConstraints(
-            cb1, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(5, 0, 0, 0))
+            cb1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(5, 0, 0, 0))
         )
 
         val p3 = JPanel()
         p3.setLayout(gb)
         tf3 = JTextField(3)
         p3.add(tf3)
-        gb.setConstraints(tf3, constraints(GridBagConstraints.LINE_START, 1, 0))
+        gb.setConstraints(tf3, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
         lab4 = JLabel(getStringResource(Res.string.gui_simultaneous_throws))
         p3.add(lab4)
         gb.setConstraints(
-            lab4, constraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
+            lab4, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
         )
 
         p2.add(p3)
         gb.setConstraints(
-            p3, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 30, 0, 0))
+            p3, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 30, 0, 0))
         )
 
         cb2 = JCheckBox(getStringResource(Res.string.gui_no_simultaneous_catches), null)
         p2.add(cb2)
         gb.setConstraints(
-            cb2, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 0))
+            cb2, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 0))
         )
 
         cb3 = JCheckBox(getStringResource(Res.string.gui_no_clustered_throws), null)
         p2.add(cb3)
         gb.setConstraints(
-            cb3, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 25, 0, 0))
+            cb3, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 25, 0, 0))
         )
 
         val p4 = JPanel() // left justify top and multiplexing parts
@@ -106,16 +106,16 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         p4.add(p1)
         gb.setConstraints(
             p1,
-            constraints(GridBagConstraints.LINE_START, 0, 0, Insets(30, BORDER, 5, BORDER))
+            jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(30, BORDER, 5, BORDER))
         )
         p4.add(p2)
         gb.setConstraints(
             p2,
-            constraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, BORDER, 5, BORDER))
+            jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, BORDER, 5, BORDER))
         )
 
         add(p4) // the whole panel
-        gb.setConstraints(p4, constraints(GridBagConstraints.CENTER, 0, 0))
+        gb.setConstraints(p4, jlConstraints(GridBagConstraints.CENTER, 0, 0))
 
         // add action listeners to enable/disable items depending on context
         cb1.addItemListener { _: ItemEvent? ->
