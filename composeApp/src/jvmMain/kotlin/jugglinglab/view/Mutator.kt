@@ -122,7 +122,12 @@ class Mutator {
         val ev = pickMasterEvent(pat)
         var pos = ev.localCoordinate
         pos = pickNewPosition(ev.hand, rate * MUTATION_POSITION_CM, pos)
-        ev.localCoordinate = pos
+        pat.removeEvent(ev)
+        pat.addEvent(ev.copy(
+            x = pos.x,
+            y = pos.y,
+            z = pos.z
+        ))
         pat.setNeedsLayout()
         return pat
     }
@@ -173,7 +178,8 @@ class Mutator {
             tmax - (tmax - tnow) * sqrt(2 * (1 - r))
         }
 
-        ev.t = t
+        pat.removeEvent(ev)
+        pat.addEvent(ev.copy(t = t))
         pat.setNeedsLayout()
         return pat
     }
@@ -193,28 +199,7 @@ class Mutator {
             scalemax - (scalemax - 1.0) * sqrt(2 * (1 - r))
         }
 
-        var ev = pat.eventList
-        while (ev != null) {
-            if (ev.isMaster) {
-                ev.t = ev.t * scale
-            }
-            ev = ev.next
-        }
-        var pos = pat.positionList
-        while (pos != null) {
-            pat.removePosition(pos)
-            pat.addPosition(pos.copy(t = pos.t * scale))
-            pos = pos.next
-        }
-
-        pat.symmetries = pat.symmetries.map { sym ->
-            if (sym.delay > 0) {
-                sym.copy(delay = sym.delay * scale)
-            } else {
-                sym
-            }
-        }.toMutableList()
-
+        pat.scaleTime(scale)
         pat.setNeedsLayout()
         return pat
     }
@@ -291,28 +276,30 @@ class Mutator {
             t -= (pat.loopEndTime - pat.loopStartTime)
         }
 
-        ev = JMLEvent()
-        ev.setHand(juggler, hand)
-        ev.t = t
-        ev.masterEvent = null  // null signifies a master event
-
         // Now choose a spatial location for the event. Figure out where the
         // hand is currently and adjust it.
         var pos = Coordinate()
         pat.getHandCoordinate(juggler, hand, t, pos)
         pos = pat.convertGlobalToLocal(pos, juggler, t)
         pos = pickNewPosition(hand, rate * MUTATION_NEW_EVENT_POSITION_CM, pos)
-        ev.localCoordinate = pos
 
-        // Last step: add a "holding" transition for every path that the hand
-        // is holding at the chosen time
-        for (path in 1..pat.numberOfPaths) {
-            if (pat.isHandHoldingPath(juggler, hand, t, path)) {
-                val trans = JMLTransition(JMLTransition.TRANS_HOLDING, path, null, null)
-                ev.addTransition(trans)
+        ev = JMLEvent(
+            x = pos.x,
+            y = pos.y,
+            z = pos.z,
+            t = t,
+            juggler = juggler,
+            hand = hand,
+            transitions = buildList {
+                // Last step: add a "holding" transition for every path that the hand
+                // is holding at the chosen time
+                for (path in 1..pat.numberOfPaths) {
+                    if (pat.isHandHoldingPath(juggler, hand, t, path)) {
+                        add(JMLTransition(JMLTransition.TRANS_HOLDING, path, null, null))
+                    }
+                }
             }
-        }
-
+        )
         pat.addEvent(ev)
         pat.setNeedsLayout()
         return pat

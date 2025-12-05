@@ -107,10 +107,6 @@ class Animator {
             }
         }
         this.cameraAngle = ca
-
-        if (Constants.DEBUG_LAYOUT) {
-            println(pat)
-        }
     }
 
     var dimension: Dimension
@@ -280,8 +276,9 @@ class Animator {
             patternmin = min(patternmin, pattern.getPathMin(i))
 
             if (Constants.DEBUG_LAYOUT) {
-                println("Path max " + i + " = " + pattern.getPathMax(i))
-                println("Path min " + i + " = " + pattern.getPathMin(i))
+                println("Data from Animator:")
+                println("Path max $i = " + pattern.getPathMax(i))
+                println("Path min $i = " + pattern.getPathMin(i))
             }
         }
 
@@ -338,6 +335,7 @@ class Animator {
         overallMin = min(patternmin, min(handmin, jwmin))
 
         if (Constants.DEBUG_LAYOUT) {
+            println("Data from Animator:")
             println("Hand max = $handmax")
             println("Hand min = $handmin")
             println("Prop max = $propmax")

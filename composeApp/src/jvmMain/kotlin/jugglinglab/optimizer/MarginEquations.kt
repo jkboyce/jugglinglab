@@ -139,7 +139,7 @@ class MarginEquations() {
         for (i in 0..<varsNum) {
             ev = variableEvents[i]
             val coord = ev.localCoordinate
-            val type = ev.getTransition(0).type
+            val type = ev.transitions[0].type
 
             varsEvents.add(ev)
             varsValues[i] = coord.x

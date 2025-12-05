@@ -15,7 +15,7 @@ class JMLNode(
     var parentNode: JMLNode? = null
     var previousSibling: JMLNode? = null
     var nextSibling: JMLNode? = null
-    var children: MutableList<JMLNode> = ArrayList<JMLNode>()
+    var children: MutableList<JMLNode> = mutableListOf()
 
     fun addAttribute(name: String, value: String) {
         attributes = attributes.addAttribute(name, value)

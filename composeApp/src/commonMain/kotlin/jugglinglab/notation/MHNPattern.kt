@@ -25,6 +25,7 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
+import jugglinglab.jml.JMLEvent.Companion.addTransition
 import jugglinglab.util.*
 import jugglinglab.util.getStringResource
 import kotlin.math.abs
@@ -89,8 +90,8 @@ abstract class MHNPattern : Pattern() {
     override fun fromParameters(pl: ParameterList): MHNPattern {
         config = pl.toString()
         // `pattern` is the only required parameter
-        pattern = pl.removeParameter("pattern") ?:
-            throw JuggleExceptionUser(getStringResource(Res.string.error_no_pattern))
+        pattern = pl.removeParameter("pattern")
+            ?: throw JuggleExceptionUser(getStringResource(Res.string.error_no_pattern))
 
         var temp: String?
         if ((pl.removeParameter("bps").also { temp = it }) != null) {
@@ -733,29 +734,65 @@ abstract class MHNPattern : Pattern() {
         val handtouched = Array(numberOfJugglers) { BooleanArray(2) }
         val pathtouched = BooleanArray(numberOfPaths)
         addPrimaryEventsToJML(result, handtouched, pathtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 3:")
+            println(result)
+        }
 
         // Step 4: Define a body position for this juggler and beat, if specified
         addJugglerPositionsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 4:")
+            println(result)
+        }
 
         // Step 5: Add simple positioning events for hands that got no events
         addEventsForUntouchedHandsToJML(result, handtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 5:")
+            println(result)
+        }
 
         // Step 6: Add <holding> transitions for paths that got no events
         addEventsForUntouchedPathsToJML(result, pathtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 6:")
+            println(result)
+        }
 
         // Step 7: Build the full event list so we can scan through it
         // chronologically in Steps 8-10
+        //
+        // This adds additional JMLEvents to our list, which are images of
+        // the master events (what we've added so far) with the pattern
+        // symmetries applied.
+        //
+        // In everything that follows we need to be careful to retain the
+        // JMLEvent.masterEvent field, which specifies whether the event is/isn't
+        // a master event.
         result.buildEventList()
 
         // Step 8: Add events where there are long gaps for a hand
         if (hands == null) addEventsForGapsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 8:")
+            println(result)
+        }
 
         // Step 9: Specify positions for events that don't have them defined yet
         addLocationsForIncompleteEventsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 9:")
+            println(result)
+        }
 
         // Step 10: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
         addMissingHoldsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 10:")
+            println(result)
+        }
 
         // Step 11: Confirm that each throw in the JMLPattern has enough time to
         // satisfy its minimum duration requirement. If not then rescale time
@@ -764,13 +801,30 @@ abstract class MHNPattern : Pattern() {
         // This should only be done if the user has not manually set `bps`.
         if (bpsSet <= 0) {
             val scaleFactor = result.scaleTimeToFitThrows(1.01)
+            if (Constants.DEBUG_LAYOUT) {
+                println("After scaleTimeToFitThrows():")
+                println(result)
+            }
             if (scaleFactor > 1.0) {
                 bps /= scaleFactor
                 if (hands == null) {
                     // redo steps 8-10
+                    // scaleTimeToFitThrows() rebuilt the event list
                     addEventsForGapsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 8:")
+                        println(result)
+                    }
                     addLocationsForIncompleteEventsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 9:")
+                        println(result)
+                    }
                     addMissingHoldsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 10:")
+                        println(result)
+                    }
                 }
                 if (Constants.DEBUG_LAYOUT) {
                     println("Rescaled time; scale factor = $scaleFactor")
@@ -783,7 +837,7 @@ abstract class MHNPattern : Pattern() {
             result.setPropColors(colors!!)
         }
         if (Constants.DEBUG_LAYOUT) {
-            println("Pattern in JML format:\n")
+            println("Final result from MHNPattern.asJMLPattern():")
             println(result)
         }
         return result
@@ -1083,8 +1137,10 @@ abstract class MHNPattern : Pattern() {
                         continue
                     }
 
-                    // Step 3a: Add transitions to the on-beat event (throw or holding transitions)
+                    // Event that we will be constructing:
                     var ev = JMLEvent()
+
+                    // Step 3a: Add transitions to the on-beat event (throw or holding transitions)
                     var throwxsum = 0.0
                     var numThrows = 0
 
@@ -1180,7 +1236,7 @@ abstract class MHNPattern : Pattern() {
                                 )
                                 throw JuggleExceptionUser(message)
                             }
-                            ev.addTransition(
+                            ev = ev.addTransition(
                                 JMLTransition(
                                     JMLTransition.TRANS_THROW,
                                     sst2.pathnum,
@@ -1201,7 +1257,7 @@ abstract class MHNPattern : Pattern() {
                             if (!sst2.isZero) {
                                 // add holding transition if there's a ball in
                                 // hand and "hands" is specified
-                                ev.addTransition(
+                                ev = ev.addTransition(
                                     JMLTransition(
                                         JMLTransition.TRANS_HOLDING,
                                         sst2.pathnum,
@@ -1220,32 +1276,39 @@ abstract class MHNPattern : Pattern() {
                         // layout is specified
                     } else {
                         // set the event position
+                        var newLocalCoordinate = Coordinate()
+                        var newCalcpos: Boolean
+
                         if (hands == null) {
                             if (numThrows > 0) {
                                 var throwxav = throwxsum / numThrows.toDouble()
                                 if (h == LEFT_HAND) {
                                     throwxav = -throwxav
                                 }
-                                ev.localCoordinate = Coordinate(throwxav, 0.0, 0.0)
-                                ev.calcpos = false
+                                newLocalCoordinate = Coordinate(throwxav, 0.0, 0.0)
+                                newCalcpos = false
                             } else {
                                 // mark event to calculate coordinate later
-                                ev.calcpos = true
+                                newCalcpos = true
                             }
                         } else {
                             val c = hands!!.getCoordinate(sst.juggler, sst.handsindex, 0)!!
                             if (h == LEFT_HAND) {
                                 c.x = -c.x
                             }
-                            ev.localCoordinate = c
-                            ev.calcpos = false
+                            newLocalCoordinate = c
+                            newCalcpos = false
                         }
 
-                        ev.t = sst.throwtime
-                        ev.setHand(
-                            j + 1,
-                            if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                        ev = ev.copy(
+                            x = newLocalCoordinate.x,
+                            y = newLocalCoordinate.y,
+                            z = newLocalCoordinate.z,
+                            t = sst.throwtime,
+                            juggler = j + 1,
+                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
+                        ev.calcpos = newCalcpos
                         pat.addEvent(ev)
 
                         // record which hands are touched by this event, for later reference
@@ -1289,19 +1352,19 @@ abstract class MHNPattern : Pattern() {
 
                     if (squeezebeats == 0.0 || numCatches < 2) {
                         // Case 1: everything happens at a single event
-                        ev = JMLEvent()
+                        var newLocalCoordinate = Coordinate()
+                        var newCalcpos: Boolean
 
                         // first set the event position
                         if (hands == null) {
                             if (numCatches > 0) {
                                 val cx = catchxsum / numCatches.toDouble()
-                                // System.out.println("average catch pos. = "+cx);
-                                ev.localCoordinate =
+                                newLocalCoordinate =
                                     Coordinate(if (h == RIGHT_HAND) cx else -cx, 0.0, 0.0)
-                                ev.calcpos = false
+                                newCalcpos = false
                             } else {
                                 // mark event to calculate coordinate later
-                                ev.calcpos = true
+                                newCalcpos = true
                             }
                         } else {
                             var pos = sst.handsindex - 2
@@ -1313,23 +1376,26 @@ abstract class MHNPattern : Pattern() {
                             if (h == LEFT_HAND) {
                                 c.x = -c.x
                             }
-                            ev.localCoordinate = c
-                            ev.calcpos = false
+                            newLocalCoordinate = c
+                            newCalcpos = false
                         }
 
-                        ev.t = sst.catchtime
                         lastcatchtime = sst.catchtime
 
-                        ev.setHand(
-                            j + 1,
-                            if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                        var ev = JMLEvent(
+                            x = newLocalCoordinate.x,
+                            y = newLocalCoordinate.y,
+                            z = newLocalCoordinate.z,
+                            t = sst.catchtime,
+                            juggler = j + 1,
+                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
 
                         // add all the transitions
                         for (slot in 0..<maxOccupancy) {
                             val sst2 = th[j][h][k][slot] ?: break
                             if (sst2.catching) {
-                                ev.addTransition(
+                                ev = ev.addTransition(
                                     JMLTransition(
                                         JMLTransition.TRANS_CATCH,
                                         sst2.pathnum,
@@ -1341,7 +1407,7 @@ abstract class MHNPattern : Pattern() {
                                 if (sst2.pathnum != -1) {  // -1 signals a 0 throw
                                     // add holding transition if there's a ball in
                                     // hand and "hands" is specified
-                                    ev.addTransition(
+                                    ev = ev.addTransition(
                                         JMLTransition(
                                             JMLTransition.TRANS_HOLDING,
                                             sst2.pathnum,
@@ -1354,6 +1420,7 @@ abstract class MHNPattern : Pattern() {
                             }
                         }
 
+                        ev.calcpos = newCalcpos
                         pat.addEvent(ev)
                     } else {
                         // Case 2: separate event for each catch; we know that numcatches > 1 here
@@ -1365,13 +1432,12 @@ abstract class MHNPattern : Pattern() {
 
                             // we only need to add catch transitions here; holding transitions will be
                             // added in Step 9
-                            ev = JMLEvent()
+                            var newLocalCoordinate: Coordinate
 
                             // first set the event position
                             if (hands == null) {
                                 val cx = catchxsum / numCatches.toDouble()
-                                // System.out.println("average catch pos. = "+cx);
-                                ev.localCoordinate =
+                                newLocalCoordinate =
                                     Coordinate((if (h == RIGHT_HAND) cx else -cx), 0.0, 0.0)
                             } else {
                                 var pos = sst.handsindex - 2
@@ -1383,32 +1449,34 @@ abstract class MHNPattern : Pattern() {
                                 if (h == LEFT_HAND) {
                                     c.x = -c.x
                                 }
-                                ev.localCoordinate = c
+                                newLocalCoordinate = c
                             }
-                            ev.calcpos = false
 
-                            ev.t = sst2.catchtime
                             if (sst2.catchnum == (numCatches - 1)) {
                                 lastcatchtime = sst2.catchtime
                             }
-
-                            ev.setHand(
-                                j + 1,
-                                if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
-                            )
-                            ev.addTransition(
-                                JMLTransition(
-                                    JMLTransition.TRANS_CATCH,
-                                    sst2.pathnum,
-                                    null,
-                                    null
+                            val ev = JMLEvent(
+                                x = newLocalCoordinate.x,
+                                y = newLocalCoordinate.y,
+                                z = newLocalCoordinate.z,
+                                t = sst2.catchtime,
+                                juggler = j + 1,
+                                hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND,
+                                transitions = listOf(
+                                    JMLTransition(
+                                        JMLTransition.TRANS_CATCH,
+                                        sst2.pathnum,
+                                        null,
+                                        null
+                                    )
                                 )
                             )
+                            ev.calcpos = false
                             pat.addEvent(ev)
                         }
                     }
 
-                    // Step 3d: If hand positionss are specified, add any extra hand positioning
+                    // Step 3d: If hand positions are specified, add any extra hand positioning
                     // events after the catch above, until the next catch for the hand
                     if (hands == null) {
                         continue
@@ -1424,21 +1492,20 @@ abstract class MHNPattern : Pattern() {
                         hands!!.getNumberOfCoordinates(sst.juggler, pos) - catchindex
 
                     for (di in 1..<numcoords) {
-                        val c =
-                            hands!!.getCoordinate(sst.juggler, pos, catchindex + di) ?: continue
-                        ev = JMLEvent()
+                        val c = hands!!.getCoordinate(sst.juggler, pos, catchindex + di) ?: continue
                         if (h == LEFT_HAND) {
                             c.x = -c.x
                         }
-                        ev.localCoordinate = c
-                        ev.calcpos = false
-                        ev.t =
-                            lastcatchtime + di.toDouble() *
-                                (sst.throwtime - lastcatchtime) / numcoords
-                        ev.setHand(
-                            sst.juggler,
-                            (if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND)
+                        val ev = JMLEvent(
+                            x = c.x,
+                            y = c.y,
+                            z = c.z,
+                            t = lastcatchtime + di.toDouble() *
+                                (sst.throwtime - lastcatchtime) / numcoords,
+                            juggler = sst.juggler,
+                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
+                        ev.calcpos = false
                         pat.addEvent(ev)
                     }
 
@@ -1476,19 +1543,19 @@ abstract class MHNPattern : Pattern() {
 
                     for (di in 1..<numcoords) {
                         val c = hands!!.getCoordinate(sst.juggler, pos, di) ?: continue
-                        ev = JMLEvent()
                         if (h == LEFT_HAND) {
                             c.x = -c.x
                         }
-                        ev.localCoordinate = c
-                        ev.calcpos = false
-                        ev.t =
-                            sst.throwtime + di.toDouble() *
-                                (nextcatchtime - sst.throwtime) / numcoords
-                        ev.setHand(
-                            sst.juggler,
-                            (if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND)
+                        val ev = JMLEvent(
+                            x = c.x,
+                            y = c.y,
+                            z = c.z,
+                            t = sst.throwtime + di.toDouble() *
+                                (nextcatchtime - sst.throwtime) / numcoords,
+                            juggler = sst.juggler,
+                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
+                        ev.calcpos = false
                         pat.addEvent(ev)
                     }
                 }
@@ -1521,11 +1588,14 @@ abstract class MHNPattern : Pattern() {
         for (j in 0..<numberOfJugglers) {
             for (h in 0..1) {
                 if (!handtouched[j][h]) {
-                    val ev = JMLEvent()
-                    ev.localCoordinate =
-                        Coordinate(if (h == RIGHT_HAND) RESTINGX else -RESTINGX, 0.0, 0.0)
-                    ev.t = -1.0
-                    ev.setHand(j + 1, if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND)
+                    val ev = JMLEvent(
+                        x = if (h == RIGHT_HAND) RESTINGX else -RESTINGX,
+                        y = 0.0,
+                        z = 0.0,
+                        t = -1.0,
+                        juggler = j + 1,
+                        hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                    )
                     ev.calcpos = false
                     pat.addEvent(ev)
                 }
@@ -1576,7 +1646,8 @@ abstract class MHNPattern : Pattern() {
             var ev = pat.eventList
             while (ev != null) {
                 if (ev.hand == hand && ev.juggler == (juggler + 1)) {
-                    ev.addTransition(
+                    pat.removeEvent(ev)
+                    val ev2 = ev.addTransition(
                         JMLTransition(
                             JMLTransition.TRANS_HOLDING,
                             (k + 1),
@@ -1584,6 +1655,9 @@ abstract class MHNPattern : Pattern() {
                             null
                         )
                     )
+                    ev2.masterEvent = ev.masterEvent
+                    ev2.calcpos = ev.calcpos
+                    pat.addEvent(ev2)
                     // mark related paths as touched
                     pathtouched[k] = true
                     for (sym in pat.symmetries) {
@@ -1595,8 +1669,6 @@ abstract class MHNPattern : Pattern() {
                 }
                 ev = ev.next
             }
-            //  if (ev == null)
-            //      throw new JuggleExceptionUser("Could not find event for hand");
         }
     }
 
@@ -1626,10 +1698,14 @@ abstract class MHNPattern : Pattern() {
                                     if (evtime < pat.loopStartTime || evtime >= pat.loopEndTime) {
                                         continue
                                     }
-                                    val ev2 = JMLEvent()
-                                    ev2.t = evtime
-                                    ev2.setHand(j, hand)
+                                    val ev2 = JMLEvent(
+                                        t = evtime,
+                                        juggler = j,
+                                        hand = hand
+                                    )
+                                    // no transitions yet; added later if needed
                                     ev2.calcpos = true
+                                    // adding these as master events (the default)
                                     pat.addEvent(ev2)
                                 }
                             }
@@ -1647,7 +1723,7 @@ abstract class MHNPattern : Pattern() {
             for (h in 0..1) {
                 val hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                 var ev = pat.eventList
-                var start: JMLEvent? = null
+                var startEvent: JMLEvent? = null
                 var scanstate = 1 // 1 = starting, 2 = on defined event, 3 = on undefined event
                 while (ev != null) {
                     if (ev.juggler == j && ev.hand == hand) {
@@ -1658,28 +1734,32 @@ abstract class MHNPattern : Pattern() {
                                 1 -> scanstate = 2
                                 2 -> {}
                                 3 -> {
-                                    if (start != null) {
-                                        val end: JMLEvent = ev
-                                        val tEnd = end.t
-                                        val posEnd = end.localCoordinate
-                                        val tStart = start.t
-                                        val posStart = start.localCoordinate
+                                    if (startEvent != null) {
+                                        val endEvent: JMLEvent = ev
+                                        val endT = endEvent.t
+                                        val endPos = endEvent.localCoordinate
+                                        val startT = startEvent.t
+                                        val startPos = startEvent.localCoordinate
 
-                                        ev = start.next
-                                        while (ev != end) {
+                                        ev = startEvent.next
+                                        while (ev != endEvent) {
                                             if (ev!!.juggler == j && ev.hand == hand) {
                                                 val t = ev.t
-                                                val x = (posStart.x
-                                                    + (t - tStart) * (posEnd.x - posStart.x) /
-                                                    (tEnd - tStart))
-                                                val y = (posStart.y
-                                                    + (t - tStart) * (posEnd.y - posStart.y) /
-                                                    (tEnd - tStart))
-                                                val z = (posStart.z
-                                                    + (t - tStart) * (posEnd.z - posStart.z) /
-                                                    (tEnd - tStart))
-                                                ev.localCoordinate = Coordinate(x, y, z)
-                                                ev.calcpos = false
+                                                // interpolate between start and end positions
+                                                val x = (startPos.x
+                                                    + (t - startT) * (endPos.x - startPos.x) /
+                                                    (endT - startT))
+                                                val y = (startPos.y
+                                                    + (t - startT) * (endPos.y - startPos.y) /
+                                                    (endT - startT))
+                                                val z = (startPos.z
+                                                    + (t - startT) * (endPos.z - startPos.z) /
+                                                    (endT - startT))
+                                                val ev2 = ev.copy(x = x, y = y, z = z)
+                                                ev2.masterEvent = ev.masterEvent
+                                                ev2.calcpos = false
+                                                pat.removeEvent(ev)
+                                                pat.addEvent(ev2)
                                             }
                                             ev = ev.next
                                         }
@@ -1687,9 +1767,8 @@ abstract class MHNPattern : Pattern() {
                                     scanstate = 2
                                 }
                             }
-                            start = ev
+                            startEvent = ev
                         }
-                        // System.out.println("   final state = "+scanstate);
                     }
                     ev = ev.next
                 }
@@ -1697,10 +1776,15 @@ abstract class MHNPattern : Pattern() {
                 // do a last scan through to define any remaining undefined positions
                 ev = pat.eventList
                 while (ev != null) {
-                    if (ev.juggler == j && ev.hand == hand && ev.calcpos) {
-                        ev.localCoordinate =
-                            Coordinate(if (h == RIGHT_HAND) RESTINGX else -RESTINGX, 0.0, 0.0)
-                        ev.calcpos = false
+                    if (ev.juggler == j && ev.hand == hand && ev.calcpos && ev.isMaster) {
+                        val ev2 = ev.copy(
+                            x = if (h == RIGHT_HAND) RESTINGX else -RESTINGX,
+                            y = 0.0,
+                            z = 0.0,
+                        )
+                        ev2.calcpos = false
+                        pat.removeEvent(ev)
+                        pat.addEvent(ev2)
                     }
                     ev = ev.next
                 }
@@ -1708,8 +1792,8 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    // Step 9: Scan through the list of events, and look for cases where we need
-    // to add additional <holding> transitions.  These are marked by cases where the
+    // Scan through the list of events, and look for cases where we need to add
+    // additional <holding> transitions.  These are marked by cases where the
     // catch and throw transitions for a given path have intervening events in that
     // hand; we want to add <holding> transitions to these intervening events.
 
@@ -1764,14 +1848,18 @@ abstract class MHNPattern : Pattern() {
                     foundEvent = true
                 } else if (addMode) {
                     if (ev.juggler == addJuggler && ev.hand == addHand && ev.isMaster) {
-                        ev.addTransition(
-                            JMLTransition(
-                                JMLTransition.TRANS_HOLDING,
-                                (k + 1),
-                                null,
-                                null
-                            )
+                        val ev2 = ev.copy(
+                            transitions = ev.transitions +
+                                JMLTransition(
+                                    JMLTransition.TRANS_HOLDING,
+                                    (k + 1),
+                                    null,
+                                    null
+                                )
                         )
+                        // add as a master event
+                        pat.removeEvent(ev)
+                        pat.addEvent(ev2)
                     }
                 }
                 ev = ev.next

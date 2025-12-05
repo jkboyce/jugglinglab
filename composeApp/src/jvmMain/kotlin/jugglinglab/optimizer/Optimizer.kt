@@ -313,9 +313,10 @@ class Optimizer private constructor(val pat: JMLPattern) {
             if (pinned[i]) {
                 val ev = me.varsEvents[i]
                 val newx = (me.varsValues[i] * 100.0).roundToInt().toDouble() / 100.0
-                val coord = ev.localCoordinate
-                coord.x = newx
-                ev.localCoordinate = coord
+                val ev2 = ev.copy(x = newx)
+                pat.removeEvent(ev)
+                pat.addEvent(ev2)
+                me.varsEvents[i] = ev2
             }
         }
         pat.setNeedsLayout()
