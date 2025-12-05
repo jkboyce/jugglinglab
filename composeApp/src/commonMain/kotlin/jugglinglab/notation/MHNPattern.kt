@@ -733,15 +733,31 @@ abstract class MHNPattern : Pattern() {
         val handtouched = Array(numberOfJugglers) { BooleanArray(2) }
         val pathtouched = BooleanArray(numberOfPaths)
         addPrimaryEventsToJML(result, handtouched, pathtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 3:")
+            println(result)
+        }
 
         // Step 4: Define a body position for this juggler and beat, if specified
         addJugglerPositionsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 4:")
+            println(result)
+        }
 
         // Step 5: Add simple positioning events for hands that got no events
         addEventsForUntouchedHandsToJML(result, handtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 5:")
+            println(result)
+        }
 
         // Step 6: Add <holding> transitions for paths that got no events
         addEventsForUntouchedPathsToJML(result, pathtouched)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 6:")
+            println(result)
+        }
 
         // Step 7: Build the full event list so we can scan through it
         // chronologically in Steps 8-10
@@ -749,13 +765,25 @@ abstract class MHNPattern : Pattern() {
 
         // Step 8: Add events where there are long gaps for a hand
         if (hands == null) addEventsForGapsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 8:")
+            println(result)
+        }
 
         // Step 9: Specify positions for events that don't have them defined yet
         addLocationsForIncompleteEventsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 9:")
+            println(result)
+        }
 
         // Step 10: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
         addMissingHoldsToJML(result)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 10:")
+            println(result)
+        }
 
         // Step 11: Confirm that each throw in the JMLPattern has enough time to
         // satisfy its minimum duration requirement. If not then rescale time
@@ -764,13 +792,29 @@ abstract class MHNPattern : Pattern() {
         // This should only be done if the user has not manually set `bps`.
         if (bpsSet <= 0) {
             val scaleFactor = result.scaleTimeToFitThrows(1.01)
+            if (Constants.DEBUG_LAYOUT) {
+                println("After scaleTimeToFitThrows():")
+                println(result)
+            }
             if (scaleFactor > 1.0) {
                 bps /= scaleFactor
                 if (hands == null) {
                     // redo steps 8-10
                     addEventsForGapsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 8:")
+                        println(result)
+                    }
                     addLocationsForIncompleteEventsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 9:")
+                        println(result)
+                    }
                     addMissingHoldsToJML(result)
+                    if (Constants.DEBUG_LAYOUT) {
+                        println("After redone step 10:")
+                        println(result)
+                    }
                 }
                 if (Constants.DEBUG_LAYOUT) {
                     println("Rescaled time; scale factor = $scaleFactor")
@@ -783,7 +827,7 @@ abstract class MHNPattern : Pattern() {
             result.setPropColors(colors!!)
         }
         if (Constants.DEBUG_LAYOUT) {
-            println("Pattern in JML format:\n")
+            println("Final pattern:\n")
             println(result)
         }
         return result
