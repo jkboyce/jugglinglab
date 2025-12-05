@@ -6,7 +6,3 @@
 .kotlin/
 admin/
 build/
-*.jar
-*~
-*.*~
-.*~
