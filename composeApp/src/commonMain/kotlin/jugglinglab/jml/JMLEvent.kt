@@ -22,7 +22,7 @@ data class JMLEvent(
     val juggler: Int = 0,
     val hand: Int = 0,
     val transitions: List<JMLTransition> = emptyList()
-) {
+): Comparable<JMLEvent> {
     val localCoordinate: Coordinate
         get() = Coordinate(x, y, z)
 
@@ -49,10 +49,9 @@ data class JMLEvent(
         }
 
     fun writeJML(wr: Appendable, startTagOnly: Boolean = false) {
-        val c = localCoordinate
-        wr.append("<event x=\"${jlToStringRounded(c.x, 4)}\"")
-        wr.append(" y=\"${jlToStringRounded(c.y, 4)}\"")
-        wr.append(" z=\"${jlToStringRounded(c.z, 4)}\"")
+        wr.append("<event x=\"${jlToStringRounded(x, 4)}\"")
+        wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
+        wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
         wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
         wr.append(" hand=\"$juggler:")
         wr.append(if (hand == HandLink.LEFT_HAND) "left" else "right")
@@ -80,6 +79,21 @@ data class JMLEvent(
             return sb.toString().hashCode()
         }
 
+    override fun compareTo(other: JMLEvent): Int {
+        if (t != other.t) {
+            return t.compareTo(other.t)
+        }
+        if (juggler != other.juggler) {
+            return juggler.compareTo(other.juggler)
+        }
+        if (hand != other.hand) {
+            return hand.compareTo(other.hand)
+        }
+        // shouldn't get here; shouldn't have multiple events for the same
+        // juggler/hand at a single time
+        return x.compareTo(other.x)
+    }
+
     //--------------------------------------------------------------------------
     // Items below here are for layout and animation - target removal
     //--------------------------------------------------------------------------
@@ -88,16 +102,16 @@ data class JMLEvent(
     var previous: JMLEvent? = null
     var next: JMLEvent? = null // for doubly-linked event list
 
-    // for "image" JMLEvents that are created from other "master" events
+    // for "image" JMLEvents that are created from other "primary" events
     // during layout
-    var masterEvent: JMLEvent? = null // null if this is a master event
+    var primaryEvent: JMLEvent? = null // null if this is a primary event
     var delay: Int = 0
     var delayunits: Int = 0
-    var pathPermFromMaster: Permutation? = null
-    val master: JMLEvent
-        get() = masterEvent ?: this
-    val isMaster: Boolean
-        get() = (masterEvent == null)
+    var pathPermFromPrimary: Permutation? = null
+    val primary: JMLEvent
+        get() = primaryEvent ?: this
+    val isPrimary: Boolean
+        get() = (primaryEvent == null)
 
     // used by MHNPattern during layout
     var calcpos: Boolean = false
@@ -141,7 +155,7 @@ data class JMLEvent(
         }
 
     fun isDelayOf(ev2: JMLEvent): Boolean {
-        if (!hasSameMasterAs(ev2)) {
+        if (!hasSamePrimaryAs(ev2)) {
             return false
         }
         if (juggler != ev2.juggler || hand != ev2.hand) {
@@ -155,10 +169,10 @@ data class JMLEvent(
         return (totaldelay % delayunits) == 0
     }
 
-    fun hasSameMasterAs(ev2: JMLEvent): Boolean {
-        val mast1 = if (masterEvent == null) this else masterEvent
-        val mast2 = if (ev2.masterEvent == null) ev2 else ev2.masterEvent
-        return (mast1 === mast2)
+    fun hasSamePrimaryAs(ev2: JMLEvent): Boolean {
+        val primary1 = if (primaryEvent == null) this else primaryEvent
+        val primary2 = if (ev2.primaryEvent == null) ev2 else ev2.primaryEvent
+        return (primary1 === primary2)
     }
 
     // Return true if the event contains a throw transition to another juggler.
@@ -196,7 +210,7 @@ data class JMLEvent(
         delay = newDelay
         delayunits = newDelayunits
         calcpos = ev.calcpos
-        masterEvent = if (ev.isMaster) ev else ev.masterEvent
+        primaryEvent = if (ev.isPrimary) ev else ev.primaryEvent
     }
 
     companion object {

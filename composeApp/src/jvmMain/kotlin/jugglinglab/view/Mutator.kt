@@ -119,7 +119,7 @@ class Mutator {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateEventPosition(pat: JMLPattern): JMLPattern {
-        val ev = pickMasterEvent(pat)
+        val ev = pickPrimaryEvent(pat)
         var pos = ev.localCoordinate
         pos = pickNewPosition(ev.hand, rate * MUTATION_POSITION_CM, pos)
         pat.removeEvent(ev)
@@ -136,7 +136,7 @@ class Mutator {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateEventTime(pat: JMLPattern): JMLPattern? {
-        val ev = pickMasterEvent(pat)
+        val ev = pickPrimaryEvent(pat)
 
         var evPrev = ev.previous
         while (evPrev != null) {
@@ -268,7 +268,7 @@ class Mutator {
             tmax - (tmax - tmin) * sqrt(0.5 * (1 - r))
         }
 
-        // want its time to be within this range since it's a master event
+        // want its time to be within this range since it's a primary event
         while (t < pat.loopStartTime) {
             t += (pat.loopEndTime - pat.loopStartTime)
         }
@@ -305,7 +305,7 @@ class Mutator {
         return pat
     }
 
-    // Remove a randomly-selected master event with only holding transitions.
+    // Remove a randomly-selected primary event with only holding transitions.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateRemoveEvent(pat: JMLPattern): JMLPattern? {
@@ -314,7 +314,7 @@ class Mutator {
         var ev = pat.eventList
 
         while (ev != null) {
-            if (ev.isMaster) {
+            if (ev.isPrimary) {
                 var holdingOnly = true
                 for (tr in ev.transitions) {
                     val type = tr.type
@@ -340,7 +340,7 @@ class Mutator {
         ev = pat.eventList
 
         while (ev != null) {
-            if (ev.isMaster) {
+            if (ev.isPrimary) {
                 var holdingOnly = true
                 for (tr in ev.transitions) {
                     val type = tr.type
@@ -368,29 +368,29 @@ class Mutator {
     // Helpers
     //--------------------------------------------------------------------------
 
-    // Return a random master event from the pattern.
+    // Return a random primary event from the pattern.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun pickMasterEvent(pat: JMLPattern): JMLEvent {
+    private fun pickPrimaryEvent(pat: JMLPattern): JMLEvent {
         pat.layoutPattern()
 
         val eventlist = pat.eventList
-        var masterCount = 0
+        var primaryCount = 0
 
         var current = eventlist
         do {
-            if (current!!.isMaster) {
-                ++masterCount
+            if (current!!.isPrimary) {
+                ++primaryCount
             }
             current = current.next
         } while (current != null)
 
-        // pick a number from 0 to (master_count - 1) inclusive
-        var eventNum = (Math.random() * masterCount).toInt()
+        // pick a number from 0 to (primaryCount - 1) inclusive
+        var eventNum = (Math.random() * primaryCount).toInt()
 
         current = eventlist
         do {
-            if (current!!.isMaster) {
+            if (current!!.isPrimary) {
                 if (eventNum == 0) {
                     return current
                 }

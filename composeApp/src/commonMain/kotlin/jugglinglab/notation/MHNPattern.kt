@@ -243,9 +243,9 @@ abstract class MHNPattern : Pattern() {
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println("-----------------------------------------------------")
             println("Building internal MHNPattern representation...\n")
-            println("findMasterThrows()")
+            println("findPrimaryThrows()")
         }
-        findMasterThrows()
+        findPrimaryThrows()
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println("assignPaths()")
@@ -302,15 +302,15 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    // Determine which throws are "master" throws. Because of symmetries defined
+    // Determine which throws are "primary" throws. Because of symmetries defined
     // for the pattern, some throws are shifted or reflected copies of others.
-    // For each such chain of related throws, appoint one as the master.
+    // For each such chain of related throws, appoint one as the primary.
 
     @Throws(JuggleExceptionInternal::class)
-    protected fun findMasterThrows() {
-        // start by making every throw a master throw
+    protected fun findPrimaryThrows() {
+        // start by making every throw a primary throw
         th.mhnIterator().forEach { (_, _, _, _, mhnt) ->
-            mhnt?.master = mhnt // Every throw is its own master initially
+            mhnt?.primary = mhnt // Every throw is its own primary initially
             mhnt?.source = null   // No source is known yet
         }
 
@@ -336,15 +336,15 @@ abstract class MHNPattern : Pattern() {
                     imagej = abs(imagej) - 1
 
                     val imaget = th[imagej][imageh][imagei][slot]
-                        ?: throw JuggleExceptionInternal("Problem finding master throws")
+                        ?: throw JuggleExceptionInternal("Problem finding primary throws")
 
-                    val m = mhnt.master!!
-                    val im = imaget.master!!
+                    val m = mhnt.primary!!
+                    val im = imaget.primary!!
                     if (m === im) {
                         return@forEach
                     }
 
-                    // we have a disagreement about which is the master;
+                    // we have a disagreement about which is the primary;
                     // choose one of them and set them equal
                     var newm: MHNThrow? = m
                     if (m.index > im.index) {
@@ -358,8 +358,8 @@ abstract class MHNPattern : Pattern() {
                             }
                         }
                     }
-                    imaget.master = newm
-                    mhnt.master = imaget.master
+                    imaget.primary = newm
+                    mhnt.primary = imaget.primary
                     changed = true
                 }
             }
@@ -367,8 +367,8 @@ abstract class MHNPattern : Pattern() {
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             th.mhnIterator().forEach { (i, j, h, slot, mhnt) ->
-                if (mhnt?.master === mhnt) {
-                    println("master throw at j=$j,h=$h,i=$i,slot=$slot")
+                if (mhnt?.primary === mhnt) {
+                    println("primary throw at j=$j,h=$h,i=$i,slot=$slot")
                 }
             }
         }
@@ -382,21 +382,21 @@ abstract class MHNPattern : Pattern() {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     protected fun assignPaths() {
         th.mhnIterator().forEach { (_, _, _, _, sst) ->
-            if (sst == null || sst.master !== sst) {
-                return@forEach  // skip non-master throws
+            if (sst == null || sst.primary !== sst) {
+                return@forEach  // skip non-primary throws
             }
 
             // Figure out which slot number we're filling with this
-            // master throw. We need to find a value of `targetslot`
-            // that is empty for the master throw's target, as well as
+            // primary throw. We need to find a value of `targetslot`
+            // that is empty for the primary throw's target, as well as
             // the targets of its images.
             var targetslot = 0
             while (targetslot < maxOccupancy) {  // find value of targetslot that works
                 var itworks = true
 
-                // loop over all throws that have sst as master
+                // loop over all throws that have sst as primary
                 th.mhnIterator().forEach { (_, _, _, _, sst2) ->
-                    if (sst2 == null || sst2.master !== sst || sst2.targetindex >= indexes) {
+                    if (sst2 == null || sst2.primary !== sst || sst2.targetindex >= indexes) {
                         return@forEach
                     }
 
@@ -439,10 +439,10 @@ abstract class MHNPattern : Pattern() {
                 throw JuggleExceptionUser(message)
             }
 
-            // loop again over all throws that have sst as master,
+            // loop again over all throws that have sst as primary,
             // wiring up sources and targets using the value of `targetslot`
             th.mhnIterator().forEach { (_, _, _, _, sst2) ->
-                if (sst2 == null || sst2.master !== sst || sst2.targetindex >= indexes) {
+                if (sst2 == null || sst2.primary !== sst || sst2.targetindex >= indexes) {
                     return@forEach
                 }
                 val target2 =
@@ -535,7 +535,7 @@ abstract class MHNPattern : Pattern() {
                         sst3.handsindex = -1 // undefined
                         sst3.pathnum = sst.pathnum
                         sst3.mod = sst2.mod
-                        sst3.master = sst2.master
+                        sst3.primary = sst2.primary
                         sst3.source = null
                         sst3.target = sst
 
@@ -549,7 +549,7 @@ abstract class MHNPattern : Pattern() {
     // Set the MHNThrow.catching and MHNThrow.catchnum fields.
 
     protected fun setCatchOrder() {
-        // Figure out the correct catch order for master throws
+        // Figure out the correct catch order for primary throws
         for (k in 0..<indexes) {
             for (j in 0..<numberOfJugglers) {
                 for (h in 0..1) {
@@ -572,8 +572,8 @@ abstract class MHNPattern : Pattern() {
 
                     for (slot1 in 0..<maxOccupancy) {
                         val sst1 = th[j][h][k][slot1]
-                        if (sst1 == null || sst1.master !== sst1) {
-                            break // only master throws
+                        if (sst1 == null || sst1.primary !== sst1) {
+                            break // only primary throws
                         }
 
                         if (!sst1.catching) {
@@ -582,7 +582,7 @@ abstract class MHNPattern : Pattern() {
 
                         for (slot2 in (slot1 + 1)..<maxOccupancy) {
                             val sst2 = th[j][h][k][slot2]
-                            if (sst2 == null || sst2.master !== sst2) {
+                            if (sst2 == null || sst2.primary !== sst2) {
                                 break
                             }
                             if (!sst2.catching) {
@@ -605,12 +605,12 @@ abstract class MHNPattern : Pattern() {
             }
         }
 
-        // Copy that over to the non-master throws
+        // Copy that over to the non-primary throws
         th.mhnIterator().forEach { (_, _, _, _, sst) ->
-            if (sst == null || sst.master === sst) {
-                return@forEach  // skip master throws
+            if (sst == null || sst.primary === sst) {
+                return@forEach  // skip primary throws
             }
-            sst.catchnum = sst.master!!.catchnum
+            sst.catchnum = sst.primary!!.catchnum
         }
     }
 
@@ -764,12 +764,12 @@ abstract class MHNPattern : Pattern() {
         // chronologically in Steps 8-10
         //
         // This adds additional JMLEvents to our list, which are images of
-        // the master events (what we've added so far) with the pattern
+        // the primary events (what we've added so far) with the pattern
         // symmetries applied.
         //
         // In everything that follows we need to be careful to retain the
-        // JMLEvent.masterEvent field, which specifies whether the event is/isn't
-        // a master event.
+        // JMLEvent.primaryEvent field, which specifies whether the event is/isn't
+        // a primary event.
         result.buildEventList()
 
         // Step 8: Add events where there are long gaps for a hand
@@ -1133,7 +1133,7 @@ abstract class MHNPattern : Pattern() {
             for (j in 0..<numberOfJugglers) {
                 for (h in 0..1) {
                     val sst = th[j][h][k][0]
-                    if (sst == null || sst.master !== sst) {
+                    if (sst == null || sst.primary !== sst) {
                         continue
                     }
 
@@ -1313,7 +1313,7 @@ abstract class MHNPattern : Pattern() {
 
                         // record which hands are touched by this event, for later reference
                         th.mhnIterator().forEach { (_, j2, h2, _, sst2) ->
-                            if (sst2 != null && sst2.master === sst) {
+                            if (sst2 != null && sst2.primary === sst) {
                                 handtouched[j2][h2] = true
                             }
                         }
@@ -1655,7 +1655,7 @@ abstract class MHNPattern : Pattern() {
                             null
                         )
                     )
-                    ev2.masterEvent = ev.masterEvent
+                    ev2.primaryEvent = ev.primaryEvent
                     ev2.calcpos = ev.calcpos
                     pat.addEvent(ev2)
                     // mark related paths as touched
@@ -1705,7 +1705,7 @@ abstract class MHNPattern : Pattern() {
                                     )
                                     // no transitions yet; added later if needed
                                     ev2.calcpos = true
-                                    // adding these as master events (the default)
+                                    // adding these as primary events (the default)
                                     pat.addEvent(ev2)
                                 }
                             }
@@ -1756,7 +1756,7 @@ abstract class MHNPattern : Pattern() {
                                                     + (t - startT) * (endPos.z - startPos.z) /
                                                     (endT - startT))
                                                 val ev2 = ev.copy(x = x, y = y, z = z)
-                                                ev2.masterEvent = ev.masterEvent
+                                                ev2.primaryEvent = ev.primaryEvent
                                                 ev2.calcpos = false
                                                 pat.removeEvent(ev)
                                                 pat.addEvent(ev2)
@@ -1776,7 +1776,7 @@ abstract class MHNPattern : Pattern() {
                 // do a last scan through to define any remaining undefined positions
                 ev = pat.eventList
                 while (ev != null) {
-                    if (ev.juggler == j && ev.hand == hand && ev.calcpos && ev.isMaster) {
+                    if (ev.juggler == j && ev.hand == hand && ev.calcpos && ev.isPrimary) {
                         val ev2 = ev.copy(
                             x = if (h == RIGHT_HAND) RESTINGX else -RESTINGX,
                             y = 0.0,
@@ -1847,7 +1847,7 @@ abstract class MHNPattern : Pattern() {
                     }
                     foundEvent = true
                 } else if (addMode) {
-                    if (ev.juggler == addJuggler && ev.hand == addHand && ev.isMaster) {
+                    if (ev.juggler == addJuggler && ev.hand == addHand && ev.isPrimary) {
                         val ev2 = ev.copy(
                             transitions = ev.transitions +
                                 JMLTransition(
@@ -1857,7 +1857,7 @@ abstract class MHNPattern : Pattern() {
                                     null
                                 )
                         )
-                        // add as a master event
+                        // add as a primary event
                         pat.removeEvent(ev)
                         pat.addEvent(ev2)
                     }

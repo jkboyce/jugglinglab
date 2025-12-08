@@ -23,7 +23,7 @@ class MHNThrow {
     var mod: String? = null
 
     // filled in during buildJugglingMatrix():
-    var master: MHNThrow? = null
+    var primary: MHNThrow? = null
     var source: MHNThrow? = null
     var target: MHNThrow? = null
     var pathnum: Int = -1
@@ -55,7 +55,7 @@ class MHNThrow {
     override fun toString(): String {
         var s = "($juggler, $hand, $index, $slot"
         s = "$s -> $targetjuggler, $targethand, $targetindex, $targetslot)"
-        if (master === this) {
+        if (primary === this) {
             s = "$s*"
         }
         return s

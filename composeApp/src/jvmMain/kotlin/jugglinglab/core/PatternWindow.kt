@@ -511,9 +511,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     view.pattern!!.writeJML(fw, writeTitle = true, writeInfo = true)
                     fw.close()
                 } catch (fnfe: FileNotFoundException) {
-                    throw JuggleExceptionInternal("FileNotFound: " + fnfe.message)
+                    throw JuggleExceptionInternal("FileNotFound: ${fnfe.message}")
                 } catch (ioe: IOException) {
-                    throw JuggleExceptionInternal("IOException: " + ioe.message)
+                    throw JuggleExceptionInternal("IOException: ${ioe.message}")
                 }
             }
 
@@ -577,11 +577,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
                     val newpat = JMLPattern(view.pattern!!)
-                    newpat.swapHands()
+                    newpat.invertXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
-                } catch (_: JuggleExceptionUser) {
-                    throw JuggleExceptionInternal("Error in FILE_SWAPHANDS")
+                } catch (e: JuggleExceptionUser) {
+                    throw JuggleExceptionInternal("Error in FILE_SWAPHANDS: ${e.message}")
                 }
             }
 
@@ -591,8 +591,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     newpat.invertXAxis()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
-                } catch (_: JuggleExceptionUser) {
-                    throw JuggleExceptionInternal("Error in FILE_INVERTX")
+                } catch (e: JuggleExceptionUser) {
+                    throw JuggleExceptionInternal("Error in FILE_INVERTX: ${e.message}")
                 }
             }
 
@@ -602,8 +602,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     newpat.invertTime()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
-                } catch (_: JuggleExceptionUser) {
-                    throw JuggleExceptionInternal("Error in FILE_INVERTTIME")
+                } catch (e: JuggleExceptionUser) {
+                    throw JuggleExceptionInternal("Error in FILE_INVERTTIME: ${e.message}")
                 }
             }
 

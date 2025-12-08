@@ -9,8 +9,8 @@ package jugglinglab.jml
 data class JMLTransition(
     val type: Int,
     val path: Int,
-    val throwType: String?,
-    val throwMod: String?
+    val throwType: String? = null,
+    val throwMod: String? = null
 ) {
     // TODO: remove these later; part of layout
     var incomingPathLink: PathLink? = null

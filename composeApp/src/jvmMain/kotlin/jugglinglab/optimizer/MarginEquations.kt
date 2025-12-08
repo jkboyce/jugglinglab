@@ -86,7 +86,7 @@ class MarginEquations() {
         val events = pat.eventList
         val pathlinks = pat.pathLinks
 
-        // Step 2: Figure out the variables in the margin equations. Find the master events
+        // Step 2: Figure out the variables in the margin equations. Find the primary events
         // in the pattern, in particular the ones that are throws or catches. The x-coordinate
         // of each will be a free variable in our equations.
         val variableEvents = ArrayList<JMLEvent>()
@@ -96,7 +96,7 @@ class MarginEquations() {
 
         var ev = events
         while (ev != null) {
-            if (ev.isMaster) {
+            if (ev.isPrimary) {
                 for (tr in ev.transitions) {
                     val type = tr.type
                     if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
@@ -177,20 +177,20 @@ class MarginEquations() {
             println("   propradius = $propradius")
         }
 
-        // Step 5: Identify the "master pathlinks", the non-hand pathlinks starting
-        // on master events. Put them into a linear array for convenience.
-        var masterplNum = 0
-        val masterpl: MutableList<PathLink> = ArrayList()
+        // Step 5: Identify the "primary pathlinks", the non-hand pathlinks starting
+        // on primary events. Put them into a linear array for convenience.
+        var primaryPlNum = 0
+        val primaryPl: MutableList<PathLink> = ArrayList()
         for (pathlink in pathlinks) {
             for (pl in pathlink) {
-                if (!pl.isInHand && pl.startEvent.isMaster) {
-                    ++masterplNum
-                    masterpl.add(pl)
+                if (!pl.isInHand && pl.startEvent.isPrimary) {
+                    ++primaryPlNum
+                    primaryPl.add(pl)
                 }
             }
         }
         if (Constants.DEBUG_OPTIMIZE) {
-            println("   number of master pathlinks = $masterplNum")
+            println("   number of primary pathlinks = $primaryPlNum")
         }
 
         // Step 6: Figure out all distinct potential collisions in the pattern, and the
@@ -199,7 +199,7 @@ class MarginEquations() {
         // Find all pathlink pairs (P1, P2) such that:
         // * P1 and P2 both represent paths through the air (not in the hands)
         // * P1 and P2 are either both air paths, or both bounced paths
-        // * P1 starts on a master event
+        // * P1 starts on a primary event
         // * P2 does not start on the same event as P1
         // * P2 starts no earlier than P1
         // * if P1 and P2 start at the same time, then P2 ends no earlier than P1
@@ -224,10 +224,10 @@ class MarginEquations() {
         if (Constants.DEBUG_OPTIMIZE) {
             println("potential collisions:")
         }
-        for (i in 0..<masterplNum) {
-            for (j in 0..<masterplNum) {
-                val mpl1 = masterpl[i]
-                val mpl2 = masterpl[j]
+        for (i in 0..<primaryPlNum) {
+            for (j in 0..<primaryPlNum) {
+                val mpl1 = primaryPl[i]
+                val mpl2 = primaryPl[j]
 
                 // enumerate all of the ways that mpl2 could collide with mpl1.
                 val mpl1Start = mpl1.startEvent.t
@@ -324,40 +324,40 @@ class MarginEquations() {
                             val c2Varnum: Int
 
                             var mplev = mpl1.startEvent
-                            if (!mplev.isMaster) {
-                                if (mplev.hand != mplev.master.hand) {
+                            if (!mplev.isPrimary) {
+                                if (mplev.hand != mplev.primary.hand) {
                                     coefT1 = -coefT1
                                 }
-                                mplev = mplev.master
+                                mplev = mplev.primary
                             }
                             t1Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl1.endEvent
-                            if (!mplev.isMaster) {
-                                if (mplev.hand != mplev.master.hand) {
+                            if (!mplev.isPrimary) {
+                                if (mplev.hand != mplev.primary.hand) {
                                     coefC1 = -coefC1
                                 }
-                                mplev = mplev.master
+                                mplev = mplev.primary
                             }
                             c1Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl2.startEvent
-                            if (!mplev.isMaster) {
-                                if (mplev.hand != mplev.master.hand) {
+                            if (!mplev.isPrimary) {
+                                if (mplev.hand != mplev.primary.hand) {
                                     coefT2 = -coefT2
                                 }
-                                mplev = mplev.master
+                                mplev = mplev.primary
                             }
                             t2Varnum = variableEvents.indexOf(mplev)
                             mplev = mpl2.endEvent
-                            if (!mplev.isMaster) {
-                                if (mplev.hand != mplev.master.hand) {
+                            if (!mplev.isPrimary) {
+                                if (mplev.hand != mplev.primary.hand) {
                                     coefC2 = -coefC2
                                 }
-                                mplev = mplev.master
+                                mplev = mplev.primary
                             }
                             c2Varnum = variableEvents.indexOf(mplev)
 
                             if (t1Varnum < 0 || c1Varnum < 0 || t2Varnum < 0 || c2Varnum < 0) {
-                                throw JuggleExceptionInternal("Could not find master event in variableEvents")
+                                throw JuggleExceptionInternal("Could not find primary event in variableEvents")
                             }
 
                             if (invertMpl2) {

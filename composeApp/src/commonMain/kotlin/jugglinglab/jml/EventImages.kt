@@ -10,49 +10,52 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.Permutation.Companion.lcm
 
-class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
-    private var numjugglers: Int = 0
-    private var numpaths: Int = 0
-    private var looptime: Double = 0.0
-    private var loopperm: Permutation? = null
+class EventImages(
+    val pattern: JMLPattern,
+    val primaryEvent: JMLEvent
+) {
+    private var numJugglers: Int = 0
+    private var numPaths: Int = 0
+    private var loopTime: Double = 0.0
+    private var loopPerm: Permutation? = null
 
-    private var evjuggler: Int = 0
-    private var evhand: Int = 0
-    private var evtransitions: Int = 0 // hand is by index (0 or 1)
-    private var evtime: Double = 0.0
+    private var evJuggler: Int = 0
+    private var evHand: Int = 0 // hand is by index (0 or 1)
+    private var evTransitionCount: Int = 0
+    private var evTime: Double = 0.0
 
     private lateinit var ea: Array<Array<Array<Permutation?>>>
 
-    private var numentries: Int = 0
-    private lateinit var transitiontype: IntArray
+    private var numEntries: Int = 0
+    private lateinit var transitionType: IntArray
 
-    private var currentloop: Int = 0
-    private var currentj: Int = 0
-    private var currenth: Int = 0
-    private var currententry: Int = 0
+    private var currentLoop: Int = 0
+    private var currentJuggler: Int = 0
+    private var currentHand: Int = 0
+    private var currentEntry: Int = 0
 
     init {
         calcarray()
         resetPosition()
-        ev.delay = 0 // delay relative to master -> none for ev
-        ev.delayunits = numentries
+        primaryEvent.delay = 0 // delay relative to primary -> none for ev
+        primaryEvent.delayunits = numEntries
     }
 
     val next: JMLEvent
         get() {
             // move pointer to next in line
             do {
-                if (++currenth == 2) {
-                    currenth = 0
-                    if (++currentj == this.numjugglers) {
-                        currentj = 0
-                        if (++currententry == this.numentries) {
-                            currententry = 0
-                            currentloop++
+                if (++currentHand == 2) {
+                    currentHand = 0
+                    if (++currentJuggler == this.numJugglers) {
+                        currentJuggler = 0
+                        if (++currentEntry == this.numEntries) {
+                            currentEntry = 0
+                            currentLoop++
                         }
                     }
                 }
-            } while (ea[currentj][currenth][currententry] == null)
+            } while (ea[currentJuggler][currentHand][currentEntry] == null)
 
             return makeEvent()
         }
@@ -61,26 +64,26 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         get() {
             // move point to previous in line
             do {
-                if (currenth-- == 0) {
-                    currenth = 1
-                    if (currentj-- == 0) {
-                        currentj = numjugglers - 1
-                        if (currententry-- == 0) {
-                            currententry = numentries - 1
-                            --currentloop
+                if (currentHand-- == 0) {
+                    currentHand = 1
+                    if (currentJuggler-- == 0) {
+                        currentJuggler = numJugglers - 1
+                        if (currentEntry-- == 0) {
+                            currentEntry = numEntries - 1
+                            --currentLoop
                         }
                     }
                 }
-            } while (ea[currentj][currenth][currententry] == null)
+            } while (ea[currentJuggler][currentHand][currentEntry] == null)
 
             return makeEvent()
         }
 
     private fun makeEvent(): JMLEvent {
-        val pathPermFromMaster = run {
-            var ptemp = ea[currentj][currenth][currententry]
-            var lp = loopperm!!
-            var pow = currentloop
+        val pathPermFromPrimary = run {
+            var ptemp = ea[currentJuggler][currentHand][currentEntry]
+            var lp = loopPerm!!
+            var pow = currentLoop
             if (pow < 0) {
                 lp = lp.inverse
                 pow = -pow
@@ -92,41 +95,41 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
             ptemp!!
         }
 
-        val newX = if (currenth != evhand) -ev.x else ev.x
-        val newT = (evtime
-            + currentloop.toDouble() * looptime + currententry.toDouble() * (looptime / numentries.toDouble()))
-        val newJuggler = currentj + 1
-        val newHand = if (currenth == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+        val newX = if (currentHand != evHand) -primaryEvent.x else primaryEvent.x
+        val newT = (evTime
+            + currentLoop.toDouble() * loopTime + currentEntry.toDouble() * (loopTime / numEntries.toDouble()))
+        val newJuggler = currentJuggler + 1
+        val newHand = if (currentHand == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
 
-        val newEvent = ev.copy(
+        val newEvent = primaryEvent.copy(
             x = newX,
-            y = ev.y,
-            z = ev.z,
+            y = primaryEvent.y,
+            z = primaryEvent.z,
             t = newT,
             juggler = newJuggler,
             hand = newHand,
-            transitions = ev.transitions.map { tr ->
-                tr.copy(path = pathPermFromMaster.getMapping(tr.path))
+            transitions = primaryEvent.transitions.map { tr ->
+                tr.copy(path = pathPermFromPrimary.getMapping(tr.path))
             }
         )
 
-        newEvent.copyLayoutDataFrom(ev, currententry + numentries * currentloop, numentries)
-        newEvent.pathPermFromMaster = pathPermFromMaster
+        newEvent.copyLayoutDataFrom(primaryEvent, currentEntry + numEntries * currentLoop, numEntries)
+        newEvent.pathPermFromPrimary = pathPermFromPrimary
         return newEvent
     }
 
     fun resetPosition() {
-        currentloop = 0
-        currentj = evjuggler
-        currenth = evhand
-        currententry = 0
+        currentLoop = 0
+        currentJuggler = evJuggler
+        currentHand = evHand
+        currentEntry = 0
     }
 
     // Determine if this event has any transitions for the specified hand, after
     // symmetries are applied.
 
     fun hasJMLTransitionForHand(jug: Int, han: Int): Boolean {
-        for (i in 0..<numentries) {
+        for (i in 0..<numEntries) {
             if (ea[jug - 1][HandLink.index(han)][i] != null) {
                 return true
             }
@@ -139,17 +142,17 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
     fun hasVDJMLTransitionForHand(jug: Int, han: Int): Boolean {
         var i = 0
-        while (i < numentries) {
+        while (i < numEntries) {
             if (ea[jug - 1][HandLink.index(han)][i] != null) {
                 break
             }
             ++i
         }
-        if (i == numentries) return false
+        if (i == numEntries) return false
 
-        for (j in 0..<evtransitions) {
-            if (transitiontype[j] == JMLTransition.TRANS_THROW
-                || transitiontype[j] == JMLTransition.TRANS_SOFTCATCH
+        for (j in 0..<evTransitionCount) {
+            if (transitionType[j] == JMLTransition.TRANS_THROW
+                || transitionType[j] == JMLTransition.TRANS_SOFTCATCH
             ) {
                 return true
             }
@@ -158,12 +161,12 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
     }
 
     fun hasJMLTransitionForPath(path: Int): Boolean {
-        val cycle = loopperm!!.getCycle(path)
+        val cycle = loopPerm!!.getCycle(path)
 
-        for (k in 0..<evtransitions) {
-            val transPath = ev.transitions[k].path
-            for (i in 0..<numjugglers) {
-                for (j in 0..<numentries) {
+        for (k in 0..<evTransitionCount) {
+            val transPath = primaryEvent.transitions[k].path
+            for (i in 0..<numJugglers) {
+                for (j in 0..<numEntries) {
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
@@ -177,17 +180,17 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
     }
 
     fun hasVDJMLTransitionForPath(path: Int): Boolean {
-        val cycle = loopperm!!.getCycle(path)
+        val cycle = loopPerm!!.getCycle(path)
 
-        for (k in 0..<evtransitions) {
-            if (transitiontype[k] != JMLTransition.TRANS_THROW
-                && transitiontype[k] != JMLTransition.TRANS_SOFTCATCH
+        for (k in 0..<evTransitionCount) {
+            if (transitionType[k] != JMLTransition.TRANS_THROW
+                && transitionType[k] != JMLTransition.TRANS_SOFTCATCH
             ) {
                 continue
             }
-            val transPath = ev.transitions[k].path
-            for (i in 0..<numjugglers) {
-                for (j in 0..<numentries) {
+            val transPath = primaryEvent.transitions[k].path
+            for (i in 0..<numJugglers) {
+                for (j in 0..<numEntries) {
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
@@ -202,25 +205,25 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
     @Throws(JuggleExceptionUser::class)
     private fun calcarray() {
-        numjugglers = pat.numberOfJugglers
-        numpaths = pat.numberOfPaths
-        looptime = pat.loopEndTime - pat.loopStartTime
-        loopperm = pat.pathPermutation
+        numJugglers = pattern.numberOfJugglers
+        numPaths = pattern.numberOfPaths
+        loopTime = pattern.loopEndTime - pattern.loopStartTime
+        loopPerm = pattern.pathPermutation
 
-        evjuggler = ev.juggler - 1
-        evhand = HandLink.index(ev.hand)
-        evtransitions = ev.transitions.size
-        evtime = ev.t
+        evJuggler = primaryEvent.juggler - 1
+        evHand = HandLink.index(primaryEvent.hand)
+        evTransitionCount = primaryEvent.transitions.size
+        evTime = primaryEvent.t
 
-        val numsyms = pat.symmetries.size - 1
+        val numsyms = pattern.symmetries.size - 1
         val sym = arrayOfNulls<JMLSymmetry>(numsyms)
         val symperiod = IntArray(numsyms)
         val deltaentries = IntArray(numsyms)
         var invdelayperm: Permutation? = null
 
-        numentries = 1
+        numEntries = 1
         var index = 0
-        for (temp in pat.symmetries) {
+        for (temp in pattern.symmetries) {
             when (temp.type) {
                 JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm!!.inverse
                 JMLSymmetry.TYPE_SWITCH -> {
@@ -233,7 +236,7 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
                 JMLSymmetry.TYPE_SWITCHDELAY -> {
                     sym[index] = temp
                     symperiod[index] = temp.jugglerPerm!!.order
-                    numentries = lcm(numentries, symperiod[index])
+                    numEntries = lcm(numEntries, symperiod[index])
                     deltaentries[index] = -1
                     index++
                 }
@@ -242,18 +245,18 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
         for (i in 0..<numsyms) { // assume exactly one delay symmetry
             if (deltaentries[i] == -1) {
                 // signals a switchdelay symmetry
-                deltaentries[i] = numentries / symperiod[i]
+                deltaentries[i] = numEntries / symperiod[i]
             }
         }
 
-        ea = Array(numjugglers) { Array(2) { arrayOfNulls(numentries) } }
-        transitiontype = IntArray(evtransitions)
+        ea = Array(numJugglers) { Array(2) { arrayOfNulls(numEntries) } }
+        transitionType = IntArray(evTransitionCount)
 
-        val idperm = Permutation(numpaths, false) // identity
-        ev.pathPermFromMaster = idperm
-        ea[evjuggler][evhand][0] = idperm
-        for (i in 0..<evtransitions) {
-            transitiontype[i] = ev.transitions[i].type
+        val idperm = Permutation(numPaths, false) // identity
+        primaryEvent.pathPermFromPrimary = idperm
+        ea[evJuggler][evHand][0] = idperm
+        for (i in 0..<evTransitionCount) {
+            transitionType[i] = primaryEvent.transitions[i].type
         }
 
         var changed: Boolean
@@ -261,9 +264,9 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
             changed = false
 
             for (i in 0..<numsyms) {
-                for (j in 0..<numjugglers) {
+                for (j in 0..<numJugglers) {
                     for (k in 0..1) {
-                        for (l in 0..<numentries) {
+                        for (l in 0..<numEntries) {
                             // apply symmetry to event
                             var newj = sym[i]!!.jugglerPerm!!.getMapping(j + 1)
                             if (newj == 0) {
@@ -282,9 +285,9 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
 
                             var newl = l + deltaentries[i]
                             // map back into range
-                            if (newl >= numentries) {
+                            if (newl >= numEntries) {
                                 p = p.apply(invdelayperm)
-                                newl -= numentries
+                                newl -= numEntries
                             }
                             // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);
                             // check for consistency
@@ -301,16 +304,5 @@ class EventImages(private var pat: JMLPattern, private var ev: JMLEvent) {
                 }
             }
         } while (changed)
-
-        // System.out.println("**** done with event");
-
-        /*      int[][][] ea = eventlist.getEventArray();
-        for (int j = 0; j < numjugglers; j++) {
-            for (int k = 0; k < 2; k++) {
-                for (int l = 0; l < numentries; l++) {
-                    System.out.println("ea["+(j+1)+","+k+","+l+"] = "+ea[j][k][l][0]);
-                }
-            }
-        }*/
     }
 }

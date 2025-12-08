@@ -29,6 +29,7 @@ import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.HandLink.Companion.index
+import jugglinglab.jml.JMLEvent.Companion.addTransition
 import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.notation.Pattern
 import jugglinglab.path.BouncePath
@@ -73,6 +74,7 @@ class JMLPattern() {
     // for layout
     private lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
     private lateinit var jugglerangle: Array<Curve?> // angles for each juggler
+
     // whether pattern has a velocity-defining transition
     private lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
     private lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
@@ -206,50 +208,44 @@ class JMLPattern() {
     fun addEvent(ev: JMLEvent) {
         setNeedsLayout()
 
-        if (this.eventList == null || ev.t < eventList!!.t) {
+        if (eventList == null || ev.t < eventList!!.t) {
             // set `ev` as new list head
             ev.previous = null
-            ev.next = this.eventList
-            if (this.eventList != null) {
+            ev.next = eventList
+            if (eventList != null) {
                 eventList!!.previous = ev
             }
-            this.eventList = ev
+            eventList = ev
             return
         }
 
-        var current = this.eventList
+        var current = eventList
+
         while (true) {
             val combineEvents =
                 current!!.t == ev.t && current.hand == ev.hand && current.juggler == ev.juggler
 
             if (combineEvents) {
-                // replace `current` with `ev` in the list...
-                ev.previous = current.previous
-                ev.next = current.next
+                var event = ev
+
+                // move all the transitions from `current` to `event`, except those
+                // for a path number that already has a transition in `event`.
+                for (trCurrent in current.transitions) {
+                    if (event.transitions.all { tr -> tr.path != trCurrent.path }) {
+                        event = event.addTransition(trCurrent)
+                    }
+                }
+
+                // then replace `current` with `event` in the list
+                event.previous = current.previous
+                event.next = current.next
                 if (current.next != null) {
-                    current.next!!.previous = ev
+                    current.next!!.previous = event
                 }
                 if (current.previous == null) {
-                    this.eventList = ev // new head of the list
+                    eventList = event // new head of the list
                 } else {
-                    current.previous!!.next = ev
-                }
-
-                // ...then move all the transitions from `current` to `ev`, except
-                // those for a path number that already has a transition in `ev`.
-                for (trCurrent in current.transitions) {
-                    var addTransition = true
-
-                    for (tr in ev.transitions) {
-                        if (tr.path == trCurrent.path) {
-                            addTransition = false
-                            break
-                        }
-                    }
-
-                    if (addTransition) {
-                        ev.addTransition(trCurrent)
-                    }
+                    current.previous!!.next = event
                 }
                 return
             }
@@ -301,7 +297,7 @@ class JMLPattern() {
             if ((current.t in loopStartTime..<loopEndTime) &&
                 current.juggler == ev.juggler &&
                 current.hand == ev.hand &&
-                current.hasSameMasterAs(ev)
+                current.hasSamePrimaryAs(ev)
             ) {
                 return current
             }
@@ -317,10 +313,10 @@ class JMLPattern() {
         val sb = StringBuilder()
         var current = this.eventList
         while (current != null) {
-            if (current.isMaster) {
-                sb.append("  Master event:\n")
+            if (current.isPrimary) {
+                sb.append("  Primary event:\n")
             } else {
-                sb.append("  Slave event; master at t=" + current.master.t + "\n")
+                sb.append("  Image event; primary at t=" + current.primary.t + "\n")
             }
             current.writeJML(sb)
             current = current.next
@@ -430,19 +426,28 @@ class JMLPattern() {
     // Multiply all times in the pattern by a common factor `scale`.
 
     fun scaleTime(scale: Double) {
-        var ev = this.eventList
+        var ev = eventList
+        val newEvents: MutableList<JMLEvent> = mutableListOf()
         while (ev != null) {
-            if (ev.isMaster) {
-                ev.t = ev.t * scale
+            if (ev.isPrimary) {
+                newEvents.add(ev.copy(t = ev.t * scale))
             }
             ev = ev.next
         }
+        eventList = null
+        for (ev in newEvents) {
+            addEvent(ev)
+        }
 
         var pos = positionList
+        val newPositions: MutableList<JMLPosition> = mutableListOf()
         while (pos != null) {
-            removePosition(pos)
-            addPosition(pos.copy(t = pos.t * scale))
+            newPositions.add(pos.copy(t = pos.t * scale))
             pos = pos.next
+        }
+        positionList = null
+        for (pos in newPositions) {
+            addPosition(pos)
         }
 
         symmetries = symmetries.map { sym ->
@@ -468,14 +473,12 @@ class JMLPattern() {
 
         for (path in 1..numberOfPaths) {
             for (pl in pathLinks[path - 1]) {
-                val p = pl.path
-                if (p != null) {
-                    val d = p.duration
-                    val dmin = p.minDuration
+                val path = pl.path ?: continue
+                val duration = path.duration
+                val minDuration = path.minDuration
 
-                    if (d < dmin && d > 0) {
-                        scaleFactor = max(scaleFactor, dmin / d)
-                    }
+                if (duration < minDuration && duration > 0) {
+                    scaleFactor = max(scaleFactor, minDuration / duration)
                 }
             }
         }
@@ -487,143 +490,183 @@ class JMLPattern() {
         return scaleFactor
     }
 
-    // Swap the assignment of hands, leaving events in the same locations.
-
-    fun swapHands() {
-        var ev = this.eventList
-        while (ev != null) {
-            var hand = ev.hand
-
-            // flip hand assignment, invert x coordinate
-            hand = if (hand == HandLink.LEFT_HAND) {
-                HandLink.RIGHT_HAND
-            } else {
-                HandLink.LEFT_HAND
-            }
-
-            ev.setHand(ev.juggler, hand)
-            ev = ev.next
-        }
-        setNeedsLayout()
-    }
-
     // Flip the x-axis in the local coordinates of each juggler.
+    //
+    // Makes a right<-->left hand switch for all events in the pattern.
+    // Parameter `flipXCoordinate` determines whether the x coordinates are
+    // also inverted.
 
-    fun invertXAxis() {
-        var ev = this.eventList
+    fun invertXAxis(flipXCoordinate: Boolean = true) {
+        var ev = eventList
         while (ev != null) {
-            var hand = ev.hand
-            val c = ev.localCoordinate
-
-            // flip hand assignment, invert x coordinate
-            hand = if (hand == HandLink.LEFT_HAND) {
-                HandLink.RIGHT_HAND
-            } else {
-                HandLink.LEFT_HAND
+            if (ev.isPrimary) {
+                val newHand = if (ev.hand == HandLink.LEFT_HAND) {
+                    HandLink.RIGHT_HAND
+                } else {
+                    HandLink.LEFT_HAND
+                }
+                removeEvent(ev)
+                if (flipXCoordinate) {
+                    addEvent(ev.copy(x = -ev.x, hand = newHand))
+                } else {
+                    addEvent(ev.copy(hand = newHand))
+                }
             }
-
-            c.x = -c.x
-
-            ev.setHand(ev.juggler, hand)
-            ev.localCoordinate = c
             ev = ev.next
         }
         setNeedsLayout()
     }
+
+    // Return the (infinite) sequence of events formed by applying the pattern
+    // symmetries to the primary events.
+    //
+    // This yields events in increasing order, the major dimension of which is
+    // time. If `reverse` is true then they are yielded moving backward in time,
+    // in decreasing order.
+    //
+    // When scanning forward we start at time `startTime` and advance forward.
+    // When scanning in reverse we start at `startTime` and advance backward -
+    // however we do not yield any events exactly at `startTime` when scanning
+    // in reverse. In this way, scanning forward and backward generates all events
+    // exactly once.
+
+    fun eventSequence(
+        startTime: Double = loopStartTime,
+        reverse: Boolean = false
+    ): Sequence<EventImage> = sequence {
+        val primaryEvents = buildList {
+            var ev = eventList
+            while (ev != null) {
+                if (ev.isPrimary) {
+                    add(ev)
+                }
+                ev = ev.next
+            }
+        }
+        val eventImages = primaryEvents.map { ev ->
+            EventImages(this@JMLPattern, ev)
+        }
+        val eventQueue = eventImages.map { ei ->
+            EventImage(ei.primaryEvent, ei.primaryEvent)
+        }.toMutableList()
+
+        // we may need to scan in the opposite direction for a while to get
+        // to the correct time before we start yielding events
+        var starting = true
+
+        while (true) {
+            val currentEventImage = if (reverse xor starting) {
+                eventQueue.maxWith { a, b -> a.event.compareTo(b.event) }
+            } else {
+                eventQueue.minWith { a, b -> a.event.compareTo(b.event) }
+            }
+
+            if (starting) {
+                if (reverse xor (currentEventImage.event.t < startTime)) {
+                    starting = false
+                }
+            } else {
+                if (reverse xor (currentEventImage.event.t >= startTime)) {
+                    yield(currentEventImage)
+                }
+            }
+
+            // restock the queue
+            val lastIndexUsed = eventQueue.indexOf(currentEventImage)
+            val nextEvent = if (reverse xor starting) {
+                eventImages[lastIndexUsed].previous
+            } else {
+                eventImages[lastIndexUsed].next
+            }
+            eventQueue[lastIndexUsed] = EventImage(
+                nextEvent,
+                eventImages[lastIndexUsed].primaryEvent
+            )
+        }
+    }
+
+    data class EventImage(
+        val event: JMLEvent,
+        val primary: JMLEvent
+    )
 
     // Flip the time axis to create (as nearly as possible) what the pattern
     // looks like played in reverse.
 
     @Throws(JuggleExceptionInternal::class)
     fun invertTime() {
-        try {
-            layoutPattern() // to ensure we have PathLinks
-
-            // For each JMLEvent:
-            //     - set t = looptime - t
-            //     - reverse the doubly-linked event list
-            val looptime = loopEndTime
+        val primaryEvents = buildList {
             var ev = eventList
             while (ev != null) {
-                ev.t = looptime - ev.t
-
-                val prev = ev.previous
-                val next = ev.next
-                ev.previous = next
-                ev.next = prev
-
-                if (next == null) {
-                    eventList = ev  // new list head
+                if (ev.isPrimary) {
+                    add(ev)
                 }
-
-                ev = next
+                ev = ev.next
             }
-
-            // For each JMLPosition:
-            //     - set t = looptime - t
-            //     - sort the position list in time
-            var pos = positionList
-            positionList = null
-            while (pos != null) {
-                // no notion analagous to master events, so have to keep
-                // position time within [0, looptime).
-                val newTime = if (pos.t != 0.0) { looptime - pos.t } else 0.0
-                addPosition(pos.copy(t = newTime))
-                pos = pos.next
-            }
-
-            // for each symmetry (besides type SWITCH):
-            //     - invert pperm
-            symmetries = symmetries.map { sym ->
-                if (sym.type == JMLSymmetry.TYPE_SWITCH) {
-                    sym
-                } else {
-                    sym.copy(pathPerm = sym.pathPerm!!.inverse)
-                }
-            }.toMutableList()
-
-            // for each PathLink:
-            //     - find corresponding throw-type JMLTransition in startevent
-            //     - find corresponding catch-type JMLTransition in endevent
-            //     - swap {type, throw type, throw mod} for the two transitions
-            for (path in 1..numberOfPaths) {
-                for (pl in pathLinks[path - 1]) {
-                    if (pl.isInHand) continue
-                    val start = pl.startEvent
-                    val end = pl.endEvent
-
-                    val startTrIndex = start.transitions.indexOfFirst { it.path == path }
-                    val endTrIndex = end.transitions.indexOfFirst { it.path == path }
-                    if (startTrIndex == -1 || endTrIndex == -1) {
-                        throw JuggleExceptionInternalWithPattern("invertTime() error 1", this)
-                    }
-
-                    val startTr = start.transitions[startTrIndex]
-                    val endTr = end.transitions[endTrIndex]
-                    if (startTr.outgoingPathLink != pl) {
-                        throw JuggleExceptionInternalWithPattern("invertTime() error 2", this)
-                    }
-                    if (endTr.incomingPathLink != pl) {
-                        throw JuggleExceptionInternalWithPattern("invertTime() error 3", this)
-                    }
-
-                    val startTrType = startTr.type
-                    val startTrThrowType = startTr.throwType
-                    val startTrThrowMod = startTr.throwMod
-
-                    start.transitions[startTrIndex] = startTr.copy(type = endTr.type, throwType = endTr.throwType, throwMod = endTr.throwMod)
-                    end.transitions[endTrIndex] = endTr.copy(type = startTrType, throwType = startTrThrowType, throwMod = startTrThrowMod)
-
-                    // don't need to do surgery on PathLinks or Paths since those
-                    // will be recalculated during pattern layout
-                }
-            }
-        } catch (jeu: JuggleExceptionUser) {
-            // No user errors here because the pattern has already been animated
-            throw JuggleExceptionInternalWithPattern("invertTime() error 4: " + jeu.message, this)
-        } finally {
-            setNeedsLayout()
         }
+
+        // For each JMLEvent:
+        //     - set t = looptime - t
+        //     - set all throw transitions to catch transitions
+        //     - set all catch transitions to throw transitions of the correct
+        //       type
+        val inverseEvents = primaryEvents.map { ev ->
+            val newT = loopEndTime - ev.t
+            val newTransitions = ev.transitions.map { tr ->
+                when (tr.type) {
+                    JMLTransition.TRANS_THROW -> {
+                        // throws become catches
+                        JMLTransition(type = JMLTransition.TRANS_CATCH, path = tr.path)
+                    }
+                    JMLTransition.TRANS_CATCH,
+                    JMLTransition.TRANS_SOFTCATCH,
+                    JMLTransition.TRANS_GRABCATCH -> {
+                        // and catches become the prior throw that landed at this
+                        // catch
+                        val sourceEvent =
+                            eventSequence(startTime = ev.t, reverse = true)
+                                .first { ei ->
+                                    ei.event.transitions.any { it.path == tr.path }
+                                }.event
+                        val sourceTransition =
+                            sourceEvent.transitions.first { it.path == tr.path }
+                        if (sourceTransition.type != JMLTransition.TRANS_THROW) {
+                            throw JuggleExceptionInternalWithPattern("invertTime() problem 1", this)
+                        }
+                        sourceTransition
+                    }
+                    else -> tr
+                }
+            }
+            ev.copy(t = newT, transitions = newTransitions)
+        }
+
+        eventList = null
+        inverseEvents.map { addEvent(it) }
+
+        // for each JMLPosition:
+        //     - set t = looptime - t
+        var pos = positionList
+        positionList = null
+        while (pos != null) {
+            // no notion analagous to primary events, so have to keep position
+            // time within [0, looptime).
+            val newTime = if (pos.t != 0.0) {
+                loopEndTime - pos.t
+            } else 0.0
+            addPosition(pos.copy(t = newTime))
+            pos = pos.next
+        }
+
+        // for each symmetry (besides type SWITCH):
+        //     - invert pperm
+        symmetries = symmetries.map { sym ->
+            if (sym.type == JMLSymmetry.TYPE_SWITCH) {
+                sym
+            } else {
+                sym.copy(pathPerm = sym.pathPerm!!.inverse)
+            }
+        }.toMutableList()
     }
 
     // Streamline the pattern to remove excess empty and holding events.
@@ -632,7 +675,7 @@ class JMLPattern() {
     // all of the following are true:
     //
     // (a) event is empty or contains only <holding> transitions
-    // (b) event has a different master event than the previous (surviving)
+    // (b) event has a different primary event than the previous (surviving)
     //     event for that hand
     // (c) event is within `twindow` seconds of the previous (surviving) event
     //     for that hand
@@ -661,12 +704,12 @@ class JMLPattern() {
                     break
                 }
             }
-            val differentMasters = (prev == null || !ev.hasSameMasterAs(prev))
+            val differentPrimaries = (prev == null || !ev.hasSamePrimaryAs(prev))
             val insideWindow = (prev != null && (ev.t - prev.t) < twindow)
             val notPassAdjacent =
                 (prev != null && next != null && !prev.hasPassingTransition && !next.hasPassingTransition)
 
-            val remove = holdingOnly && differentMasters && insideWindow && notPassAdjacent
+            val remove = holdingOnly && differentPrimaries && insideWindow && notPassAdjacent
             if (remove) {
                 removeEvent(ev)
                 ++nRemoved
@@ -765,6 +808,7 @@ class JMLPattern() {
                     newProps.add(newProp)
                     newProps.size
                 }
+
                 else -> idx + 1  // props are indexed from 1
             }
         }
@@ -797,13 +841,14 @@ class JMLPattern() {
             }
 
             buildEventList()
-            findMasterEvents()
+            findPrimaryEvents()
             findPositions()
             gotoGlobalCoordinates()
             buildLinkLists()
             layoutHandPaths()
 
             if (Constants.DEBUG_LAYOUT) {
+                println("Data from JMLPattern.layoutPattern():")
                 for (i in 0..<numberOfPaths) {
                     println(pathlinks!![i].size.toString() + " pathlinks for path " + (i + 1) + ":")
                     for (jtemp in pathlinks!![i].indices) {
@@ -856,7 +901,7 @@ class JMLPattern() {
                 val message = getStringResource(Res.string.error_juggler_outofrange)
                 throw JuggleExceptionUser(message)
             }
-            if (current.isMaster) {
+            if (current.isPrimary) {
                 ++numevents
             } else {
                 removeEvent(current)
@@ -943,7 +988,7 @@ class JMLPattern() {
             eventqueue[i] = ei[i]!!.previous // seed the queue
         }
 
-        // start by extending each master event backward in time
+        // start by extending each primary event backward in time
         var contin: Boolean
         do {
             // find latest event in queue
@@ -1117,44 +1162,44 @@ class JMLPattern() {
     }
 
     //--------------------------------------------------------------------------
-    // Step 2: figure out which events should be considered master events
+    // Step 2: figure out which events should be considered primary events
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    fun findMasterEvents() {
+    fun findPrimaryEvents() {
         var rebuildList = false
         var ev = this.eventList
 
         while (ev != null) {
-            if (ev.isMaster) {
-                var newmaster: JMLEvent? = ev
-                var tmaster = loopEndTime
-                if (ev.t in loopStartTime..<tmaster) {
-                    tmaster = ev.t
+            if (ev.isPrimary) {
+                var newPrimary: JMLEvent? = ev
+                var tPrimary = loopEndTime
+                if (ev.t in loopStartTime..<tPrimary) {
+                    tPrimary = ev.t
                 }
 
                 var ev2 = eventList
                 while (ev2 != null) {
-                    if (ev2.master == ev) {
-                        if (ev2.t in loopStartTime..<tmaster) {
-                            newmaster = ev2
-                            tmaster = ev2.t
+                    if (ev2.primary == ev) {
+                        if (ev2.t in loopStartTime..<tPrimary) {
+                            newPrimary = ev2
+                            tPrimary = ev2.t
                         }
                     }
                     ev2 = ev2.next
                 }
 
-                if (newmaster != ev) {
+                if (newPrimary != ev) {
                     rebuildList = true
                     ev2 = eventList
                     while (ev2 != null) {
-                        if (ev2.master == ev) {
-                            ev2.masterEvent = newmaster
+                        if (ev2.primary == ev) {
+                            ev2.primaryEvent = newPrimary
                         }
                         ev2 = ev2.next
                     }
-                    newmaster!!.masterEvent = null
-                    ev.masterEvent = newmaster
+                    newPrimary!!.primaryEvent = null
+                    ev.primaryEvent = newPrimary
                 }
             }
             ev = ev.next
@@ -1312,15 +1357,18 @@ class JMLPattern() {
                     when (tr.type) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
                             if (lasttr!!.type == JMLTransition.TRANS_THROW) {
-                                val message = getStringResource(Res.string.error_successive_throws, i + 1)
+                                val message =
+                                    getStringResource(Res.string.error_successive_throws, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             if (lastev.juggler != ev.juggler) {
-                                val message = getStringResource(Res.string.error_juggler_changed, i + 1)
+                                val message =
+                                    getStringResource(Res.string.error_juggler_changed, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             if (lastev.hand != ev.hand) {
-                                val message = getStringResource(Res.string.error_hand_changed, i + 1)
+                                val message =
+                                    getStringResource(Res.string.error_hand_changed, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             pl.setInHand(ev.juggler, ev.hand)
@@ -1328,7 +1376,8 @@ class JMLPattern() {
 
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
                             if (lasttr!!.type != JMLTransition.TRANS_THROW) {
-                                val message = getStringResource(Res.string.error_successive_catches, i + 1)
+                                val message =
+                                    getStringResource(Res.string.error_successive_catches, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             pl.setThrow(lasttr.throwType!!, lasttr.throwMod)
@@ -1866,17 +1915,14 @@ class JMLPattern() {
             if (pl.isInHand) {
                 if (Constants.DEBUG_LAYOUT) {
                     println(
-                        "Path min " + path + " link " + i + ": HandMin = " +
+                        "Path min $path link $i: HandMin = " +
                             getHandMin(pl.holdingJuggler, pl.holdingHand)
                     )
                 }
                 result = min(result, getHandMin(pl.holdingJuggler, pl.holdingHand))
             } else {
                 if (Constants.DEBUG_LAYOUT) {
-                    println(
-                        "Path min " + path + " link " + ": PathMin = " +
-                            pl.path!!.getMin(t1, t2)
-                    )
+                    println("Path min $path link : PathMin = " + pl.path!!.getMin(t1, t2))
                 }
                 result = min(result, pl.path!!.getMin(t1, t2))
             }
@@ -1894,9 +1940,6 @@ class JMLPattern() {
             val hl = handlinks!![juggler - 1][handnum][i]
             val hp = hl.handCurve
             if (hp != null) {
-                if (Constants.DEBUG_LAYOUT) {
-                    println("getHandMax($juggler,$hand) = ${hp.getMin(t1, t2)}")
-                }
                 result = max(result, hp.getMax(t1, t2))
             }
         }
@@ -1913,9 +1956,6 @@ class JMLPattern() {
             val hl = handlinks!![juggler - 1][handnum][i]
             val hp = hl.handCurve
             if (hp != null) {
-                if (Constants.DEBUG_LAYOUT) {
-                    println("getHandMin($juggler,$hand) = ${hp.getMin(t1, t2)}")
-                }
                 result = min(result, hp.getMin(t1, t2))
             }
         }
@@ -2024,8 +2064,8 @@ class JMLPattern() {
             }
 
             "event" -> {
-                val ev = JMLEvent()
-                ev.readJML(current, loadingversion, numberOfJugglers, numberOfPaths)
+                val ev =
+                    JMLEvent.fromJMLNode(current, loadingversion, numberOfJugglers, numberOfPaths)
                 addEvent(ev)
                 return  // stop recursion
             }
@@ -2083,8 +2123,8 @@ class JMLPattern() {
         if (basePatternNotation != null && basePatternConfig != null) {
             wr.append(
                 ("<basepattern notation=\""
-                        + xmlescape(basePatternNotation!!.lowercase())
-                        + "\">\n")
+                    + xmlescape(basePatternNotation!!.lowercase())
+                    + "\">\n")
             )
             wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n"))).append('\n')
             wr.append("</basepattern>\n")
@@ -2116,7 +2156,7 @@ class JMLPattern() {
 
         var ev = this.eventList
         while (ev != null) {
-            if (ev.isMaster) {
+            if (ev.isPrimary) {
                 ev.writeJML(wr)
             }
             ev = ev.next
