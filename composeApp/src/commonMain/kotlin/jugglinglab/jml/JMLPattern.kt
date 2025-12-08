@@ -642,7 +642,7 @@ class JMLPattern() {
         }
 
         eventList = null
-        inverseEvents.map { addEvent(it) }
+        inverseEvents.forEach { addEvent(it) }
 
         // for each JMLPosition:
         //     - set t = looptime - t
@@ -650,10 +650,10 @@ class JMLPattern() {
         positionList = null
         while (pos != null) {
             // no notion analagous to primary events, so have to keep position
-            // time within [0, looptime).
-            val newTime = if (pos.t != 0.0) {
+            // time within [loopStartTime, loopEndTime).
+            val newTime = if (pos.t != loopStartTime) {
                 loopEndTime - pos.t
-            } else 0.0
+            } else loopStartTime
             addPosition(pos.copy(t = newTime))
             pos = pos.next
         }
