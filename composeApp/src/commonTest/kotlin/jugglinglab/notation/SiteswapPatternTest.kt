@@ -95,4 +95,19 @@ class SiteswapPatternTest {
         assertEquals(1, pattern.numberOfJugglers)
         assertEquals(4, pattern.numberOfPaths)
     }
+
+    @Test
+    fun `pattern parsing 0 pattern 1`() {
+        // corner case
+        val pattern = SiteswapPattern().fromString("0")
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(0, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing 0 pattern 2`() {
+        val pattern = SiteswapPattern().fromString("<0|0>")
+        assertEquals(2, pattern.numberOfJugglers)
+        assertEquals(0, pattern.numberOfPaths)
+    }
 }
