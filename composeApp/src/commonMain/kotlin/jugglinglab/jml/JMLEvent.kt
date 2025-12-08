@@ -263,7 +263,7 @@ data class JMLEvent(
                 y = tempy,
                 z = tempz,
                 t = tempt
-            ).setHand(handstr)
+            ).withHandString(handstr)
 
             if (result.juggler !in 1..numberOfJugglers) {
                 val message = getStringResource(Res.string.error_juggler_out_of_range)
@@ -354,7 +354,7 @@ data class JMLEvent(
         }
 
         @Throws(JuggleExceptionUser::class)
-        fun JMLEvent.setHand(handString: String): JMLEvent {
+        private fun JMLEvent.withHandString(handString: String): JMLEvent {
             var newJuggler: Int
             var newHand: Int
 
