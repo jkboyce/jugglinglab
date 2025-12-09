@@ -807,6 +807,24 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
     }
 
+    // Useful for debugging.
+
+    @Suppress("unused")
+    private fun printEventList() {
+        val sb = StringBuilder()
+        var current = pat.eventList
+        while (current != null) {
+            if (current.isPrimary) {
+                sb.append("  Primary event:\n")
+            } else {
+                sb.append("  Image event; primary at t=" + current.primary.t + "\n")
+            }
+            current.writeJML(sb)
+            current = current.next
+        }
+        println(sb.toString())
+    }
+
     //--------------------------------------------------------------------------
     // Methods used by the animator to animate the pattern
     //--------------------------------------------------------------------------

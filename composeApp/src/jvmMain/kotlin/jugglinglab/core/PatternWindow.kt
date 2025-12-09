@@ -14,6 +14,8 @@ package jugglinglab.core
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JMLPattern.Companion.withInvertedTime
+import jugglinglab.jml.JMLPattern.Companion.withInvertedXAxis
 import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
@@ -578,7 +580,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
                     val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                    newpat.invertXAxis(flipXCoordinate = false)
+                        .withInvertedXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -589,7 +591,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_INVERTX -> {
                 try {
                     val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                    newpat.invertXAxis()
+                        .withInvertedXAxis()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -600,7 +602,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_INVERTTIME -> {
                 try {
                     val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                    newpat.invertTime()
+                        .withInvertedTime()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
