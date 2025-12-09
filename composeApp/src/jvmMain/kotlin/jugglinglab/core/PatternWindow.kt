@@ -16,6 +16,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.withInvertedTime
 import jugglinglab.jml.JMLPattern.Companion.withInvertedXAxis
+import jugglinglab.jml.JMLPattern.Companion.withPropColors
 import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
@@ -423,7 +424,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     }
                     try {
                         val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                        newpat.setPropColors(colorString)
+                            .withPropColors(colorString)
                         view.restartView(newpat, null)
                         view.addToUndoList(newpat)
                     } catch (_: JuggleExceptionUser) {

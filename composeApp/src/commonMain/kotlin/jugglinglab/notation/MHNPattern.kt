@@ -27,6 +27,7 @@ import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.jml.JMLEvent.Companion.addTransition
 import jugglinglab.jml.JMLPattern.Companion.withScaledTimeToFitThrows
+import jugglinglab.jml.JMLPattern.Companion.withPropColors
 import jugglinglab.util.*
 import jugglinglab.util.getStringResource
 import kotlin.math.abs
@@ -838,7 +839,7 @@ abstract class MHNPattern : Pattern() {
 
         result.title = if (title == null) pattern else title
         if (colors != null) {
-            result.setPropColors(colors!!)
+            result = result.withPropColors(colors!!)
         }
         if (Constants.DEBUG_LAYOUT) {
             println("Final result from MHNPattern.asJMLPattern():")

@@ -531,89 +531,6 @@ data class JMLPattern(
     val isColorable: Boolean
         get() = props.all { it.isColorable }
 
-    // Set the colors of props in the pattern, using the information provided
-    // in `colorString`.
-
-    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    fun setPropColors(colorString: String) {
-        if (!isColorable) {
-            throw JuggleExceptionInternal("setPropColors(): not colorable")
-        }
-
-        // compile a list of colors to apply in round-robin fashion to paths
-        val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
-            "mixed" -> {
-                Prop.colorMixed
-            }
-
-            "orbits" -> {
-                // the path permutation on the DELAY symmetry determines orbits
-                val delayPerm: Permutation = pathPermutation!!
-                val colorsByOrbit = Array(numberOfPaths) { "" }
-                var colorIndex = 0
-                for (i in 0..<numberOfPaths) {
-                    if (colorsByOrbit[i].isNotEmpty())
-                        continue
-                    val cycle = delayPerm.getCycle(i + 1)
-                    for (j in cycle) {
-                        colorsByOrbit[j - 1] = Prop.colorMixed[colorIndex % Prop.colorMixed.size]
-                    }
-                    ++colorIndex
-                }
-                colorsByOrbit.toList()
-            }
-
-            "" -> {
-                val message = getStringResource(Res.string.error_color_empty)
-                throw JuggleExceptionUser(message)
-            }
-
-            else -> {
-                jlExpandRepeats(trimmedColorString)
-                    .split('}')
-                    .filter { it.isNotBlank() }
-                    .map { it.replace("{", "").trim() }
-                    .map { cs ->
-                        val parts = cs.split(',')
-                        when (parts.size) {
-                            1 -> parts[0].trim()
-                            3 -> "{$cs}"
-                            else -> {
-                                val message = getStringResource(Res.string.error_color_format)
-                                throw JuggleExceptionUser(message)
-                            }
-                        }
-                    }
-            }
-        }
-
-        val newProps: MutableList<JMLProp> = mutableListOf()
-        val newPropAssignments = IntArray(numberOfPaths)
-
-        // apply colors to get a new list of JMLProps, deduping as we go
-        for (i in 0..<numberOfPaths) {
-            val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
-            val propParameters = ParameterList(oldProp.mod).apply {
-                removeParameter("color")
-                addParameter("color", colorList[i % colorList.size])
-            }
-            val newProp = JMLProp(oldProp.type, propParameters.toString())
-
-            newPropAssignments[i] = when (val idx = newProps.indexOf(newProp)) {
-                -1 -> {
-                    newProps.add(newProp)
-                    newProps.size
-                }
-
-                else -> idx + 1  // props are indexed from 1
-            }
-        }
-
-        props = newProps
-        setPropAssignments(newPropAssignments)
-        setNeedsLayout()
-    }
-
     fun setNeedsLayout() {
         laidout = false
     }
@@ -1127,6 +1044,90 @@ data class JMLPattern(
             return result
         }
 
+        // Set the colors of props in the pattern, using the information provided
+        // in `colorString`.
+
+        @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
+        fun JMLPattern.withPropColors(colorString: String): JMLPattern {
+            if (!isColorable) {
+                throw JuggleExceptionInternal("setPropColors(): not colorable")
+            }
+
+            // compile a list of colors to apply in round-robin fashion to paths
+            val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
+                "mixed" -> {
+                    Prop.colorMixed
+                }
+
+                "orbits" -> {
+                    // the path permutation on the DELAY symmetry determines orbits
+                    val delayPerm: Permutation = pathPermutation!!
+                    val colorsByOrbit = Array(numberOfPaths) { "" }
+                    var colorIndex = 0
+                    for (i in 0..<numberOfPaths) {
+                        if (colorsByOrbit[i].isNotEmpty())
+                            continue
+                        val cycle = delayPerm.getCycle(i + 1)
+                        for (j in cycle) {
+                            colorsByOrbit[j - 1] = Prop.colorMixed[colorIndex % Prop.colorMixed.size]
+                        }
+                        ++colorIndex
+                    }
+                    colorsByOrbit.toList()
+                }
+
+                "" -> {
+                    val message = getStringResource(Res.string.error_color_empty)
+                    throw JuggleExceptionUser(message)
+                }
+
+                else -> {
+                    jlExpandRepeats(trimmedColorString)
+                        .split('}')
+                        .filter { it.isNotBlank() }
+                        .map { it.replace("{", "").trim() }
+                        .map { cs ->
+                            val parts = cs.split(',')
+                            when (parts.size) {
+                                1 -> parts[0].trim()
+                                3 -> "{$cs}"
+                                else -> {
+                                    val message = getStringResource(Res.string.error_color_format)
+                                    throw JuggleExceptionUser(message)
+                                }
+                            }
+                        }
+                }
+            }
+
+            val newProps: MutableList<JMLProp> = mutableListOf()
+            val newPropAssignment = IntArray(numberOfPaths)
+
+            // apply colors to get a new list of JMLProps, deduping as we go
+            for (i in 0..<numberOfPaths) {
+                val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
+                val propParameters = ParameterList(oldProp.mod).apply {
+                    removeParameter("color")
+                    addParameter("color", colorList[i % colorList.size])
+                }
+                val newProp = JMLProp(oldProp.type, propParameters.toString())
+
+                newPropAssignment[i] = when (val idx = newProps.indexOf(newProp)) {
+                    -1 -> {
+                        newProps.add(newProp)
+                        newProps.size
+                    }
+
+                    else -> idx + 1  // props are indexed from 1
+                }
+            }
+
+            val record = PatternBuilder.fromJMLPattern(this)
+            record.props = newProps
+            record.propAssignment = newPropAssignment
+            return fromPatternBuilder(record)
+        }
+
     }
 }
 
@@ -1146,4 +1147,34 @@ class PatternBuilder {
     var basePatternConfigString: String? = null
     var infoString: String? = null
     var titleString: String? = null
+
+    companion object {
+        fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
+            val record = PatternBuilder()
+            record.numberOfJugglers = pat.numberOfJugglers
+            record.numberOfPaths = pat.numberOfPaths
+            record.loadingversion = pat.version
+            record.symmetries = pat.symmetries.toMutableList()
+            var ev = pat.eventList
+            while (ev != null) {
+                if (ev.isPrimary) {
+                    record.events.add(ev)
+                }
+                ev = ev.next
+            }
+            var pos = pat.positionList
+            while (pos != null) {
+                record.positions.add(pos)
+                pos = pos.next
+            }
+            record.props = pat.props.toMutableList()
+            record.propAssignment = pat.propassignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
+            record.tags = pat.tags.toMutableList()
+            record.basePatternNotationString = pat.basePatternNotation
+            record.basePatternConfigString = pat.basePatternConfig
+            record.infoString = pat.info
+            record.titleString = pat.title
+            return record
+        }
+    }
 }
