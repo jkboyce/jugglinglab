@@ -25,20 +25,20 @@ import kotlin.math.sin
 
 class LaidoutPattern(val pat: JMLPattern) {
     // list of PathLink objects for each path
-    var pathlinks: MutableList<MutableList<PathLink>>? = null
+    private var pathlinks: MutableList<MutableList<PathLink>>? = null
 
     // list of HandLink objects for each juggler/hand combination
-    var handlinks: MutableList<MutableList<MutableList<HandLink>>>? = null
+    private var handlinks: MutableList<MutableList<MutableList<HandLink>>>? = null
 
     // for layout
-    lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
-    lateinit var jugglerangle: Array<Curve?> // angles for each juggler
+    private lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
+    private lateinit var jugglerangle: Array<Curve?> // angles for each juggler
 
     // whether pattern has a velocity-defining transition
-    lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
-    lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
+    private lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
+    private lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
 
-    val pathLinks: MutableList<MutableList<PathLink>>
+    val pathLinks: List<List<PathLink>>
         get() = pathlinks!!
 
     //--------------------------------------------------------------------------
@@ -376,7 +376,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    fun findPrimaryEvents() {
+    private fun findPrimaryEvents() {
         var rebuildList = false
         var ev = pat.eventList
 
@@ -427,7 +427,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class)
-    fun findPositions() {
+    private fun findPositions() {
         jugglercurve = arrayOfNulls(pat.numberOfJugglers)
         jugglerangle = arrayOfNulls(pat.numberOfJugglers)
 
@@ -523,7 +523,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     // Step 4: transform event coordinates from local to global reference frame
     //--------------------------------------------------------------------------
 
-    fun gotoGlobalCoordinates() {
+    private fun gotoGlobalCoordinates() {
         var ev = pat.eventList
         while (ev != null) {
             val lc = ev.localCoordinate

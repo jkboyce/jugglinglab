@@ -536,16 +536,14 @@ data class JMLPattern(
     }
 
     val isBouncePattern: Boolean
-        get() = layout.pathlinks!!.any { it.any { it1 -> it1.path is BouncePath } }
+        get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
 
     //--------------------------------------------------------------------------
     // Reader/writer methods
     //--------------------------------------------------------------------------
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
-        for (i in JMLDefs.jmlPrefix.indices) {
-            wr.append(JMLDefs.jmlPrefix[i]).append('\n')
-        }
+        JMLDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
         wr.append("<jml version=\"${xmlescape(version)}\">\n")
         wr.append("<pattern>\n")
         if (writeTitle && title != null) {
@@ -574,12 +572,9 @@ data class JMLPattern(
             wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n"))).append('\n')
             wr.append("</basepattern>\n")
         }
-        for (prop in props) {
-            prop.writeJML(wr)
-        }
+        props.forEach { it.writeJML(wr) }
 
-        var out =
-            ("<setup jugglers=\"$numberOfJugglers\" paths=\"$numberOfPaths\" props=\"")
+        var out = "<setup jugglers=\"$numberOfJugglers\" paths=\"$numberOfPaths\" props=\""
 
         if (numberOfPaths > 0) {
             out += getPropAssignment(1)
@@ -589,17 +584,15 @@ data class JMLPattern(
         }
         wr.append("$out\"/>\n")
 
-        for (symmetry in symmetries) {
-            symmetry.writeJML(wr)
-        }
+        symmetries.forEach { it.writeJML(wr) }
 
-        var pos = this.positionList
+        var pos = positionList
         while (pos != null) {
             pos.writeJML(wr)
             pos = pos.next
         }
 
-        var ev = this.eventList
+        var ev = eventList
         while (ev != null) {
             if (ev.isPrimary) {
                 ev.writeJML(wr)
@@ -607,11 +600,8 @@ data class JMLPattern(
             ev = ev.next
         }
         wr.append("</pattern>\n")
-
         wr.append("</jml>\n")
-        for (i in JMLDefs.jmlSuffix.indices) {
-            wr.append(JMLDefs.jmlSuffix[i]).append('\n')
-        }
+        JMLDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
     @get:Throws(JuggleExceptionInternal::class)
