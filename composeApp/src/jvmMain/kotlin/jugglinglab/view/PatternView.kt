@@ -212,7 +212,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
                 restartView(newpat, null)
                 addToUndoList(newpat)
             } else if (rbJml.isSelected) {
-                val newpat = JMLPattern(ta.getText())
+                val newpat = JMLPattern.fromJMLString(ta.getText())
                 restartView(newpat, null)
                 addToUndoList(newpat)
             }

@@ -440,7 +440,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
                 when (parser.fileType) {
                     JMLParser.JML_PATTERN -> {
-                        val pat = JMLPattern(parser.tree!!)
+                        val pat = JMLPattern.fromJMLNode(parser.tree!!)
                         pat.layout
                         if (!bringToFront(pat.hashCode)) {
                             val pw = PatternWindow(pat.title, pat, AnimationPrefs())

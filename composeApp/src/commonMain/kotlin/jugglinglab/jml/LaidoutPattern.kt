@@ -107,7 +107,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var numevents = 0
         var current = pat.eventList
         while (current != null) {
-            if (current.juggler !in 1..pat.numjugglers) {
+            if (current.juggler !in 1..pat.numberOfJugglers) {
                 val message = getStringResource(Res.string.error_juggler_outofrange)
                 throw JuggleExceptionUser(message)
             }
@@ -127,15 +127,15 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
 
         // arrays used for creating the event list
-        val needHandEvent = Array(pat.numjugglers) { BooleanArray(2) }
-        val needVDHandEvent = Array(pat.numjugglers) { BooleanArray(2) }
-        val needPathEvent = BooleanArray(pat.numpaths)
-        val needSpecialPathEvent = BooleanArray(pat.numpaths)
-        hasVDHandJMLTransition = Array(pat.numjugglers) { BooleanArray(2) }
-        hasVDPathJMLTransition = BooleanArray(pat.numpaths)
+        val needHandEvent = Array(pat.numberOfJugglers) { BooleanArray(2) }
+        val needVDHandEvent = Array(pat.numberOfJugglers) { BooleanArray(2) }
+        val needPathEvent = BooleanArray(pat.numberOfPaths)
+        val needSpecialPathEvent = BooleanArray(pat.numberOfPaths)
+        hasVDHandJMLTransition = Array(pat.numberOfJugglers) { BooleanArray(2) }
+        hasVDPathJMLTransition = BooleanArray(pat.numberOfPaths)
 
         // make sure each hand and path are hit at least once
-        for (i in 0..<pat.numjugglers) {
+        for (i in 0..<pat.numberOfJugglers) {
             var hasJMLTransitionForLeft = false
             var hasJMLTransitionForRight = false
             hasVDHandJMLTransition[i][1] = false
@@ -172,7 +172,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             needHandEvent[i][1] = true
             needHandEvent[i][0] = true
         }
-        for (i in 0..<pat.numpaths) {
+        for (i in 0..<pat.numberOfPaths) {
             var hasPathJMLTransition = false
             hasVDPathJMLTransition[i] = false
 
@@ -260,26 +260,26 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
             // do we need to continue adding earlier events?
             contin = false
-            for (i in 0..<pat.numjugglers) {
+            for (i in 0..<pat.numberOfJugglers) {
                 contin = contin or needHandEvent[i][0]
                 contin = contin or needHandEvent[i][1]
                 contin = contin or needVDHandEvent[i][0]
                 contin = contin or needVDHandEvent[i][1]
             }
-            for (i in 0..<pat.numpaths) {
+            for (i in 0..<pat.numberOfPaths) {
                 contin = contin or needPathEvent[i]
                 contin = contin or needSpecialPathEvent[i]
             }
         } while (contin)
 
         // reset things to go forward in time
-        for (i in 0..<pat.numjugglers) {
+        for (i in 0..<pat.numberOfJugglers) {
             needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0]
             needVDHandEvent[i][1] = hasVDHandJMLTransition[i][1]
             needHandEvent[i][1] = true
             needHandEvent[i][0] = true
         }
-        for (i in 0..<pat.numpaths) {
+        for (i in 0..<pat.numberOfPaths) {
             needPathEvent[i] = true
             needSpecialPathEvent[i] = false
         }
@@ -358,13 +358,13 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
             // do we need to continue adding later events?
             contin = false
-            for (i in 0..<pat.numjugglers) {
+            for (i in 0..<pat.numberOfJugglers) {
                 contin = contin or needHandEvent[i][0]
                 contin = contin or needHandEvent[i][1]
                 contin = contin or needVDHandEvent[i][0]
                 contin = contin or needVDHandEvent[i][1]
             }
-            for (i in 0..<pat.numpaths) {
+            for (i in 0..<pat.numberOfPaths) {
                 contin = contin or needPathEvent[i]
                 contin = contin or needSpecialPathEvent[i]
             }

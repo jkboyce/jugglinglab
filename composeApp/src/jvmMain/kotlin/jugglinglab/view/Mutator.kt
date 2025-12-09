@@ -78,7 +78,7 @@ class Mutator {
 
         try {
             if (freqSum == 0.0) {
-                return JMLPattern(pat)
+                return JMLPattern.fromJMLPattern(pat)
             }
 
             this.rate = sliderRates[sliderRate.value]
@@ -87,7 +87,7 @@ class Mutator {
             var tries = 0
 
             do {
-                val clone = JMLPattern(pat)
+                val clone = JMLPattern.fromJMLPattern(pat)
                 val r = freqSum * Math.random()
                 tries++
 
@@ -104,7 +104,7 @@ class Mutator {
                 }
             } while (mutant == null && tries < 5)
 
-            return mutant ?: JMLPattern(pat)
+            return mutant ?: JMLPattern.fromJMLPattern(pat)
         } catch (jeu: JuggleExceptionUser) {
             // this shouldn't be able to happen, so treat it as an internal error
             throw JuggleExceptionInternal("Mutator: User error: " + jeu.message)

@@ -89,7 +89,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private constructor(pw: PatternWindow) : this(
         pw.getTitle(),
-        JMLPattern(pw.view.pattern!!),
+        JMLPattern.fromJMLPattern(pw.view.pattern!!),
         AnimationPrefs(pw.view.animationPrefs)
     )
 
@@ -419,7 +419,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                         else -> "{$colorName}"
                     }
                     try {
-                        val newpat = JMLPattern(view.pattern!!)
+                        val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
                         newpat.setPropColors(colorString)
                         view.restartView(newpat, null)
                         view.addToUndoList(newpat)
@@ -576,7 +576,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
-                    val newpat = JMLPattern(view.pattern!!)
+                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
                     newpat.invertXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
@@ -587,7 +587,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTX -> {
                 try {
-                    val newpat = JMLPattern(view.pattern!!)
+                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
                     newpat.invertXAxis()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
@@ -598,7 +598,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTTIME -> {
                 try {
-                    val newpat = JMLPattern(view.pattern!!)
+                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
                     newpat.invertTime()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
@@ -652,7 +652,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         val okbutton = JButton(getStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val newpat = JMLPattern(view.pattern!!)
+            val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
             newpat.title = tf.getText()
             view.restartView(newpat, null)
             view.addToUndoList(newpat)
@@ -708,7 +708,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 return@addActionListener
             }
             if (scale > 0.0) {
-                val newpat = JMLPattern(view.pattern!!)
+                val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
                 newpat.scaleTime(scale)
                 view.restartView(newpat, null)
                 view.addToUndoList(newpat)
