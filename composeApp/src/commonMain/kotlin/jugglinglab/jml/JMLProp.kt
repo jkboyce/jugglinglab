@@ -17,10 +17,6 @@ data class JMLProp (
     val prop: Prop by lazy {
         Prop.newProp(type).apply { initProp(mod) }
     }
-    
-    @get:Throws(JuggleExceptionUser::class)
-    val isColorable: Boolean
-        get() = prop.isColorable
 
     fun writeJML(wr: Appendable) {
         val modString = if (mod != null) " mod=\"$mod\"" else ""

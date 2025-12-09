@@ -1186,7 +1186,7 @@ class EditLadderDiagram(
             try {
                 // fail if prop definition is invalid, before we change the pattern
                 mod = this.dialogParameterList
-                JMLProp(type.lowercase(Locale.getDefault()), mod).isColorable
+                JMLProp(type.lowercase(Locale.getDefault()), mod).prop.isColorable
             } catch (jeu: JuggleExceptionUser) {
                 jlHandleUserException(parentFrame, jeu.message)
                 return@addActionListener

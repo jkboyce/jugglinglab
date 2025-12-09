@@ -529,7 +529,7 @@ data class JMLPattern(
 
     @get:Throws(JuggleExceptionUser::class)
     val isColorable: Boolean
-        get() = props.all { it.isColorable }
+        get() = props.all { it.prop.isColorable }
 
     fun setNeedsLayout() {
         laidout = false
