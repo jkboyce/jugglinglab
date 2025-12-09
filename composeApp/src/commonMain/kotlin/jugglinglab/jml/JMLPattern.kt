@@ -35,10 +35,10 @@ import jugglinglab.util.Permutation.Companion.lcm
 import kotlin.math.max
 
 data class JMLPattern(
-    val numberOfJugglers: Int
+    val numberOfJugglers: Int,
+    val numberOfPaths: Int
 ) {
     var version: String = JMLDefs.CURRENT_JML_VERSION
-    var numberOfPaths: Int = 0
     var symmetries: MutableList<JMLSymmetry> = mutableListOf()
     var eventList: JMLEvent? = null
     var positionList: JMLPosition? = null
@@ -840,20 +840,16 @@ data class JMLPattern(
     }
 
     companion object {
-        // Create a JMLPattern by parsing a JMLNode
+        //----------------------------------------------------------------------
+        // Constructing JMLPatterns
+        //----------------------------------------------------------------------
 
-        @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(
-            current: JMLNode,
-            version: String = JMLDefs.CURRENT_JML_VERSION
-        ): JMLPattern {
-            val record = PatternData()
-            record.loadingversion = version
-            readJML(current, record)
+        fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
+            val result = JMLPattern(
+                numberOfJugglers = record.numberOfJugglers,
+                numberOfPaths = record.numberOfPaths
+            )
 
-            val result = JMLPattern(record.numberOfJugglers)
-
-            result.numberOfPaths = record.numberOfPaths
             result.version = record.loadingversion
             record.symmetries.forEach { result.addSymmetry(it) }
             record.events.forEach { result.addEvent(it) }
@@ -869,14 +865,26 @@ data class JMLPattern(
                 record.tags.forEach { result.addTag(it) }
             }
             result.title = record.titleString
-
             return result
         }
 
-        // Helper for the above
+        // Create a JMLPattern by parsing a JMLNode
 
         @Throws(JuggleExceptionUser::class)
-        private fun readJML(current: JMLNode, record: PatternData) {
+        fun fromJMLNode(
+            current: JMLNode,
+            version: String = JMLDefs.CURRENT_JML_VERSION
+        ): JMLPattern {
+            val record = PatternBuilder()
+            record.loadingversion = version
+            readJML(current, record)
+            return fromPatternBuilder(record)
+        }
+
+        // Helper for JML parsing
+
+        @Throws(JuggleExceptionUser::class)
+        private fun readJML(current: JMLNode, record: PatternBuilder) {
             // process current node, then treat subnodes recursively
             when (val type = current.nodeType?.lowercase()) {
                 "#root" -> {
@@ -982,22 +990,6 @@ data class JMLPattern(
             }
         }
 
-        private class PatternData {
-            var numberOfJugglers: Int = -1
-            var numberOfPaths: Int = -1
-            var loadingversion: String = JMLDefs.CURRENT_JML_VERSION
-            var symmetries: MutableList<JMLSymmetry> = mutableListOf()
-            var events: MutableList<JMLEvent> = mutableListOf()
-            var positions: MutableList<JMLPosition> = mutableListOf()
-            var props: MutableList<JMLProp> = mutableListOf()
-            var propAssignment: IntArray = IntArray(1) { 1 }
-            var tags: MutableList<String> = mutableListOf()
-            var basePatternNotationString: String? = null
-            var basePatternConfigString: String? = null
-            var infoString: String? = null
-            var titleString: String? = null
-        }
-
         // Construct from a string of XML data.
         //
         // Treat any errors as internal errors since this is not how user-inputted
@@ -1042,6 +1034,10 @@ data class JMLPattern(
             pat.basePatternConfig = p.toString()
             return pat
         }
+
+        //----------------------------------------------------------------------
+        // Other helpers
+        //----------------------------------------------------------------------
 
         fun getPeriod(perm: Permutation, propassign: IntArray): Int {
             var period = 1
@@ -1144,4 +1140,22 @@ data class JMLPattern(
             return Pair(this, scaleFactor)
         }
     }
+}
+
+// Helper for building JMLPatterns
+
+class PatternBuilder {
+    var numberOfJugglers: Int = -1
+    var numberOfPaths: Int = -1
+    var loadingversion: String = JMLDefs.CURRENT_JML_VERSION
+    var symmetries: MutableList<JMLSymmetry> = mutableListOf()
+    var events: MutableList<JMLEvent> = mutableListOf()
+    var positions: MutableList<JMLPosition> = mutableListOf()
+    var props: MutableList<JMLProp> = mutableListOf()
+    var propAssignment: IntArray = IntArray(1) { 1 }
+    var tags: MutableList<String> = mutableListOf()
+    var basePatternNotationString: String? = null
+    var basePatternConfigString: String? = null
+    var infoString: String? = null
+    var titleString: String? = null
 }

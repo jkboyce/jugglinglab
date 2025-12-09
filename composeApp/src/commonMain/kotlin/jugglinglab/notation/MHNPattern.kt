@@ -717,7 +717,10 @@ abstract class MHNPattern : Pattern() {
         // throws, so long as dwell <= (2 - BEATS_THROW_CATCH_MIN)
         beats_one_throw_early = max(0.0, dwell + BEATS_AIRTIME_MIN - 1)
 
-        var result = JMLPattern(numberOfJugglers)
+        var result = JMLPattern(
+            numberOfJugglers = numberOfJugglers,
+            numberOfPaths = numberOfPaths
+        )
 
         // Step 1: Add basic information about the pattern
         addPropsToJML(result)
@@ -867,10 +870,8 @@ abstract class MHNPattern : Pattern() {
     }
 
     protected fun addPropsToJML(pat: JMLPattern) {
-        val balls = numberOfPaths
         val mod = if (propdiam != PROPDIAM_DEFAULT) "diam=$propdiam" else null
-        val pa = IntArray(balls) { 1 }
-        pat.numberOfPaths = balls
+        val pa = IntArray(numberOfPaths) { 1 }
         pat.addProp(JMLProp(propName, mod))
         pat.setPropAssignments(pa)
     }
