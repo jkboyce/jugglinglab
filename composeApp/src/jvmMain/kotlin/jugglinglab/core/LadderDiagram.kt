@@ -31,7 +31,6 @@ import kotlin.math.sqrt
 open class LadderDiagram(p: JMLPattern) :
     JPanel(), AnimationAttachment, MouseListener, MouseMotionListener {
     protected var ap: AnimationPanel? = null
-    protected val pat: JMLPattern
     protected var ladderWidth: Int = 0 // pixel dimensions of entire panel
     protected var ladderHeight: Int = 0
     protected var rightX: Int = 0 // right/left hand pos. for juggler 1 (px)
@@ -43,49 +42,55 @@ open class LadderDiagram(p: JMLPattern) :
     protected var hasSwitchSymmetry: Boolean = false
     protected var hasSwitchdelaySymmetry: Boolean = false
 
-    protected var ladderEventItems: ArrayList<LadderEventItem>? = null
-    protected var ladderPathItems: ArrayList<LadderPathItem>? = null
-    protected var ladderPositionItems: ArrayList<LadderPositionItem>? = null
+    protected var ladderEventItems: MutableList<LadderEventItem>? = null
+    protected var ladderPathItems: MutableList<LadderPathItem>? = null
+    protected var ladderPositionItems: MutableList<LadderPositionItem>? = null
 
     protected var im: BufferedImage? = null
     protected var imageValid: Boolean = false
     protected var framesUntilImageDraw: Int = 0
 
     protected var animPaused: Boolean = false
+    
+    var pattern: JMLPattern = p
+        set(pat) {
+            field = pat
+            val jugglers = pat.numberOfJugglers
+            if (jugglers > MAX_JUGGLERS) {
+                // allocate enough space for a "too many jugglers" message; see paintLadder()
+                val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
+                val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
+                preferredSize = Dimension(mwidth, 1)
+                minimumSize = Dimension(mwidth, 1)
+                removeMouseListener(this)
+                removeMouseMotionListener(this)
+            } else {
+                var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
+                val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
+                val widthMult =
+                    doubleArrayOf(
+                        1.0, 1.0, 0.85, 0.72, 0.65, 0.55,
+                    )
+                prefWidth = (prefWidth.toDouble() *
+                    (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
+                prefWidth = max(prefWidth, minWidth)
+                preferredSize = Dimension(prefWidth, 1)
+                minimumSize = Dimension(minWidth, 1)
+
+                pat.layout  // ensures we have event list
+                createView()
+
+                addMouseListener(this)
+                addMouseMotionListener(this)
+            }
+        }
 
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        pat = p
-
-        val jugglers = pat.numberOfJugglers
-        if (jugglers > MAX_JUGGLERS) {
-            // allocate enough space for a "too many jugglers" message; see paintLadder()
-            val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
-            val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
-            preferredSize = Dimension(mwidth, 1)
-            minimumSize = Dimension(mwidth, 1)
-        } else {
-            var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
-            val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
-            val widthMult =
-                doubleArrayOf(
-                    1.0, 1.0, 0.85, 0.72, 0.65, 0.55,
-                )
-            prefWidth = (prefWidth.toDouble() *
-                (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
-            prefWidth = max(prefWidth, minWidth)
-            preferredSize = Dimension(prefWidth, 1)
-            minimumSize = Dimension(minWidth, 1)
-
-            pat.layoutPattern() // ensures we have event list
-            createView()
-
-            addMouseListener(this)
-            addMouseMotionListener(this)
-        }
+        pattern = p
     }
-
+    
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
     //--------------------------------------------------------------------------
@@ -95,13 +100,12 @@ open class LadderDiagram(p: JMLPattern) :
             return
         }
 
-        var my = me.getY()
-        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
+        val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
 
         guiState = STATE_MOVING_TRACKER
         trackerY = my
         if (ap != null) {
-            val scale = ((pat.loopEndTime - pat.loopStartTime)
+            val scale = ((pattern.loopEndTime - pattern.loopStartTime)
                 / (ladderHeight - 2 * BORDER_TOP).toDouble())
             val newtime = (my - BORDER_TOP).toDouble() * scale
             animPaused = ap!!.isPaused
@@ -110,9 +114,7 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         repaint()
-        if (ap != null) {
-            ap!!.repaint()
-        }
+        ap?.repaint()
     }
 
     override fun mouseReleased(me: MouseEvent?) {
@@ -121,9 +123,7 @@ open class LadderDiagram(p: JMLPattern) :
         }
 
         guiState = STATE_INACTIVE
-        if (ap != null) {
-            ap!!.isPaused = animPaused
-        }
+        ap?.isPaused = animPaused
         repaint()
     }
 
@@ -142,13 +142,12 @@ open class LadderDiagram(p: JMLPattern) :
             return
         }
 
-        var my = me.getY()
-        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
+        val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
         trackerY = my
         repaint()
 
         if (ap != null) {
-            val scale = ((pat.loopEndTime - pat.loopStartTime)
+            val scale = ((pattern.loopEndTime - pattern.loopStartTime)
                 / (ladderHeight - 2 * BORDER_TOP).toDouble())
             val newtime = (my - BORDER_TOP).toDouble() * scale
             ap!!.time = newtime
@@ -237,8 +236,8 @@ open class LadderDiagram(p: JMLPattern) :
       }
       */
     protected fun updateTrackerPosition() {
-        val loopStart = pat.loopStartTime
-        val loopEnd = pat.loopEndTime
+        val loopStart = pattern.loopStartTime
+        val loopEnd = pattern.loopEndTime
         trackerY = (
             0.5 +
                 (ladderHeight - 2 * BORDER_TOP).toDouble() *
@@ -255,19 +254,19 @@ open class LadderDiagram(p: JMLPattern) :
         hasSwitchdelaySymmetry = false
         hasSwitchSymmetry = false
 
-        for (sym in pat.symmetries) {
+        for (sym in pattern.symmetries) {
             when (sym.type) {
                 JMLSymmetry.TYPE_SWITCH -> hasSwitchSymmetry = true
                 JMLSymmetry.TYPE_SWITCHDELAY -> hasSwitchdelaySymmetry = true
             }
         }
 
-        val loopStart = pat.loopStartTime
-        val loopEnd = pat.loopEndTime
+        val loopStart = pattern.loopStartTime
+        val loopEnd = pattern.loopEndTime
 
         // first create events (black circles on the vertical lines representing hands)
         ladderEventItems = ArrayList()
-        val eventlist = pat.eventList
+        val eventlist = pattern.eventList
         var ev = eventlist
 
         while (ev!!.t < loopStart) {
@@ -281,7 +280,7 @@ open class LadderDiagram(p: JMLPattern) :
             item.event = ev
             ladderEventItems!!.add(item)
 
-            for (i in 0..<ev.numberOfTransitions) {
+            for (i in 0..<ev.transitions.size) {
                 val item2 = LadderEventItem()
                 item2.type = LadderItem.TYPE_TRANSITION
                 item2.eventitem = item
@@ -297,8 +296,8 @@ open class LadderDiagram(p: JMLPattern) :
         ladderPathItems = ArrayList()
         ev = eventlist
         while (ev!!.t <= loopEnd) {
-            for (i in 0..<ev.numberOfTransitions) {
-                val tr = ev.getTransition(i)
+            for (i in 0..<ev.transitions.size) {
+                val tr = ev.transitions[i]
                 val opl = tr.outgoingPathLink
 
                 if (opl != null) {
@@ -329,7 +328,7 @@ open class LadderDiagram(p: JMLPattern) :
 
         // create juggler positions
         ladderPositionItems = ArrayList()
-        var pos = pat.positionList
+        var pos = pattern.positionList
 
         while (pos != null && pos.t < loopStart) {
             pos = pos.next
@@ -355,7 +354,7 @@ open class LadderDiagram(p: JMLPattern) :
 
         // calculate placements of hands and jugglers
         val scale: Double =
-            ladderWidth.toDouble() / (BORDER_SIDES * 2 + JUGGLER_SEPARATION * (pat.numberOfJugglers - 1) + pat.numberOfJugglers)
+            ladderWidth.toDouble() / (BORDER_SIDES * 2 + JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) + pattern.numberOfJugglers)
         leftX = (scale * BORDER_SIDES + 0.5).toInt()
         rightX = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
         jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
@@ -365,8 +364,8 @@ open class LadderDiagram(p: JMLPattern) :
         im = null
         framesUntilImageDraw = IMAGE_DRAW_WAIT
 
-        val loopStart = pat.loopStartTime
-        val loopEnd = pat.loopEndTime
+        val loopStart = pattern.loopStartTime
+        val loopEnd = pattern.loopEndTime
 
         // set locations of events and transitions
         for (item in ladderEventItems!!) {
@@ -407,14 +406,9 @@ open class LadderDiagram(p: JMLPattern) :
             item.yEnd =
                 (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.endEvent!!.t - loopStart) / (loopEnd - loopStart)).toInt() + BORDER_TOP
 
-            var slot = 0
-            for (j in 0..<item.endEvent!!.numberOfTransitions) {
-                val temp = item.endEvent!!.getTransition(j)
-                if (temp.path == item.pathNum) {
-                    slot = j
-                    break
-                }
-            }
+            val slot = item.endEvent!!.transitions.indexOfFirst { it.path == item.pathNum }
+            if (slot == -1) continue // Should not happen in a valid pattern
+
             item.xEnd = ((if (item.endEvent!!.hand == HandLink.LEFT_HAND)
                 (leftX + (slot + 1) * 2 * TRANSITION_RADIUS)
             else
@@ -427,7 +421,7 @@ open class LadderDiagram(p: JMLPattern) :
                 )
                 val xt = 0.5 * (item.xStart + item.xEnd).toDouble()
                 val yt = 0.5 * (item.yStart + item.yEnd).toDouble()
-                val b: Double = SELFTHROW_WIDTH * (ladderWidth.toDouble() / pat.numberOfJugglers)
+                val b: Double = SELFTHROW_WIDTH * (ladderWidth.toDouble() / pattern.numberOfJugglers)
                 var d = 0.5 * (a * a / b - b)
                 if (d < (0.5 * b)) {
                     d = 0.5 * b
@@ -469,7 +463,7 @@ open class LadderDiagram(p: JMLPattern) :
 
     // Return true if ladder was drawn successfully, false otherwise.
     protected fun paintLadder(gr: Graphics): Boolean {
-        if (pat.numberOfJugglers > MAX_JUGGLERS) {
+        if (pattern.numberOfJugglers > MAX_JUGGLERS) {
             val dim = size
             gr.font = MSGFONT
             val fm = gr.fontMetrics
@@ -548,7 +542,7 @@ open class LadderDiagram(p: JMLPattern) :
 
             // draw the lines representing the hands
             g.color = COLOR_HANDS
-            for (j in 0..<pat.numberOfJugglers) {
+            for (j in 0..<pattern.numberOfJugglers) {
                 for (i in -1..1) {
                     g.drawLine(
                         leftX + i + j * jugglerDeltaX,
@@ -651,9 +645,9 @@ open class LadderDiagram(p: JMLPattern) :
                         gr.color = COLOR_BACKGROUND
                     } else {
                         // color ball representation with the prop's color
-                        val tr = item.event!!.getTransition(item.transnum)
+                        val tr = item.event!!.transitions[item.transnum]
                         val propnum = animpropnum[tr.path - 1]
-                        gr.color = pat.getProp(propnum).getEditorColor().toAwtColor()
+                        gr.color = pattern.getProp(propnum).getEditorColor().toAwtColor()
                     }
                     gr.fillOval(
                         item.xlow,

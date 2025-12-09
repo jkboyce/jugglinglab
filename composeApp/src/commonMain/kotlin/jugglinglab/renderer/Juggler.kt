@@ -55,13 +55,13 @@ object Juggler {
             val coord0 = Coordinate()
             val coord1 = Coordinate()
             val coord2 = Coordinate()
-            pat.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0)
-            pat.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1)
+            pat.layout.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0)
+            pat.layout.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1)
             val lefthand = JLVector(coord0.x, coord0.z + LOWER_HAND_HEIGHT, coord0.y)
             val righthand = JLVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
 
-            pat.getJugglerPosition(juggler, time, coord2)
-            val angle = Math.toRadians(pat.getJugglerAngle(juggler, time))
+            pat.layout.getJugglerPosition(juggler, time, coord2)
+            val angle = Math.toRadians(pat.layout.getJugglerAngle(juggler, time))
             val s = sin(angle)
             val c = cos(angle)
 

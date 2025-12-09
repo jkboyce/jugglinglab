@@ -243,7 +243,7 @@ open class AnimationPanel : JPanel(), Runnable {
         }
 
         if (animator.pat!!.numberOfJugglers == 1) {
-            var a = -Math.toRadians(animator.pat!!.getJugglerAngle(1, this.time))
+            var a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(1, this.time))
 
             while (a < 0) {
                 a += Math.toRadians(360.0)
@@ -269,7 +269,7 @@ open class AnimationPanel : JPanel(), Runnable {
     open fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
         // Do pattern layout first so if there's an error we don't disrupt the
         // current animation
-        pat?.layoutPattern()
+        pat?.layout
 
         // stop the current animation thread, if one is running
         killAnimationThread()
@@ -360,7 +360,7 @@ open class AnimationPanel : JPanel(), Runnable {
                         val pattemp = animator.pat!!
                         synchronized(pattemp) {
                             for (path in 1..pattemp.numberOfPaths) {
-                                if (pattemp.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
+                                if (pattemp.layout.getPathCatchVolume(path, oldtime, newtime) > 0.0) {
                                     // do audio playback on the EDT -- not strictly
                                     // necessary but it seems to work better on Linux
                                     SwingUtilities.invokeLater {
@@ -378,7 +378,7 @@ open class AnimationPanel : JPanel(), Runnable {
                         val pattemp = animator.pat!!
                         synchronized(pattemp) {
                             for (path in 1..pattemp.numberOfPaths) {
-                                if (pattemp.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
+                                if (pattemp.layout.getPathBounceVolume(path, oldtime, newtime) > 0.0) {
                                     SwingUtilities.invokeLater {
                                         if (bounceclip!!.isActive) {
                                             bounceclip!!.stop()

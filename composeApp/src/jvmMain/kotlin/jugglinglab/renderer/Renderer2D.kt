@@ -241,7 +241,7 @@ class Renderer2D : Renderer() {
         for (i in 1..pat.numberOfPaths) {
             obj[index].type = DrawObject2D.TYPE_PROP
             obj[index].number = i
-            pat.getPathCoordinate(i, time, tempc)
+            pat.layout.getPathCoordinate(i, time, tempc)
             if (!tempc.isValid) {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
@@ -596,9 +596,9 @@ class Renderer2D : Renderer() {
 
     override val jugglerWindowMax: Coordinate
         get() {
-            var max = pat.getJugglerMax(1)
+            var max = pat.layout.getJugglerMax(1)
             for (i in 2..pat.numberOfJugglers) {
-                max = max(max, pat.getJugglerMax(i))
+                max = max(max, pat.layout.getJugglerMax(i))
             }
 
             max = Coordinate.add(
@@ -614,9 +614,9 @@ class Renderer2D : Renderer() {
 
      override val jugglerWindowMin: Coordinate
         get() {
-            var min = pat.getJugglerMin(1)
+            var min = pat.layout.getJugglerMin(1)
             for (i in 2..pat.numberOfJugglers) {
-                min = min(min, pat.getJugglerMin(i))
+                min = min(min, pat.layout.getJugglerMin(i))
             }
 
             min = Coordinate.add(

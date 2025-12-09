@@ -475,7 +475,7 @@ object JugglingLab {
                 try {
                     ++patternsCount
                     val pat = JMLPattern(parser.tree!!)
-                    pat.layoutPattern()
+                    val layout = pat.layout
                     ps.println("   OK")
                 } catch (je: JuggleException) {
                     ps.println("   Error creating pattern: ${je.message}")
@@ -502,7 +502,7 @@ object JugglingLab {
                         val pat = pl.getPatternForLine(i)
                         if (pat != null) {
                             ++patternsCount
-                            pat.layoutPattern()
+                            val layout = pat.layout
                             pl.getAnimationPrefsForLine(i)
                             ps.println("   Pattern line ${i + 1}: OK")
                         }

@@ -16,7 +16,6 @@ import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
 import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.distance
-import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.jlHandleFatalException
 import java.awt.*
 import java.awt.event.*
@@ -24,6 +23,7 @@ import java.awt.geom.Path2D
 import javax.swing.SwingUtilities
 import kotlin.math.*
 import androidx.compose.ui.unit.IntSize
+import jugglinglab.util.Coordinate.Companion.sub
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
     // for when an event is activated/dragged
@@ -34,7 +34,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     private var showXzDragControl: Boolean = false
     private var showYDragControl: Boolean = false
     private var eventStart: Coordinate? = null
-    private var eventMasterStart: Coordinate? = null
+    private var eventPrimaryStart: Coordinate? = null
     private var visibleEvents: ArrayList<JMLEvent>? = null
     private var eventPoints: Array<Array<Array<DoubleArray>>>
     private var handpathPoints: Array<Array<DoubleArray>>
@@ -122,7 +122,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltay = 0
                         deltax = 0
                         eventStart = event!!.localCoordinate
-                        eventMasterStart = event!!.master.localCoordinate
+                        eventPrimaryStart = event!!.primary.localCoordinate
                         repaint()
                         return
                     }
@@ -154,7 +154,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltay = 0
                         deltax = 0
                         eventStart = event!!.localCoordinate
-                        eventMasterStart = event!!.master.localCoordinate
+                        eventPrimaryStart = event!!.primary.localCoordinate
                         repaint()
                         return
                     }
@@ -300,7 +300,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         deltay = 0
         deltax = 0
         deltaAngle = 0.0
-        eventMasterStart = null
+        eventPrimaryStart = null
         eventStart = null
         positionStart = null
         repaint()
@@ -391,19 +391,30 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val cc = currentCoordinate
 
                 if (eventActive) {
-                    var deltalc = sub(cc, eventStart)
-                    deltalc = Coordinate.truncate(deltalc!!, 1e-7)
-                    event!!.localCoordinate = add(eventStart, deltalc)!!
+                    var deltalc = sub(cc, eventStart)!!
+                    deltalc = Coordinate.truncate(deltalc, 1e-7)
 
-                    if (!event!!.isMaster) {
-                        // set new coordinate in the master event
-                        val master = event!!.master
-                        val flipx = (event!!.hand != master.hand)
-                        if (flipx) {
-                            deltalc.x = -deltalc.x
-                        }
-                        master.localCoordinate = add(eventMasterStart, deltalc)!!
+                    val newEventCoordinate = add(eventStart, deltalc)!!
+                    val newEvent = event!!.copy(
+                        x = newEventCoordinate.x,
+                        y = newEventCoordinate.y,
+                        z = newEventCoordinate.z
+                    )
+
+                    val primary = event!!.primary
+                    if (event!!.hand != primary.hand) {
+                        deltalc.x = -deltalc.x
                     }
+                    val newPrimaryCoordinate = add(eventPrimaryStart, deltalc)!!
+                    val newPrimary = primary.copy(
+                        x = newPrimaryCoordinate.x,
+                        y = newPrimaryCoordinate.y,
+                        z = newPrimaryCoordinate.z
+                    )
+
+                    event = newEvent
+                    pattern?.removeEvent(primary)
+                    pattern?.addEvent(newPrimary)
                     dolayout = true
                 }
 
@@ -419,7 +430,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 try {
                     synchronized(animator.pat!!) {
                         animator.pat!!.setNeedsLayout()
-                        animator.pat!!.layoutPattern()
+                        animator.pat!!.layout
                     }
                     if (eventActive) {
                         createHandpathView()
@@ -547,12 +558,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         var snapHorizontal = true
 
         if (eventActive) {
-            a = -Math.toRadians(animator.pat!!.getJugglerAngle(event!!.juggler, event!!.t))
+            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(event!!.juggler, event!!.t))
         } else if (positionActive) {
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
         } else if (animator.pat!!.numberOfJugglers == 1) {
-            a = -Math.toRadians(animator.pat!!.getJugglerAngle(1, time))
+            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(1, time))
         } else {
             snapHorizontal = false
         }
@@ -641,13 +652,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
                 handpathStartTime = min(handpathStartTime, ev2.t)
 
-                var newMaster = true
+                var newPrimary = true
                 for (ev3 in visibleEvents!!) {
-                    if (ev3.hasSameMasterAs(ev2)) {
-                        newMaster = false
+                    if (ev3.hasSamePrimaryAs(ev2)) {
+                        newPrimary = false
                     }
                 }
-                if (newMaster) {
+                if (newPrimary) {
                     visibleEvents!!.add(ev2)
                 } else {
                     break
@@ -664,13 +675,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
                 handpathEndTime = max(handpathEndTime, ev2.t)
 
-                var newMaster = true
+                var newPrimary = true
                 for (ev3 in visibleEvents!!) {
-                    if (ev3.hasSameMasterAs(ev2)) {
-                        newMaster = false
+                    if (ev3.hasSamePrimaryAs(ev2)) {
+                        newPrimary = false
                     }
                 }
-                if (newMaster) {
+                if (newPrimary) {
                     visibleEvents!!.add(ev2)
                 } else {
                     break
@@ -704,7 +715,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val dl = 1.0 / distance(c, c2) // pixels/cm
 
                 val ca = ren.cameraAngle
-                val theta = ca[0] + Math.toRadians(pattern!!.getJugglerAngle(ev.juggler, ev.t))
+                val theta = ca[0] + Math.toRadians(pattern!!.layout.getJugglerAngle(ev.juggler, ev.t))
                 val phi = ca[1]
 
                 val dlc = dl * cos(phi)
@@ -780,11 +791,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             for (j in 0..<numHandpathPoints) {
                 val t: Double = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
-                pat!!.getHandCoordinate(event!!.juggler, event!!.hand, t, c)
+                pat!!.layout.getHandCoordinate(event!!.juggler, event!!.hand, t, c)
                 val point = ren!!.getXY(c)
                 handpathPoints[i][j][0] = point[0].toDouble()
                 handpathPoints[i][j][1] = point[1].toDouble()
-                handpathHold[j] = pat.isHandHolding(event!!.juggler, event!!.hand, t + 0.0001)
+                handpathHold[j] = pat.layout.isHandHolding(event!!.juggler, event!!.hand, t + 0.0001)
             }
         }
     }

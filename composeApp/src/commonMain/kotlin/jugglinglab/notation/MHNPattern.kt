@@ -770,7 +770,7 @@ abstract class MHNPattern : Pattern() {
         // In everything that follows we need to be careful to retain the
         // JMLEvent.primaryEvent field, which specifies whether the event is/isn't
         // a primary event.
-        result.buildEventList()
+        result.layout.buildEventList()
 
         // Step 8: Add events where there are long gaps for a hand
         if (hands == null) addEventsForGapsToJML(result)
@@ -1678,7 +1678,7 @@ abstract class MHNPattern : Pattern() {
             val hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
             if (h == 1) {
                 // only need to do this if there's a switch or switchdelay symmetry
-                pat.buildEventList()
+                pat.layout.buildEventList()
             }
             for (j in 1..numberOfJugglers) {
                 var ev = pat.eventList

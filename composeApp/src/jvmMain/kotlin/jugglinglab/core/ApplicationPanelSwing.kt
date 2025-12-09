@@ -108,7 +108,7 @@ class ApplicationPanelSwing
                         val notation = p.notationName
                         val config: String = p.toString()
                         val pat = fromBasePattern(notation, config)
-                        pat.layoutPattern()
+                        pat.layout
 
                         if (bringToFront(pat.hashCode)) {
                             return@addActionListener

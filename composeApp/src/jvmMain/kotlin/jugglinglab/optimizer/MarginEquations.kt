@@ -82,9 +82,9 @@ class MarginEquations() {
 
         // Step 1: Lay out the pattern. This generates two things we need, the pattern event
         // list and the pattern pathlink list.
-        pat.layoutPattern()
+        pat.layout
         val events = pat.eventList
-        val pathlinks = pat.pathLinks
+        val pathlinks = pat.layout.pathLinks
 
         // Step 2: Figure out the variables in the margin equations. Find the primary events
         // in the pattern, in particular the ones that are throws or catches. The x-coordinate

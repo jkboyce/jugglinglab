@@ -209,7 +209,7 @@ class Mutator {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateAddEvent(pat: JMLPattern): JMLPattern? {
-        pat.layoutPattern()
+        pat.layout
 
         var ev: JMLEvent?
         var tmin: Double
@@ -279,8 +279,8 @@ class Mutator {
         // Now choose a spatial location for the event. Figure out where the
         // hand is currently and adjust it.
         var pos = Coordinate()
-        pat.getHandCoordinate(juggler, hand, t, pos)
-        pos = pat.convertGlobalToLocal(pos, juggler, t)
+        pat.layout.getHandCoordinate(juggler, hand, t, pos)
+        pos = pat.layout.convertGlobalToLocal(pos, juggler, t)
         pos = pickNewPosition(hand, rate * MUTATION_NEW_EVENT_POSITION_CM, pos)
 
         ev = JMLEvent(
@@ -294,7 +294,7 @@ class Mutator {
                 // Last step: add a "holding" transition for every path that the hand
                 // is holding at the chosen time
                 for (path in 1..pat.numberOfPaths) {
-                    if (pat.isHandHoldingPath(juggler, hand, t, path)) {
+                    if (pat.layout.isHandHoldingPath(juggler, hand, t, path)) {
                         add(JMLTransition(JMLTransition.TRANS_HOLDING, path, null, null))
                     }
                 }
@@ -372,7 +372,7 @@ class Mutator {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun pickPrimaryEvent(pat: JMLPattern): JMLEvent {
-        pat.layoutPattern()
+        pat.layout
 
         val eventlist = pat.eventList
         var primaryCount = 0

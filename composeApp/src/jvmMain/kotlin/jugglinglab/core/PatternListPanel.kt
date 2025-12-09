@@ -122,7 +122,7 @@ class PatternListPanel private constructor() : JPanel() {
             }
 
             val pat = patternList.getPatternForLine(row) ?: return
-            pat.layoutPattern()  // do this before getting hash code
+            pat.layout  // do this before getting hash code
             if (PatternWindow.bringToFront(pat.hashCode)) {
                 return
             }

@@ -70,7 +70,7 @@ class Animator {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartAnimator(newpat: JMLPattern?, newjc: AnimationPrefs?) {
         if (newpat != null) {
-            newpat.layoutPattern()
+            newpat.layout
             pat = newpat
         }
         if (newjc != null) {
@@ -272,13 +272,13 @@ class Animator {
         var patternmax: Coordinate? = null
         var patternmin: Coordinate? = null
         for (i in 1..pattern.numberOfPaths) {
-            patternmax = max(patternmax, pattern.getPathMax(i))
-            patternmin = min(patternmin, pattern.getPathMin(i))
+            patternmax = max(patternmax, pattern.layout.getPathMax(i))
+            patternmin = min(patternmin, pattern.layout.getPathMin(i))
 
             if (Constants.DEBUG_LAYOUT) {
                 println("Data from Animator:")
-                println("Path max $i = " + pattern.getPathMax(i))
-                println("Path min $i = " + pattern.getPathMin(i))
+                println("Path max $i = " + pattern.layout.getPathMax(i))
+                println("Path min $i = " + pattern.layout.getPathMin(i))
             }
         }
 
@@ -299,10 +299,10 @@ class Animator {
         var handmax: Coordinate? = null
         var handmin: Coordinate? = null
         for (i in 1..pattern.numberOfJugglers) {
-            handmax = max(handmax, pattern.getHandMax(i, HandLink.LEFT_HAND))
-            handmin = min(handmin, pattern.getHandMin(i, HandLink.LEFT_HAND))
-            handmax = max(handmax, pattern.getHandMax(i, HandLink.RIGHT_HAND))
-            handmin = min(handmin, pattern.getHandMin(i, HandLink.RIGHT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
         }
 
         // The renderer's hand window is in local coordinates. We don't know
