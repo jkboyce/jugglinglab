@@ -14,6 +14,7 @@ package jugglinglab.core
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
 import jugglinglab.util.*
@@ -709,7 +710,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
             if (scale > 0.0) {
                 val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                newpat.scaleTime(scale)
+                        .withScaledTime(scale)
                 view.restartView(newpat, null)
                 view.addToUndoList(newpat)
             }

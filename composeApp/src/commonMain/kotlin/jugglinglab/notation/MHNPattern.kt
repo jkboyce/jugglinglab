@@ -26,6 +26,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.jml.JMLEvent.Companion.addTransition
+import jugglinglab.jml.JMLPattern.Companion.withScaledTimeToFitThrows
 import jugglinglab.util.*
 import jugglinglab.util.getStringResource
 import kotlin.math.abs
@@ -716,7 +717,7 @@ abstract class MHNPattern : Pattern() {
         // throws, so long as dwell <= (2 - BEATS_THROW_CATCH_MIN)
         beats_one_throw_early = max(0.0, dwell + BEATS_AIRTIME_MIN - 1)
 
-        val result = JMLPattern(numberOfJugglers)
+        var result = JMLPattern(numberOfJugglers)
 
         // Step 1: Add basic information about the pattern
         addPropsToJML(result)
@@ -799,7 +800,8 @@ abstract class MHNPattern : Pattern() {
         //
         // This should only be done if the user has not manually set `bps`.
         if (bpsSet <= 0) {
-            val scaleFactor = result.scaleTimeToFitThrows(1.01)
+            val (newResult, scaleFactor) = result.withScaledTimeToFitThrows(1.01)
+            result = newResult
             if (Constants.DEBUG_LAYOUT) {
                 println("After scaleTimeToFitThrows():")
                 println(result)

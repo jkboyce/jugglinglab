@@ -37,6 +37,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.jml.JMLTransition
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
@@ -199,9 +200,7 @@ class Mutator {
             scalemax - (scalemax - 1.0) * sqrt(2 * (1 - r))
         }
 
-        pat.scaleTime(scale)
-        pat.setNeedsLayout()
-        return pat
+        return pat.withScaledTime(scale)
     }
 
     // Add an event with no transitions to a randomly-selected juggler/hand, with

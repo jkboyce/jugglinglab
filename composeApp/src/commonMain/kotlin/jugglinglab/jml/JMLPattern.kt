@@ -403,77 +403,6 @@ data class JMLPattern(
             return (this.hashCode != basePatternHashcode)
         }
 
-    //--------------------------------------------------------------------------
-    // Some pattern transformations
-    //--------------------------------------------------------------------------
-
-    // Multiply all times in the pattern by a common factor `scale`.
-
-    fun scaleTime(scale: Double) {
-        var ev = eventList
-        val newEvents: MutableList<JMLEvent> = mutableListOf()
-        while (ev != null) {
-            if (ev.isPrimary) {
-                newEvents.add(ev.copy(t = ev.t * scale))
-            }
-            ev = ev.next
-        }
-        eventList = null
-        for (ev in newEvents) {
-            addEvent(ev)
-        }
-
-        var pos = positionList
-        val newPositions: MutableList<JMLPosition> = mutableListOf()
-        while (pos != null) {
-            newPositions.add(pos.copy(t = pos.t * scale))
-            pos = pos.next
-        }
-        positionList = null
-        for (pos in newPositions) {
-            addPosition(pos)
-        }
-
-        symmetries = symmetries.map { sym ->
-            if (sym.delay > 0) {
-                sym.copy(delay = sym.delay * scale)
-            } else {
-                sym
-            }
-        }.toMutableList()
-
-        setNeedsLayout()
-    }
-
-    // Rescale the pattern in time to ensure that all throws are allotted
-    // more time than their minimum required.
-    //
-    // `multiplier` should typically be a little over 1.
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun scaleTimeToFitThrows(multiplier: Double): Double {
-        //layoutPattern()  // to ensure we have PathLinks
-        var scaleFactor = 1.0
-
-        for (path in 1..numberOfPaths) {
-            for (pl in layout.pathLinks[path - 1]) {
-                val path = pl.path ?: continue
-                val duration = path.duration
-                val minDuration = path.minDuration
-
-                if (duration < minDuration && duration > 0) {
-                    scaleFactor = max(scaleFactor, minDuration / duration)
-                }
-            }
-        }
-
-        if (scaleFactor > 1) {
-            scaleFactor *= multiplier // so things aren't just barely feasible
-            scaleTime(scaleFactor)
-        }
-        return scaleFactor
-    }
-
     // Flip the x-axis in the local coordinates of each juggler.
     //
     // Makes a right<-->left hand switch for all events in the pattern.
@@ -1145,6 +1074,74 @@ data class JMLPattern(
                 }
             }
             return period
+        }
+
+        //----------------------------------------------------------------------
+        // Some pattern transformations
+        //----------------------------------------------------------------------
+
+        // Multiply all times in the pattern by a common factor `scale`.
+
+        fun JMLPattern.withScaledTime(scale: Double): JMLPattern {
+            val newSymmetries = symmetries.map { sym ->
+                if (sym.delay > 0) {
+                    sym.copy(delay = sym.delay * scale)
+                } else {
+                    sym
+                }
+            }
+
+            val newEvents: MutableList<JMLEvent> = mutableListOf()
+            var ev = eventList
+            while (ev != null) {
+                if (ev.isPrimary) {
+                    newEvents.add(ev.copy(t = ev.t * scale))
+                }
+                ev = ev.next
+            }
+
+            val newPositions: MutableList<JMLPosition> = mutableListOf()
+            var pos = positionList
+            while (pos != null) {
+                newPositions.add(pos.copy(t = pos.t * scale))
+                pos = pos.next
+            }
+
+            val result = fromJMLPattern(this)
+            result.symmetries = newSymmetries.toMutableList()
+            result.eventList = null
+            newEvents.forEach { result.addEvent(it) }
+            result.positionList = null
+            newPositions.forEach { result.addPosition(it) }
+            return result
+        }
+
+        // Rescale the pattern in time to ensure that all throws are allotted
+        // more time than their minimum required.
+        //
+        // `multiplier` should typically be a little over 1.
+
+        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+        fun JMLPattern.withScaledTimeToFitThrows(multiplier: Double): Pair<JMLPattern, Double> {
+            var scaleFactor = 1.0
+
+            for (path in 1..numberOfPaths) {
+                for (pl in layout.pathLinks[path - 1]) {
+                    val path = pl.path ?: continue
+                    val duration = path.duration
+                    val minDuration = path.minDuration
+
+                    if (duration < minDuration && duration > 0) {
+                        scaleFactor = max(scaleFactor, minDuration / duration)
+                    }
+                }
+            }
+
+            if (scaleFactor > 1) {
+                scaleFactor *= multiplier  // so things aren't just barely feasible
+                return Pair(withScaledTime(scaleFactor), scaleFactor)
+            }
+            return Pair(this, scaleFactor)
         }
     }
 }
