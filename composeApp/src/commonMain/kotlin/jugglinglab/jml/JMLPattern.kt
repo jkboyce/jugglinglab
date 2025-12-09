@@ -107,11 +107,7 @@ data class JMLPattern(
         get() = props.size
 
     fun getProp(propnum: Int): Prop {
-        return getPropDef(propnum).prop
-    }
-
-    fun getPropDef(propnum: Int): JMLProp {
-        return props[propnum - 1]
+        return props[propnum - 1].prop
     }
 
     fun getPropAssignment(path: Int): Int {
@@ -458,68 +454,40 @@ data class JMLPattern(
         val primary: JMLEvent
     )
 
-    // Streamline the pattern to remove excess empty and holding events.
-    //
-    // Scan forward in time through the pattern and remove any event for which
-    // all of the following are true:
-    //
-    // (a) event is empty or contains only <holding> transitions
-    // (b) event has a different primary event than the previous (surviving)
-    //     event for that hand
-    // (c) event is within `twindow` seconds of the previous (surviving) event
-    //     for that hand
-    // (d) event is not immediately adjacent to a throw or catch event for that
-    //     hand that involves a pass to/from a different juggler
-
-    @Suppress("unused")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun streamlinePatternWithWindow(twindow: Double) {
-        //layoutPattern()  // to ensure we have PathLinks
-
-        var nEvents = 0 // for reporting stats
-        var nHolds = 0
-        var nRemoved = 0
-
-        var ev = eventList
-
-        while (ev != null) {
-            val prev = ev.previousForHand
-            val next = ev.nextForHand
-
-            var holdingOnly = true
-            for (tr in ev.transitions) {
-                if (tr.type != JMLTransition.TRANS_HOLDING) {
-                    holdingOnly = false
-                    break
-                }
-            }
-            val differentPrimaries = (prev == null || !ev.hasSamePrimaryAs(prev))
-            val insideWindow = (prev != null && (ev.t - prev.t) < twindow)
-            val notPassAdjacent =
-                (prev != null && next != null && !prev.hasPassingTransition && !next.hasPassingTransition)
-
-            val remove = holdingOnly && differentPrimaries && insideWindow && notPassAdjacent
-            if (remove) {
-                removeEvent(ev)
-                ++nRemoved
-            }
-
-            ++nEvents
-            if (holdingOnly) {
-                ++nHolds
-            }
-
-            ev = ev.next
-        }
-
-        if (Constants.DEBUG_LAYOUT) {
-            println("Streamlined with time window $twindow secs:")
-            println(
-                "    Removed $nRemoved of $nHolds holding events ($nEvents events total)"
-            )
-        }
+    fun prevForHandFromEvent(ev: JMLEvent): JMLEvent {
+        return eventSequence(startTime = ev.t, reverse = true).first {
+            it.event.hand == ev.hand && it.event.juggler == ev.juggler
+        }.event
     }
 
+    fun nextForHandFromEvent(ev: JMLEvent): JMLEvent {
+        return eventSequence(startTime = ev.t).first {
+            it.event.t > ev.t && it.event.hand == ev.hand && it.event.juggler == ev.juggler
+        }.event
+    }
+
+    fun prevForPathFromEvent(ev: JMLEvent, path: Int): JMLEvent {
+        return eventSequence(startTime = ev.t, reverse = true).first { image ->
+            image.event.transitions.any { it.path == path }
+        }.event
+    }
+
+    fun nextForPathFromEvent(ev: JMLEvent, path: Int): JMLEvent {
+        return eventSequence(startTime = ev.t).first { image ->
+            image.event.t > ev.t && image.event.transitions.any { it.path == path }
+        }.event
+    }
+
+    // Return true if the event has a transition for a path to or from a
+    // different juggler.
+
+    fun hasPassingTransitionInEvent(ev: JMLEvent): Boolean {
+        val transitionPaths = ev.transitions.filter { it.isThrowOrCatch }.map { it.path }
+        return transitionPaths.any {
+            prevForPathFromEvent(ev, it).juggler != ev.juggler ||
+                nextForPathFromEvent(ev, it).juggler != ev.juggler
+        }
+    }
 
     val pathPermutation: Permutation?
         get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
@@ -535,6 +503,7 @@ data class JMLPattern(
         laidout = false
     }
 
+    // TODO: make this not depend on `layout`
     val isBouncePattern: Boolean
         get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
 
@@ -741,13 +710,22 @@ data class JMLPattern(
                 }
 
                 "symmetry" -> {
-                    val sym = JMLSymmetry.fromJMLNode(current, record.numberOfJugglers, record.numberOfPaths)
+                    val sym = JMLSymmetry.fromJMLNode(
+                        current,
+                        record.numberOfJugglers,
+                        record.numberOfPaths
+                    )
                     record.symmetries.add(sym)
                 }
 
                 "event" -> {
                     val ev =
-                        JMLEvent.fromJMLNode(current, record.loadingversion, record.numberOfJugglers, record.numberOfPaths)
+                        JMLEvent.fromJMLNode(
+                            current,
+                            record.loadingversion,
+                            record.numberOfJugglers,
+                            record.numberOfPaths
+                        )
                     record.events.add(ev)
                     return  // stop recursion
                 }
@@ -980,6 +958,7 @@ data class JMLPattern(
                             // throws become catches
                             JMLTransition(type = JMLTransition.TRANS_CATCH, path = tr.path)
                         }
+
                         JMLTransition.TRANS_CATCH,
                         JMLTransition.TRANS_SOFTCATCH,
                         JMLTransition.TRANS_GRABCATCH -> {
@@ -993,10 +972,14 @@ data class JMLPattern(
                             val sourceTransition =
                                 sourceEvent.transitions.first { it.path == tr.path }
                             if (sourceTransition.type != JMLTransition.TRANS_THROW) {
-                                throw JuggleExceptionInternalWithPattern("invertTime() problem 1", this)
+                                throw JuggleExceptionInternalWithPattern(
+                                    "invertTime() problem 1",
+                                    this
+                                )
                             }
                             sourceTransition
                         }
+
                         else -> tr
                     }
                 }
@@ -1034,6 +1017,77 @@ data class JMLPattern(
             return result
         }
 
+        // Streamline the pattern to remove excess empty and holding events.
+        //
+        // Scan forward in time through the pattern and remove any event for which
+        // all of the following are true:
+        //
+        // (a) event is empty or contains only <holding> transitions
+        // (b) event has a different primary event than the previous (surviving)
+        //     event for that hand
+        // (c) event is within `twindow` seconds of the previous (surviving) event
+        //     for that hand
+        // (d) event is not immediately adjacent to a throw or catch event for that
+        //     hand that involves a pass to/from a different juggler
+
+        @Suppress("unused")
+        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+        fun JMLPattern.withExtraEventsRemovedOverWindow(twindow: Double): JMLPattern {
+            val record = PatternBuilder.fromJMLPattern(this)
+            var result = fromPatternBuilder(record)
+
+            val nEventsStart = record.events.size
+            val nHoldsStart = record.events.count { ev ->
+                ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
+            }
+
+            newpattern@ while (true) {
+                val primaryEvents = buildList {
+                    var ev = result.eventList
+                    while (ev != null) {
+                        if (ev.isPrimary) {
+                            add(ev)
+                        }
+                        ev = ev.next
+                    }
+                }
+
+                for (ev in primaryEvents) {
+                    val holdingOnly = ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
+                    if (!holdingOnly) {
+                        continue
+                    }
+
+                    val prevForHand = result.prevForHandFromEvent(ev)
+                    val nextForHand = result.nextForHandFromEvent(ev)
+
+                    val differentPrimaries = !ev.hasSamePrimaryAs(prevForHand)
+                    val insideWindow = ((ev.t - prevForHand.t) < twindow)
+                    val notPassAdjacent = (
+                        !result.hasPassingTransitionInEvent(prevForHand) &&
+                            !result.hasPassingTransitionInEvent(nextForHand)
+                        )
+
+                    val remove = differentPrimaries && insideWindow && notPassAdjacent
+                    if (remove) {
+                        record.events.remove(ev)
+                        result = fromPatternBuilder(record)
+                        continue@newpattern
+                    }
+                }
+                break
+            }
+
+            if (Constants.DEBUG_LAYOUT) {
+                val nRemoved = nEventsStart - record.events.size
+                println("Streamlined with time window $twindow secs:")
+                println(
+                    "    Removed $nRemoved of $nHoldsStart holding events ($nEventsStart events total)"
+                )
+            }
+            return result
+        }
+
         // Set the colors of props in the pattern, using the information provided
         // in `colorString`.
 
@@ -1059,7 +1113,8 @@ data class JMLPattern(
                             continue
                         val cycle = delayPerm.getCycle(i + 1)
                         for (j in cycle) {
-                            colorsByOrbit[j - 1] = Prop.colorMixed[colorIndex % Prop.colorMixed.size]
+                            colorsByOrbit[j - 1] =
+                                Prop.colorMixed[colorIndex % Prop.colorMixed.size]
                         }
                         ++colorIndex
                     }
@@ -1158,7 +1213,8 @@ class PatternBuilder {
                 pos = pos.next
             }
             record.props = pat.props.toMutableList()
-            record.propAssignment = pat.propassignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
+            record.propAssignment =
+                pat.propassignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
             record.tags = pat.tags.toMutableList()
             record.basePatternNotationString = pat.basePatternNotation
             record.basePatternConfigString = pat.basePatternConfig

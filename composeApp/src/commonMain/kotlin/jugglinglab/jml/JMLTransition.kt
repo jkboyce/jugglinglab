@@ -12,6 +12,14 @@ data class JMLTransition(
     val throwType: String? = null,
     val throwMod: String? = null
 ) {
+    val isThrowOrCatch: Boolean = when (type) {
+        TRANS_THROW,
+        TRANS_CATCH,
+        TRANS_SOFTCATCH,
+        TRANS_GRABCATCH -> true
+        else -> false
+    }
+
     // TODO: remove these later; part of layout
     var incomingPathLink: PathLink? = null
     var outgoingPathLink: PathLink? = null

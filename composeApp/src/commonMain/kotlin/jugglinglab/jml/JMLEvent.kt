@@ -130,30 +130,6 @@ data class JMLEvent(
             globalvalid = true
         }
 
-    val previousForHand: JMLEvent?
-        get() {
-            var ev = previous
-            while (ev != null) {
-                if (ev.juggler == juggler && ev.hand == hand) {
-                    return ev
-                }
-                ev = ev.previous
-            }
-            return null
-        }
-
-    val nextForHand: JMLEvent?
-        get() {
-            var ev = next
-            while (ev != null) {
-                if (ev.juggler == juggler && ev.hand == hand) {
-                    return ev
-                }
-                ev = ev.next
-            }
-            return null
-        }
-
     fun isDelayOf(ev2: JMLEvent): Boolean {
         if (!hasSamePrimaryAs(ev2)) {
             return false
@@ -174,35 +150,6 @@ data class JMLEvent(
         val primary2 = if (ev2.primaryEvent == null) ev2 else ev2.primaryEvent
         return (primary1 === primary2)
     }
-
-    // Return true if the event contains a throw transition to another juggler.
-    //
-    // Note this will only work after pattern layout.
-
-    val hasPassingThrow: Boolean
-        get() = transitions.any { tr ->
-            tr.type == JMLTransition.TRANS_THROW &&
-                tr.outgoingPathLink?.endEvent?.juggler != juggler
-        }
-
-    // Return true if the event contains a catch transition from another juggler.
-    //
-    // Note this will only work after pattern layout.
-
-    val hasPassingCatch: Boolean
-        get() = transitions.any { tr ->
-            when (tr.type) {
-                JMLTransition.TRANS_CATCH,
-                JMLTransition.TRANS_SOFTCATCH,
-                JMLTransition.TRANS_GRABCATCH -> true
-                else -> false
-            } && tr.incomingPathLink?.startEvent?.juggler != juggler
-        }
-
-    // Note this only works after pattern layout.
-
-    val hasPassingTransition: Boolean
-        get() = (hasPassingThrow || hasPassingCatch)
 
     // Temporary fix, eventually remove
 

@@ -1216,7 +1216,7 @@ class EditLadderDiagram(
             var gotmatch = false
             var matchingprop = 0
             for (i in 1..pattern.numberOfProps) {
-                val pdef = pattern.getPropDef(i)
+                val pdef = pattern.props[i - 1]
                 if (type.equals(pdef.type, ignoreCase = true)) {
                     if ((mod == null && pdef.mod == null)
                         || (mod != null && mod.equals(pdef.mod, ignoreCase = true))
