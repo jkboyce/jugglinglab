@@ -1869,12 +1869,51 @@ abstract class MHNPattern : Pattern() {
         const val RIGHT_HAND: Int = 0
         const val LEFT_HAND: Int = 1
 
-        // Decide whether the catches immediately prior to the two given throws should
-        // be made in the order given, or whether they should be switched.
+        // Default spatial coordinates, by number of objects
+        protected val samethrowx: DoubleArray =
+            doubleArrayOf(0.0, 20.0, 25.0, 12.0, 10.0, 7.5, 5.0, 5.0, 5.0)
+        protected val crossingthrowx: DoubleArray =
+            doubleArrayOf(0.0, 17.0, 17.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0)
+        protected val catchx: DoubleArray =
+            doubleArrayOf(0.0, 17.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0)
+        protected const val RESTINGX: Double = 25.0
+
+        // Default beats per second, by number of objects
+        protected val throwspersec: DoubleArray = doubleArrayOf(
+            2.00,
+            2.00,
+            2.00,
+            2.90,
+            3.40,
+            4.10,
+            4.25,
+            5.00,
+            5.00,
+            5.50,
+        )
+
+        // How many beats early to throw a '1' (all other throws are on-beat)
+        // This value is calculated; see asJMLPattern()
+        protected var beats_one_throw_early: Double = 0.0
+
+        // Minimum airtime for a throw, in beats
+        protected const val BEATS_AIRTIME_MIN: Double = 0.3
+
+        // Minimum time from a throw to a subsequent catch for that hand, in beats
+        protected const val BEATS_THROW_CATCH_MIN: Double = 0.3
+
+        // Minimum time from a catch to a subsequent throw for that hand, in beats
+        protected const val BEATS_CATCH_THROW_MIN: Double = 0.02
+
+        // Maximum allowed time without events for a given hand, in seconds
+        protected const val SECS_EVENT_GAP_MAX: Double = 0.5
+
+        // Helper to decide whether the catches immediately prior to the two given
+        // throws should be made in the order given, or whether they should be switched.
         //
-        // The following implementation isn't ideal; we would like a function that is
-        // invariant with respect to the various pattern symmetries we can apply, but
-        // I don't think this is possible with respect to the jugglers.
+        // JKB: The following implementation isn't ideal; we would like a function that
+        // is invariant with respect to the various pattern symmetries we can apply,
+        // but I don't think this is possible with respect to the jugglers.
 
         protected fun isCatchOrderIncorrect(t1: MHNThrow, t2: MHNThrow): Boolean {
             // first look at the time spent in the air; catch higher throws first
@@ -1900,44 +1939,5 @@ abstract class MHNPattern : Pattern() {
             val hdiff2 = abs(t2.hand - t2.source!!.hand)
             return hdiff1 > hdiff2
         }
-
-        // Default spatial coordinates
-        protected val samethrowx: DoubleArray =
-            doubleArrayOf(0.0, 20.0, 25.0, 12.0, 10.0, 7.5, 5.0, 5.0, 5.0)
-        protected val crossingthrowx: DoubleArray =
-            doubleArrayOf(0.0, 17.0, 17.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0)
-        protected val catchx: DoubleArray =
-            doubleArrayOf(0.0, 17.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0)
-        protected const val RESTINGX: Double = 25.0
-
-        // How many beats early to throw a '1' (all other throws are on-beat)
-        //
-        // This value is calculated; see asJMLPattern()
-        protected var beats_one_throw_early: Double = 0.0
-
-        // Minimum airtime for a throw, in beats
-        protected const val BEATS_AIRTIME_MIN: Double = 0.3
-
-        // Minimum time from a throw to a subsequent catch for that hand, in beats
-        protected const val BEATS_THROW_CATCH_MIN: Double = 0.3
-
-        // Minimum time from a catch to a subsequent throw for that hand, in beats
-        protected const val BEATS_CATCH_THROW_MIN: Double = 0.02
-
-        // Maximum allowed time without events for a given hand, in seconds
-        protected const val SECS_EVENT_GAP_MAX: Double = 0.5
-
-        protected val throwspersec: DoubleArray = doubleArrayOf(
-            2.00,
-            2.00,
-            2.00,
-            2.90,
-            3.40,
-            4.10,
-            4.25,
-            5.00,
-            5.00,
-            5.50,
-        )
     }
 }
