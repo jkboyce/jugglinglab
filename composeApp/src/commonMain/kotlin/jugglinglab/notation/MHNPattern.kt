@@ -700,6 +700,10 @@ abstract class MHNPattern : Pattern() {
         return result
     }
 
+    //--------------------------------------------------------------------------
+    // Convert from juggling matrix representation to JML
+    //--------------------------------------------------------------------------
+
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun asJMLPattern(): JMLPattern {
         if (bpsSet <= 0) {
@@ -842,6 +846,10 @@ abstract class MHNPattern : Pattern() {
         }
         return result
     }
+
+    //--------------------------------------------------------------------------
+    // Helpers for converting to JML
+    //--------------------------------------------------------------------------
 
     protected fun calcBps(): Double {
         // Calculate a default beats per second (bps) for the pattern
@@ -1753,7 +1761,8 @@ abstract class MHNPattern : Pattern() {
             if (endEvent == null) {
                 // if we found an event going backward, we should find one forward
                 throw JuggleExceptionInternalWithPattern(
-                    "Error in addLocationsForIncompleteEventsToJML()", pat)
+                    "Error in addLocationsForIncompleteEventsToJML()", pat
+                )
             }
 
             // linear interpolation between start and end positions
@@ -1826,21 +1835,18 @@ abstract class MHNPattern : Pattern() {
                         }
                     }
                     foundEvent = true
-                } else if (addMode) {
-                    if (ev.juggler == addJuggler && ev.hand == addHand && ev.isPrimary) {
-                        val ev2 = ev.copy(
-                            transitions = ev.transitions +
-                                JMLTransition(
-                                    type = JMLTransition.TRANS_HOLDING,
-                                    path = path,
-                                    throwType = null,
-                                    throwMod = null
-                                )
+                } else if (addMode && ev.juggler == addJuggler && ev.hand == addHand && ev.isPrimary) {
+                    val ev2 = ev.addTransition(
+                        JMLTransition(
+                            type = JMLTransition.TRANS_HOLDING,
+                            path = path,
+                            throwType = null,
+                            throwMod = null
                         )
-                        // add as a primary event
-                        pat.removeEvent(ev)
-                        pat.addEvent(ev2)
-                    }
+                    )
+                    // add as a primary event
+                    pat.removeEvent(ev)
+                    pat.addEvent(ev2)
                 }
                 ev = ev.next
             }
@@ -1895,11 +1901,7 @@ abstract class MHNPattern : Pattern() {
             return hdiff1 > hdiff2
         }
 
-        //----------------------------------------------------------------------
-        // Convert from juggling matrix representation to JML
-        //----------------------------------------------------------------------
-
-        // The following are default spatial coordinates to use
+        // Default spatial coordinates
         protected val samethrowx: DoubleArray =
             doubleArrayOf(0.0, 20.0, 25.0, 12.0, 10.0, 7.5, 5.0, 5.0, 5.0)
         protected val crossingthrowx: DoubleArray =
@@ -1924,10 +1926,6 @@ abstract class MHNPattern : Pattern() {
 
         // Maximum allowed time without events for a given hand, in seconds
         protected const val SECS_EVENT_GAP_MAX: Double = 0.5
-
-        //----------------------------------------------------------------------
-        // Helpers for converting to JML
-        //----------------------------------------------------------------------
 
         protected val throwspersec: DoubleArray = doubleArrayOf(
             2.00,

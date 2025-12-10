@@ -38,12 +38,12 @@ data class JMLPattern(
     val numberOfJugglers: Int,
     val numberOfPaths: Int
 ) {
-    var version: String = JMLDefs.CURRENT_JML_VERSION
+    var jmlVersion: String = JMLDefs.CURRENT_JML_VERSION
     var symmetries: MutableList<JMLSymmetry> = mutableListOf()
     var eventList: JMLEvent? = null
     var positionList: JMLPosition? = null
     var props: MutableList<JMLProp> = mutableListOf()
-    var propassignment: IntArray? = null
+    var propAssignment: IntArray? = null
     var tags: MutableList<String> = mutableListOf()
 
     private var laidout: Boolean = false
@@ -107,7 +107,7 @@ data class JMLPattern(
         get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
 
     val periodWithProps: Int
-        get() = getPeriod(pathPermutation!!, propassignment!!)
+        get() = getPeriod(pathPermutation!!, propAssignment!!)
 
     @get:Throws(JuggleExceptionUser::class)
     val isColorable: Boolean
@@ -121,7 +121,7 @@ data class JMLPattern(
     }
 
     fun getPropAssignment(path: Int): Int {
-        return propassignment!![path - 1]
+        return propAssignment!![path - 1]
     }
 
     val loopStartTime: Double
@@ -192,12 +192,12 @@ data class JMLPattern(
     }
 
     fun setPropAssignment(pathnum: Int, propnum: Int) {
-        propassignment?.set(pathnum - 1, propnum)
+        propAssignment?.set(pathnum - 1, propnum)
         setNeedsLayout()
     }
 
     fun setPropAssignments(pa: IntArray) {
-        propassignment = pa
+        propAssignment = pa
         setNeedsLayout()
     }
 
@@ -508,7 +508,7 @@ data class JMLPattern(
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
         JMLDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
-        wr.append("<jml version=\"${xmlescape(version)}\">\n")
+        wr.append("<jml version=\"${xmlescape(jmlVersion)}\">\n")
         wr.append("<pattern>\n")
         if (writeTitle && title != null) {
             wr.append("<title>${xmlescape(title!!)}</title>\n")
@@ -597,7 +597,7 @@ data class JMLPattern(
                 numberOfPaths = record.numberOfPaths
             )
 
-            result.version = record.loadingversion
+            result.jmlVersion = record.jmlVersion
             record.symmetries.forEach { result.addSymmetry(it) }
             record.events.forEach { result.addEvent(it) }
             record.positions.forEach { result.addPosition(it) }
@@ -623,7 +623,7 @@ data class JMLPattern(
             version: String = JMLDefs.CURRENT_JML_VERSION
         ): JMLPattern {
             val record = PatternBuilder()
-            record.loadingversion = version
+            record.jmlVersion = version
             readJML(current, record)
             return fromPatternBuilder(record)
         }
@@ -644,7 +644,7 @@ data class JMLPattern(
                         val message = getStringResource(Res.string.error_jml_version)
                         throw JuggleExceptionUser(message)
                     }
-                    record.loadingversion = vers
+                    record.jmlVersion = vers
                 }
 
                 "pattern" -> {
@@ -665,7 +665,7 @@ data class JMLPattern(
                     record.basePatternConfigString = current.nodeValue!!.trim()
                 }
 
-                "prop" -> record.props.add(JMLProp.fromJMLNode(current, record.loadingversion))
+                "prop" -> record.props.add(JMLProp.fromJMLNode(current, record.jmlVersion))
                 "setup" -> {
                     val at = current.attributes
                     val jugglerstring = at.getValueOf("jugglers")
@@ -717,7 +717,7 @@ data class JMLPattern(
                     val ev =
                         JMLEvent.fromJMLNode(
                             current,
-                            record.loadingversion,
+                            record.jmlVersion,
                             record.numberOfJugglers,
                             record.numberOfPaths
                         )
@@ -726,7 +726,7 @@ data class JMLPattern(
                 }
 
                 "position" -> {
-                    val pos = JMLPosition.fromJMLNode(current, record.loadingversion)
+                    val pos = JMLPosition.fromJMLNode(current, record.jmlVersion)
                     record.positions.add(pos)
                     return
                 }
@@ -1177,7 +1177,7 @@ data class JMLPattern(
 data class PatternBuilder(
     var numberOfJugglers: Int = -1,
     var numberOfPaths: Int = -1,
-    var loadingversion: String = JMLDefs.CURRENT_JML_VERSION,
+    var jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
     var symmetries: MutableList<JMLSymmetry> = mutableListOf(),
     var events: MutableList<JMLEvent> = mutableListOf(),
     var positions: MutableList<JMLPosition> = mutableListOf(),
@@ -1194,7 +1194,7 @@ data class PatternBuilder(
             val record = PatternBuilder()
             record.numberOfJugglers = pat.numberOfJugglers
             record.numberOfPaths = pat.numberOfPaths
-            record.loadingversion = pat.version
+            record.jmlVersion = pat.jmlVersion
             record.symmetries = pat.symmetries.toMutableList()
             var ev = pat.eventList
             while (ev != null) {
@@ -1210,7 +1210,7 @@ data class PatternBuilder(
             }
             record.props = pat.props.toMutableList()
             record.propAssignment =
-                pat.propassignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
+                pat.propAssignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
             record.tags = pat.tags.toMutableList()
             record.basePatternNotationString = pat.basePatternNotation
             record.basePatternConfigString = pat.basePatternConfig
