@@ -454,28 +454,28 @@ data class JMLPattern(
         val primary: JMLEvent
     )
 
-    fun prevForHandFromEvent(ev: JMLEvent): JMLEvent {
+    fun prevForHandFromEvent(ev: JMLEvent): EventImage {
         return eventSequence(startTime = ev.t, reverse = true).first {
             it.event.hand == ev.hand && it.event.juggler == ev.juggler
-        }.event
+        }
     }
 
-    fun nextForHandFromEvent(ev: JMLEvent): JMLEvent {
+    fun nextForHandFromEvent(ev: JMLEvent): EventImage {
         return eventSequence(startTime = ev.t).first {
             it.event.t > ev.t && it.event.hand == ev.hand && it.event.juggler == ev.juggler
-        }.event
+        }
     }
 
-    fun prevForPathFromEvent(ev: JMLEvent, path: Int): JMLEvent {
+    fun prevForPathFromEvent(ev: JMLEvent, path: Int): EventImage {
         return eventSequence(startTime = ev.t, reverse = true).first { image ->
             image.event.transitions.any { it.path == path }
-        }.event
+        }
     }
 
-    fun nextForPathFromEvent(ev: JMLEvent, path: Int): JMLEvent {
+    fun nextForPathFromEvent(ev: JMLEvent, path: Int): EventImage {
         return eventSequence(startTime = ev.t).first { image ->
             image.event.t > ev.t && image.event.transitions.any { it.path == path }
-        }.event
+        }
     }
 
     // Return true if the event has a transition for a path to or from a
@@ -484,8 +484,8 @@ data class JMLPattern(
     fun hasPassingTransitionInEvent(ev: JMLEvent): Boolean {
         val transitionPaths = ev.transitions.filter { it.isThrowOrCatch }.map { it.path }
         return transitionPaths.any {
-            prevForPathFromEvent(ev, it).juggler != ev.juggler ||
-                nextForPathFromEvent(ev, it).juggler != ev.juggler
+            prevForPathFromEvent(ev, it).event.juggler != ev.juggler ||
+                nextForPathFromEvent(ev, it).event.juggler != ev.juggler
         }
     }
 
@@ -1061,11 +1061,12 @@ data class JMLPattern(
                     val prevForHand = result.prevForHandFromEvent(ev)
                     val nextForHand = result.nextForHandFromEvent(ev)
 
-                    val differentPrimaries = !ev.hasSamePrimaryAs(prevForHand)
-                    val insideWindow = ((ev.t - prevForHand.t) < twindow)
+                    val differentPrimaries = (ev != prevForHand.primary)
+                    //val differentPrimaries = !ev.hasSamePrimaryAs(prevForHand.event)
+                    val insideWindow = ((ev.t - prevForHand.event.t) < twindow)
                     val notPassAdjacent = (
-                        !result.hasPassingTransitionInEvent(prevForHand) &&
-                            !result.hasPassingTransitionInEvent(nextForHand)
+                        !result.hasPassingTransitionInEvent(prevForHand.event) &&
+                            !result.hasPassingTransitionInEvent(nextForHand.event)
                         )
 
                     val remove = differentPrimaries && insideWindow && notPassAdjacent
@@ -1178,21 +1179,21 @@ data class JMLPattern(
 
 // Helper for building JMLPatterns
 
-class PatternBuilder {
-    var numberOfJugglers: Int = -1
-    var numberOfPaths: Int = -1
-    var loadingversion: String = JMLDefs.CURRENT_JML_VERSION
-    var symmetries: MutableList<JMLSymmetry> = mutableListOf()
-    var events: MutableList<JMLEvent> = mutableListOf()
-    var positions: MutableList<JMLPosition> = mutableListOf()
-    var props: MutableList<JMLProp> = mutableListOf()
-    var propAssignment: IntArray = IntArray(1) { 1 }
-    var tags: MutableList<String> = mutableListOf()
-    var basePatternNotationString: String? = null
-    var basePatternConfigString: String? = null
-    var infoString: String? = null
+data class PatternBuilder(
+    var numberOfJugglers: Int = -1,
+    var numberOfPaths: Int = -1,
+    var loadingversion: String = JMLDefs.CURRENT_JML_VERSION,
+    var symmetries: MutableList<JMLSymmetry> = mutableListOf(),
+    var events: MutableList<JMLEvent> = mutableListOf(),
+    var positions: MutableList<JMLPosition> = mutableListOf(),
+    var props: MutableList<JMLProp> = mutableListOf(),
+    var propAssignment: IntArray = IntArray(1) { 1 },
+    var tags: MutableList<String> = mutableListOf(),
+    var basePatternNotationString: String? = null,
+    var basePatternConfigString: String? = null,
+    var infoString: String? = null,
     var titleString: String? = null
-
+){
     companion object {
         fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
             val record = PatternBuilder()

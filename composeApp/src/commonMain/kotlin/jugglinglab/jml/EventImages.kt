@@ -79,7 +79,13 @@ class EventImages(
             return makeEvent()
         }
 
+    // Note this returns the primary event when appropriate, not a copy.
+
     private fun makeEvent(): JMLEvent {
+        if (currentEntry == 0 && currentLoop == 0) {
+            return primaryEvent
+        }
+
         val pathPermFromPrimary = run {
             var ptemp = ea[currentJuggler][currentHand][currentEntry]
             var lp = loopPerm!!
@@ -112,8 +118,11 @@ class EventImages(
                 tr.copy(path = pathPermFromPrimary.getMapping(tr.path))
             }
         )
-
-        newEvent.copyLayoutDataFrom(primaryEvent, currentEntry + numEntries * currentLoop, numEntries)
+        newEvent.copyLayoutDataFrom(
+            primaryEvent,
+            currentEntry + numEntries * currentLoop,
+            numEntries
+        )
         newEvent.pathPermFromPrimary = pathPermFromPrimary
         return newEvent
     }
