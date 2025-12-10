@@ -100,8 +100,18 @@ data class JMLPattern(
         }
 
     //--------------------------------------------------------------------------
-    // Methods to define the pattern
+    // Useful properties of JMLPatterns
     //--------------------------------------------------------------------------
+
+    val pathPermutation: Permutation?
+        get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
+
+    val periodWithProps: Int
+        get() = getPeriod(pathPermutation!!, propassignment!!)
+
+    @get:Throws(JuggleExceptionUser::class)
+    val isColorable: Boolean
+        get() = props.all { it.prop.isColorable }
 
     val numberOfProps: Int
         get() = props.size
@@ -127,26 +137,9 @@ data class JMLPattern(
             return -1.0
         }
 
-    fun addTag(tag: String?) {
-        if (tag != null && !tag.isEmpty() && !isTaggedWith(tag)) {
-            tags.add(tag)
-        }
-    }
-
-    @Suppress("unused")
-    fun removeTag(tag: String?): Boolean {
-        if (tag == null || !isTaggedWith(tag)) {
-            return false
-        }
-
-        for (i in tags.indices) {
-            if (tags[i].equals(tag, ignoreCase = true)) {
-                tags.removeAt(i)
-                return true
-            }
-        }
-        return false  // shouldn't happen
-    }
+    // TODO: make this not depend on `layout`
+    val isBouncePattern: Boolean
+        get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
 
     fun isTaggedWith(tag: String?): Boolean {
         if (tag == null) return false
@@ -156,6 +149,31 @@ data class JMLPattern(
             }
         }
         return false
+    }
+
+    val hashCode: Int
+        get() {
+            val sb = StringBuilder()
+
+            // Omit <info> tag metadata for the purposes of evaluating hash code.
+            // Two patterns that differ only by metadata are treated as identical.
+            writeJML(sb, writeTitle = true, writeInfo = false)
+
+            return sb.toString().hashCode()
+        }
+
+    //--------------------------------------------------------------------------
+    // Target removal
+    //--------------------------------------------------------------------------
+
+    fun setNeedsLayout() {
+        laidout = false
+    }
+
+    fun addTag(tag: String?) {
+        if (tag != null && !tag.isEmpty() && !isTaggedWith(tag)) {
+            tags.add(tag)
+        }
     }
 
     fun addProp(pd: JMLProp?) {
@@ -274,21 +292,6 @@ data class JMLPattern(
         }
     }
 
-    fun getEventImageInLoop(ev: JMLEvent): JMLEvent? {
-        var current = eventList
-        while (current != null) {
-            if ((current.t in loopStartTime..<loopEndTime) &&
-                current.juggler == ev.juggler &&
-                current.hand == ev.hand &&
-                current.hasSamePrimaryAs(ev)
-            ) {
-                return current
-            }
-            current = current.next
-        }
-        return null
-    }
-
     fun addPosition(pos: JMLPosition) {
         if (pos.t < this.loopStartTime || pos.t > this.loopEndTime) {
             return  // throw new JuggleExceptionUser("<position> time out of range");
@@ -344,17 +347,6 @@ data class JMLPattern(
         }
     }
 
-    val hashCode: Int
-        get() {
-            val sb = StringBuilder()
-
-            // Omit <info> tag metadata for the purposes of evaluating hash code.
-            // Two patterns that differ only by metadata are treated as identical.
-            writeJML(sb, writeTitle = true, writeInfo = false)
-
-            return sb.toString().hashCode()
-        }
-
     //--------------------------------------------------------------------------
     // Methods related to the base pattern (if set)
     //--------------------------------------------------------------------------
@@ -380,6 +372,10 @@ data class JMLPattern(
 
             return (this.hashCode != basePatternHashcode)
         }
+
+    //--------------------------------------------------------------------------
+    // Event sequences
+    //--------------------------------------------------------------------------
 
     // Return the (infinite) sequence of events formed by applying the pattern
     // symmetries to the primary events.
@@ -489,26 +485,25 @@ data class JMLPattern(
         }
     }
 
-    val pathPermutation: Permutation?
-        get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
+    // TODO: do we need this?
 
-    val periodWithProps: Int
-        get() = getPeriod(pathPermutation!!, propassignment!!)
-
-    @get:Throws(JuggleExceptionUser::class)
-    val isColorable: Boolean
-        get() = props.all { it.prop.isColorable }
-
-    fun setNeedsLayout() {
-        laidout = false
+    fun getEventImageInLoop(ev: JMLEvent): JMLEvent? {
+        var current = eventList
+        while (current != null) {
+            if ((current.t in loopStartTime..<loopEndTime) &&
+                current.juggler == ev.juggler &&
+                current.hand == ev.hand &&
+                current.hasSamePrimaryAs(ev)
+            ) {
+                return current
+            }
+            current = current.next
+        }
+        return null
     }
 
-    // TODO: make this not depend on `layout`
-    val isBouncePattern: Boolean
-        get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
-
     //--------------------------------------------------------------------------
-    // Reader/writer methods
+    // Input/output methods
     //--------------------------------------------------------------------------
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {

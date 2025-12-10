@@ -770,26 +770,26 @@ abstract class MHNPattern : Pattern() {
         if (hands == null) {
             addEventsForGapsToJML(record)
             if (Constants.DEBUG_LAYOUT) {
-                println("After step 8:")
+                println("After step 7:")
                 println(JMLPattern.fromPatternBuilder(record))
             }
+        }
+
+        // Step 8: Specify positions for events that don't have them defined yet
+        addLocationsForIncompleteEventsToJML(record)
+        if (Constants.DEBUG_LAYOUT) {
+            println("After step 8:")
+            println(JMLPattern.fromPatternBuilder(record))
         }
 
         var result = JMLPattern.fromPatternBuilder(record)
         result.layout.buildEventList()
 
-        // Step 8: Specify positions for events that don't have them defined yet
-        addLocationsForIncompleteEventsToJML(result)
-        if (Constants.DEBUG_LAYOUT) {
-            println("After step 9:")
-            println(result)
-        }
-
         // Step 9: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
         addMissingHoldsToJML(result)
         if (Constants.DEBUG_LAYOUT) {
-            println("After step 10:")
+            println("After step 9:")
             println(result)
         }
 
@@ -812,17 +812,17 @@ abstract class MHNPattern : Pattern() {
                     // scaleTimeToFitThrows() rebuilt the event list
                     addEventsForGapsToJML(record)
                     if (Constants.DEBUG_LAYOUT) {
-                        println("After redone step 8:")
-                        println(result)
+                        println("After redone step 7:")
+                        println(JMLPattern.fromPatternBuilder(record))
                     }
-                    addLocationsForIncompleteEventsToJML(result)
+                    addLocationsForIncompleteEventsToJML(record)
                     if (Constants.DEBUG_LAYOUT) {
-                        println("After redone step 9:")
-                        println(result)
+                        println("After redone step 8:")
+                        println(JMLPattern.fromPatternBuilder(record))
                     }
                     addMissingHoldsToJML(result)
                     if (Constants.DEBUG_LAYOUT) {
-                        println("After redone step 10:")
+                        println("After redone step 9:")
                         println(result)
                     }
                 }
@@ -1723,101 +1723,60 @@ abstract class MHNPattern : Pattern() {
     }
 
     protected fun addLocationsForIncompleteEventsToJML(
-        pat: JMLPattern
+        rec: PatternBuilder
     ) {
-        for (j in 1..numberOfJugglers) {
-            for (h in 0..1) {
-                val hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
-
-                var startEvent: JMLEvent? = null
-
-                // 1 = starting, 2 = on defined event, 3 = in a window of undefined events
-                var scanstate = 1
-
-                var ev = pat.eventList
-                while (ev != null) {
-                    if (ev.juggler != j || ev.hand != hand) {
-                        ev = ev.next
-                        continue
-                    }
-
-                    if (ev.calcpos) {
-                        // undefined event, continue in scanstate 3
-                        scanstate = 3
-                        ev = ev.next
-                        continue
-                    }
-
-                    if (scanstate != 3) {
-                        // no window to define, continue in scanstate 2
-                        scanstate = 2
-                        startEvent = ev
-                        ev = ev.next
-                        continue
-                    }
-
-                    if (startEvent == null) {
-                        // this shouldn't happen? It will leave some events
-                        // undefined
-                        scanstate = 2
-                        startEvent = ev
-                        ev = ev.next
-                        continue
-                    }
-
-                    // past the window of undefined events, go back and define
-                    // their locations
-
-                    val endEvent = ev
-                    val endT = endEvent.t
-                    val endPos = endEvent.localCoordinate
-                    val startT = startEvent.t
-                    val startPos = startEvent.localCoordinate
-
-                    ev = startEvent.next
-                    while (ev != endEvent) {
-                        if (ev!!.juggler == j && ev.hand == hand) {
-                            val t = ev.t
-                            // interpolate between start and end positions
-                            val x = (startPos.x
-                                + (t - startT) * (endPos.x - startPos.x) /
-                                (endT - startT))
-                            val y = (startPos.y
-                                + (t - startT) * (endPos.y - startPos.y) /
-                                (endT - startT))
-                            val z = (startPos.z
-                                + (t - startT) * (endPos.z - startPos.z) /
-                                (endT - startT))
-                            val ev2 = ev.copy(x = x, y = y, z = z)
-                            ev2.primaryEvent = ev.primaryEvent
-                            ev2.calcpos = false
-                            pat.removeEvent(ev)
-                            pat.addEvent(ev2)
-                        }
-                        ev = ev.next
-                    }
-
-                    scanstate = 2
-                    startEvent = ev
-                    ev = ev.next
-                }
-
-                // do a last scan through to define any remaining undefined positions
-                ev = pat.eventList
-                while (ev != null) {
-                    if (ev.juggler == j && ev.hand == hand && ev.calcpos && ev.isPrimary) {
-                        val ev2 = ev.copy(
-                            x = if (h == RIGHT_HAND) RESTINGX else -RESTINGX,
-                            y = 0.0,
-                            z = 0.0,
-                        )
-                        ev2.calcpos = false
-                        pat.removeEvent(ev)
-                        pat.addEvent(ev2)
-                    }
-                    ev = ev.next
-                }
+        for ((index, ev) in rec.events.withIndex()) {
+            if (!ev.calcpos) {
+                continue
             }
+            // rebuild the pattern to get the event sequence
+            val pat = JMLPattern.fromPatternBuilder(rec)
+            val loopTime = pat.loopEndTime - pat.loopStartTime
+
+            val startEvent: JMLEvent? =
+                pat.eventSequence(startTime = ev.t, reverse = true)
+                    .takeWhile { it.event.t > ev.t - loopTime }
+                    .filter { it.event.juggler == ev.juggler && it.event.hand == ev.hand }
+                    .firstOrNull { !it.primary.calcpos }?.event
+
+            if (startEvent == null) {
+                // simple positioning event
+                rec.events[index] = ev.copy(
+                    x = if (ev.hand == RIGHT_HAND) RESTINGX else -RESTINGX,
+                    y = 0.0,
+                    z = 0.0,
+                )
+                continue
+            }
+
+            val endEvent: JMLEvent? =
+                pat.eventSequence(startTime = ev.t)
+                    .takeWhile { it.event.t < ev.t + loopTime }
+                    .filter { it.event.juggler == ev.juggler && it.event.hand == ev.hand }
+                    .firstOrNull { !it.primary.calcpos }?.event
+            if (endEvent == null) {
+                // if we found an event going backward, we should find one forward
+                throw JuggleExceptionInternalWithPattern(
+                    "Error in addLocationsForIncompleteEventsToJML()", pat)
+            }
+
+            val endT = endEvent.t
+            val endPos = endEvent.localCoordinate
+            val startT = startEvent.t
+            val startPos = startEvent.localCoordinate
+
+            // linear interpolation between start and end positions
+            val t = ev.t
+            val x = (startPos.x
+                + (t - startT) * (endPos.x - startPos.x) /
+                (endT - startT))
+            val y = (startPos.y
+                + (t - startT) * (endPos.y - startPos.y) /
+                (endT - startT))
+            val z = (startPos.z
+                + (t - startT) * (endPos.z - startPos.z) /
+                (endT - startT))
+            rec.events[index] = ev.copy(x = x, y = y, z = z)
         }
     }
 
