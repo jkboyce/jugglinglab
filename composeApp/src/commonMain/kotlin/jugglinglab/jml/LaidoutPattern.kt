@@ -59,7 +59,6 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
 
             buildEventList()
-            findPrimaryEvents()
             findPositions()
             gotoGlobalCoordinates()
             buildLinkLists()
@@ -372,56 +371,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 2: figure out which events should be considered primary events
-    //--------------------------------------------------------------------------
-
-    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    private fun findPrimaryEvents() {
-        var rebuildList = false
-        var ev = pat.eventList
-
-        while (ev != null) {
-            if (ev.isPrimary) {
-                var newPrimary: JMLEvent? = ev
-                var tPrimary = pat.loopEndTime
-                if (ev.t in pat.loopStartTime..<tPrimary) {
-                    tPrimary = ev.t
-                }
-
-                var ev2 = pat.eventList
-                while (ev2 != null) {
-                    if (ev2.primary == ev) {
-                        if (ev2.t in pat.loopStartTime..<tPrimary) {
-                            newPrimary = ev2
-                            tPrimary = ev2.t
-                        }
-                    }
-                    ev2 = ev2.next
-                }
-
-                if (newPrimary != ev) {
-                    rebuildList = true
-                    ev2 = pat.eventList
-                    while (ev2 != null) {
-                        if (ev2.primary == ev) {
-                            ev2.primaryEvent = newPrimary
-                        }
-                        ev2 = ev2.next
-                    }
-                    newPrimary!!.primaryEvent = null
-                    ev.primaryEvent = newPrimary
-                }
-            }
-            ev = ev.next
-        }
-
-        if (rebuildList) {
-            buildEventList()
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    // Step 3: find positions/angles for all jugglers at all points in time,
+    // Step 2: find positions/angles for all jugglers at all points in time,
     // using <position> tags. This is done by finding spline functions passing
     // through the specified locations and angles.
     //--------------------------------------------------------------------------
@@ -520,7 +470,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 4: transform event coordinates from local to global reference frame
+    // Step 3: transform event coordinates from local to global reference frame
     //--------------------------------------------------------------------------
 
     private fun gotoGlobalCoordinates() {
@@ -534,7 +484,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 5: construct the links connecting events; build PathLink and
+    // Step 4: construct the links connecting events; build PathLink and
     // HandLink lists
     //--------------------------------------------------------------------------
 
@@ -688,7 +638,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 6: do a physical layout of the handlink paths
+    // Step 5: do a physical layout of the handlink paths
     // (Props were physically laid out in PathLink.setThrow() in Step 5 above)
     //--------------------------------------------------------------------------
 
