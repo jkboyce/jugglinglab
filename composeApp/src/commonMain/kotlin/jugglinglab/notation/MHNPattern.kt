@@ -741,39 +741,41 @@ abstract class MHNPattern : Pattern() {
         val handtouched = Array(numberOfJugglers) { BooleanArray(2) }
         val pathtouched = BooleanArray(numberOfPaths)
         addPrimaryEventsToJML(record, handtouched, pathtouched)
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 3:")
             println(JMLPattern.fromPatternBuilder(record))
         }
 
         // Step 4: Define a body position for this juggler and beat, if specified
         addJugglerPositionsToJML(record)
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 4:")
             println(JMLPattern.fromPatternBuilder(record))
         }
 
         // Step 5: Add simple positioning events for hands that got no events
         addEventsForUntouchedHandsToJML(record, handtouched)
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 5:")
             println(JMLPattern.fromPatternBuilder(record))
         }
 
         // Step 6: Add <holding> transitions for paths that got no events
         addEventsForUntouchedPathsToJML(record, pathtouched)
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 6:")
             println(JMLPattern.fromPatternBuilder(record))
         }
 
         // save a snapshot in case we need to redo steps 7-9 below
-        val recordSnapshot = record.copy()
+        val recordSnapshot = record.copy(
+            events = record.events.toMutableList()
+        )
 
         // Step 7: Add events where there are long gaps for a hand
         if (hands == null) {
             addEventsForGapsToJML(record)
-            if (Constants.DEBUG_LAYOUT) {
+            if (Constants.DEBUG_PATTERN_CREATION) {
                 println("After step 7:")
                 println(JMLPattern.fromPatternBuilder(record))
             }
@@ -781,57 +783,96 @@ abstract class MHNPattern : Pattern() {
 
         // Step 8: Specify positions for events that don't have them defined yet
         addLocationsForIncompleteEventsToJML(record)
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 8:")
             println(JMLPattern.fromPatternBuilder(record))
         }
 
-        var result = JMLPattern.fromPatternBuilder(record)
-        result.layout.buildEventList()
-
         // Step 9: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
-        addMissingHoldsToJML(result)
-        if (Constants.DEBUG_LAYOUT) {
+        addMissingHoldsToJML(record)
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 9:")
+            println(JMLPattern.fromPatternBuilder(record))
+        }
+
+        // Step 10: Select the primary events, and build the pattern.
+        selectPrimaryEvents(record)
+        var result = JMLPattern.fromPatternBuilder(record)
+        if (Constants.DEBUG_PATTERN_CREATION) {
+            println("After step 10:")
             println(result)
         }
 
-        // Step 10: Confirm that each throw in the JMLPattern has enough time to
-        // satisfy its minimum duration requirement. If not then rescale time
-        // (bps) to make everything feasible.
-        //
-        // This should only be done if the user has not manually set `bps`.
+        // Step 11: We can now construct a JMLPattern that can be laid out.
+        // If `bps` wasn't manually set then we do a final check: Do a layout and
+        // confirm that each throw in the pattern has enough time to satisfy its
+        // minimum duration requirement. If not then rescale time (bps) to make
+        // everything feasible.
         if (bpsSet <= 0) {
             val (newResult, scaleFactor) = result.withScaledTimeToFitThrows(1.01)
-            result = newResult
-            if (Constants.DEBUG_LAYOUT) {
-                println("After scaleTimeToFitThrows():")
-                println(result)
-            }
+
             if (scaleFactor > 1.0) {
+                if (Constants.DEBUG_PATTERN_CREATION) {
+                    println("Rescaled time; scale factor = $scaleFactor")
+                    println("After scaleTimeToFitThrows():")
+                    println(newResult)
+                }
                 bps /= scaleFactor
                 if (hands == null) {
-                    // redo steps 7-9
-                    // scaleTimeToFitThrows() rebuilt the event list
-                    addEventsForGapsToJML(record)
-                    if (Constants.DEBUG_LAYOUT) {
+                    // go back to before step 7, when we added extra events
+                    // - finish the pattern without the extra events
+                    // - re-run the scaling operation
+                    // - get a PatternBuilder from the rescaled pattern
+                    // - redo steps 7-10 to get the final pattern
+                    addLocationsForIncompleteEventsToJML(recordSnapshot)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
+                        println("After completion step 8:")
+                        println(JMLPattern.fromPatternBuilder(recordSnapshot))
+                    }
+                    addMissingHoldsToJML(recordSnapshot)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
+                        println("After completion step 9:")
+                        println(JMLPattern.fromPatternBuilder(recordSnapshot))
+                    }
+                    val (newResult, _) =
+                        JMLPattern.fromPatternBuilder(recordSnapshot)
+                            .withScaledTimeToFitThrows(1.01)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
+                        println("After second scaleTimeToFitThrows():")
+                        println(newResult)
+                    }
+                    val newRecord = PatternBuilder.fromJMLPattern(newResult)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
+                        println("After PatternBuilder.fromJMLPattern():")
+                        println(JMLPattern.fromPatternBuilder(newRecord))
+                    }
+
+                    // redo steps 7-10
+                    addEventsForGapsToJML(newRecord)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 7:")
-                        println(JMLPattern.fromPatternBuilder(record))
+                        println(JMLPattern.fromPatternBuilder(newRecord))
                     }
-                    addLocationsForIncompleteEventsToJML(record)
-                    if (Constants.DEBUG_LAYOUT) {
+                    addLocationsForIncompleteEventsToJML(newRecord)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 8:")
-                        println(JMLPattern.fromPatternBuilder(record))
+                        println(JMLPattern.fromPatternBuilder(newRecord))
                     }
-                    addMissingHoldsToJML(result)
-                    if (Constants.DEBUG_LAYOUT) {
+                    addMissingHoldsToJML(newRecord)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 9:")
+                        println(JMLPattern.fromPatternBuilder(newRecord))
+                    }
+                    selectPrimaryEvents(newRecord)
+                    result = JMLPattern.fromPatternBuilder(newRecord)
+                    if (Constants.DEBUG_PATTERN_CREATION) {
+                        println("After redone step 10:")
                         println(result)
                     }
-                }
-                if (Constants.DEBUG_LAYOUT) {
-                    println("Rescaled time; scale factor = $scaleFactor")
+                } else {
+                    // if `hands` was set then accept the rescaled pattern as-is
+                    result = newResult
                 }
             }
         }
@@ -840,7 +881,7 @@ abstract class MHNPattern : Pattern() {
         if (colors != null) {
             result = result.withPropColors(colors!!)
         }
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             println("Final result from MHNPattern.asJMLPattern():")
             println(result)
         }
@@ -1707,9 +1748,6 @@ abstract class MHNPattern : Pattern() {
 
                         for (i in 1..numAdd) {
                             val evTime = start.t + i * deltaT
-                            if (evTime < result.loopStartTime || evTime >= result.loopEndTime) {
-                                continue
-                            }
                             val ev2 = JMLEvent(t = evTime, juggler = ev.juggler, hand = hand)
                             // no transitions yet; added later if needed
                             ev2.calcpos = true
@@ -1785,70 +1823,124 @@ abstract class MHNPattern : Pattern() {
     // hand; we want to add <holding> transitions to these intervening events.
 
     protected fun addMissingHoldsToJML(
-        pat: JMLPattern
+        rec: PatternBuilder
     ) {
-        for (path in 1..numberOfPaths) {
-            var addMode = false
-            var foundEvent = false
-            var addJuggler = 0
-            var addHand = 0
+        scanstart@ while (true) {
+            val pat = JMLPattern.fromPatternBuilder(rec)
+            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
 
-            var ev = pat.eventList
-            while (ev != null) {
-                val tr = ev.getPathTransition(path, JMLTransition.TRANS_ANY)
-                if (tr != null) {
+            // record of where balls are held (juggler, hand) as we scan forward
+            val holdingLocation = arrayOfNulls<Pair<Int, Int>?>(numberOfPaths)
+
+            for ((ev, evPrimary) in pat.eventSequence()) {
+                if (ev.t > pat.loopStartTime + timeWindow) {
+                    return  // only exit from the function
+                }
+                val pathsToAddHolds = (1..numberOfPaths).filter {
+                    val loc = holdingLocation[it - 1]
+                    (loc != null && loc.first == ev.juggler && loc.second == ev.hand)
+                }.toMutableList()
+
+                for (tr in ev.transitions) {
+                    pathsToAddHolds.remove(tr.path)
+                    val loc = holdingLocation[tr.path - 1]
+
                     when (tr.type) {
-                        JMLTransition.TRANS_THROW -> {
-                            if (!foundEvent && !addMode) {
-                                // first event mentioning path is a throw
-                                // rewind to beginning of list and add holds
-                                addMode = true
-                                addJuggler = ev.juggler
-                                addHand = ev.hand
-                                ev = pat.eventList
-                                continue
-                            }
-                            addMode = false
-                        }
-
                         JMLTransition.TRANS_CATCH,
                         JMLTransition.TRANS_SOFTCATCH,
                         JMLTransition.TRANS_GRABCATCH -> {
-                            addMode = true
-                            addJuggler = ev.juggler
-                            addHand = ev.hand
+                            if (loc != null && (loc.first != 0 || loc.second != 0)) {
+                                throw JuggleExceptionInternalWithPattern(
+                                    "error 1 in addMissingHoldsToJML()",
+                                    pat
+                                )
+                            }
+                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
+                        }
+
+                        JMLTransition.TRANS_THROW -> {
+                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
+                                throw JuggleExceptionInternalWithPattern(
+                                    "error 2 in addMissingHoldsToJML()",
+                                    pat
+                                )
+                            }
+                            holdingLocation[tr.path - 1] = Pair(0, 0)
                         }
 
                         JMLTransition.TRANS_HOLDING -> {
-                            if (!foundEvent && !addMode) {
-                                // first event mentioning path is a hold
-                                // rewind to beginning of list and add holds
-                                addMode = true
-                                addJuggler = ev.juggler
-                                addHand = ev.hand
-                                ev = pat.eventList
-                                continue
+                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
+                                throw JuggleExceptionInternalWithPattern(
+                                    "error 3 in addMissingHoldsToJML()",
+                                    pat
+                                )
                             }
-                            addMode = true
-                            addJuggler = ev.juggler
-                            addHand = ev.hand
+                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
                         }
                     }
-                    foundEvent = true
-                } else if (addMode && ev.juggler == addJuggler && ev.hand == addHand && ev.isPrimary) {
-                    val ev2 = ev.addTransition(
+                }
+
+                // We know which paths we want to add holds for, but we have to do it
+                // in the primary event. Use `pathPermFromPrimary` generated by
+                // EventImages to map the path number back to the primary. Restart
+                // the scan after each added hold to maintain consistency.
+
+                for (path in pathsToAddHolds) {
+                    val pathPrimary =
+                        if (ev == evPrimary) path else ev.pathPermFromPrimary!!.getInverseMapping(
+                            path
+                        )
+                    val trPrimary =
+                        evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                    if (trPrimary != null) {
+                        if (trPrimary.type == JMLTransition.TRANS_HOLDING) {
+                            continue
+                        }
+                        throw JuggleExceptionInternalWithPattern(
+                            "error 4 in addMissingHoldsToJML()",
+                            pat
+                        )
+                    }
+
+                    // hold is missing from primary – add it
+                    val newPrimary = evPrimary.addTransition(
                         JMLTransition(
                             type = JMLTransition.TRANS_HOLDING,
-                            path = path,
-                            throwType = null,
-                            throwMod = null
+                            path = pathPrimary
                         )
                     )
-                    // add as a primary event
-                    pat.removeEvent(ev)
-                    pat.addEvent(ev2)
+                    val index = rec.events.indexOf(evPrimary)
+                    if (index == -1) {
+                        throw JuggleExceptionInternalWithPattern(
+                            "error 5 in addMissingHoldsToJML()",
+                            pat
+                        )
+                    }
+                    rec.events[index] = newPrimary
+                    continue@scanstart
                 }
-                ev = ev.next
+            }
+        }
+    }
+
+    // For any primary events that have an image earlier in time but t>=0,
+    // promote that earliest image as the replacement primary.
+
+    fun selectPrimaryEvents(rec: PatternBuilder) {
+        scanstart@ while (true) {
+            val pat = JMLPattern.fromPatternBuilder(rec)
+            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
+
+            for ((ev, evPrimary) in pat.eventSequence()) {
+                if (ev.t > pat.loopStartTime + timeWindow) {
+                    return
+                }
+                if (ev.t < evPrimary.t) {
+                    // promote `ev` as primary
+                    ev.primaryEvent = null
+                    rec.events[rec.events.indexOf(evPrimary)] = ev
+                    continue@scanstart
+                }
             }
         }
     }

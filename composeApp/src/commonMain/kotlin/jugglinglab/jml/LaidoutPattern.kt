@@ -102,7 +102,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    fun buildEventList() {
+    private fun buildEventList() {
         // figure out how many events there are
         var numevents = 0
         var current = pat.eventList

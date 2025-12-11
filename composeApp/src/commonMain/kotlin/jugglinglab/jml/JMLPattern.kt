@@ -599,7 +599,10 @@ data class JMLPattern(
 
             result.jmlVersion = record.jmlVersion
             record.symmetries.forEach { result.addSymmetry(it) }
-            record.events.forEach { result.addEvent(it) }
+            record.events.forEach {
+                it.primaryEvent = null  // add as primary event
+                result.addEvent(it)
+            }
             record.positions.forEach { result.addPosition(it) }
             record.props.forEach { result.addProp(it) }
             result.setPropAssignments(record.propAssignment)
@@ -1174,6 +1177,7 @@ data class JMLPattern(
 
 // Helper for building JMLPatterns
 
+@Suppress("ArrayInDataClass")
 data class PatternBuilder(
     var numberOfJugglers: Int = -1,
     var numberOfPaths: Int = -1,
