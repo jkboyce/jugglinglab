@@ -39,12 +39,11 @@ data class JMLPattern(
     val numberOfPaths: Int,
     val jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
     val symmetries: List<JMLSymmetry> = emptyList(),
-    val positions: List<JMLPosition> = emptyList()
+    val positions: List<JMLPosition> = emptyList(),
+    val props: List<JMLProp> = emptyList(),
+    val propAssignment: List<Int> = listOf(0)
 ) {
     var eventList: JMLEvent? = null
-
-    var props: MutableList<JMLProp> = mutableListOf()
-    var propAssignment: IntArray? = null
     var tags: MutableList<String> = mutableListOf()
 
     private var laidout: Boolean = false
@@ -108,7 +107,7 @@ data class JMLPattern(
         get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
 
     val periodWithProps: Int
-        get() = getPeriod(pathPermutation!!, propAssignment!!)
+        get() = getPeriod(pathPermutation!!, propAssignment)
 
     @get:Throws(JuggleExceptionUser::class)
     val isColorable: Boolean
@@ -122,7 +121,7 @@ data class JMLPattern(
     }
 
     fun getPropAssignment(path: Int): Int {
-        return propAssignment!![path - 1]
+        return propAssignment[path - 1]
     }
 
     val loopStartTime: Double
@@ -175,31 +174,6 @@ data class JMLPattern(
         if (tag != null && !tag.isEmpty() && !isTaggedWith(tag)) {
             tags.add(tag)
         }
-    }
-
-    fun addProp(pd: JMLProp?) {
-        props.add(pd!!)
-        setNeedsLayout()
-    }
-
-    fun removeProp(propnum: Int) {
-        props.removeAt(propnum - 1)
-        for (i in 1..this.numberOfPaths) {
-            if (getPropAssignment(i) > propnum) {
-                setPropAssignment(i, getPropAssignment(i) - 1)
-            }
-        }
-        setNeedsLayout()
-    }
-
-    fun setPropAssignment(pathnum: Int, propnum: Int) {
-        propAssignment?.set(pathnum - 1, propnum)
-        setNeedsLayout()
-    }
-
-    fun setPropAssignments(pa: IntArray) {
-        propAssignment = pa
-        setNeedsLayout()
     }
 
     fun addEvent(ev: JMLEvent) {
@@ -533,15 +507,16 @@ data class JMLPattern(
                 numberOfPaths = record.numberOfPaths,
                 jmlVersion = record.jmlVersion,
                 symmetries = record.symmetries.toList(),
-                positions = record.positions.toList()
+                positions = record.positions.toList(),
+                props = record.props.toList(),
+                propAssignment = record.propAssignment.toList()
             )
 
             record.events.forEach {
                 it.primaryEvent = null  // add as primary event
                 result.addEvent(it)
             }
-            record.props.forEach { result.addProp(it) }
-            result.setPropAssignments(record.propAssignment)
+
             if (record.basePatternNotationString != null) {
                 result.basePatternNotation = record.basePatternNotationString
                 result.basePatternConfig = record.basePatternConfigString
@@ -633,13 +608,13 @@ data class JMLPattern(
                                     throw JuggleExceptionUser(message)
                                 }
                                 propNum
-                            }.toIntArray()
+                            }.toMutableList()
                         } catch (_: NumberFormatException) {
                             val message = getStringResource(Res.string.error_prop_format)
                             throw JuggleExceptionUser(message)
                         }
                     } else {
-                        IntArray(record.numberOfPaths) { 1 }
+                        MutableList(record.numberOfPaths) { 1 }
                     }
                 }
 
@@ -734,7 +709,7 @@ data class JMLPattern(
         // Other helpers
         //----------------------------------------------------------------------
 
-        fun getPeriod(perm: Permutation, propassign: IntArray): Int {
+        fun getPeriod(perm: Permutation, propassign: List<Int>): Int {
             var period = 1
             val size = perm.size
             val done = BooleanArray(size)
@@ -1069,7 +1044,7 @@ data class JMLPattern(
             }
 
             val newProps: MutableList<JMLProp> = mutableListOf()
-            val newPropAssignment = IntArray(numberOfPaths)
+            val newPropAssignment: MutableList<Int> = MutableList(numberOfPaths) { 1 }
 
             // apply colors to get a new list of JMLProps, deduping as we go
             for (i in 0..<numberOfPaths) {
@@ -1101,7 +1076,6 @@ data class JMLPattern(
 
 // Helper for building JMLPatterns
 
-@Suppress("ArrayInDataClass")
 data class PatternBuilder(
     var numberOfJugglers: Int = -1,
     var numberOfPaths: Int = -1,
@@ -1110,7 +1084,7 @@ data class PatternBuilder(
     var events: MutableList<JMLEvent> = mutableListOf(),
     var positions: MutableList<JMLPosition> = mutableListOf(),
     var props: MutableList<JMLProp> = mutableListOf(),
-    var propAssignment: IntArray = IntArray(1) { 1 },
+    var propAssignment: MutableList<Int> = mutableListOf(),
     var tags: MutableList<String> = mutableListOf(),
     var basePatternNotationString: String? = null,
     var basePatternConfigString: String? = null,
@@ -1133,8 +1107,7 @@ data class PatternBuilder(
             }
             record.positions = pat.positions.toMutableList()
             record.props = pat.props.toMutableList()
-            record.propAssignment =
-                pat.propAssignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }
+            record.propAssignment = pat.propAssignment.toMutableList()
             record.tags = pat.tags.toMutableList()
             record.basePatternNotationString = pat.basePatternNotation
             record.basePatternConfigString = pat.basePatternConfig

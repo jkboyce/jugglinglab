@@ -55,7 +55,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         try {
             if (pat.numberOfProps == 0 && pat.numberOfPaths > 0) {
-                pat.addProp(JMLProp("ball", null))
+                throw JuggleExceptionInternalWithPattern("No props defined", pat)
             }
 
             buildEventList()

@@ -877,7 +877,7 @@ class EditLadderDiagram(
         val newPosition = pos.copy(t = newt)
         rec.positions[index] = newPosition
         item.position = newPosition
-        pattern = JMLPattern.fromPatternBuilder(rec)
+        aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
     }
 
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
@@ -1068,7 +1068,7 @@ class EditLadderDiagram(
         )
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.add(pos)  // TODO: sort the positions
-        pattern = JMLPattern.fromPatternBuilder(rec)
+        aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
 
         activeEventitem = null
         aep?.deactivateEvent()
@@ -1088,7 +1088,8 @@ class EditLadderDiagram(
         val pos = (popupitem as LadderPositionItem).position
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.remove(pos)
-        pattern = JMLPattern.fromPatternBuilder(rec)
+        aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
+
         activePositionitem = null
         aep?.deactivatePosition()
         layoutPattern(true)
@@ -1197,14 +1198,16 @@ class EditLadderDiagram(
                 return@addActionListener
             }
 
+            val rec = PatternBuilder.fromJMLPattern(pattern)
+
             // sync paths with current prop list
-            for (i in 0..<pattern.numberOfPaths) {
-                pattern.setPropAssignment(i + 1, animpropnum[i])
+            for (i in 0..<rec.numberOfPaths) {
+                rec.propAssignment[i] = animpropnum[i]
             }
 
             // check to see if any other paths are using this prop definition
             var killprop = true
-            for (i in 0..<pattern.numberOfPaths) {
+            for (i in 0..<rec.numberOfPaths) {
                 if (i != pn - 1) {
                     if (animpropnum[i] == propnum) {
                         killprop = false
@@ -1214,14 +1217,19 @@ class EditLadderDiagram(
             }
 
             if (killprop) {
-                pattern.removeProp(propnum)
+                rec.props.removeAt(propnum - 1)
+                for (i in 0..<rec.numberOfPaths) {
+                    if (rec.propAssignment[i] > propnum) {
+                        rec.propAssignment[i] = rec.propAssignment[i] - 1
+                    }
+                }
             }
 
             // check to see if a prop like this one has already been defined
             var gotmatch = false
             var matchingprop = 0
-            for (i in 1..pattern.numberOfProps) {
-                val pdef = pattern.props[i - 1]
+            for (i in 1..rec.props.size) {
+                val pdef = rec.props[i - 1]
                 if (type.equals(pdef.type, ignoreCase = true)) {
                     if ((mod == null && pdef.mod == null)
                         || (mod != null && mod.equals(pdef.mod, ignoreCase = true))
@@ -1235,13 +1243,15 @@ class EditLadderDiagram(
 
             if (gotmatch) {
                 // new prop is identical to pre-existing one
-                pattern.setPropAssignment(pn, matchingprop)
+                rec.propAssignment[pn - 1] = matchingprop
             } else {
                 // new prop is different
                 val newprop = JMLProp(type.lowercase(Locale.getDefault()), mod)
-                pattern.addProp(newprop)
-                pattern.setPropAssignment(pn, pattern.numberOfProps)
+                rec.props.add(newprop)
+                rec.propAssignment[pn - 1] = rec.props.size
             }
+
+            aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
 
             if (activeEventitem != null) {
                 activeEventChanged()

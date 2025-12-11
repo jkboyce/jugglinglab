@@ -917,7 +917,7 @@ abstract class MHNPattern : Pattern() {
     protected fun addPropsToJML(rec: PatternBuilder) {
         val mod = if (propdiam != PROPDIAM_DEFAULT) "diam=$propdiam" else null
         rec.props.add(JMLProp(propName, mod))
-        val pa = IntArray(numberOfPaths) { 1 }
+        val pa = MutableList(numberOfPaths) { 1 }
         rec.propAssignment = pa
     }
 

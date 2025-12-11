@@ -282,6 +282,12 @@ open class AnimationPanel : JPanel(), Runnable {
         animator.restartAnimator(pat, newjc)
         setBackground(animator.background)
 
+        if (pat != null) {
+            for (att in attachments) {
+                att.setJMLPattern(pat)
+            }
+        }
+
         engine = Thread(this)
         engine!!.start()
     }
@@ -496,6 +502,9 @@ open class AnimationPanel : JPanel(), Runnable {
     interface AnimationAttachment {
         // AnimationPanel we're attached to
         fun setAnimationPanel(animPanel: AnimationPanel?)
+
+        // JMLPattern being animated
+        fun setJMLPattern(pat: JMLPattern)
 
         // simulation time (seconds)
         fun setTime(t: Double)

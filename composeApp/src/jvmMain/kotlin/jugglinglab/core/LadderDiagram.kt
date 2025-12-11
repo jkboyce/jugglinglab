@@ -67,10 +67,7 @@ open class LadderDiagram(p: JMLPattern) :
             } else {
                 var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
                 val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
-                val widthMult =
-                    doubleArrayOf(
-                        1.0, 1.0, 0.85, 0.72, 0.65, 0.55,
-                    )
+                val widthMult = doubleArrayOf(1.0, 1.0, 0.85, 0.72, 0.65, 0.55)
                 prefWidth = (prefWidth.toDouble() *
                     (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
                 prefWidth = max(prefWidth, minWidth)
@@ -79,6 +76,9 @@ open class LadderDiagram(p: JMLPattern) :
 
                 pat.layout  // ensures we have event list
                 createView()
+
+                println("in pattern.set()")
+                println(pat)
 
                 addMouseListener(this)
                 addMouseMotionListener(this)
@@ -674,6 +674,10 @@ open class LadderDiagram(p: JMLPattern) :
 
     override fun setAnimationPanel(animPanel: AnimationPanel?) {
         ap = animPanel
+    }
+
+    override fun setJMLPattern(pat: JMLPattern) {
+        pattern = pat
     }
 
     override fun setTime(t: Double) {
