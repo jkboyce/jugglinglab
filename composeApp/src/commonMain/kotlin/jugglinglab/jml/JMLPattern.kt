@@ -38,10 +38,11 @@ data class JMLPattern(
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
     val jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
-    val symmetries: List<JMLSymmetry> = emptyList()
+    val symmetries: List<JMLSymmetry> = emptyList(),
+    val positions: List<JMLPosition> = emptyList()
 ) {
     var eventList: JMLEvent? = null
-    var positionList: JMLPosition? = null
+
     var props: MutableList<JMLProp> = mutableListOf()
     var propAssignment: IntArray? = null
     var tags: MutableList<String> = mutableListOf()
@@ -287,61 +288,6 @@ data class JMLPattern(
         }
     }
 
-    fun addPosition(pos: JMLPosition) {
-        if (pos.t < this.loopStartTime || pos.t > this.loopEndTime) {
-            return  // throw new JuggleExceptionUser("<position> time out of range");
-        }
-        setNeedsLayout()
-
-        if (this.positionList == null || positionList!!.t > pos.t) {
-            pos.previous = null
-            pos.next = this.positionList
-            if (this.positionList != null) {
-                positionList!!.previous = pos
-            }
-            this.positionList = pos
-            return
-        }
-
-        var current = this.positionList
-
-        while (current!!.next != null) {
-            current = current.next
-
-            if (current!!.t > pos.t) {
-                pos.next = current
-                pos.previous = current.previous
-                current.previous!!.next = pos
-                current.previous = pos
-                return
-            }
-        }
-
-        current.next = pos
-        pos.next = null
-        pos.previous = current
-    }
-
-    fun removePosition(pos: JMLPosition) {
-        setNeedsLayout()
-        if (this.positionList == pos) {
-            this.positionList = pos.next
-            if (this.positionList != null) {
-                positionList!!.previous = null
-            }
-            return
-        }
-
-        val next = pos.next
-        val prev = pos.previous
-        if (next != null) {
-            next.previous = prev
-        }
-        if (prev != null) {
-            prev.next = next
-        }
-    }
-
     //--------------------------------------------------------------------------
     // Methods related to the base pattern (if set)
     //--------------------------------------------------------------------------
@@ -544,12 +490,7 @@ data class JMLPattern(
         wr.append("$out\"/>\n")
 
         symmetries.forEach { it.writeJML(wr) }
-
-        var pos = positionList
-        while (pos != null) {
-            pos.writeJML(wr)
-            pos = pos.next
-        }
+        positions.forEach { it.writeJML(wr) }
 
         var ev = eventList
         while (ev != null) {
@@ -591,14 +532,14 @@ data class JMLPattern(
                 numberOfJugglers = record.numberOfJugglers,
                 numberOfPaths = record.numberOfPaths,
                 jmlVersion = record.jmlVersion,
-                symmetries = record.symmetries.toList()
+                symmetries = record.symmetries.toList(),
+                positions = record.positions.toList()
             )
 
             record.events.forEach {
                 it.primaryEvent = null  // add as primary event
                 result.addEvent(it)
             }
-            record.positions.forEach { result.addPosition(it) }
             record.props.forEach { result.addProp(it) }
             result.setPropAssignments(record.propAssignment)
             if (record.basePatternNotationString != null) {
@@ -850,17 +791,12 @@ data class JMLPattern(
                 ev = ev.next
             }
 
-            val newPositions: MutableList<JMLPosition> = mutableListOf()
-            var pos = positionList
-            while (pos != null) {
-                newPositions.add(pos.copy(t = pos.t * scale))
-                pos = pos.next
-            }
+            val newPositions = positions.map { it.copy(t = it.t * scale) }
 
             val record = PatternBuilder.fromJMLPattern(this)
             record.symmetries = newSymmetries.toMutableList()
             record.events = newEvents
-            record.positions = newPositions
+            record.positions = newPositions.toMutableList()
             return fromPatternBuilder(record)
         }
 
@@ -979,15 +915,11 @@ data class JMLPattern(
 
             // for each JMLPosition:
             //     - set t = looptime - t
-            val newPositions = buildList {
-                var pos = positionList
-                while (pos != null) {
-                    val newTime = if (pos.t != loopStartTime) {
-                        loopEndTime - pos.t
-                    } else loopStartTime
-                    add(pos.copy(t = newTime))
-                    pos = pos.next
-                }
+            val newPositions = positions.map {
+                val newTime = if (it.t != loopStartTime) {
+                    loopEndTime - it.t
+                } else loopStartTime
+                it.copy(t = newTime)
             }
 
             // for each symmetry (besides type SWITCH):
@@ -1184,7 +1116,7 @@ data class PatternBuilder(
     var basePatternConfigString: String? = null,
     var infoString: String? = null,
     var titleString: String? = null
-){
+) {
     companion object {
         fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
             val record = PatternBuilder()
@@ -1199,11 +1131,7 @@ data class PatternBuilder(
                 }
                 ev = ev.next
             }
-            var pos = pat.positionList
-            while (pos != null) {
-                record.positions.add(pos)
-                pos = pos.next
-            }
+            record.positions = pat.positions.toMutableList()
             record.props = pat.props.toMutableList()
             record.propAssignment =
                 pat.propAssignment?.copyOf() ?: IntArray(pat.numberOfPaths) { 1 }

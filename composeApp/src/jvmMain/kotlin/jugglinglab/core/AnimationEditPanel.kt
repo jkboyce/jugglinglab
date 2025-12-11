@@ -23,6 +23,7 @@ import java.awt.geom.Path2D
 import javax.swing.SwingUtilities
 import kotlin.math.*
 import androidx.compose.ui.unit.IntSize
+import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.Coordinate.Companion.sub
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
@@ -378,10 +379,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 while (finalAngle < 0) {
                     finalAngle += 360.0
                 }
-                pattern?.removePosition(position!!)
-                position = position!!.copy(angle = finalAngle)
-                pattern?.addPosition(position!!)
-                dolayout = true
+                val rec = PatternBuilder.fromJMLPattern(pattern!!)
+                val index = rec.positions.indexOf(position!!)
+                if (index < 0) throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
+                val newPosition = position!!.copy(angle = finalAngle)
+                rec.positions[index] = newPosition
+                position = newPosition
+                restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
             } else {
                 deltax = mx - startx
                 deltay = my - starty
@@ -419,10 +423,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
 
                 if (positionActive) {
-                    pattern?.removePosition(position!!)
-                    position = position!!.copy(x = cc.x, y = cc.y, z = cc.z)
-                    pattern?.addPosition(position!!)
-                    dolayout = true
+                    val rec = PatternBuilder.fromJMLPattern(pattern!!)
+                    val index = rec.positions.indexOf(position!!)
+                    if (index < 0) throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
+                    val newPosition = position!!.copy(x = cc.x, y = cc.y, z = cc.z)
+                    rec.positions[index] = newPosition
+                    position = newPosition
+                    restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
                 }
             }
 

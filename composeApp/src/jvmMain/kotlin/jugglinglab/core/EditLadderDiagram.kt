@@ -819,9 +819,8 @@ class EditLadderDiagram(
 
         do {
             changed = false
-            var pos = pattern.positionList
 
-            while (pos != null) {
+            for (pos in pattern.positions) {
                 if (pos != position && pos.juggler == position.juggler) {
                     val posExclMin: Double = pos.t - MIN_POSITION_SEP_TIME
                     val posExclMax: Double = pos.t + MIN_POSITION_SEP_TIME
@@ -836,7 +835,6 @@ class EditLadderDiagram(
                         changed = true
                     }
                 }
-                pos = pos.next
             }
         } while (changed)
 
@@ -862,7 +860,7 @@ class EditLadderDiagram(
     }
 
     private fun movePositionInPattern(item: LadderPositionItem) {
-        val pos = item.position
+        val pos = item.position!!
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
@@ -873,10 +871,13 @@ class EditLadderDiagram(
             newt = pattern.loopEndTime - 0.0001
         }
 
-        val newPosition = pos!!.copy(t = newt)
-        pattern.removePosition(pos)
-        pattern.addPosition(newPosition)
+        val rec = PatternBuilder.fromJMLPattern(pattern)
+        val index = rec.positions.indexOf(pos)
+        if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
+        val newPosition = pos.copy(t = newt)
+        rec.positions[index] = newPosition
         item.position = newPosition
+        pattern = JMLPattern.fromPatternBuilder(rec)
     }
 
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
@@ -1065,7 +1066,9 @@ class EditLadderDiagram(
             angle = pattern.layout.getJugglerAngle(juggler, postime),
             juggler = juggler
         )
-        pattern.addPosition(pos)
+        val rec = PatternBuilder.fromJMLPattern(pattern)
+        rec.positions.add(pos)  // TODO: sort the positions
+        pattern = JMLPattern.fromPatternBuilder(rec)
 
         activeEventitem = null
         aep?.deactivateEvent()
@@ -1083,7 +1086,9 @@ class EditLadderDiagram(
             return
         }
         val pos = (popupitem as LadderPositionItem).position
-        pattern.removePosition(pos!!)
+        val rec = PatternBuilder.fromJMLPattern(pattern)
+        rec.positions.remove(pos)
+        pattern = JMLPattern.fromPatternBuilder(rec)
         activePositionitem = null
         aep?.deactivatePosition()
         layoutPattern(true)

@@ -328,19 +328,13 @@ open class LadderDiagram(p: JMLPattern) :
 
         // create juggler positions
         ladderPositionItems = ArrayList()
-        var pos = pattern.positionList
-
-        while (pos != null && pos.t < loopStart) {
-            pos = pos.next
-        }
-
-        while (pos != null && pos.t < loopEnd) {
-            val item = LadderPositionItem()
-            item.type = LadderItem.TYPE_POSITION
-            item.position = pos
-            ladderPositionItems!!.add(item)
-
-            pos = pos.next
+        for (pos in pattern.positions) {
+            if (pos.t in loopStart..<loopEnd) {
+                val item = LadderPositionItem()
+                item.type = LadderItem.TYPE_POSITION
+                item.position = pos
+                ladderPositionItems!!.add(item)
+            }
         }
 
         updateView()

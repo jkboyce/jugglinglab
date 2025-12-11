@@ -382,14 +382,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         jugglerangle = arrayOfNulls(pat.numberOfJugglers)
 
         for (i in 1..pat.numberOfJugglers) {
-            var num = 0
-            var current = pat.positionList
-            while (current != null) {
-                if (current.juggler == i) {
-                    ++num
-                }
-                current = current.next
-            }
+            val num = pat.positions.count { it.juggler == i }
 
             // curves for body position and angle, respectively
             val jcurve = SplineCurve()
@@ -431,16 +424,14 @@ class LaidoutPattern(val pat: JMLPattern) {
                 val positions = Array(num + 1) { Coordinate() }
                 val angles = Array(num + 1) { Coordinate() }
 
-                current = pat.positionList
                 var j = 0
-                while (current != null) {
-                    if (current.juggler == i) {
-                        times[j] = current.t
-                        positions[j] = current.coordinate
-                        angles[j] = Coordinate(current.angle, 0.0, 0.0)
+                for (pos in pat.positions) {
+                    if (pos.juggler == i) {
+                        times[j] = pos.t
+                        positions[j] = pos.coordinate
+                        angles[j] = Coordinate(pos.angle, 0.0, 0.0)
                         ++j
                     }
-                    current = current.next
                 }
                 times[num] = times[0] + pat.loopEndTime - pat.loopStartTime
                 positions[num] = positions[0]
