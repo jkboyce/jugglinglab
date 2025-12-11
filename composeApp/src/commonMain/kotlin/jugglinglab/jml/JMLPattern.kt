@@ -36,10 +36,10 @@ import kotlin.math.max
 
 data class JMLPattern(
     val numberOfJugglers: Int,
-    val numberOfPaths: Int
+    val numberOfPaths: Int,
+    val jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
+    val symmetries: List<JMLSymmetry> = emptyList()
 ) {
-    var jmlVersion: String = JMLDefs.CURRENT_JML_VERSION
-    var symmetries: MutableList<JMLSymmetry> = mutableListOf()
     var eventList: JMLEvent? = null
     var positionList: JMLPosition? = null
     var props: MutableList<JMLProp> = mutableListOf()
@@ -198,11 +198,6 @@ data class JMLPattern(
 
     fun setPropAssignments(pa: IntArray) {
         propAssignment = pa
-        setNeedsLayout()
-    }
-
-    fun addSymmetry(sym: JMLSymmetry?) {
-        symmetries.add(sym!!)
         setNeedsLayout()
     }
 
@@ -594,11 +589,11 @@ data class JMLPattern(
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
             val result = JMLPattern(
                 numberOfJugglers = record.numberOfJugglers,
-                numberOfPaths = record.numberOfPaths
+                numberOfPaths = record.numberOfPaths,
+                jmlVersion = record.jmlVersion,
+                symmetries = record.symmetries.toList()
             )
 
-            result.jmlVersion = record.jmlVersion
-            record.symmetries.forEach { result.addSymmetry(it) }
             record.events.forEach {
                 it.primaryEvent = null  // add as primary event
                 result.addEvent(it)
@@ -862,13 +857,11 @@ data class JMLPattern(
                 pos = pos.next
             }
 
-            val result = fromJMLPattern(this)
-            result.symmetries = newSymmetries.toMutableList()
-            result.eventList = null
-            newEvents.forEach { result.addEvent(it) }
-            result.positionList = null
-            newPositions.forEach { result.addPosition(it) }
-            return result
+            val record = PatternBuilder.fromJMLPattern(this)
+            record.symmetries = newSymmetries.toMutableList()
+            record.events = newEvents
+            record.positions = newPositions
+            return fromPatternBuilder(record)
         }
 
         // Rescale the pattern in time to ensure that all throws are allotted
@@ -984,35 +977,34 @@ data class JMLPattern(
                 ev.copy(t = newT, transitions = newTransitions)
             }
 
-            val result = fromJMLPattern(this)
-            result.eventList = null
-            inverseEvents.forEach { result.addEvent(it) }
-
             // for each JMLPosition:
             //     - set t = looptime - t
-            result.positionList = null
-            var pos = positionList
-            while (pos != null) {
-                // no notion analagous to primary events, so have to keep position
-                // time within [loopStartTime, loopEndTime).
-                val newTime = if (pos.t != loopStartTime) {
-                    loopEndTime - pos.t
-                } else loopStartTime
-                result.addPosition(pos.copy(t = newTime))
-                pos = pos.next
+            val newPositions = buildList {
+                var pos = positionList
+                while (pos != null) {
+                    val newTime = if (pos.t != loopStartTime) {
+                        loopEndTime - pos.t
+                    } else loopStartTime
+                    add(pos.copy(t = newTime))
+                    pos = pos.next
+                }
             }
 
             // for each symmetry (besides type SWITCH):
             //     - invert pperm
-            result.symmetries = symmetries.map { sym ->
+            val newSymmetries = symmetries.map { sym ->
                 if (sym.type == JMLSymmetry.TYPE_SWITCH) {
                     sym
                 } else {
                     sym.copy(pathPerm = sym.pathPerm!!.inverse)
                 }
-            }.toMutableList()
+            }
 
-            return result
+            val record = PatternBuilder.fromJMLPattern(this)
+            record.symmetries = newSymmetries.toMutableList()
+            record.events = inverseEvents.toMutableList()
+            record.positions = newPositions.toMutableList()
+            return fromPatternBuilder(record)
         }
 
         // Streamline the pattern to remove excess empty and holding events.
