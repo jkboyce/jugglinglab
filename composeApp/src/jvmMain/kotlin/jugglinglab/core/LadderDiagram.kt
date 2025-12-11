@@ -51,9 +51,9 @@ open class LadderDiagram(p: JMLPattern) :
     protected var framesUntilImageDraw: Int = 0
 
     protected var animPaused: Boolean = false
-    
+
     var pattern: JMLPattern = p
-        set(pat) {
+        private set(pat) {
             field = pat
             val jugglers = pat.numberOfJugglers
             if (jugglers > MAX_JUGGLERS) {
@@ -76,10 +76,6 @@ open class LadderDiagram(p: JMLPattern) :
 
                 pat.layout  // ensures we have event list
                 createView()
-
-                println("in pattern.set()")
-                println(pat)
-
                 addMouseListener(this)
                 addMouseMotionListener(this)
             }
@@ -90,7 +86,7 @@ open class LadderDiagram(p: JMLPattern) :
         setOpaque(false)
         pattern = p
     }
-    
+
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
     //--------------------------------------------------------------------------

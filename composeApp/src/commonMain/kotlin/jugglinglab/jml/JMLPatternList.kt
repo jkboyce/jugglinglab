@@ -96,13 +96,12 @@ class JMLPatternList() {
         } else if (rec.anim != null) {
             pat = JMLPattern.fromBasePattern(rec.notation!!, rec.anim!!)
 
+            val record = PatternBuilder.fromJMLPattern(pat)
             if (rec.info != null) {
-                pat.info = rec.info
+                record.info = rec.info
             }
             if (rec.tags != null) {
-                for (tag in rec.tags) {
-                    pat.addTag(tag)
-                }
+                record.tags.addAll(rec.tags!!)
             }
         } else {
             return null

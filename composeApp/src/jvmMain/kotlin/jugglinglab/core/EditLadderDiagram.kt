@@ -1123,8 +1123,6 @@ class EditLadderDiagram(
 
         val animpropnum = aep!!.animator.animPropNum
         val propnum = animpropnum!![pn - 1]
-        // final int propnum = pattern.getPropAssignment(pathnum);
-        // System.out.println("pathnum = " + pathnum + ", propnum = " + propnum);
         val startprop = pattern.getProp(propnum)
         val prtypes: List<String> = Prop.builtinProps
 

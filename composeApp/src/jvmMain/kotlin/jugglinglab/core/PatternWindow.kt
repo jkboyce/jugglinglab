@@ -18,6 +18,7 @@ import jugglinglab.jml.JMLPattern.Companion.withInvertedTime
 import jugglinglab.jml.JMLPattern.Companion.withInvertedXAxis
 import jugglinglab.jml.JMLPattern.Companion.withPropColors
 import jugglinglab.jml.JMLPattern.Companion.withScaledTime
+import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
 import jugglinglab.util.*
@@ -552,7 +553,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_DUPLICATE -> {
                 val newpw = PatternWindow(this)
-                newpw.pattern?.title = "$title copy"
                 newpw.title = "$title copy"
             }
 
@@ -656,8 +656,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         val okbutton = JButton(getStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-            newpat.title = tf.getText()
+            val rec = PatternBuilder.fromJMLPattern(view.pattern!!)
+            rec.setTitleString(tf.getText())
+            val newpat = JMLPattern.fromPatternBuilder(rec)
             view.restartView(newpat, null)
             view.addToUndoList(newpat)
             jd.dispose()

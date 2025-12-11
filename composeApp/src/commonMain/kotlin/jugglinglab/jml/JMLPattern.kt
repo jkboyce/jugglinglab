@@ -41,10 +41,12 @@ data class JMLPattern(
     val symmetries: List<JMLSymmetry> = emptyList(),
     val positions: List<JMLPosition> = emptyList(),
     val props: List<JMLProp> = emptyList(),
-    val propAssignment: List<Int> = listOf(0)
+    val propAssignment: List<Int> = listOf(0),
+    val tags: List<String> = emptyList(),
+    val info: String? = null,
+    val title: String? = null
 ) {
     var eventList: JMLEvent? = null
-    var tags: MutableList<String> = mutableListOf()
 
     private var laidout: Boolean = false
     private var _layout: LaidoutPattern? = null
@@ -68,36 +70,6 @@ data class JMLPattern(
 
     var isValid: Boolean = true
         private set
-
-    var info: String? = null
-        set(t) {
-            field = if (t != null && !t.trim().isBlank()) t.trim() else null
-        }
-
-    var title: String? = null
-        set(title) {
-            val t = title?.replace(";", "")  // filter out semicolons
-            field = if (t != null && !t.isBlank()) t.trim() else null
-
-            if (!hasBasePattern) return
-            try {
-                // set the title in base pattern
-                val pl = ParameterList(basePatternConfig)
-                if (pl.getParameter("pattern") == title) {
-                    // if title is the default then remove the title parameter
-                    pl.removeParameter("title")
-                } else {
-                    pl.addParameter("title", title ?: "")
-                }
-
-                basePatternConfig = pl.toString()
-                basePatternHashcodeValid = false  // recalculate hash code
-            } catch (jeu: JuggleExceptionUser) {
-                // can't be a user error since base pattern has already successfully
-                // compiled
-                throw JuggleExceptionInternalWithPattern(jeu.message, this)
-            }
-        }
 
     //--------------------------------------------------------------------------
     // Useful properties of JMLPatterns
@@ -141,16 +113,6 @@ data class JMLPattern(
     val isBouncePattern: Boolean
         get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
 
-    fun isTaggedWith(tag: String?): Boolean {
-        if (tag == null) return false
-        for (t in tags) {
-            if (t.equals(tag, ignoreCase = true)) {
-                return true
-            }
-        }
-        return false
-    }
-
     val hashCode: Int
         get() {
             val sb = StringBuilder()
@@ -168,12 +130,6 @@ data class JMLPattern(
 
     fun setNeedsLayout() {
         laidout = false
-    }
-
-    fun addTag(tag: String?) {
-        if (tag != null && !tag.isEmpty() && !isTaggedWith(tag)) {
-            tags.add(tag)
-        }
     }
 
     fun addEvent(ev: JMLEvent) {
@@ -426,16 +382,16 @@ data class JMLPattern(
         wr.append("<jml version=\"${xmlescape(jmlVersion)}\">\n")
         wr.append("<pattern>\n")
         if (writeTitle && title != null) {
-            wr.append("<title>${xmlescape(title!!)}</title>\n")
+            wr.append("<title>${xmlescape(title)}</title>\n")
         }
         if (writeInfo && (info != null || !tags.isEmpty())) {
             val tagstr = tags.joinToString(",")
             if (info != null) {
                 if (tagstr.isEmpty()) {
-                    wr.append("<info>${xmlescape(info!!)}</info>\n")
+                    wr.append("<info>${xmlescape(info)}</info>\n")
                 } else {
                     wr.append(
-                        ("<info tags=\"${xmlescape(tagstr)}\">${xmlescape(info!!)}</info>\n")
+                        ("<info tags=\"${xmlescape(tagstr)}\">${xmlescape(info)}</info>\n")
                     )
                 }
             } else {
@@ -509,7 +465,10 @@ data class JMLPattern(
                 symmetries = record.symmetries.toList(),
                 positions = record.positions.toList(),
                 props = record.props.toList(),
-                propAssignment = record.propAssignment.toList()
+                propAssignment = record.propAssignment.toList(),
+                tags = record.tags.toList(),
+                info = record.info,
+                title = record.title
             )
 
             record.events.forEach {
@@ -521,11 +480,6 @@ data class JMLPattern(
                 result.basePatternNotation = record.basePatternNotationString
                 result.basePatternConfig = record.basePatternConfigString
             }
-            if (record.infoString != null) {
-                result.info = record.infoString
-                record.tags.forEach { result.addTag(it) }
-            }
-            result.title = record.titleString
             return result
         }
 
@@ -565,9 +519,9 @@ data class JMLPattern(
                     // do nothing
                 }
 
-                "title" -> record.titleString = current.nodeValue
+                "title" -> record.setTitleString(current.nodeValue)
                 "info" -> {
-                    record.infoString = current.nodeValue
+                    record.setInfoString(current.nodeValue)
                     current.attributes.getValueOf("tags")
                         ?.split(',')
                         ?.forEach { record.tags.add(it.trim()) }
@@ -1088,9 +1042,36 @@ data class PatternBuilder(
     var tags: MutableList<String> = mutableListOf(),
     var basePatternNotationString: String? = null,
     var basePatternConfigString: String? = null,
-    var infoString: String? = null,
-    var titleString: String? = null
+    var info: String? = null,
+    var title: String? = null
 ) {
+    fun setInfoString(t: String?) {
+        info = if (t != null && !t.trim().isBlank()) t.trim() else null
+    }
+
+    fun setTitleString(str: String?) {
+        val t = str?.replace(";", "")  // filter out semicolons
+        title = if (t != null && !t.isBlank()) t.trim() else null
+
+        if (basePatternNotationString == null || basePatternConfigString == null) return
+        try {
+            // set the title in base pattern
+            val pl = ParameterList(basePatternConfigString)
+            if (pl.getParameter("pattern") == str) {
+                // if title is the default then remove the title parameter
+                pl.removeParameter("title")
+            } else {
+                pl.addParameter("title", str ?: "")
+            }
+
+            basePatternConfigString = pl.toString()
+        } catch (jeu: JuggleExceptionUser) {
+            // can't be a user error since base pattern has already successfully
+            // compiled
+            throw JuggleExceptionInternal(jeu.message)
+        }
+    }
+
     companion object {
         fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
             val record = PatternBuilder()
@@ -1111,8 +1092,8 @@ data class PatternBuilder(
             record.tags = pat.tags.toMutableList()
             record.basePatternNotationString = pat.basePatternNotation
             record.basePatternConfigString = pat.basePatternConfig
-            record.infoString = pat.info
-            record.titleString = pat.title
+            record.info = pat.info
+            record.title = pat.title
             return record
         }
     }
