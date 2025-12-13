@@ -1,25 +1,14 @@
 //
 // JMLPattern.kt
 //
-// This is one of the core classes, representing a juggling pattern in generalized
-// form. It is used in three steps:
+// This represents a juggling pattern in generalized form. All patterns that
+// can be animated in Juggling Lab are expressed as JMLPatterns.
 //
-// 1) Define a pattern, in one of four ways:
-//    a) Manually, by calling methods in this class.
-//    b) Parsing from pre-existing JML stream (file, user input, etc.).
-//       (JML = Juggling Markup Language, an XML document type)
-//    c) Output from a Notation instance's asJMLPattern() method.
-//    d) The fromBasePattern() method in this class.
-//
-// 2) Call layoutPattern() to calculate flight paths for all the props and hands.
-//
-// 3) Call various methods to get information about the pattern, e.g., prop/hand
-//    coordinates at points in time.
+// The `layout` value creates an instance of LaidoutPattern that physically
+// lays out the pattern, ready for animation.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
-
-@file:Suppress("KotlinConstantConditions", "SimplifyBooleanWithConstants")
 
 package jugglinglab.jml
 
@@ -38,6 +27,8 @@ data class JMLPattern(
     val title: String? = null,
     val info: String? = null,
     val tags: List<String> = emptyList(),
+    val basePatternNotation: String? = null,
+    val basePatternConfig: String? = null,
     val props: List<JMLProp> = emptyList(),
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
@@ -59,10 +50,6 @@ data class JMLPattern(
         }
 
     // for retaining the base pattern this pattern was created from
-    var basePatternNotation: String? = null
-        private set
-    var basePatternConfig: String? = null
-        private set
     private var basePatternHashcode: Int = 0
     private var basePatternHashcodeValid: Boolean = false
 
@@ -150,7 +137,6 @@ data class JMLPattern(
                     return false
                 }
             }
-
             return (this.hashCode != basePatternHashcode)
         }
 
@@ -302,10 +288,10 @@ data class JMLPattern(
         if (basePatternNotation != null && basePatternConfig != null) {
             wr.append(
                 ("<basepattern notation=\""
-                    + xmlescape(basePatternNotation!!.lowercase())
+                    + xmlescape(basePatternNotation.lowercase())
                     + "\">\n")
             )
-            wr.append(xmlescape(basePatternConfig!!.replace(";", ";\n"))).append('\n')
+            wr.append(xmlescape(basePatternConfig.replace(";", ";\n"))).append('\n')
             wr.append("</basepattern>\n")
         }
         props.forEach { it.writeJML(wr) }
@@ -356,6 +342,8 @@ data class JMLPattern(
                 title = record.title,
                 info = record.info,
                 tags = record.tags.toList(),
+                basePatternNotation = record.basePatternNotation,
+                basePatternConfig = record.basePatternConfig,
                 props = record.props.toList(),
                 numberOfJugglers = record.numberOfJugglers,
                 numberOfPaths = record.numberOfPaths,
@@ -364,10 +352,6 @@ data class JMLPattern(
                 positions = record.positions.toList(),  // TODO: sort the positions
                 events = record.events.toList(),  // TODO: sort the events
             )
-            if (record.basePatternNotationString != null) {
-                result.basePatternNotation = record.basePatternNotationString
-                result.basePatternConfig = record.basePatternConfigString
-            }
             return result
         }
 
@@ -416,9 +400,9 @@ data class JMLPattern(
                 }
 
                 "basepattern" -> {
-                    record.basePatternNotationString =
+                    record.basePatternNotation =
                         Pattern.canonicalNotation(current.attributes.getValueOf("notation"))
-                    record.basePatternConfigString = current.nodeValue!!.trim()
+                    record.basePatternConfig = current.nodeValue!!.trim()
                 }
 
                 "prop" -> record.props.add(JMLProp.fromJMLNode(current, record.jmlVersion))
@@ -539,12 +523,7 @@ data class JMLPattern(
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun fromBasePattern(notation: String, config: String): JMLPattern {
             val p = Pattern.newPattern(notation).fromString(config)
-            val pat = p.asJMLPattern()
-
-            // regularize the notation name and config string
-            pat.basePatternNotation = p.notationName
-            pat.basePatternConfig = p.toString()
-            return pat
+            return p.asJMLPattern()
         }
 
         //----------------------------------------------------------------------
@@ -746,7 +725,7 @@ data class JMLPattern(
         // (d) event is not immediately adjacent to a throw or catch event for that
         //     hand that involves a pass to/from a different juggler
 
-        @Suppress("unused")
+        @Suppress("unused", "KotlinConstantConditions")
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun JMLPattern.withExtraEventsRemovedOverWindow(twindow: Double): JMLPattern {
             val record = PatternBuilder.fromJMLPattern(this)
@@ -890,8 +869,8 @@ data class PatternBuilder(
     var title: String? = null,
     var info: String? = null,
     var tags: MutableList<String> = mutableListOf(),
-    var basePatternNotationString: String? = null,
-    var basePatternConfigString: String? = null,
+    var basePatternNotation: String? = null,
+    var basePatternConfig: String? = null,
     var props: MutableList<JMLProp> = mutableListOf(),
     var numberOfJugglers: Int = -1,
     var numberOfPaths: Int = -1,
@@ -904,18 +883,17 @@ data class PatternBuilder(
         val t = str?.replace(";", "")  // filter out semicolons
         title = if (t != null && !t.isBlank()) t.trim() else null
 
-        if (basePatternNotationString == null || basePatternConfigString == null) return
+        if (basePatternNotation == null || basePatternConfig == null) return
         try {
             // set the title in base pattern
-            val pl = ParameterList(basePatternConfigString)
+            val pl = ParameterList(basePatternConfig)
             if (pl.getParameter("pattern") == str) {
                 // if title is the default then remove the title parameter
                 pl.removeParameter("title")
             } else {
                 pl.addParameter("title", str ?: "")
             }
-
-            basePatternConfigString = pl.toString()
+            basePatternConfig = pl.toString()
         } catch (jeu: JuggleExceptionUser) {
             // can't be a user error since base pattern has already successfully
             // compiled
@@ -934,8 +912,8 @@ data class PatternBuilder(
             record.title = pat.title
             record.info = pat.info
             record.tags = pat.tags.toMutableList()
-            record.basePatternNotationString = pat.basePatternNotation
-            record.basePatternConfigString = pat.basePatternConfig
+            record.basePatternNotation = pat.basePatternNotation
+            record.basePatternConfig = pat.basePatternConfig
             record.props = pat.props.toMutableList()
             record.numberOfJugglers = pat.numberOfJugglers
             record.numberOfPaths = pat.numberOfPaths

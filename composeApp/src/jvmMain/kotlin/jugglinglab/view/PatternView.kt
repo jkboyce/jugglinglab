@@ -12,6 +12,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -66,6 +67,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         rbBp = JRadioButton(getStringResource(Res.string.gui_patternview_rb1_default))
         bg.add(rbBp)
         bppanel.add(rbBp)
+        // TODO: change this icon to a Compose resource
         val url = PatternView::class.java.getResource("/alert.png")
         if (url != null) {
             val editedIcon = ImageIcon(url)
@@ -213,8 +215,12 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
                 addToUndoList(newpat)
             } else if (rbJml.isSelected) {
                 val newpat = JMLPattern.fromJMLString(ta.getText())
-                restartView(newpat, null)
-                addToUndoList(newpat)
+                // set the title in the base pattern
+                val record = PatternBuilder.fromJMLPattern(newpat)
+                record.setTitleString(newpat.title)
+                val newpat2 = JMLPattern.fromPatternBuilder(record)
+                restartView(newpat2, null)
+                addToUndoList(newpat2)
             }
         } catch (jeu: JuggleExceptionUser) {
             lab.setText(jeu.message)
@@ -241,7 +247,7 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
 
         if (p != null) {
             val notation = p.basePatternNotation
-            val message = getStringResource(Res.string.gui_patternview_rb1, "none set")
+            val message = getStringResource(Res.string.gui_patternview_rb1, notation)
             rbBp.setText(message)
 
             if (!(rbBp.isSelected || rbJml.isSelected)) {

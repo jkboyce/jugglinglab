@@ -725,6 +725,8 @@ abstract class MHNPattern : Pattern() {
         val record = PatternBuilder()
         record.numberOfJugglers = numberOfJugglers
         record.numberOfPaths = numberOfPaths
+        record.basePatternNotation = notationName
+        record.basePatternConfig = toString()
         record.setTitleString(if (title == null) pattern else title)
 
         // Step 1: Add basic information about the pattern
