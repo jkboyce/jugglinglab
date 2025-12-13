@@ -36,20 +36,10 @@ data class JMLPattern(
     val positions: List<JMLPosition> = emptyList(),
     val events: List<JMLEvent> = emptyList()
 ) {
-    //--------------------------------------------------------------------------
-    // Useful properties
-    //--------------------------------------------------------------------------
-
     val loopStartTime: Double = 0.0
 
     val loopEndTime: Double by lazy {
-        var loopTime = -1.0
-        for (sym in symmetries) {
-            if (sym.type == JMLSymmetry.TYPE_DELAY) {
-                loopTime = sym.delay
-            }
-        }
-        loopTime
+        symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.delay ?: -1.0
     }
 
     val pathPermutation: Permutation? by lazy {

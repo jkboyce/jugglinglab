@@ -19,7 +19,7 @@ data class JMLEvent(
     val y: Double = 0.0,
     val z: Double = 0.0,
     val t: Double = 0.0,
-    val juggler: Int = 0,
+    val juggler: Int = 1,
     val hand: Int = 0,
     val transitions: List<JMLTransition> = emptyList()
 ): Comparable<JMLEvent> {
@@ -176,8 +176,6 @@ data class JMLEvent(
     //--------------------------------------------------------------------------
 
     companion object {
-        // Factory methods to create JMLEvents
-
         @Throws(JuggleExceptionUser::class)
         fun fromJMLNode(
             current: JMLNode,
@@ -264,10 +262,10 @@ data class JMLEvent(
                     if (childNodeType.equals("throw", ignoreCase = true)) {
                         add(
                             JMLTransition(
-                                JMLTransition.TRANS_THROW,
-                                pathNum,
-                                childTranstype,
-                                childMod
+                                type = JMLTransition.TRANS_THROW,
+                                path = pathNum,
+                                throwType = childTranstype,
+                                throwMod = childMod
                             )
                         )
                     } else if (childNodeType.equals("catch", ignoreCase = true) &&
@@ -275,10 +273,8 @@ data class JMLEvent(
                     ) {
                         add(
                             JMLTransition(
-                                JMLTransition.TRANS_SOFTCATCH,
-                                pathNum,
-                                null,
-                                null
+                                type = JMLTransition.TRANS_SOFTCATCH,
+                                path = pathNum
                             )
                         )
                     } else if (childNodeType.equals("catch", ignoreCase = true) &&
@@ -286,10 +282,8 @@ data class JMLEvent(
                     ) {
                         add(
                             JMLTransition(
-                                JMLTransition.TRANS_GRABCATCH,
-                                pathNum,
-                                null,
-                                null
+                                type = JMLTransition.TRANS_GRABCATCH,
+                                path = pathNum
                             )
                         )
                     } else if (childNodeType.equals("catch", ignoreCase = true)) {
@@ -297,10 +291,8 @@ data class JMLEvent(
                     } else if (childNodeType.equals("holding", ignoreCase = true)) {
                         add(
                             JMLTransition(
-                                JMLTransition.TRANS_HOLDING,
-                                pathNum,
-                                null,
-                                null
+                                type = JMLTransition.TRANS_HOLDING,
+                                path = pathNum
                             )
                         )
                     }

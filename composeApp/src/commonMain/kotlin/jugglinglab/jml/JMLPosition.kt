@@ -19,7 +19,7 @@ data class JMLPosition(
     val z: Double = 0.0,
     val t: Double = 0.0,
     val angle: Double = 0.0,
-    val juggler: Int = 0,
+    val juggler: Int = 1,
 ) : Comparable<JMLPosition> {
     val coordinate: Coordinate by lazy {
         Coordinate(x, y, z)
@@ -31,7 +31,7 @@ data class JMLPosition(
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
         wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
         wr.append(" angle=\"${jlToStringRounded(angle, 4)}\"")
-        wr.append(" juggler=\"${this.juggler}\"/>\n")
+        wr.append(" juggler=\"${juggler}\"/>\n")
     }
 
     private val cachedToString: String by lazy {
