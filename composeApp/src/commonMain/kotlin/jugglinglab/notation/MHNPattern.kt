@@ -1926,8 +1926,14 @@ abstract class MHNPattern : Pattern() {
                 if (ev.t > pat.loopStartTime + timeWindow) {
                     return
                 }
-                if (ev.t < evPrimary.t) {
+                if (ev.t < evPrimary.t || evPrimary.t < pat.loopStartTime) {
                     // promote `ev` as primary
+                    if (ev.t < pat.loopStartTime || ev.t >= pat.loopEndTime) {
+                        throw JuggleExceptionInternalWithPattern(
+                            "error in selectPrimaryEvents(): ${ev.t}",
+                            pat
+                        )
+                    }
                     ev.primaryEvent = null
                     rec.events[rec.events.indexOf(evPrimary)] = ev
                     continue@scanstart

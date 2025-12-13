@@ -656,7 +656,7 @@ data class JMLPattern(
                 propAssignment = record.propAssignment.toList(),
                 symmetries = record.symmetries.toList(),
                 positions = record.positions.toList(),  // TODO: sort the positions
-                events = record.events.sorted(),
+                events = record.events.sorted()
             )
             return result
         }
