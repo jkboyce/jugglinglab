@@ -8,6 +8,7 @@
 
 package jugglinglab.view
 
+import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
@@ -16,6 +17,7 @@ import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.getImageResource
 import jugglinglab.util.jlConstraints
 import jugglinglab.util.getStringResource
 import java.awt.*
@@ -67,19 +69,18 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
         rbBp = JRadioButton(getStringResource(Res.string.gui_patternview_rb1_default))
         bg.add(rbBp)
         bppanel.add(rbBp)
-        // TODO: change this icon to a Compose resource
-        val url = PatternView::class.java.getResource("/alert.png")
-        if (url != null) {
-            val editedIcon = ImageIcon(url)
-            val editedIconScaled =
-                ImageIcon(
-                    editedIcon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH)
-                )
-            bpEditedIcon = JLabel(editedIconScaled)
-            bpEditedIcon?.setToolTipText(getStringResource(Res.string.gui_patternview_alert))
-            bppanel.add(Box.createHorizontalStrut(10))
-            bppanel.add(bpEditedIcon)
-        }
+
+        val composeImage = getImageResource("alert.png")
+        val editedIcon = ImageIcon(composeImage.toAwtImage(), "alert.png")
+        val editedIconScaled =
+            ImageIcon(
+                editedIcon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH)
+            )
+        bpEditedIcon = JLabel(editedIconScaled)
+        bpEditedIcon?.setToolTipText(getStringResource(Res.string.gui_patternview_alert))
+        bppanel.add(Box.createHorizontalStrut(10))
+        bppanel.add(bpEditedIcon)
+
         controls.add(bppanel)
         gb.setConstraints(
             bppanel, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0))
