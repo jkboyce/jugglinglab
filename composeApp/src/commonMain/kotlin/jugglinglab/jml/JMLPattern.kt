@@ -37,17 +37,8 @@ data class JMLPattern(
     val positions: List<JMLPosition> = emptyList(),
     val events: List<JMLEvent> = emptyList()
 ) {
-    private var laidout: Boolean = false
-    private var _layout: LaidoutPattern? = null
-
-    val layout: LaidoutPattern
-        get() {
-            if (_layout == null || !laidout) {
-                _layout = LaidoutPattern(this)
-                laidout = true
-            }
-            return _layout!!
-        }
+    @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    val layout: LaidoutPattern by lazy { LaidoutPattern(this) }
 
     // for retaining the base pattern this pattern was created from
     private var basePatternHashcode: Int = 0
@@ -106,14 +97,6 @@ data class JMLPattern(
             writeJML(sb, writeTitle = true, writeInfo = false)
             return sb.toString().hashCode()
         }
-
-    //--------------------------------------------------------------------------
-    // Target removal
-    //--------------------------------------------------------------------------
-
-    fun setNeedsLayout() {
-        laidout = false
-    }
 
     //--------------------------------------------------------------------------
     // Methods related to the base pattern (if set)

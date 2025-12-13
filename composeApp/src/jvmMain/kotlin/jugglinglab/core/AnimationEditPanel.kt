@@ -440,7 +440,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             if (dolayout) {
                 try {
                     synchronized(animator.pat!!) {
-                        animator.pat!!.setNeedsLayout()
                         animator.pat!!.layout
                     }
                     if (eventActive) {

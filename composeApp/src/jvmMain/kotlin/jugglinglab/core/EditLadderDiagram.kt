@@ -130,7 +130,6 @@ class EditLadderDiagram(
             // use synchronized here to avoid data consistency problems with
             // animation thread in AnimationPanel's run() method
             synchronized(pattern) {
-                pattern.setNeedsLayout()
                 pattern.layout
                 aep?.animator?.initAnimator()
                 aep?.repaint()
