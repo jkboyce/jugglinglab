@@ -110,7 +110,7 @@ class ApplicationPanelSwing
                         val pat = fromBasePattern(notation, config)
                         pat.layout
 
-                        if (bringToFront(pat.hashCode)) {
+                        if (bringToFront(pat.hashCode())) {
                             return@addActionListener
                         }
 

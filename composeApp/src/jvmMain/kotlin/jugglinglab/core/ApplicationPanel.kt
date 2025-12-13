@@ -156,7 +156,7 @@ open class ApplicationPanel(
                 val pat = fromBasePattern(notation, config)
                 pat.layout
 
-                if (!bringToFront(pat.hashCode)) {
+                if (!bringToFront(pat.hashCode())) {
                     if (animtarget != null) {
                         animtarget.restartView(pat, jc)
                     } else {

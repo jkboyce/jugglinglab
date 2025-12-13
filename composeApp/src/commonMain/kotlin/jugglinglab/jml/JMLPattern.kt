@@ -16,7 +16,6 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.notation.Pattern
-import jugglinglab.path.BouncePath
 import jugglinglab.prop.Prop
 import jugglinglab.util.*
 import jugglinglab.util.Permutation.Companion.lcm
@@ -37,32 +36,30 @@ data class JMLPattern(
     val positions: List<JMLPosition> = emptyList(),
     val events: List<JMLEvent> = emptyList()
 ) {
+    // physical pattern layout
     @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    val layout: LaidoutPattern by lazy { LaidoutPattern(this) }
-
-    // for retaining the base pattern this pattern was created from
-    private var basePatternHashcode: Int = 0
-    private var basePatternHashcodeValid: Boolean = false
-
-    var isValid: Boolean = true
-        private set
+    val layout: LaidoutPattern by lazy {
+        LaidoutPattern(this)
+    }
 
     //--------------------------------------------------------------------------
     // Useful properties of JMLPatterns
     //--------------------------------------------------------------------------
 
-    val pathPermutation: Permutation?
-        get() = symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
+    val pathPermutation: Permutation? by lazy {
+        symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
+    }
 
-    val periodWithProps: Int
-        get() = getPeriod(pathPermutation!!, propAssignment)
+    val periodWithProps: Int by lazy {
+        getPeriod(pathPermutation!!, propAssignment)
+    }
 
     @get:Throws(JuggleExceptionUser::class)
-    val isColorable: Boolean
-        get() = props.all { it.prop.isColorable }
+    val isColorable: Boolean by lazy {
+        props.all { it.prop.isColorable }
+    }
 
-    val numberOfProps: Int
-        get() = props.size
+    val numberOfProps: Int = props.size
 
     fun getProp(propnum: Int): Prop {
         return props[propnum - 1].prop
@@ -72,8 +69,7 @@ data class JMLPattern(
         return propAssignment[path - 1]
     }
 
-    val loopStartTime: Double
-        get() = 0.0
+    val loopStartTime: Double = 0.0
 
     val loopEndTime: Double
         get() {
@@ -85,43 +81,42 @@ data class JMLPattern(
             return -1.0
         }
 
-    // TODO: make this not depend on `layout`
-    val isBouncePattern: Boolean
-        get() = layout.pathLinks.any { it.any { it1 -> it1.path is BouncePath } }
-
-    val hashCode: Int
-        get() {
-            val sb = StringBuilder()
-            // Omit <info> tag metadata for the purposes of evaluating hash code.
-            // Two patterns that differ only by metadata are treated as identical.
-            writeJML(sb, writeTitle = true, writeInfo = false)
-            return sb.toString().hashCode()
-        }
-
-    //--------------------------------------------------------------------------
-    // Methods related to the base pattern (if set)
-    //--------------------------------------------------------------------------
-
-    val hasBasePattern: Boolean
-        get() = (basePatternNotation != null && basePatternConfig != null)
-
-    val isBasePatternEdited: Boolean
-        get() {
-            if (!hasBasePattern) return false
-            if (!basePatternHashcodeValid) {
-                try {
-                    basePatternHashcode =
-                        fromBasePattern(basePatternNotation!!, basePatternConfig!!)
-                            .hashCode
-                    basePatternHashcodeValid = true
-                } catch (_: JuggleException) {
-                    basePatternHashcode = 0
-                    basePatternHashcodeValid = false
-                    return false
-                }
+    val isBouncePattern: Boolean by lazy {
+        events.any {
+            it.transitions.any {
+                tr -> tr.type == JMLTransition.TRANS_THROW &&
+                tr.throwType.equals("bounce", ignoreCase = true)
             }
-            return (this.hashCode != basePatternHashcode)
         }
+    }
+
+    private val cachedHashCode: Int by lazy {
+        val sb = StringBuilder()
+        // Omit <info> tag metadata for the purposes of evaluating hash code.
+        // Two patterns that differ only by metadata are treated as identical.
+        writeJML(sb, writeTitle = true, writeInfo = false)
+        sb.toString().hashCode()
+    }
+
+    override fun hashCode(): Int = cachedHashCode
+
+    override fun equals(other: Any?): Boolean {
+        return hashCode() == other.hashCode()
+    }
+
+    val hasBasePattern: Boolean =
+        (basePatternNotation != null && basePatternConfig != null)
+
+    val isBasePatternEdited: Boolean by lazy {
+        var edited = false
+        if (hasBasePattern) {
+            try {
+                edited = (fromBasePattern(basePatternNotation!!, basePatternConfig!!).hashCode() != hashCode())
+            } catch (_: JuggleException) {
+            }
+        }
+        edited
+    }
 
     //--------------------------------------------------------------------------
     // Event sequences
@@ -486,7 +481,6 @@ data class JMLPattern(
             } catch (e: Exception) {
                 throw JuggleExceptionInternal(e.message)
             }
-            result.isValid = true
             return result
         }
 

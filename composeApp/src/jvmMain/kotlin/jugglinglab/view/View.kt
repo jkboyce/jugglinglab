@@ -39,8 +39,7 @@ abstract class View : JPanel() {
     var undoIndex: Int = 0
         protected set
 
-    val hashCode: Int
-        get() = pattern?.hashCode ?: 0
+    override fun hashCode(): Int = pattern?.hashCode() ?: 0
 
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality.

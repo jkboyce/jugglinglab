@@ -49,10 +49,6 @@ class LaidoutPattern(val pat: JMLPattern) {
         get() = pathlinks!!
 
     init {
-        if (!pat.isValid) {
-            throw JuggleExceptionInternalWithPattern("Cannot do layout of invalid pattern", pat)
-        }
-
         pat.events.forEach {
             it.primaryEvent = null  // add as primary event
             addEvent(it)

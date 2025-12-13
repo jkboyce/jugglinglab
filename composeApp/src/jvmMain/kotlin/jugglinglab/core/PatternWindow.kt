@@ -189,8 +189,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         get() = view.animationPrefs
 
     // Used for testing whether a given JMLPattern is already being animated.
-    private val hashCode: Int
-        get() = view.hashCode
+    override fun hashCode(): Int = view.hashCode()
 
     // For determining if the current window is maximized in the UI.
     val isWindowMaximized: Boolean
@@ -488,11 +487,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             MenuCommand.FILE_SAVE -> {
-                if (!view.pattern!!.isValid) {
-                    val message = getStringResource(Res.string.error_saving_invalid_pattern)
-                    throw JuggleExceptionUser(message)
-                }
-
                 var fname = lastJmlFilename
                 if (fname == null) {
                     fname = getTitle() + ".jml"  // default filename
@@ -827,7 +821,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         fun bringToFront(hash: Int): Boolean {
             for (fr in getFrames()) {
-                if (fr is PatternWindow && fr.isVisible && fr.hashCode == hash) {
+                if (fr is PatternWindow && fr.isVisible && fr.hashCode() == hash) {
                     SwingUtilities.invokeLater { fr.toFront() }
                     return true
                 }
