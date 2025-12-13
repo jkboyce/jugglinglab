@@ -20,16 +20,9 @@ data class JMLPosition(
     val t: Double = 0.0,
     val angle: Double = 0.0,
     val juggler: Int = 0,
-) {
-    // for doubly-linked event list during layout
-    var previous: JMLPosition? = null
-    var next: JMLPosition? = null
-
+): Comparable<JMLPosition> {
     val coordinate: Coordinate
         get() = Coordinate(x, y, z)
-
-    val hashCode: Int
-        get() = toString().hashCode()
 
     fun writeJML(wr: Appendable) {
         val c = this.coordinate
@@ -55,6 +48,25 @@ data class JMLPosition(
         writeJML(sb)
         return sb.toString()
     }
+
+    val hashCode: Int
+        get() = toString().hashCode()
+
+    override fun compareTo(other: JMLPosition): Int {
+        if (t != other.t) {
+            return t.compareTo(other.t)
+        }
+        if (juggler != other.juggler) {
+            return juggler.compareTo(other.juggler)
+        }
+        // shouldn't get here; shouldn't have multiple positions for the same
+        // juggler at a single time
+        return x.compareTo(other.x)
+    }
+
+    // for doubly-linked event list during layout
+    var previous: JMLPosition? = null
+    var next: JMLPosition? = null
 
     companion object {
         @Suppress("unused")

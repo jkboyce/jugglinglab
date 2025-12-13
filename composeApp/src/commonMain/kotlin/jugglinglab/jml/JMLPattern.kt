@@ -107,7 +107,10 @@ data class JMLPattern(
         var edited = false
         if (hasBasePattern) {
             try {
-                edited = (fromBasePattern(basePatternNotation!!, basePatternConfig!!).hashCode() != hashCode())
+                edited = (fromBasePattern(
+                    basePatternNotation!!,
+                    basePatternConfig!!
+                ).hashCode() != hashCode())
             } catch (_: JuggleException) {
             }
         }
@@ -121,9 +124,9 @@ data class JMLPattern(
 
     val isBouncePattern: Boolean by lazy {
         events.any {
-            it.transitions.any {
-                tr -> tr.type == JMLTransition.TRANS_THROW &&
-                tr.throwType.equals("bounce", ignoreCase = true)
+            it.transitions.any { tr ->
+                tr.type == JMLTransition.TRANS_THROW &&
+                    tr.throwType.equals("bounce", ignoreCase = true)
             }
         }
     }
@@ -135,6 +138,7 @@ data class JMLPattern(
         writeJML(sb, writeTitle = true, writeInfo = false)
         sb.toString().hashCode()
     }
+
     override fun hashCode(): Int = cachedHashCode
 
     override fun equals(other: Any?): Boolean {
@@ -655,7 +659,7 @@ data class JMLPattern(
                 numberOfPaths = record.numberOfPaths,
                 propAssignment = record.propAssignment.toList(),
                 symmetries = record.symmetries.toList(),
-                positions = record.positions.toList(),  // TODO: sort the positions
+                positions = record.positions.sorted(),
                 events = record.events.sorted()
             )
             return result
