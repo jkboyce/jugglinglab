@@ -36,14 +36,8 @@ data class JMLPattern(
     val positions: List<JMLPosition> = emptyList(),
     val events: List<JMLEvent> = emptyList()
 ) {
-    // physical pattern layout
-    @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    val layout: LaidoutPattern by lazy {
-        LaidoutPattern(this)
-    }
-
     //--------------------------------------------------------------------------
-    // Useful properties of JMLPatterns
+    // Useful properties
     //--------------------------------------------------------------------------
 
     val pathPermutation: Permutation? by lazy {
@@ -71,15 +65,15 @@ data class JMLPattern(
 
     val loopStartTime: Double = 0.0
 
-    val loopEndTime: Double
-        get() {
-            for (sym in symmetries) {
-                if (sym.type == JMLSymmetry.TYPE_DELAY) {
-                    return sym.delay
-                }
+    val loopEndTime: Double by lazy {
+        var loopTime = -1.0
+        for (sym in symmetries) {
+            if (sym.type == JMLSymmetry.TYPE_DELAY) {
+                loopTime = sym.delay
             }
-            return -1.0
         }
+        loopTime
+    }
 
     val isBouncePattern: Boolean by lazy {
         events.any {
@@ -97,7 +91,6 @@ data class JMLPattern(
         writeJML(sb, writeTitle = true, writeInfo = false)
         sb.toString().hashCode()
     }
-
     override fun hashCode(): Int = cachedHashCode
 
     override fun equals(other: Any?): Boolean {
@@ -116,6 +109,15 @@ data class JMLPattern(
             }
         }
         edited
+    }
+
+    //--------------------------------------------------------------------------
+    // Physical pattern layout, for animation
+    //--------------------------------------------------------------------------
+
+    @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    val layout: LaidoutPattern by lazy {
+        LaidoutPattern(this)
     }
 
     //--------------------------------------------------------------------------
@@ -239,7 +241,7 @@ data class JMLPattern(
     }
 
     //--------------------------------------------------------------------------
-    // Input/output methods
+    // Input/output
     //--------------------------------------------------------------------------
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
