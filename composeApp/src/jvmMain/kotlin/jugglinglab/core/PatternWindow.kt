@@ -14,10 +14,6 @@ package jugglinglab.core
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPattern.Companion.withInvertedTime
-import jugglinglab.jml.JMLPattern.Companion.withInvertedXAxis
-import jugglinglab.jml.JMLPattern.Companion.withPropColors
-import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources

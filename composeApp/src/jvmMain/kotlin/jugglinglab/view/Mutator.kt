@@ -37,7 +37,6 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.jml.JMLTransition
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.Coordinate

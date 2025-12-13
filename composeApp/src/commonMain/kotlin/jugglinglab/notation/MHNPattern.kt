@@ -26,10 +26,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.jml.JMLEvent.Companion.addTransition
-import jugglinglab.jml.JMLPattern.Companion.withScaledTimeToFitThrows
-import jugglinglab.jml.JMLPattern.Companion.withPropColors
 import jugglinglab.util.*
-import jugglinglab.util.getStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

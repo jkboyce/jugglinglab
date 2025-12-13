@@ -40,17 +40,20 @@ data class JMLPattern(
     // Useful properties
     //--------------------------------------------------------------------------
 
+    val loopStartTime: Double = 0.0
+
+    val loopEndTime: Double by lazy {
+        var loopTime = -1.0
+        for (sym in symmetries) {
+            if (sym.type == JMLSymmetry.TYPE_DELAY) {
+                loopTime = sym.delay
+            }
+        }
+        loopTime
+    }
+
     val pathPermutation: Permutation? by lazy {
         symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
-    }
-
-    val periodWithProps: Int by lazy {
-        getPeriod(pathPermutation!!, propAssignment)
-    }
-
-    @get:Throws(JuggleExceptionUser::class)
-    val isColorable: Boolean by lazy {
-        props.all { it.prop.isColorable }
     }
 
     val numberOfProps: Int = props.size
@@ -63,16 +66,57 @@ data class JMLPattern(
         return propAssignment[path - 1]
     }
 
-    val loopStartTime: Double = 0.0
+    val periodWithProps: Int by lazy {
+        val perm = pathPermutation!!
+        var period = 1
+        val size = perm.size
+        val done = BooleanArray(size)
 
-    val loopEndTime: Double by lazy {
-        var loopTime = -1.0
-        for (sym in symmetries) {
-            if (sym.type == JMLSymmetry.TYPE_DELAY) {
-                loopTime = sym.delay
+        for (i in 0..<size) {
+            if (done[i]) continue
+
+            val cycle = perm.getCycle(i + 1)
+            for (j in 0..<cycle.size) {
+                done[cycle[j] - 1] = true
+                cycle[j] = propAssignment[cycle[j] - 1]
+            }
+            // find the period of the current cycle
+            for (cperiod in 1..<cycle.size) {
+                if (cycle.size % cperiod != 0) continue
+
+                var matches = true
+                for (k in 0..<cycle.size) {
+                    if (cycle[k] != cycle[(k + cperiod) % cycle.size]) {
+                        matches = false
+                        break
+                    }
+                }
+                if (matches) {
+                    period = lcm(period, cperiod)
+                    break
+                }
             }
         }
-        loopTime
+        period
+    }
+
+    val hasBasePattern: Boolean =
+        (basePatternNotation != null && basePatternConfig != null)
+
+    val isBasePatternEdited: Boolean by lazy {
+        var edited = false
+        if (hasBasePattern) {
+            try {
+                edited = (fromBasePattern(basePatternNotation!!, basePatternConfig!!).hashCode() != hashCode())
+            } catch (_: JuggleException) {
+            }
+        }
+        edited
+    }
+
+    @get:Throws(JuggleExceptionUser::class)
+    val isColorable: Boolean by lazy {
+        props.all { it.prop.isColorable }
     }
 
     val isBouncePattern: Boolean by lazy {
@@ -95,20 +139,6 @@ data class JMLPattern(
 
     override fun equals(other: Any?): Boolean {
         return hashCode() == other.hashCode()
-    }
-
-    val hasBasePattern: Boolean =
-        (basePatternNotation != null && basePatternConfig != null)
-
-    val isBasePatternEdited: Boolean by lazy {
-        var edited = false
-        if (hasBasePattern) {
-            try {
-                edited = (fromBasePattern(basePatternNotation!!, basePatternConfig!!).hashCode() != hashCode())
-            } catch (_: JuggleException) {
-            }
-        }
-        edited
     }
 
     //--------------------------------------------------------------------------
@@ -311,11 +341,307 @@ data class JMLPattern(
         return sb.toString()
     }
 
-    companion object {
-        //----------------------------------------------------------------------
-        // Constructing JMLPatterns
-        //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Pattern transformations
+    //--------------------------------------------------------------------------
 
+    // Multiply all times in the pattern by a common factor `scale`.
+
+    fun withScaledTime(scale: Double): JMLPattern {
+        val newSymmetries = symmetries.map { sym ->
+            if (sym.delay > 0) {
+                sym.copy(delay = sym.delay * scale)
+            } else {
+                sym
+            }
+        }
+        val newPositions = positions.map { it.copy(t = it.t * scale) }
+        val newEvents = events.map { it.copy(t = it.t * scale) }
+
+        val record = PatternBuilder.fromJMLPattern(this)
+        record.symmetries = newSymmetries.toMutableList()
+        record.events = newEvents.toMutableList()
+        record.positions = newPositions.toMutableList()
+        return fromPatternBuilder(record)
+    }
+
+    // Rescale the pattern in time to ensure that all throws are allotted
+    // more time than their minimum required.
+    //
+    // `multiplier` should typically be a little over 1.
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    fun withScaledTimeToFitThrows(multiplier: Double): Pair<JMLPattern, Double> {
+        var scaleFactor = 1.0
+
+        for (path in 1..numberOfPaths) {
+            for (pl in layout.pathLinks[path - 1]) {
+                val path = pl.path ?: continue
+                val duration = path.duration
+                val minDuration = path.minDuration
+
+                if (duration < minDuration && duration > 0) {
+                    scaleFactor = max(scaleFactor, minDuration / duration)
+                }
+            }
+        }
+
+        if (scaleFactor > 1) {
+            scaleFactor *= multiplier  // so things aren't just barely feasible
+            return Pair(withScaledTime(scaleFactor), scaleFactor)
+        }
+        return Pair(this, scaleFactor)
+    }
+
+    // Flip the x-axis in the local coordinates of each juggler.
+    //
+    // Makes a right<-->left hand switch for all events in the pattern.
+    // Parameter `flipXCoordinate` determines whether the x coordinates are
+    // also inverted.
+
+    fun withInvertedXAxis(flipXCoordinate: Boolean = true): JMLPattern {
+        val newEvents = events.map {
+            val newHand = if (it.hand == HandLink.LEFT_HAND) {
+                HandLink.RIGHT_HAND
+            } else {
+                HandLink.LEFT_HAND
+            }
+            if (flipXCoordinate) {
+                it.copy(x = -it.x, hand = newHand)
+            } else {
+                it.copy(hand = newHand)
+            }
+        }
+
+        val record = PatternBuilder.fromJMLPattern(this)
+        record.events = newEvents.toMutableList()
+        return fromPatternBuilder(record)
+    }
+
+    // Flip the time axis to create (as nearly as possible) what the pattern
+    // looks like played in reverse.
+
+    @Throws(JuggleExceptionInternal::class)
+    fun withInvertedTime(): JMLPattern {
+        // For each JMLEvent:
+        //     - set t = looptime - t
+        //     - set all throw transitions to catch transitions
+        //     - set all catch transitions to throw transitions of the correct
+        //       type
+        val inverseEvents = events.map { ev ->
+            val newT = loopEndTime - ev.t
+            val newTransitions = ev.transitions.map { tr ->
+                when (tr.type) {
+                    JMLTransition.TRANS_THROW -> {
+                        // throws become catches
+                        JMLTransition(type = JMLTransition.TRANS_CATCH, path = tr.path)
+                    }
+
+                    JMLTransition.TRANS_CATCH,
+                    JMLTransition.TRANS_SOFTCATCH,
+                    JMLTransition.TRANS_GRABCATCH -> {
+                        // and catches become the prior throw that landed at this
+                        // catch
+                        val sourceEvent =
+                            eventSequence(startTime = ev.t, reverse = true)
+                                .first { ei ->
+                                    ei.event.transitions.any { it.path == tr.path }
+                                }.event
+                        val sourceTransition =
+                            sourceEvent.transitions.first { it.path == tr.path }
+                        if (sourceTransition.type != JMLTransition.TRANS_THROW) {
+                            throw JuggleExceptionInternalWithPattern(
+                                "invertTime() problem 1",
+                                this
+                            )
+                        }
+                        sourceTransition
+                    }
+
+                    else -> tr
+                }
+            }
+            ev.copy(t = newT, transitions = newTransitions)
+        }
+
+        // for each JMLPosition:
+        //     - set t = looptime - t
+        val newPositions = positions.map {
+            val newTime = if (it.t != loopStartTime) {
+                loopEndTime - it.t
+            } else loopStartTime
+            it.copy(t = newTime)
+        }
+
+        // for each symmetry (besides type SWITCH):
+        //     - invert pperm
+        val newSymmetries = symmetries.map { sym ->
+            if (sym.type == JMLSymmetry.TYPE_SWITCH) {
+                sym
+            } else {
+                sym.copy(pathPerm = sym.pathPerm!!.inverse)
+            }
+        }
+
+        val record = PatternBuilder.fromJMLPattern(this)
+        record.symmetries = newSymmetries.toMutableList()
+        record.events = inverseEvents.toMutableList()
+        record.positions = newPositions.toMutableList()
+        return fromPatternBuilder(record)
+    }
+
+    // Streamline the pattern to remove excess empty and holding events.
+    //
+    // Scan forward in time through the pattern and remove any event for which
+    // all of the following are true:
+    //
+    // (a) event is empty or contains only <holding> transitions
+    // (b) event has a different primary event than the previous (surviving)
+    //     event for that hand
+    // (c) event is within `twindow` seconds of the previous (surviving) event
+    //     for that hand
+    // (d) event is not immediately adjacent to a throw or catch event for that
+    //     hand that involves a pass to/from a different juggler
+
+    @Suppress("unused", "KotlinConstantConditions")
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    fun withExtraEventsRemovedOverWindow(twindow: Double): JMLPattern {
+        val record = PatternBuilder.fromJMLPattern(this)
+        var result = fromPatternBuilder(record)
+
+        val nEventsStart = record.events.size
+        val nHoldsStart = record.events.count { ev ->
+            ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
+        }
+
+        newpattern@ while (true) {
+            for (ev in events) {
+                val holdingOnly = ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
+                if (!holdingOnly) {
+                    continue
+                }
+
+                val prevForHand = result.prevForHandFromEvent(ev)
+                val nextForHand = result.nextForHandFromEvent(ev)
+
+                val differentPrimaries = (ev != prevForHand.primary)
+                //val differentPrimaries = !ev.hasSamePrimaryAs(prevForHand.event)
+                val insideWindow = ((ev.t - prevForHand.event.t) < twindow)
+                val notPassAdjacent = (
+                    !result.hasPassingTransitionInEvent(prevForHand.event) &&
+                        !result.hasPassingTransitionInEvent(nextForHand.event)
+                    )
+
+                val remove = differentPrimaries && insideWindow && notPassAdjacent
+                if (remove) {
+                    record.events.remove(ev)
+                    result = fromPatternBuilder(record)
+                    continue@newpattern
+                }
+            }
+            break
+        }
+
+        if (Constants.DEBUG_LAYOUT) {
+            val nRemoved = nEventsStart - record.events.size
+            println("Streamlined with time window $twindow secs:")
+            println(
+                "    Removed $nRemoved of $nHoldsStart holding events ($nEventsStart events total)"
+            )
+        }
+        return result
+    }
+
+    // Set the colors of props in the pattern, using the information provided
+    // in `colorString`.
+
+    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
+    fun withPropColors(colorString: String): JMLPattern {
+        if (!isColorable) {
+            throw JuggleExceptionInternal("setPropColors(): not colorable")
+        }
+
+        // compile a list of colors to apply in round-robin fashion to paths
+        val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
+            "mixed" -> {
+                Prop.colorMixed
+            }
+
+            "orbits" -> {
+                // the path permutation on the DELAY symmetry determines orbits
+                val delayPerm: Permutation = pathPermutation!!
+                val colorsByOrbit = Array(numberOfPaths) { "" }
+                var colorIndex = 0
+                for (i in 0..<numberOfPaths) {
+                    if (colorsByOrbit[i].isNotEmpty())
+                        continue
+                    val cycle = delayPerm.getCycle(i + 1)
+                    for (j in cycle) {
+                        colorsByOrbit[j - 1] =
+                            Prop.colorMixed[colorIndex % Prop.colorMixed.size]
+                    }
+                    ++colorIndex
+                }
+                colorsByOrbit.toList()
+            }
+
+            "" -> {
+                val message = getStringResource(Res.string.error_color_empty)
+                throw JuggleExceptionUser(message)
+            }
+
+            else -> {
+                jlExpandRepeats(trimmedColorString)
+                    .split('}')
+                    .filter { it.isNotBlank() }
+                    .map { it.replace("{", "").trim() }
+                    .map { cs ->
+                        val parts = cs.split(',')
+                        when (parts.size) {
+                            1 -> parts[0].trim()
+                            3 -> "{$cs}"
+                            else -> {
+                                val message = getStringResource(Res.string.error_color_format)
+                                throw JuggleExceptionUser(message)
+                            }
+                        }
+                    }
+            }
+        }
+
+        val newProps: MutableList<JMLProp> = mutableListOf()
+        val newPropAssignment: MutableList<Int> = MutableList(numberOfPaths) { 1 }
+
+        // apply colors to get a new list of JMLProps, deduping as we go
+        for (i in 0..<numberOfPaths) {
+            val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
+            val propParameters = ParameterList(oldProp.mod).apply {
+                removeParameter("color")
+                addParameter("color", colorList[i % colorList.size])
+            }
+            val newProp = JMLProp(oldProp.type, propParameters.toString())
+
+            newPropAssignment[i] = when (val idx = newProps.indexOf(newProp)) {
+                -1 -> {
+                    newProps.add(newProp)
+                    newProps.size
+                }
+
+                else -> idx + 1  // props are indexed from 1
+            }
+        }
+
+        val record = PatternBuilder.fromJMLPattern(this)
+        record.props = newProps
+        record.propAssignment = newPropAssignment
+        return fromPatternBuilder(record)
+    }
+
+    //----------------------------------------------------------------------
+    // Constructing JMLPatterns
+    //----------------------------------------------------------------------
+
+    companion object {
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
             val result = JMLPattern(
                 jmlVersion = record.jmlVersion,
@@ -330,7 +656,7 @@ data class JMLPattern(
                 propAssignment = record.propAssignment.toList(),
                 symmetries = record.symmetries.toList(),
                 positions = record.positions.toList(),  // TODO: sort the positions
-                events = record.events.toList(),  // TODO: sort the events
+                events = record.events.sorted(),
             )
             return result
         }
@@ -504,344 +830,12 @@ data class JMLPattern(
             val p = Pattern.newPattern(notation).fromString(config)
             return p.asJMLPattern()
         }
-
-        //----------------------------------------------------------------------
-        // Other helpers
-        //----------------------------------------------------------------------
-
-        fun getPeriod(perm: Permutation, propassign: List<Int>): Int {
-            var period = 1
-            val size = perm.size
-            val done = BooleanArray(size)
-
-            for (i in 0..<size) {
-                if (done[i]) continue
-
-                val cycle = perm.getCycle(i + 1)
-                for (j in 0..<cycle.size) {
-                    done[cycle[j] - 1] = true
-                    cycle[j] = propassign[cycle[j] - 1]
-                }
-                // find the period of the current cycle
-                for (cperiod in 1..<cycle.size) {
-                    if (cycle.size % cperiod != 0) continue
-
-                    var matches = true
-                    for (k in 0..<cycle.size) {
-                        if (cycle[k] != cycle[(k + cperiod) % cycle.size]) {
-                            matches = false
-                            break
-                        }
-                    }
-                    if (matches) {
-                        period = lcm(period, cperiod)
-                        break
-                    }
-                }
-            }
-            return period
-        }
-
-        //----------------------------------------------------------------------
-        // Some pattern transformations
-        //----------------------------------------------------------------------
-
-        // Multiply all times in the pattern by a common factor `scale`.
-
-        fun JMLPattern.withScaledTime(scale: Double): JMLPattern {
-            val newSymmetries = symmetries.map { sym ->
-                if (sym.delay > 0) {
-                    sym.copy(delay = sym.delay * scale)
-                } else {
-                    sym
-                }
-            }
-            val newPositions = positions.map { it.copy(t = it.t * scale) }
-            val newEvents = events.map { it.copy(t = it.t * scale) }
-
-            val record = PatternBuilder.fromJMLPattern(this)
-            record.symmetries = newSymmetries.toMutableList()
-            record.events = newEvents.toMutableList()
-            record.positions = newPositions.toMutableList()
-            return fromPatternBuilder(record)
-        }
-
-        // Rescale the pattern in time to ensure that all throws are allotted
-        // more time than their minimum required.
-        //
-        // `multiplier` should typically be a little over 1.
-
-        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun JMLPattern.withScaledTimeToFitThrows(multiplier: Double): Pair<JMLPattern, Double> {
-            var scaleFactor = 1.0
-
-            for (path in 1..numberOfPaths) {
-                for (pl in layout.pathLinks[path - 1]) {
-                    val path = pl.path ?: continue
-                    val duration = path.duration
-                    val minDuration = path.minDuration
-
-                    if (duration < minDuration && duration > 0) {
-                        scaleFactor = max(scaleFactor, minDuration / duration)
-                    }
-                }
-            }
-
-            if (scaleFactor > 1) {
-                scaleFactor *= multiplier  // so things aren't just barely feasible
-                return Pair(withScaledTime(scaleFactor), scaleFactor)
-            }
-            return Pair(this, scaleFactor)
-        }
-
-        // Flip the x-axis in the local coordinates of each juggler.
-        //
-        // Makes a right<-->left hand switch for all events in the pattern.
-        // Parameter `flipXCoordinate` determines whether the x coordinates are
-        // also inverted.
-
-        fun JMLPattern.withInvertedXAxis(flipXCoordinate: Boolean = true): JMLPattern {
-            val newEvents = events.map {
-                val newHand = if (it.hand == HandLink.LEFT_HAND) {
-                    HandLink.RIGHT_HAND
-                } else {
-                    HandLink.LEFT_HAND
-                }
-                if (flipXCoordinate) {
-                    it.copy(x = -it.x, hand = newHand)
-                } else {
-                    it.copy(hand = newHand)
-                }
-            }
-
-            val record = PatternBuilder.fromJMLPattern(this)
-            record.events = newEvents.toMutableList()
-            return fromPatternBuilder(record)
-        }
-
-        // Flip the time axis to create (as nearly as possible) what the pattern
-        // looks like played in reverse.
-
-        @Throws(JuggleExceptionInternal::class)
-        fun JMLPattern.withInvertedTime(): JMLPattern {
-            // For each JMLEvent:
-            //     - set t = looptime - t
-            //     - set all throw transitions to catch transitions
-            //     - set all catch transitions to throw transitions of the correct
-            //       type
-            val inverseEvents = events.map { ev ->
-                val newT = loopEndTime - ev.t
-                val newTransitions = ev.transitions.map { tr ->
-                    when (tr.type) {
-                        JMLTransition.TRANS_THROW -> {
-                            // throws become catches
-                            JMLTransition(type = JMLTransition.TRANS_CATCH, path = tr.path)
-                        }
-
-                        JMLTransition.TRANS_CATCH,
-                        JMLTransition.TRANS_SOFTCATCH,
-                        JMLTransition.TRANS_GRABCATCH -> {
-                            // and catches become the prior throw that landed at this
-                            // catch
-                            val sourceEvent =
-                                eventSequence(startTime = ev.t, reverse = true)
-                                    .first { ei ->
-                                        ei.event.transitions.any { it.path == tr.path }
-                                    }.event
-                            val sourceTransition =
-                                sourceEvent.transitions.first { it.path == tr.path }
-                            if (sourceTransition.type != JMLTransition.TRANS_THROW) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "invertTime() problem 1",
-                                    this
-                                )
-                            }
-                            sourceTransition
-                        }
-
-                        else -> tr
-                    }
-                }
-                ev.copy(t = newT, transitions = newTransitions)
-            }
-
-            // for each JMLPosition:
-            //     - set t = looptime - t
-            val newPositions = positions.map {
-                val newTime = if (it.t != loopStartTime) {
-                    loopEndTime - it.t
-                } else loopStartTime
-                it.copy(t = newTime)
-            }
-
-            // for each symmetry (besides type SWITCH):
-            //     - invert pperm
-            val newSymmetries = symmetries.map { sym ->
-                if (sym.type == JMLSymmetry.TYPE_SWITCH) {
-                    sym
-                } else {
-                    sym.copy(pathPerm = sym.pathPerm!!.inverse)
-                }
-            }
-
-            val record = PatternBuilder.fromJMLPattern(this)
-            record.symmetries = newSymmetries.toMutableList()
-            record.events = inverseEvents.toMutableList()
-            record.positions = newPositions.toMutableList()
-            return fromPatternBuilder(record)
-        }
-
-        // Streamline the pattern to remove excess empty and holding events.
-        //
-        // Scan forward in time through the pattern and remove any event for which
-        // all of the following are true:
-        //
-        // (a) event is empty or contains only <holding> transitions
-        // (b) event has a different primary event than the previous (surviving)
-        //     event for that hand
-        // (c) event is within `twindow` seconds of the previous (surviving) event
-        //     for that hand
-        // (d) event is not immediately adjacent to a throw or catch event for that
-        //     hand that involves a pass to/from a different juggler
-
-        @Suppress("unused", "KotlinConstantConditions")
-        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun JMLPattern.withExtraEventsRemovedOverWindow(twindow: Double): JMLPattern {
-            val record = PatternBuilder.fromJMLPattern(this)
-            var result = fromPatternBuilder(record)
-
-            val nEventsStart = record.events.size
-            val nHoldsStart = record.events.count { ev ->
-                ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
-            }
-
-            newpattern@ while (true) {
-                for (ev in events) {
-                    val holdingOnly = ev.transitions.all { it.type == JMLTransition.TRANS_HOLDING }
-                    if (!holdingOnly) {
-                        continue
-                    }
-
-                    val prevForHand = result.prevForHandFromEvent(ev)
-                    val nextForHand = result.nextForHandFromEvent(ev)
-
-                    val differentPrimaries = (ev != prevForHand.primary)
-                    //val differentPrimaries = !ev.hasSamePrimaryAs(prevForHand.event)
-                    val insideWindow = ((ev.t - prevForHand.event.t) < twindow)
-                    val notPassAdjacent = (
-                        !result.hasPassingTransitionInEvent(prevForHand.event) &&
-                            !result.hasPassingTransitionInEvent(nextForHand.event)
-                        )
-
-                    val remove = differentPrimaries && insideWindow && notPassAdjacent
-                    if (remove) {
-                        record.events.remove(ev)
-                        result = fromPatternBuilder(record)
-                        continue@newpattern
-                    }
-                }
-                break
-            }
-
-            if (Constants.DEBUG_LAYOUT) {
-                val nRemoved = nEventsStart - record.events.size
-                println("Streamlined with time window $twindow secs:")
-                println(
-                    "    Removed $nRemoved of $nHoldsStart holding events ($nEventsStart events total)"
-                )
-            }
-            return result
-        }
-
-        // Set the colors of props in the pattern, using the information provided
-        // in `colorString`.
-
-        @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-        fun JMLPattern.withPropColors(colorString: String): JMLPattern {
-            if (!isColorable) {
-                throw JuggleExceptionInternal("setPropColors(): not colorable")
-            }
-
-            // compile a list of colors to apply in round-robin fashion to paths
-            val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
-                "mixed" -> {
-                    Prop.colorMixed
-                }
-
-                "orbits" -> {
-                    // the path permutation on the DELAY symmetry determines orbits
-                    val delayPerm: Permutation = pathPermutation!!
-                    val colorsByOrbit = Array(numberOfPaths) { "" }
-                    var colorIndex = 0
-                    for (i in 0..<numberOfPaths) {
-                        if (colorsByOrbit[i].isNotEmpty())
-                            continue
-                        val cycle = delayPerm.getCycle(i + 1)
-                        for (j in cycle) {
-                            colorsByOrbit[j - 1] =
-                                Prop.colorMixed[colorIndex % Prop.colorMixed.size]
-                        }
-                        ++colorIndex
-                    }
-                    colorsByOrbit.toList()
-                }
-
-                "" -> {
-                    val message = getStringResource(Res.string.error_color_empty)
-                    throw JuggleExceptionUser(message)
-                }
-
-                else -> {
-                    jlExpandRepeats(trimmedColorString)
-                        .split('}')
-                        .filter { it.isNotBlank() }
-                        .map { it.replace("{", "").trim() }
-                        .map { cs ->
-                            val parts = cs.split(',')
-                            when (parts.size) {
-                                1 -> parts[0].trim()
-                                3 -> "{$cs}"
-                                else -> {
-                                    val message = getStringResource(Res.string.error_color_format)
-                                    throw JuggleExceptionUser(message)
-                                }
-                            }
-                        }
-                }
-            }
-
-            val newProps: MutableList<JMLProp> = mutableListOf()
-            val newPropAssignment: MutableList<Int> = MutableList(numberOfPaths) { 1 }
-
-            // apply colors to get a new list of JMLProps, deduping as we go
-            for (i in 0..<numberOfPaths) {
-                val oldProp: JMLProp = props[getPropAssignment(i + 1) - 1]
-                val propParameters = ParameterList(oldProp.mod).apply {
-                    removeParameter("color")
-                    addParameter("color", colorList[i % colorList.size])
-                }
-                val newProp = JMLProp(oldProp.type, propParameters.toString())
-
-                newPropAssignment[i] = when (val idx = newProps.indexOf(newProp)) {
-                    -1 -> {
-                        newProps.add(newProp)
-                        newProps.size
-                    }
-
-                    else -> idx + 1  // props are indexed from 1
-                }
-            }
-
-            val record = PatternBuilder.fromJMLPattern(this)
-            record.props = newProps
-            record.propAssignment = newPropAssignment
-            return fromPatternBuilder(record)
-        }
-
     }
 }
 
+//------------------------------------------------------------------------------
 // Helper for building JMLPatterns
+//------------------------------------------------------------------------------
 
 data class PatternBuilder(
     var jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
