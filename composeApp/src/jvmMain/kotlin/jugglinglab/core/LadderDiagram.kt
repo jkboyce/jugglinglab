@@ -262,7 +262,7 @@ open class LadderDiagram(p: JMLPattern) :
 
         // first create events (black circles on the vertical lines representing hands)
         ladderEventItems = ArrayList()
-        val eventlist = pattern.eventList
+        val eventlist = pattern.layout.eventList
         var ev = eventlist
 
         while (ev!!.t < loopStart) {

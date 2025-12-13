@@ -39,6 +39,7 @@ import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.withScaledTime
 import jugglinglab.jml.JMLTransition
+import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -123,14 +124,11 @@ class Mutator {
         val ev = pickPrimaryEvent(pat)
         var pos = ev.localCoordinate
         pos = pickNewPosition(ev.hand, rate * MUTATION_POSITION_CM, pos)
-        pat.removeEvent(ev)
-        pat.addEvent(ev.copy(
-            x = pos.x,
-            y = pos.y,
-            z = pos.z
-        ))
-        pat.setNeedsLayout()
-        return pat
+
+        val record = PatternBuilder.fromJMLPattern(pat)
+        val index = record.events.indexOf(ev)
+        record.events[index] = ev.copy(x = pos.x, y = pos.y, z = pos.z)
+        return JMLPattern.fromPatternBuilder(record)
     }
 
     // Pick a random event and mutate its time.
@@ -138,32 +136,10 @@ class Mutator {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateEventTime(pat: JMLPattern): JMLPattern? {
         val ev = pickPrimaryEvent(pat)
-
-        var evPrev = ev.previous
-        while (evPrev != null) {
-            if (evPrev.juggler == ev.juggler && evPrev.hand == ev.hand) {
-                break
-            }
-            evPrev = evPrev.previous
-        }
-        val tmin =
-            (if (evPrev == null)
-                pat.loopStartTime
-            else
-                max(pat.loopStartTime, evPrev.t) + MUTATION_MIN_EVENT_DELTA_SEC)
-
-        var evNext = ev.next
-        while (evNext != null) {
-            if (evNext.juggler == ev.juggler && evNext.hand == ev.hand) {
-                break
-            }
-            evNext = evNext.next
-        }
-        val tmax =
-            (if (evNext == null)
-                pat.loopEndTime
-            else
-                min(pat.loopEndTime, evNext.t) - MUTATION_MIN_EVENT_DELTA_SEC)
+        val (evPrev, _) = pat.prevForHandFromEvent(ev)
+        val tmin = max(pat.loopStartTime, evPrev.t) + MUTATION_MIN_EVENT_DELTA_SEC
+        val (evNext, _) = pat.nextForHandFromEvent(ev)
+        val tmax = min(pat.loopEndTime, evNext.t) - MUTATION_MIN_EVENT_DELTA_SEC
 
         if (tmax <= tmin) {
             return null
@@ -173,16 +149,16 @@ class Mutator {
         // equal probability of going down or up.
         val r = Math.random()
         val tnow = ev.t
-        val t = if (r < 0.5) {
+        val tnew = if (r < 0.5) {
             tmin + (tnow - tmin) * sqrt(2 * r)
         } else {
             tmax - (tmax - tnow) * sqrt(2 * (1 - r))
         }
 
-        pat.removeEvent(ev)
-        pat.addEvent(ev.copy(t = t))
-        pat.setNeedsLayout()
-        return pat
+        val record = PatternBuilder.fromJMLPattern(pat)
+        val index = record.events.indexOf(ev)
+        record.events[index] = ev.copy(t = tnew)
+        return JMLPattern.fromPatternBuilder(record)
     }
 
     // Rescale overall pattern timing faster or slower.
@@ -208,12 +184,8 @@ class Mutator {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateAddEvent(pat: JMLPattern): JMLPattern? {
-        pat.layout
-
-        var ev: JMLEvent?
         var tmin: Double
         var tmax: Double
-        var t: Double
         var juggler: Int
         var hand: Int
         var tries = 0
@@ -228,32 +200,17 @@ class Mutator {
             // pick from a triangular distribution.
             tmin = pat.loopStartTime
             tmax = pat.loopEndTime
-            t = tmin + (tmax - tmin) * Math.random()
+            val targetT = tmin + (tmax - tmin) * Math.random()
 
-            ev = pat.eventList
-            while (ev != null) {
-                if (ev.juggler == juggler && ev.hand == hand && ev.t >= t) {
-                    break
-                }
-                ev = ev.next
-            }
-            if (ev == null) {
-                return null
-            }
+            var ev = pat.eventSequence(startTime = targetT).first {
+                it.event.juggler == juggler && it.event.hand == hand
+            }.event
             tmax = ev.t - MUTATION_MIN_EVENT_DELTA_SEC
 
-            while (ev != null) {
-                if (ev.juggler == juggler && ev.hand == hand && ev.t <= t) {
-                    break
-                }
-                ev = ev.previous
-            }
-            if (ev == null) {
-                return null
-            }
+            ev = pat.prevForHandFromEvent(ev).event
             tmin = ev.t + MUTATION_MIN_EVENT_DELTA_SEC
 
-            tries++
+            ++tries
         } while (tmin > tmax && tries < 5)
 
         if (tries == 5) {
@@ -261,7 +218,7 @@ class Mutator {
         }
 
         val r = Math.random()
-        t = if (r < 0.5) {
+        var t = if (r < 0.5) {
             tmin + (tmax - tmin) * sqrt(0.5 * r)
         } else {
             tmax - (tmax - tmin) * sqrt(0.5 * (1 - r))
@@ -282,7 +239,7 @@ class Mutator {
         pos = pat.layout.convertGlobalToLocal(pos, juggler, t)
         pos = pickNewPosition(hand, rate * MUTATION_NEW_EVENT_POSITION_CM, pos)
 
-        ev = JMLEvent(
+        val newEvent = JMLEvent(
             x = pos.x,
             y = pos.y,
             z = pos.z,
@@ -294,73 +251,35 @@ class Mutator {
                 // is holding at the chosen time
                 for (path in 1..pat.numberOfPaths) {
                     if (pat.layout.isHandHoldingPath(juggler, hand, t, path)) {
-                        add(JMLTransition(JMLTransition.TRANS_HOLDING, path, null, null))
+                        add(JMLTransition(type = JMLTransition.TRANS_HOLDING, path = path))
                     }
                 }
             }
         )
-        pat.addEvent(ev)
-        pat.setNeedsLayout()
-        return pat
+        val record = PatternBuilder.fromJMLPattern(pat)
+        record.events.add(newEvent)
+        return JMLPattern.fromPatternBuilder(record)
     }
 
     // Remove a randomly-selected primary event with only holding transitions.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun mutateRemoveEvent(pat: JMLPattern): JMLPattern? {
-        // first count the number of such events
-        var count = 0
-        var ev = pat.eventList
-
-        while (ev != null) {
-            if (ev.isPrimary) {
-                var holdingOnly = true
-                for (tr in ev.transitions) {
-                    val type = tr.type
-                    if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
-                        holdingOnly = false
-                        break
-                    }
-                }
-                if (holdingOnly) {
-                    ++count
-                }
+        val evHolding = pat.events.filter {
+            it.transitions.all { tr ->
+                tr.type == JMLTransition.TRANS_HOLDING
             }
-            ev = ev.next
-        }
-
-        if (count == 0) {
+        }.toList()
+        if (evHolding.isEmpty()) {
             return null
         }
 
-        // pick one to remove, then go back through event list and find it
-        count = (count * Math.random()).toInt()
+        // pick one to remove
+        val ev = evHolding[(evHolding.size * Math.random()).toInt()]
 
-        ev = pat.eventList
-
-        while (ev != null) {
-            if (ev.isPrimary) {
-                var holdingOnly = true
-                for (tr in ev.transitions) {
-                    val type = tr.type
-                    if (type != JMLTransition.TRANS_NONE && type != JMLTransition.TRANS_HOLDING) {
-                        holdingOnly = false
-                        break
-                    }
-                }
-                if (holdingOnly) {
-                    if (count == 0) {
-                        pat.removeEvent(ev)
-                        pat.setNeedsLayout()
-                        return pat
-                    }
-                    --count
-                }
-            }
-            ev = ev.next
-        }
-
-        throw JuggleExceptionInternal("mutateRemoveEvent error")
+        val record = PatternBuilder.fromJMLPattern(pat)
+        record.events.remove(ev)
+        return JMLPattern.fromPatternBuilder(record)
     }
 
     //--------------------------------------------------------------------------
@@ -369,36 +288,8 @@ class Mutator {
 
     // Return a random primary event from the pattern.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun pickPrimaryEvent(pat: JMLPattern): JMLEvent {
-        pat.layout
-
-        val eventlist = pat.eventList
-        var primaryCount = 0
-
-        var current = eventlist
-        do {
-            if (current!!.isPrimary) {
-                ++primaryCount
-            }
-            current = current.next
-        } while (current != null)
-
-        // pick a number from 0 to (primaryCount - 1) inclusive
-        var eventNum = (Math.random() * primaryCount).toInt()
-
-        current = eventlist
-        do {
-            if (current!!.isPrimary) {
-                if (eventNum == 0) {
-                    return current
-                }
-                --eventNum
-            }
-            current = current.next
-        } while (current != null)
-
-        throw JuggleExceptionInternal("Mutator: pickEvent() failed")
+        return pat.events[(Math.random() * pat.events.size).toInt()]
     }
 
     private fun pickNewPosition(hand: Int, scaleDistance: Double, pos: Coordinate): Coordinate {

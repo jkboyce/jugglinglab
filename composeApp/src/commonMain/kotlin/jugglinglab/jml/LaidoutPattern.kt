@@ -1,6 +1,9 @@
 //
 // LaidoutPattern.kt
 //
+// This class represent a JMLPattern that is physically laid out and ready to
+// animate.
+//
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
@@ -14,6 +17,7 @@ import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.HandLink.Companion.index
+import jugglinglab.jml.JMLEvent.Companion.addTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*
@@ -24,6 +28,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class LaidoutPattern(val pat: JMLPattern) {
+    // events as a linked list
+    var eventList: JMLEvent? = null
+
     // list of PathLink objects for each path
     private var pathlinks: MutableList<MutableList<PathLink>>? = null
 
@@ -41,16 +48,14 @@ class LaidoutPattern(val pat: JMLPattern) {
     val pathLinks: List<List<PathLink>>
         get() = pathlinks!!
 
-    //--------------------------------------------------------------------------
-    // Lay out the spatial paths in the pattern
-    //
-    // Note that this can change the pattern's toString() representation,
-    // and therefore its hash code.
-    //--------------------------------------------------------------------------
-
     init {
         if (!pat.isValid) {
             throw JuggleExceptionInternalWithPattern("Cannot do layout of invalid pattern", pat)
+        }
+
+        pat.events.forEach {
+            it.primaryEvent = null  // add as primary event
+            addEvent(it)
         }
 
         try {
@@ -96,6 +101,93 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
+    // Managing the event list
+    //--------------------------------------------------------------------------
+
+    fun addEvent(ev: JMLEvent) {
+        if (eventList == null || ev.t < eventList!!.t) {
+            // set `ev` as new list head
+            ev.previous = null
+            ev.next = eventList
+            if (eventList != null) {
+                eventList!!.previous = ev
+            }
+            eventList = ev
+            return
+        }
+
+        var current = eventList
+
+        while (true) {
+            val combineEvents =
+                current!!.t == ev.t && current.hand == ev.hand && current.juggler == ev.juggler
+
+            if (combineEvents) {
+                var event = ev
+
+                // move all the transitions from `current` to `event`, except those
+                // for a path number that already has a transition in `event`.
+                for (trCurrent in current.transitions) {
+                    if (event.transitions.all { tr -> tr.path != trCurrent.path }) {
+                        event = event.addTransition(trCurrent)
+                    }
+                }
+
+                // then replace `current` with `event` in the list
+                event.previous = current.previous
+                event.next = current.next
+                if (current.next != null) {
+                    current.next!!.previous = event
+                }
+                if (current.previous == null) {
+                    eventList = event // new head of the list
+                } else {
+                    current.previous!!.next = event
+                }
+                return
+            }
+
+            if (ev.t < current.t) {
+                // insert `ev` before `current`
+                ev.next = current
+                ev.previous = current.previous
+                current.previous!!.next = ev
+                current.previous = ev
+                return
+            }
+
+            if (current.next == null) {
+                // append `ev` at the list end, after current
+                current.next = ev
+                ev.next = null
+                ev.previous = current
+                return
+            }
+
+            current = current.next
+        }
+    }
+
+    fun removeEvent(ev: JMLEvent) {
+        if (eventList == ev) {
+            eventList = ev.next
+            if (eventList != null) {
+                eventList!!.previous = null
+            }
+            return
+        }
+
+        val next = ev.next
+        val prev = ev.previous
+        if (next != null) {
+            next.previous = prev
+        }
+        if (prev != null) {
+            prev.next = next
+        }
+    }
+
+    //--------------------------------------------------------------------------
     // Step 1: construct the list of events
     // Extend events in list using known symmetries
     //--------------------------------------------------------------------------
@@ -104,7 +196,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     private fun buildEventList() {
         // figure out how many events there are
         var numevents = 0
-        var current = pat.eventList
+        var current = eventList
         while (current != null) {
             if (current.juggler !in 1..pat.numberOfJugglers) {
                 val message = getStringResource(Res.string.error_juggler_outofrange)
@@ -113,13 +205,13 @@ class LaidoutPattern(val pat: JMLPattern) {
             if (current.isPrimary) {
                 ++numevents
             } else {
-                pat.removeEvent(current)
+                removeEvent(current)
             }
             current = current.next
         }
         // construct event images for extending event list
         val ei = arrayOfNulls<EventImages>(numevents)
-        current = pat.eventList
+        current = eventList
         for (i in 0..<numevents) {
             ei[i] = EventImages(pat, current!!)
             current = current.next
@@ -212,7 +304,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
 
-            pat.addEvent(maxevent!!)
+            addEvent(maxevent!!)
             eventqueue[maxnum] = ei[maxnum]!!.previous // restock queue
 
             // now update the needs arrays, so we know when to stop
@@ -300,7 +392,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
 
-            pat.addEvent(minevent!!)
+            addEvent(minevent!!)
             eventqueue[minnum] = ei[minnum]!!.next // restock queue
 
             // now update the needs arrays, so we know when to stop
@@ -465,7 +557,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     //--------------------------------------------------------------------------
 
     private fun gotoGlobalCoordinates() {
-        var ev = pat.eventList
+        var ev = eventList
         while (ev != null) {
             val lc = ev.localCoordinate
             val gc = convertLocalToGlobal(lc, ev.juggler, ev.t)
@@ -484,7 +576,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         pathlinks = MutableList(pat.numberOfPaths) { mutableListOf() }
 
         for (i in 0..<pat.numberOfPaths) {
-            var ev = pat.eventList
+            var ev = eventList
             var lastev: JMLEvent? = null
             var lasttr: JMLTransition? = null
 
@@ -571,7 +663,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                 handlinks!![i].add(mutableListOf())
 
-                var ev = pat.eventList
+                var ev = eventList
                 var lastev: JMLEvent? = null
                 var vr: VelocityRef?
                 var lastvr: VelocityRef? = null
@@ -753,7 +845,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     @Suppress("unused")
     private fun printEventList() {
         val sb = StringBuilder()
-        var current = pat.eventList
+        var current = eventList
         while (current != null) {
             if (current.isPrimary) {
                 sb.append("  Primary event:\n")

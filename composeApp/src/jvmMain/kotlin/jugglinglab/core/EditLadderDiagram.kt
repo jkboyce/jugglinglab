@@ -137,7 +137,7 @@ class EditLadderDiagram(
             }
 
             if (undo) {
-                addToUndoList()
+                addToUndoList(pattern)
             }
         } catch (je: JuggleException) {
             // The various editing functions below (e.g., from the popup menu)
@@ -149,8 +149,8 @@ class EditLadderDiagram(
         }
     }
 
-    fun addToUndoList() {
-        parentView.addToUndoList(pattern)
+    fun addToUndoList(pat: JMLPattern) {
+        parentView.addToUndoList(pat)
     }
 
     //--------------------------------------------------------------------------
@@ -392,7 +392,7 @@ class EditLadderDiagram(
                     guiState = STATE_INACTIVE
                     if (deltaY != 0) {
                         deltaY = 0
-                        addToUndoList()
+                        addToUndoList(pattern)
                     } else if (itemWasSelected) {
                         // clicked without moving --> deselect
                         activeEventitem = null
@@ -406,7 +406,7 @@ class EditLadderDiagram(
                     guiState = STATE_INACTIVE
                     if (deltaY != 0) {
                         deltaY = 0
-                        addToUndoList()
+                        addToUndoList(pattern)
                     } else if (itemWasSelected) {
                         activePositionitem = null
                         aep2?.deactivatePosition()
@@ -576,7 +576,7 @@ class EditLadderDiagram(
 
         do {
             changed = false
-            var ev = pattern.eventList
+            var ev = pattern.layout.eventList
             var sep: Double
 
             while (ev != null) {
@@ -754,13 +754,10 @@ class EditLadderDiagram(
         val pp = ev!!.pathPermFromPrimary!!.inverse
         var newPrimaryT = startT + shift
 
-        /*
         if (!ev.isPrimary) {
-            val newEventT = newPrimaryT
             newPrimaryT += ev.primary.t - ev.t
-            ev.t = newEventT // update event time so getHashCode() works
             ev = ev.primary
-        }*/
+        }
 
         for (j in 0..<pattern.numberOfPaths) {
             if (holdpathnew[j] != holdpathorig[j]) {
@@ -783,9 +780,10 @@ class EditLadderDiagram(
             }
         }
 
-        pattern.removeEvent(ev)
-        // change time of primary
-        pattern.addEvent(ev.copy(t = newPrimaryT)) // remove/add cycle keeps events sorted
+        val record = PatternBuilder.fromJMLPattern(pattern)
+        val index = record.events.indexOf(ev)
+        record.events[index] = ev.copy(t = newPrimaryT)
+        aep?.restartJuggle(JMLPattern.fromPatternBuilder(record), null)
     }
 
     private fun findPositionLimits(item: LadderPositionItem) {
@@ -969,48 +967,33 @@ class EditLadderDiagram(
             return null
         }
 
+        // add holding transitions to the new event, if hand is filled
+        val newTransitions: List<JMLTransition> = buildList {
+            for (path in 1..pattern.numberOfPaths) {
+                if (pattern.layout.isHandHoldingPath(juggler, hand, evtime, path)) {
+                    add(JMLTransition(type = JMLTransition.TRANS_HOLDING, path = path))
+                }
+            }
+        }
+
         val newLocalCoordinate = pattern.layout.convertGlobalToLocal(evpos, juggler, evtime)
-        val ev = JMLEvent(
+        val newEvent = JMLEvent(
             x = newLocalCoordinate.x,
             y = newLocalCoordinate.y,
             z = newLocalCoordinate.z,
             t = evtime,
             juggler = juggler,
-            hand = hand
+            hand = hand,
+            transitions = newTransitions
         )
-        pattern.addEvent(ev)
 
-        // add holding transitions to the new event, if hand is filled
-        for (i in 0..<pattern.numberOfPaths) {
-            var holding = false
-            var evt = ev.previous
-            while (evt != null) {
-                val tr = evt.getPathTransition(i + 1, JMLTransition.TRANS_ANY)
-                if (tr != null) {
-                    if (evt.juggler != ev.juggler || evt.hand != ev.hand) {
-                        break
-                    }
-                    if (tr.type == JMLTransition.TRANS_THROW) {
-                        break
-                    }
-                    holding = true
-                    break
-                }
-                evt = evt.previous
-            }
+        val record = PatternBuilder.fromJMLPattern(pattern)
+        record.events.add(newEvent)
+        val newPattern = JMLPattern.fromPatternBuilder(record)
 
-            if (holding) {
-                val tr = JMLTransition(JMLTransition.TRANS_HOLDING, (i + 1), null, null)
-                ev.addTransition(tr)
-            }
-        }
-
-        activeEventitem = null
-        aep?.deactivateEvent()
-        layoutPattern(true)
-        createView()
-        repaint()
-        return ev
+        aep?.restartJuggle(newPattern, null)
+        addToUndoList(newPattern)
+        return newEvent
     }
 
     private fun removeEvent() {
@@ -1025,12 +1008,9 @@ class EditLadderDiagram(
         if (!ev!!.isPrimary) {
             ev = ev.primary
         }
-        pattern.removeEvent(ev)
-        activeEventitem = null
-        aep?.deactivateEvent()
-        layoutPattern(true)
-        createView()
-        repaint()
+        val record = PatternBuilder.fromJMLPattern(pattern)
+        record.events.remove(ev)
+        aep?.restartJuggle(JMLPattern.fromPatternBuilder(record), null)
     }
 
     private fun addPositionToJuggler(): JMLPosition {
@@ -1249,11 +1229,12 @@ class EditLadderDiagram(
                 rec.propAssignment[pn - 1] = rec.props.size
             }
 
-            aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
+            val newPattern = JMLPattern.fromPatternBuilder(rec)
+            aep?.restartJuggle(newPattern, null)
 
             if (activeEventitem != null) {
                 activeEventChanged()
-                addToUndoList()
+                addToUndoList(newPattern)
             } else {
                 layoutPattern(true)
             }
@@ -1371,10 +1352,12 @@ class EditLadderDiagram(
                     this[(popupitem as LadderEventItem).transnum] = newTransition
                 }
             )
-            pattern.removeEvent(evPrimary)
-            pattern.addEvent(newPrimary)
-            activeEventChanged()
-            addToUndoList()
+            val record = PatternBuilder.fromJMLPattern(pattern)
+            val index = record.events.indexOf(evPrimary)
+            record.events[index] = newPrimary
+            val newPattern = JMLPattern.fromPatternBuilder(record)
+            addToUndoList(newPattern)
+            aep?.restartJuggle(newPattern, null)
             jd.dispose()
         }
 
@@ -1419,10 +1402,13 @@ class EditLadderDiagram(
             }
         )
 
-        pattern.removeEvent(evPrimary)
-        pattern.addEvent(newPrimary)
+        val record = PatternBuilder.fromJMLPattern(pattern)
+        val index = record.events.indexOf(evPrimary)
+        record.events[index] = newPrimary
+        val newPattern = JMLPattern.fromPatternBuilder(record)
+        aep?.restartJuggle(newPattern, null)
         activeEventChanged()
-        addToUndoList()
+        addToUndoList(newPattern)
         repaint()
     }
 

@@ -1447,9 +1447,7 @@ abstract class MHNPattern : Pattern() {
                                 ev = ev.addTransition(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
-                                        path = sst2.pathnum,
-                                        throwType = null,
-                                        throwMod = null
+                                        path = sst2.pathnum
                                     )
                                 )
                             } else if (hands != null) {
@@ -1459,9 +1457,7 @@ abstract class MHNPattern : Pattern() {
                                     ev = ev.addTransition(
                                         JMLTransition(
                                             type = JMLTransition.TRANS_HOLDING,
-                                            path = sst2.pathnum,
-                                            throwType = null,
-                                            throwMod = null
+                                            path = sst2.pathnum
                                         )
                                     )
                                     pathtouched[sst2.pathnum - 1] = true
@@ -1514,9 +1510,7 @@ abstract class MHNPattern : Pattern() {
                                 transitions = listOf(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
-                                        path = sst2.pathnum,
-                                        throwType = null,
-                                        throwMod = null
+                                        path = sst2.pathnum
                                     )
                                 )
                             )
@@ -1701,9 +1695,7 @@ abstract class MHNPattern : Pattern() {
                     val ev2 = ev.addTransition(
                         JMLTransition(
                             type = JMLTransition.TRANS_HOLDING,
-                            path = (k + 1),
-                            throwType = null,
-                            throwMod = null
+                            path = (k + 1)
                         )
                     )
                     ev2.primaryEvent = ev.primaryEvent

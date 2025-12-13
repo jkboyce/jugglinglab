@@ -25,12 +25,15 @@ import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPSolver.ResultStatus
 import com.google.ortools.linearsolver.MPVariable
+import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.getStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class Optimizer private constructor(val pat: JMLPattern) {
+class Optimizer private constructor(pat: JMLPattern) {
+    private val record: PatternBuilder = PatternBuilder.fromJMLPattern(pat)
+
     private val me: MarginEquations = MarginEquations(pat)
     private val pinned: BooleanArray =
         if (me.marginsNum > 0) {
@@ -314,12 +317,15 @@ class Optimizer private constructor(val pat: JMLPattern) {
                 val ev = me.varsEvents[i]
                 val newx = (me.varsValues[i] * 100.0).roundToInt().toDouble() / 100.0
                 val ev2 = ev.copy(x = newx)
-                pat.removeEvent(ev)
-                pat.addEvent(ev2)
+                val index = record.events.indexOf(ev)
+                record.events[index] = ev2
                 me.varsEvents[i] = ev2
             }
         }
-        pat.setNeedsLayout()
+    }
+
+    private fun getResult(): JMLPattern {
+        return JMLPattern.fromPatternBuilder(record)
     }
 
     companion object {
@@ -384,7 +390,7 @@ class Optimizer private constructor(val pat: JMLPattern) {
                 println("---- No margin equations, bailing")
             }
 
-            return pat
+            return opt.getResult()
         }
     }
 }

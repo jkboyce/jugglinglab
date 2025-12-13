@@ -263,7 +263,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         // reactivate the event in ladder diagram, since we've
                         // called layoutPattern() and events may have changed
                         event = att.reactivateEvent()
-                        att.addToUndoList()
+                        att.addToUndoList(pattern!!)
                     }
                 }
                 animator.initAnimator()
@@ -280,7 +280,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             deltaAngle = 0.0
             for (att in attachments) {
                 if (att is EditLadderDiagram) {
-                    att.addToUndoList()
+                    att.addToUndoList(pattern!!)
                 }
             }
             animator.initAnimator()
@@ -417,9 +417,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     )
 
                     event = newEvent
-                    pattern?.removeEvent(primary)
-                    pattern?.addEvent(newPrimary)
-                    dolayout = true
+                    if (pattern != null) {
+                        val record = PatternBuilder.fromJMLPattern(pattern!!)
+                        val index = record.events.indexOf(primary)
+                        record.events[index] = newPrimary
+                        restartJuggle(JMLPattern.fromPatternBuilder(record), null)
+                        //dolayout = true
+                    }
                 }
 
                 if (positionActive) {
