@@ -733,7 +733,7 @@ open class LadderDiagram(p: JMLPattern) :
         var event: JMLEvent? = null
         var transnum: Int = 0
         val hashCode: Int
-            get() = event!!.hashCode * 17 + type * 23 + transnum * 27
+            get() = event!!.hashCode() * 17 + type * 23 + transnum * 27
     }
 
     class LadderPathItem : LadderItem() {
@@ -758,7 +758,7 @@ open class LadderDiagram(p: JMLPattern) :
         var yHigh: Int = 0
         var position: JMLPosition? = null
         val hashCode: Int
-            get() = position!!.hashCode
+            get() = position!!.hashCode()
     }
 
     companion object {

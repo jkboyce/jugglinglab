@@ -339,11 +339,13 @@ data class JMLPattern(
             }
         }
 
-    override fun toString(): String {
+    private val cachedToString: String by lazy {
         val sb = StringBuilder()
         writeJML(sb, writeTitle = true, writeInfo = true)
-        return sb.toString()
+        sb.toString()
     }
+
+    override fun toString(): String = cachedToString
 
     //--------------------------------------------------------------------------
     // Pattern transformations
@@ -641,9 +643,9 @@ data class JMLPattern(
         return fromPatternBuilder(record)
     }
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Constructing JMLPatterns
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
 
     companion object {
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {

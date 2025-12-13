@@ -23,8 +23,9 @@ data class JMLEvent(
     val hand: Int = 0,
     val transitions: List<JMLTransition> = emptyList()
 ): Comparable<JMLEvent> {
-    val localCoordinate: Coordinate
-        get() = Coordinate(x, y, z)
+    val localCoordinate: Coordinate by lazy {
+        Coordinate(x, y, z)
+    }
 
     fun getPathTransition(path: Int, transType: Int): JMLTransition? {
         return transitions.firstOrNull {
@@ -32,21 +33,24 @@ data class JMLEvent(
         }
     }
 
-    val hasThrow: Boolean
-        get() = transitions.any {
+    val hasThrow: Boolean by lazy {
+        transitions.any {
             it.type == JMLTransition.TRANS_THROW
         }
+    }
 
-    val hasThrowOrCatch: Boolean
-        get() = transitions.any {
+    val hasThrowOrCatch: Boolean by lazy {
+        transitions.any {
             when (it.type) {
                 JMLTransition.TRANS_THROW,
                 JMLTransition.TRANS_CATCH,
                 JMLTransition.TRANS_SOFTCATCH,
                 JMLTransition.TRANS_GRABCATCH -> true
+
                 else -> false
             }
         }
+    }
 
     fun writeJML(wr: Appendable, startTagOnly: Boolean = false) {
         wr.append("<event x=\"${jlToStringRounded(x, 4)}\"")
@@ -64,20 +68,23 @@ data class JMLEvent(
         }
     }
 
-    override fun toString(): String {
+    private val cachedToString: String by lazy {
         val sb = StringBuilder()
         writeJML(sb)
-        return sb.toString()
+        sb.toString()
     }
+
+    override fun toString(): String = cachedToString
 
     // Event hash code for locating a particular event in a pattern.
 
-    val hashCode: Int
-        get() {
-            val sb = StringBuilder()
-            writeJML(sb, startTagOnly = true)
-            return sb.toString().hashCode()
-        }
+    private val cachedHashCode: Int by lazy {
+        val sb = StringBuilder()
+        writeJML(sb, startTagOnly = true)
+        sb.toString().hashCode()
+    }
+
+    override fun hashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLEvent): Int {
         if (t != other.t) {
@@ -92,6 +99,10 @@ data class JMLEvent(
         // shouldn't get here; shouldn't have multiple events for the same
         // juggler/hand at a single time
         return x.compareTo(other.x)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return hashCode() == other.hashCode()
     }
 
     //--------------------------------------------------------------------------
@@ -159,6 +170,10 @@ data class JMLEvent(
         calcpos = ev.calcpos
         primaryEvent = if (ev.isPrimary) ev else ev.primaryEvent
     }
+
+    //--------------------------------------------------------------------------
+    // Constructing JMLEvents
+    //--------------------------------------------------------------------------
 
     companion object {
         // Factory methods to create JMLEvents

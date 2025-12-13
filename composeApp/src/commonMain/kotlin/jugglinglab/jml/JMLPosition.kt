@@ -20,37 +20,33 @@ data class JMLPosition(
     val t: Double = 0.0,
     val angle: Double = 0.0,
     val juggler: Int = 0,
-): Comparable<JMLPosition> {
-    val coordinate: Coordinate
-        get() = Coordinate(x, y, z)
+) : Comparable<JMLPosition> {
+    val coordinate: Coordinate by lazy {
+        Coordinate(x, y, z)
+    }
 
     fun writeJML(wr: Appendable) {
-        val c = this.coordinate
-        wr.append(
-            ("<position x=\""
-                    + jlToStringRounded(c.x, 4)
-                    + "\" y=\""
-                    + jlToStringRounded(c.y, 4)
-                    + "\" z=\""
-                    + jlToStringRounded(c.z, 4)
-                    + "\" t=\""
-                    + jlToStringRounded(this.t, 4)
-                    + "\" angle=\""
-                    + jlToStringRounded(this.angle, 4)
-                    + "\" juggler=\""
-                    + this.juggler
-                    + "\"/>\n")
-        )
+        wr.append("<position x=\"${jlToStringRounded(x, 4)}\"")
+        wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
+        wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
+        wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
+        wr.append(" angle=\"${jlToStringRounded(angle, 4)}\"")
+        wr.append(" juggler=\"${this.juggler}\"/>\n")
     }
 
-    override fun toString(): String {
+    private val cachedToString: String by lazy {
         val sb = StringBuilder()
         writeJML(sb)
-        return sb.toString()
+        sb.toString()
     }
 
-    val hashCode: Int
-        get() = toString().hashCode()
+    override fun toString(): String = cachedToString
+
+    private val cachedHashCode: Int by lazy {
+        toString().hashCode()
+    }
+
+    override fun hashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLPosition): Int {
         if (t != other.t) {
@@ -64,9 +60,20 @@ data class JMLPosition(
         return x.compareTo(other.x)
     }
 
-    // for doubly-linked event list during layout
+    override fun equals(other: Any?): Boolean {
+        return hashCode() == other.hashCode()
+    }
+
+    //--------------------------------------------------------------------------
+    // Items below here are for layout and animation - target removal
+    //--------------------------------------------------------------------------
+
     var previous: JMLPosition? = null
     var next: JMLPosition? = null
+
+    //--------------------------------------------------------------------------
+    // Constructing JMLPositions
+    //--------------------------------------------------------------------------
 
     companion object {
         @Suppress("unused")
