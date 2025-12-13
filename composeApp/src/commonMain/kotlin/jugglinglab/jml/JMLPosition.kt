@@ -113,7 +113,7 @@ data class JMLPosition(
                 throw JuggleExceptionUser(message)
             }
 
-            if (current.numberOfChildren != 0) {
+            if (current.children.isNotEmpty()) {
                 val message = getStringResource(Res.string.error_position_subtag)
                 throw JuggleExceptionUser(message)
             }

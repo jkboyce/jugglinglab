@@ -386,7 +386,7 @@ data class JMLPattern(
             scaleFactor *= multiplier  // so things aren't just barely feasible
             return Pair(withScaledTime(scaleFactor), scaleFactor)
         }
-        return Pair(this, scaleFactor)
+        return Pair(this, 1.0)
     }
 
     // Flip the x-axis in the local coordinates of each juggler.
@@ -481,8 +481,8 @@ data class JMLPattern(
 
         val record = PatternBuilder.fromJMLPattern(this)
         record.symmetries = newSymmetries.toMutableList()
-        record.events = inverseEvents.toMutableList()
         record.positions = newPositions.toMutableList()
+        record.events = inverseEvents.toMutableList()
         return fromPatternBuilder(record)
     }
 
@@ -538,7 +538,7 @@ data class JMLPattern(
             break
         }
 
-        if (Constants.DEBUG_LAYOUT) {
+        if (Constants.DEBUG_PATTERN_CREATION) {
             val nRemoved = nEventsStart - record.events.size
             println("Streamlined with time window $twindow secs:")
             println(
@@ -783,8 +783,8 @@ data class JMLPattern(
                 }
             }
 
-            for (i in 0..<current.numberOfChildren) {
-                readJML(current.getChildNode(i), record)
+            for (child in current.children) {
+                readJML(child, record)
             }
         }
 
@@ -798,14 +798,13 @@ data class JMLPattern(
             xmlString: String,
             version: String = JMLDefs.CURRENT_JML_VERSION
         ): JMLPattern {
-            val result = try {
+            return try {
                 val parser = JMLParser()
                 parser.parse(xmlString)
                 fromJMLNode(parser.tree!!, version)
             } catch (e: Exception) {
                 throw JuggleExceptionInternal(e.message)
             }
-            return result
         }
 
         // TODO: Target removal

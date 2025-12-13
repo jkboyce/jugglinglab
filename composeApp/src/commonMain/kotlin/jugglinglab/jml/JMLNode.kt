@@ -21,11 +21,6 @@ class JMLNode(
         attributes = attributes.addAttribute(name, value)
     }
     
-    val numberOfChildren: Int
-        get() = children.size
-
-    fun getChildNode(index: Int) = children[index]
-    
     fun addChildNode(newChild: JMLNode) {
         val lastNode = children.lastOrNull()
         lastNode?.nextSibling = newChild
@@ -39,28 +34,24 @@ class JMLNode(
     // node type.
     
     fun findNode(type: String?): JMLNode? {
-        if (this.nodeType == type) {
+        if (nodeType == type) {
             return this
         }
-
-        for (i in 0..<numberOfChildren) {
-            val match = getChildNode(i).findNode(type)
-            if (match != null) {
-                return match
-            }
-        }
-        return null
+        return children.firstNotNullOfOrNull { it.findNode(type) }
     }
 
     fun writeNode(appendable: Appendable, indentlevel: Int) {
         appendable.append("<").append(nodeType)
-        for (i in 0..<attributes.numberOfAttributes) {
-            appendable.append(" ").append(attributes.getAttributeName(i))
-                .append("=\"").append(xmlescape(attributes.getAttributeValue(i)))
+        
+        for ((name, value) in attributes.entries) {
+            appendable.append(" ")
+                .append(name)
+                .append("=\"")
+                .append(xmlescape(value))
                 .append("\"")
         }
 
-        if (numberOfChildren == 0) {
+        if (children.isEmpty()) {
             if (nodeValue == null) {
                 appendable.append("/>")
             } else {

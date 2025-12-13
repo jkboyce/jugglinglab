@@ -297,7 +297,7 @@ data class JMLEvent(
                         )
                     }
 
-                    if (child.numberOfChildren != 0) {
+                    if (child.children.isNotEmpty()) {
                         val message = getStringResource(Res.string.error_event_subtag)
                         throw JuggleExceptionUser(message)
                     }

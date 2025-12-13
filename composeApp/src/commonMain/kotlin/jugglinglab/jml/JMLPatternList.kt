@@ -150,7 +150,7 @@ class JMLPatternList() {
             loadingversion = vers
         }
 
-        val listnode = current.getChildNode(0)
+        val listnode = current.children[0]
         if (!listnode.nodeType.equals("patternlist", ignoreCase = true)) {
             val message = getStringResource(Res.string.error_missing_patternlist_tag)
             throw JuggleExceptionUser(message)
@@ -158,8 +158,7 @@ class JMLPatternList() {
 
         var linenumber = 0
 
-        for (i in 0..<listnode.numberOfChildren) {
-            val child = listnode.getChildNode(i)
+        for (child in listnode.children) {
             if (child.nodeType.equals("title", ignoreCase = true)) {
                 title = child.nodeValue!!.trim()
             } else if (child.nodeType.equals("info", ignoreCase = true)) {
