@@ -478,8 +478,8 @@ class EditLadderDiagram(
     //--------------------------------------------------------------------------
 
     private fun findEventLimits(item: LadderEventItem) {
-        var tmin = pattern.loopStartTime
-        var tmax = pattern.loopEndTime
+        var tMin = pattern.loopStartTime
+        var tMax = pattern.loopEndTime
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
@@ -489,16 +489,9 @@ class EditLadderDiagram(
                     // find out when the ball being thrown was last caught
                     var ev = item.transEvent.previous
                     while (ev != null) {
-                        if (ev.getPathTransition(
-                                tr.path,
-                                JMLTransition.TRANS_CATCH
-                            ) != null || ev.getPathTransition(
-                                tr.path,
-                                JMLTransition.TRANS_SOFTCATCH
-                            ) != null || ev.getPathTransition(
-                                tr.path,
-                                JMLTransition.TRANS_GRABCATCH
-                            ) != null
+                        if (ev.getPathTransition(tr.path, JMLTransition.TRANS_CATCH) != null ||
+                            ev.getPathTransition(tr.path, JMLTransition.TRANS_SOFTCATCH) != null ||
+                            ev.getPathTransition(tr.path, JMLTransition.TRANS_GRABCATCH) != null
                         ) {
                             break
                         }
@@ -511,12 +504,12 @@ class EditLadderDiagram(
                         parentFrame?.dispose()
                         return
                     }
-                    tmin = max(tmin, ev.t + MIN_THROW_SEP_TIME)
+                    tMin = max(tMin, ev.t + MIN_THROW_SEP_TIME)
 
                     // next catch is easy to find
                     ev = tr.outgoingPathLink!!.endEvent
                     if (!ev.hasSamePrimaryAs(item.transEvent)) {
-                        tmax = min(tmax, ev.t - MIN_THROW_SEP_TIME)
+                        tMax = min(tMax, ev.t - MIN_THROW_SEP_TIME)
                     }
                 }
 
@@ -526,7 +519,7 @@ class EditLadderDiagram(
                     // previous throw is easy to find
                     var ev: JMLEvent? = tr.incomingPathLink!!.startEvent
                     if (!ev!!.hasSamePrimaryAs(item.transEvent)) {
-                        tmin = max(tmin, ev.t + MIN_THROW_SEP_TIME)
+                        tMin = max(tMin, ev.t + MIN_THROW_SEP_TIME)
                     }
 
                     // find out when the ball being caught is next thrown
@@ -544,12 +537,12 @@ class EditLadderDiagram(
                         parentFrame?.dispose()
                         return
                     }
-                    tmax = min(tmax, ev.t - MIN_THROW_SEP_TIME)
+                    tMax = min(tMax, ev.t - MIN_THROW_SEP_TIME)
                 }
             }
         }
-        deltaYMin = ((tmin - item.transEvent.t) / scale).toInt()
-        deltaYMax = ((tmax - item.transEvent.t) / scale).toInt()
+        deltaYMin = ((tMin - item.transEvent.t) / scale).toInt()
+        deltaYMax = ((tMax - item.transEvent.t) / scale).toInt()
     }
 
     // Return value of `delta_y` during mouse drag of an event, clipping it to
