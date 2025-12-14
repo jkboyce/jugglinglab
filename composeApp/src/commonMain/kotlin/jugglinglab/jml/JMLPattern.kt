@@ -643,7 +643,7 @@ data class JMLPattern(
 
     companion object {
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
-            val result = JMLPattern(
+            return JMLPattern(
                 jmlVersion = record.jmlVersion,
                 title = record.title,
                 info = record.info,
@@ -658,7 +658,6 @@ data class JMLPattern(
                 positions = record.positions.sorted(),
                 events = record.events.sorted()
             )
-            return result
         }
 
         // Create a JMLPattern by parsing a JMLNode
@@ -879,21 +878,21 @@ data class PatternBuilder(
 
     companion object {
         fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
-            val record = PatternBuilder()
-            record.jmlVersion = pat.jmlVersion
-            record.title = pat.title
-            record.info = pat.info
-            record.tags = pat.tags.toMutableList()
-            record.basePatternNotation = pat.basePatternNotation
-            record.basePatternConfig = pat.basePatternConfig
-            record.props = pat.props.toMutableList()
-            record.numberOfJugglers = pat.numberOfJugglers
-            record.numberOfPaths = pat.numberOfPaths
-            record.propAssignment = pat.propAssignment.toMutableList()
-            record.symmetries = pat.symmetries.toMutableList()
-            record.positions = pat.positions.toMutableList()
-            record.events = pat.events.toMutableList()
-            return record
+            return PatternBuilder(
+                jmlVersion = pat.jmlVersion,
+                title = pat.title,
+                info = pat.info,
+                tags = pat.tags.toMutableList(),
+                basePatternNotation = pat.basePatternNotation,
+                basePatternConfig = pat.basePatternConfig,
+                props = pat.props.toMutableList(),
+                numberOfJugglers = pat.numberOfJugglers,
+                numberOfPaths = pat.numberOfPaths,
+                propAssignment = pat.propAssignment.toMutableList(),
+                symmetries = pat.symmetries.toMutableList(),
+                positions = pat.positions.toMutableList(),
+                events = pat.events.toMutableList()
+            )
         }
     }
 }
