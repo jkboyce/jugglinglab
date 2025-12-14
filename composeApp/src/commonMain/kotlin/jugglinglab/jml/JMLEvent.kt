@@ -128,18 +128,7 @@ data class JMLEvent(
     var calcpos: Boolean = false
 
     // coordinates in global frame, used during animation
-    private var gx: Double = 0.0
-    private var gy: Double = 0.0
-    private var gz: Double = 0.0 // coordinates in global frame
-    private var globalvalid: Boolean = false // global coordinates need to be recalced?
-    var globalCoordinate: Coordinate?
-        get() = if (globalvalid) Coordinate(gx, gy, gz) else null
-        set(c) {
-            gx = c!!.x
-            gy = c.y
-            gz = c.z
-            globalvalid = true
-        }
+    var globalCoordinate: Coordinate? = null
 
     fun isDelayOf(ev2: JMLEvent): Boolean {
         if (!hasSamePrimaryAs(ev2)) {

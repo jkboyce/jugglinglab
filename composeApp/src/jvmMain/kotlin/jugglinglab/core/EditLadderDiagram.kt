@@ -47,18 +47,18 @@ class EditLadderDiagram(
 ) : LadderDiagram(p), ActionListener {
     private var aep: AnimationEditPanel? = null
 
-    private var activeEventitem: LadderEventItem? = null
-    private var activePositionitem: LadderPositionItem? = null
+    private var activeEventItem: LadderEventItem? = null
+    private var activePositionItem: LadderPositionItem? = null
     private var itemWasSelected: Boolean = false // for detecting de-selecting clicks
     private var startY: Int = 0
-    private var startYlow: Int = 0
-    private var startYhigh: Int = 0 // initial box y-coordinates
+    private var startYLow: Int = 0
+    private var startYHigh: Int = 0 // initial box y-coordinates
     private var startT: Double = 0.0 // initial time
     private var deltaY: Int = 0
     private var deltaYMin: Int = 0
     private var deltaYMax: Int = 0 // limits for dragging up/down
 
-    private var popupitem: LadderItem? = null
+    private var popupItem: LadderItem? = null
     private var popupX: Int = 0 // screen coordinates where popup was raised
     private var popupY: Int = 0
 
@@ -73,27 +73,26 @@ class EditLadderDiagram(
     // some way within this ladder diagram's UI.
 
     fun activeEventChanged() {
-        if (activeEventitem == null) return
+        if (activeEventItem == null) return
 
-        val hash = activeEventitem!!.hashCode
+        val hash = activeEventItem!!.hashCode
         layoutPattern(false)  // rebuild pattern event list
         createView()  // rebuild ladder diagram (LadderItem arrays)
 
         // locate the event we're editing, in the updated pattern
-        activeEventitem = null
+        activeEventItem = null
         for (item in ladderEventItems) {
             if (item.hashCode == hash) {
-                activeEventitem = item
+                activeEventItem = item
                 break
             }
         }
 
         try {
-            if (activeEventitem == null) {
+            if (activeEventItem == null) {
                 throw JuggleExceptionInternalWithPattern("activeEventChanged(): event not found", pattern)
-            } else if (aep != null) {
-                aep!!.activateEvent(activeEventitem!!.transEvent)
             }
+            aep?.activateEvent(activeEventItem!!.transEvent)
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)
         }
@@ -103,25 +102,25 @@ class EditLadderDiagram(
     // some way, within this ladder diagram's UI.
 
     fun activePositionChanged() {
-        if (activePositionitem == null) return
+        if (activePositionItem == null) return
 
-        val hash = activePositionitem!!.hashCode
+        val hash = activePositionItem!!.hashCode
         layoutPattern(false)
         createView()
 
-        activePositionitem = null
+        activePositionItem = null
         for (item in ladderPositionItems) {
             // System.out.println(item.event.toString());
             if (item.hashCode == hash) {
-                activePositionitem = item
+                activePositionItem = item
                 break
             }
         }
 
-        if (activePositionitem == null) {
+        if (activePositionItem == null) {
             jlHandleFatalException(JuggleExceptionInternalWithPattern("ELD: position not found", pattern))
         } else if (aep != null) {
-            aep!!.activatePosition(activePositionitem!!.position)
+            aep!!.activatePosition(activePositionItem!!.position)
         }
     }
 
@@ -159,40 +158,40 @@ class EditLadderDiagram(
     @Throws(JuggleExceptionInternal::class)
     fun activateEvent(ev: JMLEvent) {
         createView()  // rebuild ladder diagram (LadderItem arrays)
-        activeEventitem = null
+        activeEventItem = null
         val evInloop = pattern.getEventImageInLoop(ev)
             ?: throw JuggleExceptionInternalWithPattern("activateEvent(): null event", pattern)
         for (item in ladderEventItems) {
             if (item.transEvent == evInloop) {
-                activeEventitem = item
+                activeEventItem = item
                 break
             }
         }
-        if (activeEventitem == null) {
+        if (activeEventItem == null) {
             throw JuggleExceptionInternalWithPattern("activateEvent(): event not found", pattern)
         }
     }
 
     @Throws(JuggleExceptionInternal::class)
     fun reactivateEvent(): JMLEvent {
-        if (activeEventitem == null) {
+        if (activeEventItem == null) {
             throw JuggleExceptionInternalWithPattern("reactivateEvent(): null eventitem", pattern)
         }
-        val hash = activeEventitem!!.hashCode
+        val hash = activeEventItem!!.hashCode
         createView()  // rebuild ladder diagram (LadderItem arrays)
 
         // re-locate the event we're editing in the newly laid out pattern
-        activeEventitem = null
+        activeEventItem = null
         for (item in ladderEventItems) {
             if (item.hashCode == hash) {
-                activeEventitem = item
+                activeEventItem = item
                 break
             }
         }
-        if (activeEventitem == null) {
+        if (activeEventItem == null) {
             throw JuggleExceptionInternalWithPattern("reactivateEvent(): event not found", pattern)
         }
-        return activeEventitem!!.transEvent
+        return activeEventItem!!.transEvent
     }
 
     //--------------------------------------------------------------------------
@@ -211,11 +210,11 @@ class EditLadderDiagram(
         // on macOS the popup triggers here
         if (me.isPopupTrigger) {
             guiState = STATE_POPUP
-            activeEventitem = getSelectedLadderEvent(me.getX(), me.getY())
-            activePositionitem = getSelectedLadderPosition(me.getX(), me.getY())
-            popupitem = if (activeEventitem != null) activeEventitem else activePositionitem
-            if (popupitem == null) {
-                popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
+            activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
+            activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
+            popupItem = if (activeEventItem != null) activeEventItem else activePositionItem
+            if (popupItem == null) {
+                popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
             }
 
             popupX = me.getX()
@@ -229,73 +228,71 @@ class EditLadderDiagram(
                 aep2.time = newtime
                 aep2.deactivateEvent()
                 aep2.deactivatePosition()
-                if (activeEventitem != null) {
+                if (activeEventItem != null) {
                     try {
-                        aep2.activateEvent(activeEventitem!!.transEvent)
+                        aep2.activateEvent(activeEventItem!!.transEvent)
                     } catch (jei: JuggleExceptionInternal) {
                         jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                     }
                 }
-                if (activePositionitem != null) {
-                    aep2.activatePosition(activePositionitem!!.position)
+                if (activePositionItem != null) {
+                    aep2.activatePosition(activePositionItem!!.position)
                 }
                 aep2.repaint()
             }
 
-            makePopupMenu(popupitem).show(this@EditLadderDiagram, me.getX(), me.getY())
+            makePopupMenu(popupItem).show(this@EditLadderDiagram, me.getX(), me.getY())
         } else {
             when (guiState) {
                 STATE_INACTIVE -> {
                     var needsHandling = true
                     itemWasSelected = false
 
-                    val oldEventitem = activeEventitem
-                    activeEventitem = getSelectedLadderEvent(me.getX(), me.getY())
-                    if (oldEventitem != null && oldEventitem == activeEventitem) {
+                    val oldEventitem = activeEventItem
+                    activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
+                    if (oldEventitem != null && oldEventitem == activeEventItem) {
                         itemWasSelected = true
                     }
 
-                    if (activeEventitem != null) {
-                        if (aep2 != null) {
-                            try {
-                                aep2.activateEvent(activeEventitem!!.transEvent)
-                            } catch (jei: JuggleExceptionInternal) {
-                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-                            }
+                    if (activeEventItem != null) {
+                        try {
+                            aep2?.activateEvent(activeEventItem!!.transEvent)
+                        } catch (jei: JuggleExceptionInternal) {
+                            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                         }
-                        if (activeEventitem!!.type == LadderItem.TYPE_TRANSITION) {
+                        if (activeEventItem!!.type == LadderItem.TYPE_TRANSITION) {
                             // only allow dragging of TYPE_EVENT
                             needsHandling = false
                         }
 
                         if (needsHandling) {
                             guiState = STATE_MOVING_EVENT
-                            activePositionitem = null
+                            activePositionItem = null
                             startY = me.getY()
-                            startYlow = activeEventitem!!.yLow
-                            startYhigh = activeEventitem!!.yHigh
-                            startT = activeEventitem!!.transEvent.t
-                            findEventLimits(activeEventitem!!)
+                            startYLow = activeEventItem!!.yLow
+                            startYHigh = activeEventItem!!.yHigh
+                            startT = activeEventItem!!.transEvent.t
+                            findEventLimits(activeEventItem!!)
                             needsHandling = false
                         }
                     }
 
                     if (needsHandling) {
-                        val oldPositionitem = activePositionitem
-                        activePositionitem = getSelectedLadderPosition(me.getX(), me.getY())
-                        if (oldPositionitem != null && oldPositionitem == activePositionitem) {
+                        val oldPositionitem = activePositionItem
+                        activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
+                        if (oldPositionitem != null && oldPositionitem == activePositionItem) {
                             itemWasSelected = true
                         }
 
-                        if (activePositionitem != null) {
+                        if (activePositionItem != null) {
                             guiState = STATE_MOVING_POSITION
-                            activeEventitem = null
+                            activeEventItem = null
                             startY = me.getY()
-                            startYlow = activePositionitem!!.yLow
-                            startYhigh = activePositionitem!!.yHigh
-                            startT = activePositionitem!!.position.t
-                            findPositionLimits(activePositionitem!!)
-                            aep2?.activatePosition(activePositionitem!!.position)
+                            startYLow = activePositionItem!!.yLow
+                            startYHigh = activePositionItem!!.yHigh
+                            startT = activePositionItem!!.position.t
+                            findPositionLimits(activePositionItem!!)
+                            aep2?.activatePosition(activePositionItem!!.position)
                             needsHandling = false
                         }
                     }
@@ -350,15 +347,15 @@ class EditLadderDiagram(
                         aep2.time = newtime
                         aep2.deactivateEvent()
                         aep2.deactivatePosition()
-                        if (activeEventitem != null) {
+                        if (activeEventItem != null) {
                             try {
-                                aep2.activateEvent(activeEventitem!!.transEvent)
+                                aep2.activateEvent(activeEventItem!!.transEvent)
                             } catch (jei: JuggleExceptionInternal) {
                                 jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
                             }
                         }
-                        if (activePositionitem != null) {
-                            aep2.activatePosition(activePositionitem!!.position)
+                        if (activePositionItem != null) {
+                            aep2.activatePosition(activePositionItem!!.position)
                         }
                         aep2.repaint()
                     }
@@ -371,13 +368,13 @@ class EditLadderDiagram(
                     }
                     popupX = me.getX()
                     popupY = me.getY()
-                    popupitem =
-                        (if (activeEventitem != null) activeEventitem else activePositionitem)
-                    if (popupitem == null) {
-                        popupitem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
+                    popupItem =
+                        (if (activeEventItem != null) activeEventItem else activePositionItem)
+                    if (popupItem == null) {
+                        popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
                     }
 
-                    makePopupMenu(popupitem).show(this@EditLadderDiagram, me.getX(), me.getY())
+                    makePopupMenu(popupItem).show(this@EditLadderDiagram, me.getX(), me.getY())
                 }
 
                 STATE_POPUP -> jlHandleFatalException(
@@ -394,7 +391,7 @@ class EditLadderDiagram(
                         addToUndoList(pattern)
                     } else if (itemWasSelected) {
                         // clicked without moving --> deselect
-                        activeEventitem = null
+                        activeEventItem = null
                         aep2?.deactivateEvent()
                         aep2?.repaint()
                         repaint()
@@ -407,7 +404,7 @@ class EditLadderDiagram(
                         deltaY = 0
                         addToUndoList(pattern)
                     } else if (itemWasSelected) {
-                        activePositionitem = null
+                        activePositionItem = null
                         aep2?.deactivatePosition()
                         aep2?.repaint()
                         repaint()
@@ -442,10 +439,10 @@ class EditLadderDiagram(
             STATE_INACTIVE, STATE_POPUP -> {}
             STATE_MOVING_EVENT -> {
                 val oldDeltaY = deltaY
-                deltaY = getClippedEventTime(me, activeEventitem!!.transEvent)
+                deltaY = getClippedEventTime(me, activeEventItem!!.transEvent)
 
                 if (deltaY != oldDeltaY) {
-                    moveEventInPattern(activeEventitem!!.transEventItem!!)
+                    moveEventInPattern(activeEventItem!!.transEventItem!!)
                     activeEventChanged()
                     repaint()
                 }
@@ -453,10 +450,10 @@ class EditLadderDiagram(
 
             STATE_MOVING_POSITION -> {
                 val oldDeltaY = deltaY
-                deltaY = getClippedPositionTime(me, activePositionitem!!.position)
+                deltaY = getClippedPositionTime(me, activePositionItem!!.position)
 
                 if (deltaY != oldDeltaY) {
-                    movePositionInPattern(activePositionitem!!)
+                    movePositionInPattern(activePositionItem!!)
                     activePositionChanged()
                     repaint()
                 }
@@ -997,13 +994,13 @@ class EditLadderDiagram(
 
     private fun removeEvent() {
         // makePopupMenu() ensures that the event only has hold transitions
-        if (popupitem !is LadderEventItem) {
+        if (popupItem !is LadderEventItem) {
             jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram illegal remove event", pattern)
             )
             return
         }
-        var ev = (popupitem as LadderEventItem).transEvent
+        var ev = (popupItem as LadderEventItem).transEvent
         if (!ev.isPrimary) {
             ev = ev.primary
         }
@@ -1049,7 +1046,7 @@ class EditLadderDiagram(
         rec.positions.add(pos)  // TODO: sort the positions
         aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
 
-        activeEventitem = null
+        activeEventItem = null
         aep?.deactivateEvent()
         layoutPattern(true)
         createView()
@@ -1058,18 +1055,18 @@ class EditLadderDiagram(
     }
 
     private fun removePosition() {
-        if (popupitem !is LadderPositionItem) {
+        if (popupItem !is LadderPositionItem) {
             jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram illegal remove position", pattern)
             )
             return
         }
-        val pos = (popupitem as LadderPositionItem).position
+        val pos = (popupItem as LadderPositionItem).position
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.remove(pos)
         aep?.restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
 
-        activePositionitem = null
+        activePositionItem = null
         aep?.deactivatePosition()
         layoutPattern(true)
         createView()
@@ -1077,27 +1074,27 @@ class EditLadderDiagram(
     }
 
     private fun defineProp() {
-        if (popupitem == null) {
+        if (popupItem == null) {
             jlHandleFatalException(JuggleExceptionInternalWithPattern("defineProp() null popupitem", pattern))
             return
         }
 
         // figure out which path number the user selected
         val pn: Int
-        if (popupitem is LadderEventItem) {
-            if (popupitem!!.type != LadderItem.TYPE_TRANSITION) {
+        if (popupItem is LadderEventItem) {
+            if (popupItem!!.type != LadderItem.TYPE_TRANSITION) {
                 jlHandleFatalException(
                     JuggleExceptionInternalWithPattern("defineProp() bad LadderItem type", pattern)
                 )
                 return
             }
 
-            val ev = (popupitem as LadderEventItem).transEvent
-            val transnum = (popupitem as LadderEventItem).transNum
+            val ev = (popupItem as LadderEventItem).transEvent
+            val transnum = (popupItem as LadderEventItem).transNum
             val tr = ev.transitions[transnum]
             pn = tr.path
         } else {
-            pn = (popupitem as LadderPathItem).pathNum
+            pn = (popupItem as LadderPathItem).pathNum
         }
 
         val animpropnum = aep!!.animator.animPropNum
@@ -1231,7 +1228,7 @@ class EditLadderDiagram(
             val newPattern = JMLPattern.fromPatternBuilder(rec)
             aep?.restartJuggle(newPattern, null)
 
-            if (activeEventitem != null) {
+            if (activeEventItem != null) {
                 activeEventChanged()
                 addToUndoList(newPattern)
             } else {
@@ -1267,12 +1264,12 @@ class EditLadderDiagram(
     }
 
     private fun defineThrow() {
-        if (popupitem !is LadderEventItem) {
+        if (popupItem !is LadderEventItem) {
             jlHandleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pattern))
             return
         }
-        val evPrimary = (popupitem as LadderEventItem).transEvent.primary
-        val tr = evPrimary.transitions[(popupitem as LadderEventItem).transNum]
+        val evPrimary = (popupItem as LadderEventItem).transEvent.primary
+        val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
 
         val pptypes: List<String> = Path.builtinPaths
 
@@ -1348,7 +1345,7 @@ class EditLadderDiagram(
             )
             val newPrimary = evPrimary.copy(
                 transitions = evPrimary.transitions.toMutableList().apply {
-                    this[(popupitem as LadderEventItem).transNum] = newTransition
+                    this[(popupItem as LadderEventItem).transNum] = newTransition
                 }
             )
             val record = PatternBuilder.fromJMLPattern(pattern)
@@ -1382,22 +1379,22 @@ class EditLadderDiagram(
     }
 
     private fun changeCatchStyleTo(type: Int) {
-        if (popupitem == null) {
+        if (popupItem == null) {
             jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 10", pattern))
             return
         }
-        if (popupitem !is LadderEventItem) {
+        if (popupItem !is LadderEventItem) {
             jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram change to catch class format", pattern)
             )
             return
         }
-        val evPrimary = (popupitem as LadderEventItem).transEvent.primary
-        val tr = evPrimary.transitions[(popupitem as LadderEventItem).transNum]
+        val evPrimary = (popupItem as LadderEventItem).transEvent.primary
+        val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
 
         val newPrimary = evPrimary.copy(
             transitions = evPrimary.transitions.toMutableList().apply {
-                this[(popupitem as LadderEventItem).transNum] = tr.copy(type = type)
+                this[(popupItem as LadderEventItem).transNum] = tr.copy(type = type)
             }
         )
 
@@ -1412,24 +1409,24 @@ class EditLadderDiagram(
     }
 
     private fun makeLastInEvent() {
-        if (popupitem == null) {
+        if (popupItem == null) {
             jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 8", pattern))
             return
         }
-        if (popupitem !is LadderEventItem) {
+        if (popupItem !is LadderEventItem) {
             jlHandleFatalException(
                 JuggleExceptionInternalWithPattern("LadderDiagram make last transition class format", pattern)
             )
             return
         }
-        var ev = (popupitem as LadderEventItem).transEvent
+        var ev = (popupItem as LadderEventItem).transEvent
         if (!ev.isPrimary) {
             ev = ev.primary
         }
-        val tr = ev.transitions[(popupitem as LadderEventItem).transNum]
+        val tr = ev.transitions[(popupItem as LadderEventItem).transNum]
         ev.removeTransition(tr)
         ev.addTransition(tr) // will add at end
-        activeEventitem = null // deselect event since it's moving
+        activeEventItem = null // deselect event since it's moving
         aep?.deactivateEvent()
         layoutPattern(true)
         createView()
@@ -1639,7 +1636,7 @@ class EditLadderDiagram(
     // Call this at the very end of every popup interaction.
 
     private fun finishPopup() {
-        popupitem = null
+        popupItem = null
         if (guiState == STATE_POPUP) {
             guiState = STATE_INACTIVE
             aep?.isPaused = animPaused
@@ -1669,7 +1666,7 @@ class EditLadderDiagram(
         if (!paintLadder(gr)) return
 
         // draw the box around the selected position
-        val api = activePositionitem
+        val api = activePositionItem
         if (api != null) {
             gr.color = COLOR_SELECTION
             gr.drawLine(
@@ -1699,7 +1696,7 @@ class EditLadderDiagram(
         }
 
         // draw the box around the selected event
-        val aei = activeEventitem
+        val aei = activeEventItem
         if (aei != null) {
             gr.color = COLOR_SELECTION
             gr.drawLine(

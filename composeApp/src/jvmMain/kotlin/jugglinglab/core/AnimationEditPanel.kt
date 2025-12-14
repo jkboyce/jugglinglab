@@ -720,7 +720,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 // translate by one pixel and see how far it is in juggler space
                 val c = ev.globalCoordinate
-                    ?: throw JuggleExceptionInternalWithPattern("AEP: No coord on event $ev", pattern)
+                    ?: throw JuggleExceptionInternalWithPattern("AEP: No global coord on event $ev", pattern)
                 val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2) // pixels/cm
 
