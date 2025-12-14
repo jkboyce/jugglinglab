@@ -39,7 +39,7 @@ open class LadderDiagram(p: JMLPattern) :
     protected var simTime: Double = 0.0
     protected var trackerY: Int = BORDER_TOP
     protected var hasSwitchSymmetry: Boolean = false
-    protected var hasSwitchdelaySymmetry: Boolean = false
+    protected var hasSwitchDelaySymmetry: Boolean = false
 
     protected var ladderEventItems: List<LadderEventItem> = emptyList()
     protected var ladderPathItems: List<LadderPathItem> = emptyList()
@@ -237,29 +237,22 @@ open class LadderDiagram(p: JMLPattern) :
 
     // Create arrays of all the elements in the ladder diagram.
     protected fun createView() {
-        hasSwitchdelaySymmetry = false
-        hasSwitchSymmetry = false
-
-        for (sym in pattern.symmetries) {
-            when (sym.type) {
-                JMLSymmetry.TYPE_SWITCH -> hasSwitchSymmetry = true
-                JMLSymmetry.TYPE_SWITCHDELAY -> hasSwitchdelaySymmetry = true
-            }
-        }
+        hasSwitchDelaySymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
+        hasSwitchSymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
 
         val loopStart = pattern.loopStartTime
         val loopEnd = pattern.loopEndTime
 
         // first create events (black circles on the vertical lines representing hands)
         ladderEventItems = buildList {
-            for ((ev, _) in pattern.loopEvents) {
-                val item = LadderEventItem(ev)
+            for ((ev, evPrimary) in pattern.loopEvents) {
+                val item = LadderEventItem(event = ev, eventPrimary = evPrimary)
                 item.type = LadderItem.TYPE_EVENT
                 item.transEventItem = item
                 add(item)
 
                 for (index in 0..<ev.transitions.size) {
-                    val item2 = LadderEventItem(ev)
+                    val item2 = LadderEventItem(event = ev, eventPrimary = evPrimary)
                     item2.type = LadderItem.TYPE_TRANSITION
                     item2.transEventItem = item
                     item2.transNum = index
@@ -270,34 +263,62 @@ open class LadderDiagram(p: JMLPattern) :
 
         // create paths (lines and arcs)
         ladderPathItems = buildList {
-            var ev: JMLEvent? = pattern.layout.eventList
-            while (ev!!.t <= loopEnd) {
-                for (i in 0..<ev.transitions.size) {
-                    val tr = ev.transitions[i]
-                    val opl = tr.outgoingPathLink
+            for ((ev, evPrimary) in pattern.loopEvents) {
+                for ((index, tr) in ev.transitions.withIndex()) {
+                    // add ladder path items that start on event `ev`
 
-                    if (opl != null) {
-                        val item = LadderPathItem(startEvent = opl.startEvent, endEvent = opl.endEvent)
-                        item.transnumStart = i
-
-                        if (opl.isInHand) {
-                            item.type = LadderItem.TYPE_HOLD
-                        } else if (item.startEvent.juggler != item.endEvent.juggler) {
-                            item.type = LadderItem.TYPE_PASS
+                    val (endEvent, endEventPrimary) = pattern.nextForPathFromEvent(ev, tr.path)
+                    add(LadderPathItem(
+                        startEvent = ev,
+                        startEventPrimary = evPrimary,
+                        endEvent = endEvent,
+                        endEventPrimary = endEventPrimary
+                    ).apply {
+                        transnumStart = index
+                        type = if (tr.type != JMLTransition.TRANS_THROW) {
+                            LadderItem.TYPE_HOLD
+                        } else if (ev.juggler != endEvent.juggler) {
+                            LadderItem.TYPE_PASS
+                        } else if (ev.hand == endEvent.hand) {
+                            LadderItem.TYPE_SELF
                         } else {
-                            item.type = if (item.startEvent.hand == item.endEvent.hand)
-                                LadderItem.TYPE_SELF
-                            else
-                                LadderItem.TYPE_CROSS
+                            LadderItem.TYPE_CROSS
                         }
+                        pathNum = tr.path
+                        color = Color.black
+                    })
 
-                        item.pathNum = opl.pathNum
-                        item.color = Color.black
-                        add(item)
+                    // add ladder path items that end on event `ev`, unless the
+                    // source event is in loopEvents (in which case we've already
+                    // added it)
+
+                    val (startEvent, startEventPrimary) = pattern.prevForPathFromEvent(ev, tr.path)
+                    if (startEvent.t >= pattern.loopStartTime) {
+                        continue
                     }
-                }
+                    val startTransIndex = startEvent.transitions.indexOfFirst { it.path == tr.path }
+                    val startTrans = startEvent.transitions[startTransIndex]
 
-                ev = ev.next
+                    add(LadderPathItem(
+                        startEvent = startEvent,
+                        startEventPrimary = startEventPrimary,
+                        endEvent = ev,
+                        endEventPrimary = evPrimary
+                    ).apply {
+                        transnumStart = startTransIndex
+                        type = if (startTrans.type != JMLTransition.TRANS_THROW) {
+                            LadderItem.TYPE_HOLD
+                        } else if (startEvent.juggler != ev.juggler) {
+                            LadderItem.TYPE_PASS
+                        } else if (startEvent.hand == ev.hand) {
+                            LadderItem.TYPE_SELF
+                        } else {
+                            LadderItem.TYPE_CROSS
+                        }
+                        pathNum = tr.path
+                        color = Color.black
+                    })
+                }
             }
         }
 
@@ -340,7 +361,7 @@ open class LadderDiagram(p: JMLPattern) :
 
         // set locations of events and transitions
         for (item in ladderEventItems) {
-            val ev = item.transEvent
+            val ev = item.event
 
             var eventX: Int =
                 ((if (ev.hand == HandLink.LEFT_HAND) leftX else rightX)
@@ -510,7 +531,7 @@ open class LadderDiagram(p: JMLPattern) :
                     ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP / 4
                 )
             }
-            if (hasSwitchdelaySymmetry) {
+            if (hasSwitchDelaySymmetry) {
                 g.drawLine(0, ladderHeight / 2, ladderWidth, ladderHeight / 2)
             }
 
@@ -624,7 +645,7 @@ open class LadderDiagram(p: JMLPattern) :
                         gr.color = COLOR_BACKGROUND
                     } else {
                         // color ball representation with the prop's color
-                        val tr = item.transEvent.transitions[item.transNum]
+                        val tr = item.event.transitions[item.transNum]
                         val propnum = animpropnum[tr.path - 1]
                         gr.color = pattern.getProp(propnum).getEditorColor().toAwtColor()
                     }
@@ -713,7 +734,8 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     class LadderEventItem(
-        var transEvent: JMLEvent
+        val event: JMLEvent,
+        val eventPrimary: JMLEvent
     ) : LadderItem() {
         // screen bounding box of the event circle
         var xLow: Int = 0
@@ -726,12 +748,14 @@ open class LadderDiagram(p: JMLPattern) :
         var transNum: Int = 0
 
         val hashCode: Int
-            get() = transEvent.hashCode() * 17 + type * 23 + transNum * 27
+            get() = event.hashCode() * 17 + type * 23 + transNum * 27
     }
 
     class LadderPathItem(
-        var startEvent: JMLEvent,
-        var endEvent: JMLEvent
+        val startEvent: JMLEvent,
+        val startEventPrimary: JMLEvent,
+        val endEvent: JMLEvent,
+        val endEventPrimary: JMLEvent
     ) : LadderItem() {
         // screen coordinates/dimensions of the path
         var xStart: Int = 0
@@ -748,7 +772,7 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     class LadderPositionItem(
-        var position: JMLPosition
+        val position: JMLPosition
     ) : LadderItem() {
         // screen bounding box of the position square
         var xLow: Int = 0
