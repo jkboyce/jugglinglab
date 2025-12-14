@@ -46,6 +46,10 @@ data class JMLPattern(
         symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
     }
 
+    val loopEvents: List<EventImage> by lazy {
+        eventSequence().takeWhile { it.event.t < loopEndTime }.toList()
+    }
+
     val numberOfProps: Int = props.size
 
     fun getProp(propnum: Int): Prop {
