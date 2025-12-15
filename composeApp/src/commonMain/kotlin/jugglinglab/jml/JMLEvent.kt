@@ -115,7 +115,6 @@ data class JMLEvent(
         delay = 0
         delayunits = 0
         pathPermFromPrimary = null
-        calcpos = false
         globalCoordinate = null
         transitions.forEach { it.clearLayoutData() }
     }
@@ -134,9 +133,6 @@ data class JMLEvent(
         get() = primaryEvent ?: this
     val isPrimary: Boolean
         get() = (primaryEvent == null)
-
-    // used by MHNPattern during layout
-    var calcpos: Boolean = false
 
     // coordinates in global frame, used during animation
     var globalCoordinate: Coordinate? = null
@@ -162,12 +158,11 @@ data class JMLEvent(
         return (primary1 === primary2)
     }
 
-    // Temporary fix, eventually remove
+    // temporary fix for EventImages
 
     fun copyLayoutDataFrom(ev: JMLEvent, newDelay: Int, newDelayunits: Int) {
         delay = newDelay
         delayunits = newDelayunits
-        calcpos = ev.calcpos
         primaryEvent = if (ev.isPrimary) ev else ev.primaryEvent
     }
 
