@@ -52,8 +52,11 @@ open class LadderDiagram(p: JMLPattern) :
     protected var animPaused: Boolean = false
 
     var pattern: JMLPattern = p
-        private set(pat) {
+        protected set(pat) {
+            removeMouseListener(this)
+            removeMouseMotionListener(this)
             field = pat
+
             val jugglers = pat.numberOfJugglers
             if (jugglers > MAX_JUGGLERS) {
                 // allocate enough space for a "too many jugglers" message; see paintLadder()
@@ -61,8 +64,6 @@ open class LadderDiagram(p: JMLPattern) :
                 val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
                 preferredSize = Dimension(mwidth, 1)
                 minimumSize = Dimension(mwidth, 1)
-                removeMouseListener(this)
-                removeMouseMotionListener(this)
             } else {
                 var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
                 val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
@@ -73,17 +74,14 @@ open class LadderDiagram(p: JMLPattern) :
                 preferredSize = Dimension(prefWidth, 1)
                 minimumSize = Dimension(minWidth, 1)
 
-                pat.layout  // ensures we have event list
                 createView()
-                addMouseListener(this)
-                addMouseMotionListener(this)
             }
         }
 
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        pattern = p
+        setJMLPattern(p)
     }
 
     //--------------------------------------------------------------------------
@@ -116,7 +114,6 @@ open class LadderDiagram(p: JMLPattern) :
         if (ap != null && (ap!!.writingGIF || !ap!!.engineAnimating)) {
             return
         }
-
         guiState = STATE_INACTIVE
         ap?.isPaused = animPaused
         repaint()
@@ -454,6 +451,8 @@ open class LadderDiagram(p: JMLPattern) :
         updateTrackerPosition()
     }
 
+    // Paint the latter on the screen.
+    //
     // Return true if ladder was drawn successfully, false otherwise.
     protected fun paintLadder(gr: Graphics): Boolean {
         if (pattern.numberOfJugglers > MAX_JUGGLERS) {
@@ -478,6 +477,8 @@ open class LadderDiagram(p: JMLPattern) :
         if (dim.width != ladderWidth || dim.height != ladderHeight) {
             updateView()
         }
+
+        // TODO: remove image caching?
 
         val rebuildLadderImage = (!imageValid && --framesUntilImageDraw <= 0)
 
@@ -682,8 +683,14 @@ open class LadderDiagram(p: JMLPattern) :
         ap = animPanel
     }
 
-    override fun setJMLPattern(pat: JMLPattern) {
+    override fun setJMLPattern(pat: JMLPattern, activeHashCode: Int) {
         pattern = pat
+        addMouseListener(this)
+        addMouseMotionListener(this)
+    }
+
+    override fun setActiveItem(activeHashCode: Int) {
+        // not used in LadderDiagram
     }
 
     override fun setTime(t: Double) {
@@ -722,14 +729,16 @@ open class LadderDiagram(p: JMLPattern) :
     open class LadderItem {
         var type: Int = 0
 
+        open val hashCode: Int = 0
+
         companion object {
-            const val TYPE_EVENT: Int = 1
-            const val TYPE_TRANSITION: Int = 2
-            const val TYPE_SELF: Int = 3
-            const val TYPE_CROSS: Int = 4
-            const val TYPE_HOLD: Int = 5
-            const val TYPE_PASS: Int = 6
-            const val TYPE_POSITION: Int = 7
+            const val TYPE_EVENT: Int = 0
+            const val TYPE_TRANSITION: Int = 1
+            const val TYPE_SELF: Int = 2
+            const val TYPE_CROSS: Int = 3
+            const val TYPE_HOLD: Int = 4
+            const val TYPE_PASS: Int = 5
+            const val TYPE_POSITION: Int = 6
         }
     }
 
@@ -747,8 +756,10 @@ open class LadderDiagram(p: JMLPattern) :
         var transEventItem: LadderEventItem? = null
         var transNum: Int = 0
 
-        val hashCode: Int
-            get() = event.hashCode() * 17 + type * 23 + transNum * 27
+        // note the hashCode equals the hashCode of the event, for an event-type
+        // LadderItem
+        override val hashCode: Int
+            get() = event.hashCode() + type * 23 + transNum * 27
     }
 
     class LadderPathItem(
@@ -780,7 +791,7 @@ open class LadderDiagram(p: JMLPattern) :
         var yLow: Int = 0
         var yHigh: Int = 0
 
-        val hashCode: Int
+        override val hashCode: Int
             get() = position.hashCode()
     }
 

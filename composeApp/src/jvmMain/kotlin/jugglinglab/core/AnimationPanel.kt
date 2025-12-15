@@ -503,8 +503,12 @@ open class AnimationPanel : JPanel(), Runnable {
         // AnimationPanel we're attached to
         fun setAnimationPanel(animPanel: AnimationPanel?)
 
-        // JMLPattern being animated
-        fun setJMLPattern(pat: JMLPattern)
+        // JMLPattern being animated, and (optionally if nonzero) an item in
+        // the pattern that is selected/active
+        fun setJMLPattern(pat: JMLPattern, activeHashCode: Int = 0)
+
+        // active event, position, or transition in the pattern
+        fun setActiveItem(activeHashCode: Int)
 
         // simulation time (seconds)
         fun setTime(t: Double)

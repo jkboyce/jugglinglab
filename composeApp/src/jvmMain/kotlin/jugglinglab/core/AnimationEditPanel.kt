@@ -137,11 +137,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         if (j > 0) {
                             try {
-                                activateEvent(pattern!!.getEventImageInLoop(visibleEvents!![j]))
+                                setActiveItem(pattern!!.getEventImageInLoop(visibleEvents!![j]).hashCode())
                                 for (att in attachments) {
-                                    if (att is EditLadderDiagram) {
-                                        att.activateEvent(event!!)
-                                    }
+                                    att.setActiveItem(event!!.hashCode())
                                     att.repaintAttachment()
                                 }
                             } catch (jei: JuggleExceptionInternal) {
@@ -260,14 +258,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             try {
                 for (att in attachments) {
                     if (att is EditLadderDiagram) {
-                        // reactivate the event in ladder diagram, since we've
-                        // called layoutPattern() and events may have changed
-                        event = att.reactivateEvent()
                         att.addToUndoList(pattern!!)
                     }
                 }
                 animator.initAnimator()
-                activateEvent(event)
+                setActiveItem(event.hashCode())
             } catch (jei: JuggleExceptionInternal) {
                 jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
@@ -284,7 +279,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
             }
             animator.initAnimator()
-            activatePosition(position)
+            setActiveItem(position.hashCode())
         }
 
         if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
@@ -599,6 +594,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         return result
     }
 
+    /*
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
         super.restartJuggle(pat, newjc)
@@ -608,7 +604,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (positionActive) {
             createPositionView()
         }
-    }
+    }*/
 
     override var zoomLevel: Double
         get() = super.zoomLevel
@@ -625,19 +621,18 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
 
+
     //--------------------------------------------------------------------------
-    // Helper functions related to event editing
+    // Incoming notifications of changes
     //--------------------------------------------------------------------------
 
-    @Throws(JuggleExceptionInternal::class)
-    fun activateEvent(ev: JMLEvent?) {
-        deactivatePosition()
-        event = ev
-        eventActive = true
-        createEventView()
+    fun setJMLPattern(pat: JMLPattern, activeHashCode: Int) {
+        restartJuggle(pat, null)
+        setActiveItem(activeHashCode)
     }
 
-    fun deactivateEvent() {
+    fun setActiveItem(activeHashCode: Int) {
+        // reset event-related fields
         event = null
         eventActive = false
         draggingY = false
@@ -645,7 +640,36 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
         visibleEvents = null
         handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
+
+        // reset position-related fields
+        position = null
+        positionActive = false
+        draggingAngle = false
+        draggingZ = false
+        draggingXy = false
+
+        for ((ev, _) in pattern!!.loopEvents) {
+            if (ev.hashCode() == activeHashCode) {
+                event = ev
+                eventActive = true
+                createEventView()
+                break
+            }
+        }
+        for (pos in pattern!!.positions) {
+            if (pos.hashCode() == activeHashCode) {
+                position = pos
+                positionActive = true
+                createPositionView()
+                break
+            }
+        }
+        repaint()
     }
+
+    //--------------------------------------------------------------------------
+    // Helper functions related to event editing
+    //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class)
     private fun createEventView() {
@@ -912,22 +936,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     //--------------------------------------------------------------------------
     // Helper functions related to position editing
     //--------------------------------------------------------------------------
-
-    fun activatePosition(pos: JMLPosition?) {
-        deactivateEvent()
-        position = pos
-        positionActive = true
-        startAngle = Math.toRadians(position!!.angle)
-        createPositionView()
-    }
-
-    fun deactivatePosition() {
-        position = null
-        positionActive = false
-        draggingAngle = false
-        draggingZ = false
-        draggingXy = false
-    }
 
     private fun createPositionView() {
         if (!positionActive) return

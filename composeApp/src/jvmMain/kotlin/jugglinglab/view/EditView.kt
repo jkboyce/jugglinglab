@@ -85,8 +85,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
 
         val ap2 = ap
         if (ap2 is AnimationEditPanel) {
-            ap2.deactivateEvent()
-            ap2.deactivatePosition()
+            ap2.setActiveItem(0)
         }
 
         ladderPanel.removeAll()
