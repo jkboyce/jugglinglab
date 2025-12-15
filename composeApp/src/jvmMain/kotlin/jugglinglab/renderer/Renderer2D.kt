@@ -146,7 +146,7 @@ class Renderer2D : Renderer() {
         setZoomLevel(getZoomLevel()) // calculate camera matrix etc.
 
         if (Constants.DEBUG_LAYOUT) {
-            println("Data from Renderer2D:")
+            println("Data from Renderer2D.initDisplay():")
             println("overallmax = $overallmax")
             println("overallmin = $overallmin")
             println("adjusted_max = $adjustedMax")

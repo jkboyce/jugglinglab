@@ -1097,8 +1097,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
 
-        for (i in pathlinks!![path - 1].indices) {
-            val pl = pathlinks!![path - 1][i]
+        for (pl in pathlinks!![path - 1]) {
             if (pl.isInHand) {
                 val coord2 = getHandMax(pl.holdingJuggler, pl.holdingHand)
                 result = max(result, coord2)
@@ -1115,8 +1114,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
 
-        for (i in pathlinks!![path - 1].indices) {
-            val pl = pathlinks!![path - 1][i]
+        for ((i, pl) in pathlinks!![path - 1].withIndex()) {
             if (pl.isInHand) {
                 if (Constants.DEBUG_LAYOUT) {
                     println(
@@ -1141,8 +1139,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t2 = pat.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (i in handlinks!![juggler - 1][handnum].indices) {
-            val hl = handlinks!![juggler - 1][handnum][i]
+        for ((i, hl) in handlinks!![juggler - 1][handnum].withIndex()) {
             val hp = hl.handCurve
             if (hp != null) {
                 result = max(result, hp.getMax(t1, t2))
@@ -1157,8 +1154,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t2 = pat.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (i in handlinks!![juggler - 1][handnum].indices) {
-            val hl = handlinks!![juggler - 1][handnum][i]
+        for (hl in handlinks!![juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
                 result = min(result, hp.getMin(t1, t2))

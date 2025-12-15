@@ -106,7 +106,7 @@ class Animator {
                 ca[1] = Math.toRadians(70.0)
             }
         }
-        this.cameraAngle = ca
+        cameraAngle = ca
     }
 
     var dimension: Dimension
@@ -276,7 +276,7 @@ class Animator {
             patternmin = min(patternmin, pattern.layout.getPathMin(i))
 
             if (Constants.DEBUG_LAYOUT) {
-                println("Data from Animator:")
+                println("Data from Animator.findMaxMin():")
                 println("Path max $i = " + pattern.layout.getPathMax(i))
                 println("Path min $i = " + pattern.layout.getPathMin(i))
             }
@@ -303,6 +303,14 @@ class Animator {
             handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
             handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
             handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+
+            if (Constants.DEBUG_LAYOUT) {
+                println("Data from Animator.findMaxMin():")
+                println("Hand max $i left = " + pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
+                println("Hand min $i left = " + pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
+                println("Hand max $i right = " + pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
+                println("Hand min $i right = " + pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+            }
         }
 
         // The renderer's hand window is in local coordinates. We don't know
@@ -335,7 +343,7 @@ class Animator {
         overallMin = min(patternmin, min(handmin, jwmin))
 
         if (Constants.DEBUG_LAYOUT) {
-            println("Data from Animator:")
+            println("Data from Animator.findMaxMin():")
             println("Hand max = $handmax")
             println("Hand min = $handmin")
             println("Prop max = $propmax")
@@ -354,7 +362,6 @@ class Animator {
 
     private fun syncRenderersToSize() {
         val d = Dimension(dim)
-
         if (jc.stereo) {
             d.width /= 2
             ren1!!.initDisplay(d, jc.border, overallMax!!, overallMin!!)
