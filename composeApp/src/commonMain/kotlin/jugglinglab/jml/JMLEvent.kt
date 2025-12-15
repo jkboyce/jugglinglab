@@ -109,6 +109,18 @@ data class JMLEvent(
     // Items below here are for layout and animation - target removal
     //--------------------------------------------------------------------------
 
+    fun clearLayoutData() {
+        previous = null
+        next = null
+        primaryEvent = null
+        delay = 0
+        delayunits = 0
+        pathPermFromPrimary = null
+        calcpos = false
+        globalCoordinate = null
+        transitions.forEach { it.clearLayoutData() }
+    }
+
     // for linking into event chains
     var previous: JMLEvent? = null
     var next: JMLEvent? = null // for doubly-linked event list

@@ -50,7 +50,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     init {
         pat.events.forEach {
-            it.primaryEvent = null  // add as primary event
+            it.clearLayoutData()
             addEvent(it)
         }
 
@@ -66,7 +66,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             layoutHandPaths()
 
             if (Constants.DEBUG_LAYOUT) {
-                println("Data from JMLPattern.layoutPattern():")
+                println("Data from LaidoutPattern.init:")
                 for (i in 0..<pat.numberOfPaths) {
                     println(pathlinks!![i].size.toString() + " pathlinks for path " + (i + 1) + ":")
                     for (jtemp in pathlinks!![i].indices) {

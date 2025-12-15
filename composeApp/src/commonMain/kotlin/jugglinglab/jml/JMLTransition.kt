@@ -20,9 +20,21 @@ data class JMLTransition(
         else -> false
     }
 
-    // TODO: remove these later; part of layout
+    //--------------------------------------------------------------------------
+    // Items below here are for layout and animation - target removal
+    //--------------------------------------------------------------------------
+
+    fun clearLayoutData() {
+        incomingPathLink = null
+        outgoingPathLink = null
+    }
+
     var incomingPathLink: PathLink? = null
     var outgoingPathLink: PathLink? = null
+
+    //--------------------------------------------------------------------------
+    // Output
+    //--------------------------------------------------------------------------
 
     fun writeJML(wr: Appendable) {
         when (type) {
@@ -44,7 +56,6 @@ data class JMLTransition(
     }
 
     companion object {
-        const val TRANS_NONE: Int = 0
         const val TRANS_THROW: Int = 1
         const val TRANS_CATCH: Int = 2
         const val TRANS_SOFTCATCH: Int = 3
