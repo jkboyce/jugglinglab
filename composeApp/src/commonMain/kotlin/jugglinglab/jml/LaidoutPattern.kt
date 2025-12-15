@@ -1139,7 +1139,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t2 = pat.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for ((i, hl) in handlinks!![juggler - 1][handnum].withIndex()) {
+        for (hl in handlinks!![juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
                 result = max(result, hp.getMax(t1, t2))
