@@ -23,9 +23,8 @@ data class JMLEvent(
     val hand: Int = 0,
     val transitions: List<JMLTransition> = emptyList()
 ): Comparable<JMLEvent> {
-    val localCoordinate: Coordinate by lazy {
-        Coordinate(x, y, z)
-    }
+    val localCoordinate: Coordinate
+        get() = Coordinate(x, y, z)
 
     fun getPathTransition(path: Int, transType: Int): JMLTransition? {
         return transitions.firstOrNull {
