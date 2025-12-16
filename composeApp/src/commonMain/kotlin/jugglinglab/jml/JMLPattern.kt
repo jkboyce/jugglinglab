@@ -819,7 +819,7 @@ data class JMLPattern(
         // Construct from a string of XML data.
         //
         // Treat any errors as internal errors since this is not how user-inputted
-        // patterns are created.
+        // patterns are created. TODO: is this last statement correct now?
 
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun fromJMLString(
@@ -833,16 +833,6 @@ data class JMLPattern(
             } catch (e: Exception) {
                 throw JuggleExceptionInternal(e.message)
             }
-        }
-
-        // TODO: Target removal
-
-        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun fromJMLPattern(
-            pat: JMLPattern,
-            version: String = JMLDefs.CURRENT_JML_VERSION
-        ): JMLPattern {
-            return fromJMLString(pat.toString(), version)
         }
 
         // Create a JMLPattern from another notation. Here `config` can be regular

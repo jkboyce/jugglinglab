@@ -61,7 +61,7 @@ abstract class View : JPanel() {
     fun addToUndoList(p: JMLPattern) {
         try {
             ++undoIndex
-            undo!!.add(undoIndex, JMLPattern.fromJMLPattern(p))  // add a copy
+            undo!!.add(undoIndex, p)
             while (undoIndex + 1 < undo!!.size) {
                 undo!!.removeAt(undoIndex + 1)
             }
@@ -86,7 +86,7 @@ abstract class View : JPanel() {
             return
         try {
             --undoIndex
-            restartView(JMLPattern.fromJMLPattern(undo!![undoIndex]), null)
+            restartView(undo!![undoIndex], null)
             if (undoIndex == 0 || undoIndex == undo!!.size - 2) {
                 patternWindow?.updateUndoMenu()
             }
@@ -104,7 +104,7 @@ abstract class View : JPanel() {
             return
         try {
             ++undoIndex
-            restartView(JMLPattern.fromJMLPattern(undo!![undoIndex]), null)
+            restartView(undo!![undoIndex], null)
             if (undoIndex == 1 || undoIndex == undo!!.size - 1) {
                 patternWindow?.updateUndoMenu()
             }

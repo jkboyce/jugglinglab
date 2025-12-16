@@ -90,7 +90,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private constructor(pw: PatternWindow) : this(
         pw.getTitle(),
-        JMLPattern.fromJMLPattern(pw.view.pattern!!),
+        pw.view.pattern!!,
         AnimationPrefs(pw.view.animationPrefs)
     )
 
@@ -419,8 +419,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                         else -> "{$colorName}"
                     }
                     try {
-                        val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                            .withPropColors(colorString)
+                        val newpat = view.pattern!!.withPropColors(colorString)
                         view.restartView(newpat, null)
                         view.addToUndoList(newpat)
                     } catch (_: JuggleExceptionUser) {
@@ -570,8 +569,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
-                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                        .withInvertedXAxis(flipXCoordinate = false)
+                    val newpat = view.pattern!!.withInvertedXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -581,8 +579,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTX -> {
                 try {
-                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                        .withInvertedXAxis()
+                    val newpat = view.pattern!!.withInvertedXAxis()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -592,8 +589,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTTIME -> {
                 try {
-                    val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                        .withInvertedTime()
+                    val newpat = view.pattern!!.withInvertedTime()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -703,8 +699,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 return@addActionListener
             }
             if (scale > 0.0) {
-                val newpat = JMLPattern.fromJMLPattern(view.pattern!!)
-                        .withScaledTime(scale)
+                val newpat = view.pattern!!.withScaledTime(scale)
                 view.restartView(newpat, null)
                 view.addToUndoList(newpat)
             }
