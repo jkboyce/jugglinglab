@@ -993,7 +993,7 @@ class EditLadderDiagram(
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             try {
                 val ppt = if (type.equals(tr.throwType, ignoreCase = true)) {
-                    tr.outgoingPathLink!!.path
+                    pattern.layout.pathLinks[tr.path - 1].find { it.startEvent == evPrimary }!!.path
                 } else {
                     newPath(type)
                 }
