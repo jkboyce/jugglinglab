@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+
+<line display="Ummm so here are some (stupid) juggling lab patterns"/>
+
+<line display="bouncing balls for fun :D" notation="siteswap">
+pattern=bBHFbBHFbBHFbBHFbBHFbBHF00000;colors=mixed;title=bouncing balls for fun :D
+</line>
+
+<line display="wanna see a magic trick?" notation="siteswap">
+pattern=([2x2],[4x2])([2x2],[4x2])([2x2],[4x2]);colors=mixed;title=wanna see a magic trick?
+</line>
+
+<line display="6 people but 3 people who dont know how to juggle" notation="siteswap">
+pattern=&lt;7|1|7|1|7|1&gt;&lt;7p|1p|7p|1p|7p|1p&gt;;colors=mixed;title=6 people but 3 people who dont know how to juggle
+</line>
+
+<line display="I have 0 idea whats going on" notation="siteswap">
+pattern=(&lt;1|7|1|7|1|7&gt;&lt;1p|7p|1p|7p|1p|7p&gt;^2)&lt;6p2/07070|6p4/70707|6p6/07070|7p1/70707|7p3/07070|7p5/70707&gt;(&lt;7|1|7|1|7|1&gt;&lt;7p|1p|7p|1p|7p|1p&gt;^2)&lt;670707|6p3/07070|6p5/70707|7p2/07070|7p4/70707|707070&gt;;colors=mixed;title=I have 0 idea whats going on
+</line>
+
+<line display="&quot;STOP GIVING ME THE BALLS&quot; -juggler 2" notation="siteswap">
+pattern=&lt;b|1&gt;&lt;bp|1p&gt;;colors=mixed;title=&quot;STOP GIVING ME THE BALLS&quot; -juggler 2
+</line>
+
+<line display="more bouncing" notation="siteswap">
+pattern=&lt;3pBBHF|3pBBHF&gt;;colors=mixed;title=more bouncing
+</line>
+
+</patternlist>
+</jml>
