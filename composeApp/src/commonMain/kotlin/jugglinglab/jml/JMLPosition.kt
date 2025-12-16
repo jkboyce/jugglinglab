@@ -21,9 +21,8 @@ data class JMLPosition(
     val angle: Double = 0.0,
     val juggler: Int = 1,
 ) : Comparable<JMLPosition> {
-    val coordinate: Coordinate by lazy {
-        Coordinate(x, y, z)
-    }
+    val coordinate: Coordinate
+        get() = Coordinate(x, y, z)
 
     fun writeJML(wr: Appendable) {
         wr.append("<position x=\"${jlToStringRounded(x, 4)}\"")

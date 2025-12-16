@@ -479,7 +479,7 @@ data class JMLPattern(
             if (sym.type == JMLSymmetry.TYPE_SWITCH) {
                 sym
             } else {
-                sym.copy(pathPerm = sym.pathPerm!!.inverse)
+                sym.copy(pathPerm = sym.pathPerm.inverse)
             }
         }
 
