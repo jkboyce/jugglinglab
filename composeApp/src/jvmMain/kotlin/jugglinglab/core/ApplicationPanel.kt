@@ -154,7 +154,6 @@ open class ApplicationPanel(
                 val notation = p.notationName
                 val config: String = p.toString()
                 val pat = fromBasePattern(notation, config)
-                pat.layout
 
                 if (!bringToFront(pat.hashCode())) {
                     if (animtarget != null) {
