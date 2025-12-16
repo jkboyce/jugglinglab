@@ -13,22 +13,19 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.getStringResource
 
-/**
- * An immutable data class representing a symmetry definition in a JML pattern.
- */
 data class JMLSymmetry(
     val type: Int,
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
-    val jugglerPerm: Permutation?,
-    val pathPerm: Permutation?,
+    val jugglerPerm: Permutation,
+    val pathPerm: Permutation,
     val delay: Double = -1.0
 ) {
     fun writeJML(wr: Appendable) {
         val output = when (type) {
-            TYPE_DELAY -> "<symmetry type=\"delay\" pperm=\"${pathPerm!!.toString(true)}\" delay=\"${jlToStringRounded(delay, 4)}\"/>\n"
-            TYPE_SWITCH -> "<symmetry type=\"switch\" jperm=\"${jugglerPerm!!.toString(true)}\" pperm=\"${pathPerm!!.toString(true)}\"/>\n"
-            TYPE_SWITCHDELAY -> "<symmetry type=\"switchdelay\" jperm=\"${jugglerPerm!!.toString(true)}\" pperm=\"${pathPerm!!.toString(true)}\"/>\n"
+            TYPE_DELAY -> "<symmetry type=\"delay\" pperm=\"$pathPerm\" delay=\"${jlToStringRounded(delay, 4)}\"/>\n"
+            TYPE_SWITCH -> "<symmetry type=\"switch\" jperm=\"$jugglerPerm\" pperm=\"$pathPerm\"/>\n"
+            TYPE_SWITCHDELAY -> "<symmetry type=\"switchdelay\" jperm=\"$jugglerPerm\" pperm=\"$pathPerm\"/>\n"
             else -> ""
         }
         wr.append(output)
@@ -39,13 +36,13 @@ data class JMLSymmetry(
         const val TYPE_SWITCH: Int = 2
         const val TYPE_SWITCHDELAY: Int = 3
 
-        /**
-         * Factory method to create a JMLSymmetry instance by parsing a JMLNode.
-         */
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(current: JMLNode, numberOfJugglers: Int, numberOfPaths: Int): JMLSymmetry {
+        fun fromJMLNode(
+            current: JMLNode,
+            numberOfJugglers: Int,
+            numberOfPaths: Int
+        ): JMLSymmetry {
             val at = current.attributes
-
             val symTypeString = at.getValueOf("type")
                 ?: throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_notype))
 
@@ -77,8 +74,11 @@ data class JMLSymmetry(
             )
         }
 
-        /** Helper to create a Permutation from a nullable string. */
-        private fun createPermutation(size: Int, permString: String?, reverses: Boolean): Permutation {
+        private fun createPermutation(
+            size: Int,
+            permString: String?,
+            reverses: Boolean
+        ): Permutation {
             return if (permString == null) {
                 Permutation(size, reverses)
             } else {
