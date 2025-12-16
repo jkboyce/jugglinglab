@@ -244,7 +244,12 @@ class EditLadderDiagram(
                             try {
                                 aep2.setActiveItem(activeEventItem!!.event.hashCode())
                             } catch (jei: JuggleExceptionInternal) {
-                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                                jlHandleFatalException(
+                                    JuggleExceptionInternalWithPattern(
+                                        jei,
+                                        pattern
+                                    )
+                                )
                             }
                         }
                         if (activePositionItem != null) {
@@ -271,7 +276,10 @@ class EditLadderDiagram(
                 }
 
                 STATE_POPUP -> jlHandleFatalException(
-                    JuggleExceptionInternalWithPattern("tried to enter POPUP state while already in it", pattern)
+                    JuggleExceptionInternalWithPattern(
+                        "tried to enter POPUP state while already in it",
+                        pattern
+                    )
                 )
             }
         } else {
@@ -369,22 +377,22 @@ class EditLadderDiagram(
     private fun findEventLimits(item: LadderEventItem) {
         var tMin = pattern.loopStartTime
         var tMax = pattern.loopEndTime
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         val evPaths = item.event.transitions.filter { it.isThrowOrCatch }.map { it.path }.toList()
-
         ladderEventItems.forEach {
             if (it.event.t < item.event.t - MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths}) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
                     tMin = max(tMin, it.event.t + MIN_THROW_SEP_TIME)
                 }
             } else if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths}) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
                     tMax = min(tMax, it.event.t - MIN_THROW_SEP_TIME)
                 }
             }
         }
+
+        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
         deltaYMin = ((tMin - item.event.t) / scale).toInt()
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
@@ -624,6 +632,7 @@ class EditLadderDiagram(
                 override fun popupMenuCanceled(e: PopupMenuEvent?) {
                     finishPopup()
                 }
+
                 override fun popupMenuWillBecomeInvisible(e: PopupMenuEvent?) {}
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {}
             })
@@ -685,7 +694,8 @@ class EditLadderDiagram(
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)
         }
-        val newLocalCoordinate = pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
+        val newLocalCoordinate =
+            pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
         val newEvent = JMLEvent(
             x = newLocalCoordinate.x,
             y = newLocalCoordinate.y,
@@ -771,7 +781,12 @@ class EditLadderDiagram(
 
     private fun defineProp() {
         if (popupItem == null) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern("defineProp() null popupitem", pattern))
+            jlHandleFatalException(
+                JuggleExceptionInternalWithPattern(
+                    "defineProp() null popupitem",
+                    pattern
+                )
+            )
             return
         }
 
@@ -951,7 +966,12 @@ class EditLadderDiagram(
 
     private fun defineThrow() {
         if (popupItem !is LadderEventItem) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pattern))
+            jlHandleFatalException(
+                JuggleExceptionInternalWithPattern(
+                    "defineThrow() class format",
+                    pattern
+                )
+            )
             return
         }
         val evPrimary = (popupItem as LadderEventItem).eventPrimary
@@ -1064,12 +1084,20 @@ class EditLadderDiagram(
 
     private fun changeCatchStyleTo(type: Int) {
         if (popupItem == null) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 10", pattern))
+            jlHandleFatalException(
+                JuggleExceptionInternalWithPattern(
+                    "No popupitem in case 10",
+                    pattern
+                )
+            )
             return
         }
         if (popupItem !is LadderEventItem) {
             jlHandleFatalException(
-                JuggleExceptionInternalWithPattern("LadderDiagram change to catch class format", pattern)
+                JuggleExceptionInternalWithPattern(
+                    "LadderDiagram change to catch class format",
+                    pattern
+                )
             )
             return
         }
@@ -1085,18 +1113,26 @@ class EditLadderDiagram(
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         activeItemHashCode = (popupItem as LadderEventItem).event.hashCode() + 23 +
-                (popupItem as LadderEventItem).transNum * 27
+            (popupItem as LadderEventItem).transNum * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
 
     private fun makeLastInEvent() {
         if (popupItem == null) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern("No popupitem in case 8", pattern))
+            jlHandleFatalException(
+                JuggleExceptionInternalWithPattern(
+                    "No popupitem in case 8",
+                    pattern
+                )
+            )
             return
         }
         if (popupItem !is LadderEventItem) {
             jlHandleFatalException(
-                JuggleExceptionInternalWithPattern("LadderDiagram make last transition class format", pattern)
+                JuggleExceptionInternalWithPattern(
+                    "LadderDiagram make last transition class format",
+                    pattern
+                )
             )
             return
         }
