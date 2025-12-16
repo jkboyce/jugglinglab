@@ -397,77 +397,67 @@ class EditLadderDiagram(
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
 
-    // Return value of `delta_y` during mouse drag of an event, clipping it to
+    // Return value of `deltaY` during mouse drag of an event, clipping it to
     // enforce proximity limits between various event types, as well as hard
-    // limits `delta_y_min` and `delta_y_max`.
+    // limits `deltaYMin` and `deltaYMax`.
 
     private fun getClippedEventTime(me: MouseEvent, event: JMLEvent): Int {
         val dy = min(max(me.getY() - startY, deltaYMin), deltaYMax)
 
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        val shift = dy * scale
-        val newt = startT + shift // unclipped new event time
+        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
+        val newT = startT + dy * scale  // unclipped new event time
 
-        // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
-        // proximity to other events, where `newt` is contained within the window.
-        var tExclMin = newt
-        var tExclMax = newt
+        // Calculate a window (tExclMin, tExclMax) of excluded times based on
+        // proximity to other events, where `newT` is contained within the window.
+        var tExclMin = newT
+        var tExclMax = newT
         var changed: Boolean
 
         do {
             changed = false
-            var ev = pattern.layout.eventList
-            var sep: Double
 
-            while (ev != null) {
-                if (ev != event && ev.juggler == event.juggler && ev.hand == event.hand) {
-                    sep = if (ev.hasThrow && event.hasThrowOrCatch
-                        || ev.hasThrowOrCatch && event.hasThrow
-                    ) {
-                        MIN_THROW_SEP_TIME
-                    } else {
-                        MIN_EVENT_SEP_TIME
-                    }
-
-                    val evExclMin = ev.t - sep
-                    val evExclMax = ev.t + sep
-
-                    if (tExclMax in evExclMin..<evExclMax) {
-                        tExclMax = evExclMax
-                        changed = true
-                    }
-
-                    if (evExclMin < tExclMin && evExclMax >= tExclMin) {
-                        tExclMin = evExclMin
-                        changed = true
-                    }
+            ladderEventItems.filter {
+                it.event != event && it.event.juggler == event.juggler && it.event.hand == event.hand
+            }.forEach {
+                val sep = if (it.event.hasThrow && event.hasThrowOrCatch
+                    || it.event.hasThrowOrCatch && event.hasThrow
+                ) {
+                    MIN_THROW_SEP_TIME
+                } else {
+                    MIN_EVENT_SEP_TIME
                 }
-                ev = ev.next
+                val evExclMin = it.event.t - sep
+                val evExclMax = it.event.t + sep
+
+                if (tExclMax in evExclMin..<evExclMax) {
+                    tExclMax = evExclMax
+                    changed = true
+                }
+                if (evExclMin < tExclMin && evExclMax >= tExclMin) {
+                    tExclMin = evExclMin
+                    changed = true
+                }
             }
         } while (changed)
 
-        // System.out.println("t_excl_min = " + t_excl_min + ", t_excl_max = " + t_excl_max);
-
-        // Clip the event time `newt` to whichever end of the exclusion window
+        // Clip the event time `newT` to whichever end of the exclusion window
         // is closest. First check if each end is feasible.
         val exclDyMin = floor((tExclMin - startT) / scale).toInt()
         val exclDyMax = ceil((tExclMax - startT) / scale).toInt()
         val feasibleMin = (exclDyMin in deltaYMin..deltaYMax)
         val feasibleMax = (exclDyMax in deltaYMin..deltaYMax)
 
-        var resultDy = dy
-
-        if (feasibleMin && feasibleMax) {
+        return if (feasibleMin && feasibleMax) {
             val tMidpoint = 0.5 * (tExclMin + tExclMax)
-            resultDy = (if (newt <= tMidpoint) exclDyMin else exclDyMax)
+            if (newT <= tMidpoint) exclDyMin else exclDyMax
         } else if (feasibleMin) {
-            resultDy = exclDyMin
+            exclDyMin
         } else if (feasibleMax) {
-            resultDy = exclDyMax
+            exclDyMax
+        } else {
+            dy
         }
-
-        return resultDy
     }
 
     private fun moveEventInPattern(item: LadderEventItem) {
