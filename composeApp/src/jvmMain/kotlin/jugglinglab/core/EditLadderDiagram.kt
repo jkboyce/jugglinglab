@@ -18,9 +18,9 @@ import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
-import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.jml.JMLEvent.Companion.addTransition
 import jugglinglab.jml.JMLEvent.Companion.removeTransition
+import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -28,7 +28,7 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.MalformedURLException
-import java.util.*
+import java.util.Locale
 import javax.swing.*
 import javax.swing.border.BevelBorder
 import javax.swing.event.CaretEvent
@@ -372,6 +372,7 @@ class EditLadderDiagram(
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
+        /*
         for (tr in item.event.transitions) {
             when (tr.type) {
                 JMLTransition.TRANS_THROW -> {
@@ -429,7 +430,7 @@ class EditLadderDiagram(
                     tMax = min(tMax, ev.t - MIN_THROW_SEP_TIME)
                 }
             }
-        }
+        }*/
         deltaYMin = ((tMin - item.event.t) / scale).toInt()
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
@@ -508,7 +509,6 @@ class EditLadderDiagram(
     }
 
     private fun moveEventInPattern(item: LadderEventItem) {
-        var ev: JMLEvent? = item.event
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
         var shift = deltaY * scale
@@ -522,6 +522,7 @@ class EditLadderDiagram(
             newT = pattern.loopEndTime - 0.0001
         }
 
+        /*
         val throwpath = BooleanArray(pattern.numberOfPaths)
         val catchpath = BooleanArray(pattern.numberOfPaths)
         val holdpathorig = BooleanArray(pattern.numberOfPaths)
@@ -626,25 +627,20 @@ class EditLadderDiagram(
                 ev = ev.next
             }
         }
+*/
+        var newEvent = item.event.copy(t = newT)
+        val pp = item.event.pathPermFromPrimary!!.inverse
 
-        ev = item.event
-        val pp = ev.pathPermFromPrimary!!.inverse
-        var newPrimaryT = startT + shift
-
-        if (ev != item.eventPrimary) {
-            newPrimaryT += item.eventPrimary.t - ev.t
-            ev = item.eventPrimary
-        }
-
+/*
         for (j in 0..<pattern.numberOfPaths) {
             if (holdpathnew[j] != holdpathorig[j]) {
                 if (holdpathnew[j]) {
                     val tr =
                         JMLTransition(JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null)
-                    ev.addTransition(tr)
+                    newEvent = newEvent.addTransition(tr)
                 } else {
                     val tr =
-                        ev.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING)
+                        newEvent.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING)
                     if (tr == null) {
                         jlHandleFatalException(
                             JuggleExceptionInternalWithPattern("Null transition in removing hold", pattern)
@@ -652,17 +648,24 @@ class EditLadderDiagram(
                         parentFrame?.dispose()
                         return
                     }
-                    ev.removeTransition(tr)
+                    newEvent = newEvent.removeTransition(tr)
                 }
             }
         }
-
+*/
         val record = PatternBuilder.fromJMLPattern(pattern)
-        val index = record.events.indexOf(ev)
-        val newEvent = ev.copy(t = newPrimaryT)
-        record.events[index] = newEvent
-        activeItemHashCode = newEvent.hashCode()
+        val index = record.events.indexOf(item.eventPrimary)
+        if (item.event == item.eventPrimary) {
+            record.events[index] = newEvent
+        } else {
+            // TODO: apply pathperm here to `newEvent` to create a new primary event
+            val newPrimaryT = newT + item.eventPrimary.t - item.event.t
+            val newEventPrimary = item.eventPrimary.copy(t = newPrimaryT)
+
+            record.events[index] = newEventPrimary
+        }
         val newPattern = JMLPattern.fromPatternBuilder(record)
+        activeItemHashCode = newEvent.hashCode()
         onPatternChange(newPattern, undoable = false)
     }
 
