@@ -13,6 +13,7 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
+import jugglinglab.util.Permutation
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
@@ -242,14 +243,22 @@ open class LadderDiagram(p: JMLPattern) :
 
         // first create events (black circles on the vertical lines representing hands)
         ladderEventItems = buildList {
-            for ((ev, evPrimary) in pattern.loopEvents) {
-                val item = LadderEventItem(event = ev, eventPrimary = evPrimary)
+            for ((ev, evPrimary, pPermFromPrimary) in pattern.loopEvents) {
+                val item = LadderEventItem(
+                    event = ev,
+                    eventPrimary = evPrimary,
+                    pathPermFromPrimary = pPermFromPrimary
+                )
                 item.type = LadderItem.TYPE_EVENT
                 item.transEventItem = item
                 add(item)
 
                 for (index in 0..<ev.transitions.size) {
-                    val item2 = LadderEventItem(event = ev, eventPrimary = evPrimary)
+                    val item2 = LadderEventItem(
+                        event = ev,
+                        eventPrimary = evPrimary,
+                        pathPermFromPrimary = pPermFromPrimary
+                    )
                     item2.type = LadderItem.TYPE_TRANSITION
                     item2.transEventItem = item
                     item2.transNum = index
@@ -744,7 +753,8 @@ open class LadderDiagram(p: JMLPattern) :
 
     class LadderEventItem(
         val event: JMLEvent,
-        val eventPrimary: JMLEvent
+        val eventPrimary: JMLEvent,
+        val pathPermFromPrimary: Permutation
     ) : LadderItem() {
         // screen bounding box of the event circle
         var xLow: Int = 0

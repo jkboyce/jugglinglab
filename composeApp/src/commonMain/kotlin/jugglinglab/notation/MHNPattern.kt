@@ -25,7 +25,7 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
-import jugglinglab.jml.JMLEvent.Companion.addTransition
+import jugglinglab.jml.JMLEvent.Companion.withTransition
 import jugglinglab.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -792,7 +792,7 @@ abstract class MHNPattern : Pattern() {
 
         // Step 9: Add additional <holding> transitions where needed (i.e., a
         // ball is in a hand)
-        addMissingHoldsToJML(record)
+        record.fixHolds()
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 9:")
             println(JMLPattern.fromPatternBuilder(record))
@@ -832,7 +832,7 @@ abstract class MHNPattern : Pattern() {
                         println("After completion step 8:")
                         println(JMLPattern.fromPatternBuilder(recordSnapshot))
                     }
-                    addMissingHoldsToJML(recordSnapshot)
+                    recordSnapshot.fixHolds()
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After completion step 9:")
                         println(JMLPattern.fromPatternBuilder(recordSnapshot))
@@ -861,7 +861,7 @@ abstract class MHNPattern : Pattern() {
                         println("After redone step 8:")
                         println(JMLPattern.fromPatternBuilder(newRecord))
                     }
-                    addMissingHoldsToJML(newRecord)
+                    newRecord.fixHolds()
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 9:")
                         println(JMLPattern.fromPatternBuilder(newRecord))
@@ -1287,7 +1287,7 @@ abstract class MHNPattern : Pattern() {
                                 )
                                 throw JuggleExceptionUser(message)
                             }
-                            ev = ev.addTransition(
+                            ev = ev.withTransition(
                                 JMLTransition(
                                     type = JMLTransition.TRANS_THROW,
                                     path = sst2.pathnum,
@@ -1308,7 +1308,7 @@ abstract class MHNPattern : Pattern() {
                             if (!sst2.isZero) {
                                 // add holding transition if there's a ball in
                                 // hand and "hands" is specified
-                                ev = ev.addTransition(
+                                ev = ev.withTransition(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_HOLDING,
                                         path = sst2.pathnum,
@@ -1446,7 +1446,7 @@ abstract class MHNPattern : Pattern() {
                         for (slot in 0..<maxOccupancy) {
                             val sst2 = th[j][h][k][slot] ?: break
                             if (sst2.catching) {
-                                ev = ev.addTransition(
+                                ev = ev.withTransition(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
                                         path = sst2.pathnum
@@ -1456,7 +1456,7 @@ abstract class MHNPattern : Pattern() {
                                 if (sst2.pathnum != -1) {  // -1 signals a 0 throw
                                     // add holding transition if there's a ball in
                                     // hand and "hands" is specified
-                                    ev = ev.addTransition(
+                                    ev = ev.withTransition(
                                         JMLTransition(
                                             type = JMLTransition.TRANS_HOLDING,
                                             path = sst2.pathnum
@@ -1660,7 +1660,7 @@ abstract class MHNPattern : Pattern() {
             val perm = sym.pathPerm
             for (k in 0..<numberOfPaths) {
                 if (pathtouched[k]) {
-                    for (l in 1..<perm!!.getOrder(k + 1)) {
+                    for (l in 1..<perm.getOrder(k + 1)) {
                         pathtouched[perm.getMapping(k + 1, l) - 1] = true
                     }
                 }
@@ -1696,7 +1696,7 @@ abstract class MHNPattern : Pattern() {
             // add <holding> transitions to each of that hand's events
             for ((index, ev) in rec.events.withIndex()) {
                 if (ev.hand == hand && ev.juggler == (juggler + 1)) {
-                    val ev2 = ev.addTransition(
+                    val ev2 = ev.withTransition(
                         JMLTransition(
                             type = JMLTransition.TRANS_HOLDING,
                             path = (k + 1)
@@ -1709,7 +1709,7 @@ abstract class MHNPattern : Pattern() {
                     pathtouched[k] = true
                     for (sym in rec.symmetries) {
                         val perm = sym.pathPerm
-                        for (l in 1..<perm!!.getOrder(k + 1)) {
+                        for (l in 1..<perm.getOrder(k + 1)) {
                             pathtouched[perm.getMapping(k + 1, l) - 1] = true
                         }
                     }
@@ -1812,112 +1812,6 @@ abstract class MHNPattern : Pattern() {
             val y = (startPos.y + (t - startT) * (endPos.y - startPos.y) / (endT - startT))
             val z = (startPos.z + (t - startT) * (endPos.z - startPos.z) / (endT - startT))
             rec.events[index] = ev.copy(x = x, y = y, z = z)
-        }
-    }
-
-    // Scan through the list of events, looking for cases where we need to add
-    // additional <holding> transitions. These are marked by cases where the
-    // catch and throw transitions for a given path have intervening events in that
-    // hand; we want to add <holding> transitions to these intervening events.
-
-    protected fun addMissingHoldsToJML(
-        rec: PatternBuilder
-    ) {
-        scanstart@ while (true) {
-            val pat = JMLPattern.fromPatternBuilder(rec)
-            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
-
-            // record of where balls are held (juggler, hand) as we scan forward
-            val holdingLocation = arrayOfNulls<Pair<Int, Int>?>(numberOfPaths)
-
-            for ((ev, evPrimary) in pat.eventSequence()) {
-                if (ev.t > pat.loopStartTime + timeWindow) {
-                    return  // only exit from the function
-                }
-                val pathsToAddHolds = (1..numberOfPaths).filter {
-                    val loc = holdingLocation[it - 1]
-                    (loc != null && loc.first == ev.juggler && loc.second == ev.hand)
-                }.toMutableList()
-
-                for (tr in ev.transitions) {
-                    pathsToAddHolds.remove(tr.path)
-                    val loc = holdingLocation[tr.path - 1]
-
-                    when (tr.type) {
-                        JMLTransition.TRANS_CATCH,
-                        JMLTransition.TRANS_SOFTCATCH,
-                        JMLTransition.TRANS_GRABCATCH -> {
-                            if (loc != null && (loc.first != 0 || loc.second != 0)) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "error 1 in addMissingHoldsToJML()",
-                                    pat
-                                )
-                            }
-                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
-                        }
-
-                        JMLTransition.TRANS_THROW -> {
-                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "error 2 in addMissingHoldsToJML()",
-                                    pat
-                                )
-                            }
-                            holdingLocation[tr.path - 1] = Pair(0, 0)
-                        }
-
-                        JMLTransition.TRANS_HOLDING -> {
-                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "error 3 in addMissingHoldsToJML()",
-                                    pat
-                                )
-                            }
-                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
-                        }
-                    }
-                }
-
-                // We know which paths we want to add holds for, but we have to do it
-                // in the primary event. Use `pathPermFromPrimary` generated by
-                // EventImages to map the path number back to the primary. Restart
-                // the scan after each added hold to maintain consistency.
-
-                for (path in pathsToAddHolds) {
-                    val pathPrimary =
-                        if (ev == evPrimary) path else ev.pathPermFromPrimary!!.getInverseMapping(
-                            path
-                        )
-                    val trPrimary =
-                        evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
-                    if (trPrimary != null) {
-                        if (trPrimary.type == JMLTransition.TRANS_HOLDING) {
-                            continue
-                        }
-                        throw JuggleExceptionInternalWithPattern(
-                            "error 4 in addMissingHoldsToJML()",
-                            pat
-                        )
-                    }
-
-                    // hold is missing from primary – add it
-                    val newPrimary = evPrimary.addTransition(
-                        JMLTransition(
-                            type = JMLTransition.TRANS_HOLDING,
-                            path = pathPrimary
-                        )
-                    )
-                    val index = rec.events.indexOf(evPrimary)
-                    if (index == -1) {
-                        throw JuggleExceptionInternalWithPattern(
-                            "error 5 in addMissingHoldsToJML()",
-                            pat
-                        )
-                    }
-                    rec.events[index] = newPrimary
-                    continue@scanstart
-                }
-            }
         }
     }
 

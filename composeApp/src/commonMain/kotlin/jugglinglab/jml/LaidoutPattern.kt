@@ -17,7 +17,7 @@ import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.HandLink.Companion.index
-import jugglinglab.jml.JMLEvent.Companion.addTransition
+import jugglinglab.jml.JMLEvent.Companion.withTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*
@@ -124,7 +124,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 // for a path number that already has a transition in `event`.
                 for (trCurrent in current.transitions) {
                     if (event.transitions.all { tr -> tr.path != trCurrent.path }) {
-                        event = event.addTransition(trCurrent)
+                        event = event.withTransition(trCurrent)
                     }
                 }
 

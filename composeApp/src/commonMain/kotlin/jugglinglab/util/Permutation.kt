@@ -21,7 +21,7 @@ class Permutation {
     // of jugglers, and the symmetry is such that the right hand of juggler `i`
     // is equivalent to the left hand of juggler `j`.
 
-    constructor(n: Int, reverses: Boolean) {
+    constructor(n: Int, reverses: Boolean = false) {
         size = n
         this.reverses = reverses
 

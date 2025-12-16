@@ -14,6 +14,8 @@ package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
+import jugglinglab.jml.JMLEvent.Companion.withTransition
+import jugglinglab.jml.JMLEvent.Companion.withoutTransition
 import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.notation.Pattern
 import jugglinglab.prop.Prop
@@ -173,7 +175,7 @@ data class JMLPattern(
             EventImages(this@JMLPattern, ev)
         }
         val eventQueue = eventImages.map { ei ->
-            EventImage(ei.primaryEvent, ei.primaryEvent)
+            EventImage(ei.primaryEvent, ei.primaryEvent, Permutation(numberOfPaths))
         }.toMutableList()
 
         // we may need to scan in the opposite direction for a while to get
@@ -206,14 +208,16 @@ data class JMLPattern(
             }
             eventQueue[lastIndexUsed] = EventImage(
                 nextEvent,
-                eventImages[lastIndexUsed].primaryEvent
+                eventImages[lastIndexUsed].primaryEvent,
+                nextEvent.pathPermFromPrimary!!
             )
         }
     }
 
     data class EventImage(
         val event: JMLEvent,
-        val primary: JMLEvent
+        val primary: JMLEvent,
+        val pathPermFromPrimary: Permutation
     )
 
     fun prevForHandFromEvent(ev: JMLEvent): EventImage {
@@ -875,6 +879,114 @@ data class PatternBuilder(
 
     fun setInfoString(t: String?) {
         info = if (t != null && !t.trim().isBlank()) t.trim() else null
+    }
+
+    // Scan through the list of events, looking for cases where we need to add
+    // or remove <holding> transitions. Update the `event` records as needed.
+
+    fun fixHolds() {
+        scanstart@ while (true) {
+            val pat = JMLPattern.fromPatternBuilder(this)
+            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
+
+            // record of where balls are held (juggler, hand) as we scan forward,
+            // for each path: value `null` means unknown, value (0, 0) means in the air
+            val holdingLocation = arrayOfNulls<Pair<Int, Int>?>(numberOfPaths)
+
+            for ((ev, evPrimary, pathPermFromPrimary) in pat.eventSequence()) {
+                if (ev.t > pat.loopStartTime + timeWindow) {
+                    return  // only exit from the function
+                }
+                val pathsToHold = (1..numberOfPaths).filter {
+                    val loc = holdingLocation[it - 1]
+                    (loc != null && loc.first == ev.juggler && loc.second == ev.hand)
+                }.toMutableList()
+
+                for (tr in ev.transitions) {
+                    pathsToHold.remove(tr.path)
+                    val loc = holdingLocation[tr.path - 1]
+
+                    when (tr.type) {
+                        JMLTransition.TRANS_CATCH,
+                        JMLTransition.TRANS_SOFTCATCH,
+                        JMLTransition.TRANS_GRABCATCH -> {
+                            if (loc != null && (loc.first != 0 || loc.second != 0)) {
+                                throw JuggleExceptionInternalWithPattern(
+                                    "error 1 in fixHolds()",
+                                    pat
+                                )
+                            }
+                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
+                        }
+
+                        JMLTransition.TRANS_THROW -> {
+                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
+                                throw JuggleExceptionInternalWithPattern(
+                                    "error 2 in fixHolds()",
+                                    pat
+                                )
+                            }
+                            holdingLocation[tr.path - 1] = Pair(0, 0)
+                        }
+
+                        JMLTransition.TRANS_HOLDING -> {
+                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
+                                // Path `tr.path` is not being held in this hand – remove transition
+                                // from the primary event and then restart the scan.
+
+                                val pathPrimary =
+                                    if (ev == evPrimary) tr.path else pathPermFromPrimary.getInverseMapping(tr.path)
+                                val trPrimary =
+                                    evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                                if (trPrimary == null || trPrimary.type != JMLTransition.TRANS_HOLDING) {
+                                    throw JuggleExceptionInternalWithPattern("error 3 in fixHolds()", pat)
+                                }
+
+                                val newPrimary = evPrimary.withoutTransition(trPrimary)
+                                val index = events.indexOf(evPrimary)
+                                if (index == -1) {
+                                    throw JuggleExceptionInternalWithPattern("error 4 in fixHolds()", pat)
+                                }
+                                events[index] = newPrimary
+                                continue@scanstart
+                            }
+                        }
+                    }
+                }
+
+                // We know which paths we want to add holds for, but we have to do it
+                // in the primary event. Use `pathPermFromPrimary` generated by
+                // EventImages to map the path number back to the primary. Restart
+                // the scan after each added hold to maintain consistency.
+
+                for (path in pathsToHold) {
+                    val pathPrimary =
+                        if (ev == evPrimary) path else pathPermFromPrimary.getInverseMapping(path)
+                    val trPrimary =
+                        evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                    if (trPrimary != null) {
+                        if (trPrimary.type == JMLTransition.TRANS_HOLDING) {
+                            continue
+                        }
+                        throw JuggleExceptionInternalWithPattern("error 5 in fixHolds()", pat)
+                    }
+
+                    // hold is missing from primary – add it
+                    val newPrimary = evPrimary.withTransition(
+                        JMLTransition(
+                            type = JMLTransition.TRANS_HOLDING,
+                            path = pathPrimary
+                        )
+                    )
+                    val index = events.indexOf(evPrimary)
+                    if (index == -1) {
+                        throw JuggleExceptionInternalWithPattern("error 6 in fixHolds()", pat)
+                    }
+                    events[index] = newPrimary
+                    continue@scanstart
+                }
+            }
+        }
     }
 
     companion object {

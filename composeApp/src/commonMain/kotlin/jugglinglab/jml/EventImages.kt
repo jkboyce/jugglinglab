@@ -109,8 +109,6 @@ class EventImages(
 
         val newEvent = primaryEvent.copy(
             x = newX,
-            y = primaryEvent.y,
-            z = primaryEvent.z,
             t = newT,
             juggler = newJuggler,
             hand = newHand,
@@ -234,17 +232,17 @@ class EventImages(
         var index = 0
         for (temp in pattern.symmetries) {
             when (temp.type) {
-                JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm!!.inverse
+                JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm.inverse
                 JMLSymmetry.TYPE_SWITCH -> {
                     sym[index] = temp
-                    symperiod[index] = temp.jugglerPerm!!.order
+                    symperiod[index] = temp.jugglerPerm.order
                     deltaentries[index] = 0
                     index++
                 }
 
                 JMLSymmetry.TYPE_SWITCHDELAY -> {
                     sym[index] = temp
-                    symperiod[index] = temp.jugglerPerm!!.order
+                    symperiod[index] = temp.jugglerPerm.order
                     numEntries = lcm(numEntries, symperiod[index])
                     deltaentries[index] = -1
                     index++
@@ -277,7 +275,7 @@ class EventImages(
                     for (k in 0..1) {
                         for (l in 0..<numEntries) {
                             // apply symmetry to event
-                            var newj = sym[i]!!.jugglerPerm!!.getMapping(j + 1)
+                            var newj = sym[i]!!.jugglerPerm.getMapping(j + 1)
                             if (newj == 0) {
                                 continue
                             }

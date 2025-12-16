@@ -18,8 +18,8 @@ import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
-import jugglinglab.jml.JMLEvent.Companion.addTransition
-import jugglinglab.jml.JMLEvent.Companion.removeTransition
+import jugglinglab.jml.JMLEvent.Companion.withTransition
+import jugglinglab.jml.JMLEvent.Companion.withoutTransition
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -509,161 +509,45 @@ class EditLadderDiagram(
     }
 
     private fun moveEventInPattern(item: LadderEventItem) {
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        var shift = deltaY * scale
-        var newT = startT + shift
-        if (newT < pattern.loopStartTime + scale) {
-            // within 1 pixel of top
-            shift = pattern.loopStartTime - startT
-            newT = pattern.loopStartTime
-        } else if (newT >= pattern.loopEndTime) {
-            shift = pattern.loopEndTime - 0.0001 - startT
-            newT = pattern.loopEndTime - 0.0001
-        }
-
-        /*
-        val throwpath = BooleanArray(pattern.numberOfPaths)
-        val catchpath = BooleanArray(pattern.numberOfPaths)
-        val holdpathorig = BooleanArray(pattern.numberOfPaths)
-        val holdpathnew = BooleanArray(pattern.numberOfPaths)
-        for (tr in ev!!.transitions) {
-            when (tr.type) {
-                JMLTransition.TRANS_THROW -> throwpath[tr.path - 1] = true
-
-                JMLTransition.TRANS_CATCH,
-                JMLTransition.TRANS_SOFTCATCH,
-                JMLTransition.TRANS_GRABCATCH -> catchpath[tr.path - 1] = true
-
-                JMLTransition.TRANS_HOLDING -> {
-                    holdpathorig[tr.path - 1] = true
-                    holdpathnew[tr.path - 1] = true
-                }
+        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
+        val newT = run {
+            val tempT = startT + deltaY * scale
+            if (tempT < pattern.loopStartTime + scale) {
+                pattern.loopStartTime  // within 1 pixel of top
+            } else if (tempT >= pattern.loopEndTime) {
+                pattern.loopEndTime - 0.0001
+            } else {
+                tempT
             }
         }
 
-        if (newT < ev.t) {  // moving to earlier time
-            ev = ev.previous
-            while (ev != null && ev.t > newT) {
-                if (!ev.hasSamePrimaryAs(item.event) && ev.juggler == item.event.juggler && ev.hand == item.event.hand) {
-                    var j = 0
-                    while (j < ev.transitions.size) {
-                        val tr = ev.transitions[j]
-                        when (tr.type) {
-                            JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = true
+        // new event to swap in for `item.event`
+        val newEvent = item.event.copy(t = newT)
 
-                            JMLTransition.TRANS_CATCH,
-                            JMLTransition.TRANS_SOFTCATCH,
-                            JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] = false
-
-                            JMLTransition.TRANS_HOLDING -> if (throwpath[tr.path - 1]) {
-                                ev.removeTransition(j)
-                                if (!ev.isPrimary) {
-                                    ev.primary.removeTransition(j)
-                                }
-                                j--  // next trans moved into slot
-                            }
-                        }
-                        j++
-                    }
-
-                    for (j in 0..<pattern.numberOfPaths) {
-                        if (catchpath[j]) {
-                            var tr =
-                                JMLTransition(JMLTransition.TRANS_HOLDING, (j + 1), null, null)
-                            ev.addTransition(tr)
-                            if (!ev.isPrimary) {
-                                val pp = ev.pathPermFromPrimary!!.inverse
-                                tr = JMLTransition(
-                                    JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null
-                                )
-                                ev.primary.addTransition(tr)
-                            }
-                        }
-                    }
-                }
-                ev = ev.previous
-            }
-        } else if (newT > ev.t) {  // moving to later time
-            ev = ev.next
-            while (ev != null && ev.t < newT) {
-                if (!ev.hasSamePrimaryAs(item.event) && ev.juggler == item.event.juggler && ev.hand == item.event.hand) {
-                    var j = 0
-                    while (j < ev.transitions.size) {
-                        val tr = ev.transitions[j]
-                        when (tr.type) {
-                            JMLTransition.TRANS_THROW -> holdpathnew[tr.path - 1] = false
-
-                            JMLTransition.TRANS_CATCH,
-                            JMLTransition.TRANS_SOFTCATCH,
-                            JMLTransition.TRANS_GRABCATCH -> holdpathnew[tr.path - 1] = true
-
-                            JMLTransition.TRANS_HOLDING -> if (catchpath[tr.path - 1]) {
-                                ev.removeTransition(j)
-                                if (!ev.isPrimary) {
-                                    ev.primary.removeTransition(j)
-                                }
-                                j--
-                            }
-                        }
-                        j++
-                    }
-
-                    for (j in 0..<pattern.numberOfPaths) {
-                        if (throwpath[j]) {
-                            var tr =
-                                JMLTransition(JMLTransition.TRANS_HOLDING, (j + 1), null, null)
-                            ev.addTransition(tr)
-                            if (!ev.isPrimary) {
-                                val pp = ev.pathPermFromPrimary!!.inverse
-                                tr = JMLTransition(
-                                    JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null
-                                )
-                                ev.primary.addTransition(tr)
-                            }
-                        }
-                    }
-                }
-                ev = ev.next
-            }
-        }
-*/
-        var newEvent = item.event.copy(t = newT)
-        val pp = item.event.pathPermFromPrimary!!.inverse
-
-/*
-        for (j in 0..<pattern.numberOfPaths) {
-            if (holdpathnew[j] != holdpathorig[j]) {
-                if (holdpathnew[j]) {
-                    val tr =
-                        JMLTransition(JMLTransition.TRANS_HOLDING, pp.getMapping(j + 1), null, null)
-                    newEvent = newEvent.addTransition(tr)
-                } else {
-                    val tr =
-                        newEvent.getPathTransition(pp.getMapping(j + 1), JMLTransition.TRANS_HOLDING)
-                    if (tr == null) {
-                        jlHandleFatalException(
-                            JuggleExceptionInternalWithPattern("Null transition in removing hold", pattern)
-                        )
-                        parentFrame?.dispose()
-                        return
-                    }
-                    newEvent = newEvent.removeTransition(tr)
-                }
-            }
-        }
-*/
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(item.eventPrimary)
+        if (index < 0) throw JuggleExceptionInternal("Error in ELD.moveEventInPattern()")
         if (item.event == item.eventPrimary) {
             record.events[index] = newEvent
         } else {
-            // TODO: apply pathperm here to `newEvent` to create a new primary event
+            // make the change in the primary event
             val newPrimaryT = newT + item.eventPrimary.t - item.event.t
             val newEventPrimary = item.eventPrimary.copy(t = newPrimaryT)
-
             record.events[index] = newEventPrimary
         }
+
+        // did we just hop over another event in the same hand? if so then fix
+        // the HOLDING transitions
+        val needFixHolds = ladderEventItems.any {
+            (it.event.t - item.event.t) * (it.event.t - newT) < 0.0 &&
+                it.event.juggler == item.event.juggler &&
+                it.event.hand == item.event.hand
+        }
+        if (needFixHolds) {
+            record.fixHolds()
+        }
+
         val newPattern = JMLPattern.fromPatternBuilder(record)
         activeItemHashCode = newEvent.hashCode()
         onPatternChange(newPattern, undoable = false)
@@ -1280,8 +1164,8 @@ class EditLadderDiagram(
         val evPrimary = (popupItem as LadderEventItem).eventPrimary
 
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
-        var newEv = evPrimary.removeTransition(tr)
-        newEv = newEv.addTransition(tr)  // adds at end
+        var newEv = evPrimary.withoutTransition(tr)
+        newEv = newEv.withTransition(tr)  // adds at end
 
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)

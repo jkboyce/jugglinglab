@@ -330,17 +330,17 @@ data class JMLEvent(
         }
 
 
-        fun JMLEvent.addTransition(trans: JMLTransition): JMLEvent {
+        fun JMLEvent.withTransition(trans: JMLTransition): JMLEvent {
             return copy(transitions = transitions + trans)
         }
 
-        fun JMLEvent.removeTransition(index: Int): JMLEvent {
+        fun JMLEvent.withoutTransitionIndex(index: Int): JMLEvent {
             return copy(
                 transitions = transitions.filterIndexed { i, _ -> i != index }
             )
         }
 
-        fun JMLEvent.removeTransition(trans: JMLTransition): JMLEvent {
+        fun JMLEvent.withoutTransition(trans: JMLTransition): JMLEvent {
             return copy(
                 transitions = transitions.filter { it != trans }
             )
