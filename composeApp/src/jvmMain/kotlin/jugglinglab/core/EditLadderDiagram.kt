@@ -372,65 +372,19 @@ class EditLadderDiagram(
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
 
-        /*
-        for (tr in item.event.transitions) {
-            when (tr.type) {
-                JMLTransition.TRANS_THROW -> {
-                    // find out when the ball being thrown was last caught
-                    var ev = item.event.previous
-                    while (ev != null) {
-                        if (ev.getPathTransition(tr.path, JMLTransition.TRANS_CATCH) != null ||
-                            ev.getPathTransition(tr.path, JMLTransition.TRANS_SOFTCATCH) != null ||
-                            ev.getPathTransition(tr.path, JMLTransition.TRANS_GRABCATCH) != null
-                        ) {
-                            break
-                        }
-                        ev = ev.previous
-                    }
-                    if (ev == null) {
-                        jlHandleFatalException(
-                            JuggleExceptionInternalWithPattern("Null event 1 in mousePressed()", pattern)
-                        )
-                        parentFrame?.dispose()
-                        return
-                    }
-                    tMin = max(tMin, ev.t + MIN_THROW_SEP_TIME)
+        val evPaths = item.event.transitions.filter { it.isThrowOrCatch }.map { it.path }.toList()
 
-                    // next catch is easy to find
-                    ev = tr.outgoingPathLink!!.endEvent
-                    if (!ev.hasSamePrimaryAs(item.event)) {
-                        tMax = min(tMax, ev.t - MIN_THROW_SEP_TIME)
-                    }
+        ladderEventItems.forEach {
+            if (it.event.t < item.event.t - MIN_THROW_SEP_TIME) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths}) {
+                    tMin = max(tMin, it.event.t + MIN_THROW_SEP_TIME)
                 }
-
-                JMLTransition.TRANS_CATCH,
-                JMLTransition.TRANS_SOFTCATCH,
-                JMLTransition.TRANS_GRABCATCH -> {
-                    // previous throw is easy to find
-                    var ev: JMLEvent? = tr.incomingPathLink!!.startEvent
-                    if (!ev!!.hasSamePrimaryAs(item.event)) {
-                        tMin = max(tMin, ev.t + MIN_THROW_SEP_TIME)
-                    }
-
-                    // find out when the ball being caught is next thrown
-                    ev = item.event.next
-                    while (ev != null) {
-                        if (ev.getPathTransition(tr.path, JMLTransition.TRANS_THROW) != null) {
-                            break
-                        }
-                        ev = ev.next
-                    }
-                    if (ev == null) {
-                        jlHandleFatalException(
-                            JuggleExceptionInternalWithPattern("Null event 2 in mousePressed()", pattern)
-                        )
-                        parentFrame?.dispose()
-                        return
-                    }
-                    tMax = min(tMax, ev.t - MIN_THROW_SEP_TIME)
+            } else if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths}) {
+                    tMax = min(tMax, it.event.t - MIN_THROW_SEP_TIME)
                 }
             }
-        }*/
+        }
         deltaYMin = ((tMin - item.event.t) / scale).toInt()
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
