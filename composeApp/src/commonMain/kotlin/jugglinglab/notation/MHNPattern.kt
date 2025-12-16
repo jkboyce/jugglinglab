@@ -886,6 +886,14 @@ abstract class MHNPattern : Pattern() {
             println("Final result from MHNPattern.asJMLPattern():")
             println(result)
         }
+        try {
+            result.assertValid()
+        } catch (e: JuggleException) {
+            throw JuggleExceptionInternalWithPattern(
+                "Error in asJMLPattern(): " + e.message,
+                result
+            )
+        }
         return result
     }
 

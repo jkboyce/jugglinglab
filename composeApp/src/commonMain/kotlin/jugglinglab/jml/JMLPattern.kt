@@ -142,6 +142,26 @@ data class JMLPattern(
     }
 
     //--------------------------------------------------------------------------
+    // Validity checking
+    //--------------------------------------------------------------------------
+
+    // Check whether the pattern is valid. Report any errors as user exceptions
+    // with readable messages; the pattern may be from direct user input.
+
+    @Throws(JuggleExceptionUser::class)
+    fun assertValid() {
+        /*
+        TODO: finish this function. Check that:
+        - all paths have at least one transition
+        - the time sequence of transitions makes sense for each path (i.e.,
+          don't have two throws in succession)
+        - holding transitions are correct
+        - pperm for switchdelay symmetry is consistent with pperm for delay symmetry
+        - propnums don't refer to nonexistent props (already checked by parser?)
+         */
+    }
+
+    //--------------------------------------------------------------------------
     // Physical pattern layout, for animation
     //--------------------------------------------------------------------------
 
@@ -883,7 +903,11 @@ data class PatternBuilder(
 
     // Scan through the list of events, looking for cases where we need to add
     // or remove <holding> transitions. Update the `event` records as needed.
+    //
+    // Any errors are considered internal errors because we assume user input
+    // has been validated prior to this.
 
+    @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
         scanstart@ while (true) {
             val pat = JMLPattern.fromPatternBuilder(this)
