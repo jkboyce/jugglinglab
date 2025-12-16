@@ -705,56 +705,45 @@ class EditLadderDiagram(
     }
 
     private fun addEventToHand(hand: Int) {
-        var juggler = 1
-        if (pattern.numberOfJugglers > 1) {
-            var mouseX = popupX
-            val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
-
-            while (juggler <= pattern.numberOfJugglers) {
-                if (mouseX < jugglerRightPx) {
-                    break
+        val juggler = run {
+            var jug = 1
+            if (pattern.numberOfJugglers > 1) {
+                var mouseX = popupX
+                val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
+                while (jug <= pattern.numberOfJugglers) {
+                    if (mouseX < jugglerRightPx) {
+                        break
+                    }
+                    mouseX -= jugglerDeltaX
+                    ++jug
                 }
-
-                mouseX -= jugglerDeltaX
-                juggler++
+                jug = min(jug, pattern.numberOfJugglers)
             }
-            juggler = min(juggler, pattern.numberOfJugglers)
+            jug
         }
 
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        val evtime = (popupY - BORDER_TOP).toDouble() * scale
-
-        val evpos = Coordinate()
+        val newTime = (popupY - BORDER_TOP).toDouble() * scale
+        val newGlobalCoordinate = Coordinate()
         try {
-            pattern.layout.getHandCoordinate(juggler, hand, evtime, evpos)
+            pattern.layout.getHandCoordinate(juggler, hand, newTime, newGlobalCoordinate)
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)
-            parentFrame?.dispose()
         }
-
-        // add holding transitions to the new event, if hand is filled
-        val newTransitions: List<JMLTransition> = buildList {
-            for (path in 1..pattern.numberOfPaths) {
-                if (pattern.layout.isHandHoldingPath(juggler, hand, evtime, path)) {
-                    add(JMLTransition(type = JMLTransition.TRANS_HOLDING, path = path))
-                }
-            }
-        }
-
-        val newLocalCoordinate = pattern.layout.convertGlobalToLocal(evpos, juggler, evtime)
+        val newLocalCoordinate = pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
         val newEvent = JMLEvent(
             x = newLocalCoordinate.x,
             y = newLocalCoordinate.y,
             z = newLocalCoordinate.z,
-            t = evtime,
+            t = newTime,
             juggler = juggler,
-            hand = hand,
-            transitions = newTransitions
+            hand = hand
         )
 
         val record = PatternBuilder.fromJMLPattern(pattern)
         record.events.add(newEvent)
+        record.fixHolds()
         activeItemHashCode = newEvent.hashCode()
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
@@ -767,47 +756,43 @@ class EditLadderDiagram(
             )
             return
         }
-        var ev = (popupItem as LadderEventItem).event
-        if (!ev.isPrimary) {
-            ev = ev.primary
-        }
+        val evRemove = (popupItem as LadderEventItem).eventPrimary
         val record = PatternBuilder.fromJMLPattern(pattern)
-        record.events.remove(ev)
+        record.events.remove(evRemove)
         activeItemHashCode = 0
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
 
     private fun addPositionToJuggler() {
-        var juggler = 1
-        if (pattern.numberOfJugglers > 1) {
-            var mouseX = popupX
-            val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
-
-            while (juggler <= pattern.numberOfJugglers) {
-                if (mouseX < jugglerRightPx) {
-                    break
+        val juggler = run {
+            var jug = 1
+            if (pattern.numberOfJugglers > 1) {
+                var mouseX = popupX
+                val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
+                while (jug <= pattern.numberOfJugglers) {
+                    if (mouseX < jugglerRightPx) {
+                        break
+                    }
+                    mouseX -= jugglerDeltaX
+                    ++jug
                 }
-
-                mouseX -= jugglerDeltaX
-                juggler++
+                jug = min(jug, pattern.numberOfJugglers)
             }
-            if (juggler > pattern.numberOfJugglers) {
-                juggler = pattern.numberOfJugglers
-            }
+            jug
         }
 
         val scale =
             (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-        val postime = (popupY - BORDER_TOP).toDouble() * scale
+        val newTime = (popupY - BORDER_TOP).toDouble() * scale
 
-        val loc = Coordinate()
-        pattern.layout.getJugglerPosition(juggler, postime, loc)
+        val newGlobalCoordinate = Coordinate()
+        pattern.layout.getJugglerPosition(juggler, newTime, newGlobalCoordinate)
         val pos = JMLPosition(
-            x = loc.x,
-            y = loc.y,
-            z = loc.z,
-            t = postime,
-            angle = pattern.layout.getJugglerAngle(juggler, postime),
+            x = newGlobalCoordinate.x,
+            y = newGlobalCoordinate.y,
+            z = newGlobalCoordinate.z,
+            t = newTime,
+            angle = pattern.layout.getJugglerAngle(juggler, newTime),
             juggler = juggler
         )
         val rec = PatternBuilder.fromJMLPattern(pattern)
@@ -1015,7 +1000,7 @@ class EditLadderDiagram(
             jlHandleFatalException(JuggleExceptionInternalWithPattern("defineThrow() class format", pattern))
             return
         }
-        val evPrimary = (popupItem as LadderEventItem).event.primary
+        val evPrimary = (popupItem as LadderEventItem).eventPrimary
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
 
         val pptypes: List<String> = Path.builtinPaths
@@ -1162,16 +1147,14 @@ class EditLadderDiagram(
             return
         }
         val evPrimary = (popupItem as LadderEventItem).eventPrimary
-
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
-        var newEv = evPrimary.withoutTransition(tr)
-        newEv = newEv.withTransition(tr)  // adds at end
+        val newPrimary = evPrimary.withoutTransition(tr).withTransition(tr)  // adds at end
 
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)
-        record.events[index] = newEv
+        record.events[index] = newPrimary
         activeItemHashCode = (popupItem as LadderEventItem).event.hashCode() + 23 +
-            (newEv.transitions.size - 1) * 27
+            (newPrimary.transitions.size - 1) * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
 
