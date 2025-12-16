@@ -61,7 +61,6 @@ class LaidoutPattern(val pat: JMLPattern) {
 
             buildEventList()
             findPositions()
-            gotoGlobalCoordinates()
             buildLinkLists()
             layoutHandPaths()
 
@@ -549,21 +548,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 3: transform event coordinates from local to global reference frame
-    //--------------------------------------------------------------------------
-
-    private fun gotoGlobalCoordinates() {
-        var ev = eventList
-        while (ev != null) {
-            val lc = ev.localCoordinate
-            val gc = convertLocalToGlobal(lc, ev.juggler, ev.t)
-            ev.globalCoordinate = gc
-            ev = ev.next
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    // Step 4: construct the links connecting events; build PathLink and
+    // Step 3: construct the links connecting events; build PathLink and
     // HandLink lists
     //--------------------------------------------------------------------------
 
@@ -591,7 +576,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
 
                 if (lastev != null) {
-                    val pl = PathLink(i + 1, lastev, ev)
+                    val pl = PathLink(i + 1, getGlobalCoordinate(lastev), lastev, getGlobalCoordinate(ev), ev)
 
                     when (tr.type) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
@@ -717,8 +702,8 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 5: do a physical layout of the handlink paths
-    // (Props were physically laid out in PathLink.setThrow() in Step 5 above)
+    // Step 4: do a physical layout of the handlink paths
+    // (Props were physically laid out in PathLink.setThrow() in Step 3 above)
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class)
@@ -762,7 +747,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             for (l in 0..<num) {
                                 val hl2 = handlinks!![j][h][k - num + 1 + l]
                                 times[l] = hl2.startEvent.t
-                                pos[l] = hl2.startEvent.globalCoordinate!!
+                                pos[l] = getGlobalCoordinate(hl2.startEvent)
                                 val vr2 = hl2.startVelocityRef
                                 if (l > 0 && vr2 != null && vr2.source == VelocityRef.VR_CATCH) {
                                     velocities[l] = vr2.velocity
@@ -770,7 +755,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                                 hl2.handCurve = hp
                             }
                             times[num] = hl.endEvent.t
-                            pos[num] = hl.endEvent.globalCoordinate!!
+                            pos[num] = getGlobalCoordinate(hl.endEvent)
                             velocities[0] = startlink.startVelocityRef!!.velocity
                             velocities[num] = hl.endVelocityRef!!.velocity
 
@@ -817,11 +802,11 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                         for (l in 0..<num) {
                             val hl2 = handlinks!![j][h][k - num + 1 + l]
-                            pos[l] = hl2.startEvent.globalCoordinate!!
+                            pos[l] = getGlobalCoordinate(hl2.startEvent)
                             times[l] = hl2.startEvent.t
                             hl2.handCurve = hp
                         }
-                        pos[num] = hl.endEvent.globalCoordinate!!
+                        pos[num] = getGlobalCoordinate(hl.endEvent)
                         times[num] = hl.endEvent.t
                         // all velocities are null (unknown) -> signal to calculate
                         hp.setCurve(times, pos, arrayOfNulls(num + 1))
@@ -943,6 +928,13 @@ class LaidoutPattern(val pat: JMLPattern) {
         p.getCoordinate(time, coord)
 
         return coord.x
+    }
+
+    // Return the global coordinate of an event.
+
+    fun getGlobalCoordinate(ev: JMLEvent): Coordinate {
+        val lc = ev.localCoordinate
+        return convertLocalToGlobal(lc, ev.juggler, ev.t)
     }
 
     // Convert from local juggler frame to global frame.

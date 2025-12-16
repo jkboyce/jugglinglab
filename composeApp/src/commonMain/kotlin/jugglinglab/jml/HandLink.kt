@@ -11,21 +11,26 @@ package jugglinglab.jml
 
 import jugglinglab.curve.Curve
 
-class HandLink(var juggler: Int, var hand: Int, var startEvent: JMLEvent, var endEvent: JMLEvent) {
+class HandLink(
+    var juggler: Int,
+    var hand: Int,
+    var startEvent: JMLEvent,
+    var endEvent: JMLEvent
+) {
     var startVelocityRef: VelocityRef? = null
     var endVelocityRef: VelocityRef? = null
     var handCurve: Curve? = null
 
     override fun toString(): String {
-        val start = startEvent.globalCoordinate
-        val end = endEvent.globalCoordinate
+        val start = startEvent.localCoordinate
+        val end = endEvent.localCoordinate
         val svr = startVelocityRef
         val evr = endVelocityRef
         val hp = handCurve
         val sb = StringBuilder()
 
-        sb.append("Link from (x=${start!!.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
-        sb.append("to (x=${end!!.x},y=${end.y},z=${end.z},t=${endEvent.t})")
+        sb.append("Link from (x=${start.x},y=${start.y},z=${start.z},t=${startEvent.t}) ")
+        sb.append("to (x=${end.x},y=${end.y},z=${end.z},t=${endEvent.t})")
         if (svr != null) {
             val vel = svr.velocity
             sb.append("\n      start velocity (x=${vel.x},y=${vel.y},z=${vel.z})")

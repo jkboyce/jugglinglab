@@ -115,7 +115,6 @@ data class JMLEvent(
         delay = 0
         delayunits = 0
         pathPermFromPrimary = null
-        globalCoordinate = null
         transitions.forEach { it.clearLayoutData() }
     }
 
@@ -133,9 +132,6 @@ data class JMLEvent(
         get() = primaryEvent ?: this
     val isPrimary: Boolean
         get() = (primaryEvent == null)
-
-    // coordinates in global frame, used during animation
-    var globalCoordinate: Coordinate? = null
 
     fun isDelayOf(ev2: JMLEvent): Boolean {
         if (!hasSamePrimaryAs(ev2)) {
