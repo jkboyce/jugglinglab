@@ -1738,7 +1738,7 @@ abstract class MHNPattern : Pattern() {
             val result = JMLPattern.fromPatternBuilder(rec)
             val startEv: MutableList<JMLEvent?> = MutableList(numberOfJugglers) { null }
 
-            for ((ev, _) in result.eventSequence()) {
+            for ((ev, _, _) in result.eventSequence()) {
                 if (ev.hand != hand) {
                     continue
                 }
@@ -1753,10 +1753,12 @@ abstract class MHNPattern : Pattern() {
 
                         for (i in 1..numAdd) {
                             val evTime = start.t + i * deltaT
-                            val ev2 = JMLEvent(t = evTime, juggler = ev.juggler, hand = hand)
-                            // no transitions yet; added later if needed
-                            calcpos[ev2] = true
-                            rec.events.add(ev2)
+                            if (evTime < result.loopEndTime) {
+                                val ev2 = JMLEvent(t = evTime, juggler = ev.juggler, hand = hand)
+                                // no transitions yet; added later if needed
+                                calcpos[ev2] = true
+                                rec.events.add(ev2)
+                            }
                         }
                     }
                 }
