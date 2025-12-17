@@ -2,6 +2,7 @@
 // build.gradle.kts
 //
 // Juggling Lab build file for use with the Gradle build system.
+// - `gradlew run` to build and run
 // - `gradlew build` to build bin/JugglingLab.jar
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
@@ -59,19 +60,24 @@ kotlin {
     }
 }
 
-/*
 compose.desktop {
     application {
         mainClass = "jugglinglab.JugglingLabKt"
-
+        jvmArgs += listOf(
+            "-Xss2048k",
+            "-Dfile.encoding=UTF-8",
+            "-DJL_run_as_bundle=true",
+            "-DJL_compose_ui=true",
+            "--enable-native-access=ALL-UNNAMED"
+        )
+        /*
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.jugglinglab"
             packageVersion = "1.6.7"
-        }
+        }*/
     }
 }
-*/
 
 // Custom task to build a fat JAR for the JVM target
 val shadowJar by tasks.registering(ShadowJar::class) {
