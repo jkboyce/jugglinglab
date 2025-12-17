@@ -3,7 +3,7 @@ androidx-lifecycle = "2.9.5"
 composeHotReload = "1.0.0-rc02"
 composeMultiplatform = "1.9.3"
 junit = "4.13.2"
-kotlin = "2.2.20"
+kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 shadowjar = "8.1.1"
 
