@@ -899,6 +899,8 @@ data class PatternBuilder(
 
     @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
+        val holdsOnly = Array(numberOfPaths) { false }
+
         scanstart@ while (true) {
             val pat = JMLPattern.fromPatternBuilder(this)
             val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
@@ -909,6 +911,14 @@ data class PatternBuilder(
 
             for ((ev, evPrimary, pathPermFromPrimary) in pat.eventSequence()) {
                 if (ev.t > pat.loopStartTime + timeWindow) {
+                    // last check: were there any paths that had ONLY holds? If
+                    // so then re-scan and fix holds for those paths
+                    for (i in 0..<numberOfPaths) {
+                        holdsOnly[i] = (holdingLocation[i] == null)
+                    }
+                    if (holdsOnly.any { it }) {
+                        continue@scanstart
+                    }
                     return  // only exit from the function
                 }
                 val pathsToHold = (1..numberOfPaths).filter {
@@ -963,6 +973,9 @@ data class PatternBuilder(
                                 }
                                 events[index] = newPrimary
                                 continue@scanstart
+                            }
+                            if (holdsOnly[tr.path - 1]) {
+                                holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
                             }
                         }
                     }
