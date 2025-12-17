@@ -228,7 +228,7 @@ class Animator {
     // Rescale the animator so that the pattern and key parts of the juggler
     // are visible. Call this whenever the pattern changes.
 
-    fun initAnimator() {
+    fun initAnimator(fitToFrame: Boolean = true) {
         val pattern = pat!!
         val sg = (jc.showGround == AnimationPrefs.GROUND_ON ||
                 (jc.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
@@ -239,8 +239,10 @@ class Animator {
             ren2!!.setGround(sg)
         }
 
-        findMaxMin()
-        syncRenderersToSize()
+        if (fitToFrame) {
+            findMaxMin()
+            syncRenderersToSize()
+        }
 
         // figure out timing constants; this in effect adjusts fps to get an integer
         // number of frames in one repetition of the pattern

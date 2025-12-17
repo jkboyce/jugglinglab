@@ -85,16 +85,27 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     //--------------------------------------------------------------------------
 
     // Call this to initiate a change in the pattern.
+    //
+    // There are three levels of "pattern restart":
+    // 1. Full restart (reset camera angle and zoom, restart animation at t = 0)
+    // 2. Pattern update (leave camera angle and time unchanged, re-fit the
+    //    animation to the rendering frame)
+    // 3. Pattern update w/o size refit (as #2 but w/o size refit)
+    //
+    // For any edits made in EditLadderDiagram we use restart #2.
+    // For any edits made in AnimationEditPanel we use restart #3 while mouse
+    // dragging is active, then restart #2 on mouse release.
 
     fun onPatternChange(
         newPattern: JMLPattern,
-        undoable: Boolean = true
+        addToUndo: Boolean = true,
+        fitToFrame: Boolean = true
     ) {
-        if (undoable) {
+        if (addToUndo) {
             addToUndoList(newPattern)
         }
         animator.pat = newPattern
-        animator.initAnimator()
+        animator.initAnimator(fitToFrame = fitToFrame)
         for (att in attachments) {
             att.setJMLPattern(newPattern)
         }
@@ -165,7 +176,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltaY = 0
                         deltaX = 0
                         eventStart = activeEvent!!.localCoordinate
-                        eventPrimaryStart = activeEvent!!.primary.localCoordinate
+                        eventPrimaryStart = activeEventPrimary!!.localCoordinate
                         repaint()
                         return
                     }
@@ -194,7 +205,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         deltaY = 0
                         deltaX = 0
                         eventStart = activeEvent!!.localCoordinate
-                        eventPrimaryStart = activeEvent!!.primary.localCoordinate
+                        eventPrimaryStart = activeEventPrimary!!.localCoordinate
                         repaint()
                         return
                     }
@@ -295,12 +306,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (eventActive && dragging && mouseMoved) {
             draggingY = false
             draggingXz = false
-
-            try {
-                addToUndoList(pattern!!)
-            } catch (jei: JuggleExceptionInternal) {
-                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-            }
+            onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
         }
 
         if (positionActive && dragging && mouseMoved) {
@@ -308,9 +314,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             draggingZ = false
             draggingXy = false
             deltaAngle = 0.0
-            addToUndoList(pattern!!)
-            //animator.initAnimator()
-            //setActiveItem(activePosition.hashCode())
+            onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
         }
 
         if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
@@ -410,7 +414,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val newPosition = activePosition!!.copy(angle = finalAngle)
                 rec.positions[index] = newPosition
                 activeItemHashCode = newPosition.hashCode()
-                onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
+                onPatternChange(JMLPattern.fromPatternBuilder(rec), addToUndo = false, fitToFrame = false)
             } else {
                 deltaX = mx - startX
                 deltaY = my - startY
@@ -445,7 +449,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         val index = record.events.indexOf(activeEventPrimary)
                         record.events[index] = newPrimary
                         activeItemHashCode = newEvent.hashCode()
-                        onPatternChange(JMLPattern.fromPatternBuilder(record), undoable = false)
+                        onPatternChange(JMLPattern.fromPatternBuilder(record), addToUndo = false, fitToFrame = false)
                     }
                 }
 
@@ -456,7 +460,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                     rec.positions[index] = newPosition
                     activeItemHashCode = newPosition.hashCode()
-                    onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
+                    onPatternChange(JMLPattern.fromPatternBuilder(rec), addToUndo = false, fitToFrame = false)
                 }
             }
         } else if (!draggingCamera) {
@@ -712,7 +716,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         val pat = pattern!!
         val ev = activeEvent!!
 
-        // determine which events to display on-screen
+        // identify events to display on-screen
         visibleEvents = mutableListOf()
         visibleEvents.add(ev)
         handpathStartTime = ev.t
@@ -754,19 +758,21 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
         var evNum = 0
-        for (ev in visibleEvents) {
+        for (ev2 in visibleEvents) {
             for (i in 0..<rendererCount) {
                 val ren = (if (i == 0) animator.ren1 else animator.ren2)
 
                 // translate by one pixel and see how far it is in juggler space
-                val c = pat.layout.getGlobalCoordinate(ev)
+                val c = pat.layout.getGlobalCoordinate(ev2)
                 val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2)  // pixels/cm
 
                 val ca = ren.cameraAngle
-                val theta = ca[0] + Math.toRadians(pat.layout.getJugglerAngle(ev.juggler, ev.t))
+                val theta = ca[0] + Math.toRadians(pat.layout.getJugglerAngle(ev2.juggler, ev2.t))
                 val phi = ca[1]
 
+                // matrix translating global coordinates (in cm) to screen
+                // coordinates (in pixels)
                 val dlc = dl * cos(phi)
                 val dls = dl * sin(phi)
                 val dxx = -dl * cos(theta)
@@ -778,7 +784,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 val center = ren.getXY(c)
 
-                if (ev == activeEvent) {
+                if (ev2 == activeEvent) {
                     for (j in EVENT_CONTROL_POINTS.indices) {
                         eventPoints[0][i][j][0] =
                             (center[0].toDouble() +
@@ -858,8 +864,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         var g2 = g
 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
-            // Renderer ren = (i == 0 ? anim.ren1 : anim.ren2);
-
             if (jc.stereo) {
                 if (i == 0) {
                     g2 = g.create(0, 0, d.width / 2, d.height)
@@ -911,24 +915,24 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             // dot at center
             g2.fillOval(
-                eventPoints[0][i][4][0].roundToInt() + deltaX - 2,
-                eventPoints[0][i][4][1].roundToInt() + deltaY - 2,
+                eventPoints[0][i][4][0].roundToInt() - 2,
+                eventPoints[0][i][4][1].roundToInt() - 2,
                 5,
                 5
             )
 
             if (showXzDragControl || dragging) {
                 // edges of xz plane control
-                drawLine(g2, eventPoints[0], i, 0, 1, true)
-                drawLine(g2, eventPoints[0], i, 1, 2, true)
-                drawLine(g2, eventPoints[0], i, 2, 3, true)
-                drawLine(g2, eventPoints[0], i, 3, 0, true)
+                drawLine(g2, eventPoints[0], i, 0, 1)
+                drawLine(g2, eventPoints[0], i, 1, 2)
+                drawLine(g2, eventPoints[0], i, 2, 3)
+                drawLine(g2, eventPoints[0], i, 3, 0)
 
                 for (j in 1..<eventPoints.size) {
-                    drawLine(g2, eventPoints[j], i, 0, 1, false)
-                    drawLine(g2, eventPoints[j], i, 1, 2, false)
-                    drawLine(g2, eventPoints[j], i, 2, 3, false)
-                    drawLine(g2, eventPoints[j], i, 3, 0, false)
+                    drawLine(g2, eventPoints[j], i, 0, 1)
+                    drawLine(g2, eventPoints[j], i, 1, 2)
+                    drawLine(g2, eventPoints[j], i, 2, 3)
+                    drawLine(g2, eventPoints[j], i, 3, 0)
                     g2.fillOval(
                         eventPoints[j][i][4][0].roundToInt() - 1,
                         eventPoints[j][i][4][1].roundToInt() - 1,
@@ -940,11 +944,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             if (showYDragControl && (!dragging || draggingY)) {
                 // y-axis control pointing forward/backward
-                drawLine(g2, eventPoints[0], i, 5, 6, true)
-                drawLine(g2, eventPoints[0], i, 5, 7, true)
-                drawLine(g2, eventPoints[0], i, 5, 8, true)
-                drawLine(g2, eventPoints[0], i, 6, 9, true)
-                drawLine(g2, eventPoints[0], i, 6, 10, true)
+                drawLine(g2, eventPoints[0], i, 5, 6)
+                drawLine(g2, eventPoints[0], i, 5, 7)
+                drawLine(g2, eventPoints[0], i, 5, 8)
+                drawLine(g2, eventPoints[0], i, 6, 9)
+                drawLine(g2, eventPoints[0], i, 6, 10)
             }
         }
     }
@@ -1039,22 +1043,22 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             if (showXyDragControl || dragging) {
                 // edges of xy plane control
-                drawLine(g2, posPoints, i, 0, 1, true)
-                drawLine(g2, posPoints, i, 1, 2, true)
-                drawLine(g2, posPoints, i, 2, 3, true)
-                drawLine(g2, posPoints, i, 3, 0, true)
+                drawLine(g2, posPoints, i, 0, 1)
+                drawLine(g2, posPoints, i, 1, 2)
+                drawLine(g2, posPoints, i, 2, 3)
+                drawLine(g2, posPoints, i, 3, 0)
             }
 
             if (showZDragControl && (!dragging || draggingZ)) {
                 // z-axis control pointing upward
-                drawLine(g2, posPoints, i, 4, 6, true)
-                drawLine(g2, posPoints, i, 6, 7, true)
-                drawLine(g2, posPoints, i, 6, 8, true)
+                drawLine(g2, posPoints, i, 4, 6)
+                drawLine(g2, posPoints, i, 6, 7)
+                drawLine(g2, posPoints, i, 6, 8)
             }
 
             if (showAngleDragControl && (!dragging || draggingAngle)) {
                 // angle-changing control pointing backward
-                drawLine(g2, posPoints, i, 4, 5, true)
+                drawLine(g2, posPoints, i, 4, 5)
                 g2.fillOval(
                     posPoints[i][5][0].roundToInt() - 4 + deltaX,
                     posPoints[i][5][1].roundToInt() - 4 + deltaY,
@@ -1065,7 +1069,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             if (draggingAngle) {
                 // sighting line during angle rotation
-                drawLine(g2, posPoints, i, 9, 10, true)
+                drawLine(g2, posPoints, i, 9, 10)
             }
 
             if (!draggingAngle) {
@@ -1367,24 +1371,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         array: Array<Array<DoubleArray>>,
         index: Int,
         p1: Int,
-        p2: Int,
-        mouse: Boolean
+        p2: Int
     ) {
-        if (mouse) {
-            g.drawLine(
-                array[index][p1][0].roundToInt() + deltaX,
-                array[index][p1][1].roundToInt() + deltaY,
-                array[index][p2][0].roundToInt() + deltaX,
-                array[index][p2][1].roundToInt() + deltaY
-            )
-        } else {
-            g.drawLine(
-                array[index][p1][0].roundToInt(),
-                array[index][p1][1].roundToInt(),
-                array[index][p2][0].roundToInt(),
-                array[index][p2][1].roundToInt()
-            )
-        }
+        g.drawLine(
+            array[index][p1][0].roundToInt(),
+            array[index][p1][1].roundToInt(),
+            array[index][p2][0].roundToInt(),
+            array[index][p2][1].roundToInt()
+        )
     }
 
     //--------------------------------------------------------------------------
