@@ -27,16 +27,20 @@ import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.Coordinate.Companion.sub
 
 class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener {
+    private var activeItemHashCode: Int = 0
+
     // for when an event is activated/dragged
     private var eventActive: Boolean = false
-    private var event: JMLEvent? = null
+    private var activeEvent: JMLEvent? = null
+    private var activeEventPrimary: JMLEvent? = null
+
     private var draggingXz: Boolean = false
     private var draggingY: Boolean = false
     private var showXzDragControl: Boolean = false
     private var showYDragControl: Boolean = false
     private var eventStart: Coordinate? = null
     private var eventPrimaryStart: Coordinate? = null
-    private var visibleEvents: ArrayList<JMLEvent>? = null
+    private var visibleEvents: MutableList<JMLEvent> = mutableListOf()
     private var eventPoints: Array<Array<Array<DoubleArray>>>
     private var handpathPoints: Array<Array<DoubleArray>>
     private var handpathStartTime: Double = 0.0
@@ -45,7 +49,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
     // for when a position is activated/dragged
     private var positionActive: Boolean = false
-    private var position: JMLPosition? = null
+    private var activePosition: JMLPosition? = null
+
     private var posPoints: Array<Array<DoubleArray>>
     private var draggingXy: Boolean = false
     private var draggingZ: Boolean = false
@@ -65,14 +70,51 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     // for when either an event or position is being dragged
     private var dragging: Boolean = false
     private var draggingLeft: Boolean = false // for stereo mode; may not be necessary?
-    private var deltax: Int = 0
-    private var deltay: Int = 0 // extent of drag action (pixels)
+    private var deltaX: Int = 0
+    private var deltaY: Int = 0 // extent of drag action (pixels)
 
     init {
         eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
         handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
         handpathHold = BooleanArray(0)
         posPoints = Array(2) { Array(0) { DoubleArray(2) } }
+    }
+
+    //--------------------------------------------------------------------------
+    // Methods to handle changes made within this UI
+    //--------------------------------------------------------------------------
+
+    // Call this to initiate a change in the pattern.
+
+    fun onPatternChange(
+        newPattern: JMLPattern,
+        undoable: Boolean = true
+    ) {
+        if (undoable) {
+            addToUndoList(newPattern)
+        }
+        animator.pat = newPattern
+        animator.initAnimator()
+        for (att in attachments) {
+            att.setJMLPattern(newPattern)
+        }
+        onNewActiveItem(activeItemHashCode)
+    }
+
+    fun onNewActiveItem(hash: Int) {
+        try {
+            setActiveItem(hash)
+        } catch (jei: JuggleExceptionInternal) {
+            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+        }
+    }
+
+    fun addToUndoList(pat: JMLPattern) {
+        for (att in attachments) {
+            if (att is EditLadderDiagram) {
+                att.addToUndoList(pat)
+            }
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -95,8 +137,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (!engineAnimating) return
         if (writingGIF) return
 
-        startx = me.getX()
-        starty = me.getY()
+        startX = me.getX()
+        startY = me.getY()
 
         if (eventActive) {
             val mx = me.getX()
@@ -120,10 +162,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingY) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltay = 0
-                        deltax = 0
-                        eventStart = event!!.localCoordinate
-                        eventPrimaryStart = event!!.primary.localCoordinate
+                        deltaY = 0
+                        deltaX = 0
+                        eventStart = activeEvent!!.localCoordinate
+                        eventPrimaryStart = activeEvent!!.primary.localCoordinate
                         repaint()
                         return
                     }
@@ -137,10 +179,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         if (j > 0) {
                             try {
-                                setActiveItem(pattern!!.getEventImageInLoop(visibleEvents!![j]).hashCode())
+                                setActiveItem(pattern!!.getEventImageInLoop(visibleEvents[j]).hashCode())
                                 for (att in attachments) {
-                                    att.setActiveItem(event!!.hashCode())
-                                    att.repaintAttachment()
+                                    att.setActiveItem(activeEvent!!.hashCode())
                                 }
                             } catch (jei: JuggleExceptionInternal) {
                                 jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
@@ -150,10 +191,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         draggingXz = true
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltay = 0
-                        deltax = 0
-                        eventStart = event!!.localCoordinate
-                        eventPrimaryStart = event!!.primary.localCoordinate
+                        deltaY = 0
+                        deltaX = 0
+                        eventStart = activeEvent!!.localCoordinate
+                        eventPrimaryStart = activeEvent!!.primary.localCoordinate
                         repaint()
                         return
                     }
@@ -183,9 +224,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingZ) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltay = 0
-                        deltax = 0
-                        positionStart = position!!.coordinate
+                        deltaY = 0
+                        deltaX = 0
+                        positionStart = activePosition!!.coordinate
                         repaint()
                         return
                     }
@@ -197,9 +238,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingXy) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltay = 0
-                        deltax = 0
-                        positionStart = position!!.coordinate
+                        deltaY = 0
+                        deltaX = 0
+                        positionStart = activePosition!!.coordinate
                         repaint()
                         return
                     }
@@ -213,8 +254,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingAngle) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltay = 0
-                        deltax = 0
+                        deltaY = 0
+                        deltaX = 0
 
                         // record pixel coordinates of x and y unit vectors
                         // in juggler's frame, at start of angle drag
@@ -249,20 +290,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             return
         }
 
-        val mouseMoved = (me.getX() != startx) || (me.getY() != starty)
+        val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
         if (eventActive && dragging && mouseMoved) {
             draggingY = false
             draggingXz = false
 
             try {
-                for (att in attachments) {
-                    if (att is EditLadderDiagram) {
-                        att.addToUndoList(pattern!!)
-                    }
-                }
-                animator.initAnimator()
-                setActiveItem(event.hashCode())
+                addToUndoList(pattern!!)
             } catch (jei: JuggleExceptionInternal) {
                 jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
             }
@@ -273,13 +308,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             draggingZ = false
             draggingXy = false
             deltaAngle = 0.0
-            for (att in attachments) {
-                if (att is EditLadderDiagram) {
-                    att.addToUndoList(pattern!!)
-                }
-            }
-            animator.initAnimator()
-            setActiveItem(position.hashCode())
+            addToUndoList(pattern!!)
+            //animator.initAnimator()
+            //setActiveItem(activePosition.hashCode())
         }
 
         if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
@@ -293,8 +324,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         draggingAngle = false
         draggingZ = false
         draggingXy = false
-        deltay = 0
-        deltax = 0
+        deltaY = 0
+        deltaX = 0
         deltaAngle = 0.0
         eventPrimaryStart = null
         eventStart = null
@@ -333,13 +364,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (dragging) {
             val mx = me.getX()
             val my = me.getY()
-            var dolayout = false
 
             if (draggingAngle) {
                 // shift pixel coords of control point by mouse drag
                 val dcontrol = doubleArrayOf(
-                    startControl[0] + mx - startx,
-                    startControl[1] + my - starty
+                    startControl[0] + mx - startX,
+                    startControl[1] + my - startY
                 )
 
                 // re-express control point location in coordinate
@@ -375,18 +405,18 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     finalAngle += 360.0
                 }
                 val rec = PatternBuilder.fromJMLPattern(pattern!!)
-                val index = rec.positions.indexOf(position!!)
+                val index = rec.positions.indexOf(activePosition!!)
                 if (index < 0) throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
-                val newPosition = position!!.copy(angle = finalAngle)
+                val newPosition = activePosition!!.copy(angle = finalAngle)
                 rec.positions[index] = newPosition
-                position = newPosition
-                restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
+                activeItemHashCode = newPosition.hashCode()
+                onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
             } else {
-                deltax = mx - startx
-                deltay = my - starty
+                deltaX = mx - startX
+                deltaY = my - startY
 
                 // Get updated event/position coordinate based on mouse position.
-                // This modifies deltax, deltay based on snapping and projection.
+                // This modifies deltaX, deltaY based on snapping and projection.
                 val cc = currentCoordinate
 
                 if (eventActive) {
@@ -394,71 +424,53 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     deltalc = Coordinate.truncate(deltalc, 1e-7)
 
                     val newEventCoordinate = add(eventStart, deltalc)!!
-                    val newEvent = event!!.copy(
+                    val newEvent = activeEvent!!.copy(
                         x = newEventCoordinate.x,
                         y = newEventCoordinate.y,
                         z = newEventCoordinate.z
                     )
 
-                    val primary = event!!.primary
-                    if (event!!.hand != primary.hand) {
+                    if (activeEvent!!.hand != activeEventPrimary!!.hand) {
                         deltalc.x = -deltalc.x
                     }
                     val newPrimaryCoordinate = add(eventPrimaryStart, deltalc)!!
-                    val newPrimary = primary.copy(
+                    val newPrimary = activeEventPrimary!!.copy(
                         x = newPrimaryCoordinate.x,
                         y = newPrimaryCoordinate.y,
                         z = newPrimaryCoordinate.z
                     )
 
-                    event = newEvent
                     if (pattern != null) {
                         val record = PatternBuilder.fromJMLPattern(pattern!!)
-                        val index = record.events.indexOf(primary)
+                        val index = record.events.indexOf(activeEventPrimary)
                         record.events[index] = newPrimary
-                        restartJuggle(JMLPattern.fromPatternBuilder(record), null)
-                        //dolayout = true
+                        activeItemHashCode = newEvent.hashCode()
+                        onPatternChange(JMLPattern.fromPatternBuilder(record), undoable = false)
                     }
                 }
 
                 if (positionActive) {
                     val rec = PatternBuilder.fromJMLPattern(pattern!!)
-                    val index = rec.positions.indexOf(position!!)
+                    val index = rec.positions.indexOf(activePosition!!)
                     if (index < 0) throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
-                    val newPosition = position!!.copy(x = cc.x, y = cc.y, z = cc.z)
+                    val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                     rec.positions[index] = newPosition
-                    position = newPosition
-                    restartJuggle(JMLPattern.fromPatternBuilder(rec), null)
+                    activeItemHashCode = newPosition.hashCode()
+                    onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
                 }
-            }
-
-            if (dolayout) {
-                try {
-                    synchronized(animator.pat!!) {
-                        animator.pat!!.layout
-                    }
-                    if (eventActive) {
-                        createHandpathView()
-                    }
-                } catch (je: JuggleException) {
-                    // The editing operations here should never put the pattern
-                    // into an invalid state, so we shouldn't ever get here
-                    jlHandleFatalException(je)
-                }
-                repaint()
             }
         } else if (!draggingCamera) {
             draggingCamera = true
-            lastx = startx
-            lasty = starty
+            lastX = startX
+            lastY = startY
             dragcamangle = animator.cameraAngle
         }
 
         if (draggingCamera) {
-            val dx = me.getX() - lastx
-            val dy = me.getY() - lasty
-            lastx = me.getX()
-            lasty = me.getY()
+            val dx = me.getX() - lastX
+            val dy = me.getY() - lastY
+            lastX = me.getX()
+            lastY = me.getY()
             val ca = dragcamangle
             ca!![0] += dx.toDouble() * 0.02
             ca[1] -= dy.toDouble() * 0.02
@@ -563,7 +575,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         var snapHorizontal = true
 
         if (eventActive) {
-            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(event!!.juggler, event!!.t))
+            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(activeEvent!!.juggler, activeEvent!!.t))
         } else if (positionActive) {
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
@@ -626,31 +638,53 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     // Incoming notifications of changes
     //--------------------------------------------------------------------------
 
-    fun setJMLPattern(pat: JMLPattern, activeHashCode: Int) {
-        restartJuggle(pat, null)
-        setActiveItem(activeHashCode)
+    fun setJMLPattern(
+        pat: JMLPattern,
+        activeHashCode: Int,
+        restart: Boolean = true
+    ) {
+        if (restart) {
+            restartJuggle(pat, null)
+        } else {
+            animator.pat = pat
+            animator.initAnimator()
+            for (att in attachments) {
+                att.setJMLPattern(pat)
+            }
+        }
+        try {
+            setActiveItem(activeHashCode)
+        } catch (jei: JuggleExceptionInternal) {
+            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
+        }
     }
 
     fun setActiveItem(activeHashCode: Int) {
         // reset event-related fields
-        event = null
+        activeEvent = null
+        activeEventPrimary = null
         eventActive = false
-        draggingY = false
-        draggingXz = false
         eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
-        visibleEvents = null
+        visibleEvents = mutableListOf()
         handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
 
         // reset position-related fields
-        position = null
+        activePosition = null
         positionActive = false
-        draggingAngle = false
-        draggingZ = false
-        draggingXy = false
 
-        for ((ev, _) in pattern!!.loopEvents) {
+        for ((ev, evPrimary) in pattern!!.loopEvents) {
             if (ev.hashCode() == activeHashCode) {
-                event = ev
+                activeEvent = ev
+                activeEventPrimary = evPrimary
+                eventActive = true
+                createEventView()
+                break
+            } else if (ev.transitions.withIndex().any { (transNum, _) ->
+                val trHash = ev.hashCode() + 23 + transNum * 27
+                trHash == activeHashCode
+            }) {
+                activeEvent = ev
+                activeEventPrimary = evPrimary
                 eventActive = true
                 createEventView()
                 break
@@ -658,7 +692,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
         for (pos in pattern!!.positions) {
             if (pos.hashCode() == activeHashCode) {
-                position = pos
+                activePosition = pos
                 positionActive = true
                 createPositionView()
                 break
@@ -675,80 +709,62 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     private fun createEventView() {
         if (!eventActive) return
 
+        val pat = pattern!!
+        val ev = activeEvent!!
+
         // determine which events to display on-screen
-        visibleEvents = ArrayList()
-        visibleEvents!!.add(event!!)
-        handpathStartTime = event!!.t
-        handpathEndTime = event!!.t
+        visibleEvents = mutableListOf()
+        visibleEvents.add(ev)
+        handpathStartTime = ev.t
+        handpathEndTime = ev.t
 
-        var ev2 = event!!.previous
-        while (ev2 != null) {
-            if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
-                handpathStartTime = min(handpathStartTime, ev2.t)
-
-                var newPrimary = true
-                for (ev3 in visibleEvents!!) {
-                    if (ev3.hasSamePrimaryAs(ev2)) {
-                        newPrimary = false
-                    }
-                }
-                if (newPrimary) {
-                    visibleEvents!!.add(ev2)
-                } else {
-                    break
-                }
-                if (ev2.hasThrowOrCatch) {
-                    break
-                }
+        for ((ev2, ev2Primary) in pat.eventSequence(startTime = ev.t, reverse = true)
+            .filter { it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
+            handpathStartTime = min(handpathStartTime, ev2.t)
+            if (ev2Primary != activeEventPrimary) {
+                visibleEvents.add(ev2)
+            } else {
+                break
             }
-            ev2 = ev2.previous
+            if (ev2.hasThrowOrCatch) {
+                break
+            }
         }
-
-        ev2 = event!!.next
-        while (ev2 != null) {
-            if (ev2.juggler == event!!.juggler && ev2.hand == event!!.hand) {
-                handpathEndTime = max(handpathEndTime, ev2.t)
-
-                var newPrimary = true
-                for (ev3 in visibleEvents!!) {
-                    if (ev3.hasSamePrimaryAs(ev2)) {
-                        newPrimary = false
-                    }
-                }
-                if (newPrimary) {
-                    visibleEvents!!.add(ev2)
-                } else {
-                    break
-                }
-                if (ev2.hasThrowOrCatch) {
-                    break
-                }
+        for ((ev2, ev2Primary) in pat.eventSequence(startTime = ev.t)
+            .filter { it.event != ev && it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
+            handpathEndTime = max(handpathStartTime, ev2.t)
+            if (ev2Primary != activeEventPrimary) {
+                visibleEvents.add(ev2)
+            } else {
+                break
             }
-            ev2 = ev2.next
+            if (ev2.hasThrowOrCatch) {
+                break
+            }
         }
 
         // Determine screen coordinates of visual representations for events.
         // Note the first event in `visible_events` is the selected one.
         val rendererCount = if (jc.stereo) 2 else 1
         eventPoints =
-            Array(visibleEvents!!.size) {
+            Array(visibleEvents.size) {
                 Array(rendererCount) {
                     Array(EVENT_CONTROL_POINTS.size) { DoubleArray(2) }
                 }
             }
 
         var evNum = 0
-        for (ev in visibleEvents!!) {
+        for (ev in visibleEvents) {
             for (i in 0..<rendererCount) {
                 val ren = (if (i == 0) animator.ren1 else animator.ren2)
 
                 // translate by one pixel and see how far it is in juggler space
-                val c = pattern!!.layout.getGlobalCoordinate(ev)
+                val c = pat.layout.getGlobalCoordinate(ev)
                 val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2)  // pixels/cm
 
                 val ca = ren.cameraAngle
-                val theta = ca[0] + Math.toRadians(pattern!!.layout.getJugglerAngle(ev.juggler, ev.t))
+                val theta = ca[0] + Math.toRadians(pat.layout.getJugglerAngle(ev.juggler, ev.t))
                 val phi = ca[1]
 
                 val dlc = dl * cos(phi)
@@ -762,7 +778,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                 val center = ren.getXY(c)
 
-                if (ev == event) {
+                if (ev == activeEvent) {
                     for (j in EVENT_CONTROL_POINTS.indices) {
                         eventPoints[0][i][j][0] =
                             (center[0].toDouble() +
@@ -810,7 +826,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     private fun createHandpathView() {
         if (!eventActive) return
 
-        val pat = pattern
+        val pat = pattern!!
+        val ev = activeEvent!!
         val rendererCount = (if (jc.stereo) 2 else 1)
         val numHandpathPoints =
             ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
@@ -819,16 +836,16 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         handpathHold = BooleanArray(numHandpathPoints)
 
         for (i in 0..<rendererCount) {
-            val ren = (if (i == 0) animator.ren1 else animator.ren2)
+            val ren = (if (i == 0) animator.ren1 else animator.ren2)!!
             val c = Coordinate()
 
             for (j in 0..<numHandpathPoints) {
                 val t: Double = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
-                pat!!.layout.getHandCoordinate(event!!.juggler, event!!.hand, t, c)
-                val point = ren!!.getXY(c)
+                pat.layout.getHandCoordinate(ev.juggler, ev.hand, t, c)
+                val point = ren.getXY(c)
                 handpathPoints[i][j][0] = point[0].toDouble()
                 handpathPoints[i][j][1] = point[1].toDouble()
-                handpathHold[j] = pat.layout.isHandHolding(event!!.juggler, event!!.hand, t + 0.0001)
+                handpathHold[j] = pat.layout.isHandHolding(ev.juggler, ev.hand, t + 0.0001)
             }
         }
     }
@@ -894,8 +911,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             // dot at center
             g2.fillOval(
-                eventPoints[0][i][4][0].roundToInt() + deltax - 2,
-                eventPoints[0][i][4][1].roundToInt() + deltay - 2,
+                eventPoints[0][i][4][0].roundToInt() + deltaX - 2,
+                eventPoints[0][i][4][1].roundToInt() + deltaY - 2,
                 5,
                 5
             )
@@ -946,7 +963,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             // translate by one pixel and see how far it is in juggler space
             val c =
-                add(position!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
+                add(activePosition!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
             val c2 = ren!!.getScreenTranslatedCoordinate(c!!, 1, 0)
             val dl = 1.0 / distance(c, c2) // pixels/cm
 
@@ -1014,8 +1031,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             // dot at center
             g2.fillOval(
-                posPoints[i][4][0].roundToInt() + deltax - 2,
-                posPoints[i][4][1].roundToInt() + deltay - 2,
+                posPoints[i][4][0].roundToInt() + deltaX - 2,
+                posPoints[i][4][1].roundToInt() + deltaY - 2,
                 5,
                 5
             )
@@ -1039,8 +1056,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 // angle-changing control pointing backward
                 drawLine(g2, posPoints, i, 4, 5, true)
                 g2.fillOval(
-                    posPoints[i][5][0].roundToInt() - 4 + deltax,
-                    posPoints[i][5][1].roundToInt() - 4 + deltay,
+                    posPoints[i][5][0].roundToInt() - 4 + deltaX,
+                    posPoints[i][5][1].roundToInt() - 4 + deltaY,
                     10,
                     10
                 )
@@ -1061,8 +1078,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     g2.drawLine(
                         xyProjection[0],
                         xyProjection[1],
-                        posPoints[i][4][0].roundToInt() + deltax,
-                        posPoints[i][4][1].roundToInt() + deltay
+                        posPoints[i][4][0].roundToInt() + deltaX,
+                        posPoints[i][4][1].roundToInt() + deltaY
                     )
                     g2.fillOval(xyProjection[0] - 2, xyProjection[1] - 2, 5, 5)
 
@@ -1072,7 +1089,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             max(posPoints[i][0][1], posPoints[i][1][1]),
                             max(posPoints[i][2][1], posPoints[i][3][1])
                         )
-                        val messageY = y.roundToInt() + deltay + 40
+                        val messageY = y.roundToInt() + deltaY + 40
 
                         g2.color = Color.black
                         g2.drawString(
@@ -1185,7 +1202,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         get() {
             if (eventActive) {
                 if (!dragging) {
-                    return event!!.localCoordinate
+                    return activeEvent!!.localCoordinate
                 }
 
                 val c = eventStart!!.copy()
@@ -1208,36 +1225,36 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
 
                 if (draggingXz) {
-                    // express deltax, deltay in terms of dx, dz above
+                    // express deltaX, deltaY in terms of dx, dz above
                     //
-                    // deltax = A * dxx + B * dzx;
-                    // deltay = A * dxy + B * dzy;
+                    // deltaX = A * dxx + B * dzx;
+                    // deltaY = A * dxy + B * dzy;
                     //
                     // then c.x += A
                     //      c.z += B
                     val det = dx[0] * dz[1] - dx[1] * dz[0]
-                    val a = (dz[1] * deltax - dz[0] * deltay) / det
-                    val b = (-dx[1] * deltax + dx[0] * deltay) / det
+                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
+                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
 
                     c.x += a
                     c.z += b
 
                     // Snap to z = 0 in local coordinates ("normal" throwing height)
                     if (abs(c.z) < YZ_EVENT_SNAP_CM) {
-                        deltay += (dz[1] * (-c.z)).roundToInt()
+                        deltaY += (dz[1] * (-c.z)).roundToInt()
                         c.z = 0.0
                     }
                 }
 
                 if (draggingY) {
-                    // express deltax, deltay in terms of dy, dz above
+                    // express deltaX, deltaY in terms of dy, dz above
                     //
-                    // deltax = A * dyx + B * dzx;
-                    // deltay = A * dyy + B * dzy;
+                    // deltaX = A * dyx + B * dzx;
+                    // deltaY = A * dyy + B * dzy;
                     //
                     // then c.y += A
                     val det = dy[0] * dz[1] - dy[1] * dz[0]
-                    val a = (dz[1] * deltax - dz[0] * deltay) / det
+                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
 
                     c.y += a
 
@@ -1246,10 +1263,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         c.y = 0.0
                     }
 
-                    // Calculate `deltax`, `deltay` that put the event closest to its final
-                    // location
-                    deltax = ((c.y - eventStart!!.y) * dy[0]).roundToInt()
-                    deltay = ((c.y - eventStart!!.y) * dy[1]).roundToInt()
+                    // Calculate deltaX, deltaX that put the event closest to its
+                    // final location
+                    deltaX = ((c.y - eventStart!!.y) * dy[0]).roundToInt()
+                    deltaY = ((c.y - eventStart!!.y) * dy[1]).roundToInt()
                 }
 
                 return c
@@ -1257,7 +1274,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
             if (positionActive) {
                 if (!draggingXy && !draggingZ) {
-                    return position!!.coordinate
+                    return activePosition!!.coordinate
                 }
 
                 val c = positionStart!!.copy()
@@ -1280,19 +1297,19 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
 
                 if (draggingXy) {
-                    // express deltax, deltay in terms of dx, dy above
+                    // express deltaX, deltaY in terms of dx, dy above
                     //
-                    // deltax = A * dxx + B * dyx;
-                    // deltay = A * dxy + B * dyy;
+                    // deltaX = A * dxx + B * dyx;
+                    // deltaY = A * dxy + B * dyy;
                     //
                     // then position.x += A
                     //      position.y += B
                     val det = dx[0] * dy[1] - dx[1] * dy[0]
-                    val a = (dy[1] * deltax - dy[0] * deltay) / det
-                    val b = (-dx[1] * deltax + dx[0] * deltay) / det
+                    val a = (dy[1] * deltaX - dy[0] * deltaY) / det
+                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
 
                     // transform changes to global coordinates
-                    val angle = Math.toRadians(position!!.angle)
+                    val angle = Math.toRadians(activePosition!!.angle)
                     c.x += a * cos(angle) - b * sin(angle)
                     c.y += a * sin(angle) + b * cos(angle)
 
@@ -1315,7 +1332,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
 
                     if (snapped) {
-                        // calculate `deltax` and `deltay` that get us closest to the snapped
+                        // calculate `deltaX` and `deltaY` that get us closest to the snapped
                         // position
                         val deltacx = c.x - oldcx
                         val deltacy = c.y - oldcy
@@ -1324,17 +1341,17 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         val deltaXpx = dx[0] * deltaa + dy[0] * deltab
                         val deltaYpx = dx[1] * deltaa + dy[1] * deltab
 
-                        deltax += deltaXpx.roundToInt()
-                        deltay += deltaYpx.roundToInt()
+                        deltaX += deltaXpx.roundToInt()
+                        deltaY += deltaYpx.roundToInt()
                     }
                 }
 
                 if (draggingZ) {
-                    deltax = 0 // constrain movement to be vertical
-                    c.z += deltay / dz[1]
+                    deltaX = 0 // constrain movement to be vertical
+                    c.z += deltaY / dz[1]
 
                     if (abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
-                        deltay += (dz[1] * (100 - c.z)).roundToInt()
+                        deltaY += (dz[1] * (100 - c.z)).roundToInt()
                         c.z = 100.0
                     }
                 }
@@ -1355,10 +1372,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     ) {
         if (mouse) {
             g.drawLine(
-                array[index][p1][0].roundToInt() + deltax,
-                array[index][p1][1].roundToInt() + deltay,
-                array[index][p2][0].roundToInt() + deltax,
-                array[index][p2][1].roundToInt() + deltay
+                array[index][p1][0].roundToInt() + deltaX,
+                array[index][p1][1].roundToInt() + deltaY,
+                array[index][p2][0].roundToInt() + deltaX,
+                array[index][p2][1].roundToInt() + deltaY
             )
         } else {
             g.drawLine(
@@ -1483,7 +1500,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             x: Int,
             y: Int,
             array: Array<Array<DoubleArray>>,
-            index: Int, points: IntArray
+            index: Int,
+            points: IntArray
         ): Boolean {
             var inside = false
             var i = 0

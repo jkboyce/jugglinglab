@@ -232,8 +232,10 @@ class Animator {
         val pattern = pat!!
         val sg = (jc.showGround == AnimationPrefs.GROUND_ON ||
                 (jc.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
+        ren1!!.setPattern(pattern)
         ren1!!.setGround(sg)
         if (jc.stereo) {
+            ren2!!.setPattern(pattern)
             ren2!!.setGround(sg)
         }
 

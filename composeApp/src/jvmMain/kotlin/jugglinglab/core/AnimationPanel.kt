@@ -18,7 +18,6 @@ import jugglinglab.util.JuggleExceptionUser
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.*
-import java.util.*
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
@@ -48,14 +47,14 @@ open class AnimationPanel : JPanel(), Runnable {
 
     // for camera dragging
     protected var draggingCamera: Boolean = false
-    protected var startx: Int = 0
-    protected var starty: Int = 0
-    protected var lastx: Int = 0
-    protected var lasty: Int = 0
+    protected var startX: Int = 0
+    protected var startY: Int = 0
+    protected var lastX: Int = 0
+    protected var lastY: Int = 0
     protected var dragcamangle: DoubleArray? = null
 
     // attached objects to be notified of events
-    protected var attachments: ArrayList<AnimationAttachment> = ArrayList<AnimationAttachment>()
+    protected var attachments: MutableList<AnimationAttachment> = mutableListOf()
 
     init {
         setOpaque(true)
@@ -104,8 +103,8 @@ open class AnimationPanel : JPanel(), Runnable {
                     if (jc.mousePause && lastpress == lastenter) return
                     if (!engineAnimating) return
                     if (writingGIF) return
-                    startx = me.getX()
-                    starty = me.getY()
+                    startX = me.getX()
+                    startY = me.getY()
                 }
 
                 override fun mouseReleased(me: MouseEvent) {
@@ -117,7 +116,7 @@ open class AnimationPanel : JPanel(), Runnable {
                         this@AnimationPanel.isPaused = !enginePaused
                         return
                     }
-                    if (me.getX() == startx && me.getY() == starty && engine != null && engine!!.isAlive) {
+                    if (me.getX() == startX && me.getY() == startY && engine != null && engine!!.isAlive) {
                         this@AnimationPanel.isPaused = !enginePaused
                         getParent().dispatchEvent(me)
                     }
@@ -156,15 +155,15 @@ open class AnimationPanel : JPanel(), Runnable {
                     }
                     if (!draggingCamera) {
                         draggingCamera = true
-                        lastx = startx
-                        lasty = starty
+                        lastX = startX
+                        lastY = startY
                         dragcamangle = this@AnimationPanel.cameraAngle
                     }
 
-                    val xdelta = me.getX() - lastx
-                    val ydelta = me.getY() - lasty
-                    lastx = me.getX()
-                    lasty = me.getY()
+                    val xdelta = me.getX() - lastX
+                    val ydelta = me.getY() - lastY
+                    lastX = me.getX()
+                    lastY = me.getY()
                     val ca = dragcamangle!!
                     ca[0] += (xdelta).toDouble() * 0.02
                     ca[1] -= (ydelta).toDouble() * 0.02

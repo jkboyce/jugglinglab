@@ -82,7 +82,15 @@ class EditLadderDiagram(
         if (undoable) {
             addToUndoList(newPattern)
         }
-        aep?.setJMLPattern(newPattern, activeItemHashCode)
+        aep?.setJMLPattern(newPattern, activeItemHashCode, restart = false)
+    }
+
+    fun onNewActiveItem(hash: Int) {
+        try {
+            aep?.setActiveItem(hash)
+        } catch (jei: JuggleExceptionInternal) {
+            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+        }
     }
 
     fun addToUndoList(pat: JMLPattern) {
@@ -115,24 +123,20 @@ class EditLadderDiagram(
             popupX = me.getX()
             popupY = me.getY()
             if (aep2 != null) {
-                val scale =
-                    (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
-                val newtime = (my - BORDER_TOP).toDouble() * scale
+                val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                    (ladderHeight - 2 * BORDER_TOP).toDouble()
+                val newT = (my - BORDER_TOP).toDouble() * scale
                 animPaused = aep2.isPaused
                 aep2.isPaused = true
-                aep2.time = newtime
-                aep2.setActiveItem(0)
-                if (activeEventItem != null) {
-                    try {
-                        aep2.setActiveItem(activeEventItem!!.event.hashCode())
-                    } catch (jei: JuggleExceptionInternal) {
-                        jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-                    }
+                aep2.time = newT
+                activeItemHashCode = if (activeEventItem != null) {
+                    activeEventItem!!.event.hashCode()
+                } else if (activePositionItem != null) {
+                    activePositionItem!!.position.hashCode()
+                } else {
+                    0
                 }
-                if (activePositionItem != null) {
-                    aep2.setActiveItem(activePositionItem!!.position.hashCode())
-                }
-                aep2.repaint()
+                onNewActiveItem(activeItemHashCode)
             }
 
             makePopupMenu(popupItem).show(this@EditLadderDiagram, me.getX(), me.getY())
@@ -150,11 +154,7 @@ class EditLadderDiagram(
                             itemWasSelected = true
                         }
                         activeItemHashCode = activeEventItem!!.hashCode
-                        try {
-                            aep2?.setActiveItem(activeItemHashCode)
-                        } catch (jei: JuggleExceptionInternal) {
-                            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-                        }
+                        onNewActiveItem(activeItemHashCode)
                         if (activeEventItem!!.type == LadderItem.TYPE_TRANSITION) {
                             // only allow dragging of TYPE_EVENT
                             needsHandling = false
@@ -188,7 +188,7 @@ class EditLadderDiagram(
                             startYHigh = activePositionItem!!.yHigh
                             startT = activePositionItem!!.position.t
                             findPositionLimits(activePositionItem!!)
-                            aep2?.setActiveItem(activePositionItem!!.position.hashCode())
+                            onNewActiveItem(activeItemHashCode)
                             needsHandling = false
                         }
                     }
@@ -204,7 +204,7 @@ class EditLadderDiagram(
                             animPaused = aep2.isPaused
                             aep2.isPaused = true
                             aep2.time = newtime
-                            aep2.setActiveItem(0)
+                            onNewActiveItem(0)
                         }
                     }
                 }
@@ -239,22 +239,14 @@ class EditLadderDiagram(
                         animPaused = aep2.isPaused
                         aep2.isPaused = true
                         aep2.time = newtime
-                        aep2.setActiveItem(0)
-                        if (activeEventItem != null) {
-                            try {
-                                aep2.setActiveItem(activeEventItem!!.event.hashCode())
-                            } catch (jei: JuggleExceptionInternal) {
-                                jlHandleFatalException(
-                                    JuggleExceptionInternalWithPattern(
-                                        jei,
-                                        pattern
-                                    )
-                                )
-                            }
+                        activeItemHashCode = if (activeEventItem != null) {
+                            activeEventItem!!.event.hashCode()
+                        } else if (activePositionItem != null) {
+                            activePositionItem!!.position.hashCode()
+                        } else {
+                            0
                         }
-                        if (activePositionItem != null) {
-                            aep2.setActiveItem(activePositionItem!!.position.hashCode())
-                        }
+                        onNewActiveItem(activeItemHashCode)
                         aep2.repaint()
                     }
 
@@ -293,8 +285,8 @@ class EditLadderDiagram(
                     } else if (itemWasSelected) {
                         // clicked without moving --> deselect
                         activeEventItem = null
-                        aep2?.setActiveItem(0)
-                        aep2?.repaint()
+                        activeItemHashCode = 0
+                        onNewActiveItem(0)
                         repaint()
                     }
                 }
@@ -306,8 +298,8 @@ class EditLadderDiagram(
                         addToUndoList(pattern)
                     } else if (itemWasSelected) {
                         activePositionItem = null
-                        aep2?.setActiveItem(0)
-                        aep2?.repaint()
+                        activeItemHashCode = 0
+                        onNewActiveItem(0)
                         repaint()
                     }
                 }
@@ -1389,6 +1381,7 @@ class EditLadderDiagram(
                 activePositionItem = item
             }
         }
+        repaint()
     }
 
     //--------------------------------------------------------------------------
