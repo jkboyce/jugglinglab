@@ -1469,6 +1469,113 @@ class EditLadderDiagram(
         }
     }
 
+    // Determine which commands are enabled for a particular LadderItem
+    //
+    // Returns true for enabled, false for disabled
+
+    private fun isCommandEnabled(laditem: LadderItem?, command: String?): Boolean {
+        if (laditem == null) {
+            return !listOf(
+                "removeevent",
+                "removeposition",
+                "defineprop",
+                "definethrow",
+                "changetocatch",
+                "changetosoftcatch",
+                "changetograbcatch",
+                "makelast"
+            ).contains(command)
+        } else if (laditem.type == LadderItem.TYPE_EVENT) {
+            if (listOf(
+                    "addeventtoleft",
+                    "addeventtoright",
+                    "addposition",
+                    "removeposition",
+                    "defineprop",
+                    "definethrow",
+                    "changetocatch",
+                    "changetosoftcatch",
+                    "changetograbcatch",
+                    "makelast"
+                ).contains(command)
+            ) return false
+
+            if (command == "removeevent") {
+                // can't remove an event with throws or catches
+                val evitem = laditem as LadderEventItem
+                if (evitem.event.transitions.any { it.isThrowOrCatch }) {
+                    return false
+                }
+
+                // can't delete an event if it's the last one for that hand
+                val anotherEventForHand = ladderEventItems.any {
+                    it.event.juggler == evitem.event.juggler &&
+                        it.event.hand == evitem.event.hand &&
+                        it.eventPrimary != evitem.eventPrimary
+                }
+                if (!anotherEventForHand) {
+                    return false
+                }
+            }
+        } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
+            if (mutableListOf(
+                    "addeventtoleft",
+                    "addeventtoright",
+                    "addposition",
+                    "removeposition",
+                    "removeevent"
+                ).contains(command)
+            ) return false
+
+            val evitem = laditem as LadderEventItem
+            val tr = evitem.event.transitions[evitem.transNum]
+
+            when (command) {
+                "makelast" ->
+                    return evitem.transNum != (evitem.event.transitions.size - 1)
+
+                "definethrow" ->
+                    return tr.type == JMLTransition.TRANS_THROW
+
+                "changetocatch" ->
+                    return tr.type == JMLTransition.TRANS_SOFTCATCH
+                        || tr.type == JMLTransition.TRANS_GRABCATCH
+
+                "changetosoftcatch" ->
+                    return tr.type == JMLTransition.TRANS_CATCH
+                        || tr.type == JMLTransition.TRANS_GRABCATCH
+
+                "changetograbcatch" ->
+                    return tr.type == JMLTransition.TRANS_CATCH
+                        || tr.type == JMLTransition.TRANS_SOFTCATCH
+            }
+        } else if (laditem.type == LadderItem.TYPE_POSITION) {
+            return !mutableListOf(
+                "addeventtoleft",
+                "addeventtoright",
+                "removeevent",
+                "addposition",
+                "defineprop",
+                "definethrow",
+                "changetocatch",
+                "changetosoftcatch",
+                "changetograbcatch",
+                "makelast"
+            ).contains(command)
+        } else {  // LadderPathItem
+            return !mutableListOf(
+                "removeevent",
+                "removeposition",
+                "definethrow",
+                "changetocatch",
+                "changetosoftcatch",
+                "changetograbcatch",
+                "makelast"
+            ).contains(command)
+        }
+        return true
+    }
+
     companion object {
         // minimum time (seconds) between a throw and another event with transitions
         private const val MIN_THROW_SEP_TIME: Double = 0.05
@@ -1533,124 +1640,5 @@ class EditLadderDiagram(
             "changetograbcatch",
             "makelast",
         )
-
-        // Determine which commands are enabled for a particular LadderItem
-        //
-        // Returns true for enabled, false for disabled
-
-        private fun isCommandEnabled(laditem: LadderItem?, command: String?): Boolean {
-            if (laditem == null) {
-                return !listOf(
-                    "removeevent",
-                    "removeposition",
-                    "defineprop",
-                    "definethrow",
-                    "changetocatch",
-                    "changetosoftcatch",
-                    "changetograbcatch",
-                    "makelast"
-                ).contains(command)
-            } else if (laditem.type == LadderItem.TYPE_EVENT) {
-                if (listOf(
-                        "addeventtoleft",
-                        "addeventtoright",
-                        "addposition",
-                        "removeposition",
-                        "defineprop",
-                        "definethrow",
-                        "changetocatch",
-                        "changetosoftcatch",
-                        "changetograbcatch",
-                        "makelast"
-                    ).contains(command)
-                ) return false
-
-                if (command == "removeevent") {
-                    // can't remove an event with throws or catches
-                    val evitem = laditem as LadderEventItem
-
-                    for (tr in evitem.event.transitions) {
-                        if (tr.type != JMLTransition.TRANS_HOLDING) {
-                            return false
-                        }
-                    }
-
-                    // check to make sure we're not allowing the user to delete
-                    // an event if it's the last one in that hand.
-                    // do this by finding the next event in the same hand; if it
-                    // has the same primary, it's the only one
-                    val hand = evitem.event.hand
-                    val juggler = evitem.event.juggler
-                    val evm1 = if (evitem.event.isPrimary) evitem.event else evitem.event.primary
-                    var ev = evitem.event.next
-                    while (ev != null) {
-                        if (ev.hand == hand && ev.juggler == juggler) {
-                            val evm2 = if (ev.isPrimary) ev else ev.primary
-                            if (evm1 == evm2) {
-                                return false
-                            }
-                            break
-                        }
-                        ev = ev.next
-                    }
-                }
-            } else if (laditem.type == LadderItem.TYPE_TRANSITION) {
-                if (mutableListOf(
-                        "addeventtoleft",
-                        "addeventtoright",
-                        "addposition",
-                        "removeposition",
-                        "removeevent"
-                    ).contains(command)
-                ) return false
-
-                val evitem = laditem as LadderEventItem
-                val tr = evitem.event.transitions[evitem.transNum]
-
-                when (command) {
-                    "makelast" ->
-                        return evitem.transNum != (evitem.event.transitions.size - 1)
-
-                    "definethrow" ->
-                        return tr.type == JMLTransition.TRANS_THROW
-
-                    "changetocatch" ->
-                        return tr.type == JMLTransition.TRANS_SOFTCATCH
-                            || tr.type == JMLTransition.TRANS_GRABCATCH
-
-                    "changetosoftcatch" ->
-                        return tr.type == JMLTransition.TRANS_CATCH
-                            || tr.type == JMLTransition.TRANS_GRABCATCH
-
-                    "changetograbcatch" ->
-                        return tr.type == JMLTransition.TRANS_CATCH
-                            || tr.type == JMLTransition.TRANS_SOFTCATCH
-                }
-            } else if (laditem.type == LadderItem.TYPE_POSITION) {
-                return !mutableListOf(
-                    "addeventtoleft",
-                    "addeventtoright",
-                    "removeevent",
-                    "addposition",
-                    "defineprop",
-                    "definethrow",
-                    "changetocatch",
-                    "changetosoftcatch",
-                    "changetograbcatch",
-                    "makelast"
-                ).contains(command)
-            } else {  // LadderPathItem
-                return !mutableListOf(
-                    "removeevent",
-                    "removeposition",
-                    "definethrow",
-                    "changetocatch",
-                    "changetosoftcatch",
-                    "changetograbcatch",
-                    "makelast"
-                ).contains(command)
-            }
-            return true
-        }
     }
 }
