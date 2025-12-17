@@ -39,6 +39,8 @@ import javax.imageio.stream.MemoryCacheImageOutputStream
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.max
+import kotlin.math.min
 
 class Animator {
     var pat: JMLPattern? = null
@@ -95,7 +97,7 @@ class Animator {
         val ca = DoubleArray(2)
         if (jc.camangle != null) {
             ca[0] = Math.toRadians(jc.camangle!![0])
-            val theta = kotlin.math.min(179.9999, kotlin.math.max(0.0001, jc.camangle!![1]))
+            val theta = min(179.9999, max(0.0001, jc.camangle!![1]))
             ca[1] = Math.toRadians(theta)
         } else {
             if (pat!!.numberOfJugglers == 1) {
@@ -323,9 +325,9 @@ class Animator {
         // regardless of rotation angle.
         val hwmax = ren1!!.handWindowMax
         val hwmin = ren1!!.handWindowMin
-        hwmax.x = kotlin.math.max(
-            kotlin.math.max(abs(hwmax.x), abs(hwmin.x)),
-            kotlin.math.max(abs(hwmax.y), abs(hwmin.y))
+        hwmax.x = max(
+            max(abs(hwmax.x), abs(hwmin.x)),
+            max(abs(hwmax.y), abs(hwmin.y))
         )
         hwmin.x = -hwmax.x
         hwmax.y = hwmax.x
