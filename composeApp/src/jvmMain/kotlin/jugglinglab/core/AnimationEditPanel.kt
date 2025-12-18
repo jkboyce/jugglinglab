@@ -1285,9 +1285,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     //
                     // then c.y += A
                     val det = dy[0] * dz[1] - dy[1] * dz[0]
-                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
-
-                    c.y += a
+                    if (abs(det) > 1.0e-4) {
+                        val a = (dz[1] * deltaX - dz[0] * deltaY) / det
+                        c.y += a
+                    } else {
+                        c.y += deltaY / dy[1]
+                    }
 
                     // Snap to y = 0 in local coordinates ("normal" throwing depth)
                     if (abs(c.y) < YZ_EVENT_SNAP_CM) {
