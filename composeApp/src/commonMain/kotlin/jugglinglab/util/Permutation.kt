@@ -279,7 +279,7 @@ class Permutation {
             return false
         }
         for (i in 1..this.size) {
-            if (getMapping(i) != p.getMapping(i)) {
+            if (map(i) != p.map(i)) {
                 return false
             }
         }
@@ -288,7 +288,7 @@ class Permutation {
 
     // Return `perm(elem)`, or the result of applying the permutation to `elem`.
 
-    fun getMapping(elem: Int): Int {
+    fun map(elem: Int): Int {
         return if (reverses) {
             mapping[elem + size]
         } else {
@@ -302,15 +302,15 @@ class Permutation {
     // If `power` < 0 then return the inverse permutation applied `abs(power)`
     // times in succession.
 
-    fun getMapping(elem: Int, power: Int): Int {
+    fun map(elem: Int, power: Int): Int {
         var el = elem
         if (power > 0) {
             repeat(power) {
-                el = getMapping(el)
+                el = map(el)
             }
         } else if (power < 0) {
             repeat(-power) {
-                el = getInverseMapping(el)
+                el = mapInverse(el)
             }
         }
         return el
@@ -319,7 +319,7 @@ class Permutation {
     // Return the permutation that is this one, plus permutation `secondp` applied
     // afterward.
 
-    fun apply(secondp: Permutation?): Permutation {
+    fun composedWith(secondp: Permutation?): Permutation {
         if (secondp == null || this.size != secondp.size) {
             return this
         }
@@ -329,7 +329,7 @@ class Permutation {
 
         val res = IntArray(this.size)
         for (i in 0..<this.size) {
-            res[i] = secondp.getMapping(this.getMapping(i + 1))
+            res[i] = secondp.map(this.map(i + 1))
         }
 
         return Permutation(this.size, res, false)
@@ -338,7 +338,7 @@ class Permutation {
     // Return `perm.inverse(elem)`, i.e. the element that the permutation maps
     // onto `elem`.
 
-    fun getInverseMapping(elem: Int): Int {
+    fun mapInverse(elem: Int): Int {
         if (reverses) {
             for (i in 0..<(2 * size + 1)) {
                 if (mapping[i] == elem) {
@@ -386,8 +386,8 @@ class Permutation {
             var ord = 1
 
             for (elem in 1..size) {
-                if (getMapping(elem) != 0) {
-                    ord = lcm(ord, getOrder(elem))
+                if (map(elem) != 0) {
+                    ord = lcm(ord, orderOf(elem))
                 }
             }
 
@@ -396,7 +396,7 @@ class Permutation {
 
     // Find the order of a particular element in the permutation.
 
-    fun getOrder(elem: Int): Int {
+    fun orderOf(elem: Int): Int {
         var ord = 1
         var index = (if (reverses) elem + size else elem - 1)
 
@@ -408,8 +408,8 @@ class Permutation {
         return ord
     }
 
-    fun getCycle(elem: Int): IntArray {
-        val ord = getOrder(elem)
+    fun cycleOf(elem: Int): IntArray {
+        val ord = orderOf(elem)
         val result = IntArray(ord)
         var term = elem
 

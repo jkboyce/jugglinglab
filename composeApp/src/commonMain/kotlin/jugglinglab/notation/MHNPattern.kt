@@ -330,7 +330,7 @@ abstract class MHNPattern : Pattern() {
                         return@forEach
                     }
 
-                    var imagej = jperm.getMapping(j + 1)
+                    var imagej = jperm.map(j + 1)
                     val imageh = (if (imagej > 0) h else 1 - h)
                     imagej = abs(imagej) - 1
 
@@ -982,7 +982,7 @@ abstract class MHNPattern : Pattern() {
                                 while (slot < maxOccupancy) {
                                     val sst: MHNThrow? = th[j][h][k][slot]
                                     if (sst != null && sst.pathnum != -1) {
-                                        val map = jugperm.getMapping(j + 1)
+                                        val map = jugperm.map(j + 1)
                                         val newj = abs(map) - 1
                                         val newh = (if (map > 0) h else 1 - h)
                                         val sst2 = th[newj][newh][k + sss.delay][slot]
@@ -1668,8 +1668,8 @@ abstract class MHNPattern : Pattern() {
             val perm = sym.pathPerm
             for (k in 0..<numberOfPaths) {
                 if (pathtouched[k]) {
-                    for (l in 1..<perm.getOrder(k + 1)) {
-                        pathtouched[perm.getMapping(k + 1, l) - 1] = true
+                    for (l in 1..<perm.orderOf(k + 1)) {
+                        pathtouched[perm.map(k + 1, l) - 1] = true
                     }
                 }
             }
@@ -1717,8 +1717,8 @@ abstract class MHNPattern : Pattern() {
                     pathtouched[k] = true
                     for (sym in rec.symmetries) {
                         val perm = sym.pathPerm
-                        for (l in 1..<perm.getOrder(k + 1)) {
-                            pathtouched[perm.getMapping(k + 1, l) - 1] = true
+                        for (l in 1..<perm.orderOf(k + 1)) {
+                            pathtouched[perm.map(k + 1, l) - 1] = true
                         }
                     }
                 }

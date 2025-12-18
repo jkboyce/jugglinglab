@@ -71,7 +71,7 @@ data class JMLPattern(
         for (i in 0..<size) {
             if (done[i]) continue
 
-            val cycle = perm.getCycle(i + 1)
+            val cycle = perm.cycleOf(i + 1)
             for (j in 0..<cycle.size) {
                 done[cycle[j] - 1] = true
                 cycle[j] = propAssignment[cycle[j] - 1]
@@ -598,7 +598,7 @@ data class JMLPattern(
                 for (i in 0..<numberOfPaths) {
                     if (colorsByOrbit[i].isNotEmpty())
                         continue
-                    val cycle = delayPerm.getCycle(i + 1)
+                    val cycle = delayPerm.cycleOf(i + 1)
                     for (j in cycle) {
                         colorsByOrbit[j - 1] =
                             Prop.colorMixed[colorIndex % Prop.colorMixed.size]
@@ -958,7 +958,7 @@ data class PatternBuilder(
                                 // from the primary event and then restart the scan.
 
                                 val pathPrimary =
-                                    if (ev == evPrimary) tr.path else pathPermFromPrimary.getInverseMapping(tr.path)
+                                    if (ev == evPrimary) tr.path else pathPermFromPrimary.mapInverse(tr.path)
                                 val trPrimary =
                                     evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
                                 if (trPrimary == null || trPrimary.type != JMLTransition.TRANS_HOLDING) {
@@ -987,7 +987,7 @@ data class PatternBuilder(
 
                 for (path in pathsToHold) {
                     val pathPrimary =
-                        if (ev == evPrimary) path else pathPermFromPrimary.getInverseMapping(path)
+                        if (ev == evPrimary) path else pathPermFromPrimary.mapInverse(path)
                     val trPrimary =
                         evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
                     if (trPrimary != null) {

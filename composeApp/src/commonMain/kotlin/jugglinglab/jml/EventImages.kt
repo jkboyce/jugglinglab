@@ -95,7 +95,7 @@ class EventImages(
                 pow = -pow
             }
             while (pow > 0) {
-                ptemp = ptemp!!.apply(lp)
+                ptemp = ptemp!!.composedWith(lp)
                 --pow
             }
             ptemp!!
@@ -113,7 +113,7 @@ class EventImages(
             juggler = newJuggler,
             hand = newHand,
             transitions = primaryEvent.transitions.map { tr ->
-                tr.copy(path = pathPermFromPrimary.getMapping(tr.path))
+                tr.copy(path = pathPermFromPrimary.map(tr.path))
             }
         )
         newEvent.copyLayoutDataFrom(
@@ -168,7 +168,7 @@ class EventImages(
     }
 
     fun hasJMLTransitionForPath(path: Int): Boolean {
-        val cycle = loopPerm!!.getCycle(path)
+        val cycle = loopPerm!!.cycleOf(path)
 
         for (k in 0..<evTransitionCount) {
             val transPath = primaryEvent.transitions[k].path
@@ -177,7 +177,7 @@ class EventImages(
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
-                            if (permtemp.getMapping(transPath) in cycle) return true
+                            if (permtemp.map(transPath) in cycle) return true
                         }
                     }
                 }
@@ -187,7 +187,7 @@ class EventImages(
     }
 
     fun hasVDJMLTransitionForPath(path: Int): Boolean {
-        val cycle = loopPerm!!.getCycle(path)
+        val cycle = loopPerm!!.cycleOf(path)
 
         for (k in 0..<evTransitionCount) {
             if (transitionType[k] != JMLTransition.TRANS_THROW
@@ -201,7 +201,7 @@ class EventImages(
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
-                            if (permtemp.getMapping(transPath) in cycle) return true
+                            if (permtemp.map(transPath) in cycle) return true
                         }
                     }
                 }
@@ -275,7 +275,7 @@ class EventImages(
                     for (k in 0..1) {
                         for (l in 0..<numEntries) {
                             // apply symmetry to event
-                            var newj = sym[i]!!.jugglerPerm.getMapping(j + 1)
+                            var newj = sym[i]!!.jugglerPerm.map(j + 1)
                             if (newj == 0) {
                                 continue
                             }
@@ -288,12 +288,12 @@ class EventImages(
 
                             var p = ea[j][k][l] ?: continue
 
-                            p = p.apply(sym[i]!!.pathPerm)
+                            p = p.composedWith(sym[i]!!.pathPerm)
 
                             var newl = l + deltaentries[i]
                             // map back into range
                             if (newl >= numEntries) {
-                                p = p.apply(invdelayperm)
+                                p = p.composedWith(invdelayperm)
                                 newl -= numEntries
                             }
                             // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);

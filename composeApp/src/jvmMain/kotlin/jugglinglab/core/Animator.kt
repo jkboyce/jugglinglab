@@ -222,7 +222,7 @@ class Animator {
         val temppropnum = IntArray(paths)
 
         for (i in 0..<paths) {
-            temppropnum[invPathPerm!!.getMapping(i + 1) - 1] = animPropNum!![i]
+            temppropnum[invPathPerm!!.map(i + 1) - 1] = animPropNum!![i]
         }
         System.arraycopy(temppropnum, 0, animPropNum!!, 0, paths)
     }
