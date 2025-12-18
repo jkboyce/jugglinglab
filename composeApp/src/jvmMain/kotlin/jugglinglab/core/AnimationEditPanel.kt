@@ -475,7 +475,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                 "Error 2 in AEP.mouseDragged()",
                                 pattern!!
                             )
-                        )                    }
+                        )
+                    }
                     val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                     rec.positions[index] = newPosition
                     activeItemHashCode = newPosition.hashCode()
@@ -636,6 +637,17 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
         return result
+    }
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    override fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
+        super.restartJuggle(pat, newjc)
+        if (eventActive) {
+            createEventView()
+        }
+        if (positionActive) {
+            createPositionView()
+        }
     }
 
     override var zoomLevel: Double
@@ -851,7 +863,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         val pat = pattern!!
         val ev = activeEvent!!
-        val rendererCount = (if (jc.stereo) 2 else 1)
+        val rendererCount = if (jc.stereo) 2 else 1
         val numHandpathPoints =
             ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
         handpathPoints =
@@ -901,7 +913,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             val pathSolid = Path2D.Double()
             val pathDashed = Path2D.Double()
             for (j in 0..<numHandpathPoints - 1) {
-                val path = (if (handpathHold[j]) pathSolid else pathDashed)
+                val path = if (handpathHold[j]) pathSolid else pathDashed
 
                 if (path.getCurrentPoint() == null) {
                     path.moveTo(handpathPoints[i][j][0], handpathPoints[i][j][1])
@@ -1139,32 +1151,27 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         // need a Graphics2D object for setStroke() below
         if (g !is Graphics2D) return
-        var g2: Graphics2D = g
 
         // only draw grid when looking down from above
         if (cameraAngle[1] > Math.toRadians(GRID_SHOW_DEG)) return
 
-        g2.color = COLOR_GRID
-        val d = size
-
-        val width = (if (jc.stereo) d.width / 2 else d.width)
-
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
-            val ren = (if (i == 0) animator.ren1 else animator.ren2)
-
-            if (jc.stereo) {
-                g2 = if (i == 0) {
-                    g2.create(0, 0, d.width / 2, d.height) as Graphics2D
+            val g2 =
+                if (jc.stereo) {
+                    if (i == 0) {
+                        g.create(0, 0, size.width / 2, size.height) as Graphics2D
+                    } else {
+                        g.create(size.width / 2, 0, size.width / 2, size.height) as Graphics2D
+                    }
                 } else {
-                    g2.create(d.width / 2, 0, d.width / 2, d.height) as Graphics2D
+                    g
                 }
-            }
-
+            g2.color = COLOR_GRID
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            val ren = if (i == 0) animator.ren1 else animator.ren2
 
             // Figure out pixel deltas for 1cm vectors along x and y axes
             val center = ren!!.getXY(Coordinate(0.0, 0.0, 0.0))
-
             val dx = ren.getXY(Coordinate(100.0, 0.0, 0.0))
             val dy = ren.getXY(Coordinate(0.0, 100.0, 0.0))
             val xaxisSpacing = doubleArrayOf(
@@ -1188,15 +1195,15 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             var nmax = 0
             for (j in 0..3) {
                 val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
-                val b = ((if (j < 2) 0 else d.height) - center[1]).toDouble()
+                val b = ((if (j < 2) 0 else size.height) - center[1]).toDouble()
                 val m = (axis2[1] * a - axis2[0] * b) / det
                 val n = (-axis1[1] * a + axis1[0] * b) / det
                 val mint = floor(m).toInt()
                 val nint = floor(n).toInt()
-                mmin = (if (j == 0) mint else min(mmin, mint))
-                mmax = (if (j == 0) mint + 1 else max(mmax, mint + 1))
-                nmin = (if (j == 0) nint else min(nmin, nint))
-                nmax = (if (j == 0) nint + 1 else max(nmax, nint + 1))
+                mmin = if (j == 0) mint else min(mmin, mint)
+                mmax = if (j == 0) mint + 1 else max(mmax, mint + 1)
+                nmin = if (j == 0) nint else min(nmin, nint)
+                nmax = if (j == 0) nint + 1 else max(nmax, nint + 1)
             }
 
             for (j in mmin..mmax) {
@@ -1244,7 +1251,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val dx = doubleArrayOf(0.0, 0.0)
                 val dy = doubleArrayOf(0.0, 0.0)
                 val dz = doubleArrayOf(0.0, 0.0)
-                val f = (if (jc.stereo) 0.5 else 1.0)
+                val f = if (jc.stereo) 0.5 else 1.0
 
                 for (i in 0..<(if (jc.stereo) 2 else 1)) {
                     dx[0] += f * (eventPoints[0][i][11][0] - eventPoints[0][i][4][0])
