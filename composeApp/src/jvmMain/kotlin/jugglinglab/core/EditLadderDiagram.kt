@@ -325,24 +325,25 @@ class EditLadderDiagram(
             return
         }
 
-        var my = me.getY()
-        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
+        val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
 
         when (guiState) {
             STATE_INACTIVE, STATE_POPUP -> {}
             STATE_MOVING_EVENT -> {
                 val oldDeltaY = deltaY
                 deltaY = getClippedEventTime(me, activeEventItem!!.event)
-
                 if (deltaY != oldDeltaY) {
-                    moveEventInPattern(activeEventItem!!.transEventItem!!)
+                    try {
+                        moveEventInPattern(activeEventItem!!.transEventItem!!)
+                    } catch (jei: JuggleExceptionInternal) {
+                        jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                    }
                 }
             }
 
             STATE_MOVING_POSITION -> {
                 val oldDeltaY = deltaY
                 deltaY = getClippedPositionTime(me, activePositionItem!!.position)
-
                 if (deltaY != oldDeltaY) {
                     movePositionInPattern(activePositionItem!!)
                 }
@@ -352,8 +353,8 @@ class EditLadderDiagram(
                 trackerY = my
                 this@EditLadderDiagram.repaint()
                 if (aep2 != null) {
-                    val scale =
-                        (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
+                    val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                        (ladderHeight - 2 * BORDER_TOP).toDouble()
                     val newtime = (my - BORDER_TOP).toDouble() * scale
                     aep2.time = newtime
                     aep2.repaint()
@@ -452,6 +453,7 @@ class EditLadderDiagram(
         }
     }
 
+    @Throws(JuggleExceptionInternal::class)
     private fun moveEventInPattern(item: LadderEventItem) {
         val scale = (pattern.loopEndTime - pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
@@ -570,8 +572,8 @@ class EditLadderDiagram(
 
     private fun movePositionInPattern(item: LadderPositionItem) {
         val pos = item.position
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
+        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         var newt = startT + deltaY * scale
         if (newt < pattern.loopStartTime + scale) {

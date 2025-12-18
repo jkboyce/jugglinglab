@@ -408,7 +408,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
                 val rec = PatternBuilder.fromJMLPattern(pattern!!)
                 val index = rec.positions.indexOf(activePosition!!)
-                if (index < 0) throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
+                if (index < 0) {
+                    jlHandleFatalException(
+                        JuggleExceptionInternalWithPattern(
+                            "Error 1 in AEP.mouseDragged()",
+                            pattern!!
+                        )
+                    )
+                }
                 val newPosition = activePosition!!.copy(angle = finalAngle)
                 rec.positions[index] = newPosition
                 activeItemHashCode = newPosition.hashCode()
@@ -462,7 +469,13 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 if (positionActive) {
                     val rec = PatternBuilder.fromJMLPattern(pattern!!)
                     val index = rec.positions.indexOf(activePosition!!)
-                    if (index < 0) throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
+                    if (index < 0) {
+                        jlHandleFatalException(
+                            JuggleExceptionInternalWithPattern(
+                                "Error 2 in AEP.mouseDragged()",
+                                pattern!!
+                            )
+                        )                    }
                     val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                     rec.positions[index] = newPosition
                     activeItemHashCode = newPosition.hashCode()
@@ -666,6 +679,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
     }
 
+    @Throws(JuggleExceptionInternal::class)
     fun setActiveItem(activeHashCode: Int) {
         // reset event-related fields
         activeEvent = null
@@ -1214,6 +1228,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
     }
 
+    @get:Throws(JuggleExceptionInternal::class)
     private val currentCoordinate: Coordinate
         get() {
             if (eventActive) {
