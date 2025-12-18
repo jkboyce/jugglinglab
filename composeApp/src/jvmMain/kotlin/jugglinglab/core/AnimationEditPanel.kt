@@ -1453,7 +1453,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         private val COLOR_EVENTS: Color = Color.green
 
         // constants for rendering hand path
-        private const val HANDPATH_POINT_SEP_TIME: Double = 0.01 // secs
+        private const val HANDPATH_POINT_SEP_TIME: Double = 0.005 // secs
         private val COLOR_HANDPATH: Color = Color.lightGray
 
         // constants for rendering positions
