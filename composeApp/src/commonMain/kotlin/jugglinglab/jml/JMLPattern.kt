@@ -345,7 +345,7 @@ data class JMLPattern(
         JMLDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
-    @get:Throws(JuggleExceptionInternal::class)
+    @get:Throws(JuggleExceptionInternalWithPattern::class)
     val rootNode: JMLNode?
         get() {
             try {
@@ -394,7 +394,6 @@ data class JMLPattern(
     //
     // `multiplier` should typically be a little over 1.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun withScaledTimeToFitThrows(multiplier: Double): Pair<JMLPattern, Double> {
         var scaleFactor = 1.0
 
@@ -445,7 +444,7 @@ data class JMLPattern(
     // Flip the time axis to create (as nearly as possible) what the pattern
     // looks like played in reverse.
 
-    @Throws(JuggleExceptionInternal::class)
+    @Throws(JuggleExceptionInternalWithPattern::class)
     fun withInvertedTime(): JMLPattern {
         // For each JMLEvent:
         //     - set t = looptime - t
@@ -579,10 +578,10 @@ data class JMLPattern(
     // Set the colors of props in the pattern, using the information provided
     // in `colorString`.
 
-    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
+    @Throws(JuggleExceptionInternalWithPattern::class, JuggleExceptionUser::class)
     fun withPropColors(colorString: String): JMLPattern {
         if (!isColorable) {
-            throw JuggleExceptionInternal("setPropColors(): not colorable")
+            throw JuggleExceptionInternalWithPattern("setPropColors(): not colorable", this)
         }
 
         // compile a list of colors to apply in round-robin fashion to paths
@@ -897,7 +896,7 @@ data class PatternBuilder(
     // Any errors are considered internal errors because we assume user input
     // has been validated prior to this.
 
-    @Throws(JuggleExceptionInternal::class)
+    @Throws(JuggleExceptionInternalWithPattern::class)
     fun fixHolds() {
         val holdsOnly = Array(numberOfPaths) { false }
 
