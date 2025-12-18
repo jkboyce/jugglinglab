@@ -370,16 +370,31 @@ class EditLadderDiagram(
     private fun findEventLimits(item: LadderEventItem) {
         var tMin = pattern.loopStartTime
         var tMax = pattern.loopEndTime
+        val loopTime = pattern.loopEndTime - pattern.loopStartTime
 
         val evPaths = item.event.transitions.filter { it.isThrowOrCatch }.map { it.path }.toList()
+        val evPathsNext = evPaths.map { pattern.pathPermutation!!.map(it) }
+        val evPathsPrev = evPaths.map { pattern.pathPermutation!!.mapInverse(it) }
+
         ladderEventItems.forEach {
             if (it.event.t < item.event.t - MIN_THROW_SEP_TIME) {
                 if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
                     tMin = max(tMin, it.event.t + MIN_THROW_SEP_TIME)
                 }
-            } else if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
+            }
+            if (it.event.t - loopTime < item.event.t - MIN_THROW_SEP_TIME) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPathsNext }) {
+                    tMin = max(tMin, it.event.t - loopTime + MIN_THROW_SEP_TIME)
+                }
+            }
+            if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
                 if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
                     tMax = min(tMax, it.event.t - MIN_THROW_SEP_TIME)
+                }
+            }
+            if (it.event.t + loopTime > item.event.t + MIN_THROW_SEP_TIME) {
+                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPathsPrev }) {
+                    tMax = min(tMax, it.event.t + loopTime - MIN_THROW_SEP_TIME)
                 }
             }
         }
