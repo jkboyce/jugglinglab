@@ -107,7 +107,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         animator.pat = newPattern
         animator.initAnimator(fitToFrame = fitToFrame)
         for (att in attachments) {
-            att.setJMLPattern(newPattern)
+            att.setJMLPattern(newPattern, activeHashCode = activeItemHashCode)
         }
         onNewActiveItem(activeItemHashCode)
     }
@@ -173,8 +173,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingY) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltaY = 0
                         deltaX = 0
+                        deltaY = 0
                         eventStart = activeEvent!!.localCoordinate
                         eventPrimaryStart = activeEventPrimary!!.localCoordinate
                         repaint()
@@ -190,20 +190,27 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                         if (j > 0) {
                             try {
-                                setActiveItem(pattern!!.getEventImageInLoop(visibleEvents[j]).hashCode())
+                                setActiveItem(
+                                    pattern!!.getEventImageInLoop(visibleEvents[j]).hashCode()
+                                )
                                 for (att in attachments) {
                                     att.setActiveItem(activeEvent!!.hashCode())
                                 }
                             } catch (jei: JuggleExceptionInternal) {
-                                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                                jlHandleFatalException(
+                                    JuggleExceptionInternalWithPattern(
+                                        jei,
+                                        pattern
+                                    )
+                                )
                             }
                         }
 
                         draggingXz = true
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltaY = 0
                         deltaX = 0
+                        deltaY = 0
                         eventStart = activeEvent!!.localCoordinate
                         eventPrimaryStart = activeEventPrimary!!.localCoordinate
                         repaint()
@@ -235,8 +242,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingZ) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltaY = 0
                         deltaX = 0
+                        deltaY = 0
                         positionStart = activePosition!!.coordinate
                         repaint()
                         return
@@ -249,8 +256,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingXy) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltaY = 0
                         deltaX = 0
+                        deltaY = 0
                         positionStart = activePosition!!.coordinate
                         repaint()
                         return
@@ -265,8 +272,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     if (draggingAngle) {
                         dragging = true
                         draggingLeft = (i == 0)
-                        deltaY = 0
                         deltaX = 0
+                        deltaY = 0
+                        startAngle = Math.toRadians(activePosition!!.angle)
 
                         // record pixel coordinates of x and y unit vectors
                         // in juggler's frame, at start of angle drag
@@ -303,17 +311,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
-        if (eventActive && dragging && mouseMoved) {
-            draggingY = false
-            draggingXz = false
-            onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
-        }
-
-        if (positionActive && dragging && mouseMoved) {
-            draggingAngle = false
-            draggingZ = false
-            draggingXy = false
-            deltaAngle = 0.0
+        if ((eventActive || positionActive) && dragging && mouseMoved) {
             onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
         }
 
@@ -328,11 +326,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         draggingAngle = false
         draggingZ = false
         draggingXy = false
-        deltaY = 0
         deltaX = 0
+        deltaY = 0
         deltaAngle = 0.0
-        eventPrimaryStart = null
         eventStart = null
+        eventPrimaryStart = null
         positionStart = null
         repaint()
     }
@@ -376,11 +374,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     startControl[1] + my - startY
                 )
 
-                // re-express control point location in coordinate
-                // system of juggler:
+                // re-express the control point location in coordinate system
+                // of juggler:
                 //
-                // dcontrol_x = A * start_dx_x + B * start_dy_x;
-                // dcontrol_y = A * start_dx_y + B * start_dy_y;
+                // dcontrol_x = A * startDx_x + B * startDy_x;
+                // dcontrol_y = A * startDx_y + B * startDy_y;
                 //
                 // then (A, B) are coordinates of shifted control
                 // point, in juggler space
@@ -414,7 +412,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val newPosition = activePosition!!.copy(angle = finalAngle)
                 rec.positions[index] = newPosition
                 activeItemHashCode = newPosition.hashCode()
-                onPatternChange(JMLPattern.fromPatternBuilder(rec), addToUndo = false, fitToFrame = false)
+                onPatternChange(
+                    JMLPattern.fromPatternBuilder(rec),
+                    addToUndo = false,
+                    fitToFrame = false
+                )
             } else {
                 deltaX = mx - startX
                 deltaY = my - startY
@@ -449,7 +451,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         val index = record.events.indexOf(activeEventPrimary)
                         record.events[index] = newPrimary
                         activeItemHashCode = newEvent.hashCode()
-                        onPatternChange(JMLPattern.fromPatternBuilder(record), addToUndo = false, fitToFrame = false)
+                        onPatternChange(
+                            JMLPattern.fromPatternBuilder(record),
+                            addToUndo = false,
+                            fitToFrame = false
+                        )
                     }
                 }
 
@@ -460,7 +466,11 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                     rec.positions[index] = newPosition
                     activeItemHashCode = newPosition.hashCode()
-                    onPatternChange(JMLPattern.fromPatternBuilder(rec), addToUndo = false, fitToFrame = false)
+                    onPatternChange(
+                        JMLPattern.fromPatternBuilder(rec),
+                        addToUndo = false,
+                        fitToFrame = false
+                    )
                 }
             }
         } else if (!draggingCamera) {
@@ -579,7 +589,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         var snapHorizontal = true
 
         if (eventActive) {
-            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(activeEvent!!.juggler, activeEvent!!.t))
+            a = -Math.toRadians(
+                animator.pat!!.layout.getJugglerAngle(
+                    activeEvent!!.juggler,
+                    activeEvent!!.t
+                )
+            )
         } else if (positionActive) {
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
@@ -609,18 +624,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         }
         return result
     }
-
-    /*
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
-        super.restartJuggle(pat, newjc)
-        if (eventActive) {
-            createEventView()
-        }
-        if (positionActive) {
-            createPositionView()
-        }
-    }*/
 
     override var zoomLevel: Double
         get() = super.zoomLevel
@@ -684,9 +687,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 createEventView()
                 break
             } else if (ev.transitions.withIndex().any { (transNum, _) ->
-                val trHash = ev.hashCode() + 23 + transNum * 27
-                trHash == activeHashCode
-            }) {
+                    val trHash = ev.hashCode() + 23 + transNum * 27
+                    trHash == activeHashCode
+                }) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
                 eventActive = true
@@ -873,7 +876,10 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
             if (g2 is Graphics2D) {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+                )
             }
 
             // draw hand path
@@ -895,7 +901,12 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 val gdash = g2.create() as Graphics2D
                 val dashed: Stroke =
                     BasicStroke(
-                        1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f, floatArrayOf(5f, 3f), 0f
+                        1f,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_BEVEL,
+                        1f,
+                        floatArrayOf(5f, 3f),
+                        0f
                     )
                 gdash.stroke = dashed
                 gdash.color = COLOR_HANDPATH
@@ -963,16 +974,15 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
 
         for (i in 0..<(if (jc.stereo) 2 else 1)) {
-            val ren = (if (i == 0) animator.ren1 else animator.ren2)
+            val ren = if (i == 0) animator.ren1 else animator.ren2
 
             // translate by one pixel and see how far it is in juggler space
-            val c =
-                add(activePosition!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
+            val c = add(activePosition!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
             val c2 = ren!!.getScreenTranslatedCoordinate(c!!, 1, 0)
-            val dl = 1.0 / distance(c, c2) // pixels/cm
+            val dl = 1.0 / distance(c, c2)  // pixels/cm
 
             val ca = ren.cameraAngle
-            val theta = ca[0] + startAngle + deltaAngle
+            val theta = ca[0] + Math.toRadians(activePosition!!.angle)
             val phi = ca[1]
 
             val dlc = dl * cos(phi)
@@ -1027,16 +1037,18 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
             if (g2 is Graphics2D) {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON)
+                g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+                )
             }
 
             g2.color = COLOR_POSITIONS
 
             // dot at center
             g2.fillOval(
-                posPoints[i][4][0].roundToInt() + deltaX - 2,
-                posPoints[i][4][1].roundToInt() + deltaY - 2,
+                posPoints[i][4][0].roundToInt() - 2,
+                posPoints[i][4][1].roundToInt() - 2,
                 5,
                 5
             )
@@ -1060,8 +1072,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 // angle-changing control pointing backward
                 drawLine(g2, posPoints, i, 4, 5)
                 g2.fillOval(
-                    posPoints[i][5][0].roundToInt() - 4 + deltaX,
-                    posPoints[i][5][1].roundToInt() - 4 + deltaY,
+                    posPoints[i][5][0].roundToInt() - 4,
+                    posPoints[i][5][1].roundToInt() - 4,
                     10,
                     10
                 )
@@ -1082,8 +1094,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     g2.drawLine(
                         xyProjection[0],
                         xyProjection[1],
-                        posPoints[i][4][0].roundToInt() + deltaX,
-                        posPoints[i][4][1].roundToInt() + deltaY
+                        posPoints[i][4][0].roundToInt(),
+                        posPoints[i][4][1].roundToInt()
                     )
                     g2.fillOval(xyProjection[0] - 2, xyProjection[1] - 2, 5, 5)
 
@@ -1093,7 +1105,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             max(posPoints[i][0][1], posPoints[i][1][1]),
                             max(posPoints[i][2][1], posPoints[i][3][1])
                         )
-                        val messageY = y.roundToInt() + deltaY + 40
+                        val messageY = y.roundToInt() + 40
 
                         g2.color = Color.black
                         g2.drawString(
