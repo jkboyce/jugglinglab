@@ -107,115 +107,119 @@ class EditLadderDiagram(
             return
         }
 
-        var my = me.getY()
-        my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
+        try {
+            var my = me.getY()
+            my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
 
-        // on macOS the popup triggers here
-        if (me.isPopupTrigger) {
-            guiState = STATE_POPUP
-            activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
-            activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
-            popupItem = if (activeEventItem != null) activeEventItem else activePositionItem
-            if (popupItem == null) {
-                popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
-            }
-
-            popupX = me.getX()
-            popupY = me.getY()
-            if (aep2 != null) {
-                val scale = (pattern.loopEndTime - pattern.loopStartTime) /
-                    (ladderHeight - 2 * BORDER_TOP).toDouble()
-                val newT = (my - BORDER_TOP).toDouble() * scale
-                animPaused = aep2.isPaused
-                aep2.isPaused = true
-                aep2.time = newT
-                activeItemHashCode = if (activeEventItem != null) {
-                    activeEventItem!!.event.hashCode()
-                } else if (activePositionItem != null) {
-                    activePositionItem!!.position.hashCode()
-                } else {
-                    0
+            // on macOS the popup triggers here
+            if (me.isPopupTrigger) {
+                guiState = STATE_POPUP
+                activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
+                activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
+                popupItem = if (activeEventItem != null) activeEventItem else activePositionItem
+                if (popupItem == null) {
+                    popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
                 }
-                onNewActiveItem(activeItemHashCode)
-            }
 
-            makePopupMenu(popupItem).show(this@EditLadderDiagram, me.getX(), me.getY())
-        } else {
-            when (guiState) {
-                STATE_INACTIVE -> {
-                    var needsHandling = true
-                    itemWasSelected = false
+                popupX = me.getX()
+                popupY = me.getY()
+                if (aep2 != null) {
+                    val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                        (ladderHeight - 2 * BORDER_TOP).toDouble()
+                    val newT = (my - BORDER_TOP).toDouble() * scale
+                    animPaused = aep2.isPaused
+                    aep2.isPaused = true
+                    aep2.time = newT
+                    activeItemHashCode = if (activeEventItem != null) {
+                        activeEventItem!!.event.hashCode()
+                    } else if (activePositionItem != null) {
+                        activePositionItem!!.position.hashCode()
+                    } else {
+                        0
+                    }
+                    onNewActiveItem(activeItemHashCode)
+                }
 
-                    val oldEventitem = activeEventItem
-                    activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
+                makePopupMenu(popupItem).show(this, me.getX(), me.getY())
+            } else {
+                when (guiState) {
+                    STATE_INACTIVE -> {
+                        var needsHandling = true
+                        itemWasSelected = false
 
-                    if (activeEventItem != null) {
-                        if (oldEventitem == activeEventItem) {
-                            itemWasSelected = true
-                        }
-                        activeItemHashCode = activeEventItem!!.hashCode
-                        onNewActiveItem(activeItemHashCode)
-                        if (activeEventItem!!.type == LadderItem.TYPE_TRANSITION) {
-                            // only allow dragging of TYPE_EVENT
-                            needsHandling = false
+                        val oldEventitem = activeEventItem
+                        activeEventItem = getSelectedLadderEvent(me.getX(), me.getY())
+
+                        if (activeEventItem != null) {
+                            if (oldEventitem == activeEventItem) {
+                                itemWasSelected = true
+                            }
+                            activeItemHashCode = activeEventItem!!.hashCode
+                            onNewActiveItem(activeItemHashCode)
+                            if (activeEventItem!!.type == LadderItem.TYPE_TRANSITION) {
+                                // only allow dragging of TYPE_EVENT
+                                needsHandling = false
+                            }
+
+                            if (needsHandling) {
+                                guiState = STATE_MOVING_EVENT
+                                activePositionItem = null
+                                startY = me.getY()
+                                startYLow = activeEventItem!!.yLow
+                                startYHigh = activeEventItem!!.yHigh
+                                startT = activeEventItem!!.event.t
+                                findEventLimits(activeEventItem!!)
+                                needsHandling = false
+                            }
                         }
 
                         if (needsHandling) {
-                            guiState = STATE_MOVING_EVENT
-                            activePositionItem = null
-                            startY = me.getY()
-                            startYLow = activeEventItem!!.yLow
-                            startYHigh = activeEventItem!!.yHigh
-                            startT = activeEventItem!!.event.t
-                            findEventLimits(activeEventItem!!)
-                            needsHandling = false
-                        }
-                    }
+                            val oldPositionitem = activePositionItem
+                            activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
 
-                    if (needsHandling) {
-                        val oldPositionitem = activePositionItem
-                        activePositionItem = getSelectedLadderPosition(me.getX(), me.getY())
-
-                        if (activePositionItem != null) {
-                            if (oldPositionitem == activePositionItem) {
-                                itemWasSelected = true
+                            if (activePositionItem != null) {
+                                if (oldPositionitem == activePositionItem) {
+                                    itemWasSelected = true
+                                }
+                                activeItemHashCode = activePositionItem!!.hashCode
+                                guiState = STATE_MOVING_POSITION
+                                activeEventItem = null
+                                startY = me.getY()
+                                startYLow = activePositionItem!!.yLow
+                                startYHigh = activePositionItem!!.yHigh
+                                startT = activePositionItem!!.position.t
+                                findPositionLimits(activePositionItem!!)
+                                onNewActiveItem(activeItemHashCode)
+                                needsHandling = false
                             }
-                            activeItemHashCode = activePositionItem!!.hashCode
-                            guiState = STATE_MOVING_POSITION
-                            activeEventItem = null
-                            startY = me.getY()
-                            startYLow = activePositionItem!!.yLow
-                            startYHigh = activePositionItem!!.yHigh
-                            startT = activePositionItem!!.position.t
-                            findPositionLimits(activePositionItem!!)
-                            onNewActiveItem(activeItemHashCode)
-                            needsHandling = false
+                        }
+
+                        if (needsHandling) {
+                            guiState = STATE_MOVING_TRACKER
+                            trackerY = my
+                            if (aep2 != null) {
+                                val scale =
+                                    ((pattern.loopEndTime - pattern.loopStartTime)
+                                        / (ladderHeight - 2 * BORDER_TOP).toDouble())
+                                val newtime = (my - BORDER_TOP).toDouble() * scale
+                                animPaused = aep2.isPaused
+                                aep2.isPaused = true
+                                aep2.time = newtime
+                                onNewActiveItem(0)
+                            }
                         }
                     }
 
-                    if (needsHandling) {
-                        guiState = STATE_MOVING_TRACKER
-                        trackerY = my
-                        if (aep2 != null) {
-                            val scale =
-                                ((pattern.loopEndTime - pattern.loopStartTime)
-                                    / (ladderHeight - 2 * BORDER_TOP).toDouble())
-                            val newtime = (my - BORDER_TOP).toDouble() * scale
-                            animPaused = aep2.isPaused
-                            aep2.isPaused = true
-                            aep2.time = newtime
-                            onNewActiveItem(0)
-                        }
-                    }
+                    STATE_MOVING_EVENT -> {}
+                    STATE_MOVING_POSITION -> {}
+                    STATE_MOVING_TRACKER -> {}
+                    STATE_POPUP -> finishPopup()  // shouldn't ever get here
                 }
 
-                STATE_MOVING_EVENT -> {}
-                STATE_MOVING_POSITION -> {}
-                STATE_MOVING_TRACKER -> {}
-                STATE_POPUP -> finishPopup()  // shouldn't ever get here
+                repaint()
             }
-
-            repaint()
+        } catch (e: Exception) {
+            jlHandleFatalException(e)
         }
     }
 
@@ -225,93 +229,97 @@ class EditLadderDiagram(
             return
         }
 
-        // on Windows the popup triggers here
-        if (me!!.isPopupTrigger) {
-            when (guiState) {
-                STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
-                    // skip this code for MOVING_TRACKER state, since already executed in
-                    // mousePressed() above
-                    if (guiState != STATE_MOVING_TRACKER && aep2 != null) {
-                        val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
-                        val scale = ((pattern.loopEndTime - pattern.loopStartTime)
-                            / (ladderHeight - 2 * BORDER_TOP).toDouble())
-                        val newtime = (my - BORDER_TOP).toDouble() * scale
-                        animPaused = aep2.isPaused
-                        aep2.isPaused = true
-                        aep2.time = newtime
-                        activeItemHashCode = if (activeEventItem != null) {
-                            activeEventItem!!.event.hashCode()
-                        } else if (activePositionItem != null) {
-                            activePositionItem!!.position.hashCode()
-                        } else {
-                            0
+        try {
+            // on Windows the popup triggers here
+            if (me!!.isPopupTrigger) {
+                when (guiState) {
+                    STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
+                        // skip this code for MOVING_TRACKER state, since already executed in
+                        // mousePressed() above
+                        if (guiState != STATE_MOVING_TRACKER && aep2 != null) {
+                            val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
+                            val scale = ((pattern.loopEndTime - pattern.loopStartTime)
+                                / (ladderHeight - 2 * BORDER_TOP).toDouble())
+                            val newtime = (my - BORDER_TOP).toDouble() * scale
+                            animPaused = aep2.isPaused
+                            aep2.isPaused = true
+                            aep2.time = newtime
+                            activeItemHashCode = if (activeEventItem != null) {
+                                activeEventItem!!.event.hashCode()
+                            } else if (activePositionItem != null) {
+                                activePositionItem!!.position.hashCode()
+                            } else {
+                                0
+                            }
+                            onNewActiveItem(activeItemHashCode)
+                            aep2.repaint()
                         }
-                        onNewActiveItem(activeItemHashCode)
-                        aep2.repaint()
+
+                        guiState = STATE_POPUP
+
+                        if (deltaY != 0) {
+                            deltaY = 0
+                            repaint()
+                        }
+                        popupX = me.getX()
+                        popupY = me.getY()
+                        popupItem =
+                            (if (activeEventItem != null) activeEventItem else activePositionItem)
+                        if (popupItem == null) {
+                            popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
+                        }
+
+                        makePopupMenu(popupItem).show(this, me.getX(), me.getY())
                     }
 
-                    guiState = STATE_POPUP
-
-                    if (deltaY != 0) {
-                        deltaY = 0
-                        repaint()
-                    }
-                    popupX = me.getX()
-                    popupY = me.getY()
-                    popupItem =
-                        (if (activeEventItem != null) activeEventItem else activePositionItem)
-                    if (popupItem == null) {
-                        popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
-                    }
-
-                    makePopupMenu(popupItem).show(this@EditLadderDiagram, me.getX(), me.getY())
-                }
-
-                STATE_POPUP -> jlHandleFatalException(
-                    JuggleExceptionInternalWithPattern(
-                        "tried to enter POPUP state while already in it",
-                        pattern
+                    STATE_POPUP -> jlHandleFatalException(
+                        JuggleExceptionInternalWithPattern(
+                            "tried to enter POPUP state while already in it",
+                            pattern
+                        )
                     )
-                )
-            }
-        } else {
-            when (guiState) {
-                STATE_INACTIVE -> {}
-                STATE_MOVING_EVENT -> {
-                    guiState = STATE_INACTIVE
-                    if (deltaY != 0) {
-                        deltaY = 0
-                        addToUndoList(pattern)
-                    } else if (itemWasSelected) {
-                        // clicked without moving --> deselect
-                        activeEventItem = null
-                        activeItemHashCode = 0
-                        onNewActiveItem(0)
+                }
+            } else {
+                when (guiState) {
+                    STATE_INACTIVE -> {}
+                    STATE_MOVING_EVENT -> {
+                        guiState = STATE_INACTIVE
+                        if (deltaY != 0) {
+                            deltaY = 0
+                            addToUndoList(pattern)
+                        } else if (itemWasSelected) {
+                            // clicked without moving --> deselect
+                            activeEventItem = null
+                            activeItemHashCode = 0
+                            onNewActiveItem(0)
+                            repaint()
+                        }
+                    }
+
+                    STATE_MOVING_POSITION -> {
+                        guiState = STATE_INACTIVE
+                        if (deltaY != 0) {
+                            deltaY = 0
+                            addToUndoList(pattern)
+                        } else if (itemWasSelected) {
+                            activePositionItem = null
+                            activeItemHashCode = 0
+                            onNewActiveItem(0)
+                            repaint()
+                        }
+                    }
+
+                    STATE_MOVING_TRACKER -> {
+                        guiState = STATE_INACTIVE
+                        aep2?.isPaused = animPaused
                         repaint()
                     }
-                }
 
-                STATE_MOVING_POSITION -> {
-                    guiState = STATE_INACTIVE
-                    if (deltaY != 0) {
-                        deltaY = 0
-                        addToUndoList(pattern)
-                    } else if (itemWasSelected) {
-                        activePositionItem = null
-                        activeItemHashCode = 0
-                        onNewActiveItem(0)
-                        repaint()
-                    }
+                    STATE_POPUP -> {}
                 }
-
-                STATE_MOVING_TRACKER -> {
-                    guiState = STATE_INACTIVE
-                    aep2?.isPaused = animPaused
-                    repaint()
-                }
-
-                STATE_POPUP -> {}
             }
+        } catch (e: Exception) {
+            jlHandleFatalException(e)
         }
     }
 
@@ -325,41 +333,45 @@ class EditLadderDiagram(
             return
         }
 
-        val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
+        try {
+            val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
 
-        when (guiState) {
-            STATE_INACTIVE, STATE_POPUP -> {}
-            STATE_MOVING_EVENT -> {
-                val oldDeltaY = deltaY
-                deltaY = getClippedEventTime(me, activeEventItem!!.event)
-                if (deltaY != oldDeltaY) {
-                    try {
-                        moveEventInPattern(activeEventItem!!.transEventItem!!)
-                    } catch (jei: JuggleExceptionInternal) {
-                        jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+            when (guiState) {
+                STATE_INACTIVE, STATE_POPUP -> {}
+                STATE_MOVING_EVENT -> {
+                    val oldDeltaY = deltaY
+                    deltaY = getClippedEventTime(me, activeEventItem!!.event)
+                    if (deltaY != oldDeltaY) {
+                        try {
+                            moveEventInPattern(activeEventItem!!.transEventItem!!)
+                        } catch (jei: JuggleExceptionInternal) {
+                            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                        }
+                    }
+                }
+
+                STATE_MOVING_POSITION -> {
+                    val oldDeltaY = deltaY
+                    deltaY = getClippedPositionTime(me, activePositionItem!!.position)
+                    if (deltaY != oldDeltaY) {
+                        movePositionInPattern(activePositionItem!!)
+                    }
+                }
+
+                STATE_MOVING_TRACKER -> {
+                    trackerY = my
+                    repaint()
+                    if (aep2 != null) {
+                        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                            (ladderHeight - 2 * BORDER_TOP).toDouble()
+                        val newtime = (my - BORDER_TOP).toDouble() * scale
+                        aep2.time = newtime
+                        aep2.repaint()
                     }
                 }
             }
-
-            STATE_MOVING_POSITION -> {
-                val oldDeltaY = deltaY
-                deltaY = getClippedPositionTime(me, activePositionItem!!.position)
-                if (deltaY != oldDeltaY) {
-                    movePositionInPattern(activePositionItem!!)
-                }
-            }
-
-            STATE_MOVING_TRACKER -> {
-                trackerY = my
-                this@EditLadderDiagram.repaint()
-                if (aep2 != null) {
-                    val scale = (pattern.loopEndTime - pattern.loopStartTime) /
-                        (ladderHeight - 2 * BORDER_TOP).toDouble()
-                    val newtime = (my - BORDER_TOP).toDouble() * scale
-                    aep2.time = newtime
-                    aep2.repaint()
-                }
-            }
+        } catch (e: Exception) {
+            jlHandleFatalException(e)
         }
     }
 
