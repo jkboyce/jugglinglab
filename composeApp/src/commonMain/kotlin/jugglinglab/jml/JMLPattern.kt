@@ -48,6 +48,11 @@ data class JMLPattern(
         symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
     }
 
+    // sorted list of events that:
+    // (a) includes all events inside the animation loop
+    // (b) for every path number with events in the pattern, includes at least
+    //     one event before the loop start, and one event after
+
     val allEvents: List<EventImage> by lazy {
         val result = mutableListOf<EventImage>()
         val timeWindow = pathPermutation!!.order * (loopEndTime - loopStartTime)
@@ -78,6 +83,8 @@ data class JMLPattern(
         result.sortedBy { it.event }.toList()
     }
 
+    // just the events inside the animation loop
+
     val loopEvents: List<EventImage> by lazy {
         allEvents.filter { it.event.t in loopStartTime..<loopEndTime }
     }
@@ -91,6 +98,9 @@ data class JMLPattern(
     fun getPropAssignment(path: Int): Int {
         return propAssignment[path - 1]
     }
+
+    // number of loop iterations needed to bring props back into the same path
+    // assignment; used for e.g. creating animated GIFs
 
     val periodWithProps: Int by lazy {
         val perm = pathPermutation!!
