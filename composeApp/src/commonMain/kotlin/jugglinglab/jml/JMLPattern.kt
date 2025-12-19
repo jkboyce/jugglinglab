@@ -48,8 +48,38 @@ data class JMLPattern(
         symmetries.find { it.type == JMLSymmetry.TYPE_DELAY }?.pathPerm
     }
 
+    val allEvents: List<EventImage> by lazy {
+        val result = mutableListOf<EventImage>()
+        val timeWindow = pathPermutation!!.order * (loopEndTime - loopStartTime)
+
+        val pathDone = Array(numberOfPaths) { false }
+        for (image in eventSequence(reverse = true)) {
+            if (image.event.t < loopStartTime - timeWindow) break
+            if (pathDone.all { it }) break
+            if (image.event.transitions.all { pathDone[it.path - 1] }) continue
+            result.add(image)
+            image.event.transitions.forEach { if (it.isThrowOrCatch) {
+                pathDone[it.path - 1] = true
+            } }
+        }
+
+        pathDone.fill(false)
+        for (image in eventSequence()) {
+            if (image.event.t > loopEndTime + timeWindow) break
+            if (pathDone.all { it }) break
+            if (image.event.transitions.all { pathDone[it.path - 1] }) continue
+            result.add(image)
+            if (image.event.t < loopEndTime) continue
+            image.event.transitions.forEach { if (it.isThrowOrCatch) {
+                pathDone[it.path - 1] = true
+            } }
+        }
+
+        result.sortedBy { it.event }.toList()
+    }
+
     val loopEvents: List<EventImage> by lazy {
-        eventSequence().takeWhile { it.event.t < loopEndTime }.toList()
+        allEvents.filter { it.event.t in loopStartTime..<loopEndTime }
     }
 
     val numberOfProps: Int = props.size

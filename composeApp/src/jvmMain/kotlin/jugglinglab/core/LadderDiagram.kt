@@ -13,7 +13,6 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
-import jugglinglab.util.Permutation
 import jugglinglab.util.getStringResource
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
@@ -233,7 +232,8 @@ open class LadderDiagram(p: JMLPattern) :
     // Methods to create and paint the ladder view
     //--------------------------------------------------------------------------
 
-    // Create arrays of all the elements in the ladder diagram.
+    // Create lists of all the elements in the ladder diagram.
+
     protected fun createView() {
         hasSwitchDelaySymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
         hasSwitchSymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
@@ -241,23 +241,21 @@ open class LadderDiagram(p: JMLPattern) :
         val loopStart = pattern.loopStartTime
         val loopEnd = pattern.loopEndTime
 
-        // first create events (black circles on the vertical lines representing hands)
+        // create events (black circles on the vertical lines representing hands)
         ladderEventItems = buildList {
-            for ((ev, evPrimary, pPermFromPrimary) in pattern.loopEvents) {
+            for (ei in pattern.loopEvents) {
                 val item = LadderEventItem(
-                    event = ev,
-                    eventPrimary = evPrimary,
-                    pathPermFromPrimary = pPermFromPrimary
+                    event = ei.event,
+                    eventPrimary = ei.primary
                 )
                 item.type = LadderItem.TYPE_EVENT
                 item.transEventItem = item
                 add(item)
 
-                for (index in 0..<ev.transitions.size) {
+                for (index in 0..<ei.event.transitions.size) {
                     val item2 = LadderEventItem(
-                        event = ev,
-                        eventPrimary = evPrimary,
-                        pathPermFromPrimary = pPermFromPrimary
+                        event = ei.event,
+                        eventPrimary = ei.primary
                     )
                     item2.type = LadderItem.TYPE_TRANSITION
                     item2.transEventItem = item
@@ -269,54 +267,26 @@ open class LadderDiagram(p: JMLPattern) :
 
         // create paths (lines and arcs)
         ladderPathItems = buildList {
-            for ((ev, evPrimary) in pattern.loopEvents) {
-                for ((index, tr) in ev.transitions.withIndex()) {
-                    // add ladder path items that start on event `ev`
+            for ((indexEv, ei) in pattern.allEvents.withIndex()) {
+                for ((indexTr, tr) in ei.event.transitions.withIndex()) {
+                    // add item that starts on event `ei.event`, transition `tr`
 
-                    val (endEvent, endEventPrimary) = pattern.nextForPathFromEvent(ev, tr.path)
+                    val endEi = pattern.allEvents
+                        .asSequence()
+                        .drop(indexEv + 1)
+                        .firstOrNull { it.event.transitions.any { tr2 -> tr2.path == tr.path } }
+                        ?: continue
+
                     add(LadderPathItem(
-                        startEvent = ev,
-                        startEventPrimary = evPrimary,
-                        endEvent = endEvent,
-                        endEventPrimary = endEventPrimary
+                        startEvent = ei.event,
+                        endEvent = endEi.event,
                     ).apply {
-                        transnumStart = index
+                        transnumStart = indexTr
                         type = if (tr.type != JMLTransition.TRANS_THROW) {
                             LadderItem.TYPE_HOLD
-                        } else if (ev.juggler != endEvent.juggler) {
+                        } else if (ei.event.juggler != endEvent.juggler) {
                             LadderItem.TYPE_PASS
-                        } else if (ev.hand == endEvent.hand) {
-                            LadderItem.TYPE_SELF
-                        } else {
-                            LadderItem.TYPE_CROSS
-                        }
-                        pathNum = tr.path
-                        color = Color.black
-                    })
-
-                    // add ladder path items that end on event `ev`, unless the
-                    // source event is in loopEvents (in which case we've already
-                    // added it)
-
-                    val (startEvent, startEventPrimary) = pattern.prevForPathFromEvent(ev, tr.path)
-                    if (startEvent.t >= pattern.loopStartTime) {
-                        continue
-                    }
-                    val startTransIndex = startEvent.transitions.indexOfFirst { it.path == tr.path }
-                    val startTrans = startEvent.transitions[startTransIndex]
-
-                    add(LadderPathItem(
-                        startEvent = startEvent,
-                        startEventPrimary = startEventPrimary,
-                        endEvent = ev,
-                        endEventPrimary = evPrimary
-                    ).apply {
-                        transnumStart = startTransIndex
-                        type = if (startTrans.type != JMLTransition.TRANS_THROW) {
-                            LadderItem.TYPE_HOLD
-                        } else if (startEvent.juggler != ev.juggler) {
-                            LadderItem.TYPE_PASS
-                        } else if (startEvent.hand == ev.hand) {
+                        } else if (ei.event.hand == endEvent.hand) {
                             LadderItem.TYPE_SELF
                         } else {
                             LadderItem.TYPE_CROSS
@@ -343,10 +313,10 @@ open class LadderDiagram(p: JMLPattern) :
     }
 
     // Assign screen locations to all the elements in the ladder diagram.
+
     protected fun updateView() {
-        val dim = size
-        ladderWidth = dim.width
-        ladderHeight = dim.height
+        ladderWidth = size.width
+        ladderHeight = size.height
 
         // calculate placements of hands and jugglers
         val scale: Double =
@@ -400,9 +370,11 @@ open class LadderDiagram(p: JMLPattern) :
                     (rightX - (item.transnumStart + 1) * 2 * TRANSITION_RADIUS))
                     + (item.startEvent.juggler - 1) * jugglerDeltaX)
             item.yStart =
-                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.startEvent.t - loopStart) / (loopEnd - loopStart)).toInt() + BORDER_TOP
+                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.startEvent.t - loopStart) /
+                    (loopEnd - loopStart)).toInt() + BORDER_TOP
             item.yEnd =
-                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.endEvent.t - loopStart) / (loopEnd - loopStart)).toInt() + BORDER_TOP
+                (0.5 + (ladderHeight - 2 * BORDER_TOP).toDouble() * (item.endEvent.t - loopStart) /
+                    (loopEnd - loopStart)).toInt() + BORDER_TOP
 
             val slot = item.endEvent.transitions.indexOfFirst { it.path == item.pathNum }
             if (slot == -1) continue // Should not happen in a valid pattern
@@ -415,7 +387,8 @@ open class LadderDiagram(p: JMLPattern) :
 
             if (item.type == LadderItem.TYPE_SELF) {
                 val a = 0.5 * sqrt(
-                    ((item.xStart - item.xEnd) * (item.xStart - item.xEnd)).toDouble() + ((item.yStart - item.yEnd) * (item.yStart - item.yEnd)).toDouble()
+                    ((item.xStart - item.xEnd) * (item.xStart - item.xEnd)).toDouble() +
+                        ((item.yStart - item.yEnd) * (item.yStart - item.yEnd)).toDouble()
                 )
                 val xt = 0.5 * (item.xStart + item.xEnd).toDouble()
                 val yt = 0.5 * (item.yStart + item.yEnd).toDouble()
@@ -441,7 +414,6 @@ open class LadderDiagram(p: JMLPattern) :
         // set locations of juggler positions
         for (item in ladderPositionItems) {
             val pos = item.position
-
             val positionX: Int =
                 (leftX + rightX) / 2 + (pos.juggler - 1) * jugglerDeltaX - POSITION_RADIUS
             val positionY: Int =
@@ -463,6 +435,7 @@ open class LadderDiagram(p: JMLPattern) :
     // Paint the latter on the screen.
     //
     // Return true if ladder was drawn successfully, false otherwise.
+
     protected fun paintLadder(gr: Graphics): Boolean {
         if (pattern.numberOfJugglers > MAX_JUGGLERS) {
             val dim = size
@@ -753,8 +726,7 @@ open class LadderDiagram(p: JMLPattern) :
 
     class LadderEventItem(
         val event: JMLEvent,
-        val eventPrimary: JMLEvent,
-        val pathPermFromPrimary: Permutation
+        val eventPrimary: JMLEvent
     ) : LadderItem() {
         // screen bounding box of the event circle
         var xLow: Int = 0
@@ -774,9 +746,7 @@ open class LadderDiagram(p: JMLPattern) :
 
     class LadderPathItem(
         val startEvent: JMLEvent,
-        val startEventPrimary: JMLEvent,
         val endEvent: JMLEvent,
-        val endEventPrimary: JMLEvent
     ) : LadderItem() {
         // screen coordinates/dimensions of the path
         var xStart: Int = 0
