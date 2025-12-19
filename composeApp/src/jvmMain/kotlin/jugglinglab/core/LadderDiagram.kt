@@ -246,7 +246,7 @@ open class LadderDiagram(p: JMLPattern) :
             for (ei in pattern.loopEvents) {
                 val item = LadderEventItem(
                     event = ei.event,
-                    eventPrimary = ei.primary
+                    primary = ei.primary
                 )
                 item.type = LadderItem.TYPE_EVENT
                 item.transEventItem = item
@@ -255,7 +255,7 @@ open class LadderDiagram(p: JMLPattern) :
                 for (index in 0..<ei.event.transitions.size) {
                     val item2 = LadderEventItem(
                         event = ei.event,
-                        eventPrimary = ei.primary
+                        primary = ei.primary
                     )
                     item2.type = LadderItem.TYPE_TRANSITION
                     item2.transEventItem = item
@@ -726,7 +726,7 @@ open class LadderDiagram(p: JMLPattern) :
 
     class LadderEventItem(
         val event: JMLEvent,
-        val eventPrimary: JMLEvent
+        val primary: JMLEvent
     ) : LadderItem() {
         // screen bounding box of the event circle
         var xLow: Int = 0

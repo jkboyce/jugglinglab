@@ -340,7 +340,7 @@ class EditLadderDiagram(
                 STATE_INACTIVE, STATE_POPUP -> {}
                 STATE_MOVING_EVENT -> {
                     val oldDeltaY = deltaY
-                    deltaY = getClippedEventTime(me, activeEventItem!!.event)
+                    deltaY = getClippedEventTime(activeEventItem!!, me)
                     if (deltaY != oldDeltaY) {
                         try {
                             moveEventInPattern(activeEventItem!!.transEventItem!!)
@@ -379,37 +379,27 @@ class EditLadderDiagram(
     // Utility methods for mouse interactions
     //--------------------------------------------------------------------------
 
+    // Set `deltaYMin` and `deltaYMax` for a selected event, determining the
+    // number of pixels it is allowed to move up or down.
+
     private fun findEventLimits(item: LadderEventItem) {
         var tMin = pattern.loopStartTime
         var tMax = pattern.loopEndTime
-        val loopTime = pattern.loopEndTime - pattern.loopStartTime
-
         val evPaths = item.event.transitions.filter { it.isThrowOrCatch }.map { it.path }.toList()
-        val evPathsNext = evPaths.map { pattern.pathPermutation!!.map(it) }
-        val evPathsPrev = evPaths.map { pattern.pathPermutation!!.mapInverse(it) }
 
-        ladderEventItems.forEach {
-            if (it.event.t < item.event.t - MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
+        // other events with throws/catches using the same paths define the
+        // limits of how far the item can move
+
+        pattern.allEvents
+            .filter { it.primary != item.primary }
+            .filter { it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths } }
+            .forEach {
+                if (it.event.t < item.event.t - MIN_EVENT_SEP_TIME) {
                     tMin = max(tMin, it.event.t + MIN_THROW_SEP_TIME)
-                }
-            }
-            if (it.event.t - loopTime < item.event.t - MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPathsNext }) {
-                    tMin = max(tMin, it.event.t - loopTime + MIN_THROW_SEP_TIME)
-                }
-            }
-            if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths }) {
+                } else if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
                     tMax = min(tMax, it.event.t - MIN_THROW_SEP_TIME)
                 }
             }
-            if (it.event.t + loopTime > item.event.t + MIN_THROW_SEP_TIME) {
-                if (it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPathsPrev }) {
-                    tMax = min(tMax, it.event.t + loopTime - MIN_THROW_SEP_TIME)
-                }
-            }
-        }
 
         val scale = (pattern.loopEndTime - pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
@@ -417,13 +407,12 @@ class EditLadderDiagram(
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
 
-    // Return value of `deltaY` during mouse drag of an event, clipping it to
+    // Return the value of `deltaY` during mouse drag of an event, clipping it to
     // enforce proximity limits between various event types, as well as hard
     // limits `deltaYMin` and `deltaYMax`.
 
-    private fun getClippedEventTime(me: MouseEvent, event: JMLEvent): Int {
+    private fun getClippedEventTime(item: LadderEventItem, me: MouseEvent): Int {
         val dy = min(max(me.getY() - startY, deltaYMin), deltaYMax)
-
         val scale = (pattern.loopEndTime - pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         val newT = startT + dy * scale  // unclipped new event time
@@ -432,34 +421,34 @@ class EditLadderDiagram(
         // proximity to other events, where `newT` is contained within the window.
         var tExclMin = newT
         var tExclMax = newT
-        var changed: Boolean
 
-        do {
-            changed = false
+        while (true) {
+            var changed = false
+            pattern.allEvents
+                .filter { it.primary != item.primary }
+                .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
+                .forEach {
+                    val sep = if (it.event.hasThrow && item.event.hasThrowOrCatch
+                        || it.event.hasThrowOrCatch && item.event.hasThrow
+                    ) {
+                        MIN_THROW_SEP_TIME
+                    } else {
+                        MIN_EVENT_SEP_TIME
+                    }
+                    val evExclMin = it.event.t - sep
+                    val evExclMax = it.event.t + sep
 
-            ladderEventItems.filter {
-                it.event != event && it.event.juggler == event.juggler && it.event.hand == event.hand
-            }.forEach {
-                val sep = if (it.event.hasThrow && event.hasThrowOrCatch
-                    || it.event.hasThrowOrCatch && event.hasThrow
-                ) {
-                    MIN_THROW_SEP_TIME
-                } else {
-                    MIN_EVENT_SEP_TIME
+                    if (tExclMin > evExclMin && tExclMin <= evExclMax) {
+                        tExclMin = evExclMin
+                        changed = true
+                    }
+                    if (tExclMax in evExclMin..<evExclMax) {
+                        tExclMax = evExclMax
+                        changed = true
+                    }
                 }
-                val evExclMin = it.event.t - sep
-                val evExclMax = it.event.t + sep
-
-                if (tExclMax in evExclMin..<evExclMax) {
-                    tExclMax = evExclMax
-                    changed = true
-                }
-                if (evExclMin < tExclMin && evExclMax >= tExclMin) {
-                    tExclMin = evExclMin
-                    changed = true
-                }
-            }
-        } while (changed)
+            if (!changed) break
+        }
 
         // Clip the event time `newT` to whichever end of the exclusion window
         // is closest. First check if each end is feasible.
@@ -499,14 +488,14 @@ class EditLadderDiagram(
         val newEvent = item.event.copy(t = newT)
 
         val record = PatternBuilder.fromJMLPattern(pattern)
-        val index = record.events.indexOf(item.eventPrimary)
+        val index = record.events.indexOf(item.primary)
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.moveEventInPattern()")
-        if (item.event == item.eventPrimary) {
+        if (item.event == item.primary) {
             record.events[index] = newEvent
         } else {
             // make the change in the primary event
-            val newPrimaryT = newT + item.eventPrimary.t - item.event.t
-            val newEventPrimary = item.eventPrimary.copy(t = newPrimaryT)
+            val newPrimaryT = newT + item.primary.t - item.event.t
+            val newEventPrimary = item.primary.copy(t = newPrimaryT)
             record.events[index] = newEventPrimary
         }
 
@@ -731,7 +720,7 @@ class EditLadderDiagram(
             )
             return
         }
-        val evRemove = (popupItem as LadderEventItem).eventPrimary
+        val evRemove = (popupItem as LadderEventItem).primary
         val record = PatternBuilder.fromJMLPattern(pattern)
         record.events.remove(evRemove)
         activeItemHashCode = 0
@@ -985,7 +974,7 @@ class EditLadderDiagram(
             )
             return
         }
-        val evPrimary = (popupItem as LadderEventItem).eventPrimary
+        val evPrimary = (popupItem as LadderEventItem).primary
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
 
         val pptypes: List<String> = Path.builtinPaths
@@ -1112,7 +1101,7 @@ class EditLadderDiagram(
             )
             return
         }
-        val evPrimary = (popupItem as LadderEventItem).eventPrimary
+        val evPrimary = (popupItem as LadderEventItem).primary
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
         val newPrimary = evPrimary.copy(
             transitions = evPrimary.transitions.toMutableList().apply {
@@ -1147,7 +1136,7 @@ class EditLadderDiagram(
             )
             return
         }
-        val evPrimary = (popupItem as LadderEventItem).eventPrimary
+        val evPrimary = (popupItem as LadderEventItem).primary
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
         val newPrimary = evPrimary.withoutTransition(tr).withTransition(tr)  // adds at end
 
@@ -1533,7 +1522,7 @@ class EditLadderDiagram(
                 val anotherEventForHand = ladderEventItems.any {
                     it.event.juggler == evitem.event.juggler &&
                         it.event.hand == evitem.event.hand &&
-                        it.eventPrimary != evitem.eventPrimary
+                        it.primary != evitem.primary
                 }
                 if (!anotherEventForHand) {
                     return false
