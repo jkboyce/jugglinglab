@@ -334,7 +334,8 @@ data class JMLEvent(
             return copy(transitions = transitions + trans)
         }
 
-        fun JMLEvent.withoutTransitionIndex(index: Int): JMLEvent {
+        @Suppress("unused")
+        fun JMLEvent.withoutTransitionAtIndex(index: Int): JMLEvent {
             return copy(
                 transitions = transitions.filterIndexed { i, _ -> i != index }
             )
