@@ -918,15 +918,17 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             val numHandpathPoints = handpathPoints[0].size
             val pathSolid = Path2D.Double()
             val pathDashed = Path2D.Double()
+            var lastPath: Path2D? = null
+
             for (j in 0..<numHandpathPoints - 1) {
                 val path = if (handpathHold[j]) pathSolid else pathDashed
-
-                if (path.getCurrentPoint() == null) {
+                if (path != lastPath || path.getCurrentPoint() == null) {
                     path.moveTo(handpathPoints[i][j][0], handpathPoints[i][j][1])
                     path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
                 } else {
                     path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
                 }
+                lastPath = path
             }
 
             if (pathDashed.getCurrentPoint() != null) {
