@@ -799,7 +799,7 @@ abstract class MHNPattern : Pattern() {
         }
 
         // Step 10: Select the primary events, and build the pattern.
-        selectPrimaryEvents(record)
+        record.selectPrimaryEvents()
         var result = JMLPattern.fromPatternBuilder(record)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 10:")
@@ -866,7 +866,7 @@ abstract class MHNPattern : Pattern() {
                         println("After redone step 9:")
                         println(JMLPattern.fromPatternBuilder(newRecord))
                     }
-                    selectPrimaryEvents(newRecord)
+                    newRecord.selectPrimaryEvents()
                     result = JMLPattern.fromPatternBuilder(newRecord)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 10:")
@@ -1828,34 +1828,6 @@ abstract class MHNPattern : Pattern() {
             val y = (startPos.y + (t - startT) * (endPos.y - startPos.y) / (endT - startT))
             val z = (startPos.z + (t - startT) * (endPos.z - startPos.z) / (endT - startT))
             rec.events[index] = ev.copy(x = x, y = y, z = z)
-        }
-    }
-
-    // For any primary events that have an image earlier in time but t>=0,
-    // promote that earliest image as the replacement primary.
-
-    fun selectPrimaryEvents(rec: PatternBuilder) {
-        scanstart@ while (true) {
-            val pat = JMLPattern.fromPatternBuilder(rec)
-            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
-
-            for (image in pat.eventSequence()) {
-                if (image.event.t > pat.loopStartTime + timeWindow) {
-                    return
-                }
-                if (image.event.t < image.primary.t || image.primary.t < pat.loopStartTime) {
-                    // promote `ev` as primary
-                    if (image.event.t < pat.loopStartTime || image.event.t >= pat.loopEndTime) {
-                        throw JuggleExceptionInternal(
-                            "error in selectPrimaryEvents(): ${image.event.t}",
-                            pat
-                        )
-                    }
-                    image.event.primaryEvent = null
-                    rec.events[rec.events.indexOf(image.primary)] = image.event
-                    continue@scanstart
-                }
-            }
         }
     }
 

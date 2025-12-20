@@ -503,6 +503,7 @@ class EditLadderDiagram(
             record.fixHolds()
         }
 
+        record.selectPrimaryEvents()
         val newPattern = JMLPattern.fromPatternBuilder(record)
         activeItemHashCode = newEvent.hashCode()
         onPatternChange(newPattern, undoable = false)
@@ -699,6 +700,7 @@ class EditLadderDiagram(
         val record = PatternBuilder.fromJMLPattern(pattern)
         record.events.add(newEvent)
         record.fixHolds()
+        record.selectPrimaryEvents()
         activeItemHashCode = newEvent.hashCode()
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }

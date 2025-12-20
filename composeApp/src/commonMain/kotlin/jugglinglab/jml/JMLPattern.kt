@@ -916,6 +916,21 @@ data class PatternBuilder(
         info = if (t != null && !t.trim().isBlank()) t.trim() else null
     }
 
+    // For any primary events that have an image earlier in time but t>=0,
+    // promote that earliest image as the replacement primary.
+
+    @Throws(JuggleExceptionInternal::class)
+    fun selectPrimaryEvents() {
+        val pat = JMLPattern.fromPatternBuilder(this)
+
+        for ((index, ev) in events.withIndex()) {
+            // find the first event in pat.loopEvents with `ev` as its primary
+            val newEvent = pat.loopEvents.firstOrNull { it.primary == ev }?.event
+                ?: throw JuggleExceptionInternal("Error in selectPrimaryEvents()", pat)
+            events[index] = newEvent
+        }
+    }
+
     // Scan through the list of events, looking for cases where we need to add
     // or remove <holding> transitions. Update the `event` records as needed.
     //
@@ -963,7 +978,8 @@ data class PatternBuilder(
                             if (loc != null && (loc.first != 0 || loc.second != 0)) {
                                 throw JuggleExceptionInternal("error 1 in fixHolds()", pat)
                             }
-                            holdingLocation[tr.path - 1] = Pair(image.event.juggler, image.event.hand)
+                            holdingLocation[tr.path - 1] =
+                                Pair(image.event.juggler, image.event.hand)
                         }
 
                         JMLTransition.TRANS_THROW -> {
@@ -979,9 +995,14 @@ data class PatternBuilder(
                                 // from the primary event and then restart the scan.
 
                                 val pathPrimary =
-                                    if (image.event == image.primary) tr.path else image.pathPermFromPrimary.mapInverse(tr.path)
+                                    if (image.event == image.primary) tr.path else image.pathPermFromPrimary.mapInverse(
+                                        tr.path
+                                    )
                                 val trPrimary =
-                                    image.primary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                                    image.primary.getPathTransition(
+                                        pathPrimary,
+                                        JMLTransition.TRANS_ANY
+                                    )
                                 if (trPrimary == null || trPrimary.type != JMLTransition.TRANS_HOLDING) {
                                     throw JuggleExceptionInternal("error 3 in fixHolds()", pat)
                                 }
@@ -995,7 +1016,8 @@ data class PatternBuilder(
                                 continue@scanstart
                             }
                             if (holdsOnly[tr.path - 1]) {
-                                holdingLocation[tr.path - 1] = Pair(image.event.juggler, image.event.hand)
+                                holdingLocation[tr.path - 1] =
+                                    Pair(image.event.juggler, image.event.hand)
                             }
                         }
                     }
@@ -1008,7 +1030,9 @@ data class PatternBuilder(
 
                 for (path in pathsToHold) {
                     val pathPrimary =
-                        if (image.event == image.primary) path else image.pathPermFromPrimary.mapInverse(path)
+                        if (image.event == image.primary) path else image.pathPermFromPrimary.mapInverse(
+                            path
+                        )
                     val trPrimary =
                         image.primary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
                     if (trPrimary != null) {
