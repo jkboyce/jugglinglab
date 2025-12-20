@@ -88,9 +88,8 @@ class EditLadderDiagram(
     fun onNewActiveItem(hash: Int) {
         try {
             aep?.setActiveItem(hash)
-        } catch (jei: JuggleExceptionInternal) {
-            jei.pattern = pattern
-            jlHandleFatalException(jei)
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
         }
     }
 
@@ -273,11 +272,8 @@ class EditLadderDiagram(
                         makePopupMenu(popupItem).show(this, me.getX(), me.getY())
                     }
 
-                    STATE_POPUP -> jlHandleFatalException(
-                        JuggleExceptionInternal(
-                            "tried to enter POPUP state while already in it",
-                            pattern
-                        )
+                    STATE_POPUP -> throw JuggleExceptionInternal(
+                        "tried to enter POPUP state while already in it"
                     )
                 }
             } else {

@@ -488,9 +488,9 @@ open class AnimationPanel : JPanel(), Runnable {
         } else if (engineRunning && !writingGIF) {
             try {
                 animator.drawFrame(this.time, g, draggingCamera, true)
-            } catch (jei: JuggleExceptionInternal) {
+            } catch (e: Exception) {
                 killAnimationThread()
-                jlHandleFatalException(jei)
+                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
             }
         }
     }

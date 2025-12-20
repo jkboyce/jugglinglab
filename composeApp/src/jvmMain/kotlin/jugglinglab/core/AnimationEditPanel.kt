@@ -112,10 +112,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
             onNewActiveItem(activeItemHashCode)
         } catch (e: Exception) {
-            if (e is JuggleExceptionInternal) {
-                e.pattern = pattern
-            }
-            jlHandleFatalException(e)
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
         }
     }
 
@@ -544,33 +541,37 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 var hasResized: Boolean = false
 
                 override fun componentResized(e: ComponentEvent?) {
-                    if (!engineAnimating) return
-                    if (writingGIF) return
+                    try {
+                        if (!engineAnimating) return
+                        if (writingGIF) return
 
-                    animator.dimension = size
-                    if (eventActive) {
-                        createEventView()
-                    }
-                    if (positionActive) {
-                        createPositionView()
-                    }
-                    if (isPaused) {
-                        repaint()
-                    }
-
-                    // Don't update the preferred animation size if the enclosing
-                    // window is maximized
-                    val comp = SwingUtilities.getRoot(this@AnimationEditPanel)
-                    if (comp is PatternWindow) {
-                        if (comp.isWindowMaximized) {
-                            return
+                        animator.dimension = size
+                        if (eventActive) {
+                            createEventView()
                         }
-                    }
+                        if (positionActive) {
+                            createPositionView()
+                        }
+                        if (isPaused) {
+                            repaint()
+                        }
 
-                    if (hasResized) {
-                        jc.size = IntSize(size.width, size.height)
+                        // Don't update the preferred animation size if the enclosing
+                        // window is maximized
+                        val comp = SwingUtilities.getRoot(this@AnimationEditPanel)
+                        if (comp is PatternWindow) {
+                            if (comp.isWindowMaximized) {
+                                return
+                            }
+                        }
+
+                        if (hasResized) {
+                            jc.size = IntSize(size.width, size.height)
+                        }
+                        hasResized = true
+                    } catch (e: Exception) {
+                        jlHandleFatalException(JuggleExceptionInternal(e, pattern))
                     }
-                    hasResized = true
                 }
             })
     }
@@ -678,10 +679,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
             setActiveItem(activeHashCode)
         } catch (e: Exception) {
-            if (e is JuggleExceptionInternal) {
-                e.pattern = pat
-            }
-            jlHandleFatalException(e)
+            jlHandleFatalException(JuggleExceptionInternal(e, pat))
         }
     }
 
@@ -1430,10 +1428,9 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 animator.drawFrame(time, g, draggingCamera, false)
                 drawEvents(g)
                 drawPositions(g)
-            } catch (jei: JuggleExceptionInternal) {
+            } catch (e: Exception) {
                 killAnimationThread()
-                jei.pattern = pattern
-                jlHandleFatalException(jei)
+                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
             }
         }
     }
