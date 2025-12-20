@@ -2,7 +2,8 @@
 // build.gradle.kts
 //
 // Juggling Lab build file for use with the Gradle build system.
-// - `gradlew run` to build and run
+// - `gradlew run` to build and run with Swing UI
+// - `gradlew runcompose` to build and run with Compose UI
 // - `gradlew build` to build bin/JugglingLab.jar
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
@@ -67,7 +68,6 @@ compose.desktop {
             "-Xss2048k",
             "-Dfile.encoding=UTF-8",
             "-DJL_run_as_bundle=true",
-            "-DJL_compose_ui=true",
             "--enable-native-access=ALL-UNNAMED"
         )
         /*
@@ -77,6 +77,23 @@ compose.desktop {
             packageVersion = "1.6.7"
         }*/
     }
+}
+
+// Custom task to run with Compose UI
+tasks.register<JavaExec>("runcompose") {
+    group = "application"
+    description = "Runs the application with Compose UI"
+    mainClass.set("jugglinglab.JugglingLabKt")
+    val jvmTarget = kotlin.targets.getByName("jvm")
+    val mainCompilation = jvmTarget.compilations.getByName("main")
+    classpath = files(mainCompilation.output.allOutputs, mainCompilation.runtimeDependencyFiles)
+    jvmArgs = listOf(
+        "-Xss2048k",
+        "-Dfile.encoding=UTF-8",
+        "-DJL_run_as_bundle=true",
+        "-DJL_compose_ui=true",
+        "--enable-native-access=ALL-UNNAMED"
+    )
 }
 
 // Custom task to build a fat JAR for the JVM target
