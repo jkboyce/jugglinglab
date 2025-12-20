@@ -385,7 +385,7 @@ data class JMLPattern(
         JMLDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
-    @get:Throws(JuggleExceptionInternalWithPattern::class)
+    @get:Throws(JuggleExceptionInternal::class)
     val rootNode: JMLNode?
         get() {
             try {
@@ -393,7 +393,7 @@ data class JMLPattern(
                 parser.parse(toString())
                 return parser.tree
             } catch (e: Exception) {
-                throw JuggleExceptionInternalWithPattern(e.message, this)
+                throw JuggleExceptionInternal(e.message ?: "", this)
             }
         }
 
@@ -484,7 +484,7 @@ data class JMLPattern(
     // Flip the time axis to create (as nearly as possible) what the pattern
     // looks like played in reverse.
 
-    @Throws(JuggleExceptionInternalWithPattern::class)
+    @Throws(JuggleExceptionInternal::class)
     fun withInvertedTime(): JMLPattern {
         // For each JMLEvent:
         //     - set t = looptime - t
@@ -513,10 +513,7 @@ data class JMLPattern(
                         val sourceTransition =
                             sourceEvent.transitions.first { it.path == tr.path }
                         if (sourceTransition.type != JMLTransition.TRANS_THROW) {
-                            throw JuggleExceptionInternalWithPattern(
-                                "invertTime() problem 1",
-                                this
-                            )
+                            throw JuggleExceptionInternal("invertTime() problem 1", this)
                         }
                         sourceTransition
                     }
@@ -618,10 +615,10 @@ data class JMLPattern(
     // Set the colors of props in the pattern, using the information provided
     // in `colorString`.
 
-    @Throws(JuggleExceptionInternalWithPattern::class, JuggleExceptionUser::class)
+    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
     fun withPropColors(colorString: String): JMLPattern {
         if (!isColorable) {
-            throw JuggleExceptionInternalWithPattern("setPropColors(): not colorable", this)
+            throw JuggleExceptionInternal("setPropColors(): not colorable", this)
         }
 
         // compile a list of colors to apply in round-robin fashion to paths
@@ -870,7 +867,7 @@ data class JMLPattern(
                 parser.parse(xmlString)
                 fromJMLNode(parser.tree!!, version)
             } catch (e: Exception) {
-                throw JuggleExceptionInternal(e.message)
+                throw JuggleExceptionInternal(e.message ?: "")
             }
         }
 
@@ -922,7 +919,7 @@ data class PatternBuilder(
         } catch (jeu: JuggleExceptionUser) {
             // can't be a user error since base pattern has already successfully
             // compiled
-            throw JuggleExceptionInternal(jeu.message)
+            throw JuggleExceptionInternal(jeu.message ?: "")
         }
     }
 
@@ -936,7 +933,7 @@ data class PatternBuilder(
     // Any errors are considered internal errors because we assume user input
     // has been validated prior to this.
 
-    @Throws(JuggleExceptionInternalWithPattern::class)
+    @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
         val holdsOnly = Array(numberOfPaths) { false }
 
@@ -948,8 +945,8 @@ data class PatternBuilder(
             // for each path: value `null` means unknown, value (0, 0) means in the air
             val holdingLocation = arrayOfNulls<Pair<Int, Int>?>(numberOfPaths)
 
-            for ((ev, evPrimary, pathPermFromPrimary) in pat.eventSequence()) {
-                if (ev.t > pat.loopStartTime + timeWindow) {
+            for (image in pat.eventSequence()) {
+                if (image.event.t > pat.loopStartTime + timeWindow) {
                     // last check: were there any paths that had ONLY holds? If
                     // so then re-scan and fix holds for those paths
                     for (i in 0..<numberOfPaths) {
@@ -960,12 +957,13 @@ data class PatternBuilder(
                     }
                     return  // only exit from the function
                 }
+
                 val pathsToHold = (1..numberOfPaths).filter {
                     val loc = holdingLocation[it - 1]
-                    (loc != null && loc.first == ev.juggler && loc.second == ev.hand)
+                    (loc != null && loc.first == image.event.juggler && loc.second == image.event.hand)
                 }.toMutableList()
 
-                for (tr in ev.transitions) {
+                for (tr in image.event.transitions) {
                     pathsToHold.remove(tr.path)
                     val loc = holdingLocation[tr.path - 1]
 
@@ -974,47 +972,41 @@ data class PatternBuilder(
                         JMLTransition.TRANS_SOFTCATCH,
                         JMLTransition.TRANS_GRABCATCH -> {
                             if (loc != null && (loc.first != 0 || loc.second != 0)) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "error 1 in fixHolds()",
-                                    pat
-                                )
+                                throw JuggleExceptionInternal("error 1 in fixHolds()", pat)
                             }
-                            holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
+                            holdingLocation[tr.path - 1] = Pair(image.event.juggler, image.event.hand)
                         }
 
                         JMLTransition.TRANS_THROW -> {
-                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
-                                throw JuggleExceptionInternalWithPattern(
-                                    "error 2 in fixHolds()",
-                                    pat
-                                )
+                            if (loc != null && (loc.first != image.event.juggler || loc.second != image.event.hand)) {
+                                throw JuggleExceptionInternal("error 2 in fixHolds()", pat)
                             }
                             holdingLocation[tr.path - 1] = Pair(0, 0)
                         }
 
                         JMLTransition.TRANS_HOLDING -> {
-                            if (loc != null && (loc.first != ev.juggler || loc.second != ev.hand)) {
+                            if (loc != null && (loc.first != image.event.juggler || loc.second != image.event.hand)) {
                                 // Path `tr.path` is not being held in this hand – remove transition
                                 // from the primary event and then restart the scan.
 
                                 val pathPrimary =
-                                    if (ev == evPrimary) tr.path else pathPermFromPrimary.mapInverse(tr.path)
+                                    if (image.event == image.primary) tr.path else image.pathPermFromPrimary.mapInverse(tr.path)
                                 val trPrimary =
-                                    evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                                    image.primary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
                                 if (trPrimary == null || trPrimary.type != JMLTransition.TRANS_HOLDING) {
-                                    throw JuggleExceptionInternalWithPattern("error 3 in fixHolds()", pat)
+                                    throw JuggleExceptionInternal("error 3 in fixHolds()", pat)
                                 }
 
-                                val newPrimary = evPrimary.withoutTransition(trPrimary)
-                                val index = events.indexOf(evPrimary)
+                                val newPrimary = image.primary.withoutTransition(trPrimary)
+                                val index = events.indexOf(image.primary)
                                 if (index == -1) {
-                                    throw JuggleExceptionInternalWithPattern("error 4 in fixHolds()", pat)
+                                    throw JuggleExceptionInternal("error 4 in fixHolds()", pat)
                                 }
                                 events[index] = newPrimary
                                 continue@scanstart
                             }
                             if (holdsOnly[tr.path - 1]) {
-                                holdingLocation[tr.path - 1] = Pair(ev.juggler, ev.hand)
+                                holdingLocation[tr.path - 1] = Pair(image.event.juggler, image.event.hand)
                             }
                         }
                     }
@@ -1027,26 +1019,26 @@ data class PatternBuilder(
 
                 for (path in pathsToHold) {
                     val pathPrimary =
-                        if (ev == evPrimary) path else pathPermFromPrimary.mapInverse(path)
+                        if (image.event == image.primary) path else image.pathPermFromPrimary.mapInverse(path)
                     val trPrimary =
-                        evPrimary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
+                        image.primary.getPathTransition(pathPrimary, JMLTransition.TRANS_ANY)
                     if (trPrimary != null) {
                         if (trPrimary.type == JMLTransition.TRANS_HOLDING) {
                             continue
                         }
-                        throw JuggleExceptionInternalWithPattern("error 5 in fixHolds()", pat)
+                        throw JuggleExceptionInternal("error 5 in fixHolds()", pat)
                     }
 
                     // hold is missing from primary – add it
-                    val newPrimary = evPrimary.withTransition(
+                    val newPrimary = image.primary.withTransition(
                         JMLTransition(
                             type = JMLTransition.TRANS_HOLDING,
                             path = pathPrimary
                         )
                     )
-                    val index = events.indexOf(evPrimary)
+                    val index = events.indexOf(image.primary)
                     if (index == -1) {
-                        throw JuggleExceptionInternalWithPattern("error 6 in fixHolds()", pat)
+                        throw JuggleExceptionInternal("error 6 in fixHolds()", pat)
                     }
                     events[index] = newPrimary
                     continue@scanstart

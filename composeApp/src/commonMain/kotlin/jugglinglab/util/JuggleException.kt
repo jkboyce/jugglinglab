@@ -12,5 +12,5 @@ package jugglinglab.util
 open class JuggleException : Exception {
     constructor() : super()
 
-    constructor(s: String?) : super(s)
+    constructor(s: String) : super(s)
 }

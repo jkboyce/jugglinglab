@@ -222,7 +222,7 @@ abstract class MHNPattern : Pattern() {
             }
         } catch (jeu: JuggleExceptionUser) {
             // can't be a user error since config has already been successfully read
-            throw JuggleExceptionInternal(jeu.message)
+            throw JuggleExceptionInternal(jeu.message ?: "")
         }
         return result
     }
@@ -701,7 +701,7 @@ abstract class MHNPattern : Pattern() {
     // Convert from juggling matrix representation to JML
     //--------------------------------------------------------------------------
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    @Throws(JuggleExceptionInternal::class)
     override fun asJMLPattern(): JMLPattern {
         if (bpsSet <= 0) {
             // signal that we should calculate bps
@@ -886,14 +886,20 @@ abstract class MHNPattern : Pattern() {
             println("Final result from MHNPattern.asJMLPattern():")
             println(result)
         }
+
         try {
             result.assertValid()
-        } catch (e: JuggleException) {
-            throw JuggleExceptionInternalWithPattern(
-                "Error in asJMLPattern(): " + e.message,
-                result
+        } catch (e: JuggleExceptionUser) {
+            // treat as internal error since user input errors should have
+            // been caught upstream
+            throw JuggleExceptionInternal(
+                "Error in asJMLPattern(): ${e.message}", result
             )
+        } catch (jei: JuggleExceptionInternal) {
+            jei.pattern = result
+            throw jei
         }
+
         return result
     }
 
@@ -1806,7 +1812,7 @@ abstract class MHNPattern : Pattern() {
                     .firstOrNull { !(calcpos[it.primary] ?: false) }?.event
             if (endEvent == null) {
                 // if we found an event going backward, we should find one forward
-                throw JuggleExceptionInternalWithPattern(
+                throw JuggleExceptionInternal(
                     "Error in addLocationsForIncompleteEventsToJML()", pat
                 )
             }
@@ -1833,20 +1839,20 @@ abstract class MHNPattern : Pattern() {
             val pat = JMLPattern.fromPatternBuilder(rec)
             val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
 
-            for ((ev, evPrimary) in pat.eventSequence()) {
-                if (ev.t > pat.loopStartTime + timeWindow) {
+            for (image in pat.eventSequence()) {
+                if (image.event.t > pat.loopStartTime + timeWindow) {
                     return
                 }
-                if (ev.t < evPrimary.t || evPrimary.t < pat.loopStartTime) {
+                if (image.event.t < image.primary.t || image.primary.t < pat.loopStartTime) {
                     // promote `ev` as primary
-                    if (ev.t < pat.loopStartTime || ev.t >= pat.loopEndTime) {
-                        throw JuggleExceptionInternalWithPattern(
-                            "error in selectPrimaryEvents(): ${ev.t}",
+                    if (image.event.t < pat.loopStartTime || image.event.t >= pat.loopEndTime) {
+                        throw JuggleExceptionInternal(
+                            "error in selectPrimaryEvents(): ${image.event.t}",
                             pat
                         )
                     }
-                    ev.primaryEvent = null
-                    rec.events[rec.events.indexOf(evPrimary)] = ev
+                    image.event.primaryEvent = null
+                    rec.events[rec.events.indexOf(image.primary)] = image.event
                     continue@scanstart
                 }
             }

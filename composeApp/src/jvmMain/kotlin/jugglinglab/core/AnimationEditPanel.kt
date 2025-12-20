@@ -101,23 +101,27 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         addToUndo: Boolean = true,
         fitToFrame: Boolean = true
     ) {
-        if (addToUndo) {
-            addToUndoList(newPattern)
+        try {
+            if (addToUndo) {
+                addToUndoList(newPattern)
+            }
+            animator.pat = newPattern
+            animator.initAnimator(fitToFrame = fitToFrame)
+            for (att in attachments) {
+                att.setJMLPattern(newPattern, activeHashCode = activeItemHashCode)
+            }
+            onNewActiveItem(activeItemHashCode)
+        } catch (e: Exception) {
+            if (e is JuggleExceptionInternal) {
+                e.pattern = pattern
+            }
+            jlHandleFatalException(e)
         }
-        animator.pat = newPattern
-        animator.initAnimator(fitToFrame = fitToFrame)
-        for (att in attachments) {
-            att.setJMLPattern(newPattern, activeHashCode = activeItemHashCode)
-        }
-        onNewActiveItem(activeItemHashCode)
     }
 
+    @Throws(JuggleExceptionInternal::class)
     fun onNewActiveItem(hash: Int) {
-        try {
-            setActiveItem(hash)
-        } catch (jei: JuggleExceptionInternal) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-        }
+        setActiveItem(hash)
     }
 
     fun addToUndoList(pat: JMLPattern) {
@@ -148,156 +152,151 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         if (!engineAnimating) return
         if (writingGIF) return
 
-        startX = me.getX()
-        startY = me.getY()
+        try {
+            startX = me.getX()
+            startY = me.getY()
 
-        if (eventActive) {
-            val mx = me.getX()
-            val my = me.getY()
+            if (eventActive) {
+                val mx = me.getX()
+                val my = me.getY()
 
-            for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                val t = i * size.width / 2
+                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                    val t = i * size.width / 2
 
-                if (showYDragControl) {
-                    draggingY =
-                        jlIsNearLine(
-                            mx - t,
-                            my,
-                            eventPoints[0][i][5][0].roundToInt(),
-                            eventPoints[0][i][5][1].roundToInt(),
-                            eventPoints[0][i][6][0].roundToInt(),
-                            eventPoints[0][i][6][1].roundToInt(),
-                            4
-                        )
+                    if (showYDragControl) {
+                        draggingY =
+                            jlIsNearLine(
+                                mx - t,
+                                my,
+                                eventPoints[0][i][5][0].roundToInt(),
+                                eventPoints[0][i][5][1].roundToInt(),
+                                eventPoints[0][i][6][0].roundToInt(),
+                                eventPoints[0][i][6][1].roundToInt(),
+                                4
+                            )
 
-                    if (draggingY) {
-                        dragging = true
-                        draggingLeft = (i == 0)
-                        deltaX = 0
-                        deltaY = 0
-                        eventStart = activeEvent!!.localCoordinate
-                        eventPrimaryStart = activeEventPrimary!!.localCoordinate
-                        repaint()
-                        return
-                    }
-                }
-
-                if (showXzDragControl) {
-                    for (j in eventPoints.indices) {
-                        if (!isInsidePolygon(mx - t, my, eventPoints[j], i, FACE_XZ)) {
-                            continue
+                        if (draggingY) {
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0
+                            deltaY = 0
+                            eventStart = activeEvent!!.localCoordinate
+                            eventPrimaryStart = activeEventPrimary!!.localCoordinate
+                            repaint()
+                            return
                         }
+                    }
 
-                        if (j > 0) {
-                            try {
+                    if (showXzDragControl) {
+                        for (j in eventPoints.indices) {
+                            if (!isInsidePolygon(mx - t, my, eventPoints[j], i, FACE_XZ)) {
+                                continue
+                            }
+
+                            if (j > 0) {
                                 setActiveItem(
                                     pattern!!.getEventImageInLoop(visibleEvents[j]).hashCode()
                                 )
                                 for (att in attachments) {
                                     att.setActiveItem(activeEvent!!.hashCode())
                                 }
-                            } catch (jei: JuggleExceptionInternal) {
-                                jlHandleFatalException(
-                                    JuggleExceptionInternalWithPattern(
-                                        jei,
-                                        pattern
-                                    )
-                                )
                             }
+
+                            draggingXz = true
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0
+                            deltaY = 0
+                            eventStart = activeEvent!!.localCoordinate
+                            eventPrimaryStart = activeEventPrimary!!.localCoordinate
+                            repaint()
+                            return
                         }
-
-                        draggingXz = true
-                        dragging = true
-                        draggingLeft = (i == 0)
-                        deltaX = 0
-                        deltaY = 0
-                        eventStart = activeEvent!!.localCoordinate
-                        eventPrimaryStart = activeEventPrimary!!.localCoordinate
-                        repaint()
-                        return
                     }
                 }
             }
-        }
 
-        if (positionActive) {
-            val mx = me.getX()
-            val my = me.getY()
+            if (positionActive) {
+                val mx = me.getX()
+                val my = me.getY()
 
-            for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                val t = i * size.width / 2
+                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                    val t = i * size.width / 2
 
-                if (showZDragControl) {
-                    draggingZ =
-                        jlIsNearLine(
-                            mx - t,
-                            my,
-                            posPoints[i][4][0].roundToInt(),
-                            posPoints[i][4][1].roundToInt(),
-                            posPoints[i][6][0].roundToInt(),
-                            posPoints[i][6][1].roundToInt(),
-                            4
-                        )
+                    if (showZDragControl) {
+                        draggingZ =
+                            jlIsNearLine(
+                                mx - t,
+                                my,
+                                posPoints[i][4][0].roundToInt(),
+                                posPoints[i][4][1].roundToInt(),
+                                posPoints[i][6][0].roundToInt(),
+                                posPoints[i][6][1].roundToInt(),
+                                4
+                            )
 
-                    if (draggingZ) {
-                        dragging = true
-                        draggingLeft = (i == 0)
-                        deltaX = 0
-                        deltaY = 0
-                        positionStart = activePosition!!.coordinate
-                        repaint()
-                        return
+                        if (draggingZ) {
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0
+                            deltaY = 0
+                            positionStart = activePosition!!.coordinate
+                            repaint()
+                            return
+                        }
                     }
-                }
 
-                if (showXyDragControl) {
-                    draggingXy = isInsidePolygon(mx - t, my, posPoints, i, FACE_XY)
+                    if (showXyDragControl) {
+                        draggingXy = isInsidePolygon(mx - t, my, posPoints, i, FACE_XY)
 
-                    if (draggingXy) {
-                        dragging = true
-                        draggingLeft = (i == 0)
-                        deltaX = 0
-                        deltaY = 0
-                        positionStart = activePosition!!.coordinate
-                        repaint()
-                        return
+                        if (draggingXy) {
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0
+                            deltaY = 0
+                            positionStart = activePosition!!.coordinate
+                            repaint()
+                            return
+                        }
                     }
-                }
 
-                if (showAngleDragControl) {
-                    val dmx = mx - t - posPoints[i][5][0].roundToInt()
-                    val dmy = my - posPoints[i][5][1].roundToInt()
-                    draggingAngle = (dmx * dmx + dmy * dmy < 49.0)
+                    if (showAngleDragControl) {
+                        val dmx = mx - t - posPoints[i][5][0].roundToInt()
+                        val dmy = my - posPoints[i][5][1].roundToInt()
+                        draggingAngle = (dmx * dmx + dmy * dmy < 49.0)
 
-                    if (draggingAngle) {
-                        dragging = true
-                        draggingLeft = (i == 0)
-                        deltaX = 0
-                        deltaY = 0
-                        startAngle = Math.toRadians(activePosition!!.angle)
+                        if (draggingAngle) {
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0
+                            deltaY = 0
+                            startAngle = Math.toRadians(activePosition!!.angle)
 
-                        // record pixel coordinates of x and y unit vectors
-                        // in juggler's frame, at start of angle drag
-                        startDx =
-                            doubleArrayOf(
-                                posPoints[i][11][0] - posPoints[i][4][0],
-                                posPoints[i][11][1] - posPoints[i][4][1]
-                            )
-                        startDy =
-                            doubleArrayOf(
-                                posPoints[i][12][0] - posPoints[i][4][0],
-                                posPoints[i][12][1] - posPoints[i][4][1]
-                            )
-                        startControl =
-                            doubleArrayOf(
-                                posPoints[i][5][0] - posPoints[i][4][0],
-                                posPoints[i][5][1] - posPoints[i][4][1]
-                            )
-                        repaint()
-                        return
+                            // record pixel coordinates of x and y unit vectors
+                            // in juggler's frame, at start of angle drag
+                            startDx =
+                                doubleArrayOf(
+                                    posPoints[i][11][0] - posPoints[i][4][0],
+                                    posPoints[i][11][1] - posPoints[i][4][1]
+                                )
+                            startDy =
+                                doubleArrayOf(
+                                    posPoints[i][12][0] - posPoints[i][4][0],
+                                    posPoints[i][12][1] - posPoints[i][4][1]
+                                )
+                            startControl =
+                                doubleArrayOf(
+                                    posPoints[i][5][0] - posPoints[i][4][0],
+                                    posPoints[i][5][1] - posPoints[i][4][1]
+                                )
+                            repaint()
+                            return
+                        }
                     }
                 }
             }
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
         }
     }
 
@@ -309,30 +308,34 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             return
         }
 
-        val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
+        try {
+            val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
-        if ((eventActive || positionActive) && dragging && mouseMoved) {
-            onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
+            if ((eventActive || positionActive) && dragging && mouseMoved) {
+                onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
+            }
+
+            if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
+                isPaused = !enginePaused
+            }
+
+            draggingCamera = false
+            dragging = false
+            draggingY = false
+            draggingXz = false
+            draggingAngle = false
+            draggingZ = false
+            draggingXy = false
+            deltaX = 0
+            deltaY = 0
+            deltaAngle = 0.0
+            eventStart = null
+            eventPrimaryStart = null
+            positionStart = null
+            repaint()
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
         }
-
-        if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
-            isPaused = !enginePaused
-        }
-
-        draggingCamera = false
-        dragging = false
-        draggingY = false
-        draggingXz = false
-        draggingAngle = false
-        draggingZ = false
-        draggingXy = false
-        deltaX = 0
-        deltaY = 0
-        deltaAngle = 0.0
-        eventStart = null
-        eventPrimaryStart = null
-        positionStart = null
-        repaint()
     }
 
     override fun mouseClicked(e: MouseEvent?) {}
@@ -410,12 +413,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     val rec = PatternBuilder.fromJMLPattern(pattern!!)
                     val index = rec.positions.indexOf(activePosition!!)
                     if (index < 0) {
-                        jlHandleFatalException(
-                            JuggleExceptionInternalWithPattern(
-                                "Error 1 in AEP.mouseDragged()",
-                                pattern!!
-                            )
-                        )
+                        throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
                     }
                     val newPosition = activePosition!!.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
@@ -471,12 +469,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         val rec = PatternBuilder.fromJMLPattern(pattern!!)
                         val index = rec.positions.indexOf(activePosition!!)
                         if (index < 0) {
-                            jlHandleFatalException(
-                                JuggleExceptionInternalWithPattern(
-                                    "Error 2 in AEP.mouseDragged()",
-                                    pattern!!
-                                )
-                            )
+                            throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
                         }
                         val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                         rec.positions[index] = newPosition
@@ -520,11 +513,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
 
             if (eventActive && draggingCamera) {
-                try {
-                    createEventView()
-                } catch (jei: JuggleExceptionInternal) {
-                    jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-                }
+                createEventView()
             }
 
             if (positionActive && (draggingCamera || draggingAngle)) {
@@ -535,7 +524,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 repaint()
             }
         } catch (e: Exception) {
-            jlHandleFatalException(e)
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
         }
     }
 
@@ -545,6 +534,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     // AnimationPanel methods
     //--------------------------------------------------------------------------
 
+    @Throws(JuggleExceptionInternal::class)
     override fun initHandlers() {
         addMouseListener(this)
         addMouseMotionListener(this)
@@ -559,11 +549,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
                     animator.dimension = size
                     if (eventActive) {
-                        try {
-                            createEventView()
-                        } catch (jei: JuggleExceptionInternal) {
-                            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
-                        }
+                        createEventView()
                     }
                     if (positionActive) {
                         createPositionView()
@@ -662,7 +648,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 try {
                     createEventView()
                 } catch (jei: JuggleExceptionInternal) {
-                    jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                    jei.pattern = pattern
+                    jlHandleFatalException(jei)
                 }
                 createPositionView()
                 repaint()
@@ -679,19 +666,22 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         activeHashCode: Int,
         restart: Boolean = true
     ) {
-        if (restart) {
-            restartJuggle(pat, null)
-        } else {
-            animator.pat = pat
-            animator.initAnimator()
-            for (att in attachments) {
-                att.setJMLPattern(pat)
-            }
-        }
         try {
+            if (restart) {
+                restartJuggle(pat, null)
+            } else {
+                animator.pat = pat
+                animator.initAnimator()
+                for (att in attachments) {
+                    att.setJMLPattern(pat)
+                }
+            }
             setActiveItem(activeHashCode)
-        } catch (jei: JuggleExceptionInternal) {
-            jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pat))
+        } catch (e: Exception) {
+            if (e is JuggleExceptionInternal) {
+                e.pattern = pat
+            }
+            jlHandleFatalException(e)
         }
     }
 
@@ -1442,7 +1432,8 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 drawPositions(g)
             } catch (jei: JuggleExceptionInternal) {
                 killAnimationThread()
-                jlHandleFatalException(JuggleExceptionInternalWithPattern(jei, pattern))
+                jei.pattern = pattern
+                jlHandleFatalException(jei)
             }
         }
     }

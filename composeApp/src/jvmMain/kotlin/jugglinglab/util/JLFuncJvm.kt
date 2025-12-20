@@ -114,13 +114,19 @@ private fun showInternalErrorWindow(e: Exception) {
         sw.write(getStringResource(Res.string.error_internal_msg_part2) + "\n")
         sw.write(getStringResource(Res.string.error_internal_msg_part3) + "\n\n")
         sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
-        e.printStackTrace(PrintWriter(sw))
-        if (e is JuggleExceptionInternalWithPattern) {
-            val pat = e.pat
+        if (e is JuggleExceptionInternal) {
+            if (e.wrapped != null) {
+                e.wrapped?.printStackTrace(PrintWriter(sw))
+            } else {
+                e.printStackTrace(PrintWriter(sw))
+            }
+            val pat = e.pattern
             if (pat != null) {
                 sw.write("\nJML pattern:\n")
                 sw.write(pat.toString())
             }
+        } else {
+            e.printStackTrace(PrintWriter(sw))
         }
         sw.write("\n")
         sw.toString()

@@ -406,7 +406,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 val pw = PatternWindow("3", pat, AnimationPrefs())
                 pw.viewMode = AnimationPrefs.VIEW_PATTERN
             } catch (jeu: JuggleExceptionUser) {
-                throw JuggleExceptionInternal(jeu.message)
+                throw JuggleExceptionInternal(jeu.message ?: "")
             }
         }
 

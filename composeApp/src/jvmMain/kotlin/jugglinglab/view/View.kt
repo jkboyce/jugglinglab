@@ -19,7 +19,6 @@ import jugglinglab.jml.JMLPattern
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
-import jugglinglab.util.JuggleExceptionInternalWithPattern
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.getStringResource
 import java.awt.Dimension
@@ -69,12 +68,11 @@ abstract class View : JPanel() {
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
             jlHandleFatalException(
-                JuggleExceptionInternalWithPattern(jeu.message, p)
+                JuggleExceptionInternal(jeu.message ?: "", p)
             )
         } catch (jei: JuggleExceptionInternal) {
-            jlHandleFatalException(
-                JuggleExceptionInternalWithPattern(jei.message, p)
-            )
+            jei.pattern = p
+            jlHandleFatalException(jei)
         }
     }
 
@@ -92,7 +90,7 @@ abstract class View : JPanel() {
             }
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
-            throw JuggleExceptionInternal(jeu.message)
+            throw JuggleExceptionInternal(jeu.message ?: "")
         }
     }
 
@@ -110,7 +108,7 @@ abstract class View : JPanel() {
             }
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
-            throw JuggleExceptionInternal(jeu.message)
+            throw JuggleExceptionInternal(jeu.message ?: "")
         }
     }
 

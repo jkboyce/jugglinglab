@@ -56,7 +56,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         try {
             if (pat.numberOfProps == 0 && pat.numberOfPaths > 0) {
-                throw JuggleExceptionInternalWithPattern("No props defined", pat)
+                throw JuggleExceptionInternal("No props defined", pat)
             }
 
             buildEventList()
@@ -91,7 +91,8 @@ class LaidoutPattern(val pat: JMLPattern) {
         } catch (jeu: JuggleExceptionUser) {
             throw jeu
         } catch (jei: JuggleExceptionInternal) {
-            throw JuggleExceptionInternalWithPattern(jei, pat)
+            jei.pattern = pat
+            throw jei
         }
     }
 
@@ -337,7 +338,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             needPathEvent[path] = false
                         }
 
-                        else -> throw JuggleExceptionInternalWithPattern(
+                        else -> throw JuggleExceptionInternal(
                             "Unrecognized transition type in buildEventList()",
                             pat
                         )
@@ -435,7 +436,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             needPathEvent[path] = false
                         }
 
-                        else -> throw JuggleExceptionInternalWithPattern(
+                        else -> throw JuggleExceptionInternal(
                             "Unrecognized transition type in buildEventList()",
                             pat
                         )
@@ -607,7 +608,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             pl.setThrow(lasttr.throwType!!, lasttr.throwMod)
                         }
 
-                        else -> throw JuggleExceptionInternalWithPattern(
+                        else -> throw JuggleExceptionInternal(
                             "unrecognized transition type in buildLinkLists()",
                             pat
                         )
@@ -627,7 +628,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
 
             if (pathlinks!![i].isEmpty()) {
-                throw JuggleExceptionInternalWithPattern("No event found for path " + (i + 1), pat)
+                throw JuggleExceptionInternal("No event found for path " + (i + 1), pat)
             }
         }
 
@@ -859,7 +860,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 return
             }
         }
-        throw JuggleExceptionInternalWithPattern("time t=$time is out of path range", pat)
+        throw JuggleExceptionInternal("time t=$time is out of path range", pat)
     }
 
     // Check if a given hand is holding the path at a given time.
@@ -986,7 +987,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         for (hl in handlinks!![juggler - 1][handindex]) {
             if (time >= hl.startEvent.t && time < hl.endEvent.t) {
-                val hp = hl.handCurve ?: throw JuggleExceptionInternalWithPattern(
+                val hp = hl.handCurve ?: throw JuggleExceptionInternal(
                     "getHandCoordinate() null pointer at t=$time",
                     pat
                 )
@@ -994,7 +995,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 return
             }
         }
-        throw JuggleExceptionInternalWithPattern(
+        throw JuggleExceptionInternal(
             "time t=$time (j=$juggler,h=$handindex) is out of handpath range",
             pat
         )
