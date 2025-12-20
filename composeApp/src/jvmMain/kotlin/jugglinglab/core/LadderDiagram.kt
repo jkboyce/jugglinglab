@@ -252,15 +252,16 @@ open class LadderDiagram(p: JMLPattern) :
                 item.transEventItem = item
                 add(item)
 
-                for (index in 0..<ei.event.transitions.size) {
-                    val item2 = LadderEventItem(
-                        event = ei.event,
-                        primary = ei.primary
-                    )
-                    item2.type = LadderItem.TYPE_TRANSITION
-                    item2.transEventItem = item
-                    item2.transNum = index
-                    add(item2)
+                for (index in ei.event.transitions.indices) {
+                    add(
+                        LadderEventItem(
+                            event = ei.event,
+                            primary = ei.primary
+                        ).apply {
+                            type = LadderItem.TYPE_TRANSITION
+                            transEventItem = item
+                            transNum = index
+                        })
                 }
             }
         }
@@ -277,23 +278,24 @@ open class LadderDiagram(p: JMLPattern) :
                         .firstOrNull { it.event.transitions.any { tr2 -> tr2.path == tr.path } }
                         ?: continue
 
-                    add(LadderPathItem(
-                        startEvent = ei.event,
-                        endEvent = endEi.event,
-                    ).apply {
-                        transnumStart = indexTr
-                        type = if (tr.type != JMLTransition.TRANS_THROW) {
-                            LadderItem.TYPE_HOLD
-                        } else if (ei.event.juggler != endEvent.juggler) {
-                            LadderItem.TYPE_PASS
-                        } else if (ei.event.hand == endEvent.hand) {
-                            LadderItem.TYPE_SELF
-                        } else {
-                            LadderItem.TYPE_CROSS
-                        }
-                        pathNum = tr.path
-                        color = Color.black
-                    })
+                    add(
+                        LadderPathItem(
+                            startEvent = ei.event,
+                            endEvent = endEi.event,
+                        ).apply {
+                            transnumStart = indexTr
+                            type = if (tr.type != JMLTransition.TRANS_THROW) {
+                                LadderItem.TYPE_HOLD
+                            } else if (ei.event.juggler != endEvent.juggler) {
+                                LadderItem.TYPE_PASS
+                            } else if (ei.event.hand == endEvent.hand) {
+                                LadderItem.TYPE_SELF
+                            } else {
+                                LadderItem.TYPE_CROSS
+                            }
+                            pathNum = tr.path
+                            color = Color.black
+                        })
                 }
             }
         }

@@ -61,23 +61,29 @@ data class JMLPattern(
         for (image in eventSequence(reverse = true)) {
             if (image.event.t < loopStartTime - timeWindow) break
             if (pathDone.all { it }) break
-            if (image.event.transitions.all { pathDone[it.path - 1] }) continue
-            result.add(image)
-            image.event.transitions.forEach { if (it.isThrowOrCatch) {
-                pathDone[it.path - 1] = true
-            } }
+            if (image.event.transitions.isEmpty() || !image.event.transitions.all { pathDone[it.path - 1] }) {
+                result.add(image)
+                image.event.transitions.forEach {
+                    if (it.isThrowOrCatch) {
+                        pathDone[it.path - 1] = true
+                    }
+                }
+            }
         }
 
         pathDone.fill(false)
         for (image in eventSequence()) {
             if (image.event.t > loopEndTime + timeWindow) break
             if (pathDone.all { it }) break
-            if (image.event.transitions.all { pathDone[it.path - 1] }) continue
-            result.add(image)
-            if (image.event.t < loopEndTime) continue
-            image.event.transitions.forEach { if (it.isThrowOrCatch) {
-                pathDone[it.path - 1] = true
-            } }
+            if (image.event.transitions.isEmpty() || !image.event.transitions.all { pathDone[it.path - 1] }) {
+                result.add(image)
+                if (image.event.t < loopEndTime) continue
+                image.event.transitions.forEach {
+                    if (it.isThrowOrCatch) {
+                        pathDone[it.path - 1] = true
+                    }
+                }
+            }
         }
 
         result.sortedBy { it.event }.toList()
