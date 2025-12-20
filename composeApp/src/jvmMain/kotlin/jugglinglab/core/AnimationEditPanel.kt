@@ -40,7 +40,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
     private var showYDragControl: Boolean = false
     private var eventStart: Coordinate? = null
     private var eventPrimaryStart: Coordinate? = null
-    private var visibleEvents: MutableList<JMLEvent> = mutableListOf()
+    private var visibleEvents: List<JMLEvent> = listOf()
     private var eventPoints: Array<Array<Array<DoubleArray>>>
     private var handpathPoints: Array<Array<DoubleArray>>
     private var handpathStartTime: Double = 0.0
@@ -189,13 +189,22 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             if (!isInsidePolygon(mx - t, my, eventPoints[j], i, FACE_XZ)) {
                                 continue
                             }
-
                             if (j > 0) {
-                                setActiveItem(
-                                    pattern!!.getEventImageInLoop(visibleEvents[j]).hashCode()
-                                )
+                                // the event visibleEvents[j] might be outside the
+                                // animation loop; find the instance inside the loop
+                                val image =
+                                    pattern!!.allEvents.find { it.event == visibleEvents[j] }
+                                        ?: throw JuggleExceptionInternal("Error 1 in AEP.mousePressed()")
+                                val code = pattern!!.loopEvents.find {
+                                    it.primary == image.primary &&
+                                        it.event.juggler == image.event.juggler &&
+                                        it.event.hand == image.event.hand
+                                }?.event?.hashCode()
+                                    ?: throw JuggleExceptionInternal("Error 2 in AEP.mousePressed()")
+
+                                setActiveItem(code)
                                 for (att in attachments) {
-                                    att.setActiveItem(activeEvent!!.hashCode())
+                                    att.setActiveItem(code)
                                 }
                             }
 
@@ -505,7 +514,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 while (ca[0] >= Math.toRadians(360.0)) {
                     ca[0] -= Math.toRadians(360.0)
                 }
-
                 animator.cameraAngle = snapCamera(ca)
             }
 
@@ -736,35 +744,41 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
         val pat = pattern!!
         val ev = activeEvent!!
-
-        // identify events to display on-screen
-        visibleEvents = mutableListOf()
-        visibleEvents.add(ev)
         handpathStartTime = ev.t
         handpathEndTime = ev.t
 
-        for ((ev2, ev2Primary) in pat.eventSequence(startTime = ev.t, reverse = true)
-            .filter { it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
-            handpathStartTime = min(handpathStartTime, ev2.t)
-            if (ev2Primary != activeEventPrimary) {
-                visibleEvents.add(ev2)
-            } else {
-                break
+        // identify events to display on-screen
+        visibleEvents = buildList {
+            add(ev)
+            val index = pat.allEvents.indexOfFirst { it.event == ev }
+            if (index == -1) throw JuggleExceptionInternal("Error 1 in createEventView()")
+
+            for (image in pat.allEvents.subList(index + 1, pat.allEvents.size).filter {
+                it.event.hand == ev.hand && it.event.juggler == ev.juggler
+            }) {
+                handpathEndTime = max(handpathEndTime, image.event.t)
+                if (image.primary != activeEventPrimary) {
+                    add(image.event)
+                } else {
+                    break
+                }
+                if (image.event.hasThrowOrCatch) {
+                    break
+                }
             }
-            if (ev2.hasThrowOrCatch) {
-                break
-            }
-        }
-        for ((ev2, ev2Primary) in pat.eventSequence(startTime = ev.t)
-            .filter { it.event != ev && it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
-            handpathEndTime = max(handpathStartTime, ev2.t)
-            if (ev2Primary != activeEventPrimary) {
-                visibleEvents.add(ev2)
-            } else {
-                break
-            }
-            if (ev2.hasThrowOrCatch) {
-                break
+
+            for (image in pat.allEvents.subList(0, index).asReversed().filter {
+                it.event.hand == ev.hand && it.event.juggler == ev.juggler
+            }) {
+                handpathStartTime = min(handpathStartTime, image.event.t)
+                if (image.primary != activeEventPrimary) {
+                    add(image.event)
+                } else {
+                    break
+                }
+                if (image.event.hasThrowOrCatch) {
+                    break
+                }
             }
         }
 

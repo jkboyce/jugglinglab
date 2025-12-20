@@ -321,23 +321,6 @@ data class JMLPattern(
         }
     }
 
-    // TODO: do we need this?
-
-    fun getEventImageInLoop(ev: JMLEvent): JMLEvent? {
-        var current = layout.eventList
-        while (current != null) {
-            if ((current.t in loopStartTime..<loopEndTime) &&
-                current.juggler == ev.juggler &&
-                current.hand == ev.hand &&
-                current.hasSamePrimaryAs(ev)
-            ) {
-                return current
-            }
-            current = current.next
-        }
-        return null
-    }
-
     //--------------------------------------------------------------------------
     // Input/output
     //--------------------------------------------------------------------------
