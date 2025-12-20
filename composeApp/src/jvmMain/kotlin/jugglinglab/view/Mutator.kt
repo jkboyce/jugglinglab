@@ -156,6 +156,7 @@ class Mutator {
         val record = PatternBuilder.fromJMLPattern(pat)
         val index = record.events.indexOf(ev)
         record.events[index] = ev.copy(t = tnew)
+        record.selectPrimaryEvents()
         return JMLPattern.fromPatternBuilder(record)
     }
 
@@ -256,6 +257,7 @@ class Mutator {
         )
         val record = PatternBuilder.fromJMLPattern(pat)
         record.events.add(newEvent)
+        record.selectPrimaryEvents()
         return JMLPattern.fromPatternBuilder(record)
     }
 
@@ -334,7 +336,7 @@ class Mutator {
         )
         controls.add(lab)
 
-        this.cb = ArrayList<JCheckBox>(5)
+        this.cb = mutableListOf()
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type1), true))
         gb.setConstraints(cb[0], jlConstraints(GridBagConstraints.LINE_START, 0, 1, null))
         this.cb.add(JCheckBox(getStringResource(Res.string.gui_mutator_type2), true))
