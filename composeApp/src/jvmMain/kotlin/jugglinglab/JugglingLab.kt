@@ -64,7 +64,7 @@ object JugglingLab {
     val baseDir: Path
 
     // command line arguments that we trim as portions are parsed
-    private var jlargs: ArrayList<String> = ArrayList()
+    private var jlargs: MutableList<String> = mutableListOf()
 
     init {
         val osname = System.getProperty("os.name").lowercase(Locale.getDefault())
@@ -112,7 +112,7 @@ object JugglingLab {
         // Figure out what mode to run in based on command line arguments. We want
         // no command line arguments to run the application, so that it launches
         // when the user double-clicks on the jar.
-        jlargs.addAll(mutableListOf(*args))
+        jlargs.addAll(listOf(*args))
 
         val runApplication = when {
             jlargs.isNotEmpty() -> (jlargs[0] == "start")
@@ -145,9 +145,7 @@ object JugglingLab {
             return
         }
 
-        val modes = mutableListOf("gen", "trans", "verify", "anim", "togif", "tojml")
-        val showHelp = !modes.contains(firstarg)
-
+        val showHelp = firstarg !in listOf("gen", "trans", "verify", "anim", "togif", "tojml")
         if (showHelp) {
             doHelp(firstarg)
             return
@@ -280,8 +278,8 @@ object JugglingLab {
     //
     // In the event of an error, print an error message and return null.
 
-    private fun parseFilelist(): ArrayList<File> {
-        val files = ArrayList<File>()
+    private fun parseFilelist(): MutableList<File> {
+        val files = mutableListOf<File>()
 
         for (filestr in jlargs) {
             var filestr = filestr
@@ -429,6 +427,15 @@ object JugglingLab {
 
     private fun doVerify(outpath: Path?, jc: AnimationPrefs?) {
         //System.setProperty("java.awt.headless", "true")
+        val doJmlOutput = run {
+            val index = jlargs.indexOfFirst { it.equals("-tojml", ignoreCase = true) }
+            if (index == -1) {
+                false
+            } else {
+                jlargs.removeAt(index)
+                true
+            }
+        }
         val files = parseFilelist()
         if (files.isEmpty()) {
             return
@@ -506,6 +513,9 @@ object JugglingLab {
                             val layout = pat.layout
                             pl.getAnimationPrefsForLine(i)
                             ps.println("   Pattern line ${i + 1}: OK")
+                            if (doJmlOutput) {
+                                println(pat.toString())
+                            }
                         }
                     } catch (je: JuggleException) {
                         ps.println("   Pattern line ${i + 1}: Error: ${je.message}")
