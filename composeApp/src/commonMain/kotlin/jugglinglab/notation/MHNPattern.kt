@@ -1737,43 +1737,51 @@ abstract class MHNPattern : Pattern() {
         rec: PatternBuilder,
         calcpos: MutableMap<JMLEvent, Boolean>
     ) {
-        for (h in 0..1) {
-            val hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
-
-            // build the pattern so we can use eventSequence()
+        scanstart@ while (true) {
+            // build the pattern so we can use `allEvents`
             val result = JMLPattern.fromPatternBuilder(rec)
-            val startEv: MutableList<JMLEvent?> = MutableList(numberOfJugglers) { null }
 
-            for ((ev, _, _) in result.eventSequence()) {
-                if (ev.hand != hand) {
-                    continue
-                }
-                val start = startEv[ev.juggler - 1]
+            for (h in 0..1) {
+                val hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                val startEvent: MutableList<JMLEvent?> = MutableList(numberOfJugglers) { null }
 
-                if (start != null) {
-                    val gap = ev.t - start.t
+                for (image in result.allEvents) {
+                    if (image.event.hand != hand) {
+                        continue
+                    }
+                    if (image.event.t < 2 * result.loopStartTime - result.loopEndTime) {
+                        continue
+                    }
+                    if (image.event.t > 2 * result.loopEndTime - result.loopStartTime) {
+                        break
+                    }
+                    val start = startEvent[image.event.juggler - 1]
 
-                    if (gap > SECS_EVENT_GAP_MAX) {
-                        val numAdd = (gap / SECS_EVENT_GAP_MAX).toInt()
-                        val deltaT = gap / (numAdd + 1).toDouble()
+                    if (start != null) {
+                        val gap = image.event.t - start.t
 
-                        for (i in 1..numAdd) {
-                            val evTime = start.t + i * deltaT
-                            if (evTime < result.loopEndTime) {
-                                val ev2 = JMLEvent(t = evTime, juggler = ev.juggler, hand = hand)
+                        if (gap > SECS_EVENT_GAP_MAX) {
+                            val numAdd = (gap / SECS_EVENT_GAP_MAX).toInt()
+                            val deltaT = gap / (numAdd + 1).toDouble()
+
+                            for (i in 1..numAdd) {
+                                val ev =
+                                    JMLEvent(
+                                        t = start.t + i * deltaT,
+                                        juggler = image.event.juggler,
+                                        hand = hand
+                                    )
                                 // no transitions yet; added later if needed
-                                calcpos[ev2] = true
-                                rec.events.add(ev2)
+                                calcpos[ev] = true
+                                rec.events.add(ev)
                             }
+                            continue@scanstart
                         }
                     }
-                }
-                startEv[ev.juggler - 1] = ev
-
-                if (ev.t > result.loopEndTime + SECS_EVENT_GAP_MAX) {
-                    break
+                    startEvent[image.event.juggler - 1] = image.event
                 }
             }
+            break
         }
     }
 

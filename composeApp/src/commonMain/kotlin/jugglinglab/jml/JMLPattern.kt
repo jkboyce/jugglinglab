@@ -50,8 +50,10 @@ data class JMLPattern(
 
     // sorted list of events that:
     // (a) includes all events inside the animation loop
-    // (b) for every path number with events in the pattern, includes at least
-    //     one event before the loop start, and one event after
+    // (b) includes all events in the cycles immediately before and after the
+    //     animation loop
+    // (c) for every path number with events in the pattern, includes at least
+    //     one event before the loop start, and one event after loop end
 
     val allEvents: List<EventImage> by lazy {
         val result = mutableListOf<EventImage>()
@@ -60,8 +62,11 @@ data class JMLPattern(
         val pathDone = Array(numberOfPaths) { false }
         for (image in eventSequence(reverse = true)) {
             if (image.event.t < loopStartTime - timeWindow) break
-            if (pathDone.all { it }) break
-            if (image.event.transitions.isEmpty() || !image.event.transitions.all { pathDone[it.path - 1] }) {
+            val addEvent =
+                image.event.t >= (2 * loopStartTime - loopEndTime) ||
+                    image.event.transitions.isEmpty() ||
+                    !image.event.transitions.all { pathDone[it.path - 1] }
+            if (addEvent) {
                 result.add(image)
                 image.event.transitions.forEach {
                     if (it.isThrowOrCatch) {
@@ -74,8 +79,11 @@ data class JMLPattern(
         pathDone.fill(false)
         for (image in eventSequence()) {
             if (image.event.t > loopEndTime + timeWindow) break
-            if (pathDone.all { it }) break
-            if (image.event.transitions.isEmpty() || !image.event.transitions.all { pathDone[it.path - 1] }) {
+            val addEvent =
+                image.event.t < (2 * loopEndTime - loopStartTime) ||
+                    image.event.transitions.isEmpty() ||
+                    !image.event.transitions.all { pathDone[it.path - 1] }
+            if (addEvent) {
                 result.add(image)
                 if (image.event.t < loopEndTime) continue
                 image.event.transitions.forEach {
