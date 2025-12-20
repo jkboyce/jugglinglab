@@ -540,10 +540,12 @@ data class JMLPattern(
             }
         }
 
-        val record = PatternBuilder.fromJMLPattern(this)
-        record.symmetries = newSymmetries.toMutableList()
-        record.positions = newPositions.toMutableList()
-        record.events = inverseEvents.toMutableList()
+        val record = PatternBuilder.fromJMLPattern(this).apply {
+            symmetries = newSymmetries.toMutableList()
+            positions = newPositions.toMutableList()
+            events = inverseEvents.toMutableList()
+            selectPrimaryEvents()
+        }
         return fromPatternBuilder(record)
     }
 
