@@ -482,7 +482,7 @@ object JugglingLab {
             if (parser.fileType == JMLParser.JML_PATTERN) {
                 try {
                     ++patternsCount
-                    val pat = JMLPattern.fromJMLNode(parser.tree!!, JMLDefs.CURRENT_JML_VERSION)
+                    val pat = JMLPattern.fromJMLNode(parser.tree!!)
                     val layout = pat.layout
                     ps.println("   OK")
                 } catch (je: JuggleException) {
@@ -572,10 +572,10 @@ object JugglingLab {
                 parser.parse(inpath.toFile().readText())
 
                 when (parser.fileType) {
-                    JMLParser.JML_PATTERN -> {
-                        return JMLPattern.fromJMLNode(parser.tree!!, JMLDefs.CURRENT_JML_VERSION)
-                    }
-                    JMLParser.JML_LIST -> println("Error: JML file cannot be a pattern list")
+                    JMLParser.JML_PATTERN ->
+                        return JMLPattern.fromJMLNode(parser.tree!!)
+                    JMLParser.JML_LIST ->
+                        println("Error: JML file cannot be a pattern list")
                     else -> println("Error: File is not valid JML")
                 }
             } catch (jeu: JuggleExceptionUser) {

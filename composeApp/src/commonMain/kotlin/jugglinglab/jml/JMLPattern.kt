@@ -22,7 +22,6 @@ import jugglinglab.util.Permutation.Companion.lcm
 import kotlin.math.max
 
 data class JMLPattern(
-    val jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
     val title: String? = null,
     val info: String? = null,
     val tags: List<String> = emptyList(),
@@ -333,7 +332,7 @@ data class JMLPattern(
 
     fun writeJML(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
         JMLDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
-        wr.append("<jml version=\"${xmlescape(jmlVersion)}\">\n")
+        wr.append("<jml version=\"${xmlescape(JMLDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<pattern>\n")
         if (writeTitle && title != null) {
             wr.append("<title>${xmlescape(title)}</title>\n")
@@ -702,7 +701,6 @@ data class JMLPattern(
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
             record.events.forEach { it.clearLayoutData() }
             return JMLPattern(
-                jmlVersion = record.jmlVersion,
                 title = record.title,
                 info = record.info,
                 tags = record.tags.toList(),
@@ -719,14 +717,17 @@ data class JMLPattern(
         }
 
         // Create a JMLPattern by parsing a JMLNode
+        //
+        // Include a JML version for when we're loading a JMLPattern that's
+        // part of a JMLPatternList
 
         @Throws(JuggleExceptionUser::class)
         fun fromJMLNode(
             current: JMLNode,
-            version: String = JMLDefs.CURRENT_JML_VERSION
+            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
         ): JMLPattern {
             val record = PatternBuilder()
-            record.jmlVersion = version
+            record.loadingJmlVersion = loadingJmlVersion
             readJML(current, record)
             return fromPatternBuilder(record)
         }
@@ -747,7 +748,7 @@ data class JMLPattern(
                         val message = getStringResource(Res.string.error_jml_version)
                         throw JuggleExceptionUser(message)
                     }
-                    record.jmlVersion = vers
+                    record.loadingJmlVersion = vers
                 }
 
                 "pattern" -> {
@@ -768,7 +769,7 @@ data class JMLPattern(
                     record.basePatternConfig = current.nodeValue!!.trim()
                 }
 
-                "prop" -> record.props.add(JMLProp.fromJMLNode(current, record.jmlVersion))
+                "prop" -> record.props.add(JMLProp.fromJMLNode(current, record.loadingJmlVersion))
                 "setup" -> {
                     val at = current.attributes
                     val jugglerstring = at.getValueOf("jugglers")
@@ -820,7 +821,7 @@ data class JMLPattern(
                     val ev =
                         JMLEvent.fromJMLNode(
                             current,
-                            record.jmlVersion,
+                            record.loadingJmlVersion,
                             record.numberOfJugglers,
                             record.numberOfPaths
                         )
@@ -829,7 +830,7 @@ data class JMLPattern(
                 }
 
                 "position" -> {
-                    val pos = JMLPosition.fromJMLNode(current, record.jmlVersion)
+                    val pos = JMLPosition.fromJMLNode(current, record.loadingJmlVersion)
                     record.positions.add(pos)
                     return
                 }
@@ -856,13 +857,12 @@ data class JMLPattern(
 
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun fromJMLString(
-            xmlString: String,
-            version: String = JMLDefs.CURRENT_JML_VERSION
+            xmlString: String
         ): JMLPattern {
             return try {
                 val parser = JMLParser()
                 parser.parse(xmlString)
-                fromJMLNode(parser.tree!!, version)
+                fromJMLNode(parser.tree!!)
             } catch (e: Exception) {
                 throw JuggleExceptionInternal(e.message ?: "")
             }
@@ -884,7 +884,6 @@ data class JMLPattern(
 //------------------------------------------------------------------------------
 
 data class PatternBuilder(
-    var jmlVersion: String = JMLDefs.CURRENT_JML_VERSION,
     var title: String? = null,
     var info: String? = null,
     var tags: MutableList<String> = mutableListOf(),
@@ -898,6 +897,8 @@ data class PatternBuilder(
     var positions: MutableList<JMLPosition> = mutableListOf(),
     var events: MutableList<JMLEvent> = mutableListOf()
 ) {
+    var loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
+
     fun setTitleString(str: String?) {
         val t = str?.replace(";", "")  // filter out semicolons
         title = if (t != null && !t.isBlank()) t.trim() else null
@@ -1071,7 +1072,6 @@ data class PatternBuilder(
     companion object {
         fun fromJMLPattern(pat: JMLPattern): PatternBuilder {
             return PatternBuilder(
-                jmlVersion = pat.jmlVersion,
                 title = pat.title,
                 info = pat.info,
                 tags = pat.tags.toMutableList(),

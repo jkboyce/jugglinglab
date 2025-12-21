@@ -19,8 +19,7 @@ import jugglinglab.util.getStringResource
 import jugglinglab.util.jlCompareVersions
 
 class JMLPatternList() {
-    var version: String = JMLDefs.CURRENT_JML_VERSION
-    var loadingversion: String = JMLDefs.CURRENT_JML_VERSION
+    var loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
 
     var title: String? = null
         set(t) {
@@ -92,7 +91,7 @@ class JMLPatternList() {
 
         val pat: JMLPattern?
         if (rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-            pat = JMLPattern.fromJMLNode(rec.patnode!!, loadingversion)
+            pat = JMLPattern.fromJMLNode(rec.patnode!!, loadingJmlVersion)
         } else if (rec.anim != null) {
             pat = JMLPattern.fromBasePattern(rec.notation!!, rec.anim!!)
 
@@ -147,7 +146,7 @@ class JMLPatternList() {
                 val message = getStringResource(Res.string.error_jml_version)
                 throw JuggleExceptionUser(message)
             }
-            loadingversion = vers
+            loadingJmlVersion = vers
         }
 
         val listnode = current.children[0]
@@ -206,7 +205,7 @@ class JMLPatternList() {
             wr.append(JMLDefs.jmlPrefix[i]).append('\n')
         }
 
-        wr.append("<jml version=\"${xmlescape(version)}\">\n")
+        wr.append("<jml version=\"${xmlescape(JMLDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<patternlist>\n")
         if (title != null && !title!!.isEmpty()) {
             wr.append("<title>${xmlescape(title!!)}</title>\n")
