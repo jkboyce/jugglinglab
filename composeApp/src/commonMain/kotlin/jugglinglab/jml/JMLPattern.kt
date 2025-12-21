@@ -14,8 +14,6 @@ package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLEvent.Companion.withTransition
-import jugglinglab.jml.JMLEvent.Companion.withoutTransition
 import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.notation.Pattern
 import jugglinglab.prop.Prop

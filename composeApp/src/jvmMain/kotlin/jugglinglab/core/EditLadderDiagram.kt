@@ -18,8 +18,6 @@ import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.View
-import jugglinglab.jml.JMLEvent.Companion.withTransition
-import jugglinglab.jml.JMLEvent.Companion.withoutTransition
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*

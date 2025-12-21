@@ -17,7 +17,6 @@ import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.HandLink.Companion.index
-import jugglinglab.jml.JMLEvent.Companion.withTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*

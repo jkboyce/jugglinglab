@@ -25,7 +25,6 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
-import jugglinglab.jml.JMLEvent.Companion.withTransition
 import jugglinglab.util.*
 import kotlin.math.abs
 import kotlin.math.max

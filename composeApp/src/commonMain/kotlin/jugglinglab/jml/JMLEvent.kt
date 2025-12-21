@@ -157,6 +157,59 @@ data class JMLEvent(
     }
 
     //--------------------------------------------------------------------------
+    // Event transformations
+    //--------------------------------------------------------------------------
+
+    @Throws(JuggleExceptionUser::class)
+    private fun withHandString(handString: String): JMLEvent {
+        var newJuggler: Int
+        var newHand: Int
+
+        val index = handString.indexOf(":")
+        if (index == -1) {
+            newJuggler = 1
+            newHand = if (handString.equals("left", ignoreCase = true)) {
+                HandLink.LEFT_HAND
+            } else if (handString.equals("right", ignoreCase = true)) {
+                HandLink.RIGHT_HAND
+            } else {
+                val message = getStringResource(Res.string.error_hand_name)
+                throw JuggleExceptionUser("$message '$handString'")
+            }
+        } else {
+            newJuggler = handString.take(index).toInt()
+            val substr = handString.substring(index + 1)
+            newHand = if (substr.equals("left", ignoreCase = true)) {
+                HandLink.LEFT_HAND
+            } else if (substr.equals("right", ignoreCase = true)) {
+                HandLink.RIGHT_HAND
+            } else {
+                val message = getStringResource(Res.string.error_hand_name)
+                throw JuggleExceptionUser("$message '$handString'")
+            }
+        }
+        return copy(juggler = newJuggler, hand = newHand)
+    }
+
+
+    fun withTransition(trans: JMLTransition): JMLEvent {
+        return copy(transitions = transitions + trans)
+    }
+
+    @Suppress("unused")
+    fun withoutTransitionAtIndex(index: Int): JMLEvent {
+        return copy(
+            transitions = transitions.filterIndexed { i, _ -> i != index }
+        )
+    }
+
+    fun withoutTransition(trans: JMLTransition): JMLEvent {
+        return copy(
+            transitions = transitions.filter { it != trans }
+        )
+    }
+
+    //--------------------------------------------------------------------------
     // Constructing JMLEvents
     //--------------------------------------------------------------------------
 
@@ -290,55 +343,6 @@ data class JMLEvent(
             }
 
             return result.copy(transitions = newTransitions)
-        }
-
-        @Throws(JuggleExceptionUser::class)
-        private fun JMLEvent.withHandString(handString: String): JMLEvent {
-            var newJuggler: Int
-            var newHand: Int
-
-            val index = handString.indexOf(":")
-            if (index == -1) {
-                newJuggler = 1
-                newHand = if (handString.equals("left", ignoreCase = true)) {
-                    HandLink.LEFT_HAND
-                } else if (handString.equals("right", ignoreCase = true)) {
-                    HandLink.RIGHT_HAND
-                } else {
-                    val message = getStringResource(Res.string.error_hand_name)
-                    throw JuggleExceptionUser("$message '$handString'")
-                }
-            } else {
-                newJuggler = handString.take(index).toInt()
-                val substr = handString.substring(index + 1)
-                newHand = if (substr.equals("left", ignoreCase = true)) {
-                    HandLink.LEFT_HAND
-                } else if (substr.equals("right", ignoreCase = true)) {
-                    HandLink.RIGHT_HAND
-                } else {
-                    val message = getStringResource(Res.string.error_hand_name)
-                    throw JuggleExceptionUser("$message '$handString'")
-                }
-            }
-            return copy(juggler = newJuggler, hand = newHand)
-        }
-
-
-        fun JMLEvent.withTransition(trans: JMLTransition): JMLEvent {
-            return copy(transitions = transitions + trans)
-        }
-
-        @Suppress("unused")
-        fun JMLEvent.withoutTransitionAtIndex(index: Int): JMLEvent {
-            return copy(
-                transitions = transitions.filterIndexed { i, _ -> i != index }
-            )
-        }
-
-        fun JMLEvent.withoutTransition(trans: JMLTransition): JMLEvent {
-            return copy(
-                transitions = transitions.filter { it != trans }
-            )
         }
     }
 }
