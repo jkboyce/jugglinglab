@@ -88,8 +88,7 @@ class MarginEquations() {
         // Step 2: Figure out the variables in the margin equations. Find the primary events
         // in the pattern, in particular the ones that are throws or catches. The x-coordinate
         // of each will be a free variable in our equations.
-        val variableEvents = ArrayList<JMLEvent>()
-
+        val variableEvents: MutableList<JMLEvent> = mutableListOf()
         var maxValue = 0.0
         var g = 980.0 // cm per second^2
 
@@ -130,7 +129,7 @@ class MarginEquations() {
 
         // Step 3: Set up the arrays containing the current values of our variables, their
         // minimum and maximum allowed values, and corresponding JMLEvents
-        varsEvents = ArrayList(varsNum)
+        varsEvents = mutableListOf()
         varsValues = DoubleArray(varsNum)
         varsMin = DoubleArray(varsNum)
         varsMax = DoubleArray(varsNum)
@@ -179,7 +178,7 @@ class MarginEquations() {
         // Step 5: Identify the "primary pathlinks", the non-hand pathlinks starting
         // on primary events. Put them into a linear array for convenience.
         var primaryPlNum = 0
-        val primaryPl: MutableList<PathLink> = ArrayList()
+        val primaryPl: MutableList<PathLink> = mutableListOf()
         for (pathlink in pathlinks) {
             for (pl in pathlink) {
                 if (!pl.isInHand && pl.startEvent.isPrimary) {
@@ -218,7 +217,7 @@ class MarginEquations() {
             }
         }
 
-        val eqns = ArrayList<DoubleArray>()
+        val eqns = mutableListOf<DoubleArray>()
 
         if (Constants.DEBUG_OPTIMIZE) {
             println("potential collisions:")
@@ -463,7 +462,7 @@ class MarginEquations() {
 
         // Step 8: Move the equations into an array, and sort it based on margins at the
         // current values of the variables.
-        marginsEqs = ArrayList(marginsNum)
+        marginsEqs = mutableListOf()
         for (i in 0..<marginsNum) {
             val le = LinearEquation(varsNum)
             le.setCoefficients(eqns[i])

@@ -21,7 +21,7 @@ data class JMLTransition(
     }
 
     //--------------------------------------------------------------------------
-    // Items below here are for layout and animation - target removal
+    // Used in pattern layout - target removal
     //--------------------------------------------------------------------------
 
     fun clearLayoutData() {
