@@ -514,7 +514,7 @@ object JugglingLab {
                             pl.getAnimationPrefsForLine(i)
                             ps.println("   Pattern line ${i + 1}: OK")
                             if (doJmlOutput) {
-                                println(pat.toString())
+                                ps.println(pat.toString())
                             }
                         }
                     } catch (je: JuggleException) {
