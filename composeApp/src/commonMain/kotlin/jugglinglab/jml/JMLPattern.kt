@@ -821,9 +821,9 @@ data class JMLPattern(
                     val ev =
                         JMLEvent.fromJMLNode(
                             current,
-                            record.loadingJmlVersion,
                             record.numberOfJugglers,
-                            record.numberOfPaths
+                            record.numberOfPaths,
+                            record.loadingJmlVersion
                         )
                     record.events.add(ev)
                     return  // stop recursion

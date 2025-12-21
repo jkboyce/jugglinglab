@@ -22,7 +22,7 @@ data class JMLEvent(
     val juggler: Int = 1,
     val hand: Int = 0,
     val transitions: List<JMLTransition> = emptyList()
-): Comparable<JMLEvent> {
+) : Comparable<JMLEvent> {
     val localCoordinate: Coordinate
         get() = Coordinate(x, y, z)
 
@@ -217,9 +217,9 @@ data class JMLEvent(
         @Throws(JuggleExceptionUser::class)
         fun fromJMLNode(
             current: JMLNode,
-            version: String,
             numberOfJugglers: Int,
-            numberOfPaths: Int
+            numberOfPaths: Int,
+            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
         ): JMLEvent {
             var tempx = 0.0
             var tempy = 0.0
@@ -247,7 +247,7 @@ data class JMLEvent(
             }
 
             // JML version 1.0 used a different coordinate system -- convert
-            if (version == "1.0") {
+            if (loadingJmlVersion == "1.0") {
                 tempy = tempz.also { tempz = tempy }
             }
 
