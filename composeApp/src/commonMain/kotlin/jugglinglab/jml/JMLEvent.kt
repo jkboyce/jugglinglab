@@ -93,7 +93,8 @@ data class JMLEvent(
             return juggler.compareTo(other.juggler)
         }
         if (hand != other.hand) {
-            return hand.compareTo(other.hand)
+            // ordering is so right hand sorts before left:
+            return other.hand.compareTo(hand)
         }
         // shouldn't get here; shouldn't have multiple events for the same
         // juggler/hand at a single time
@@ -105,7 +106,7 @@ data class JMLEvent(
     }
 
     //--------------------------------------------------------------------------
-    // Items below here are for layout and animation - target removal
+    // Used in pattern layout and optimization - target removal
     //--------------------------------------------------------------------------
 
     fun clearLayoutData() {
@@ -120,11 +121,8 @@ data class JMLEvent(
 
     // for linking into event chains
     var previous: JMLEvent? = null
-    var next: JMLEvent? = null // for doubly-linked event list
-
-    // for "image" JMLEvents that are created from other "primary" events
-    // during layout
-    var primaryEvent: JMLEvent? = null // null if this is a primary event
+    var next: JMLEvent? = null
+    var primaryEvent: JMLEvent? = null  // null if this is a primary event
     var delay: Int = 0
     var delayunits: Int = 0
     var pathPermFromPrimary: Permutation? = null
@@ -134,7 +132,9 @@ data class JMLEvent(
         get() = (primaryEvent == null)
 
     fun isDelayOf(ev2: JMLEvent): Boolean {
-        if (!hasSamePrimaryAs(ev2)) {
+        val primary1 = if (primaryEvent == null) this else primaryEvent
+        val primary2 = if (ev2.primaryEvent == null) ev2 else ev2.primaryEvent
+        if (primary1 !== primary2) {
             return false
         }
         if (juggler != ev2.juggler || hand != ev2.hand) {
@@ -146,12 +146,6 @@ data class JMLEvent(
             totaldelay = -totaldelay
         }
         return (totaldelay % delayunits) == 0
-    }
-
-    fun hasSamePrimaryAs(ev2: JMLEvent): Boolean {
-        val primary1 = if (primaryEvent == null) this else primaryEvent
-        val primary2 = if (ev2.primaryEvent == null) ev2 else ev2.primaryEvent
-        return (primary1 === primary2)
     }
 
     // temporary fix for EventImages
