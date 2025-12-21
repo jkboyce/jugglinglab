@@ -70,7 +70,10 @@ data class JMLPosition(
     companion object {
         @Suppress("unused")
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(current: JMLNode, version: String?): JMLPosition {
+        fun fromJMLNode(
+            current: JMLNode,
+            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
+        ): JMLPosition {
             var tempx = 0.0
             var tempy = 0.0
             var tempz = 0.0

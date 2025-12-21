@@ -36,11 +36,13 @@ data class JMLSymmetry(
         const val TYPE_SWITCH: Int = 2
         const val TYPE_SWITCHDELAY: Int = 3
 
+        @Suppress("unused")
         @Throws(JuggleExceptionUser::class)
         fun fromJMLNode(
             current: JMLNode,
             numberOfJugglers: Int,
-            numberOfPaths: Int
+            numberOfPaths: Int,
+            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
         ): JMLSymmetry {
             val at = current.attributes
             val symTypeString = at.getValueOf("type")

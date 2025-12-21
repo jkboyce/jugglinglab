@@ -812,7 +812,8 @@ data class JMLPattern(
                     val sym = JMLSymmetry.fromJMLNode(
                         current,
                         record.numberOfJugglers,
-                        record.numberOfPaths
+                        record.numberOfPaths,
+                        record.loadingJmlVersion
                     )
                     record.symmetries.add(sym)
                 }
