@@ -548,8 +548,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Step 3: construct the links connecting events; build PathLink and
-    // HandLink lists
+    // Step 3: construct the links connecting events: PathLinks and HandLinks
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -635,12 +634,11 @@ class LaidoutPattern(val pat: JMLPattern) {
         handlinks = mutableListOf()
 
         for (i in 0..<pat.numberOfJugglers) {
-            // build the HandLink list for the ith juggler
-
+            // HandLink list for the ith juggler
             handlinks!!.add(mutableListOf())
 
-            for (j in 0..1) {
-                val handnum = if (j == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+            for (h in 0..1) {
+                val hand = if (h == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
 
                 handlinks!![i].add(mutableListOf())
 
@@ -651,7 +649,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                 done2@ while (true) {
                     // find the next event touching hand
-                    while (ev!!.juggler != (i + 1) || ev.hand != handnum) {
+                    while (ev!!.juggler != (i + 1) || ev.hand != hand) {
                         ev = ev.next
                         if (ev == null) {
                             break@done2
@@ -660,7 +658,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                     // find velocity of hand path ending
                     vr = null
-                    if (ev.juggler == (i + 1) && ev.hand == handnum) {
+                    if (ev.juggler == (i + 1) && ev.hand == hand) {
                         for (tr in ev.transitions) {
                             if (tr.type == JMLTransition.TRANS_THROW) {
                                 val pl = tr.outgoingPathLink
@@ -685,10 +683,10 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                     if (lastev != null) {
                         // add HandLink from lastev to ev
-                        val hl = HandLink(i, handnum, lastev, ev)
+                        val hl = HandLink(i, hand, lastev, ev)
                         hl.startVelocityRef = lastvr // may be null, which is ok
                         hl.endVelocityRef = vr
-                        handlinks!![i][j].add(hl)
+                        handlinks!![i][h].add(hl)
                     }
                     lastev = ev
                     lastvr = vr

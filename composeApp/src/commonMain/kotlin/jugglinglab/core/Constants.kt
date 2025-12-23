@@ -27,7 +27,7 @@ object Constants {
     const val DEBUG_SITESWAP_PARSING: Boolean = false
     const val DEBUG_JML_PARSING: Boolean = false
     const val DEBUG_PATTERN_CREATION: Boolean = false
-    const val DEBUG_LAYOUT: Boolean = false
+    const val DEBUG_LAYOUT: Boolean = true
     const val DEBUG_TRANSITIONS: Boolean = false
     const val DEBUG_GENERATOR: Boolean = false
     const val DEBUG_OPTIMIZE: Boolean = false
