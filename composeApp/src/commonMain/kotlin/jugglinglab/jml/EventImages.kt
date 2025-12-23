@@ -82,7 +82,7 @@ class EventImages(
     // Note this returns the primary event when appropriate, not a copy.
 
     private fun makeEvent(): JMLEvent {
-        if (currentEntry == 0 && currentLoop == 0) {
+        if (currentEntry == 0 && currentLoop == 0 && currentHand == evHand) {
             return primaryEvent
         }
 
