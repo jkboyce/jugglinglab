@@ -436,14 +436,6 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         // iterate over all possible outgoing throws
-        val mhnt = MHNThrow()
-        mhnt.juggler = j + 1 // source (juggler, hand, index, slot)
-        mhnt.hand = h
-        mhnt.index = pos
-        mhnt.slot = 0
-        while (th[j][h][pos][mhnt.slot] != null) {
-            ++mhnt.slot
-        }
 
         // loop over target (index, juggler, hand)
         //
@@ -455,27 +447,37 @@ class SiteswapTransitioner : Transitioner() {
         val tiMax = min(pos + min(indexes, 35), lTarget + targetMaxFilledIndex)
         val tiThreshold = min(max(lTarget, tiMin), tiMax)
 
-        var ti = tiThreshold
+        var targetIndex = tiThreshold
         var num = 0
 
         while (true) {
-            for (tj in 0..<jugglers) {
-                for (th in 0..1) {
-                    val ts = state[pos + 1][tj][th][ti - pos - 1]  // target slot
-                    val finali = ti - lTarget  // target index in final state
+            for (targetJ in 0..<jugglers) {
+                for (targetH in 0..1) {
+                    val ts = state[pos + 1][targetJ][targetH][targetIndex - pos - 1]  // target slot
+                    val finali = targetIndex - lTarget  // target index in final state
 
                     if (finali in 0..<indexes) {
-                        if (ts >= stateTarget[tj][th][finali]) {
+                        if (ts >= stateTarget[targetJ][targetH][finali]) {
                             continue   // inconsistent with final state
                         }
                     } else if (ts >= targetOccupancy) {
                         continue
                     }
 
-                    mhnt.targetJuggler = tj + 1
-                    mhnt.targetHand = th
-                    mhnt.targetIndex = ti
-                    mhnt.targetSlot = ts
+                    val mhnt = MHNThrow(
+                        juggler = j + 1,  // source (juggler, hand, index, slot)
+                        hand = h,
+                        index = pos,
+                        slot = run {
+                            (0..<maxOccupancy).firstOrNull {
+                                th[j][h][pos][it] == null
+                            } ?: maxOccupancy
+                        },
+                        targetJuggler = targetJ + 1,
+                        targetHand = targetH,
+                        targetIndex = targetIndex,
+                        targetSlot = ts
+                    )
 
                     if (Constants.DEBUG_TRANSITIONS) {
                         println("trying throw $mhnt")
@@ -506,11 +508,11 @@ class SiteswapTransitioner : Transitioner() {
                 }
             }
 
-            ++ti
-            if (ti > tiMax) {
-                ti = tiMin
+            ++targetIndex
+            if (targetIndex > tiMax) {
+                targetIndex = tiMin
             }
-            if (ti == tiThreshold) {
+            if (targetIndex == tiThreshold) {
                 break
             }
         }

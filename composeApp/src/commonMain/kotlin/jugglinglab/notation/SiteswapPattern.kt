@@ -28,6 +28,7 @@ class SiteswapPattern : MHNPattern() {
     private var oddperiod: Boolean = false
     var hasHandsSpecifier: Boolean = false
         private set
+
     // async throws on even beat numbers made with right hand?
     private lateinit var rightOnEven: BooleanArray
 
@@ -227,7 +228,12 @@ class SiteswapPattern : MHNPattern() {
                 sb.append("(").append(i).append(",").append(i).append("*)")
             }
             addSymmetry(
-                MHNSymmetry(MHNSymmetry.TYPE_SWITCHDELAY, numberOfJugglers, sb.toString(), period / 2)
+                MHNSymmetry(
+                    MHNSymmetry.TYPE_SWITCHDELAY,
+                    numberOfJugglers,
+                    sb.toString(),
+                    period / 2
+                )
             )
         }
 
@@ -620,8 +626,8 @@ class SiteswapPattern : MHNPattern() {
                             destJuggler = 1 + (destJuggler - 1) % numberOfJugglers
                         }
 
-                        // Note we want to add an MHNThrow for 0 throws as well, to
-                        // serve as a placeholder in case of patterns like 24[504],
+                        // Note we add an MHNThrow for a 0 throw as well, to serve
+                        // as a placeholder in case of patterns like 24[504],
                         val t = MHNThrow(
                             child.source_juggler,
                             sourceHand,
@@ -655,29 +661,20 @@ class SiteswapPattern : MHNPattern() {
     // Resolve any unresolved '?' modifiers.
 
     private fun resolveModifiers() {
-        for (i in 0..<indexes) {
-            for (j in 0..<numberOfJugglers) {
-                for (h in 0..1) {
-                    for (slot in 0..<maxOccupancy) {
-                        val mhnt: MHNThrow = th[j][h][i][slot] ?: continue
-                        if (mhnt.mod == "?") {
-                            var doHold = true
-
-                            if (i + 1 < indexes) {
-                                for (slot2 in 0..<maxOccupancy) {
-                                    val mhnt2 = th[j][h][i + 1][slot2]
-                                    if (mhnt2 == null || mhnt2.targetIndex == i + 1) {
-                                        continue
-                                    }
-                                    doHold = false
-                                    break
-                                }
-                            }
-
-                            mhnt.mod = if (doHold) "H" else "T"
+        for ((i, j, h, slot, mhnt) in th.mhnIterator()) {
+            if (mhnt?.mod?.equals("?") ?: continue) {
+                var doHold = true
+                if (i + 1 < indexes) {
+                    for (slot2 in 0..<maxOccupancy) {
+                        val mhnt2 = th[j][h][i + 1][slot2]
+                        if (mhnt2 == null || mhnt2.targetIndex == i + 1) {
+                            continue
                         }
+                        doHold = false
+                        break
                     }
                 }
+                th[j][h][i][slot] = mhnt.copy(mod = if (doHold) "H" else "T")
             }
         }
     }

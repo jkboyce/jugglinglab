@@ -275,7 +275,7 @@ abstract class MHNPattern : Pattern() {
 
     // Describes an entry in the `th` array, for iteration.
 
-    private data class MHNThrowEntry(
+    protected data class MHNThrowEntry(
         val i: Int,
         val j: Int,
         val h: Int,
@@ -287,7 +287,7 @@ abstract class MHNPattern : Pattern() {
     // specific order required by the MHN logic: time index, then juggler, then
     // hand, then multiplex slot.
 
-    private fun Array<Array<Array<Array<MHNThrow?>>>>.mhnIterator():
+    protected fun Array<Array<Array<Array<MHNThrow?>>>>.mhnIterator():
         Sequence<MHNThrowEntry> = sequence {
         for (i in 0..<indexes) {
             for (j in 0..<numberOfJugglers) {
@@ -521,18 +521,19 @@ abstract class MHNPattern : Pattern() {
                         val sst2 = th[j][h][i + period][slot]!!.source
                             ?: throw JuggleExceptionInternal("Could not get throw source 1")
 
-                        val sst3 = MHNThrow()
-                        sst3.juggler = sst2.juggler
-                        sst3.hand = sst2.hand
-                        sst3.index = sst2.index - period
-                        sst3.slot = sst2.slot
-                        sst3.targetJuggler = j
-                        sst3.targetHand = h
-                        sst3.targetIndex = i
-                        sst3.targetSlot = slot
+                        val sst3 = MHNThrow(
+                            juggler = sst2.juggler,
+                            hand = sst2.hand,
+                            index = sst2.index - period,
+                            slot = sst2.slot,
+                            targetJuggler = j,
+                            targetHand = h,
+                            targetIndex = i,
+                            targetSlot = slot,
+                            mod = sst2.mod
+                        )
                         sst3.handsindex = -1 // undefined
                         sst3.pathnum = sst.pathnum
-                        sst3.mod = sst2.mod
                         sst3.primary = sst2.primary
                         sst3.source = null
                         sst3.target = sst
@@ -1217,10 +1218,10 @@ abstract class MHNPattern : Pattern() {
                             'B' -> {
                                 type = "bounce"
                                 mod = null
-                                if (sst2.mod!!.contains("F")) {
+                                if (sst2.mod.contains("F")) {
                                     mod = "forced=true"
                                 }
-                                if (sst2.mod!!.contains("H")) {
+                                if (sst2.mod.contains("H")) {
                                     mod = if (mod == null) {
                                         "hyper=true"
                                     } else {
@@ -1229,8 +1230,8 @@ abstract class MHNPattern : Pattern() {
                                 }
                                 var bounces = 1
                                 var i = 1
-                                while (i < sst2.mod!!.length) {
-                                    if (sst2.mod!![i] == 'B') {
+                                while (i < sst2.mod.length) {
+                                    if (sst2.mod[i] == 'B') {
                                         ++bounces
                                     }
                                     i++
@@ -1291,7 +1292,7 @@ abstract class MHNPattern : Pattern() {
                             }
                         }
 
-                        if (sst2.mod!![0] != 'H') {
+                        if (sst2.mod[0] != 'H') {
                             if (sst2.isZero) {
                                 val message = getStringResource(
                                     Res.string.error_modifier_on_0,

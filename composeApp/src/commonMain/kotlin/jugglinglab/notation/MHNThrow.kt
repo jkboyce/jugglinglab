@@ -11,15 +11,15 @@
 package jugglinglab.notation
 
 data class MHNThrow(
-    var juggler: Int = 0,  // indexed from 1
-    var hand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
-    var index: Int = 0,
-    var slot: Int = 0,
-    var targetJuggler: Int = 0,  // indexed from 1
-    var targetHand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
-    var targetIndex: Int = 0,
-    var targetSlot: Int = 0,
-    var mod: String? = null
+    val juggler: Int = 0,  // indexed from 1
+    val hand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    val index: Int = 0,
+    val slot: Int = 0,
+    val targetJuggler: Int = 0,  // indexed from 1
+    val targetHand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    val targetIndex: Int = 0,
+    val targetSlot: Int = 0,
+    val mod: String? = null
 ) {
     // filled in during buildJugglingMatrix():
     var primary: MHNThrow? = null
@@ -53,7 +53,7 @@ data class MHNThrow(
             if ((targetIndex - index) > 2 || hand != targetHand || juggler != targetJuggler) {
                 return false
             }
-            return mod == null || mod!!.indexOf('T') == -1
+            return mod == null || mod.indexOf('T') == -1
         }
 
     val isZero: Boolean
@@ -63,7 +63,7 @@ data class MHNThrow(
         get() = (targetIndex - index)
 
     val isThrownOne: Boolean
-        get() = (mod != null && mod!![0] != 'H' && throwValue == 1)
+        get() = (mod != null && mod[0] != 'H' && throwValue == 1)
 
     companion object {
         // Define an ordering relation for throws.
@@ -122,7 +122,7 @@ data class MHNThrow(
             } else if (!hasMod1 && hasMod2) {
                 return -1
             } else if (hasMod1) {
-                val c = mhnt1.mod!!.compareTo(mhnt2.mod!!)
+                val c = mhnt1.mod.compareTo(mhnt2.mod!!)
                 if (c < 0) {
                     return 1 // mhnt1.mod lexicographically precedes mhnt2.mod
                 } else if (c > 0) {
