@@ -106,7 +106,11 @@ fun jlHandleFatalException(e: Exception) {
     SwingUtilities.invokeLater { showInternalErrorWindow(e) }
 }
 
+private var internalErrorWindowIsActive = false
+
 private fun showInternalErrorWindow(e: Exception) {
+    if (internalErrorWindowIsActive) return
+
     // diagnostic information displayed in the window
     val message = run {
         val sw = StringWriter()
@@ -160,6 +164,7 @@ private fun showInternalErrorWindow(e: Exception) {
         addActionListener { _: ActionEvent? ->
             exframe.isVisible = false
             exframe.dispose()
+            internalErrorWindowIsActive = false
         }
     }
     val butp = JPanel().apply {
@@ -198,6 +203,7 @@ private fun showInternalErrorWindow(e: Exception) {
         isResizable = false
         setLocationRelativeTo(null)  // center frame on screen
         isVisible = true
+        internalErrorWindowIsActive = true
     }
 }
 
