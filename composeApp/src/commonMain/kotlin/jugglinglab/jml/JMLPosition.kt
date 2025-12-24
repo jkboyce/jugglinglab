@@ -45,7 +45,7 @@ data class JMLPosition(
         toString().hashCode()
     }
 
-    override fun hashCode(): Int = cachedHashCode
+    fun jlHashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLPosition): Int {
         if (t != other.t) {
@@ -57,10 +57,6 @@ data class JMLPosition(
         // shouldn't get here; shouldn't have multiple positions for the same
         // juggler at a single time
         return x.compareTo(other.x)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return hashCode() == other.hashCode()
     }
 
     //--------------------------------------------------------------------------

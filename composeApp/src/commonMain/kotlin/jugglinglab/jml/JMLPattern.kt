@@ -157,7 +157,7 @@ data class JMLPattern(
                 edited = (fromBasePattern(
                     basePatternNotation!!,
                     basePatternConfig!!
-                ).hashCode() != hashCode())
+                ).jlHashCode() != jlHashCode())
             } catch (_: JuggleException) {
             }
         }
@@ -186,11 +186,7 @@ data class JMLPattern(
         sb.toString().hashCode()
     }
 
-    override fun hashCode(): Int = cachedHashCode
-
-    override fun equals(other: Any?): Boolean {
-        return hashCode() == other.hashCode()
-    }
+    fun jlHashCode(): Int = cachedHashCode
 
     //--------------------------------------------------------------------------
     // Validity checking
@@ -1005,7 +1001,7 @@ data class PatternBuilder(
                                 // from the primary event and then restart the scan.
 
                                 val pathPrimary =
-                                    if (image.event == image.primary) tr.path else image.pathPermFromPrimary.mapInverse(
+                                    if (image.event === image.primary) tr.path else image.pathPermFromPrimary.mapInverse(
                                         tr.path
                                     )
                                 val trPrimary =
@@ -1040,7 +1036,7 @@ data class PatternBuilder(
 
                 for (path in pathsToHold) {
                     val pathPrimary =
-                        if (image.event == image.primary) path else image.pathPermFromPrimary.mapInverse(
+                        if (image.event === image.primary) path else image.pathPermFromPrimary.mapInverse(
                             path
                         )
                     val trPrimary =

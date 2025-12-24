@@ -83,7 +83,7 @@ data class JMLEvent(
         sb.toString().hashCode()
     }
 
-    override fun hashCode(): Int = cachedHashCode
+    fun jlHashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLEvent): Int {
         if (t != other.t) {
@@ -99,10 +99,6 @@ data class JMLEvent(
         // shouldn't get here; shouldn't have multiple events for the same
         // juggler/hand at a single time
         return x.compareTo(other.x)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return hashCode() == other.hashCode()
     }
 
     //--------------------------------------------------------------------------

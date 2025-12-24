@@ -713,7 +713,7 @@ open class LadderDiagram(p: JMLPattern) :
     open class LadderItem {
         var type: Int = 0
 
-        open val hashCode: Int = 0
+        open val jlHashCode: Int = 0
 
         companion object {
             const val TYPE_EVENT: Int = 0
@@ -740,10 +740,10 @@ open class LadderDiagram(p: JMLPattern) :
         var transEventItem: LadderEventItem? = null
         var transNum: Int = 0
 
-        // note the hashCode equals the hashCode of the event, for an event-type
+        // note the jlHashCode equals the jlHashCode of the event, for an event-type
         // LadderItem
-        override val hashCode: Int
-            get() = event.hashCode() + type * 23 + transNum * 27
+        override val jlHashCode: Int
+            get() = event.jlHashCode() + type * 23 + transNum * 27
     }
 
     class LadderPathItem(
@@ -773,8 +773,8 @@ open class LadderDiagram(p: JMLPattern) :
         var yLow: Int = 0
         var yHigh: Int = 0
 
-        override val hashCode: Int
-            get() = position.hashCode()
+        override val jlHashCode: Int
+            get() = position.jlHashCode()
     }
 
     companion object {

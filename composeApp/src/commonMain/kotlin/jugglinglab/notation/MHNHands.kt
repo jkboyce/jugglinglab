@@ -20,8 +20,8 @@ class MHNHands(str: String) {
     private var handpath: Array<Array<Array<DoubleArray?>>>
 
     init {
-        val cleanStr = jlExpandRepeats(str).replace("[<>{}]".toRegex(), "")
-        val jugglerStrings = cleanStr.split(Regex("[|!]"))
+        val cleanStr = jlExpandRepeats(str).filterNot { it in "<>{}" }
+        val jugglerStrings = cleanStr.split('|', '!')
 
         numberOfJugglers = jugglerStrings.size
 
@@ -164,11 +164,14 @@ class MHNHands(str: String) {
             return null
         }
         val j = (juggler - 1) % numberOfJugglers
-        if (handpath[j][pos][index] == null) {
-            return null
+        return if (handpath[j][pos][index] == null) {
+            null
+        } else {
+            Coordinate(
+                handpath[j][pos][index]!![0],
+                handpath[j][pos][index]!![1],
+                handpath[j][pos][index]!![2]
+            )
         }
-        return Coordinate(
-            handpath[j][pos][index]!![0], handpath[j][pos][index]!![1], handpath[j][pos][index]!![2]
-        )
     }
 }
