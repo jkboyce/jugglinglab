@@ -394,12 +394,12 @@ abstract class MHNPattern : Pattern() {
 
                 // loop over all throws that have sst as primary
                 th.mhnIterator().forEach { (_, _, _, _, sst2) ->
-                    if (sst2 == null || sst2.primary !== sst || sst2.targetindex >= indexes) {
+                    if (sst2 == null || sst2.primary !== sst || sst2.targetIndex >= indexes) {
                         return@forEach
                     }
 
                     val target =
-                        th[sst2.targetjuggler - 1][sst2.targethand][sst2.targetindex][targetslot]
+                        th[sst2.targetJuggler - 1][sst2.targetHand][sst2.targetIndex][targetslot]
                     itworks = if (target == null) {
                         false
                     } else {
@@ -417,21 +417,21 @@ abstract class MHNPattern : Pattern() {
                 if (Constants.DEBUG_SITESWAP_PARSING) {
                     println(
                         ("Error: Too many objects landing on beat "
-                            + (sst.targetindex + 1)
+                            + (sst.targetIndex + 1)
                             + " for juggler "
-                            + sst.targetjuggler
+                            + sst.targetJuggler
                             + ", "
-                            + (if (sst.targethand == 0) "right hand" else "left hand"))
+                            + (if (sst.targetHand == 0) "right hand" else "left hand"))
                     )
                 }
-                val hand = if (sst.targethand == 0)
+                val hand = if (sst.targetHand == 0)
                     getStringResource(Res.string.error_right_hand)
                 else
                     getStringResource(Res.string.error_left_hand)
                 val message = getStringResource(
                     Res.string.error_badpattern_landings,
-                    sst.targetindex + 1,
-                    sst.targetjuggler,
+                    sst.targetIndex + 1,
+                    sst.targetJuggler,
                     hand
                 )
                 throw JuggleExceptionUser(message)
@@ -440,11 +440,11 @@ abstract class MHNPattern : Pattern() {
             // loop again over all throws that have sst as primary,
             // wiring up sources and targets using the value of `targetslot`
             th.mhnIterator().forEach { (_, _, _, _, sst2) ->
-                if (sst2 == null || sst2.primary !== sst || sst2.targetindex >= indexes) {
+                if (sst2 == null || sst2.primary !== sst || sst2.targetIndex >= indexes) {
                     return@forEach
                 }
                 val target2 =
-                    th[sst2.targetjuggler - 1][sst2.targethand][sst2.targetindex][targetslot]
+                    th[sst2.targetJuggler - 1][sst2.targetHand][sst2.targetIndex][targetslot]
                         ?: throw JuggleExceptionInternal("Got null target in assignPaths()")
                 sst2.target = target2 // hook source and target together
                 target2.source = sst2
@@ -477,11 +477,11 @@ abstract class MHNPattern : Pattern() {
                         } else {
                             println(
                                 "   targetindex="
-                                    + tempsst.targetindex
+                                    + tempsst.targetIndex
                                     + ", targethand="
-                                    + tempsst.targethand
+                                    + tempsst.targetHand
                                     + ", targetslot="
-                                    + tempsst.targetslot
+                                    + tempsst.targetSlot
                                     + ", pathnum="
                                     + tempsst.pathnum
                             )
@@ -526,10 +526,10 @@ abstract class MHNPattern : Pattern() {
                         sst3.hand = sst2.hand
                         sst3.index = sst2.index - period
                         sst3.slot = sst2.slot
-                        sst3.targetjuggler = j
-                        sst3.targethand = h
-                        sst3.targetindex = i
-                        sst3.targetslot = slot
+                        sst3.targetJuggler = j
+                        sst3.targetHand = h
+                        sst3.targetIndex = i
+                        sst3.targetSlot = slot
                         sst3.handsindex = -1 // undefined
                         sst3.pathnum = sst.pathnum
                         sst3.mod = sst2.mod
@@ -913,7 +913,7 @@ abstract class MHNPattern : Pattern() {
 
         th.mhnIterator().forEach { (k, _, _, _, sst) ->
             if (sst != null) {
-                val throwval = sst.targetindex - k
+                val throwval = sst.targetIndex - k
                 if (throwval > 2) {
                     result += throwspersec[min(throwval, 9)]
                     ++numberaveraged
@@ -1309,9 +1309,9 @@ abstract class MHNPattern : Pattern() {
                                 )
                             )
 
-                            val throwval = sst2.targetindex - k
+                            val throwval = sst2.targetIndex - k
 
-                            throwxsum += if (sst2.targethand == h) {
+                            throwxsum += if (sst2.targetHand == h) {
                                 if (throwval > 8) samethrowx[8] else samethrowx[throwval]
                             } else {
                                 if (throwval > 8) crossingthrowx[8] else crossingthrowx[throwval]

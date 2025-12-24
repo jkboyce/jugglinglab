@@ -472,10 +472,10 @@ class SiteswapTransitioner : Transitioner() {
                         continue
                     }
 
-                    mhnt.targetjuggler = tj + 1
-                    mhnt.targethand = th
-                    mhnt.targetindex = ti
-                    mhnt.targetslot = ts
+                    mhnt.targetJuggler = tj + 1
+                    mhnt.targetHand = th
+                    mhnt.targetIndex = ti
+                    mhnt.targetSlot = ts
 
                     if (Constants.DEBUG_TRANSITIONS) {
                         println("trying throw $mhnt")
@@ -528,9 +528,9 @@ class SiteswapTransitioner : Transitioner() {
         val j = mhnt.juggler - 1
         val h = mhnt.hand
         val i = mhnt.index
-        val targetj = mhnt.targetjuggler - 1
-        val targeth = mhnt.targethand
-        val targeti = mhnt.targetindex
+        val targetj = mhnt.targetJuggler - 1
+        val targeth = mhnt.targetHand
+        val targeti = mhnt.targetIndex
 
         // check #1: throw can't be more than 35 beats long
         if (targeti - i > 35) {
@@ -602,9 +602,9 @@ class SiteswapTransitioner : Transitioner() {
                         for (s2 in 0..<maxOccupancy) {
                             val mhnt2 = th[j2][h2][i2][s2] ?: break
 
-                            if (mhnt2.targetjuggler == mhnt.juggler &&
-                                mhnt2.targethand == mhnt.hand &&
-                                mhnt2.targetindex == pos && !mhnt2.isHold
+                            if (mhnt2.targetJuggler == mhnt.juggler &&
+                                mhnt2.targetHand == mhnt.hand &&
+                                mhnt2.targetIndex == pos && !mhnt2.isHold
                             ) {
                                 ++numNotHolds
                             }
@@ -629,7 +629,7 @@ class SiteswapTransitioner : Transitioner() {
                             // `period`. Our transition tacks on to the end, so we
                             // need to add `period` to our transition index to get the
                             // index in the reference frame of the previous pattern.
-                            val indexOvershoot = mhnt2.targetindex - (pos + period)
+                            val indexOvershoot = mhnt2.targetIndex - (pos + period)
 
                             // If the overshoot is not negative, and is some even
                             // multiple of the previous pattern's period, then on
@@ -638,8 +638,8 @@ class SiteswapTransitioner : Transitioner() {
                             val correctIndex =
                                 (indexOvershoot >= 0 && (indexOvershoot % period == 0))
 
-                            if (correctIndex && mhnt2.targetjuggler == mhnt.juggler &&
-                                mhnt2.targethand == mhnt.hand && !mhnt2.isHold
+                            if (correctIndex && mhnt2.targetJuggler == mhnt.juggler &&
+                                mhnt2.targetHand == mhnt.hand && !mhnt2.isHold
                             ) {
                                 // System.out.println("got a fill from previous pattern");
                                 ++numNotHolds
@@ -674,7 +674,7 @@ class SiteswapTransitioner : Transitioner() {
                     maxSlot = stateTarget[targetj][targeth][finali] - 1
                 }
 
-                if (mhnt.targetslot > maxSlot - reserved) {
+                if (mhnt.targetSlot > maxSlot - reserved) {
                     if (Constants.DEBUG_TRANSITIONS) {
                         println("  failed check 7")
                     }
@@ -693,9 +693,9 @@ class SiteswapTransitioner : Transitioner() {
         val h = mhnt.hand
         val i = mhnt.index
         val s = mhnt.slot
-        val dj = mhnt.targetjuggler - 1
-        val dh = mhnt.targethand
-        val di = mhnt.targetindex
+        val dj = mhnt.targetJuggler - 1
+        val dh = mhnt.targetHand
+        val di = mhnt.targetIndex
 
         th[j][h][i][s] = mhnt
         throwsLeft[pos][j][h] = throwsLeft[pos][j][h] - 1
@@ -715,9 +715,9 @@ class SiteswapTransitioner : Transitioner() {
         val h = mhnt.hand
         val i = mhnt.index
         val s = mhnt.slot
-        val dj = mhnt.targetjuggler - 1
-        val dh = mhnt.targethand
-        val di = mhnt.targetindex
+        val dj = mhnt.targetJuggler - 1
+        val dh = mhnt.targetHand
+        val di = mhnt.targetIndex
 
         th[j][h][i][s] = null
         throwsLeft[pos][j][h] = throwsLeft[pos][j][h] + 1
@@ -944,9 +944,9 @@ class SiteswapTransitioner : Transitioner() {
 
         for (s in 0..<maxOccupancy) {
             val mhnt = th[j][h][pos][s] ?: break
-            val beats = mhnt.targetindex - mhnt.index
-            val isCrossed = (mhnt.hand == mhnt.targethand) xor (beats % 2 == 0)
-            val isPass = (mhnt.targetjuggler != mhnt.juggler)
+            val beats = mhnt.targetIndex - mhnt.index
+            val isCrossed = (mhnt.hand == mhnt.targetHand) xor (beats % 2 == 0)
+            val isPass = (mhnt.targetJuggler != mhnt.juggler)
 
             if (beats < 36) {
                 sb.append(Character.forDigit(beats, 36).lowercaseChar())
@@ -960,7 +960,7 @@ class SiteswapTransitioner : Transitioner() {
             if (isPass) {
                 sb.append('p')
                 if (jugglers > 2) {
-                    sb.append(mhnt.targetjuggler)
+                    sb.append(mhnt.targetJuggler)
                 }
 
                 val anotherThrow =

@@ -666,7 +666,7 @@ class SiteswapPattern : MHNPattern() {
                             if (i + 1 < indexes) {
                                 for (slot2 in 0..<maxOccupancy) {
                                     val mhnt2 = th[j][h][i + 1][slot2]
-                                    if (mhnt2 == null || mhnt2.targetindex == i + 1) {
+                                    if (mhnt2 == null || mhnt2.targetIndex == i + 1) {
                                         continue
                                     }
                                     doHold = false

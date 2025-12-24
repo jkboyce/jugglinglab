@@ -10,18 +10,17 @@
 
 package jugglinglab.notation
 
-class MHNThrow {
-    // filled in during initial pattern definition:
-    var juggler: Int = 0  // indexed from 1
-    var hand: Int = 0  // MHNPattern.RIGHT_HAND or LEFT_HAND
-    var index: Int = 0
-    var slot: Int = 0
-    var targetjuggler: Int = 0  // indexed from 1
-    var targethand: Int = 0  // MHNPattern.RIGHT_HAND or LEFT_HAND
-    var targetindex: Int = 0
-    var targetslot: Int = 0
+data class MHNThrow(
+    var juggler: Int = 0,  // indexed from 1
+    var hand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    var index: Int = 0,
+    var slot: Int = 0,
+    var targetJuggler: Int = 0,  // indexed from 1
+    var targetHand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    var targetIndex: Int = 0,
+    var targetSlot: Int = 0,
     var mod: String? = null
-
+) {
     // filled in during buildJugglingMatrix():
     var primary: MHNThrow? = null
     var source: MHNThrow? = null
@@ -38,23 +37,9 @@ class MHNThrow {
     var catchtime: Double = 0.0  // time of catch prior to throw
     var handsindex: Int = 0  // index of throw in hands sequence, if one exists
 
-    constructor()
-
-    constructor(j: Int, h: Int, i: Int, s: Int, tj: Int, th: Int, ti: Int, ts: Int, m: String?) {
-        juggler = j
-        hand = h
-        index = i
-        slot = s
-        targetjuggler = tj
-        targethand = th // 0 for right hand, 1 for left hand
-        targetindex = ti
-        targetslot = ts
-        mod = m // "T" is the default modifier
-    }
-
     override fun toString(): String {
         var s = "($juggler, $hand, $index, $slot"
-        s = "$s -> $targetjuggler, $targethand, $targetindex, $targetslot)"
+        s = "$s -> $targetJuggler, $targetHand, $targetIndex, $targetSlot)"
         if (primary === this) {
             s = "$s*"
         }
@@ -65,7 +50,7 @@ class MHNThrow {
     @Suppress("unused")
     val isHold: Boolean
         get() {
-            if ((targetindex - index) > 2 || hand != targethand || juggler != targetjuggler) {
+            if ((targetIndex - index) > 2 || hand != targetHand || juggler != targetJuggler) {
                 return false
             }
             return mod == null || mod!!.indexOf('T') == -1
@@ -75,7 +60,7 @@ class MHNThrow {
         get() = (throwValue == 0 /* pathnum == -1 */)
 
     val throwValue: Int
-        get() = (targetindex - index)
+        get() = (targetIndex - index)
 
     val isThrownOne: Boolean
         get() = (mod != null && mod!![0] != 'H' && throwValue == 1)
@@ -90,8 +75,8 @@ class MHNThrow {
         // are identical.
 
         fun compareThrows(mhnt1: MHNThrow, mhnt2: MHNThrow): Int {
-            val beats1 = mhnt1.targetindex - mhnt1.index
-            val beats2 = mhnt2.targetindex - mhnt2.index
+            val beats1 = mhnt1.targetIndex - mhnt1.index
+            val beats2 = mhnt2.targetIndex - mhnt2.index
 
             // more beats > fewer beats
             if (beats1 > beats2) {
@@ -100,10 +85,10 @@ class MHNThrow {
                 return -1
             }
 
-            val isPass1 = (mhnt1.targetjuggler != mhnt1.juggler)
-            val isPass2 = (mhnt2.targetjuggler != mhnt2.juggler)
-            val isCross1 = (mhnt1.targethand == mhnt1.hand) xor (beats1 % 2 == 0)
-            val isCross2 = (mhnt2.targethand == mhnt2.hand) xor (beats2 % 2 == 0)
+            val isPass1 = (mhnt1.targetJuggler != mhnt1.juggler)
+            val isPass2 = (mhnt2.targetJuggler != mhnt2.juggler)
+            val isCross1 = (mhnt1.targetHand == mhnt1.hand) xor (beats1 % 2 == 0)
+            val isCross2 = (mhnt2.targetHand == mhnt2.hand) xor (beats2 % 2 == 0)
 
             // passes > self-throws
             if (isPass1 && !isPass2) {
@@ -114,9 +99,9 @@ class MHNThrow {
 
             // for two passes, lower target juggler number wins
             if (isPass1) {
-                if (mhnt1.targetjuggler < mhnt2.targetjuggler) {
+                if (mhnt1.targetJuggler < mhnt2.targetJuggler) {
                     return 1
-                } else if (mhnt1.targetjuggler > mhnt2.targetjuggler) {
+                } else if (mhnt1.targetJuggler > mhnt2.targetJuggler) {
                     return -1
                 }
             }
