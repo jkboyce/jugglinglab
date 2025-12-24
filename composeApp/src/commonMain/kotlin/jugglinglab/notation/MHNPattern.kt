@@ -666,9 +666,9 @@ abstract class MHNPattern : Pattern() {
                     sb.append(mhnt).append("\n")
                 }
             }
-            sb.append("symmetries:\n") // not finished
-            sb.append("hands:\n")
-            sb.append("bodies:\n")
+            sb.append("symmetries: (to do)\n") // not finished
+            sb.append("hands: (to do)\n")
+            sb.append("bodies: (to do)\n")
             return sb.toString()
         }
 

@@ -13,12 +13,13 @@ import jugglinglab.jml.JMLPosition
 import jugglinglab.util.*
 import jugglinglab.util.jlParseFiniteDouble
 
-class MHNBody(str: String) {
-    var numberOfJugglers: Int
-        private set
-    private var size: IntArray
-    private var coords: Array<IntArray>
-    private var bodypath: Array<Array<Array<DoubleArray?>>>
+data class MHNBody(
+    val str: String
+) {
+    val numberOfJugglers: Int
+    private val size: IntArray
+    private val coords: Array<IntArray>
+    private val bodypath: Array<Array<Array<DoubleArray?>>>
 
     init {
         // parse the 'body' string to define juggler movements

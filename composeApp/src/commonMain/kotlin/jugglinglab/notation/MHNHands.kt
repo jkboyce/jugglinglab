@@ -11,13 +11,14 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.*
 
-class MHNHands(str: String) {
-    var numberOfJugglers: Int
-        private set
-    private var size: IntArray
-    private var coords: Array<IntArray>
-    private var catches: Array<IntArray>
-    private var handpath: Array<Array<Array<DoubleArray?>>>
+data class MHNHands(
+    val str: String
+) {
+    val numberOfJugglers: Int
+    private val size: IntArray
+    private val coords: Array<IntArray>
+    private val catches: Array<IntArray>
+    private val handpath: Array<Array<Array<DoubleArray?>>>
 
     init {
         val cleanStr = jlExpandRepeats(str).filterNot { it in "<>{}" }

@@ -8,10 +8,10 @@ package jugglinglab.notation
 
 import jugglinglab.util.Permutation
 
-class MHNSymmetry(
+data class MHNSymmetry(
     val type: Int,
     val numberOfJugglers: Int,
-    jugPerm: String?,
+    val jugPerm: String?,
     val delay: Int
 ) {
     val jugglerPerm: Permutation = if (jugPerm == null) {
