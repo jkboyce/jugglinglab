@@ -41,11 +41,9 @@ data class JMLPosition(
 
     override fun toString(): String = cachedToString
 
-    private val cachedHashCode: Int by lazy {
+    val jlHashCode: Int by lazy {
         toString().hashCode()
     }
-
-    fun jlHashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLPosition): Int {
         if (t != other.t) {

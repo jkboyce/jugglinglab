@@ -185,7 +185,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         get() = view.animationPrefs
 
     // Used for testing whether a given JMLPattern is already being animated.
-    fun jlHashCode(): Int = view.jlHashCode()
+    val jlHashCode: Int
+        get() = view.jlHashCode
 
     // For determining if the current window is maximized in the UI.
     val isWindowMaximized: Boolean
@@ -812,7 +813,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         fun bringToFront(hash: Int): Boolean {
             for (fr in getFrames()) {
-                if (fr is PatternWindow && fr.isVisible && fr.jlHashCode() == hash) {
+                if (fr is PatternWindow && fr.isVisible && fr.jlHashCode == hash) {
                     SwingUtilities.invokeLater { fr.toFront() }
                     return true
                 }

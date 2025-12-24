@@ -77,13 +77,11 @@ data class JMLEvent(
 
     // Event hash code for locating a particular event in a pattern.
 
-    private val cachedHashCode: Int by lazy {
+    val jlHashCode: Int by lazy {
         val sb = StringBuilder()
         writeJML(sb, startTagOnly = true)
         sb.toString().hashCode()
     }
-
-    fun jlHashCode(): Int = cachedHashCode
 
     override fun compareTo(other: JMLEvent): Int {
         if (t != other.t) {

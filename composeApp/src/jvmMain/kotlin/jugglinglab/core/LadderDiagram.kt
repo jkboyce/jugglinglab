@@ -743,7 +743,7 @@ open class LadderDiagram(p: JMLPattern) :
         // note the jlHashCode equals the jlHashCode of the event, for an event-type
         // LadderItem
         override val jlHashCode: Int
-            get() = event.jlHashCode() + type * 23 + transNum * 27
+            get() = event.jlHashCode + type * 23 + transNum * 27
     }
 
     class LadderPathItem(
@@ -774,7 +774,7 @@ open class LadderDiagram(p: JMLPattern) :
         var yHigh: Int = 0
 
         override val jlHashCode: Int
-            get() = position.jlHashCode()
+            get() = position.jlHashCode
     }
 
     companion object {

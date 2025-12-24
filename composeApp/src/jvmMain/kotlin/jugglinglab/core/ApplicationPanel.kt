@@ -155,7 +155,7 @@ open class ApplicationPanel(
                 val config: String = p.toString()
                 val pat = fromBasePattern(notation, config)
 
-                if (!bringToFront(pat.jlHashCode())) {
+                if (!bringToFront(pat.jlHashCode)) {
                     if (animtarget != null) {
                         animtarget.restartView(pat, jc)
                     } else {

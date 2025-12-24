@@ -129,9 +129,9 @@ class EditLadderDiagram(
                     aep2.isPaused = true
                     aep2.time = newT
                     activeItemHashCode = if (activeEventItem != null) {
-                        activeEventItem!!.event.jlHashCode()
+                        activeEventItem!!.event.jlHashCode
                     } else if (activePositionItem != null) {
-                        activePositionItem!!.position.jlHashCode()
+                        activePositionItem!!.position.jlHashCode
                     } else {
                         0
                     }
@@ -243,9 +243,9 @@ class EditLadderDiagram(
                             aep2.isPaused = true
                             aep2.time = newtime
                             activeItemHashCode = if (activeEventItem != null) {
-                                activeEventItem!!.event.jlHashCode()
+                                activeEventItem!!.event.jlHashCode
                             } else if (activePositionItem != null) {
-                                activePositionItem!!.position.jlHashCode()
+                                activePositionItem!!.position.jlHashCode
                             } else {
                                 0
                             }
@@ -503,7 +503,7 @@ class EditLadderDiagram(
 
         record.selectPrimaryEvents()
         val newPattern = JMLPattern.fromPatternBuilder(record)
-        activeItemHashCode = newEvent.jlHashCode()
+        activeItemHashCode = newEvent.jlHashCode
         onPatternChange(newPattern, undoable = false)
     }
 
@@ -595,7 +595,7 @@ class EditLadderDiagram(
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
         val newPosition = pos.copy(t = newt)
         rec.positions[index] = newPosition
-        activeItemHashCode = newPosition.jlHashCode()
+        activeItemHashCode = newPosition.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
     }
 
@@ -699,7 +699,7 @@ class EditLadderDiagram(
         record.events.add(newEvent)
         record.fixHolds()
         record.selectPrimaryEvents()
-        activeItemHashCode = newEvent.jlHashCode()
+        activeItemHashCode = newEvent.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
 
@@ -750,7 +750,7 @@ class EditLadderDiagram(
         )
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.add(pos)
-        activeItemHashCode = pos.jlHashCode()
+        activeItemHashCode = pos.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(rec))
     }
 
@@ -1074,7 +1074,7 @@ class EditLadderDiagram(
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
-        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode() + 23 +
+        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (popupItem as LadderEventItem).transNum * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }
@@ -1094,7 +1094,7 @@ class EditLadderDiagram(
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
-        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode() + 23 +
+        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (newPrimary.transitions.size - 1) * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
     }

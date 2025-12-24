@@ -199,7 +199,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                                     it.primary == image.primary &&
                                         it.event.juggler == image.event.juggler &&
                                         it.event.hand == image.event.hand
-                                }?.event?.jlHashCode()
+                                }?.event?.jlHashCode
                                     ?: throw JuggleExceptionInternal("Error 2 in AEP.mousePressed()")
 
                                 setActiveItem(code)
@@ -423,7 +423,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
                     val newPosition = activePosition!!.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
-                    activeItemHashCode = newPosition.jlHashCode()
+                    activeItemHashCode = newPosition.jlHashCode
                     onPatternChange(
                         JMLPattern.fromPatternBuilder(rec),
                         addToUndo = false,
@@ -462,7 +462,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                             val record = PatternBuilder.fromJMLPattern(pattern!!)
                             val index = record.events.indexOf(activeEventPrimary)
                             record.events[index] = newPrimary
-                            activeItemHashCode = newEvent.jlHashCode()
+                            activeItemHashCode = newEvent.jlHashCode
                             onPatternChange(
                                 JMLPattern.fromPatternBuilder(record),
                                 addToUndo = false,
@@ -479,7 +479,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                         }
                         val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                         rec.positions[index] = newPosition
-                        activeItemHashCode = newPosition.jlHashCode()
+                        activeItemHashCode = newPosition.jlHashCode
                         onPatternChange(
                             JMLPattern.fromPatternBuilder(rec),
                             addToUndo = false,
@@ -706,14 +706,14 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         positionActive = false
 
         for ((ev, evPrimary) in pattern!!.loopEvents) {
-            if (ev.jlHashCode() == activeHashCode) {
+            if (ev.jlHashCode == activeHashCode) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
                 eventActive = true
                 createEventView()
                 break
             } else if (ev.transitions.withIndex().any { (transNum, _) ->
-                    val trHash = ev.jlHashCode() + 23 + transNum * 27
+                    val trHash = ev.jlHashCode + 23 + transNum * 27
                     trHash == activeHashCode
                 }) {
                 activeEvent = ev
@@ -724,7 +724,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
             }
         }
         for (pos in pattern!!.positions) {
-            if (pos.jlHashCode() == activeHashCode) {
+            if (pos.jlHashCode == activeHashCode) {
                 activePosition = pos
                 positionActive = true
                 createPositionView()

@@ -157,7 +157,7 @@ data class JMLPattern(
                 edited = (fromBasePattern(
                     basePatternNotation!!,
                     basePatternConfig!!
-                ).jlHashCode() != jlHashCode())
+                ).jlHashCode != jlHashCode)
             } catch (_: JuggleException) {
             }
         }
@@ -178,15 +178,13 @@ data class JMLPattern(
         }
     }
 
-    private val cachedHashCode: Int by lazy {
+    val jlHashCode: Int by lazy {
         val sb = StringBuilder()
         // Omit <info> tag metadata for the purposes of evaluating hash code.
         // Two patterns that differ only by metadata are treated as identical.
         writeJML(sb, writeTitle = true, writeInfo = false)
         sb.toString().hashCode()
     }
-
-    fun jlHashCode(): Int = cachedHashCode
 
     //--------------------------------------------------------------------------
     // Validity checking
