@@ -946,9 +946,14 @@ data class PatternBuilder(
     @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
         val holdsOnly = Array(numberOfPaths) { false }
+        val patternsSeen = mutableSetOf<Int>()
 
         scanstart@ while (true) {
             val pat = JMLPattern.fromPatternBuilder(this)
+            if (!patternsSeen.add(pat.hashCode())) {
+                throw JuggleExceptionInternal("error 7 in fixHolds()", pat)
+            }
+
             val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
 
             // record of where balls are held (juggler, hand) as we scan forward,
