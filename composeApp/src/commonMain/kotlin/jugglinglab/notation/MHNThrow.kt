@@ -20,7 +20,7 @@ data class MHNThrow(
     val targetIndex: Int = 0,
     val targetSlot: Int = 0,
     val mod: String? = null
-) {
+) : Comparable<MHNThrow> {
     // filled in during buildJugglingMatrix():
     var primary: MHNThrow? = null
     var source: MHNThrow? = null
@@ -65,71 +65,77 @@ data class MHNThrow(
     val isThrownOne: Boolean
         get() = (mod != null && mod[0] != 'H' && throwValue == 1)
 
-    companion object {
-        // Define an ordering relation for throws.
-        //
-        // This assumes the throws are coming from the same juggler+hand+index
-        // combination, i.e., as part of a multiplex throw.
-        //
-        // Returns 1 if mhnt1 > mhnt2, -1 if mhnt1 < mhnt2, and 0 iff the throws
-        // are identical.
+    override fun compareTo(other: MHNThrow): Int {
+        val beats1 = targetIndex - index
+        val beats2 = other.targetIndex - other.index
 
-        fun compareThrows(mhnt1: MHNThrow, mhnt2: MHNThrow): Int {
-            val beats1 = mhnt1.targetIndex - mhnt1.index
-            val beats2 = mhnt2.targetIndex - mhnt2.index
-
-            // more beats > fewer beats
-            if (beats1 > beats2) {
-                return 1
-            } else if (beats1 < beats2) {
-                return -1
-            }
-
-            val isPass1 = (mhnt1.targetJuggler != mhnt1.juggler)
-            val isPass2 = (mhnt2.targetJuggler != mhnt2.juggler)
-            val isCross1 = (mhnt1.targetHand == mhnt1.hand) xor (beats1 % 2 == 0)
-            val isCross2 = (mhnt2.targetHand == mhnt2.hand) xor (beats2 % 2 == 0)
-
-            // passes > self-throws
-            if (isPass1 && !isPass2) {
-                return 1
-            } else if (!isPass1 && isPass2) {
-                return -1
-            }
-
-            // for two passes, lower target juggler number wins
-            if (isPass1) {
-                if (mhnt1.targetJuggler < mhnt2.targetJuggler) {
-                    return 1
-                } else if (mhnt1.targetJuggler > mhnt2.targetJuggler) {
-                    return -1
-                }
-            }
-
-            // crossed throws beat non-crossed throws
-            if (isCross1 && !isCross2) {
-                return 1
-            } else if (!isCross1 && isCross2) {
-                return -1
-            }
-
-            // if we get here then {targetjuggler, targethand, targetindex} are all equal
-            val hasMod1 = (mhnt1.mod != null)
-            val hasMod2 = (mhnt2.mod != null)
-
-            if (hasMod1 && !hasMod2) {
-                return 1 // throw with modifier beats one without
-            } else if (!hasMod1 && hasMod2) {
-                return -1
-            } else if (hasMod1) {
-                val c = mhnt1.mod.compareTo(mhnt2.mod!!)
-                if (c < 0) {
-                    return 1 // mhnt1.mod lexicographically precedes mhnt2.mod
-                } else if (c > 0) {
-                    return -1
-                }
-            }
-            return 0
+        // more beats > fewer beats
+        if (beats1 > beats2) {
+            return 1
+        } else if (beats1 < beats2) {
+            return -1
         }
+
+        val isPass1 = (targetJuggler != juggler)
+        val isPass2 = (other.targetJuggler != other.juggler)
+        val isCross1 = (targetHand == hand) xor (beats1 % 2 == 0)
+        val isCross2 = (other.targetHand == other.hand) xor (beats2 % 2 == 0)
+
+        // passes > self-throws
+        if (isPass1 && !isPass2) {
+            return 1
+        } else if (!isPass1 && isPass2) {
+            return -1
+        }
+
+        // for two passes, lower target juggler number wins
+        if (isPass1) {
+            if (targetJuggler < other.targetJuggler) {
+                return 1
+            } else if (targetJuggler > other.targetJuggler) {
+                return -1
+            }
+        }
+
+        // crossed throws beat non-crossed throws
+        if (isCross1 && !isCross2) {
+            return 1
+        } else if (!isCross1 && isCross2) {
+            return -1
+        }
+
+        // if we get here then {beats, isPass, isCross} are all equal
+        val hasMod1 = (mod != null)
+        val hasMod2 = (other.mod != null)
+
+        if (hasMod1 && !hasMod2) {
+            return 1 // throw with modifier beats one without
+        } else if (!hasMod1 && hasMod2) {
+            return -1
+        } else if (hasMod1) {
+            val c = mod.compareTo(other.mod!!)
+            if (c < 0) {
+                return 1 // mhnt1.mod lexicographically precedes mhnt2.mod
+            } else if (c > 0) {
+                return -1
+            }
+        }
+
+        // if we get here then {beats, isPass, isCross, mod} are equal;
+        // compare on the basis of position in the pattern
+
+        if (index != other.index) {
+            return index.compareTo(other.index)
+        }
+        if (juggler != other.juggler) {
+            return juggler.compareTo(other.juggler)
+        }
+        if (hand != other.hand) {
+            // ordering is so right hand sorts before left:
+            return other.hand.compareTo(hand)
+        }
+        // identical throws at different slots compare as equal; this is for
+        // detecting clustered multiplex throws
+        return 0
     }
 }

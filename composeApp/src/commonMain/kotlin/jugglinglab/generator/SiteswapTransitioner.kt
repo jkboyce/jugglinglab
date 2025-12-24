@@ -567,8 +567,7 @@ class SiteswapTransitioner : Transitioner() {
         // preceding throw from the same hand
         for (s in 0..<maxOccupancy) {
             val prev = th[j][h][pos][s] ?: break
-
-            if (MHNThrow.compareThrows(mhnt, prev) == 1) {
+            if (mhnt.compareTo(prev) == 1) {
                 if (Constants.DEBUG_TRANSITIONS) {
                     println("  failed check 4")
                 }
@@ -581,8 +580,7 @@ class SiteswapTransitioner : Transitioner() {
         if (maxOccupancy > 1 && !mpAllowClustersFlag) {
             for (s in 0..<maxOccupancy) {
                 val prev = th[j][h][pos][s] ?: break
-
-                if (MHNThrow.compareThrows(mhnt, prev) == 0) {
+                if (mhnt.compareTo(prev) == 0) {
                     if (Constants.DEBUG_TRANSITIONS) {
                         println("  failed check 5")
                     }

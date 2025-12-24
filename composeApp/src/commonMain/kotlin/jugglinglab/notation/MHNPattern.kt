@@ -343,21 +343,10 @@ abstract class MHNPattern : Pattern() {
                     }
 
                     // we have a disagreement about which is the primary;
-                    // choose one of them and set them equal
-                    var newm: MHNThrow? = m
-                    if (m.index > im.index) {
-                        newm = im
-                    } else if (m.index == im.index) {
-                        if (m.juggler > im.juggler) {
-                            newm = im
-                        } else if (m.juggler == im.juggler) {
-                            if (m.hand > im.hand) {
-                                newm = im
-                            }
-                        }
-                    }
+                    // choose one and set them equal
+                    val newm = minOf(m, im)
                     imaget.primary = newm
-                    mhnt.primary = imaget.primary
+                    mhnt.primary = newm
                     changed = true
                 }
             }
@@ -365,7 +354,7 @@ abstract class MHNPattern : Pattern() {
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             th.mhnIterator().forEach { (i, j, h, slot, mhnt) ->
-                if (mhnt?.primary === mhnt) {
+                if (mhnt != null && mhnt.primary === mhnt) {
                     println("primary throw at j=$j,h=$h,i=$i,slot=$slot")
                 }
             }
