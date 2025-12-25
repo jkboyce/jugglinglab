@@ -297,8 +297,10 @@ class Animator {
 
         // Make sure props are entirely visible along all paths. In principle
         // not all props go on all paths so this could be done more carefully.
-        patternmax = add(patternmax, propmax)
-        patternmin = add(patternmin, propmin)
+        if (patternmax != null && patternmin != null) {
+            patternmax = add(patternmax, propmax)
+            patternmin = add(patternmin, propmin)
+        }
 
         // Step 2: Work out a bounding box that contains the hands at all times,
         // factoring in the physical extent of the hands.
