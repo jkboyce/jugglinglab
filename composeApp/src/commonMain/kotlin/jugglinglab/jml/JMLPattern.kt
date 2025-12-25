@@ -945,9 +945,10 @@ data class PatternBuilder(
 
     @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
-        var iteration = 1
         val holdsOnly = Array(numberOfPaths) { false }
         val patternsSeen = mutableSetOf<Int>()
+        var finishing = false  // mode at the end where we only add holds
+        var iteration = 1
 
         scanstart@ while (true) {
             val pat = JMLPattern.fromPatternBuilder(this)
@@ -956,7 +957,8 @@ data class PatternBuilder(
                 println(pat)
                 ++iteration
             }
-            if (!patternsSeen.add(pat.hashCode())) {
+            if (!patternsSeen.add(pat.hashCode()) && !finishing) {
+                // prevents an infinite loop if something goes wrong
                 throw JuggleExceptionInternal("error 7 in fixHolds()", pat)
             }
 
@@ -974,6 +976,7 @@ data class PatternBuilder(
                         holdsOnly[i] = (holdingLocation[i] == null)
                     }
                     if (holdsOnly.any { it }) {
+                        finishing = true
                         continue@scanstart
                     }
                     return  // only exit from the function
