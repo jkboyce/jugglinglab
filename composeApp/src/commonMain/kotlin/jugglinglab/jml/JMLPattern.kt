@@ -10,6 +10,8 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("KotlinConstantConditions")
+
 package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
@@ -943,11 +945,17 @@ data class PatternBuilder(
 
     @Throws(JuggleExceptionInternal::class)
     fun fixHolds() {
+        var iteration = 1
         val holdsOnly = Array(numberOfPaths) { false }
         val patternsSeen = mutableSetOf<Int>()
 
         scanstart@ while (true) {
             val pat = JMLPattern.fromPatternBuilder(this)
+            if (Constants.DEBUG_PATTERN_CREATION) {
+                println("fixHolds() pass $iteration")
+                println(pat)
+                ++iteration
+            }
             if (!patternsSeen.add(pat.hashCode())) {
                 throw JuggleExceptionInternal("error 7 in fixHolds()", pat)
             }
