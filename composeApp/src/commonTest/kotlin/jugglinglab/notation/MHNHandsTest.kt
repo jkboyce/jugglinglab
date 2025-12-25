@@ -1,6 +1,6 @@
 // MHNHandsTest.kt
 //
-// Unit tests for SiteswapPattern.
+// Unit tests for MHNHands.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
