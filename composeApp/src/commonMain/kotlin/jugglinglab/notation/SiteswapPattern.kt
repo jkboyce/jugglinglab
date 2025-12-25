@@ -152,21 +152,10 @@ class SiteswapPattern : MHNPattern() {
             throw JuggleExceptionUser(message)
         }
 
-        // Use tree to fill in MHNPattern internal variables:
-        /*
-        protected int numjugglers;
-        protected int numpaths;
-        protected int period;
-        protected int max_occupancy;
-        protected MHNThrow[][][][] th;
-        protected MHNHands hands;
-        protected MHNBody bodies;
-        protected int max_throw;
-        protected int indexes;
-        protected ArrayList<MHNSymmetry> symmetry;
-        */
+        // Use tree to fill in MHNPattern internal variables
+
         numberOfJugglers = tree.jugglers
-        maxOccupancy = 0 // calculated in doFirstPass()
+        maxOccupancy = 0  // calculated in doFirstPass()
         maxThrow = 0
         rightOnEven = BooleanArray(numberOfJugglers) { true }
 
@@ -210,7 +199,14 @@ class SiteswapPattern : MHNPattern() {
         resolveModifiers()
 
         // Finally, add pattern symmetries
-        addSymmetry(MHNSymmetry(MHNSymmetry.TYPE_DELAY, numberOfJugglers, null, period))
+        addSymmetry(
+            MHNSymmetry(
+                type = MHNSymmetry.TYPE_DELAY,
+                numberOfJugglers = numberOfJugglers,
+                jugPerm = null,
+                delay = period
+            )
+        )
         if (tree.switchrepeat) { // know that tree is of type Pattern
             val sb = StringBuilder()
             for (i in 1..numberOfJugglers) {
@@ -218,10 +214,10 @@ class SiteswapPattern : MHNPattern() {
             }
             addSymmetry(
                 MHNSymmetry(
-                    MHNSymmetry.TYPE_SWITCHDELAY,
-                    numberOfJugglers,
-                    sb.toString(),
-                    period / 2
+                    type = MHNSymmetry.TYPE_SWITCHDELAY,
+                    numberOfJugglers = numberOfJugglers,
+                    jugPerm = sb.toString(),
+                    delay = period / 2
                 )
             )
         }
@@ -367,10 +363,6 @@ class SiteswapPattern : MHNPattern() {
 
             SiteswapTreeItem.TYPE_GROUPED_PATTERN -> {
                 // Contains only a Pattern type (single child)
-                /*
-                if (sti.repeats > 20)
-                    throw new JuggleExceptionUser("Grouped repeats cannot exceed 20");
-                */
                 child = sti.getChild(0)
                 if (sti.numberOfChildren > 1) {
                     sti.removeChildren()

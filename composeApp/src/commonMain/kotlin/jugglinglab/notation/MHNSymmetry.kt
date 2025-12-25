@@ -21,7 +21,7 @@ data class MHNSymmetry(
         }
 
     companion object {
-        const val TYPE_DELAY: Int = 1 // types of symmetries
+        const val TYPE_DELAY: Int = 1  // types of symmetries
         const val TYPE_SWITCH: Int = 2
         const val TYPE_SWITCHDELAY: Int = 3
     }
