@@ -31,21 +31,23 @@ class LaidoutPattern(val pat: JMLPattern) {
     var eventList: JMLEvent? = null
 
     // list of PathLink objects for each path
-    private var pathlinks: MutableList<MutableList<PathLink>>? = null
+    private var pathlinks: List<MutableList<PathLink>> =
+        List(pat.numberOfPaths) { mutableListOf() }
 
     // list of HandLink objects for each juggler/hand combination
-    private var handlinks: MutableList<MutableList<MutableList<HandLink>>>? = null
+    private var handlinks: List<List<MutableList<HandLink>>> =
+        List(pat.numberOfJugglers) { List(2) { mutableListOf() } }
 
-    // for layout
-    private lateinit var jugglercurve: Array<Curve?> // coordinates for each juggler
-    private lateinit var jugglerangle: Array<Curve?> // angles for each juggler
+    // coordinates and angles for each juggler
+    private var jugglerCurve: MutableList<Curve> = mutableListOf()
+    private var jugglerAngle: MutableList<Curve> = mutableListOf()
 
     // whether pattern has a velocity-defining transition
     private lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
     private lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
 
     val pathLinks: List<List<PathLink>>
-        get() = pathlinks!!
+        get() = pathlinks
 
     init {
         pat.events.forEach {
@@ -66,23 +68,23 @@ class LaidoutPattern(val pat: JMLPattern) {
             if (Constants.DEBUG_LAYOUT) {
                 println("Data from LaidoutPattern.init:")
                 for (i in 0..<pat.numberOfPaths) {
-                    println(pathlinks!![i].size.toString() + " pathlinks for path " + (i + 1) + ":")
-                    for (jtemp in pathlinks!![i].indices) {
-                        println("   " + pathlinks!![i][jtemp])
+                    println(pathlinks[i].size.toString() + " pathlinks for path " + (i + 1) + ":")
+                    for (jtemp in pathlinks[i].indices) {
+                        println("   " + pathlinks[i][jtemp])
                     }
                 }
                 for (i in 0..<pat.numberOfJugglers) {
                     for (j in 0..1) {
                         println(
-                            (handlinks!![i][j].size
+                            (handlinks[i][j].size
                                 .toString() + " handlinks for juggler "
                                 + (i + 1)
                                 + ", hand "
                                 + (j + 1)
                                 + ":")
                         )
-                        for (k in handlinks!![i][j].indices) {
-                            println("   " + handlinks!![i][j][k])
+                        for (k in handlinks[i][j].indices) {
+                            println("   " + handlinks[i][j][k])
                         }
                     }
                 }
@@ -465,9 +467,6 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     @Throws(JuggleExceptionInternal::class)
     private fun findPositions() {
-        jugglercurve = arrayOfNulls(pat.numberOfJugglers)
-        jugglerangle = arrayOfNulls(pat.numberOfJugglers)
-
         for (i in 1..pat.numberOfJugglers) {
             val num = pat.positions.count { it.juggler == i }
 
@@ -542,8 +541,8 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
             jcurve.calcCurve()
             jangle.calcCurve()
-            jugglercurve[i - 1] = jcurve
-            jugglerangle[i - 1] = jangle
+            jugglerCurve.add(jcurve)
+            jugglerAngle.add(jangle)
         }
     }
 
@@ -553,7 +552,8 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun buildLinkLists() {
-        pathlinks = MutableList(pat.numberOfPaths) { mutableListOf() }
+        val incomingPathLink: HashMap<IdentityKey<JMLTransition>, PathLink> = HashMap()
+        val outgoingPathLink: HashMap<IdentityKey<JMLTransition>, PathLink> = HashMap()
 
         for (i in 0..<pat.numberOfPaths) {
             var ev = eventList
@@ -612,9 +612,9 @@ class LaidoutPattern(val pat: JMLPattern) {
                         )
                     }
 
-                    pathlinks!![i].add(pl)
-                    lasttr.outgoingPathLink = pl
-                    tr.incomingPathLink = pl
+                    pathlinks[i].add(pl)
+                    outgoingPathLink[IdentityKey(lasttr)] = pl
+                    incomingPathLink[IdentityKey(tr)] = pl
                 }
 
                 lastev = ev
@@ -625,22 +625,16 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
 
-            if (pathlinks!![i].isEmpty()) {
-                throw JuggleExceptionInternal("No event found for path " + (i + 1), pat)
+            if (pathlinks[i].isEmpty()) {
+                throw JuggleExceptionInternal("No event found for path ${i + 1}", pat)
             }
         }
 
         // now build the HandLink lists
-        handlinks = mutableListOf()
 
         for (i in 0..<pat.numberOfJugglers) {
-            // HandLink list for the ith juggler
-            handlinks!!.add(mutableListOf())
-
             for (h in 0..1) {
                 val hand = if (h == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
-
-                handlinks!![i].add(mutableListOf())
 
                 var ev = eventList
                 var lastev: JMLEvent? = null
@@ -661,17 +655,17 @@ class LaidoutPattern(val pat: JMLPattern) {
                     if (ev.juggler == (i + 1) && ev.hand == hand) {
                         for (tr in ev.transitions) {
                             if (tr.type == JMLTransition.TRANS_THROW) {
-                                val pl = tr.outgoingPathLink
+                                val pl = outgoingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_THROW)
                                 }
                             } else if (tr.type == JMLTransition.TRANS_SOFTCATCH) {
-                                val pl = tr.incomingPathLink
+                                val pl = incomingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_SOFTCATCH)
                                 }
                             } else if (tr.type == JMLTransition.TRANS_CATCH) {
-                                val pl = tr.incomingPathLink
+                                val pl = incomingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_CATCH)
                                 }
@@ -684,9 +678,9 @@ class LaidoutPattern(val pat: JMLPattern) {
                     if (lastev != null) {
                         // add HandLink from lastev to ev
                         val hl = HandLink(i, hand, lastev, ev)
-                        hl.startVelocityRef = lastvr // may be null, which is ok
+                        hl.startVelocityRef = lastvr  // may be null, which is ok
                         hl.endVelocityRef = vr
-                        handlinks!![i][h].add(hl)
+                        handlinks[i][h].add(hl)
                     }
                     lastev = ev
                     lastvr = vr
@@ -719,8 +713,8 @@ class LaidoutPattern(val pat: JMLPattern) {
                     var startlink: HandLink? = null
                     var num = 0
 
-                    for (k in handlinks!![j][h].indices) {
-                        val hl = handlinks!![j][h][k]
+                    for (k in handlinks[j][h].indices) {
+                        val hl = handlinks[j][h][k]
 
                         var vr = hl.startVelocityRef
                         if (vr != null
@@ -743,7 +737,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             val hp: Curve = SplineCurve()
 
                             for (l in 0..<num) {
-                                val hl2 = handlinks!![j][h][k - num + 1 + l]
+                                val hl2 = handlinks[j][h][k - num + 1 + l]
                                 times[l] = hl2.startEvent.t
                                 pos[l] = getGlobalCoordinate(hl2.startEvent)
                                 val vr2 = hl2.startVelocityRef
@@ -778,8 +772,8 @@ class LaidoutPattern(val pat: JMLPattern) {
                     //    build spline hand path from startlink to endlink, and calculate (chain 2)
                     var k = 0
                     var hl: HandLink? = null
-                    while (k < handlinks!![j][h].size) {
-                        hl = handlinks!![j][h][k]
+                    while (k < handlinks[j][h].size) {
+                        hl = handlinks[j][h][k]
                         if (hl.endEvent.t > pat.loopStartTime) {
                             break
                         }
@@ -791,7 +785,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                         val startevent = startlink!!.startEvent
                         var num = 1 // number of links in chain
                         while (!hl!!.endEvent.isDelayOf(startevent)) {
-                            hl = handlinks!![j][h][++k]
+                            hl = handlinks[j][h][++k]
                             ++num
                         }
                         val times = DoubleArray(num + 1)
@@ -799,7 +793,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                         val hp: Curve = SplineCurve()
 
                         for (l in 0..<num) {
-                            val hl2 = handlinks!![j][h][k - num + 1 + l]
+                            val hl2 = handlinks[j][h][k - num + 1 + l]
                             pos[l] = getGlobalCoordinate(hl2.startEvent)
                             times[l] = hl2.startEvent.t
                             hl2.handCurve = hp
@@ -811,7 +805,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                         hp.calcCurve()
 
                         if (chain == 0) {
-                            hl = handlinks!![j][h][++k]
+                            hl = handlinks[j][h][++k]
                         }
                     }
                 }
@@ -845,7 +839,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     @Throws(JuggleExceptionInternal::class)
     fun getPathCoordinate(path: Int, time: Double, newPosition: Coordinate) {
-        for (pl in pathlinks!![path - 1]) {
+        for (pl in pathlinks[path - 1]) {
             if (time >= pl.startEvent.t && time <= pl.endEvent.t) {
                 if (pl.isInHand) {
                     val jug = pl.holdingJuggler
@@ -863,7 +857,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     // Check if a given hand is holding the path at a given time.
 
     fun isHandHoldingPath(juggler: Int, hand: Int, time: Double, path: Int): Boolean {
-        for (pl in pathlinks!![path - 1]) {
+        for (pl in pathlinks[path - 1]) {
             if (!pl.isInHand) continue
             if (pl.holdingJuggler != juggler) continue
             if (pl.holdingHand != hand) continue
@@ -898,8 +892,8 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     fun getJugglerPosition(juggler: Int, time: Double, newPosition: Coordinate) {
         var time = time
-        val p = jugglercurve[juggler - 1]
-        while (time < p!!.startTime) {
+        val p = jugglerCurve[juggler - 1]
+        while (time < p.startTime) {
             time += pat.loopEndTime - pat.loopStartTime
         }
         while (time > p.endTime) {
@@ -913,9 +907,9 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     fun getJugglerAngle(juggler: Int, time: Double): Double {
         var time = time
-        val p = jugglerangle[juggler - 1]
+        val p = jugglerAngle[juggler - 1]
 
-        while (time < p!!.startTime) {
+        while (time < p.startTime) {
             time += pat.loopEndTime - pat.loopStartTime
         }
         while (time > p.endTime) {
@@ -982,7 +976,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             time -= pat.loopEndTime - pat.loopStartTime
         }
 
-        for (hl in handlinks!![juggler - 1][handindex]) {
+        for (hl in handlinks[juggler - 1][handindex]) {
             if (time >= hl.startEvent.t && time < hl.endEvent.t) {
                 val hp = hl.handCurve ?: throw JuggleExceptionInternal(
                     "getHandCoordinate() null pointer at t=$time",
@@ -1007,18 +1001,18 @@ class LaidoutPattern(val pat: JMLPattern) {
         var gotcatch = false
 
         var i = 0
-        while (i < pathlinks!![path - 1].size) {
-            val pl1 = pathlinks!![path - 1][i]
+        while (i < pathlinks[path - 1].size) {
+            val pl1 = pathlinks[path - 1][i]
             if (time1 >= pl1.startEvent.t && time1 <= pl1.endEvent.t) {
                 break
             }
             ++i
         }
-        if (i == pathlinks!![path - 1].size) {
+        if (i == pathlinks[path - 1].size) {
             return 0.0
         }
         while (true) {
-            val pl2 = pathlinks!![path - 1][i]
+            val pl2 = pathlinks[path - 1][i]
             if (!pl2.isInHand) {
                 wasinair = true
             }
@@ -1030,7 +1024,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 break
             }
             ++i
-            if (i == pathlinks!![path - 1].size) {
+            if (i == pathlinks[path - 1].size) {
                 i = 0
             }
         }
@@ -1050,18 +1044,18 @@ class LaidoutPattern(val pat: JMLPattern) {
         var i = 0
         var pl: PathLink
 
-        while (i < pathlinks!![path - 1].size) {
-            pl = pathlinks!![path - 1][i]
+        while (i < pathlinks[path - 1].size) {
+            pl = pathlinks[path - 1][i]
             if (time1 >= pl.startEvent.t && time1 <= pl.endEvent.t) {
                 break
             }
             i++
         }
-        if (i == pathlinks!![path - 1].size) {
+        if (i == pathlinks[path - 1].size) {
             return 0.0
         }
         while (true) {
-            pl = pathlinks!![path - 1][i]
+            pl = pathlinks[path - 1][i]
             val p = pl.path
             if (p is BouncePath) {
                 val vol = p.getBounceVolume(time1, time2)
@@ -1074,7 +1068,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             }
 
             ++i
-            if (i == pathlinks!![path - 1].size) {
+            if (i == pathlinks[path - 1].size) {
                 i = 0
             }
         }
@@ -1087,7 +1081,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
 
-        for (pl in pathlinks!![path - 1]) {
+        for (pl in pathlinks[path - 1]) {
             if (pl.isInHand) {
                 val coord2 = getHandMax(pl.holdingJuggler, pl.holdingHand)
                 result = max(result, coord2)
@@ -1104,7 +1098,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
 
-        for ((i, pl) in pathlinks!![path - 1].withIndex()) {
+        for ((i, pl) in pathlinks[path - 1].withIndex()) {
             if (pl.isInHand) {
                 if (Constants.DEBUG_LAYOUT) {
                     println(
@@ -1129,7 +1123,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t2 = pat.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (hl in handlinks!![juggler - 1][handnum]) {
+        for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
                 result = max(result, hp.getMax(t1, t2))
@@ -1144,7 +1138,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val t2 = pat.loopEndTime
         val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
 
-        for (hl in handlinks!![juggler - 1][handnum]) {
+        for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
                 result = min(result, hp.getMin(t1, t2))
@@ -1154,10 +1148,17 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     fun getJugglerMax(juggler: Int): Coordinate? {
-        return jugglercurve[juggler - 1]!!.max
+        return jugglerCurve[juggler - 1].max
     }
 
     fun getJugglerMin(juggler: Int): Coordinate? {
-        return jugglercurve[juggler - 1]!!.min
+        return jugglerCurve[juggler - 1].min
     }
+}
+
+// Wrapper to enforce reference equality for map keys.
+
+class IdentityKey<T>(val value: T) {
+    override fun equals(other: Any?): Boolean = other is IdentityKey<*> && value === other.value
+    override fun hashCode(): Int = value.hashCode()
 }

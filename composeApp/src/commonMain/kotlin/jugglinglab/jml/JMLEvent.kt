@@ -110,7 +110,6 @@ data class JMLEvent(
         delay = 0
         delayunits = 0
         pathPermFromPrimary = null
-        transitions.forEach { it.clearLayoutData() }
     }
 
     // for linking into event chains

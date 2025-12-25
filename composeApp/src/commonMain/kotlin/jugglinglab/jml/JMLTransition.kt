@@ -21,18 +21,6 @@ data class JMLTransition(
     }
 
     //--------------------------------------------------------------------------
-    // Used in pattern layout - target removal
-    //--------------------------------------------------------------------------
-
-    fun clearLayoutData() {
-        incomingPathLink = null
-        outgoingPathLink = null
-    }
-
-    var incomingPathLink: PathLink? = null
-    var outgoingPathLink: PathLink? = null
-
-    //--------------------------------------------------------------------------
     // Output
     //--------------------------------------------------------------------------
 
