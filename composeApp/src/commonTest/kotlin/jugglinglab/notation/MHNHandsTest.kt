@@ -30,4 +30,5 @@ class MHNHandsTest {
         val config = "<t(10)c(32.5)(0,45,-25).|(-30)(2.5).(30)(-2.5).(-30)(0).>"
         val output = MHNHands(config).toString()
         assertEquals(output, "<(10)c(32.5)(0,45,-25).|(-30)(2.5).(30)(-2.5).(-30)(0).>")
-    }}
+    }
+}
