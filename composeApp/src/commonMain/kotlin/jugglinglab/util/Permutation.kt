@@ -56,6 +56,11 @@ class Permutation {
         this.mapping = if (reverses) IntArray(size * 2 + 1) else IntArray(size)
         this.reverses = reverses
 
+        if (n == 0 && perm.isBlank()) {
+            // corner case to make pattern "0" work
+            return
+        }
+
         val used: BooleanArray = if (reverses) BooleanArray(size * 2 + 1) else
             BooleanArray(size)
 
@@ -63,7 +68,7 @@ class Permutation {
             // explicit mapping
             val tokens = perm.split(',')
 
-            if (tokens.size != size) {
+            if (tokens.size != size && size != 0) {
                 throw JuggleException(
                     "Permutation init error: must have $n elements in mapping"
                 )
