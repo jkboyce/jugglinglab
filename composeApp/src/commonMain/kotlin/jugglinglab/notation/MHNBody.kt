@@ -14,29 +14,29 @@ import jugglinglab.util.*
 import jugglinglab.util.jlParseFiniteDouble
 
 data class MHNBody(
-    val str: String
+    val config: String
 ) {
     val numberOfJugglers: Int
-    private val size: IntArray
-    private val coords: Array<IntArray>
-    private val bodypath: Array<Array<Array<DoubleArray?>>>
+    private val numberOfBeats: IntArray
+    private val numberOfPositionsPerBeat: Array<IntArray>
+    private val bodyPositions: Array<Array<Array<DoubleArray?>>>
 
     init {
         // parse the 'body' string to define juggler movements
-        val cleanStr = jlExpandRepeats(str).replace("[<>{}]".toRegex(), "")
-        val jugglerStrings = cleanStr.split(Regex("[|!]"))
+        val cleanStr = jlExpandRepeats(config).filterNot { it in "<>{}" }
+        val jugglerStrings = cleanStr.split('|', '!')
 
         numberOfJugglers = jugglerStrings.size
-        size = IntArray(numberOfJugglers)
-        coords = Array(numberOfJugglers) { IntArray(0) }
-        bodypath = Array(numberOfJugglers) { emptyArray() }
+        numberOfBeats = IntArray(numberOfJugglers)
+        numberOfPositionsPerBeat = Array(numberOfJugglers) { IntArray(0) }
+        bodyPositions = Array(numberOfJugglers) { emptyArray() }
 
         for ((jugglerIndex, jugglerStr) in jugglerStrings.withIndex()) {
             val beatStrings = jlSplitOnCharOutsideParens(jugglerStr.trim(), '.')
             val beatSize = beatStrings.size
-            size[jugglerIndex] = beatSize
-            coords[jugglerIndex] = IntArray(beatSize)
-            bodypath[jugglerIndex] = Array(beatSize) { emptyArray() }
+            numberOfBeats[jugglerIndex] = beatSize
+            numberOfPositionsPerBeat[jugglerIndex] = IntArray(beatSize)
+            bodyPositions[jugglerIndex] = Array(beatSize) { emptyArray() }
 
             for ((beatIndex, beatStr) in beatStrings.withIndex()) {
                 val coordTokens = mutableListOf<DoubleArray?>()
@@ -47,11 +47,13 @@ data class MHNBody(
                             // character is ignored
                             ++pos
                         }
+
                         '-' -> {
                             // placeholder; interpolate from other nearby coordinates
                             coordTokens.add(null)
                             ++pos
                         }
+
                         '(' -> {
                             // position coordinate specified
                             val closeIndex = beatStr.indexOf(')', pos + 1)
@@ -61,7 +63,8 @@ data class MHNBody(
                             }
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
                             try {
-                                val parts = coordStr.split(',').map { jlParseFiniteDouble(it.trim()) }
+                                val parts =
+                                    coordStr.split(',').map { jlParseFiniteDouble(it.trim()) }
                                 // default z (elevation) value is 100.0 cm
                                 val coord = doubleArrayOf(0.0, 0.0, 0.0, 100.0)
                                 for ((partsIndex, partsVal) in parts.withIndex()) {
@@ -74,8 +77,10 @@ data class MHNBody(
                             }
                             pos = closeIndex + 1
                         }
+
                         else -> {
-                            val message = getStringResource(Res.string.error_body_character, ch.toString())
+                            val message =
+                                getStringResource(Res.string.error_body_character, ch.toString())
                             throw JuggleExceptionUser(message)
                         }
                     }
@@ -83,42 +88,39 @@ data class MHNBody(
 
                 if (coordTokens.isEmpty()) {
                     // A beat with no coordinates implies a single resting position
-                    coords[jugglerIndex][beatIndex] = 1
-                    bodypath[jugglerIndex][beatIndex] = arrayOf(null)
+                    numberOfPositionsPerBeat[jugglerIndex][beatIndex] = 1
+                    bodyPositions[jugglerIndex][beatIndex] = arrayOf(null)
                 } else {
-                    coords[jugglerIndex][beatIndex] = coordTokens.size
-                    bodypath[jugglerIndex][beatIndex] = coordTokens.toTypedArray()
+                    numberOfPositionsPerBeat[jugglerIndex][beatIndex] = coordTokens.size
+                    bodyPositions[jugglerIndex][beatIndex] = coordTokens.toTypedArray()
                 }
             }
         }
     }
 
     fun getPeriod(juggler: Int): Int {
-        val j = (juggler - 1) % numberOfJugglers
-        return size[j]
+        return numberOfBeats[(juggler - 1) % numberOfJugglers]
     }
 
     fun getNumberOfPositions(juggler: Int, pos: Int): Int {
-        val j = (juggler - 1) % numberOfJugglers
-        return coords[j][pos]
+        return numberOfPositionsPerBeat[(juggler - 1) % numberOfJugglers][pos]
     }
 
     // Position and index start from 0.
-    
+
     fun getPosition(juggler: Int, pos: Int, index: Int): JMLPosition? {
         if (pos >= getPeriod(juggler) || index >= getNumberOfPositions(juggler, pos)) {
             return null
         }
-        val j = (juggler - 1) % this.numberOfJugglers
-        if (bodypath[j][pos][index] == null) {
-            return null
+        val coord = bodyPositions[(juggler - 1) % numberOfJugglers][pos][index]
+        return coord?.let {
+            JMLPosition(
+                x = it[1],
+                y = it[2],
+                z = it[3],
+                angle = it[0],
+                juggler = juggler
+            )
         }
-        return JMLPosition(
-            x = bodypath[j][pos][index]!![1],
-            y = bodypath[j][pos][index]!![2],
-            z = bodypath[j][pos][index]!![3],
-            angle = bodypath[j][pos][index]!![0],
-            juggler = juggler
-        )
     }
 }
