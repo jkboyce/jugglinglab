@@ -31,23 +31,25 @@ class LaidoutPattern(val pat: JMLPattern) {
     var eventList: JMLEvent? = null
 
     // list of PathLink objects for each path
-    private var pathlinks: List<MutableList<PathLink>> =
-        List(pat.numberOfPaths) { mutableListOf() }
+    private val pathlinks =
+        Array(pat.numberOfPaths) { mutableListOf<PathLink>() }
 
     // list of HandLink objects for each juggler/hand combination
-    private var handlinks: List<List<MutableList<HandLink>>> =
-        List(pat.numberOfJugglers) { List(2) { mutableListOf() } }
+    private val handlinks =
+        Array(pat.numberOfJugglers) { Array(2) { mutableListOf<HandLink>() } }
 
     // coordinates and angles for each juggler
-    private var jugglerCurve: MutableList<Curve> = mutableListOf()
-    private var jugglerAngle: MutableList<Curve> = mutableListOf()
+    private val jugglerCurve = mutableListOf<Curve>()
+    private val jugglerAngle = mutableListOf<Curve>()
 
-    // whether pattern has a velocity-defining transition
-    private lateinit var hasVDPathJMLTransition: BooleanArray // for a given path
-    private lateinit var hasVDHandJMLTransition: Array<BooleanArray> // for a given juggler/hand
+    // whether pattern has a velocity-defining transition, for path and juggler/hand
+    private val hasVDPathJMLTransition =
+        BooleanArray(pat.numberOfPaths)
+    private val hasVDHandJMLTransition =
+        Array(pat.numberOfJugglers) { BooleanArray(2) }
 
     val pathLinks: List<List<PathLink>>
-        get() = pathlinks
+        get() = pathlinks.asList()
 
     init {
         pat.events.forEach {
@@ -78,10 +80,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                         println(
                             (handlinks[i][j].size
                                 .toString() + " handlinks for juggler "
-                                + (i + 1)
-                                + ", hand "
-                                + (j + 1)
-                                + ":")
+                                + "${i + 1}, hand ${j + 1}:")
                         )
                         for (k in handlinks[i][j].indices) {
                             println("   " + handlinks[i][j][k])
@@ -166,7 +165,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     fun removeEvent(ev: JMLEvent) {
-        if (eventList == ev) {
+        if (eventList === ev) {
             eventList = ev.next
             if (eventList != null) {
                 eventList!!.previous = null
@@ -174,14 +173,8 @@ class LaidoutPattern(val pat: JMLPattern) {
             return
         }
 
-        val next = ev.next
-        val prev = ev.previous
-        if (next != null) {
-            next.previous = prev
-        }
-        if (prev != null) {
-            prev.next = next
-        }
+        ev.next?.previous = ev.previous
+        ev.previous?.next = ev.next
     }
 
     //--------------------------------------------------------------------------
@@ -219,8 +212,6 @@ class LaidoutPattern(val pat: JMLPattern) {
         val needVDHandEvent = Array(pat.numberOfJugglers) { BooleanArray(2) }
         val needPathEvent = BooleanArray(pat.numberOfPaths)
         val needSpecialPathEvent = BooleanArray(pat.numberOfPaths)
-        hasVDHandJMLTransition = Array(pat.numberOfJugglers) { BooleanArray(2) }
-        hasVDPathJMLTransition = BooleanArray(pat.numberOfPaths)
 
         // make sure each hand and path are hit at least once
         for (i in 0..<pat.numberOfJugglers) {
