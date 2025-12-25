@@ -54,6 +54,7 @@ class SiteswapPattern : MHNPattern() {
             println("Starting siteswap parser...")
         }
 
+        // initialize parameters that MHNPattern recognizes
         super.fromParameters(pl)
 
         if (hss != null) {
@@ -62,33 +63,21 @@ class SiteswapPattern : MHNPattern() {
             dwellarray = modinfo.dwellBeatsArray
         }
 
-        // pattern = JLFunc.expandRepeats(pattern);
         parseSiteswapNotation()
 
         // see if we need to repeat the pattern to match hand or body periods:
         if (hands != null || bodies != null) {
-            val patperiod = norepPeriod
+            val patternPeriod = norepPeriod
+            val handsPeriod = hands?.let { h ->
+                (1..numberOfJugglers).fold(1) { acc, i -> lcm(acc, h.getPeriod(i)) }
+            } ?: 1
+            val bodyPeriod = bodies?.let { b ->
+                (1..numberOfJugglers).fold(1) { acc, i -> lcm(acc, b.getPeriod(i)) }
+            } ?: 1
+            val totalPeriod = lcm(lcm(patternPeriod, handsPeriod), bodyPeriod)
 
-            var handperiod = 1
-            if (hands != null) {
-                for (i in 1..numberOfJugglers) {
-                    handperiod = lcm(handperiod, hands!!.getPeriod(i))
-                }
-            }
-
-            var bodyperiod = 1
-            if (bodies != null) {
-                for (i in 1..numberOfJugglers) {
-                    bodyperiod = lcm(bodyperiod, bodies!!.getPeriod(i))
-                }
-            }
-
-            var totalperiod = patperiod
-            totalperiod = lcm(totalperiod, handperiod)
-            totalperiod = lcm(totalperiod, bodyperiod)
-
-            if (totalperiod != patperiod) {
-                val repeats = totalperiod / patperiod
+            if (totalPeriod != patternPeriod) {
+                val repeats = totalPeriod / patternPeriod
                 pattern = "($pattern^$repeats)"
                 if (Constants.DEBUG_SITESWAP_PARSING) {
                     println("-----------------------------------------------------")
@@ -98,7 +87,7 @@ class SiteswapPattern : MHNPattern() {
             }
         }
 
-        super.buildJugglingMatrix()
+        buildJugglingMatrix()
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println("Siteswap parser finished")
@@ -119,7 +108,7 @@ class SiteswapPattern : MHNPattern() {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun parseSiteswapNotation() {
         // first clear out the internal variables
-        symmetries = ArrayList()
+        symmetries = mutableListOf()
         val tree: SiteswapTreeItem?
 
         try {

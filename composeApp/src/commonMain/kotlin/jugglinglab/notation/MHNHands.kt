@@ -12,16 +12,16 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.*
 
 data class MHNHands(
-    val str: String
+    val config: String
 ) {
-    val numberOfJugglers: Int
-    private val size: IntArray
-    private val coords: Array<IntArray>
-    private val catches: Array<IntArray>
-    private val handpath: Array<Array<Array<DoubleArray?>>>
+    private val numberOfJugglers: Int
+    private val numberOfBeats: IntArray
+    private val numberOfCoordsPerBeat: Array<IntArray>
+    private val catchIndexPerBeat: Array<IntArray>
+    private val handCoords: Array<Array<Array<DoubleArray?>>>
 
     init {
-        val cleanStr = jlExpandRepeats(str).filterNot { it in "<>{}" }
+        val cleanStr = jlExpandRepeats(config).filterNot { it in "<>{}" }
         val jugglerStrings = cleanStr.split('|', '!')
 
         numberOfJugglers = jugglerStrings.size
@@ -119,18 +119,18 @@ data class MHNHands(
                 Triple(coordTokens.size, finalCatchIndex, coordTokens.toTypedArray())
             }
         }
-        size = IntArray(numberOfJugglers) { jugglerData[it].size }
-        coords = Array(numberOfJugglers) { jugglerIndex ->
+        numberOfBeats = IntArray(numberOfJugglers) { jugglerData[it].size }
+        numberOfCoordsPerBeat = Array(numberOfJugglers) { jugglerIndex ->
             IntArray(jugglerData[jugglerIndex].size) { beatIndex ->
                 jugglerData[jugglerIndex][beatIndex].first
             }
         }
-        catches = Array(numberOfJugglers) { jugglerIndex ->
+        catchIndexPerBeat = Array(numberOfJugglers) { jugglerIndex ->
             IntArray(jugglerData[jugglerIndex].size) { beatIndex ->
                 jugglerData[jugglerIndex][beatIndex].second
             }
         }
-        handpath = Array(numberOfJugglers) { jugglerIndex ->
+        handCoords = Array(numberOfJugglers) { jugglerIndex ->
             Array(jugglerData[jugglerIndex].size) { beatIndex ->
                 jugglerData[jugglerIndex][beatIndex].third
             }
@@ -138,13 +138,11 @@ data class MHNHands(
     }
 
     fun getPeriod(juggler: Int): Int {
-        val j = (juggler - 1) % numberOfJugglers
-        return size[j]
+        return numberOfBeats[(juggler - 1) % numberOfJugglers]
     }
 
     fun getNumberOfCoordinates(juggler: Int, pos: Int): Int {
-        val j = (juggler - 1) % numberOfJugglers
-        return coords[j][pos]
+        return numberOfCoordsPerBeat[(juggler - 1) % numberOfJugglers][pos]
     }
 
     // Return the index value for juggler `juggler` and beat `pos`, when the
@@ -153,8 +151,7 @@ data class MHNHands(
     // Note the throw is always assumed to happen at index 0.
 
     fun getCatchIndex(juggler: Int, pos: Int): Int {
-        val j = (juggler - 1) % numberOfJugglers
-        return catches[j][pos]
+        return catchIndexPerBeat[(juggler - 1) % numberOfJugglers][pos]
     }
 
     // Return the hand coordinate at `index`, for juggler `juggler` on beat `pos`.
@@ -164,15 +161,48 @@ data class MHNHands(
         if (pos >= getPeriod(juggler) || index >= getNumberOfCoordinates(juggler, pos)) {
             return null
         }
-        val j = (juggler - 1) % numberOfJugglers
-        return if (handpath[j][pos][index] == null) {
-            null
-        } else {
-            Coordinate(
-                handpath[j][pos][index]!![0],
-                handpath[j][pos][index]!![1],
-                handpath[j][pos][index]!![2]
-            )
+        val coord = handCoords[(juggler - 1) % numberOfJugglers][pos][index]
+        return coord?.let { Coordinate(it[0], it[1], it[2]) }
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        if (numberOfJugglers > 1) {
+            sb.append("<")
         }
+        for (j in 0..<numberOfJugglers) {
+            if (j != 0) {
+                sb.append("|")
+            }
+            for (i in 0..<numberOfBeats[j]) {
+                val catchIndex = catchIndexPerBeat[j][i]
+                for (k in 0..<numberOfCoordsPerBeat[j][i]) {
+                    if (k == catchIndex && k != numberOfCoordsPerBeat[j][i] - 1) {
+                        sb.append("c")
+                    }
+                    val coord = handCoords[j][i][k]
+                    if (coord == null) {
+                        sb.append("-")
+                    } else {
+                        val c0 = jlToStringRounded(coord[0], 4)
+                        val c1 = jlToStringRounded(coord[2], 4)
+                        val c2 = jlToStringRounded(coord[1], 4)
+                        sb.append("(").append(c0)
+                        if (c1 != "0" || c2 != "0") {
+                            sb.append(",").append(c1)
+                        }
+                        if (c2 != "0") {
+                            sb.append(",").append(c2)
+                        }
+                        sb.append(")")
+                    }
+                }
+                sb.append(".")
+            }
+        }
+        if (numberOfJugglers > 1) {
+            sb.append(">")
+        }
+        return sb.toString()
     }
 }

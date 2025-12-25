@@ -70,7 +70,7 @@ abstract class MHNPattern : Pattern() {
     var maxThrow: Int = 0
         protected set
     var indexes: Int = 0
-    protected lateinit var symmetries: ArrayList<MHNSymmetry>
+    protected lateinit var symmetries: MutableList<MHNSymmetry>
     protected var bps: Double = 0.0
 
     fun addSymmetry(ss: MHNSymmetry) {
@@ -646,7 +646,8 @@ abstract class MHNPattern : Pattern() {
             sb.append("throws:\n")
 
             th.mhnIterator().forEach { (i, j, h, s, mhnt) ->
-                sb.append("  th[").append(j).append("][")
+                sb.append("  th[")
+                    .append(j).append("][")
                     .append(h).append("][")
                     .append(i).append("][")
                     .append(s).append("] = ")
@@ -657,7 +658,7 @@ abstract class MHNPattern : Pattern() {
                 }
             }
             sb.append("symmetries: (to do)\n") // not finished
-            sb.append("hands: (to do)\n")
+            sb.append("hands: ${hands?.toString() ?: "none"}\n")
             sb.append("bodies: (to do)\n")
             return sb.toString()
         }
