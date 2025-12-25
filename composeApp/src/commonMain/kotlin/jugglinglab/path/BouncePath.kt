@@ -31,7 +31,7 @@ class BouncePath : Path() {
     private var numbounces: Int = 0 // actual number of bounces (<= this.bounces)
 
     @Throws(JuggleExceptionUser::class)
-    override fun initPath(st: String?) {
+    override fun initPath(config: String?) {
         // default bounce characteristics
         var bounces: Int = BOUNCES_DEF
         var forced: Boolean = FORCED_DEF
@@ -41,7 +41,7 @@ class BouncePath : Path() {
         var g: Double = G_DEF
 
         // now parse for edits to the above variables
-        val pl = ParameterList(st)
+        val pl = ParameterList(config)
         for (i in 0..<pl.numberOfParameters) {
             val pname = pl.getParameterName(i)
             val pvalue = pl.getParameterValue(i)

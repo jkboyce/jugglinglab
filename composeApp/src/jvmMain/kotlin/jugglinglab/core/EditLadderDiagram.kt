@@ -975,12 +975,12 @@ class EditLadderDiagram(
         cb1.addActionListener { _: ActionEvent? ->
             val type = cb1.getItemAt(cb1.getSelectedIndex())
             try {
-                val ppt = if (type.equals(tr.throwType, ignoreCase = true)) {
-                    pattern.layout.pathLinks[tr.path - 1].find { it.startEvent == evPrimary }!!.path
-                } else {
-                    newPath(type)
+                val ppt = newPath(type)
+                if (type.equals(tr.throwType, ignoreCase = true)) {
+                    // populate with current throw parameters
+                    ppt.initPath(tr.throwMod)
                 }
-                makeParametersPanel(p2, ppt!!.parameterDescriptors)
+                makeParametersPanel(p2, ppt.parameterDescriptors)
             } catch (jeu: JuggleExceptionUser) {
                 jlHandleUserException(jd, jeu.message)
                 return@addActionListener

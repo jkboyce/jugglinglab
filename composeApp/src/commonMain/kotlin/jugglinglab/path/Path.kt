@@ -29,16 +29,16 @@ abstract class Path {
 
     fun setStart(position: Coordinate, time: Double) {
         startCoord = position
-        this.startTime = time
+        startTime = time
     }
 
     fun setEnd(position: Coordinate, time: Double) {
         endCoord = position
-        this.endTime = time
+        endTime = time
     }
 
     @Throws(JuggleExceptionUser::class)
-    abstract fun initPath(st: String?)
+    abstract fun initPath(config: String?)
 
     // Must be called after above path parameters are set, before querying for
     // path coordinates
@@ -48,8 +48,8 @@ abstract class Path {
     // Utility method
     @Suppress("unused")
     fun translateTime(deltat: Double) {
-        this.startTime += deltat
-        this.endTime += deltat
+        startTime += deltat
+        endTime += deltat
     }
 
     //--------------------------------------------------------------------------
@@ -60,7 +60,7 @@ abstract class Path {
     abstract val type: String
 
     val duration: Double
-        get() = (this.endTime - this.startTime)
+        get() = endTime - startTime
 
     // Minimum duration between `startCoord` and `endCoord`, for a path of the
     // given type
@@ -86,19 +86,19 @@ abstract class Path {
 
     // Max/min over the entire path duration
     val max: Coordinate?
-        get() = getMax2(this.startTime, this.endTime)
+        get() = getMax2(startTime, endTime)
     val min: Coordinate?
-        get() = getMin2(this.startTime, this.endTime)
+        get() = getMin2(startTime, endTime)
 
     // Path max/min over [time1, time2], but clipped to `null` when the time is
     // out of range
     fun getMax(time1: Double, time2: Double): Coordinate? {
-        if (time2 < this.startTime || time1 > this.endTime) return null
+        if (time2 < startTime || time1 > endTime) return null
         return getMax2(time1, time2)
     }
 
     fun getMin(time1: Double, time2: Double): Coordinate? {
-        if (time2 < this.startTime || time1 > this.endTime) return null
+        if (time2 < startTime || time1 > endTime) return null
         return getMin2(time1, time2)
     }
 

@@ -24,11 +24,11 @@ class TossPath : Path() {
     private var g: Double = G_DEF
 
     @Throws(JuggleExceptionUser::class)
-    override fun initPath(st: String?) {
+    override fun initPath(config: String?) {
         var g: Double = G_DEF
 
         // parse for edits to the above variables
-        val pl = ParameterList(st)
+        val pl = ParameterList(config)
         for (i in 0..<pl.numberOfParameters) {
             val pname = pl.getParameterName(i)
             val pvalue = pl.getParameterValue(i)
