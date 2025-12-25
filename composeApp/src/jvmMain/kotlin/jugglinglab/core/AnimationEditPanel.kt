@@ -747,11 +747,18 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
         handpathStartTime = ev.t
         handpathEndTime = ev.t
 
+        val index = pat.allEvents.indexOfFirst { it.event == ev }
+        if (index == -1) {
+            // pattern changed and the previously-active event is no longer
+            // present; deactivate and return
+            eventActive = false
+            activeEvent = null
+            return
+        }
+
         // identify events to display on-screen
         visibleEvents = buildList {
             add(ev)
-            val index = pat.allEvents.indexOfFirst { it.event == ev }
-            if (index == -1) throw JuggleExceptionInternal("Error 1 in createEventView()")
 
             for (image in pat.allEvents.subList(index + 1, pat.allEvents.size).filter {
                 it.event.hand == ev.hand && it.event.juggler == ev.juggler
