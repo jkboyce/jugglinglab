@@ -1037,7 +1037,7 @@ abstract class MHNPattern : Pattern() {
     // throw represented by MHNThrow.
 
     fun findCatchThrowTimes() {
-        for (k in 0..<period) {
+        for (k in 0..<indexes) {
             for (j in 0..<numberOfJugglers) {
                 for (h in 0..1) {
                     val sst = th[j][h][k][0] ?: continue
@@ -1162,6 +1162,9 @@ abstract class MHNPattern : Pattern() {
                         catchtime = min(catchtime, sst.throwtime - BEATS_CATCH_THROW_MIN / bps)
 
                         sst2.catchtime = catchtime
+                        if (Constants.DEBUG_PATTERN_CREATION) {
+                            println("catch time for $sst2 = $catchtime")
+                        }
                     }
                 }
             }
@@ -1326,10 +1329,10 @@ abstract class MHNPattern : Pattern() {
                     }
 
                     // Step 3b: Finish off the on-beat event based on the transitions we've added
-                    if (hands == null && numThrows == 0) {
-                        // don't add on-beat event if there are no throws -- unless a hand
-                        // layout is specified
-                    } else {
+                    //
+                    // don't add on-beat event if there are no throws -- unless a hand layout is
+                    // specified
+                    if (hands != null || numThrows != 0) {
                         // set the event position
                         var newLocalCoordinate = Coordinate()
                         var newCalcpos: Boolean
@@ -1365,6 +1368,9 @@ abstract class MHNPattern : Pattern() {
                         )
                         calcpos[ev] = newCalcpos
                         rec.events.add(ev)
+                        if (Constants.DEBUG_PATTERN_CREATION) {
+                            println("aPETJ 1: added event $ev")
+                        }
 
                         // record which hands are touched by this event, for later reference
                         th.mhnIterator().forEach { (_, j2, h2, _, sst2) ->
@@ -1473,6 +1479,9 @@ abstract class MHNPattern : Pattern() {
 
                         calcpos[ev] = newCalcpos
                         rec.events.add(ev)
+                        if (Constants.DEBUG_PATTERN_CREATION) {
+                            println("aPETJ 2: added event $ev")
+                        }
                     } else {
                         // Case 2: separate event for each catch; we know that numcatches > 1 here
                         for (slot in 0..<maxOccupancy) {
@@ -1522,6 +1531,9 @@ abstract class MHNPattern : Pattern() {
                             )
                             calcpos[ev] = false
                             rec.events.add(ev)
+                            if (Constants.DEBUG_PATTERN_CREATION) {
+                                println("aPETJ 3: added event $ev")
+                            }
                         }
                     }
 
@@ -1556,6 +1568,9 @@ abstract class MHNPattern : Pattern() {
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
+                        if (Constants.DEBUG_PATTERN_CREATION) {
+                            println("aPETJ 4: added event $ev")
+                        }
                     }
 
                     // figure out when the next catch or hold is
@@ -1578,7 +1593,7 @@ abstract class MHNPattern : Pattern() {
 
                         for (tempslot in 0..<maxOccupancy) {
                             val tempsst = th[j][h][tempk][tempslot] ?: break
-                            val catcht = tempsst.catchtime + wrap * indexes / bps
+                            val catcht = tempsst.catchtime + (wrap * indexes).toDouble() / bps
                             nextcatchtime =
                                 (if (tempslot == 0) catcht else min(nextcatchtime, catcht))
                         }
@@ -1606,6 +1621,9 @@ abstract class MHNPattern : Pattern() {
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
+                        if (Constants.DEBUG_PATTERN_CREATION) {
+                            println("aPETJ 5: added event $ev")
+                        }
                     }
                 }
             }
