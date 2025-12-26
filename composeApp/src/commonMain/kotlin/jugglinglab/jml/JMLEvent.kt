@@ -83,8 +83,10 @@ data class JMLEvent(
     }
 
     override fun compareTo(other: JMLEvent): Int {
-        if (t != other.t) {
-            return t.compareTo(other.t)
+        val time = jlToStringRounded(t, 4).toDouble()
+        val timeOther = jlToStringRounded(other.t, 4).toDouble()
+        if (time != timeOther) {
+            return time.compareTo(timeOther)
         }
         if (juggler != other.juggler) {
             return juggler.compareTo(other.juggler)
