@@ -15,7 +15,7 @@ import jugglinglab.util.*
 import java.util.*
 import kotlin.math.abs
 
-class MarginEquations() {
+class MarginEquations(val pat: JMLPattern) {
     // number of variables in margin equations
     var varsNum: Int = 0
 
@@ -37,39 +37,13 @@ class MarginEquations() {
     // array of linear equations
     lateinit var marginsEqs: MutableList<LinearEquation>
 
-    constructor(pat: JMLPattern) : this() {
-        findeqs(pat)
+    init {
+        findEquations()
     }
-
-    // returns current value of a given margin equation
-    fun getMargin(eqn: Int): Double {
-        var m = 0.0
-        for (i in 0..<varsNum) {
-            m += marginsEqs[eqn].coef(i) * varsValues[i]
-        }
-
-        return abs(m) + marginsEqs[eqn].constant()
-    }
-
-    /*
-    val margin: Double
-        // Find minimum value of all margins together.
-        get() {
-            if (marginsNum == 0) {
-                return -100.0
-            }
-
-            var minmargin = getMargin(0)
-            for (i in 1..<marginsNum) {
-                minmargin = min(minmargin, getMargin(i))
-            }
-            return minmargin
-        }
-     */
 
     @Suppress("UnnecessaryVariable")
     @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-    private fun findeqs(pat: JMLPattern) {
+    private fun findEquations() {
         if (Constants.DEBUG_OPTIMIZE) {
             println("finding margin equations")
         }
@@ -80,46 +54,37 @@ class MarginEquations() {
             throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_bouncing))
         }
 
-        // Step 1: Lay out the pattern. This generates two things we need, the pattern event
-        // list and the pattern pathlink list.
-        val events = pat.layout.eventList
-        val pathlinks = pat.layout.pathLinks
-
-        // Step 2: Figure out the variables in the margin equations. Find the primary events
+        // Step 1: Figure out the variables in the margin equations. Find the primary events
         // in the pattern, in particular the ones that are throws or catches. The x-coordinate
         // of each will be a free variable in our equations.
         val variableEvents: MutableList<JMLEvent> = mutableListOf()
         var maxValue = 0.0
         var g = 980.0 // cm per second^2
 
-        var ev = events
-        while (ev != null) {
-            if (ev.isPrimary) {
-                for (tr in ev.transitions) {
-                    val type = tr.type
-                    if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
-                        type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH
-                    ) {
-                        ++varsNum
-                        variableEvents.add(ev)
-                        val coord = ev.localCoordinate
-                        if (abs(coord.x) > maxValue) maxValue = abs(coord.x)
+        for (ev in pat.events) {
+            for (tr in ev.transitions) {
+                val type = tr.type
+                if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
+                    type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH
+                ) {
+                    ++varsNum
+                    variableEvents.add(ev)
+                    val coord = ev.localCoordinate
+                    if (abs(coord.x) > maxValue) maxValue = abs(coord.x)
 
-                        if (type == JMLTransition.TRANS_THROW) {
-                            val pl = ParameterList(tr.throwMod)
-                            val gparam = pl.getParameter("g")
-                            if (gparam != null) {
-                                try {
-                                    g = jlParseFiniteDouble(gparam)
-                                } catch (_: NumberFormatException) {
-                                }
+                    if (type == JMLTransition.TRANS_THROW) {
+                        val pl = ParameterList(tr.throwMod)
+                        val gparam = pl.getParameter("g")
+                        if (gparam != null) {
+                            try {
+                                g = jlParseFiniteDouble(gparam)
+                            } catch (_: NumberFormatException) {
                             }
                         }
-                        break
                     }
+                    break
                 }
             }
-            ev = ev.next
         }
         if (Constants.DEBUG_OPTIMIZE) {
             println("   number of variables = $varsNum")
@@ -127,7 +92,7 @@ class MarginEquations() {
             println("   g = $g")
         }
 
-        // Step 3: Set up the arrays containing the current values of our variables, their
+        // Step 2: Set up the arrays containing the current values of our variables, their
         // minimum and maximum allowed values, and corresponding JMLEvents
         varsEvents = mutableListOf()
         varsValues = DoubleArray(varsNum)
@@ -135,7 +100,7 @@ class MarginEquations() {
         varsMax = DoubleArray(varsNum)
 
         for (i in 0..<varsNum) {
-            ev = variableEvents[i]
+            val ev = variableEvents[i]
             val coord = ev.localCoordinate
             val type = ev.transitions[0].type
 
@@ -162,7 +127,7 @@ class MarginEquations() {
             }
         }
 
-        // Step 4: Find the maximum radius of props in the pattern, used in the margin
+        // Step 3: Find the maximum radius of props in the pattern, used in the margin
         // calculation below
         var propradius = 0.0
         for (i in 0..<pat.numberOfProps) {
@@ -175,8 +140,9 @@ class MarginEquations() {
             println("   propradius = $propradius")
         }
 
-        // Step 5: Identify the "primary pathlinks", the non-hand pathlinks starting
+        // Step 4: Identify the "primary pathlinks", the non-hand pathlinks starting
         // on primary events. Put them into a linear array for convenience.
+        val pathlinks = pat.layout.pathLinks
         var primaryPlNum = 0
         val primaryPl: MutableList<PathLink> = mutableListOf()
         for (pathlink in pathlinks) {
@@ -191,7 +157,7 @@ class MarginEquations() {
             println("   number of primary pathlinks = $primaryPlNum")
         }
 
-        // Step 6: Figure out all distinct potential collisions in the pattern, and the
+        // Step 5: Figure out all distinct potential collisions in the pattern, and the
         // equation determining throw error margin for each one.
         //
         // Find all pathlink pairs (P1, P2) such that:
@@ -399,7 +365,7 @@ class MarginEquations() {
             }
         }
 
-        // Step 7: De-duplicate the list of equations; for various reasons the same equation
+        // Step 6: De-duplicate the list of equations; for various reasons the same equation
         // can appear multiple times.
         if (Constants.DEBUG_OPTIMIZE) {
             println("total margin equations = $marginsNum")
@@ -460,7 +426,7 @@ class MarginEquations() {
             ++i
         }
 
-        // Step 8: Move the equations into an array, and sort it based on margins at the
+        // Step 7: Move the equations into an array, and sort it based on margins at the
         // current values of the variables.
         marginsEqs = mutableListOf()
         for (i in 0..<marginsNum) {
@@ -492,13 +458,14 @@ class MarginEquations() {
             }
         }
 
-        sort()
+        sortEquations()
 
         if (Constants.DEBUG_OPTIMIZE) {
             println("sorted:")
             for (i in 0..<marginsNum) {
                 val sb = StringBuilder()
                 sb.append("{ ")
+
                 for (j in 0..varsNum) {
                     sb.append(jlToStringRounded(marginsEqs[i].coef(j), 4))
                     if (j == (varsNum - 1)) {
@@ -518,7 +485,7 @@ class MarginEquations() {
         }
     }
 
-    fun sort() {
+    fun sortEquations() {
         val comp =
             object : Comparator<LinearEquation> {
                 override fun compare(eq1: LinearEquation, eq2: LinearEquation): Int {
@@ -550,6 +517,32 @@ class MarginEquations() {
 
         marginsEqs.sortWith(comp)
     }
+
+    // returns current value of a given margin equation
+    fun getMargin(eqn: Int): Double {
+        var m = 0.0
+        for (i in 0..<varsNum) {
+            m += marginsEqs[eqn].coef(i) * varsValues[i]
+        }
+
+        return abs(m) + marginsEqs[eqn].constant()
+    }
+
+    /*
+    val margin: Double
+        // Find minimum value of all margins together.
+        get() {
+            if (marginsNum == 0) {
+                return -100.0
+            }
+
+            var minmargin = getMargin(0)
+            for (i in 1..<marginsNum) {
+                minmargin = min(minmargin, getMargin(i))
+            }
+            return minmargin
+        }
+     */
 
     companion object {
         const val EPSILON: Double = 0.000001

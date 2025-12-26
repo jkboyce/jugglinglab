@@ -28,11 +28,11 @@ import kotlin.math.sin
 
 class LaidoutPattern(val pat: JMLPattern) {
     // events as a linked list
-    var eventList: JMLEvent? = null
+    private var eventList: JMLEvent? = null
 
     // list of PathLink objects for each path
     private val pathlinks =
-        Array(pat.numberOfPaths) { mutableListOf<PathLink>() }
+        List(pat.numberOfPaths) { mutableListOf<PathLink>() }
 
     // list of HandLink objects for each juggler/hand combination
     private val handlinks =
@@ -47,9 +47,6 @@ class LaidoutPattern(val pat: JMLPattern) {
         BooleanArray(pat.numberOfPaths)
     private val hasVDHandJMLTransition =
         Array(pat.numberOfJugglers) { BooleanArray(2) }
-
-    val pathLinks: List<List<PathLink>>
-        get() = pathlinks.asList()
 
     init {
         pat.events.forEach {
@@ -100,7 +97,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     // Managing the event list
     //--------------------------------------------------------------------------
 
-    fun addEvent(ev: JMLEvent) {
+    private fun addEvent(ev: JMLEvent) {
         if (eventList == null || ev.t < eventList!!.t) {
             // set `ev` as new list head
             ev.previous = null
@@ -164,7 +161,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
     }
 
-    fun removeEvent(ev: JMLEvent) {
+    private fun removeEvent(ev: JMLEvent) {
         if (eventList === ev) {
             eventList = ev.next
             if (eventList != null) {
@@ -820,8 +817,11 @@ class LaidoutPattern(val pat: JMLPattern) {
     }
 
     //--------------------------------------------------------------------------
-    // Methods used by the animator to animate the pattern
+    // Public methods to optimize and animate the pattern
     //--------------------------------------------------------------------------
+
+    val pathLinks: List<List<PathLink>>
+        get() = pathlinks
 
     // Return path coordinate in global frame.
 
