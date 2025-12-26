@@ -287,36 +287,36 @@ class MarginEquations(val pat: JMLPattern) {
                             val t2Varnum: Int
                             val c2Varnum: Int
 
-                            var mplev = mpl1.startEvent
-                            if (!mplev.isPrimary) {
-                                if (mplev.hand != mplev.primary.hand) {
+                            var mplev = mpl1.startEvent.event
+                            if (mplev !in pat.events) {
+                                if (mplev.hand != mpl1.startEvent.primary.hand) {
                                     coefT1 = -coefT1
                                 }
-                                mplev = mplev.primary
+                                mplev = mpl1.startEvent.primary
                             }
                             t1Varnum = variableEvents.indexOf(mplev)
-                            mplev = mpl1.endEvent
-                            if (!mplev.isPrimary) {
-                                if (mplev.hand != mplev.primary.hand) {
+                            mplev = mpl1.endEvent.event
+                            if (mplev !in pat.events) {
+                                if (mplev.hand != mpl1.endEvent.primary.hand) {
                                     coefC1 = -coefC1
                                 }
-                                mplev = mplev.primary
+                                mplev = mpl1.endEvent.primary
                             }
                             c1Varnum = variableEvents.indexOf(mplev)
-                            mplev = mpl2.startEvent
-                            if (!mplev.isPrimary) {
-                                if (mplev.hand != mplev.primary.hand) {
+                            mplev = mpl2.startEvent.event
+                            if (mplev !in pat.events) {
+                                if (mplev.hand != mpl2.startEvent.primary.hand) {
                                     coefT2 = -coefT2
                                 }
-                                mplev = mplev.primary
+                                mplev = mpl2.startEvent.primary
                             }
                             t2Varnum = variableEvents.indexOf(mplev)
-                            mplev = mpl2.endEvent
-                            if (!mplev.isPrimary) {
-                                if (mplev.hand != mplev.primary.hand) {
+                            mplev = mpl2.endEvent.event
+                            if (mplev !in pat.events) {
+                                if (mplev.hand != mpl2.endEvent.primary.hand) {
                                     coefC2 = -coefC2
                                 }
-                                mplev = mplev.primary
+                                mplev = mpl2.endEvent.primary
                             }
                             c2Varnum = variableEvents.indexOf(mplev)
 

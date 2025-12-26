@@ -685,7 +685,6 @@ data class JMLPattern(
 
     companion object {
         fun fromPatternBuilder(record: PatternBuilder): JMLPattern {
-            record.events.forEach { it.clearLayoutData() }
             return JMLPattern(
                 title = record.title,
                 info = record.info,

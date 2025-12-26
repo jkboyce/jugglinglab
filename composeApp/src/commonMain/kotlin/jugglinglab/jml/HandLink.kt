@@ -14,16 +14,16 @@ import jugglinglab.curve.Curve
 class HandLink(
     var juggler: Int,
     var hand: Int,
-    var startEvent: JMLEvent,
-    var endEvent: JMLEvent
+    var startEvent: LayoutEvent,
+    var endEvent: LayoutEvent
 ) {
     var startVelocityRef: VelocityRef? = null
     var endVelocityRef: VelocityRef? = null
     var handCurve: Curve? = null
 
     override fun toString(): String {
-        val start = startEvent.localCoordinate
-        val end = endEvent.localCoordinate
+        val start = startEvent.event.localCoordinate
+        val end = endEvent.event.localCoordinate
         val svr = startVelocityRef
         val evr = endVelocityRef
         val hp = handCurve

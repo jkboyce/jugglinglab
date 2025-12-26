@@ -28,7 +28,7 @@ import kotlin.math.sin
 
 class LaidoutPattern(val pat: JMLPattern) {
     // events as a linked list
-    private var eventList: JMLEvent? = null
+    private var eventList: LayoutEvent? = null
 
     // list of PathLink objects for each path
     private val pathlinks =
@@ -50,8 +50,13 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     init {
         pat.events.forEach {
-            it.clearLayoutData()
-            addEvent(it)
+            addEvent(
+                LayoutEvent(
+                    event = it,
+                    primary = it,
+                    pathPermFromPrimary = Permutation(pat.numberOfPaths)
+                )
+            )
         }
 
         try {
@@ -97,7 +102,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     // Managing the event list
     //--------------------------------------------------------------------------
 
-    private fun addEvent(ev: JMLEvent) {
+    private fun addEvent(ev: LayoutEvent) {
         if (eventList == null || ev.t < eventList!!.t) {
             // set `ev` as new list head
             ev.previous = null
@@ -112,35 +117,36 @@ class LaidoutPattern(val pat: JMLPattern) {
         var current = eventList
 
         while (true) {
+            /*
             val combineEvents =
                 current!!.t == ev.t && current.hand == ev.hand && current.juggler == ev.juggler
 
             if (combineEvents) {
-                var event = ev
+                var newJMLEvent = ev.event
 
                 // move all the transitions from `current` to `event`, except those
                 // for a path number that already has a transition in `event`.
                 for (trCurrent in current.transitions) {
-                    if (event.transitions.all { tr -> tr.path != trCurrent.path }) {
-                        event = event.withTransition(trCurrent)
+                    if (newJMLEvent.transitions.all { tr -> tr.path != trCurrent.path }) {
+                        newJMLEvent = newJMLEvent.withTransition(trCurrent)
                     }
                 }
 
                 // then replace `current` with `event` in the list
-                event.previous = current.previous
-                event.next = current.next
+                newJMLEvent.previous = current.previous
+                newJMLEvent.next = current.next
                 if (current.next != null) {
-                    current.next!!.previous = event
+                    current.next!!.previous = newJMLEvent
                 }
                 if (current.previous == null) {
-                    eventList = event // new head of the list
+                    eventList = newJMLEvent // new head of the list
                 } else {
-                    current.previous!!.next = event
+                    current.previous!!.next = newJMLEvent
                 }
                 return
             }
-
-            if (ev.t < current.t) {
+*/
+            if (ev.t < current!!.t) {
                 // insert `ev` before `current`
                 ev.next = current
                 ev.previous = current.previous
@@ -161,7 +167,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
     }
 
-    private fun removeEvent(ev: JMLEvent) {
+    private fun removeEvent(ev: LayoutEvent) {
         if (eventList === ev) {
             eventList = ev.next
             if (eventList != null) {
@@ -200,7 +206,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         val ei = arrayOfNulls<EventImages>(numevents)
         current = eventList
         for (i in 0..<numevents) {
-            ei[i] = EventImages(pat, current!!)
+            ei[i] = EventImages(pat, current!!.primary)
             current = current.next
         }
 
@@ -286,7 +292,13 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
 
-            addEvent(maxEventImage.event)
+            addEvent(
+                LayoutEvent(
+                    event = maxEventImage.event,
+                    primary = maxEventImage.primary,
+                    pathPermFromPrimary = maxEventImage.pathPermFromPrimary
+                )
+            )
             eventQueue[maxnum] = ei[maxnum]!!.previous // restock queue
 
             // now update the needs arrays, so we know when to stop
@@ -374,7 +386,13 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
 
-            addEvent(minEventImage.event)
+            addEvent(
+                LayoutEvent(
+                    event = minEventImage.event,
+                    primary = minEventImage.primary,
+                    pathPermFromPrimary = minEventImage.pathPermFromPrimary
+                )
+            )
             eventQueue[minnum] = ei[minnum]!!.next // restock queue
 
             // now update the needs arrays, so we know when to stop
@@ -542,14 +560,14 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         for (i in 0..<pat.numberOfPaths) {
             var ev = eventList
-            var lastev: JMLEvent? = null
+            var lastev: LayoutEvent? = null
             var lasttr: JMLTransition? = null
 
             done1@ while (true) {
                 // find the next transition for this path
                 var tr: JMLTransition?
                 while (true) {
-                    tr = ev!!.getPathTransition(i + 1, JMLTransition.TRANS_ANY)
+                    tr = ev!!.event.getPathTransition(i + 1, JMLTransition.TRANS_ANY)
                     if (tr != null) {
                         break
                     }
@@ -560,7 +578,13 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
 
                 if (lastev != null) {
-                    val pl = PathLink(i + 1, getGlobalCoordinate(lastev), lastev, getGlobalCoordinate(ev), ev)
+                    val pl = PathLink(
+                        i + 1,
+                        getGlobalCoordinate(lastev.event),
+                        lastev,
+                        getGlobalCoordinate(ev.event),
+                        ev
+                    )
 
                     when (tr.type) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
@@ -622,7 +646,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 val hand = if (h == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
 
                 var ev = eventList
-                var lastev: JMLEvent? = null
+                var lastev: LayoutEvent? = null
                 var vr: VelocityRef?
                 var lastvr: VelocityRef? = null
 
@@ -638,7 +662,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                     // find velocity of hand path ending
                     vr = null
                     if (ev.juggler == (i + 1) && ev.hand == hand) {
-                        for (tr in ev.transitions) {
+                        for (tr in ev.event.transitions) {
                             if (tr.type == JMLTransition.TRANS_THROW) {
                                 val pl = outgoingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
@@ -724,7 +748,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             for (l in 0..<num) {
                                 val hl2 = handlinks[j][h][k - num + 1 + l]
                                 times[l] = hl2.startEvent.t
-                                pos[l] = getGlobalCoordinate(hl2.startEvent)
+                                pos[l] = getGlobalCoordinate(hl2.startEvent.event)
                                 val vr2 = hl2.startVelocityRef
                                 if (l > 0 && vr2 != null && vr2.source == VelocityRef.VR_CATCH) {
                                     velocities[l] = vr2.velocity
@@ -732,7 +756,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                                 hl2.handCurve = hp
                             }
                             times[num] = hl.endEvent.t
-                            pos[num] = getGlobalCoordinate(hl.endEvent)
+                            pos[num] = getGlobalCoordinate(hl.endEvent.event)
                             velocities[0] = startlink.startVelocityRef!!.velocity
                             velocities[num] = hl.endVelocityRef!!.velocity
 
@@ -779,11 +803,11 @@ class LaidoutPattern(val pat: JMLPattern) {
 
                         for (l in 0..<num) {
                             val hl2 = handlinks[j][h][k - num + 1 + l]
-                            pos[l] = getGlobalCoordinate(hl2.startEvent)
+                            pos[l] = getGlobalCoordinate(hl2.startEvent.event)
                             times[l] = hl2.startEvent.t
                             hl2.handCurve = hp
                         }
-                        pos[num] = getGlobalCoordinate(hl.endEvent)
+                        pos[num] = getGlobalCoordinate(hl.endEvent.event)
                         times[num] = hl.endEvent.t
                         // all velocities are null (unknown) -> signal to calculate
                         hp.setCurve(times, pos, arrayOfNulls(num + 1))
@@ -810,7 +834,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             } else {
                 sb.append("  Image event; primary at t=" + current.primary.t + "\n")
             }
-            current.writeJML(sb)
+            current.event.writeJML(sb)
             current = current.next
         }
         println(sb.toString())

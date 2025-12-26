@@ -1724,7 +1724,6 @@ abstract class MHNPattern : Pattern() {
                             path = (k + 1)
                         )
                     )
-                    ev2.primaryEvent = ev.primaryEvent
                     calcpos[ev2] = calcpos[ev]!!
                     rec.events[index] = ev2
                     // mark related paths as touched

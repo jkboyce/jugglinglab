@@ -14,9 +14,9 @@ import jugglinglab.util.JuggleExceptionUser
 class PathLink(
     val pathNum: Int,
     val startGlobalCoordinate: Coordinate,
-    val startEvent: JMLEvent,
+    val startEvent: LayoutEvent,
     val endGlobalCoordinate: Coordinate,
-    val endEvent: JMLEvent
+    val endEvent: LayoutEvent
 ) {
     var path: Path? = null
         private set

@@ -37,8 +37,6 @@ class EventImages(
     init {
         calcarray()
         resetPosition()
-        primaryEvent.delay = 0 // delay relative to primary -> none for ev
-        primaryEvent.delayunits = numEntries
     }
 
     val next: EventImage
@@ -47,9 +45,9 @@ class EventImages(
             do {
                 if (++currentHand == 2) {
                     currentHand = 0
-                    if (++currentJuggler == this.numJugglers) {
+                    if (++currentJuggler == numJugglers) {
                         currentJuggler = 0
-                        if (++currentEntry == this.numEntries) {
+                        if (++currentEntry == numEntries) {
                             currentEntry = 0
                             currentLoop++
                         }
@@ -120,12 +118,6 @@ class EventImages(
                 tr.copy(path = pathPermFromPrimary.map(tr.path))
             }
         )
-        newEvent.copyLayoutDataFrom(
-            primaryEvent,
-            currentEntry + numEntries * currentLoop,
-            numEntries
-        )
-        newEvent.pathPermFromPrimary = pathPermFromPrimary
         return EventImage(
             event = newEvent,
             primary = primaryEvent,
@@ -267,8 +259,7 @@ class EventImages(
         ea = Array(numJugglers) { Array(2) { arrayOfNulls(numEntries) } }
         transitionType = IntArray(evTransitionCount)
 
-        val idperm = Permutation(numPaths, false) // identity
-        primaryEvent.pathPermFromPrimary = idperm
+        val idperm = Permutation(numPaths, reverses = false) // identity
         ea[evJuggler][evHand][0] = idperm
         for (i in 0..<evTransitionCount) {
             transitionType[i] = primaryEvent.transitions[i].type
