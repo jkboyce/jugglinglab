@@ -268,24 +268,14 @@ data class JMLPattern(
 
             // restock the queue
             val lastIndexUsed = eventQueue.indexOf(currentEventImage)
-            val nextEvent = if (reverse xor starting) {
+            val nextEventImage = if (reverse xor starting) {
                 eventImages[lastIndexUsed].previous
             } else {
                 eventImages[lastIndexUsed].next
             }
-            eventQueue[lastIndexUsed] = EventImage(
-                nextEvent,
-                eventImages[lastIndexUsed].primaryEvent,
-                nextEvent.pathPermFromPrimary!!
-            )
+            eventQueue[lastIndexUsed] = nextEventImage
         }
     }
-
-    data class EventImage(
-        val event: JMLEvent,
-        val primary: JMLEvent,
-        val pathPermFromPrimary: Permutation
-    )
 
     fun prevForHandFromEvent(ev: JMLEvent): EventImage {
         return eventSequence(startTime = ev.t, reverse = true).first {

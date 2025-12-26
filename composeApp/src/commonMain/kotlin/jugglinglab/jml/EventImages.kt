@@ -41,7 +41,7 @@ class EventImages(
         primaryEvent.delayunits = numEntries
     }
 
-    val next: JMLEvent
+    val next: EventImage
         get() {
             // move pointer to next in line
             do {
@@ -57,10 +57,10 @@ class EventImages(
                 }
             } while (ea[currentJuggler][currentHand][currentEntry] == null)
 
-            return makeEvent()
+            return makeEventImage()
         }
 
-    val previous: JMLEvent
+    val previous: EventImage
         get() {
             // move point to previous in line
             do {
@@ -76,14 +76,18 @@ class EventImages(
                 }
             } while (ea[currentJuggler][currentHand][currentEntry] == null)
 
-            return makeEvent()
+            return makeEventImage()
         }
 
     // Note this returns the primary event when appropriate, not a copy.
 
-    private fun makeEvent(): JMLEvent {
+    private fun makeEventImage(): EventImage {
         if (currentEntry == 0 && currentLoop == 0 && currentHand == evHand) {
-            return primaryEvent
+            return EventImage(
+                event = primaryEvent,
+                primary = primaryEvent,
+                pathPermFromPrimary = Permutation(numPaths)
+            )
         }
 
         val pathPermFromPrimary = run {
@@ -122,7 +126,11 @@ class EventImages(
             numEntries
         )
         newEvent.pathPermFromPrimary = pathPermFromPrimary
-        return newEvent
+        return EventImage(
+            event = newEvent,
+            primary = primaryEvent,
+            pathPermFromPrimary = pathPermFromPrimary
+        )
     }
 
     fun resetPosition() {
@@ -313,3 +321,9 @@ class EventImages(
         } while (changed)
     }
 }
+
+data class EventImage(
+    val event: JMLEvent,
+    val primary: JMLEvent,
+    val pathPermFromPrimary: Permutation
+)

@@ -272,39 +272,36 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
 
         // queue used to store events while building event list
-        val eventqueue: Array<JMLEvent?> = arrayOfNulls(numevents)
-        for (i in 0..<numevents) {
-            eventqueue[i] = ei[i]!!.previous // seed the queue
-        }
+        val eventQueue = Array(numevents) { i -> ei[i]!!.previous }
 
         // start by extending each primary event backward in time
         var contin: Boolean
         do {
             // find latest event in queue
-            var maxevent = eventqueue[0]
-            var maxtime = maxevent!!.t
+            var maxEventImage = eventQueue[0]
+            var maxtime = maxEventImage.event.t
             var maxnum = 0
             for (i in 1..<numevents) {
-                if (eventqueue[i]!!.t > maxtime) {
-                    maxevent = eventqueue[i]
-                    maxtime = maxevent!!.t
+                if (eventQueue[i].event.t > maxtime) {
+                    maxEventImage = eventQueue[i]
+                    maxtime = maxEventImage.event.t
                     maxnum = i
                 }
             }
 
-            addEvent(maxevent!!)
-            eventqueue[maxnum] = ei[maxnum]!!.previous // restock queue
+            addEvent(maxEventImage.event)
+            eventQueue[maxnum] = ei[maxnum]!!.previous // restock queue
 
             // now update the needs arrays, so we know when to stop
             if (maxtime < pat.loopStartTime) {
-                val jug = maxevent.juggler - 1
-                val han = index(maxevent.hand)
+                val jug = maxEventImage.event.juggler - 1
+                val han = index(maxEventImage.event.hand)
 
                 if (!hasVDHandJMLTransition[jug][han]) {
                     needHandEvent[jug][han] = false
                 }
 
-                for (tr in maxevent.transitions) {
+                for (tr in maxEventImage.event.transitions) {
                     val path = tr.path - 1
 
                     when (tr.type) {
@@ -364,29 +361,29 @@ class LaidoutPattern(val pat: JMLPattern) {
         }
         for (i in 0..<numevents) {
             ei[i]!!.resetPosition()
-            eventqueue[i] = ei[i]!!.next
+            eventQueue[i] = ei[i]!!.next
         }
 
         do {
             // find earliest event in queue
-            var minevent = eventqueue[0]
-            var mintime = minevent!!.t
+            var minEventImage = eventQueue[0]
+            var mintime = minEventImage.event.t
             var minnum = 0
             for (i in 1..<numevents) {
-                if (eventqueue[i]!!.t < mintime) {
-                    minevent = eventqueue[i]
-                    mintime = minevent!!.t
+                if (eventQueue[i].event.t < mintime) {
+                    minEventImage = eventQueue[i]
+                    mintime = minEventImage.event.t
                     minnum = i
                 }
             }
 
-            addEvent(minevent!!)
-            eventqueue[minnum] = ei[minnum]!!.next // restock queue
+            addEvent(minEventImage.event)
+            eventQueue[minnum] = ei[minnum]!!.next // restock queue
 
             // now update the needs arrays, so we know when to stop
             if (mintime > pat.loopEndTime) {
-                val jug = minevent.juggler - 1
-                val han = index(minevent.hand)
+                val jug = minEventImage.event.juggler - 1
+                val han = index(minEventImage.event.hand)
 
                 // if this hand has no throws/catches, then need to build out event list
                 // past a certain time, due to how the hand layout is done in this case
@@ -397,7 +394,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                     needHandEvent[jug][han] = false
                 }
 
-                for (tr in minevent.transitions) {
+                for (tr in minEventImage.event.transitions) {
                     val path = tr.path - 1
 
                     when (tr.type) {
