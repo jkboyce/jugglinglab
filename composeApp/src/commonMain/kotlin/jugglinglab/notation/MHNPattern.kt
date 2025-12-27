@@ -18,7 +18,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:Suppress("KotlinConstantConditions")
+@file:Suppress("KotlinConstantConditions", "EmptyRange")
 
 package jugglinglab.notation
 
@@ -55,7 +55,7 @@ abstract class MHNPattern : Pattern() {
     protected var dwellarray: DoubleArray? = null
 
     // internal variables:
-    var numberOfJugglers: Int = 0
+    var numberOfJugglers: Int = 1
         protected set
     var numberOfPaths: Int = 0
         protected set
@@ -447,7 +447,7 @@ abstract class MHNPattern : Pattern() {
                 return@forEach
             }
             if (sst.source != null) {
-                sst.pathnum = sst.source!!.pathnum
+                sst.pathNum = sst.source!!.pathNum
                 return@forEach
             }
 
@@ -472,7 +472,7 @@ abstract class MHNPattern : Pattern() {
                                     + ", targetslot="
                                     + tempsst.targetSlot
                                     + ", pathnum="
-                                    + tempsst.pathnum
+                                    + tempsst.pathNum
                             )
                         }
                         println("---------------------------")
@@ -481,7 +481,7 @@ abstract class MHNPattern : Pattern() {
                 val message = getStringResource(Res.string.error_badpattern)
                 throw JuggleExceptionUser(message)
             }
-            sst.pathnum = currentpath
+            sst.pathNum = currentpath
             ++currentpath
         }
         if (currentpath <= numberOfPaths) {
@@ -520,13 +520,13 @@ abstract class MHNPattern : Pattern() {
                             targetIndex = i,
                             targetSlot = slot,
                             mod = sst2.mod
-                        )
-                        sst3.handsindex = -1 // undefined
-                        sst3.pathnum = sst.pathnum
-                        sst3.primary = sst2.primary
-                        sst3.source = null
-                        sst3.target = sst
-
+                        ).apply {
+                            handsBeat = -1 // undefined
+                            pathNum = sst.pathNum
+                            primary = sst2.primary
+                            source = null
+                            target = sst
+                        }
                         sst.source = sst3
                     }
                 }
@@ -548,7 +548,7 @@ abstract class MHNPattern : Pattern() {
 
                         sst.catching = (sst.source!!.mod!![0] != 'H')
                         if (sst.catching) {
-                            sst.catchnum = slotcatches
+                            sst.catchNum = slotcatches
                             ++slotcatches
                         }
                     }
@@ -577,15 +577,15 @@ abstract class MHNPattern : Pattern() {
                                 continue
                             }
                             val switchcatches: Boolean =
-                                if (sst1.catchnum < sst2.catchnum) {
+                                if (sst1.catchNum < sst2.catchNum) {
                                     isCatchOrderIncorrect(sst1, sst2)
                                 } else {
                                     isCatchOrderIncorrect(sst2, sst1)
                                 }
                             if (switchcatches) {
-                                val temp = sst1.catchnum
-                                sst1.catchnum = sst2.catchnum
-                                sst2.catchnum = temp
+                                val temp = sst1.catchNum
+                                sst1.catchNum = sst2.catchNum
+                                sst2.catchNum = temp
                             }
                         }
                     }
@@ -598,7 +598,7 @@ abstract class MHNPattern : Pattern() {
             if (sst == null || sst.primary === sst) {
                 return@forEach  // skip primary throws
             }
-            sst.catchnum = sst.primary!!.catchnum
+            sst.catchNum = sst.primary!!.catchNum
         }
     }
 
@@ -627,7 +627,7 @@ abstract class MHNPattern : Pattern() {
 
             // don't bother with dwellwindow > 2 since in practice
             // we never want to dwell for more than two beats
-            sst.dwellwindow = if (prevBeatThrow) 1 else 2
+            sst.dwellWindow = if (prevBeatThrow) 1 else 2
         }
     }
 
@@ -942,19 +942,19 @@ abstract class MHNPattern : Pattern() {
                             for (h in 0..1) {
                                 for (slot in 0..<maxOccupancy) {
                                     val sst: MHNThrow? = th[j][h][k][slot]
-                                    if (sst != null && sst.pathnum != -1) {
+                                    if (sst != null && sst.pathNum != -1) {
                                         val sst2 = th[j][h][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_paths)
                                             )
-                                        if ((sst.pathnum == 0) || (sst2.pathnum == 0)) {
+                                        if ((sst.pathNum == 0) || (sst2.pathNum == 0)) {
                                             throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         }
-                                        if (pathmap[sst.pathnum] == 0) {
-                                            pathmap[sst.pathnum] = sst2.pathnum
-                                        } else if (pathmap[sst.pathnum] != sst2.pathnum) {
+                                        if (pathmap[sst.pathNum] == 0) {
+                                            pathmap[sst.pathNum] = sst2.pathNum
+                                        } else if (pathmap[sst.pathNum] != sst2.pathNum) {
                                             throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_delay)
                                             )
@@ -977,7 +977,7 @@ abstract class MHNPattern : Pattern() {
                                 var slot = 0
                                 while (slot < maxOccupancy) {
                                     val sst: MHNThrow? = th[j][h][k][slot]
-                                    if (sst != null && sst.pathnum != -1) {
+                                    if (sst != null && sst.pathNum != -1) {
                                         val map = jugperm.map(j + 1)
                                         val newj = abs(map) - 1
                                         val newh = (if (map > 0) h else 1 - h)
@@ -985,14 +985,14 @@ abstract class MHNPattern : Pattern() {
                                             ?: throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_paths)
                                             )
-                                        if (sst.pathnum == 0 || sst2.pathnum == 0) {
+                                        if (sst.pathNum == 0 || sst2.pathNum == 0) {
                                             throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_paths)
                                             )
                                         }
-                                        if (pathmap[sst.pathnum] == 0) {
-                                            pathmap[sst.pathnum] = sst2.pathnum
-                                        } else if (pathmap[sst.pathnum] != sst2.pathnum) {
+                                        if (pathmap[sst.pathNum] == 0) {
+                                            pathmap[sst.pathNum] = sst2.pathNum
+                                        } else if (pathmap[sst.pathNum] != sst2.pathNum) {
                                             throw JuggleExceptionUser(
                                                 getStringResource(Res.string.error_badpattern_switchdelay)
                                             )
@@ -1055,15 +1055,15 @@ abstract class MHNPattern : Pattern() {
                     for (slot in 0..<maxOccupancy) {
                         val sst2 = th[j][h][k][slot] ?: break
 
-                        if (onethrown) sst2.throwtime =
+                        if (onethrown) sst2.throwTime =
                             (k.toDouble() - beats_one_throw_early) / bps
-                        else sst2.throwtime = k.toDouble() / bps
+                        else sst2.throwTime = k.toDouble() / bps
 
                         if (hss != null) {
                             // if (onethrown)
                             //    throwtime = ((double)k - 0.25*(double)dwellarray[k]) / bps;
                             // else
-                            sst2.throwtime = k.toDouble() / bps
+                            sst2.throwTime = k.toDouble() / bps
                         }
                     }
 
@@ -1092,7 +1092,7 @@ abstract class MHNPattern : Pattern() {
                     // Did the previous throw out of this same hand contain
                     // a 1 throw?
                     var prevOnethrown = false
-                    var tempindex = k - sst.dwellwindow
+                    var tempindex = k - sst.dwellWindow
                     while (tempindex < 0) {
                         tempindex += period
                     }
@@ -1117,7 +1117,7 @@ abstract class MHNPattern : Pattern() {
                     // previous throw from the same hand (plus margin)
                     firstcatchtime = max(
                         firstcatchtime,
-                        ((k - sst.dwellwindow).toDouble() - (if (prevOnethrown) beats_one_throw_early else 0.0)
+                        ((k - sst.dwellWindow).toDouble() - (if (prevOnethrown) beats_one_throw_early else 0.0)
                             + BEATS_THROW_CATCH_MIN) / bps
                     )
 
@@ -1133,7 +1133,7 @@ abstract class MHNPattern : Pattern() {
                     // Constraint #3: Ensure we have enough time between catch
                     // and subsequent throw
                     firstcatchtime =
-                        min(firstcatchtime, sst.throwtime - BEATS_CATCH_THROW_MIN / bps)
+                        min(firstcatchtime, sst.throwTime - BEATS_CATCH_THROW_MIN / bps)
 
                     // Set catch times
                     for (slot in 0..<maxOccupancy) {
@@ -1142,7 +1142,7 @@ abstract class MHNPattern : Pattern() {
 
                         if (numCatches > 1) {
                             catchtime +=
-                                (sst2.catchnum.toDouble() / (numCatches - 1).toDouble()) * (squeezebeats / bps)
+                                (sst2.catchNum.toDouble() / (numCatches - 1).toDouble()) * (squeezebeats / bps)
                         }
 
                         if (hss != null) {
@@ -1155,13 +1155,13 @@ abstract class MHNPattern : Pattern() {
 
                             if (numCatches > 1) {
                                 catchtime +=
-                                    sst2.catchnum.toDouble() / (numCatches - 1).toDouble() * squeezebeats / bps
+                                    sst2.catchNum.toDouble() / (numCatches - 1).toDouble() * squeezebeats / bps
                             }
                         }
 
-                        catchtime = min(catchtime, sst.throwtime - BEATS_CATCH_THROW_MIN / bps)
+                        catchtime = min(catchtime, sst.throwTime - BEATS_CATCH_THROW_MIN / bps)
 
-                        sst2.catchtime = catchtime
+                        sst2.catchTime = catchtime
                         if (Constants.DEBUG_PATTERN_CREATION) {
                             println("catch time for $sst2 = $catchtime")
                         }
@@ -1297,7 +1297,7 @@ abstract class MHNPattern : Pattern() {
                             ev = ev.withTransition(
                                 JMLTransition(
                                     type = JMLTransition.TRANS_THROW,
-                                    path = sst2.pathnum,
+                                    path = sst2.pathNum,
                                     throwType = type,
                                     throwMod = mod
                                 )
@@ -1318,12 +1318,12 @@ abstract class MHNPattern : Pattern() {
                                 ev = ev.withTransition(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_HOLDING,
-                                        path = sst2.pathnum,
+                                        path = sst2.pathNum,
                                         throwType = type,
                                         throwMod = mod
                                     )
                                 )
-                                pathtouched[sst2.pathnum - 1] = true
+                                pathtouched[sst2.pathNum - 1] = true
                             }
                         }
                     }
@@ -1350,7 +1350,7 @@ abstract class MHNPattern : Pattern() {
                                 newCalcpos = true
                             }
                         } else {
-                            val c = hands!!.getCoordinate(sst.juggler, sst.handsindex, 0)!!
+                            val c = hands!!.getCoordinate(sst.juggler, sst.handsBeat, 0)!!
                             if (h == LEFT_HAND) {
                                 c.x = -c.x
                             }
@@ -1362,7 +1362,7 @@ abstract class MHNPattern : Pattern() {
                             x = newLocalCoordinate.x,
                             y = newLocalCoordinate.y,
                             z = newLocalCoordinate.z,
-                            t = sst.throwtime,
+                            t = sst.throwTime,
                             juggler = j + 1,
                             hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
@@ -1391,7 +1391,7 @@ abstract class MHNPattern : Pattern() {
                             continue
                         }
 
-                        val catchpath = sst2.pathnum
+                        val catchpath = sst2.pathNum
                         val catchval = k - sst2.source!!.index
                         pathtouched[catchpath - 1] = true
                         catchxsum += (if (catchval > 8) catchx[8] else catchx[catchval])
@@ -1428,7 +1428,7 @@ abstract class MHNPattern : Pattern() {
                                 newCalcpos = true
                             }
                         } else {
-                            var pos = sst.handsindex - 2
+                            var pos = sst.handsBeat - 2
                             while (pos < 0) {
                                 pos += hands!!.getPeriod(sst.juggler)
                             }
@@ -1441,13 +1441,13 @@ abstract class MHNPattern : Pattern() {
                             newCalcpos = false
                         }
 
-                        lastcatchtime = sst.catchtime
+                        lastcatchtime = sst.catchTime
 
                         var ev = JMLEvent(
                             x = newLocalCoordinate.x,
                             y = newLocalCoordinate.y,
                             z = newLocalCoordinate.z,
-                            t = sst.catchtime,
+                            t = sst.catchTime,
                             juggler = j + 1,
                             hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
@@ -1459,20 +1459,20 @@ abstract class MHNPattern : Pattern() {
                                 ev = ev.withTransition(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
-                                        path = sst2.pathnum
+                                        path = sst2.pathNum
                                     )
                                 )
                             } else if (hands != null) {
-                                if (sst2.pathnum != -1) {  // -1 signals a 0 throw
+                                if (sst2.pathNum != -1) {  // -1 signals a 0 throw
                                     // add holding transition if there's a ball in
                                     // hand and "hands" is specified
                                     ev = ev.withTransition(
                                         JMLTransition(
                                             type = JMLTransition.TRANS_HOLDING,
-                                            path = sst2.pathnum
+                                            path = sst2.pathNum
                                         )
                                     )
-                                    pathtouched[sst2.pathnum - 1] = true
+                                    pathtouched[sst2.pathNum - 1] = true
                                 }
                             }
                         }
@@ -1500,7 +1500,7 @@ abstract class MHNPattern : Pattern() {
                                 newLocalCoordinate =
                                     Coordinate((if (h == RIGHT_HAND) cx else -cx), 0.0, 0.0)
                             } else {
-                                var pos = sst.handsindex - 2
+                                var pos = sst.handsBeat - 2
                                 while (pos < 0) {
                                     pos += hands!!.getPeriod(sst.juggler)
                                 }
@@ -1512,20 +1512,20 @@ abstract class MHNPattern : Pattern() {
                                 newLocalCoordinate = c
                             }
 
-                            if (sst2.catchnum == (numCatches - 1)) {
-                                lastcatchtime = sst2.catchtime
+                            if (sst2.catchNum == (numCatches - 1)) {
+                                lastcatchtime = sst2.catchTime
                             }
                             val ev = JMLEvent(
                                 x = newLocalCoordinate.x,
                                 y = newLocalCoordinate.y,
                                 z = newLocalCoordinate.z,
-                                t = sst2.catchtime,
+                                t = sst2.catchTime,
                                 juggler = j + 1,
                                 hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND,
                                 transitions = listOf(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
-                                        path = sst2.pathnum
+                                        path = sst2.pathNum
                                     )
                                 )
                             )
@@ -1544,7 +1544,7 @@ abstract class MHNPattern : Pattern() {
                     }
 
                     // add other events between the previous catch and the current throw
-                    var pos = sst.handsindex - 2
+                    var pos = sst.handsBeat - 2
                     while (pos < 0) {
                         pos += hands!!.getPeriod(sst.juggler)
                     }
@@ -1562,7 +1562,7 @@ abstract class MHNPattern : Pattern() {
                             y = c.y,
                             z = c.z,
                             t = lastcatchtime + di.toDouble() *
-                                (sst.throwtime - lastcatchtime) / numcoords,
+                                (sst.throwTime - lastcatchtime) / numcoords,
                             juggler = sst.juggler,
                             hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
@@ -1593,7 +1593,7 @@ abstract class MHNPattern : Pattern() {
 
                         for (tempslot in 0..<maxOccupancy) {
                             val tempsst = th[j][h][tempk][tempslot] ?: break
-                            val catcht = tempsst.catchtime + (wrap * indexes).toDouble() / bps
+                            val catcht = tempsst.catchTime + (wrap * indexes).toDouble() / bps
                             nextcatchtime =
                                 (if (tempslot == 0) catcht else min(nextcatchtime, catcht))
                         }
@@ -1602,7 +1602,7 @@ abstract class MHNPattern : Pattern() {
                     }
 
                     // add other events between the current throw and the next catch
-                    pos = sst.handsindex
+                    pos = sst.handsBeat
                     numcoords = hands!!.getCatchIndex(sst.juggler, pos)
 
                     for (di in 1..<numcoords) {
@@ -1614,8 +1614,8 @@ abstract class MHNPattern : Pattern() {
                             x = c.x,
                             y = c.y,
                             z = c.z,
-                            t = sst.throwtime + di.toDouble() *
-                                (nextcatchtime - sst.throwtime) / numcoords,
+                            t = sst.throwTime + di.toDouble() *
+                                (nextcatchtime - sst.throwTime) / numcoords,
                             juggler = sst.juggler,
                             hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
                         )
@@ -1704,7 +1704,7 @@ abstract class MHNPattern : Pattern() {
                     for (temph in 0..1) {
                         for (slot in 0..<maxOccupancy) {
                             val sst = th[tempj][temph][tempk][slot]
-                            if (sst != null && sst.pathnum == (k + 1)) {
+                            if (sst != null && sst.pathNum == (k + 1)) {
                                 hand = (if (temph == RIGHT_HAND) HandLink.RIGHT_HAND
                                 else HandLink.LEFT_HAND)
                                 juggler = tempj

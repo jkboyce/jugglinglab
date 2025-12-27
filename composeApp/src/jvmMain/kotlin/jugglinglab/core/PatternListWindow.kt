@@ -345,7 +345,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
     override fun setTitle(newTitle: String?) {
         var title = newTitle
-        if (title == null || title.isEmpty()) {
+        if (title.isNullOrEmpty()) {
             title = getStringResource(Res.string.gui_plwindow_default_window_title)
         }
         super.setTitle(title)

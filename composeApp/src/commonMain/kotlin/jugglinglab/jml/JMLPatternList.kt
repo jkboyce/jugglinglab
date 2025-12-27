@@ -303,7 +303,7 @@ class JMLPatternList() {
         var anim: String?  // if pattern is not in JML notation
         var patnode: JMLNode?  // if pattern is in JML
         var info: String?
-        var tags: ArrayList<String>? = null
+        var tags: MutableList<String>? = null
 
         constructor(
             dis: String,
@@ -334,7 +334,7 @@ class JMLPatternList() {
             info = pr.info
 
             if (pr.tags != null) {
-                tags = ArrayList<String>()
+                tags = mutableListOf()
                 tags!!.addAll(pr.tags!!)
             } else {
                 tags = null
@@ -364,7 +364,7 @@ class JMLPatternList() {
             }
             
             val infoString = inode.nodeValue
-            info = if (infoString != null && infoString.isNotBlank()) {
+            info = if (!infoString.isNullOrBlank()) {
                 infoString.trim()
             } else null
 

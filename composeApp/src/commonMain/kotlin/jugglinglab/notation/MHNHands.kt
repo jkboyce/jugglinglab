@@ -141,27 +141,27 @@ data class MHNHands(
         return numberOfBeats[(juggler - 1) % numberOfJugglers]
     }
 
-    fun getNumberOfCoordinates(juggler: Int, pos: Int): Int {
-        return numberOfCoordsPerBeat[(juggler - 1) % numberOfJugglers][pos]
+    fun getNumberOfCoordinates(juggler: Int, beat: Int): Int {
+        return numberOfCoordsPerBeat[(juggler - 1) % numberOfJugglers][beat]
     }
 
-    // Return the index value for juggler `juggler` and beat `pos`, when the
+    // Return the index value for juggler `juggler` and beat `beat`, when the
     // catch is made.
     //
     // Note the throw is always assumed to happen at index 0.
 
-    fun getCatchIndex(juggler: Int, pos: Int): Int {
-        return catchIndexPerBeat[(juggler - 1) % numberOfJugglers][pos]
+    fun getCatchIndex(juggler: Int, beat: Int): Int {
+        return catchIndexPerBeat[(juggler - 1) % numberOfJugglers][beat]
     }
 
-    // Return the hand coordinate at `index`, for juggler `juggler` on beat `pos`.
-    // Note that both `pos` and `index` are indexed from 0.
+    // Return the hand coordinate at `index`, for juggler `juggler` on beat `beat`.
+    // Note that both `beat` and `index` are indexed from 0.
 
-    fun getCoordinate(juggler: Int, pos: Int, index: Int): Coordinate? {
-        if (pos >= getPeriod(juggler) || index >= getNumberOfCoordinates(juggler, pos)) {
+    fun getCoordinate(juggler: Int, beat: Int, index: Int): Coordinate? {
+        if (beat >= getPeriod(juggler) || index >= getNumberOfCoordinates(juggler, beat)) {
             return null
         }
-        val coord = handCoords[(juggler - 1) % numberOfJugglers][pos][index]
+        val coord = handCoords[(juggler - 1) % numberOfJugglers][beat][index]
         return coord?.let { Coordinate(it[0], it[1], it[2]) }
     }
 

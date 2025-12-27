@@ -20,7 +20,6 @@ import jugglinglab.core.PatternWindow.Companion.setExitOnLastClose
 import jugglinglab.generator.GeneratorTargetBasic
 import jugglinglab.generator.SiteswapGenerator
 import jugglinglab.generator.SiteswapTransitioner
-import jugglinglab.jml.JMLDefs
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
@@ -219,7 +218,6 @@ object JugglingLab {
 
     // Open the JML file(s) whose paths are given as command-line arguments.
 
-    @Suppress("KotlinConstantConditions")
     private fun doOpen() {
         val files = parseFilelist()
         if (files.isEmpty()) {
@@ -483,7 +481,7 @@ object JugglingLab {
                 try {
                     ++patternsCount
                     val pat = JMLPattern.fromJMLNode(parser.tree!!)
-                    val layout = pat.layout
+                    pat.layout
                     ps.println("   OK")
                 } catch (je: JuggleException) {
                     ps.println("   Error creating pattern: ${je.message}")
@@ -510,7 +508,7 @@ object JugglingLab {
                         val pat = pl.getPatternForLine(i)
                         if (pat != null) {
                             ++patternsCount
-                            val layout = pat.layout
+                            pat.layout
                             pl.getAnimationPrefsForLine(i)
                             ps.println("   Pattern line ${i + 1}: OK")
                             if (doJmlOutput) {

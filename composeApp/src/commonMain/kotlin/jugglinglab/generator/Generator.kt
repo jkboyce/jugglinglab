@@ -40,7 +40,7 @@ abstract class Generator {
     companion object {
         // The built-in generators
         @Suppress("unused")
-        val builtinGenerators = arrayOf<String>("Siteswap")
+        val builtinGenerators = arrayOf("Siteswap")
 
         fun newGenerator(name: String): Generator? {
             if (name.equals("siteswap", ignoreCase = true)) return SiteswapGenerator()

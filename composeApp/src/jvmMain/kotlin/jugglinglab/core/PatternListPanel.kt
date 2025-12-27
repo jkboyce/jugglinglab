@@ -220,14 +220,12 @@ class PatternListPanel private constructor() : JPanel() {
             popup.add(item)
 
             if (popupCommands[i] == "insertpattern") {
-                var patnum = 0
-                for (pw in pupatterns) {
+                for ((patnum, pw) in pupatterns.withIndex()) {
                     val pitem = JMenuItem("   " + pw.getTitle())
                     pitem.actionCommand = "pat$patnum"
                     pitem.addActionListener(al)
                     pitem.setFont(FONT_PATTERN_POPUP)
                     popup.add(pitem)
-                    ++patnum
                 }
             }
         }

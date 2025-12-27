@@ -799,8 +799,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                 }
             }
 
-        var evNum = 0
-        for (ev2 in visibleEvents) {
+        for ((evNum, ev2) in visibleEvents.withIndex()) {
             for (i in 0..<rendererCount) {
                 val ren = if (i == 0) animator.ren1 else animator.ren2
 
@@ -865,7 +864,6 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
                     }
                 }
             }
-            ++evNum
         }
         createHandpathView()
     }

@@ -6,6 +6,8 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("EmptyRange")
+
 package jugglinglab.path
 
 import jugglinglab.composeapp.generated.resources.*

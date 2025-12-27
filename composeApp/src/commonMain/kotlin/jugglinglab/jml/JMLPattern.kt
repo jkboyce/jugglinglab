@@ -10,7 +10,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:Suppress("KotlinConstantConditions")
+@file:Suppress("KotlinConstantConditions", "EmptyRange")
 
 package jugglinglab.jml
 
@@ -887,7 +887,7 @@ data class PatternBuilder(
 
     fun setTitleString(str: String?) {
         val t = str?.replace(";", "")  // filter out semicolons
-        title = if (t != null && !t.isBlank()) t.trim() else null
+        title = if (!t.isNullOrBlank()) t.trim() else null
 
         if (basePatternNotation == null || basePatternConfig == null) return
         try {

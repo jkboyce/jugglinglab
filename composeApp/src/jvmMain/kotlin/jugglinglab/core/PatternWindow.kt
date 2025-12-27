@@ -727,7 +727,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     //--------------------------------------------------------------------------
 
     override fun setTitle(title: String?) {
-        val newTitle = if (title == null || title.isEmpty()) {
+        val newTitle = if (title.isNullOrEmpty()) {
             getStringResource(Res.string.gui_pwindow_default_window_title)
         } else {
             title
@@ -827,7 +827,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             exitOnLastClose = value
         }
 
-        private val fileItems: List<String?> = listOf<String?>(
+        private val fileItems: List<String?> = listOf(
             "New Pattern",
             "New Pattern List",
             "Open JML...",

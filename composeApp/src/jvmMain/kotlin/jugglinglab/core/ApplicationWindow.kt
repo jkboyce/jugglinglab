@@ -221,7 +221,6 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         HELP_ONLINE,
     }
 
-    @Suppress("KotlinConstantConditions")
     @Throws(JuggleExceptionInternal::class)
     private fun doMenuCommand(action: MenuCommand) {
         when (action) {

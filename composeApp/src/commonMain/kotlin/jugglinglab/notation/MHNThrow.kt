@@ -21,21 +21,22 @@ data class MHNThrow(
     val targetSlot: Int = 0,
     val mod: String? = null
 ) : Comparable<MHNThrow> {
+    // filled in during parseSiteswapNotation():
+    var handsBeat: Int = 0  // beat of throw in hands sequence, if one exists
+
     // filled in during buildJugglingMatrix():
     var primary: MHNThrow? = null
     var source: MHNThrow? = null
     var target: MHNThrow? = null
-    var pathnum: Int = -1
+    var pathNum: Int = -1
     var catching: Boolean = false  // are we catching just before this throw?
-    var catchnum: Int = -1  // order (starting at 1) to make catches
-
+    var catchNum: Int = -1  // order (starting at 1) to make catches
     // # of beats prior of the previous nonzero element for this hand
-    var dwellwindow: Int = 0
+    var dwellWindow: Int = 0
 
     // filled in during asJMLPattern():
-    var throwtime: Double = 0.0  // in seconds
-    var catchtime: Double = 0.0  // time of catch prior to throw
-    var handsindex: Int = 0  // index of throw in hands sequence, if one exists
+    var throwTime: Double = 0.0  // in seconds
+    var catchTime: Double = 0.0  // time of catch prior to throw
 
     override fun toString(): String {
         var s = "($juggler, $hand, $index, $slot"
