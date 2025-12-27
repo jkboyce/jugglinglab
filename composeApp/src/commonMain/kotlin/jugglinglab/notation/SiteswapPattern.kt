@@ -8,7 +8,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:Suppress("KotlinConstantConditions")
+@file:Suppress("KotlinConstantConditions", "EmptyRange")
 
 package jugglinglab.notation
 
@@ -621,12 +621,12 @@ class SiteswapPattern : MHNPattern() {
                             mod
                         )
                         if (hands != null) {
-                            var idx = index
+                            var beat = index
                             if (sti.sync_throw && sourceHand == RIGHT_HAND) {
-                                idx++
+                                beat++
                             }
-                            idx %= hands!!.getPeriod(child.source_juggler)
-                            t.handsindex = idx
+                            beat %= hands!!.getPeriod(child.source_juggler)
+                            t.handsBeat = beat
                         }
                         th[child.source_juggler - 1][sourceHand][index][i] = t
 
@@ -655,7 +655,9 @@ class SiteswapPattern : MHNPattern() {
                         break
                     }
                 }
-                th[j][h][i][slot] = mhnt.copy(mod = if (doHold) "H" else "T")
+                val newMhnt = mhnt.copy(mod = if (doHold) "H" else "T")
+                newMhnt.handsBeat = mhnt.handsBeat
+                th[j][h][i][slot] = newMhnt
             }
         }
     }
