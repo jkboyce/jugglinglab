@@ -10,6 +10,9 @@ package jugglinglab.notation
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.prop.Prop
+import jugglinglab.prop.Prop.Companion.builtinPropsStringResources
+import jugglinglab.util.ParameterList
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,13 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import jugglinglab.prop.Prop.Companion.builtinPropsStringResources
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SiteswapNotationControl(
-    onConfirm: (String) -> Unit
+    onConfirm: (ParameterList) -> Unit
 ) {
     // State Variables
     var pattern by remember { mutableStateOf("") }
@@ -61,35 +63,54 @@ fun SiteswapNotationControl(
         resetControl()
     }
 
-    fun params(): String {
+    fun parameterList(): ParameterList {
         val sb = StringBuilder()
-        sb.append("pattern=")
-        sb.append(pattern)
+        sb.append("pattern=").append(pattern)
         if (propIndex != 0 && propIndex < Prop.builtinProps.size) {
-            sb.append(";prop=")
-            sb.append(Prop.builtinProps[propIndex].lowercase())
+            sb.append(";prop=").append(Prop.builtinProps[propIndex].lowercase())
         }
         if (dwellBeats.isNotEmpty() && dwellBeats != "1.3") {
-            sb.append(";dwell=")
-            sb.append(dwellBeats)
+            sb.append(";dwell=").append(dwellBeats)
         }
         if (beatsPerSecond.isNotEmpty()) {
-            sb.append(";bps=")
-            sb.append(beatsPerSecond)
+            sb.append(";bps=").append(beatsPerSecond)
         }
         if (handParams.isNotEmpty()) {
-            sb.append(";hands=")
-            sb.append(handParams)
+            sb.append(";hands=").append(handParams)
         }
         if (bodyParams.isNotEmpty()) {
-            sb.append(";body=")
-            sb.append(bodyParams)
+            sb.append(";body=").append(bodyParams)
         }
         if (manualSettings.isNotEmpty()) {
-            sb.append(";")
-            sb.append(manualSettings)
+            sb.append(";").append(manualSettings)
         }
-        return sb.toString()
+
+        val pl = ParameterList(sb.toString())
+
+        // check if we want to add a non-default title
+        if (pl.getParameter("title") == null) {
+            val hss = pl.getParameter("hss")
+            if (hss != null) {
+                val title = "oss: " + pl.getParameter("pattern") + "  hss: " + hss
+                pl.addParameter("title", title)
+            } else if (handDropdownIndex != 0) {
+                // if hands are not default, apply a title
+                val handsLabels = builtinHandsStringResources +
+                    listOf(Res.string.gui_mhnhands_name_custom)
+                val title = pl.getParameter("pattern") + " " +
+                    jlGetStringResource(handsLabels[handDropdownIndex - 1])
+                pl.addParameter("title", title)
+            } else if (bodyDropdownIndex != 0) {
+                // if body movement is not default, apply a title
+                val bodyLabels = builtinBodyStringResources +
+                    listOf(Res.string.gui_mhnbody_name_custom)
+                val title = pl.getParameter("pattern") + " " +
+                    jlGetStringResource(bodyLabels[bodyDropdownIndex - 1])
+                pl.addParameter("title", title)
+            }
+        }
+
+        return pl
     }
 
     Column(
@@ -227,7 +248,7 @@ fun SiteswapNotationControl(
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(
-                onClick = { onConfirm(params()) }
+                onClick = { onConfirm(parameterList()) }
             ) {
                 Text(stringResource(Res.string.gui_run))
             }
