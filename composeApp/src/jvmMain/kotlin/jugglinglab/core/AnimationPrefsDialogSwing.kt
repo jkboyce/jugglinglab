@@ -14,7 +14,7 @@ import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlToStringRounded
 import java.awt.ComponentOrientation
 import java.awt.GridBagConstraints
@@ -110,43 +110,43 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
 
     private fun createContents() {
         // panel of text boxes at the top
-        val lab1 = JLabel(getStringResource(Res.string.gui_width))
+        val lab1 = JLabel(jlGetStringResource(Res.string.gui_width))
         tfWidth = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
         }
-        val lab2 = JLabel(getStringResource(Res.string.gui_height))
+        val lab2 = JLabel(jlGetStringResource(Res.string.gui_height))
         tfHeight = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
         }
-        val lab3 = JLabel(getStringResource(Res.string.gui_frames_per_second))
+        val lab3 = JLabel(jlGetStringResource(Res.string.gui_frames_per_second))
         tfFps = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
         }
-        val lab4 = JLabel(getStringResource(Res.string.gui_slowdown_factor))
+        val lab4 = JLabel(jlGetStringResource(Res.string.gui_slowdown_factor))
         tfSlowdown = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
         }
-        val lab5 = JLabel(getStringResource(Res.string.gui_border__pixels_))
+        val lab5 = JLabel(jlGetStringResource(Res.string.gui_border__pixels_))
         tfBorder = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
         }
-        val lab6 = JLabel(getStringResource(Res.string.gui_prefs_show_ground))
+        val lab6 = JLabel(jlGetStringResource(Res.string.gui_prefs_show_ground))
         comboShowground = JComboBox<String>().apply {
-            addItem(getStringResource(Res.string.gui_prefs_show_ground_auto))
-            addItem(getStringResource(Res.string.gui_prefs_show_ground_yes))
-            addItem(getStringResource(Res.string.gui_prefs_show_ground_no))
+            addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_auto))
+            addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_yes))
+            addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_no))
         }
         // checkboxes farther down
-        cbPaused = JCheckBox(getStringResource(Res.string.gui_start_paused))
-        cbMousepause = JCheckBox(getStringResource(Res.string.gui_pause_on_mouse_away))
-        cbStereo = JCheckBox(getStringResource(Res.string.gui_stereo_display))
-        cbCatchsounds = JCheckBox(getStringResource(Res.string.gui_catch_sounds))
-        cbBouncesounds = JCheckBox(getStringResource(Res.string.gui_bounce_sounds))
+        cbPaused = JCheckBox(jlGetStringResource(Res.string.gui_start_paused))
+        cbMousepause = JCheckBox(jlGetStringResource(Res.string.gui_pause_on_mouse_away))
+        cbStereo = JCheckBox(jlGetStringResource(Res.string.gui_stereo_display))
+        cbCatchsounds = JCheckBox(jlGetStringResource(Res.string.gui_catch_sounds))
+        cbBouncesounds = JCheckBox(jlGetStringResource(Res.string.gui_bounce_sounds))
         val labOther = JLabel("Manual settings")
         tfOther = JTextField(15)
         // buttons at the bottom
-        butCancel = JButton(getStringResource(Res.string.gui_cancel))
-        butOk = JButton(getStringResource(Res.string.gui_ok))
+        butCancel = JButton(jlGetStringResource(Res.string.gui_cancel))
+        butOk = JButton(jlGetStringResource(Res.string.gui_ok))
 
         // assemble subpanels
         val gb = GridBagLayout()
@@ -290,7 +290,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 newjc.width = tempint
             }
         } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_number_format, "width")
+            val message = jlGetStringResource(Res.string.error_number_format, "width")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
@@ -299,7 +299,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 newjc.height = tempint
             }
         } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_number_format, "height")
+            val message = jlGetStringResource(Res.string.error_number_format, "height")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
@@ -308,7 +308,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 newjc.fps = tempdouble
             }
         } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_number_format, "fps")
+            val message = jlGetStringResource(Res.string.error_number_format, "fps")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
@@ -317,7 +317,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 newjc.slowdown = tempdouble
             }
         } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_number_format, "slowdown")
+            val message = jlGetStringResource(Res.string.error_number_format, "slowdown")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
         try {
@@ -326,7 +326,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 newjc.border = tempint
             }
         } catch (_: NumberFormatException) {
-            val message = getStringResource(Res.string.error_number_format, "border")
+            val message = jlGetStringResource(Res.string.error_number_format, "border")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
 

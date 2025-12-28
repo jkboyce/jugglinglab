@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 
 data class JMLEvent(
     val x: Double = 0.0,
@@ -117,7 +117,7 @@ data class JMLEvent(
             } else if (handString.equals("right", ignoreCase = true)) {
                 HandLink.RIGHT_HAND
             } else {
-                val message = getStringResource(Res.string.error_hand_name)
+                val message = jlGetStringResource(Res.string.error_hand_name)
                 throw JuggleExceptionUser("$message '$handString'")
             }
         } else {
@@ -128,7 +128,7 @@ data class JMLEvent(
             } else if (substr.equals("right", ignoreCase = true)) {
                 HandLink.RIGHT_HAND
             } else {
-                val message = getStringResource(Res.string.error_hand_name)
+                val message = jlGetStringResource(Res.string.error_hand_name)
                 throw JuggleExceptionUser("$message '$handString'")
             }
         }
@@ -186,7 +186,7 @@ data class JMLEvent(
                     }
                 }
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_event_coordinate)
+                val message = jlGetStringResource(Res.string.error_event_coordinate)
                 throw JuggleExceptionUser(message)
             }
 
@@ -196,7 +196,7 @@ data class JMLEvent(
             }
 
             if (handstr == null) {
-                val message = getStringResource(Res.string.error_unspecified_hand)
+                val message = jlGetStringResource(Res.string.error_unspecified_hand)
                 throw JuggleExceptionUser(message)
             }
 
@@ -208,7 +208,7 @@ data class JMLEvent(
             ).withHandString(handstr)
 
             if (result.juggler !in 1..numberOfJugglers) {
-                val message = getStringResource(Res.string.error_juggler_out_of_range)
+                val message = jlGetStringResource(Res.string.error_juggler_out_of_range)
                 throw JuggleExceptionUser(message)
             }
 
@@ -231,13 +231,13 @@ data class JMLEvent(
                     }
 
                     if (childPath == null) {
-                        val message = getStringResource(Res.string.error_no_path)
+                        val message = jlGetStringResource(Res.string.error_no_path)
                         throw JuggleExceptionUser(message)
                     }
 
                     val pathNum = childPath.toInt()
                     if (pathNum !in 1..numberOfPaths) {
-                        val message = getStringResource(Res.string.error_path_out_of_range)
+                        val message = jlGetStringResource(Res.string.error_path_out_of_range)
                         throw JuggleExceptionUser(message)
                     }
 
@@ -280,7 +280,7 @@ data class JMLEvent(
                     }
 
                     if (child.children.isNotEmpty()) {
-                        val message = getStringResource(Res.string.error_event_subtag)
+                        val message = jlGetStringResource(Res.string.error_event_subtag)
                         throw JuggleExceptionUser(message)
                     }
                 }

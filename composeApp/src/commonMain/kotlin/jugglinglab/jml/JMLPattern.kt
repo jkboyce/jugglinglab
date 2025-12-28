@@ -628,7 +628,7 @@ data class JMLPattern(
             }
 
             "" -> {
-                val message = getStringResource(Res.string.error_color_empty)
+                val message = jlGetStringResource(Res.string.error_color_empty)
                 throw JuggleExceptionUser(message)
             }
 
@@ -643,7 +643,7 @@ data class JMLPattern(
                             1 -> parts[0].trim()
                             3 -> "{$cs}"
                             else -> {
-                                val message = getStringResource(Res.string.error_color_format)
+                                val message = jlGetStringResource(Res.string.error_color_format)
                                 throw JuggleExceptionUser(message)
                             }
                         }
@@ -730,7 +730,7 @@ data class JMLPattern(
                 "jml" -> {
                     val vers = current.attributes.getValueOf("version") ?: return
                     if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
-                        val message = getStringResource(Res.string.error_jml_version)
+                        val message = jlGetStringResource(Res.string.error_jml_version)
                         throw JuggleExceptionUser(message)
                     }
                     record.loadingJmlVersion = vers
@@ -765,27 +765,27 @@ data class JMLPattern(
                         record.numberOfJugglers = jugglerstring?.toInt() ?: 1
                         record.numberOfPaths = pathstring!!.toInt()
                     } catch (_: Exception) {
-                        val message = getStringResource(Res.string.error_setup_tag)
+                        val message = jlGetStringResource(Res.string.error_setup_tag)
                         throw JuggleExceptionUser(message)
                     }
 
                     record.propAssignment = if (propstring != null) {
                         val tokens = propstring.split(',')
                         if (tokens.size != record.numberOfPaths) {
-                            val message = getStringResource(Res.string.error_prop_assignments)
+                            val message = jlGetStringResource(Res.string.error_prop_assignments)
                             throw JuggleExceptionUser(message)
                         }
                         try {
                             tokens.map {
                                 val propNum = it.trim().toInt()
                                 if (propNum < 1 || propNum > record.props.size) {
-                                    val message = getStringResource(Res.string.error_prop_number)
+                                    val message = jlGetStringResource(Res.string.error_prop_number)
                                     throw JuggleExceptionUser(message)
                                 }
                                 propNum
                             }.toMutableList()
                         } catch (_: NumberFormatException) {
-                            val message = getStringResource(Res.string.error_prop_format)
+                            val message = jlGetStringResource(Res.string.error_prop_format)
                             throw JuggleExceptionUser(message)
                         }
                     } else {
@@ -826,7 +826,7 @@ data class JMLPattern(
                 }
 
                 else -> {
-                    val message = getStringResource(Res.string.error_unknown_tag, type)
+                    val message = jlGetStringResource(Res.string.error_unknown_tag, type)
                     throw JuggleExceptionUser(message)
                 }
             }

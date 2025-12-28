@@ -20,7 +20,7 @@ import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import java.awt.Dimension
 import java.io.File
 import java.io.FileOutputStream
@@ -160,7 +160,7 @@ abstract class View : JPanel() {
         private val pm =
             ProgressMonitor(
                 patternWindow,
-                getStringResource(Res.string.gui_saving_animated_gif),
+                jlGetStringResource(Res.string.gui_saving_animated_gif),
                 "",
                 0,
                 1
@@ -197,7 +197,7 @@ abstract class View : JPanel() {
             try {
                 ap.animator.writeGIF(FileOutputStream(file), wgm, fps)
             } catch (_: IOException) {
-                val message = getStringResource(Res.string.error_writing_file, file.toString())
+                val message = jlGetStringResource(Res.string.error_writing_file, file.toString())
                 jlHandleUserException(parent, message)
             } catch (jei: JuggleExceptionInternal) {
                 jlHandleFatalException(jei)

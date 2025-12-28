@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities
 class GeneratorTargetPatternList(val listTarget: PatternListPanel) : GeneratorTarget {
     @Throws(JuggleExceptionInternal::class)
     override fun addResult(display: String, notation: String?, anim: String?) {
-        @Suppress("KotlinConstantConditions")
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
             if (notation != null && anim != null && notation.equals(
                     "siteswap",

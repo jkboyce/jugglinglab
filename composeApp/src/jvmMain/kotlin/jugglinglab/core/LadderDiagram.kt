@@ -13,7 +13,7 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
 import java.awt.*
@@ -60,7 +60,7 @@ open class LadderDiagram(p: JMLPattern) :
             val jugglers = pat.numberOfJugglers
             if (jugglers > MAX_JUGGLERS) {
                 // allocate enough space for a "too many jugglers" message; see paintLadder()
-                val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
+                val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
                 val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
                 preferredSize = Dimension(mwidth, 1)
                 minimumSize = Dimension(mwidth, 1)
@@ -443,7 +443,7 @@ open class LadderDiagram(p: JMLPattern) :
             val dim = size
             gr.font = MSGFONT
             val fm = gr.fontMetrics
-            val message = getStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
+            val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
             val mwidth = fm.stringWidth(message)
             val x = max((dim.width - mwidth) / 2, 0)
             val y = (dim.height + fm.height) / 2

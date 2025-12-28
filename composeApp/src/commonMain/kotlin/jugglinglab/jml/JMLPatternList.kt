@@ -15,7 +15,7 @@ import jugglinglab.jml.JMLNode.Companion.xmlescape
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlCompareVersions
 
 class JMLPatternList() {
@@ -132,18 +132,18 @@ class JMLPatternList() {
         if (current.nodeType.equals("#root")) {
             current = current.children.find {
                 it.nodeType.equals("jml", ignoreCase = true)
-            } ?: throw JuggleExceptionUser(getStringResource(Res.string.error_missing_jml_tag))
+            } ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_missing_jml_tag))
         }
 
         if (!current.nodeType.equals("jml", ignoreCase = true)) {
-            val message = getStringResource(Res.string.error_missing_jml_tag)
+            val message = jlGetStringResource(Res.string.error_missing_jml_tag)
             throw JuggleExceptionUser(message)
         }
 
         val vers = current.attributes.getValueOf("version")
         if (vers != null) {
             if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
-                val message = getStringResource(Res.string.error_jml_version)
+                val message = jlGetStringResource(Res.string.error_jml_version)
                 throw JuggleExceptionUser(message)
             }
             loadingJmlVersion = vers
@@ -151,7 +151,7 @@ class JMLPatternList() {
 
         val listnode = current.children[0]
         if (!listnode.nodeType.equals("patternlist", ignoreCase = true)) {
-            val message = getStringResource(Res.string.error_missing_patternlist_tag)
+            val message = jlGetStringResource(Res.string.error_missing_patternlist_tag)
             throw JuggleExceptionUser(message)
         }
 
@@ -176,7 +176,7 @@ class JMLPatternList() {
                     if (notation.equals("jml", ignoreCase = true)) {
                         patnode = child.findNode("pattern")
                         if (patnode == null) {
-                            val message = getStringResource(
+                            val message = jlGetStringResource(
                                 Res.string.error_missing_pattern,
                                 linenumber
                             )
@@ -194,7 +194,7 @@ class JMLPatternList() {
                     display, animprefs, notation, anim, patnode, infonode)
                 addLine(-1, rec)
             } else {
-                val message = getStringResource(Res.string.error_illegal_tag)
+                val message = jlGetStringResource(Res.string.error_illegal_tag)
                 throw JuggleExceptionUser(message)
             }
         }

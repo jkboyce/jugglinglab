@@ -11,7 +11,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 
 data class JMLSymmetry(
     val type: Int,
@@ -46,20 +46,20 @@ data class JMLSymmetry(
         ): JMLSymmetry {
             val at = current.attributes
             val symTypeString = at.getValueOf("type")
-                ?: throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_notype))
+                ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_symmetry_notype))
 
             val symType = when {
                 symTypeString.equals("delay", ignoreCase = true) -> TYPE_DELAY
                 symTypeString.equals("switch", ignoreCase = true) -> TYPE_SWITCH
                 symTypeString.equals("switchdelay", ignoreCase = true) -> TYPE_SWITCHDELAY
-                else -> throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_type))
+                else -> throw JuggleExceptionUser(jlGetStringResource(Res.string.error_symmetry_type))
             }
 
             val delay = at.getValueOf("delay")?.let {
                 try {
                     jlParseFiniteDouble(it)
                 } catch (_: NumberFormatException) {
-                    throw JuggleExceptionUser(getStringResource(Res.string.error_symmetry_format))
+                    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_symmetry_format))
                 }
             } ?: -1.0
 

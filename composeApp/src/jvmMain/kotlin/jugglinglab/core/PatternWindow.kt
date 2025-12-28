@@ -204,14 +204,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val mb = JMenuBar()
         mb.add(createFileMenu())
         mb.add(createViewMenu())
-        windowMenu = JMenu(getStringResource(Res.string.gui_window))
+        windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
         mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
 
     private fun createFileMenu(): JMenu {
-        val fileMenu = JMenu(getStringResource(Res.string.gui_file))
+        val fileMenu = JMenu(jlGetStringResource(Res.string.gui_file))
         for (i in fileItems.indices) {
             if (fileItems[i] == null) {
                 fileMenu.addSeparator()
@@ -219,18 +219,18 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             if (fileCommands[i] == "colorprops") {
-                colorsMenu = JMenu(getStringResource(fileItemsStringResources[i]!!))
-                colorsMenu.add(JMenuItem(getStringResource(Res.string.gui_pcmenu_mixed)).apply {
+                colorsMenu = JMenu(jlGetStringResource(fileItemsStringResources[i]!!))
+                colorsMenu.add(JMenuItem(jlGetStringResource(Res.string.gui_pcmenu_mixed)).apply {
                     actionCommand = "colors_mixed"
                     addActionListener(this@PatternWindow)
                 })
-                colorsMenu.add(JMenuItem(getStringResource(Res.string.gui_pcmenu_orbits)).apply {
+                colorsMenu.add(JMenuItem(jlGetStringResource(Res.string.gui_pcmenu_orbits)).apply {
                     actionCommand = "colors_orbits"
                     addActionListener(this@PatternWindow)
                 })
                 colorsMenu.addSeparator()
                 for (i in Prop.colorNames.indices) {
-                    colorsMenu.add(JMenuItem(getStringResource(colorStringResources[i])).apply {
+                    colorsMenu.add(JMenuItem(jlGetStringResource(colorStringResources[i])).apply {
                         actionCommand = "colors_${Prop.colorNames[i]}"
                         addActionListener(this@PatternWindow)
                     })
@@ -239,7 +239,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 continue
             }
 
-            val fileItem = JMenuItem(getStringResource(fileItemsStringResources[i]!!))
+            val fileItem = JMenuItem(jlGetStringResource(fileItemsStringResources[i]!!))
             if (fileShortcuts[i] != ' ') {
                 fileItem.setAccelerator(
                     KeyStroke.getKeyStroke(
@@ -267,7 +267,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun createViewMenu(): JMenu {
-        viewMenu = JMenu(getStringResource(Res.string.gui_view))
+        viewMenu = JMenu(jlGetStringResource(Res.string.gui_view))
         val buttonGroup = ButtonGroup()
         var addingviews = true
 
@@ -280,7 +280,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             if (addingviews) {
                 val viewitem =
-                    JRadioButtonMenuItem(getStringResource(viewItemsStringResources[i]!!))
+                    JRadioButtonMenuItem(jlGetStringResource(viewItemsStringResources[i]!!))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -296,7 +296,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 viewMenu.add(viewitem)
                 buttonGroup.add(viewitem)
             } else {
-                val viewitem = JMenuItem(getStringResource(viewItemsStringResources[i]!!))
+                val viewitem = JMenuItem(jlGetStringResource(viewItemsStringResources[i]!!))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -341,7 +341,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             !Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        var menuname: String = getStringResource(Res.string.gui_help)
+        var menuname: String = jlGetStringResource(Res.string.gui_help)
         if (JugglingLab.isMacOS) {
             // Menus titled "Help" are handled differently by macOS; only want
             // to have one of them across the entire app.
@@ -353,7 +353,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(getStringResource(helpItemsStringResources[i]!!))
+                val helpitem = JMenuItem(jlGetStringResource(helpItemsStringResources[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -634,14 +634,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun changeTitle() {
-        val jd = JDialog(this, getStringResource(Res.string.gui_change_title), true)
+        val jd = JDialog(this, jlGetStringResource(Res.string.gui_change_title), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
         tf.text = view.pattern!!.title
 
-        val okbutton = JButton(getStringResource(Res.string.gui_ok))
+        val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val rec = PatternBuilder.fromJMLPattern(view.pattern!!)
             rec.setTitleString(tf.getText())
@@ -669,13 +669,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     private fun changeTiming() {
-        val jd = JDialog(this, getStringResource(Res.string.gui_change_timing), true)
+        val jd = JDialog(this, jlGetStringResource(Res.string.gui_change_timing), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(getStringResource(Res.string.gui_rescale_percentage))
+        val lab = JLabel(jlGetStringResource(Res.string.gui_rescale_percentage))
         p1.add(lab)
         gb.setConstraints(
             lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -687,7 +687,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             tf, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 5, 0, 0))
         )
 
-        val okbutton = JButton(getStringResource(Res.string.gui_ok))
+        val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val scale: Double
             try {
@@ -728,7 +728,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
     override fun setTitle(title: String?) {
         val newTitle = if (title.isNullOrEmpty()) {
-            getStringResource(Res.string.gui_pwindow_default_window_title)
+            jlGetStringResource(Res.string.gui_pwindow_default_window_title)
         } else {
             title
         }

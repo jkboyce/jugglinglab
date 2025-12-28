@@ -48,10 +48,10 @@ class MarginEquations(val pat: JMLPattern) {
             println("finding margin equations")
         }
         if (pat.numberOfJugglers > 1) {
-            throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_passing))
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_no_passing))
         }
         if (pat.isBouncePattern) {
-            throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_bouncing))
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_no_bouncing))
         }
 
         // Step 1: Figure out the variables in the margin equations. Find the primary events
@@ -179,7 +179,7 @@ class MarginEquations(val pat: JMLPattern) {
                 JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
                 JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
                 JMLSymmetry.TYPE_SWITCH ->
-                    throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_no_switch))
+                    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_no_switch))
             }
         }
 

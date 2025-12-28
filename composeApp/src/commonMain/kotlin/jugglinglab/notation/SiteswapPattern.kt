@@ -21,7 +21,7 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlParseSiteswapPattern
 
 class SiteswapPattern : MHNPattern() {
@@ -130,12 +130,12 @@ class SiteswapPattern : MHNPattern() {
             }
 
             if (pe.currentToken == null) {
-                val message = getStringResource(Res.string.error_pattern_parsing, pe.message)
+                val message = jlGetStringResource(Res.string.error_pattern_parsing, pe.message)
                 throw JuggleExceptionUser(message)
 
             } else {
                 val problem = pe.currentToken!!.next?.image
-                val message = getStringResource(
+                val message = jlGetStringResource(
                     Res.string.error_pattern_syntax,
                     problem,
                     pe.currentToken!!.next?.beginColumn
@@ -144,7 +144,7 @@ class SiteswapPattern : MHNPattern() {
             }
         } catch (tme: TokenMgrError) {
             val problem = tme.curChar.toChar().toString()
-            val message = getStringResource(
+            val message = jlGetStringResource(
                 Res.string.error_pattern_syntax,
                 problem,
                 tme.errorColumn
@@ -179,7 +179,7 @@ class SiteswapPattern : MHNPattern() {
 
         period = tree.beats
         if (tree.throw_sum % tree.beats != 0) {
-            val message = getStringResource(Res.string.error_siteswap_bad_average)
+            val message = jlGetStringResource(Res.string.error_siteswap_bad_average)
             throw JuggleExceptionUser(message)
         }
         numberOfPaths = tree.throw_sum / tree.beats
@@ -224,7 +224,7 @@ class SiteswapPattern : MHNPattern() {
 
         // Random error check, not sure where this should go
         if (bodies != null && bodies!!.numberOfJugglers < numberOfJugglers) {
-            val message = getStringResource(Res.string.error_jugglers_body)
+            val message = jlGetStringResource(Res.string.error_jugglers_body)
             throw JuggleExceptionUser(message)
         }
 

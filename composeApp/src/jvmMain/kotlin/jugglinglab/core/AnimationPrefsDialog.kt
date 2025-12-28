@@ -11,7 +11,7 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.material.*
 import androidx.compose.ui.awt.ComposePanel
 import javax.swing.JDialog
@@ -19,7 +19,7 @@ import javax.swing.JFrame
 
 open class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
     parentFrame,
-    getStringResource(Res.string.gui_animation_preferences),
+    jlGetStringResource(Res.string.gui_animation_preferences),
     true
 ) {
     private var result: AnimationPrefs? = null

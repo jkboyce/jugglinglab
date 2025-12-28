@@ -216,7 +216,7 @@ expect fun jlToStringRounded(value: Double, digits: Int): String
 
 // Load a string resource.
 
-fun getStringResource(key: StringResource, vararg args: Any?): String {
+fun jlGetStringResource(key: StringResource, vararg args: Any?): String {
     val message = runBlocking { getString(key) }
     return if (args.isEmpty()) {
         message
@@ -232,7 +232,7 @@ fun getStringResource(key: StringResource, vararg args: Any?): String {
 // throw a JuggleExceptionUser with a relevant error message.
 
 @Throws(JuggleExceptionUser::class)
-fun getImageResource(source: String): ImageBitmap {
+fun jlGetImageResource(source: String): ImageBitmap {
     return try {
         if (source.contains('/')) {
             // assume it's a URL and load accordingly
@@ -245,7 +245,7 @@ fun getImageResource(source: String): ImageBitmap {
             }
         }
     } catch (e: Exception) {
-        val message = getStringResource(Res.string.error_bad_file, e.message ?: "")
+        val message = jlGetStringResource(Res.string.error_bad_file, e.message ?: "")
         throw JuggleExceptionUser(message)
     }
 }

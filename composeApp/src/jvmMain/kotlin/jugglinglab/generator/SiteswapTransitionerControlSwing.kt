@@ -8,7 +8,7 @@ package jugglinglab.generator
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.jlConstraints
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -33,7 +33,7 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         val p1 = JPanel() // top section
         p1.setLayout(gb)
 
-        val lab1 = JLabel(getStringResource(Res.string.gui_from_pattern))
+        val lab1 = JLabel(jlGetStringResource(Res.string.gui_from_pattern))
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 10, 3))
@@ -44,7 +44,7 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
             tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 0, 10, 0))
         )
 
-        val lab2 = JLabel(getStringResource(Res.string.gui_to_pattern))
+        val lab2 = JLabel(jlGetStringResource(Res.string.gui_to_pattern))
         p1.add(lab2)
         gb.setConstraints(
             lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 10, 3))
@@ -67,7 +67,7 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         val p2 = JPanel() // multiplexing section
         p2.setLayout(gb)
 
-        cb1 = JCheckBox(getStringResource(Res.string.gui_multiplexing_in_transitions), null)
+        cb1 = JCheckBox(jlGetStringResource(Res.string.gui_multiplexing_in_transitions), null)
         p2.add(cb1)
         gb.setConstraints(
             cb1, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(5, 0, 0, 0))
@@ -78,7 +78,7 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         tf3 = JTextField(3)
         p3.add(tf3)
         gb.setConstraints(tf3, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
-        lab4 = JLabel(getStringResource(Res.string.gui_simultaneous_throws))
+        lab4 = JLabel(jlGetStringResource(Res.string.gui_simultaneous_throws))
         p3.add(lab4)
         gb.setConstraints(
             lab4, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
@@ -89,13 +89,13 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
             p3, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 30, 0, 0))
         )
 
-        cb2 = JCheckBox(getStringResource(Res.string.gui_no_simultaneous_catches), null)
+        cb2 = JCheckBox(jlGetStringResource(Res.string.gui_no_simultaneous_catches), null)
         p2.add(cb2)
         gb.setConstraints(
             cb2, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 0))
         )
 
-        cb3 = JCheckBox(getStringResource(Res.string.gui_no_clustered_throws), null)
+        cb3 = JCheckBox(jlGetStringResource(Res.string.gui_no_clustered_throws), null)
         p2.add(cb3)
         gb.setConstraints(
             cb3, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 25, 0, 0))

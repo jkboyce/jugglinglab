@@ -11,7 +11,7 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlToStringRounded
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -84,7 +84,7 @@ fun AnimationPrefsControl(
             newPrefs.slowdown = parseDouble(slowdown, "slowdown")
             newPrefs.border = parseInt(border, "border")
         } catch (e: Exception) {
-            errorMessage = getStringResource(Res.string.error_number_format, e.message)
+            errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
             return
         }
 

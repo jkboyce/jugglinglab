@@ -12,7 +12,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLDefs.jmlTaglist
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.parser.Parser
 import com.fleeksoft.ksoup.nodes.Node
@@ -117,7 +117,7 @@ class JMLTreeBuilder : NodeVisitor {
             }
             if (node.tagName() != "#root" && node.tagName() !in jmlTaglist) {
                 if (error == null) {
-                    error = getStringResource(
+                    error = jlGetStringResource(
                         Res.string.error_unknown_tag_at_line,
                         node.tagName(),
                         node.sourceRange().start().lineNumber()

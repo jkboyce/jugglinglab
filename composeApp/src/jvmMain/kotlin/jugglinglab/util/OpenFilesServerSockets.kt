@@ -211,7 +211,7 @@ internal class Connection(var client: Socket) : Thread() {
                         try {
                             ApplicationWindow.openJMLFile(file)
                         } catch (jeu: JuggleExceptionUser) {
-                            val message = getStringResource(Res.string.error_reading_file, file.getName())
+                            val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message
                             jlHandleUserException(null, msg)
                         } catch (jei: JuggleExceptionInternal) {

@@ -142,10 +142,9 @@ open class ApplicationPanel(
     // Return the callback function to invoke when the user clicks
     // "Run" on the pattern entry control.
 
-    private fun onRunPatternEntry(): (String) -> Unit {
-        return { params ->
+    private fun onRunPatternEntry(): (ParameterList) -> Unit {
+        return { pl ->
             try {
-                val pl = ParameterList(params)
                 val p = SiteswapPattern().fromParameters(pl)
                 val jc = (AnimationPrefs()).fromParameters(pl)
                 pl.errorIfParametersLeft()
@@ -154,7 +153,6 @@ open class ApplicationPanel(
                 val notation = p.notationName
                 val config: String = p.toString()
                 val pat = fromBasePattern(notation, config)
-
                 if (!bringToFront(pat.jlHashCode)) {
                     if (animtarget != null) {
                         animtarget.restartView(pat, jc)
@@ -190,7 +188,7 @@ open class ApplicationPanel(
                                 // jtp.setSelectedComponent(plp);
                             } else {
                                 val title =
-                                    trans.notationName + " " + getStringResource(Res.string.gui_patterns)
+                                    trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 pwot = GeneratorTargetPatternList(pw.patternListPanel)
                             }
@@ -207,7 +205,7 @@ open class ApplicationPanel(
                             val parentComponent = pw ?: plp
                             jlHandleUserMessage(
                                 parentComponent,
-                                getStringResource(Res.string.gui_generator_stopped_title),
+                                jlGetStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
                             )
                         } catch (_: JuggleExceptionInterrupted) {
@@ -247,7 +245,7 @@ open class ApplicationPanel(
                                 // jtp.setSelectedComponent(plp);
                             } else {
                                 val title =
-                                    gen.notationName + " " + getStringResource(Res.string.gui_patterns)
+                                    gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 gtpl = GeneratorTargetPatternList(pw.patternListPanel)
                             }
@@ -264,7 +262,7 @@ open class ApplicationPanel(
                             val parentComponent = pw ?: plp
                             jlHandleUserMessage(
                                 parentComponent,
-                                getStringResource(Res.string.gui_generator_stopped_title),
+                                jlGetStringResource(Res.string.gui_generator_stopped_title),
                                 ex.message
                             )
                         } catch (_: JuggleExceptionInterrupted) {

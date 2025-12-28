@@ -106,7 +106,6 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
         } else {
             ladderPanel.validate() // to make ladder redraw
         }
-
         patternWindow?.setTitle(p.title)
         patternWindow?.updateColorsMenu()
     }

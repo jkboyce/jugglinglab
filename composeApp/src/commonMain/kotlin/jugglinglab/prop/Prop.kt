@@ -12,7 +12,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
@@ -79,7 +79,7 @@ abstract class Prop {
                 return RingProp()
             }
 
-            val message = getStringResource(Res.string.error_prop_type, type)
+            val message = jlGetStringResource(Res.string.error_prop_type, type)
             throw JuggleExceptionUser(message)
         }
 

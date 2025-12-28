@@ -58,7 +58,7 @@ data class MHNBody(
                             // position coordinate specified
                             val closeIndex = beatStr.indexOf(')', pos + 1)
                             if (closeIndex < 0) {
-                                val message = getStringResource(Res.string.error_body_noparen)
+                                val message = jlGetStringResource(Res.string.error_body_noparen)
                                 throw JuggleExceptionUser(message)
                             }
                             val coordStr = beatStr.substring(pos + 1, closeIndex)
@@ -72,7 +72,7 @@ data class MHNBody(
                                 }
                                 coordTokens.add(coord)
                             } catch (_: NumberFormatException) {
-                                val message = getStringResource(Res.string.error_body_coordinate)
+                                val message = jlGetStringResource(Res.string.error_body_coordinate)
                                 throw JuggleExceptionUser(message)
                             }
                             pos = closeIndex + 1
@@ -80,7 +80,7 @@ data class MHNBody(
 
                         else -> {
                             val message =
-                                getStringResource(Res.string.error_body_character, ch.toString())
+                                jlGetStringResource(Res.string.error_body_character, ch.toString())
                             throw JuggleExceptionUser(message)
                         }
                     }

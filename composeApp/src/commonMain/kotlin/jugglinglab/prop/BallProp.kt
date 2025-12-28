@@ -12,7 +12,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlParseFiniteDouble
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
@@ -98,17 +98,17 @@ class BallProp : Prop() {
                         val alpha = if (tokens.size == 4) intTokens[3] else 255
 
                         if (listOf(red, green, blue, alpha).any { it !in 0..255 }) {
-                            val message = getStringResource(Res.string.error_prop_color, colorstr)
+                            val message = jlGetStringResource(Res.string.error_prop_color, colorstr)
                             throw JuggleExceptionUser(message)
                         }
 
                         temp = Color(red, green, blue, alpha)
                     } catch (_: NumberFormatException) {
-                        val message = getStringResource(Res.string.error_prop_color, colorstr)
+                        val message = jlGetStringResource(Res.string.error_prop_color, colorstr)
                         throw JuggleExceptionUser(message)
                     }
                 } else {
-                    val message = getStringResource(Res.string.error_token_count)
+                    val message = jlGetStringResource(Res.string.error_token_count)
                     throw JuggleExceptionUser(message)
                 }
             }
@@ -116,7 +116,7 @@ class BallProp : Prop() {
             if (temp != null) {
                 color = temp
             } else {
-                val message = getStringResource(Res.string.error_prop_color, colorstr)
+                val message = jlGetStringResource(Res.string.error_prop_color, colorstr)
                 throw JuggleExceptionUser(message)
             }
         }
@@ -128,11 +128,11 @@ class BallProp : Prop() {
                 if (temp > 0) {
                     diam = temp
                 } else {
-                    val message = getStringResource(Res.string.error_prop_diameter)
+                    val message = jlGetStringResource(Res.string.error_prop_diameter)
                     throw JuggleExceptionUser(message)
                 }
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "diam")
+                val message = jlGetStringResource(Res.string.error_number_format, "diam")
                 throw JuggleExceptionUser(message)
             }
         }

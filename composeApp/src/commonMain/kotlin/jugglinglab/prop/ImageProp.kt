@@ -13,8 +13,8 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.ParameterDescriptor
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlParseFiniteDouble
-import jugglinglab.util.getStringResource
-import jugglinglab.util.getImageResource
+import jugglinglab.util.jlGetStringResource
+import jugglinglab.util.jlGetImageResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
@@ -36,7 +36,7 @@ class ImageProp : Prop() {
 
     init {
         try {
-            baseImage = getImageResource(IMAGE_DEF)
+            baseImage = jlGetImageResource(IMAGE_DEF)
         } catch (e: Exception) {
             throw JuggleExceptionInternal("ImageProp init error (${e.message})")
         }
@@ -77,7 +77,7 @@ class ImageProp : Prop() {
 
         val sourcestr = pl.getParameter("image")
         if (sourcestr != null) {
-            baseImage = getImageResource(sourcestr)
+            baseImage = jlGetImageResource(sourcestr)
             imageSource = sourcestr
         }
 
@@ -91,7 +91,7 @@ class ImageProp : Prop() {
                     throw NumberFormatException()
                 }
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "width")
+                val message = jlGetStringResource(Res.string.error_number_format, "width")
                 throw JuggleExceptionUser(message)
             }
         }

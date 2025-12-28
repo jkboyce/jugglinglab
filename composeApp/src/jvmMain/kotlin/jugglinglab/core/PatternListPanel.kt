@@ -17,7 +17,7 @@ import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlConstraints
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.view.View
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -201,7 +201,7 @@ class PatternListPanel private constructor() : JPanel() {
                 continue
             }
 
-            val item = JMenuItem(getStringResource(popupItemsStringResources[i]!!))
+            val item = JMenuItem(jlGetStringResource(popupItemsStringResources[i]!!))
             item.actionCommand = popupCommands[i]
             item.addActionListener(al)
 
@@ -294,7 +294,7 @@ class PatternListPanel private constructor() : JPanel() {
     // Open a dialog to allow the user to insert a line of text.
 
     private fun insertText(row: Int) {
-        makeDialog(getStringResource(Res.string.gui_pldialog_insert_text), "")
+        makeDialog(jlGetStringResource(Res.string.gui_pldialog_insert_text), "")
 
         okButton!!.addActionListener { _: ActionEvent? ->
             val display = tf!!.getText()
@@ -316,7 +316,7 @@ class PatternListPanel private constructor() : JPanel() {
 
     private fun changeDisplayText(row: Int) {
         val rec = listModel.getElementAt(row)
-        makeDialog(getStringResource(Res.string.gui_pldialog_change_display_text), rec.display)
+        makeDialog(jlGetStringResource(Res.string.gui_pldialog_change_display_text), rec.display)
 
         okButton!!.addActionListener { _: ActionEvent? ->
             rec.display = tf!!.getText()
@@ -339,7 +339,7 @@ class PatternListPanel private constructor() : JPanel() {
         tf = JTextField(20)
         tf!!.text = defaultText
 
-        okButton = JButton(getStringResource(Res.string.gui_ok))
+        okButton = JButton(jlGetStringResource(Res.string.gui_ok))
 
         d.contentPane.add(tf)
         gb.setConstraints(

@@ -8,7 +8,7 @@ package jugglinglab.generator
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.jlConstraints
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -54,7 +54,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p2 = JPanel()  // top section
         p2.setLayout(gb)
-        val lab6 = JLabel(getStringResource(Res.string.gui_balls))
+        val lab6 = JLabel(jlGetStringResource(Res.string.gui_balls))
         p2.add(lab6)
         gb.setConstraints(
             lab6, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
@@ -62,7 +62,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         tf1 = JTextField(3)
         p2.add(tf1)
         gb.setConstraints(tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
-        val lab7 = JLabel(getStringResource(Res.string.gui_max__throw))
+        val lab7 = JLabel(jlGetStringResource(Res.string.gui_max__throw))
         p2.add(lab7)
         gb.setConstraints(
             lab7, jlConstraints(GridBagConstraints.LINE_END, 2, 0, Insets(0, 15, 0, 3))
@@ -70,7 +70,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         tf2 = JTextField(3)
         p2.add(tf2)
         gb.setConstraints(tf2, jlConstraints(GridBagConstraints.LINE_START, 3, 0))
-        val lab8 = JLabel(getStringResource(Res.string.gui_period))
+        val lab8 = JLabel(jlGetStringResource(Res.string.gui_period))
         p2.add(lab8)
         gb.setConstraints(
             lab8, jlConstraints(GridBagConstraints.LINE_END, 4, 0, Insets(0, 15, 0, 3))
@@ -81,7 +81,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p6 = JPanel() // Jugglers/Rhythm section
         p6.setLayout(gb)
-        val lab14 = JLabel(getStringResource(Res.string.gui_jugglers))
+        val lab14 = JLabel(jlGetStringResource(Res.string.gui_jugglers))
         p6.add(lab14)
         gb.setConstraints(lab14, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
         c1 = JComboBox<String?>()
@@ -90,19 +90,19 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         gb.setConstraints(
             c1, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
         )
-        val lab9 = JLabel(getStringResource(Res.string.gui_rhythm))
+        val lab9 = JLabel(jlGetStringResource(Res.string.gui_rhythm))
         p6.add(lab9)
         gb.setConstraints(
             lab9, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(8, 0, 0, 0))
         )
         val bg1 = ButtonGroup()
-        cb1 = JRadioButton(getStringResource(Res.string.gui_asynch))
+        cb1 = JRadioButton(jlGetStringResource(Res.string.gui_asynch))
         bg1.add(cb1)
         p6.add(cb1)
         gb.setConstraints(
             cb1, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
         )
-        cb2 = JRadioButton(getStringResource(Res.string.gui_synch))
+        cb2 = JRadioButton(jlGetStringResource(Res.string.gui_synch))
         bg1.add(cb2)
         p6.add(cb2)
         gb.setConstraints(
@@ -117,25 +117,25 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         */
         val p7 = JPanel() // Compositions section
         p7.setLayout(gb)
-        val lab10 = JLabel(getStringResource(Res.string.gui_compositions))
+        val lab10 = JLabel(jlGetStringResource(Res.string.gui_compositions))
         p7.add(lab10)
         gb.setConstraints(
             lab10, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(5, 0, 0, 0))
         )
         val bg2 = ButtonGroup()
-        cb5 = JRadioButton(getStringResource(Res.string.gui_all))
+        cb5 = JRadioButton(jlGetStringResource(Res.string.gui_all))
         bg2.add(cb5)
         p7.add(cb5)
         gb.setConstraints(
             cb5, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
         )
-        cb4 = JRadioButton(getStringResource(Res.string.gui_non_obvious))
+        cb4 = JRadioButton(jlGetStringResource(Res.string.gui_non_obvious))
         bg2.add(cb4)
         p7.add(cb4)
         gb.setConstraints(
             cb4, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
         )
-        cb6 = JRadioButton(getStringResource(Res.string.gui_none__prime_only_))
+        cb6 = JRadioButton(jlGetStringResource(Res.string.gui_none__prime_only_))
         bg2.add(cb6)
         p7.add(cb6)
         gb.setConstraints(
@@ -144,40 +144,40 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p8 = JPanel() // Find section
         p8.setLayout(gb)
-        val lab11 = JLabel(getStringResource(Res.string.gui_find))
+        val lab11 = JLabel(jlGetStringResource(Res.string.gui_find))
         p8.add(lab11)
         gb.setConstraints(lab11, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
-        cb7 = JCheckBox(getStringResource(Res.string.gui_ground_state_patterns), null)
+        cb7 = JCheckBox(jlGetStringResource(Res.string.gui_ground_state_patterns), null)
         p8.add(cb7)
         gb.setConstraints(
             cb7, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
         )
-        cb8 = JCheckBox(getStringResource(Res.string.gui_excited_state_patterns), null)
+        cb8 = JCheckBox(jlGetStringResource(Res.string.gui_excited_state_patterns), null)
         p8.add(cb8)
         gb.setConstraints(
             cb8, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
         )
-        cb9 = JCheckBox(getStringResource(Res.string.gui_transition_throws), null)
+        cb9 = JCheckBox(jlGetStringResource(Res.string.gui_transition_throws), null)
         p8.add(cb9)
         gb.setConstraints(
             cb9, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
         )
-        cb10 = JCheckBox(getStringResource(Res.string.gui_pattern_rotations), null)
+        cb10 = JCheckBox(jlGetStringResource(Res.string.gui_pattern_rotations), null)
         p8.add(cb10)
         gb.setConstraints(
             cb10, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0))
         )
-        cb17 = JCheckBox(getStringResource(Res.string.gui_juggler_permutations), null)
+        cb17 = JCheckBox(jlGetStringResource(Res.string.gui_juggler_permutations), null)
         p8.add(cb17)
         gb.setConstraints(
             cb17, jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0))
         )
-        cb15 = JCheckBox(getStringResource(Res.string.gui_connected_patterns), null)
+        cb15 = JCheckBox(jlGetStringResource(Res.string.gui_connected_patterns), null)
         p8.add(cb15)
         gb.setConstraints(
             cb15, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 10, 0, 0))
         )
-        cb18 = JCheckBox(getStringResource(Res.string.gui_symmetric_patterns), null)
+        cb18 = JCheckBox(jlGetStringResource(Res.string.gui_symmetric_patterns), null)
         p8.add(cb18)
         gb.setConstraints(
             cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0))
@@ -185,7 +185,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p9 = JPanel()  // Multiplexing section
         p9.setLayout(gb)
-        cb12 = JCheckBox(getStringResource(Res.string.gui_multiplexing), null)
+        cb12 = JCheckBox(jlGetStringResource(Res.string.gui_multiplexing), null)
         cb12.setHorizontalTextPosition(SwingConstants.LEFT)
         p9.add(cb12)
         gb.setConstraints(
@@ -194,7 +194,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        lab13 = JLabel(getStringResource(Res.string.gui_simultaneous_throws))
+        lab13 = JLabel(jlGetStringResource(Res.string.gui_simultaneous_throws))
         p3.add(lab13)
         gb.setConstraints(
             lab13, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
@@ -208,19 +208,19 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
             p3, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 15, 0, 0))
         )
 
-        cb13 = JCheckBox(getStringResource(Res.string.gui_no_simultaneous_catches), null)
+        cb13 = JCheckBox(jlGetStringResource(Res.string.gui_no_simultaneous_catches), null)
         p9.add(cb13)
         gb.setConstraints(
             cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
         )
 
-        cb14 = JCheckBox(getStringResource(Res.string.gui_no_clustered_throws), null)
+        cb14 = JCheckBox(jlGetStringResource(Res.string.gui_no_clustered_throws), null)
         p9.add(cb14)
         gb.setConstraints(
             cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
         )
 
-        cb16 = JCheckBox(getStringResource(Res.string.gui_true_multiplexing), null)
+        cb16 = JCheckBox(jlGetStringResource(Res.string.gui_true_multiplexing), null)
         p9.add(cb16)
         gb.setConstraints(
             cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0))
@@ -239,7 +239,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         val p1 = JPanel()  // bottom section
         p1.setLayout(gb)
-        lab1 = JLabel(getStringResource(Res.string.gui_exclude_these_throws))
+        lab1 = JLabel(jlGetStringResource(Res.string.gui_exclude_these_throws))
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
@@ -247,7 +247,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         tf4 = JTextField(10)
         p1.add(tf4)
         gb.setConstraints(tf4, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
-        lab2 = JLabel(getStringResource(Res.string.gui_include_these_throws))
+        lab2 = JLabel(jlGetStringResource(Res.string.gui_include_these_throws))
         p1.add(lab2)
         gb.setConstraints(
             lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 0, 3))
@@ -260,7 +260,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         p1.add(tf6);
         gb.setConstraints(tf6, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2));
         */
-        lab4 = JLabel(getStringResource(Res.string.gui_passing_communication_delay))
+        lab4 = JLabel(jlGetStringResource(Res.string.gui_passing_communication_delay))
         p1.add(lab4)
         gb.setConstraints(
             lab4, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(3, 0, 0, 3))

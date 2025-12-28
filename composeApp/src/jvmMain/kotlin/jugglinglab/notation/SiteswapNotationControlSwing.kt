@@ -14,7 +14,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.jlConstraints
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -27,7 +27,7 @@ import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class SiteswapNotationControlSwing: JPanel() {
+class SiteswapNotationControlSwing : JPanel() {
     var tf1: JTextField
     var tf2: JTextField
     var tf3: JTextField
@@ -46,7 +46,7 @@ class SiteswapNotationControlSwing: JPanel() {
         val gb = GridBagLayout()
         p1.setLayout(gb)
 
-        val lab1 = JLabel(getStringResource(Res.string.gui_pattern))
+        val lab1 = JLabel(jlGetStringResource(Res.string.gui_pattern))
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(
@@ -60,7 +60,7 @@ class SiteswapNotationControlSwing: JPanel() {
                 GridBagConstraints.LINE_START, 1, 0, Insets(BORDER, 0, 0, BORDER)
             )
         )
-        val lab3 = JLabel(getStringResource(Res.string.gui_beats_per_second))
+        val lab3 = JLabel(jlGetStringResource(Res.string.gui_beats_per_second))
         p1.add(lab3)
         gb.setConstraints(
             lab3, jlConstraints(
@@ -74,7 +74,7 @@ class SiteswapNotationControlSwing: JPanel() {
                 GridBagConstraints.LINE_START, 1, 1, Insets(2 * VSPACING, 0, 0, BORDER)
             )
         )
-        val lab2 = JLabel(getStringResource(Res.string.gui_dwell_beats))
+        val lab2 = JLabel(jlGetStringResource(Res.string.gui_dwell_beats))
         p1.add(lab2)
         gb.setConstraints(
             lab2, jlConstraints(
@@ -89,19 +89,19 @@ class SiteswapNotationControlSwing: JPanel() {
             )
         )
 
-        val lab4 = JLabel(getStringResource(Res.string.gui_hand_movement))
+        val lab4 = JLabel(jlGetStringResource(Res.string.gui_hand_movement))
         p1.add(lab4)
         gb.setConstraints(
             lab4, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 3, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
-        cb1 = JComboBox<String?>()
-        cb1.addItem(getStringResource(Res.string.gui_mhnhands_name_default))
+        cb1 = JComboBox()
+        cb1.addItem(jlGetStringResource(Res.string.gui_mhnhands_name_default))
         for (res in builtinHandsStringResources) {
-            cb1.addItem(getStringResource(res))
+            cb1.addItem(jlGetStringResource(res))
         }
-        cb1.addItem(getStringResource(Res.string.gui_mhnhands_name_custom))
+        cb1.addItem(jlGetStringResource(Res.string.gui_mhnhands_name_custom))
         p1.add(cb1)
         gb.setConstraints(
             cb1, jlConstraints(
@@ -143,19 +143,19 @@ class SiteswapNotationControlSwing: JPanel() {
             }
         })
 
-        val lab5 = JLabel(getStringResource(Res.string.gui_body_movement))
+        val lab5 = JLabel(jlGetStringResource(Res.string.gui_body_movement))
         p1.add(lab5)
         gb.setConstraints(
             lab5, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 5, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
-        cb2 = JComboBox<String?>()
-        cb2.addItem(getStringResource(Res.string.gui_mhnbody_name_default))
+        cb2 = JComboBox()
+        cb2.addItem(jlGetStringResource(Res.string.gui_mhnbody_name_default))
         for (res in builtinBodyStringResources) {
-            cb2.addItem(getStringResource(res))
+            cb2.addItem(jlGetStringResource(res))
         }
-        cb2.addItem(getStringResource(Res.string.gui_mhnbody_name_custom))
+        cb2.addItem(jlGetStringResource(Res.string.gui_mhnbody_name_custom))
         p1.add(cb2)
         gb.setConstraints(
             cb2, jlConstraints(
@@ -196,16 +196,16 @@ class SiteswapNotationControlSwing: JPanel() {
             }
         })
 
-        val propLabel = JLabel(getStringResource(Res.string.gui_prop_type))
+        val propLabel = JLabel(jlGetStringResource(Res.string.gui_prop_type))
         p1.add(propLabel)
         gb.setConstraints(
             propLabel, jlConstraints(
                 GridBagConstraints.LINE_END, 0, 7, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
-        cb3 = JComboBox<String?>()
+        cb3 = JComboBox()
         for (res in Prop.builtinPropsStringResources) {
-            cb3.addItem(getStringResource(res))
+            cb3.addItem(jlGetStringResource(res))
         }
         p1.add(cb3)
         gb.setConstraints(
@@ -214,7 +214,7 @@ class SiteswapNotationControlSwing: JPanel() {
             )
         )
 
-        val lab6 = JLabel(getStringResource(Res.string.gui_manual_settings))
+        val lab6 = JLabel(jlGetStringResource(Res.string.gui_manual_settings))
         p1.add(lab6)
         gb.setConstraints(
             lab6, jlConstraints(
@@ -266,32 +266,28 @@ class SiteswapNotationControlSwing: JPanel() {
     @get:Throws(JuggleExceptionUser::class)
     val parameterList: ParameterList
         get() {
-            val sb = StringBuilder(256)
-            sb.append("pattern=")
-            sb.append(tf1.getText())
-            if (cb3.getSelectedIndex() != 0) sb.append(";prop=")
-                .append(Prop.builtinProps[cb3.getSelectedIndex()].lowercase(Locale.getDefault()))
+            val sb = StringBuilder()
+            sb.append("pattern=").append(tf1.getText())
+            if (cb3.getSelectedIndex() != 0) {
+                sb.append(";prop=")
+                    .append(Prop.builtinProps[cb3.getSelectedIndex()].lowercase(Locale.getDefault()))
+            }
             if (!tf2.getText().isEmpty()) {
                 if (tf2.getText() != jlToStringRounded(MHNPattern.DWELL_DEFAULT, 2)) {
-                    sb.append(";dwell=")
-                    sb.append(tf2.getText())
+                    sb.append(";dwell=").append(tf2.getText())
                 }
             }
             if (!tf3.getText().isEmpty()) {
-                sb.append(";bps=")
-                sb.append(tf3.getText())
+                sb.append(";bps=").append(tf3.getText())
             }
             if (!tf4.getText().isEmpty()) {
-                sb.append(";hands=")
-                sb.append(tf4.getText())
+                sb.append(";hands=").append(tf4.getText())
             }
             if (!tf5.getText().isEmpty()) {
-                sb.append(";body=")
-                sb.append(tf5.getText())
+                sb.append(";body=").append(tf5.getText())
             }
             if (!tf6.getText().isEmpty()) {
-                sb.append(";")
-                sb.append(tf6.getText())
+                sb.append(";").append(tf6.getText())
             }
 
             val pl = ParameterList(sb.toString())

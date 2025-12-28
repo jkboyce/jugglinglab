@@ -26,7 +26,7 @@ import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPSolver.ResultStatus
 import com.google.ortools.linearsolver.MPVariable
 import jugglinglab.jml.PatternBuilder
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -373,7 +373,7 @@ class Optimizer private constructor(pat: JMLPattern) {
                 if (Constants.DEBUG_OPTIMIZE) {
                     println("---- Optimizer not loaded, bailing")
                 }
-                throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_unavailable))
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_unavailable))
             }
 
             val opt = Optimizer(pat)
@@ -383,7 +383,7 @@ class Optimizer private constructor(pat: JMLPattern) {
                 if (success) {
                     opt.updatePattern()
                 } else {
-                    throw JuggleExceptionUser(getStringResource(Res.string.error_optimizer_failed))
+                    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_failed))
                 }
             } else if (Constants.DEBUG_OPTIMIZE) {
                 // do nothing if no margin equations

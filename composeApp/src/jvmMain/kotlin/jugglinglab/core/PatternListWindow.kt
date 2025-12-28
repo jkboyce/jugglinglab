@@ -118,21 +118,21 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     private fun createMenus() {
         val mb = JMenuBar()
         mb.add(createFileMenu())
-        this.windowMenu = JMenu(getStringResource(Res.string.gui_window))
+        this.windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
         mb.add(this.windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
 
     private fun createFileMenu(): JMenu {
-        val filemenu = JMenu(getStringResource(Res.string.gui_file))
+        val filemenu = JMenu(jlGetStringResource(Res.string.gui_file))
         for (i in fileItems.indices) {
             if (fileItems[i] == null) {
                 filemenu.addSeparator()
                 continue
             }
 
-            val fileitem = JMenuItem(getStringResource(fileItemsStringResources[i]!!))
+            val fileitem = JMenuItem(jlGetStringResource(fileItemsStringResources[i]!!))
 
             if (fileShortcuts[i] != ' ') {
                 fileitem.setAccelerator(
@@ -157,7 +157,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             !Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        var menuname: String = getStringResource(Res.string.gui_help)
+        var menuname: String = jlGetStringResource(Res.string.gui_help)
         // Menus titled "Help" are handled differently by macOS; only want to
         // have one of them across the entire app.
         if (JugglingLab.isMacOS) {
@@ -169,7 +169,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(getStringResource(helpItemsStringResources[i]!!))
+                val helpitem = JMenuItem(jlGetStringResource(helpItemsStringResources[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -308,14 +308,14 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     // Open a dialog to allow the user to change the pattern list's title.
 
     private fun changeTitle() {
-        val jd = JDialog(this, getStringResource(Res.string.gui_change_title), true)
+        val jd = JDialog(this, jlGetStringResource(Res.string.gui_change_title), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
         tf.text = patternListPanel.patternList.title
 
-        val okbutton = JButton(getStringResource(Res.string.gui_ok))
+        val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
             val newtitle = tf.getText()
             patternListPanel.patternList.title = newtitle
@@ -346,7 +346,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     override fun setTitle(newTitle: String?) {
         var title = newTitle
         if (title.isNullOrEmpty()) {
-            title = getStringResource(Res.string.gui_plwindow_default_window_title)
+            title = jlGetStringResource(Res.string.gui_plwindow_default_window_title)
         }
         super.setTitle(title)
         ApplicationWindow.updateWindowMenus()
@@ -358,8 +358,8 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
     override fun dispose() {
         if (patternListPanel.hasUnsavedChanges) {
-            val message = getStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
-            val title = getStringResource(Res.string.gui_plwindow_unsaved_changes_title)
+            val message = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
+            val title = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
             val res = JOptionPane.showConfirmDialog(
                 patternListPanel, message, title, JOptionPane.YES_NO_CANCEL_OPTION,

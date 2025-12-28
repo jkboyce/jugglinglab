@@ -11,7 +11,7 @@ import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 
 data class JMLPosition(
     val x: Double = 0.0,
@@ -94,18 +94,18 @@ data class JMLPosition(
                     }
                 }
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_position_coordinate)
+                val message = jlGetStringResource(Res.string.error_position_coordinate)
                 throw JuggleExceptionUser(message)
             }
             val tempjuggler = try {
                 jugglerstr.toInt()
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "juggler")
+                val message = jlGetStringResource(Res.string.error_number_format, "juggler")
                 throw JuggleExceptionUser(message)
             }
 
             if (current.children.isNotEmpty()) {
-                val message = getStringResource(Res.string.error_position_subtag)
+                val message = jlGetStringResource(Res.string.error_position_subtag)
                 throw JuggleExceptionUser(message)
             }
 

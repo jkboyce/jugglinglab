@@ -609,7 +609,7 @@ class EditLadderDiagram(
                 continue
             }
 
-            val item = JMenuItem(getStringResource(popupItemsStringResources[i]!!))
+            val item = JMenuItem(jlGetStringResource(popupItemsStringResources[i]!!))
             val command: String? = popupCommands[i]
             item.actionCommand = command
             item.addActionListener(this)
@@ -791,13 +791,13 @@ class EditLadderDiagram(
         val startprop = pattern.getProp(propnum)
         val prtypes: List<String> = Prop.builtinProps
 
-        val jd = JDialog(parentFrame, getStringResource(Res.string.gui_define_prop), true)
+        val jd = JDialog(parentFrame, jlGetStringResource(Res.string.gui_define_prop), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(getStringResource(Res.string.gui_prop_type))
+        val lab = JLabel(jlGetStringResource(Res.string.gui_prop_type))
         p1.add(lab)
         gb.setConstraints(
             lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -836,14 +836,14 @@ class EditLadderDiagram(
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton = JButton(getStringResource(Res.string.gui_cancel))
+        val cancelbutton = JButton(jlGetStringResource(Res.string.gui_cancel))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
-        val okbutton = JButton(getStringResource(Res.string.gui_ok))
+        val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
@@ -952,13 +952,13 @@ class EditLadderDiagram(
 
         val pptypes: List<String> = Path.builtinPaths
 
-        val jd = JDialog(parentFrame, getStringResource(Res.string.gui_define_throw), true)
+        val jd = JDialog(parentFrame, jlGetStringResource(Res.string.gui_define_throw), true)
         val gb = GridBagLayout()
         jd.contentPane.setLayout(gb)
 
         val p1 = JPanel()
         p1.setLayout(gb)
-        val lab = JLabel(getStringResource(Res.string.gui_throw_type))
+        val lab = JLabel(jlGetStringResource(Res.string.gui_throw_type))
         p1.add(lab)
         gb.setConstraints(
             lab, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
@@ -997,14 +997,14 @@ class EditLadderDiagram(
 
         val p3 = JPanel()
         p3.setLayout(gb)
-        val cancelbutton = JButton(getStringResource(Res.string.gui_cancel))
+        val cancelbutton = JButton(jlGetStringResource(Res.string.gui_cancel))
         p3.add(cancelbutton)
         gb.setConstraints(
             cancelbutton,
             jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 0))
         )
         cancelbutton.addActionListener { _: ActionEvent? -> jd.dispose() }
-        val okbutton = JButton(getStringResource(Res.string.gui_ok))
+        val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         p3.add(okbutton)
         gb.setConstraints(
             okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
@@ -1170,7 +1170,7 @@ class EditLadderDiagram(
                 tf.addCaretListener { _: CaretEvent? -> }
             } else if (pd[i].type == ParameterDescriptor.TYPE_ICON) {
                 val fileSource = pd[i].value as String
-                val composeImage = getImageResource(fileSource)
+                val composeImage = jlGetImageResource(fileSource)
 
                 val icon = ImageIcon(composeImage.toAwtImage(), fileSource)
                 val maxHeight = 100f
@@ -1210,7 +1210,7 @@ class EditLadderDiagram(
                             } catch (_: MalformedURLException) {
                                 // this should never happen
                                 jlHandleFatalException(
-                                    JuggleExceptionUser(getStringResource(Res.string.error_malformed_url))
+                                    JuggleExceptionUser(jlGetStringResource(Res.string.error_malformed_url))
                                 )
                             }
                         }
@@ -1258,7 +1258,7 @@ class EditLadderDiagram(
                         }
                     } catch (_: NumberFormatException) {
                         val message =
-                            getStringResource(Res.string.error_number_format, dialog[i].name)
+                            jlGetStringResource(Res.string.error_number_format, dialog[i].name)
                         throw JuggleExceptionUser(message)
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_CHOICE) {
@@ -1279,7 +1279,7 @@ class EditLadderDiagram(
                         }
                     } catch (_: NumberFormatException) {
                         val message =
-                            getStringResource(Res.string.error_number_format, dialog[i].name)
+                            jlGetStringResource(Res.string.error_number_format, dialog[i].name)
                         throw JuggleExceptionUser(message)
                     }
                 } else if (dialog[i].type == ParameterDescriptor.TYPE_ICON) {

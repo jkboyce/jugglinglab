@@ -25,7 +25,7 @@ import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import kotlin.math.abs
 import androidx.compose.ui.unit.IntSize
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 
 open class AnimationPanel : JPanel(), Runnable {
     val animator: Animator = Animator()
@@ -305,7 +305,7 @@ open class AnimationPanel : JPanel(), Runnable {
 
         try {
             if (jc.startPause) {
-                message = getStringResource(Res.string.gui_message_click_to_start)
+                message = jlGetStringResource(Res.string.gui_message_click_to_start)
                 repaint()
                 enginePaused = true
                 while (enginePaused) {

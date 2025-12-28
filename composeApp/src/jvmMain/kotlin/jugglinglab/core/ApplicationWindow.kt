@@ -114,7 +114,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true)
         }
 
-        this.windowMenu = JMenu(getStringResource(Res.string.gui_window))
+        this.windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
         mb.add(this.windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
@@ -136,7 +136,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 }
         }
 
-        val filemenu = JMenu(getStringResource(Res.string.gui_file))
+        val filemenu = JMenu(jlGetStringResource(Res.string.gui_file))
 
         for (i in 0..<(if (quitHandler) fileItems.size - 2 else fileItems.size)) {
             if (fileItems[i] == null) {
@@ -144,7 +144,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 continue
             }
 
-            val fileitem = JMenuItem(getStringResource(fileItemsRes[i]!!))
+            val fileitem = JMenuItem(jlGetStringResource(fileItemsRes[i]!!))
             if (fileShortcuts[i] != ' ') {
                 fileitem.setAccelerator(
                     KeyStroke.getKeyStroke(
@@ -160,7 +160,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     }
 
     private fun createNotationMenu(): JMenu {
-        val notationmenu = JMenu(getStringResource(Res.string.gui_notation))
+        val notationmenu = JMenu(jlGetStringResource(Res.string.gui_notation))
         val buttonGroup = ButtonGroup()
 
         for (i in Pattern.builtinNotations.indices) {
@@ -181,13 +181,13 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             !Desktop.isDesktopSupported()
                     || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
-        val helpmenu = JMenu(getStringResource(Res.string.gui_help))
+        val helpmenu = JMenu(jlGetStringResource(Res.string.gui_help))
 
         for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
             if (helpItems[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(getStringResource(helpItemsRes[i]!!))
+                val helpitem = JMenuItem(jlGetStringResource(helpItemsRes[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -273,7 +273,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                             try {
                                 openJMLFile(file)
                             } catch (jeu: JuggleExceptionUser) {
-                                val message = getStringResource(Res.string.error_reading_file, file.getName())
+                                val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                                 jlHandleUserException(null, message + ":\n" + jeu.message)
                             }
                         }
@@ -361,7 +361,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             for (wm in menus) {
                 wm.removeAll()
 
-                val alltofront = JMenuItem(getStringResource(Res.string.gui_bring_all_to_front))
+                val alltofront = JMenuItem(jlGetStringResource(Res.string.gui_bring_all_to_front))
                 alltofront.actionCommand = "front"
                 alltofront.addActionListener(al)
                 wm.add(alltofront)
@@ -423,7 +423,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 try {
                     openJMLFile(file)
                 } catch (jeu: JuggleExceptionUser) {
-                    val message = getStringResource(Res.string.error_reading_file, file.getName())
+                    val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                     jlHandleUserException(null, message + ":\n" + jeu.message)
                 }
             }
@@ -453,15 +453,15 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     }
 
                     else -> {
-                        val message = getStringResource(Res.string.error_invalid_jml)
+                        val message = jlGetStringResource(Res.string.error_invalid_jml)
                         throw JuggleExceptionUser(message)
                     }
                 }
             } catch (fnfe: FileNotFoundException) {
-                val message = getStringResource(Res.string.error_file_not_found)
+                val message = jlGetStringResource(Res.string.error_file_not_found)
                 throw JuggleExceptionUser("$message: ${fnfe.message}")
             } catch (ioe: IOException) {
-                val message = getStringResource(Res.string.error_io)
+                val message = jlGetStringResource(Res.string.error_io)
                 throw JuggleExceptionUser("$message: ${ioe.message}")
             }
         }
@@ -469,7 +469,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // Show the user the "About" dialog box.
 
         fun showAboutBox() {
-            val aboutBox = JFrame(getStringResource(Res.string.gui_about_juggling_lab))
+            val aboutBox = JFrame(jlGetStringResource(Res.string.gui_about_juggling_lab))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
             val composePanel = ComposePanel()

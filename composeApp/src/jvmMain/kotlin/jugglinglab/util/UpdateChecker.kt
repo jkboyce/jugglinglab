@@ -85,7 +85,7 @@ class UpdateChecker : Thread() {
             }
 
         private fun showUpdateBox(version: String?) {
-            val title = getStringResource(Res.string.gui_new_version_available)
+            val title = jlGetStringResource(Res.string.gui_new_version_available)
             val updateBox = JFrame(title)
             updateBox.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
@@ -93,7 +93,7 @@ class UpdateChecker : Thread() {
             val gb = GridBagLayout()
             updatePanel.setLayout(gb)
 
-            val message = getStringResource(Res.string.gui_new_version_text1, version)
+            val message = jlGetStringResource(Res.string.gui_new_version_text1, version)
             val text1 = JLabel(message)
             text1.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text1)
@@ -101,7 +101,7 @@ class UpdateChecker : Thread() {
                 text1, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(20, 25, 0, 25))
             )
 
-            val message2 = getStringResource(Res.string.gui_new_version_text2, jugglinglab.core.Constants.VERSION)
+            val message2 = jlGetStringResource(Res.string.gui_new_version_text2, jugglinglab.core.Constants.VERSION)
             val text2 = JLabel(message2)
             text2.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text2)
@@ -109,7 +109,7 @@ class UpdateChecker : Thread() {
                 text2, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 25, 0, 25))
             )
 
-            val text3 = JLabel(getStringResource(Res.string.gui_new_version_text3))
+            val text3 = JLabel(jlGetStringResource(Res.string.gui_new_version_text3))
             text3.setFont(Font("SansSerif", Font.PLAIN, 14))
             updatePanel.add(text3)
             gb.setConstraints(
@@ -118,11 +118,11 @@ class UpdateChecker : Thread() {
 
             val butp = JPanel()
             butp.setLayout(FlowLayout(FlowLayout.LEADING))
-            val cancelbutton = JButton(getStringResource(Res.string.gui_update_cancel))
+            val cancelbutton = JButton(jlGetStringResource(Res.string.gui_update_cancel))
             cancelbutton.addActionListener { _: ActionEvent? -> updateBox.dispose() }
             butp.add(cancelbutton)
 
-            val yesbutton = JButton(getStringResource(Res.string.gui_update_yes))
+            val yesbutton = JButton(jlGetStringResource(Res.string.gui_update_yes))
             yesbutton.setDefaultCapable(true)
             yesbutton.addActionListener { _: ActionEvent? ->
                 val browseSupported =
@@ -139,7 +139,7 @@ class UpdateChecker : Thread() {
                 }
 
                 if (!browseSupported || browseProblem) {
-                    val message = getStringResource(
+                    val message = jlGetStringResource(
                         Res.string.gui_download_message,
                         jugglinglab.core.Constants.DOWNLOAD_URL
                     )

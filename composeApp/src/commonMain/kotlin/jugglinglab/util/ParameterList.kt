@@ -82,7 +82,7 @@ class ParameterList() {
             } else {
                 val str = token.trim()
                 if (str.isNotEmpty()) {
-                    val message = getStringResource(Res.string.error_param_has_no_value, str)
+                    val message = jlGetStringResource(Res.string.error_param_has_no_value, str)
                     throw JuggleExceptionUser(message)
                 }
             }
@@ -107,11 +107,11 @@ class ParameterList() {
         val count = numberOfParameters
         if (count == 1) {
             val argument = "\"${getParameterName(0)}\""
-            val message = getStringResource(Res.string.error_unused_param, argument)
+            val message = jlGetStringResource(Res.string.error_unused_param, argument)
             throw JuggleExceptionUser(message)
         } else if (count > 1) {
             val argument = (0..<count).joinToString(", ") { i -> "\"${getParameterName(i)}\"" }
-            val message = getStringResource(Res.string.error_unused_params, argument)
+            val message = jlGetStringResource(Res.string.error_unused_params, argument)
             throw JuggleExceptionUser(message)
         }
     }

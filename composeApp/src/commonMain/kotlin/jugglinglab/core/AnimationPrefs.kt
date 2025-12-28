@@ -12,7 +12,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlGetScreenFps
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlToStringRounded
 import androidx.compose.ui.unit.IntSize
 
@@ -91,7 +91,7 @@ class AnimationPrefs {
                 tempdouble = value!!.toDouble()
                 fps = tempdouble
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "fps")
+                val message = jlGetStringResource(Res.string.error_number_format, "fps")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -100,7 +100,7 @@ class AnimationPrefs {
                 tempdouble = value!!.toDouble()
                 slowdown = tempdouble
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "slowdown")
+                val message = jlGetStringResource(Res.string.error_number_format, "slowdown")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -109,7 +109,7 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 border = tempint
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "border")
+                val message = jlGetStringResource(Res.string.error_number_format, "border")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -118,7 +118,7 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 width = tempint
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "width")
+                val message = jlGetStringResource(Res.string.error_number_format, "width")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -127,7 +127,7 @@ class AnimationPrefs {
                 tempint = value!!.toInt()
                 height = tempint
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "height")
+                val message = jlGetStringResource(Res.string.error_number_format, "height")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -145,7 +145,7 @@ class AnimationPrefs {
             ) {
                 GROUND_OFF
             } else {
-                val message = getStringResource(Res.string.error_showground_value, value)
+                val message = jlGetStringResource(Res.string.error_showground_value, value)
                 throw JuggleExceptionUser(message)
             }
         }
@@ -156,7 +156,7 @@ class AnimationPrefs {
 
                 val tokens = value!!.replace(Regex("[(){}]"), "").split(',')
                 if (tokens.size > 2) {
-                    val message = getStringResource(Res.string.error_too_many_elements, "camangle")
+                    val message = jlGetStringResource(Res.string.error_too_many_elements, "camangle")
                     throw JuggleExceptionUser(message)
                 }
                 tokens.forEachIndexed { i, token ->
@@ -166,7 +166,7 @@ class AnimationPrefs {
                 }
                 camangle = ca
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "camangle")
+                val message = jlGetStringResource(Res.string.error_number_format, "camangle")
                 throw JuggleExceptionUser(message)
             }
         }
@@ -179,7 +179,7 @@ class AnimationPrefs {
             }
 
             if (view == -1) {
-                val message = getStringResource(Res.string.error_unrecognized_view, value)
+                val message = jlGetStringResource(Res.string.error_unrecognized_view, value)
                 throw JuggleExceptionUser(message)
             }
         }
@@ -190,7 +190,7 @@ class AnimationPrefs {
                     token.trim().takeIf { it.isNotEmpty() }?.toInt()
                 }.toIntArray()
             } catch (_: NumberFormatException) {
-                val message = getStringResource(Res.string.error_number_format, "hidejugglers")
+                val message = jlGetStringResource(Res.string.error_number_format, "hidejugglers")
                 throw JuggleExceptionUser(message)
             }
         }

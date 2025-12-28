@@ -31,7 +31,7 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.OpenFilesServer
 import jugglinglab.util.ParameterList
-import jugglinglab.util.getStringResource
+import jugglinglab.util.jlGetStringResource
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.desktop.AboutEvent
@@ -258,7 +258,7 @@ object JugglingLab {
                     try {
                         openJMLFile(file)
                     } catch (jeu: JuggleExceptionUser) {
-                        val message = getStringResource(Res.string.error_reading_file, file.getName())
+                        val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                         val msg = message + ":\n" + jeu.message
                         jlHandleUserException(null, msg)
                     }
@@ -309,13 +309,13 @@ object JugglingLab {
 
     private fun doHelp(firstarg: String?) {
         //System.setProperty("java.awt.headless", "true")
-        val arg1 = getStringResource(Res.string.gui_version, Constants.VERSION)
+        val arg1 = jlGetStringResource(Res.string.gui_version, Constants.VERSION)
         var output = "Juggling Lab " + arg1.lowercase(Locale.getDefault()) + "\n"
-        val arg2 = getStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+        val arg2 = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
         output += arg2 + "\n"
-        output += getStringResource(Res.string.gui_gpl_message) + "\n\n"
-        output += getStringResource(Res.string.gui_cli_help1)
-        var examples = getStringResource(Res.string.gui_cli_help2)
+        output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
+        output += jlGetStringResource(Res.string.gui_cli_help1)
+        var examples = jlGetStringResource(Res.string.gui_cli_help2)
         if (isWindows) {
             // replace single quotes with double quotes in Windows examples
             examples = examples.replace("'".toRegex(), "\"")

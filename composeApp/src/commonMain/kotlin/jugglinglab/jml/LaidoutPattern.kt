@@ -192,7 +192,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var current = eventList
         while (current != null) {
             if (current.juggler !in 1..pat.numberOfJugglers) {
-                val message = getStringResource(Res.string.error_juggler_outofrange)
+                val message = jlGetStringResource(Res.string.error_juggler_outofrange)
                 throw JuggleExceptionUser(message)
             }
             if (current.isPrimary) {
@@ -242,11 +242,11 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
             if (!hasJMLTransitionForLeft) {
-                val message = getStringResource(Res.string.error_no_left_events, i + 1)
+                val message = jlGetStringResource(Res.string.error_no_left_events, i + 1)
                 throw JuggleExceptionUser(message)
             }
             if (!hasJMLTransitionForRight) {
-                val message = getStringResource(Res.string.error_no_right_events, i + 1)
+                val message = jlGetStringResource(Res.string.error_no_right_events, i + 1)
                 throw JuggleExceptionUser(message)
             }
             needVDHandEvent[i][0] = hasVDHandJMLTransition[i][0] // set up for later
@@ -267,7 +267,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                 }
             }
             if (!hasPathJMLTransition) {
-                val message = getStringResource(Res.string.error_no_path_events, i + 1)
+                val message = jlGetStringResource(Res.string.error_no_path_events, i + 1)
                 throw JuggleExceptionUser(message)
             }
             needPathEvent[i] = true // set up for later
@@ -590,17 +590,17 @@ class LaidoutPattern(val pat: JMLPattern) {
                         JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
                             if (lasttr!!.type == JMLTransition.TRANS_THROW) {
                                 val message =
-                                    getStringResource(Res.string.error_successive_throws, i + 1)
+                                    jlGetStringResource(Res.string.error_successive_throws, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             if (lastev.juggler != ev.juggler) {
                                 val message =
-                                    getStringResource(Res.string.error_juggler_changed, i + 1)
+                                    jlGetStringResource(Res.string.error_juggler_changed, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             if (lastev.hand != ev.hand) {
                                 val message =
-                                    getStringResource(Res.string.error_hand_changed, i + 1)
+                                    jlGetStringResource(Res.string.error_hand_changed, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             pl.setInHand(ev.juggler, ev.hand)
@@ -609,7 +609,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                         JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
                             if (lasttr!!.type != JMLTransition.TRANS_THROW) {
                                 val message =
-                                    getStringResource(Res.string.error_successive_catches, i + 1)
+                                    jlGetStringResource(Res.string.error_successive_catches, i + 1)
                                 throw JuggleExceptionUser(message)
                             }
                             pl.setThrow(lasttr.throwType!!, lasttr.throwMod)

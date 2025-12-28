@@ -52,7 +52,7 @@ class BouncePath : Path() {
                 try {
                     bounces = pvalue.toInt()
                 } catch (_: NumberFormatException) {
-                    val message = getStringResource(Res.string.error_number_format, "bounces")
+                    val message = jlGetStringResource(Res.string.error_number_format, "bounces")
                     throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("forced", ignoreCase = true)) {
@@ -63,25 +63,25 @@ class BouncePath : Path() {
                 try {
                     bounceplane = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val message = getStringResource(Res.string.error_number_format, "bounceplane")
+                    val message = jlGetStringResource(Res.string.error_number_format, "bounceplane")
                     throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("bouncefrac", ignoreCase = true)) {
                 try {
                     bouncefrac = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val message = getStringResource(Res.string.error_number_format, "bouncefrac")
+                    val message = jlGetStringResource(Res.string.error_number_format, "bouncefrac")
                     throw JuggleExceptionUser(message)
                 }
             } else if (pname.equals("g", ignoreCase = true)) {
                 try {
                     g = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val message = getStringResource(Res.string.error_number_format, "g")
+                    val message = jlGetStringResource(Res.string.error_number_format, "g")
                     throw JuggleExceptionUser(message)
                 }
             } else {
-                val message = getStringResource(Res.string.error_path_badmod)
+                val message = jlGetStringResource(Res.string.error_path_badmod)
                 throw JuggleExceptionUser("$message: '$pname'")
             }
         }

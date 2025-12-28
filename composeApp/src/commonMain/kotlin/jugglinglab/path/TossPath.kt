@@ -37,11 +37,11 @@ class TossPath : Path() {
                 try {
                     g = jlParseFiniteDouble(pvalue)
                 } catch (_: NumberFormatException) {
-                    val message = getStringResource(Res.string.error_number_format, "g")
+                    val message = jlGetStringResource(Res.string.error_number_format, "g")
                     throw JuggleExceptionUser(message)
                 }
             } else {
-                val message = getStringResource(Res.string.error_path_badmod)
+                val message = jlGetStringResource(Res.string.error_path_badmod)
                 throw JuggleExceptionUser("$message: '$pname'")
             }
         }

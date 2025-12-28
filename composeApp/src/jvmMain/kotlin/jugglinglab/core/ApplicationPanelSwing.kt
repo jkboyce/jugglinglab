@@ -25,8 +25,7 @@ import java.awt.event.ActionEvent
 import javax.swing.*
 import javax.swing.event.ChangeEvent
 
-class ApplicationPanelSwing
-    (
+class ApplicationPanelSwing(
     private val parentFrame: JFrame?,
     // fields below are currently unused; they supported the applet version
     // of Juggling Lab
@@ -70,7 +69,7 @@ class ApplicationPanelSwing
             addGeneratorControl(gen, pl)
         }
         if (pl != null) {
-            jtp!!.addTab(getStringResource(Res.string.gui_pattern_list_tab), pl)
+            jtp!!.addTab(jlGetStringResource(Res.string.gui_pattern_list_tab), pl)
             if (patlist != null) {
                 jtp!!.setSelectedComponent(pl) // if we loaded from a file
             }
@@ -85,7 +84,7 @@ class ApplicationPanelSwing
     }
 
     private fun addPatternEntryControl(control: SiteswapNotationControlSwing) {
-        val nbut1 = JButton(getStringResource(Res.string.gui_defaults)).apply {
+        val nbut1 = JButton(jlGetStringResource(Res.string.gui_defaults)).apply {
             addActionListener { _: ActionEvent? ->
                 try {
                     control.resetControl()
@@ -96,7 +95,7 @@ class ApplicationPanelSwing
         }
 
         juggleButton =
-            JButton(getStringResource(Res.string.gui_juggle)).apply {
+            JButton(jlGetStringResource(Res.string.gui_juggle)).apply {
                 setDefaultCapable(true)
                 addActionListener { _: ActionEvent? ->
                     try {
@@ -109,7 +108,6 @@ class ApplicationPanelSwing
                         val config: String = p.toString()
                         val pat = fromBasePattern(notation, config)
                         pat.layout
-
                         if (bringToFront(pat.jlHashCode)) {
                             return@addActionListener
                         }
@@ -138,17 +136,17 @@ class ApplicationPanelSwing
             add(np2, BorderLayout.PAGE_END)
         }
 
-        jtp!!.addTab(getStringResource(Res.string.gui_pattern_entry), np1)
+        jtp!!.addTab(jlGetStringResource(Res.string.gui_pattern_entry), np1)
     }
 
     private fun addTransitionerControl(trans: Transitioner, plp: PatternListPanel?) {
         val transControl = SiteswapTransitionerControlSwing()
 
-        val but1 = JButton(getStringResource(Res.string.gui_defaults)).apply {
+        val but1 = JButton(jlGetStringResource(Res.string.gui_defaults)).apply {
             addActionListener { _: ActionEvent? -> transControl.resetControl() }
         }
 
-        transButton = JButton(getStringResource(Res.string.gui_run)).apply {
+        transButton = JButton(jlGetStringResource(Res.string.gui_run)).apply {
             setDefaultCapable(true)
             addActionListener {
                 val t: Thread =
@@ -159,7 +157,7 @@ class ApplicationPanelSwing
                             try {
                                 trans.initTransitioner(transControl.params)
                                 val title =
-                                    trans.notationName + " " + getStringResource(Res.string.gui_patterns)
+                                    trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 val pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
@@ -173,7 +171,7 @@ class ApplicationPanelSwing
                                 val parentComponent = pw ?: plp
                                 jlHandleUserMessage(
                                     parentComponent,
-                                    getStringResource(Res.string.gui_generator_stopped_title),
+                                    jlGetStringResource(Res.string.gui_generator_stopped_title),
                                     ex.message
                                 )
                             } catch (_: JuggleExceptionInterrupted) {
@@ -208,17 +206,17 @@ class ApplicationPanelSwing
             add(p3, BorderLayout.PAGE_END)
         }
 
-        jtp!!.addTab(getStringResource(Res.string.gui_transitions), p1)
+        jtp!!.addTab(jlGetStringResource(Res.string.gui_transitions), p1)
     }
 
     private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
         val genControl = SiteswapGeneratorControlSwing()
 
-        val but1 = JButton(getStringResource(Res.string.gui_defaults)).apply {
+        val but1 = JButton(jlGetStringResource(Res.string.gui_defaults)).apply {
             addActionListener { _: ActionEvent? -> genControl.resetControl() }
         }
 
-        genButton = JButton(getStringResource(Res.string.gui_run)).apply {
+        genButton = JButton(jlGetStringResource(Res.string.gui_run)).apply {
             addActionListener {
                 val t: Thread =
                     object : Thread() {
@@ -229,7 +227,7 @@ class ApplicationPanelSwing
                             try {
                                 gen.initGenerator(genControl.params)
                                 val title =
-                                    gen.notationName + " " + getStringResource(Res.string.gui_patterns)
+                                    gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
                                 pw = PatternListWindow(title, this)
                                 val pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME)
@@ -243,7 +241,7 @@ class ApplicationPanelSwing
                                 val parentComponent = pw ?: plp
                                 jlHandleUserMessage(
                                     parentComponent,
-                                    getStringResource(Res.string.gui_generator_stopped_title),
+                                    jlGetStringResource(Res.string.gui_generator_stopped_title),
                                     ex.message
                                 )
                             } catch (_: JuggleExceptionInterrupted) {
@@ -264,7 +262,7 @@ class ApplicationPanelSwing
             }
         }
 
-        genBusy = JLabel(getStringResource(Res.string.gui_processing)).apply {
+        genBusy = JLabel(jlGetStringResource(Res.string.gui_processing)).apply {
             isVisible = false
         }
 
@@ -293,7 +291,7 @@ class ApplicationPanelSwing
             add(p3, BorderLayout.PAGE_END)
         }
 
-        jtp!!.addTab(getStringResource(Res.string.gui_generator), p1)
+        jtp!!.addTab(jlGetStringResource(Res.string.gui_generator), p1)
     }
 
     private val defaultButton: JButton?
@@ -307,10 +305,4 @@ class ApplicationPanelSwing
                 else -> genButton
             }
         }
-
-    companion object {
-        // execution limits for generator
-        private const val MAX_PATTERNS: Int = 1000
-        private const val MAX_TIME: Double = 15.0
-    }
 }

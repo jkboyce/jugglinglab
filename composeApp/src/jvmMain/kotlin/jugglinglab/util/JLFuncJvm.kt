@@ -114,9 +114,9 @@ private fun showInternalErrorWindow(e: Exception) {
     // diagnostic information displayed in the window
     val message = run {
         val sw = StringWriter()
-        sw.write(getStringResource(Res.string.error_internal_msg_part1) + "\n\n")
-        sw.write(getStringResource(Res.string.error_internal_msg_part2) + "\n")
-        sw.write(getStringResource(Res.string.error_internal_msg_part3) + "\n\n")
+        sw.write(jlGetStringResource(Res.string.error_internal_msg_part1) + "\n\n")
+        sw.write(jlGetStringResource(Res.string.error_internal_msg_part2) + "\n")
+        sw.write(jlGetStringResource(Res.string.error_internal_msg_part3) + "\n\n")
         sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
         if (e is JuggleExceptionInternal) {
             if (e.wrapped != null) {
@@ -136,13 +136,13 @@ private fun showInternalErrorWindow(e: Exception) {
         sw.toString()
     }
 
-    val exframe = JFrame(getStringResource(Res.string.error_internal_title))
+    val exframe = JFrame(jlGetStringResource(Res.string.error_internal_title))
 
-    val exmsg1 = getStringResource(Res.string.error_internal_part1)
-    val exmsg2 = getStringResource(Res.string.error_internal_part2)
-    val exmsg3 = getStringResource(Res.string.error_internal_part3)
-    val exmsg4 = getStringResource(Res.string.error_internal_part4)
-    val exmsg5 = getStringResource(Res.string.error_internal_part5)
+    val exmsg1 = jlGetStringResource(Res.string.error_internal_part1)
+    val exmsg2 = jlGetStringResource(Res.string.error_internal_part2)
+    val exmsg3 = jlGetStringResource(Res.string.error_internal_part3)
+    val exmsg4 = jlGetStringResource(Res.string.error_internal_part4)
+    val exmsg5 = jlGetStringResource(Res.string.error_internal_part5)
 
     val text1 = JLabel(exmsg1).apply { setFont(Font("SansSerif", Font.BOLD, 12)) }
     val text2 = JLabel(exmsg2).apply { setFont(Font("SansSerif", Font.PLAIN, 12)) }
@@ -157,10 +157,10 @@ private fun showInternalErrorWindow(e: Exception) {
     val jsp = JScrollPane(dumpta).apply {
         preferredSize = Dimension(450, 300)
     }
-    val quitbutton = JButton(getStringResource(Res.string.gui_quit)).apply {
+    val quitbutton = JButton(jlGetStringResource(Res.string.gui_quit)).apply {
         addActionListener { _: ActionEvent? -> exitProcess(0) }
     }
-    val okbutton = JButton(getStringResource(Res.string.gui_continue)).apply {
+    val okbutton = JButton(jlGetStringResource(Res.string.gui_continue)).apply {
         addActionListener { _: ActionEvent? ->
             exframe.isVisible = false
             exframe.dispose()
@@ -240,8 +240,8 @@ val jlJfc: JFileChooser by lazy {
             val f = selectedFile
 
             if (f.exists() && dialogType == SAVE_DIALOG) {
-                val msg = getStringResource(Res.string.gui_jfc_file_exists_message, f.getName())
-                val title = getStringResource(Res.string.gui_jfc_file_exists_title)
+                val msg = jlGetStringResource(Res.string.gui_jfc_file_exists_message, f.getName())
+                val title = jlGetStringResource(Res.string.gui_jfc_file_exists_title)
 
                 val result = JOptionPane.showConfirmDialog(
                     this, msg, title, JOptionPane.YES_NO_CANCEL_OPTION
@@ -334,7 +334,7 @@ fun jlErrorIfNotSanitized(fname: String) {
     if (fname == jlSanitizeFilename(fname)) {
         return
     }
-    throw JuggleExceptionUser(getStringResource(Res.string.error_saving_disallowed_character))
+    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_saving_disallowed_character))
 }
 
 //------------------------------------------------------------------------------
@@ -357,13 +357,13 @@ actual fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap {
         }
         if (mt.isErrorAny()) {
             // could be bad image data, but is usually a nonexistent file
-            throw JuggleExceptionUser(getStringResource(Res.string.error_bad_file))
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_bad_file))
         }
         return awtImage.toComposeImageBitmap()
     } catch (_: IOException) {
-        throw JuggleExceptionUser(getStringResource(Res.string.error_bad_file))
+        throw JuggleExceptionUser(jlGetStringResource(Res.string.error_bad_file))
     } catch (_: SecurityException) {
-        throw JuggleExceptionUser(getStringResource(Res.string.error_security_restriction))
+        throw JuggleExceptionUser(jlGetStringResource(Res.string.error_security_restriction))
     }
 }
 
