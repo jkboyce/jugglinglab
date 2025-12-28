@@ -24,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
@@ -114,6 +115,14 @@ fun AnimationPrefsControl(
             .padding(16.dp)
             .width(IntrinsicSize.Max) // Fit width to content
             .verticalScroll(rememberScrollState())
+            .onPreviewKeyEvent {
+                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                    tryCreatePrefs()
+                    true
+                } else {
+                    false
+                }
+            }
     ) {
         // Number inputs section
         PrefsInputRow(width, { width = it }, stringResource(Res.string.gui_width))
