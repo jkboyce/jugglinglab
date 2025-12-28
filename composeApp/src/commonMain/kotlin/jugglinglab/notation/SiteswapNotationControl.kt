@@ -25,7 +25,10 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
@@ -46,6 +49,9 @@ fun SiteswapNotationControl(
     var propIndex by remember { mutableStateOf(0) }
     var manualSettings by remember { mutableStateOf("") }
 
+    // Focus requester retained across recompositions
+    val focusRequester = remember { FocusRequester() }
+
     fun resetControl() {
         pattern = "3"
         beatsPerSecond = ""
@@ -61,6 +67,7 @@ fun SiteswapNotationControl(
     // Initialize defaults once
     LaunchedEffect(Unit) {
         resetControl()
+        focusRequester.requestFocus()
     }
 
     fun parameterList(): ParameterList {
@@ -117,14 +124,23 @@ fun SiteswapNotationControl(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Allow scrolling for small screens
+            .verticalScroll(rememberScrollState()) // Allow scrolling for small screens
+            .onPreviewKeyEvent {
+                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                    onConfirm(parameterList())
+                    true
+                } else {
+                    false
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Pattern
         LabelledInputRow(
             label = stringResource(Res.string.gui_pattern),
             value = pattern,
-            onValueChange = { pattern = it }
+            onValueChange = { pattern = it },
+            modifier = Modifier.focusRequester(focusRequester)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -263,7 +279,8 @@ private fun LabelledInputRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    width: androidx.compose.ui.unit.Dp = 250.dp
+    width: androidx.compose.ui.unit.Dp = 250.dp,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -283,7 +300,7 @@ private fun LabelledInputRow(
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.width(width).height(56.dp),
+                modifier = Modifier.width(width).height(56.dp).then(modifier),
                 singleLine = true,
                 textStyle = MaterialTheme.typography.body1
             )

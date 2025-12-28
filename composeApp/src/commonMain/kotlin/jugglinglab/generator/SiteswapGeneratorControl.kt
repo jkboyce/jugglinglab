@@ -21,7 +21,10 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -31,7 +34,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SiteswapGeneratorControl(
     onConfirm: (String) -> Unit
 ) {
-    // state variables
+    // State Variables
     var balls by remember { mutableStateOf("") }
     var maxThrow by remember { mutableStateOf("") }
     var period by remember { mutableStateOf("") }
@@ -56,6 +59,9 @@ fun SiteswapGeneratorControl(
     var excludeExpressions by remember { mutableStateOf("") }
     var includeExpressions by remember { mutableStateOf("") }
     var passingDelay by remember { mutableStateOf("") }
+
+    // Focus requester retained across recompositions
+    val focusRequester = remember { FocusRequester() }
 
     // logic helpers
     val isPassing = jugglersIndex > 0 // 0 index = 1 juggler
@@ -96,6 +102,7 @@ fun SiteswapGeneratorControl(
     // Initialize defaults
     LaunchedEffect(Unit) {
         resetControl()
+        focusRequester.requestFocus()
     }
 
     fun params(): String {
@@ -157,7 +164,15 @@ fun SiteswapGeneratorControl(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .onPreviewKeyEvent {
+                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                    onConfirm(params())
+                    true
+                } else {
+                    false
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Top Row: Balls, Max Throw, Period
@@ -166,7 +181,12 @@ fun SiteswapGeneratorControl(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CompactInput(label = stringResource(Res.string.gui_balls), value = balls, onValueChange = { balls = it })
+            CompactInput(
+                label = stringResource(Res.string.gui_balls),
+                value = balls,
+                onValueChange = { balls = it },
+                modifier = Modifier.focusRequester(focusRequester)
+            )
             CompactInput(label = stringResource(Res.string.gui_max__throw), value = maxThrow, onValueChange = { maxThrow = it })
             CompactInput(label = stringResource(Res.string.gui_period), value = period, onValueChange = { period = it })
         }
@@ -312,7 +332,8 @@ fun SiteswapGeneratorControl(
 private fun CompactInput(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.body2)
@@ -323,7 +344,8 @@ private fun CompactInput(
             modifier = Modifier
                 .width(50.dp)
                 .height(50.dp)
-                .padding(PaddingValues(0.dp)),
+                .padding(PaddingValues(0.dp))
+                .then(modifier),
             singleLine = true,
             textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
         )

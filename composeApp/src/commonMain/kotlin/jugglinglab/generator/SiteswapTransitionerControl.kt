@@ -16,7 +16,10 @@ import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,9 @@ fun SiteswapTransitionerControl(
     var noSimultaneousCatches by remember { mutableStateOf(true) }
     var noClusteredThrows by remember { mutableStateOf(false) }
 
+    // Focus requester retained across recompositions
+    val focusRequester = remember { FocusRequester() }
+
     fun resetControl() {
         fromPattern = ""
         toPattern = ""
@@ -41,6 +47,10 @@ fun SiteswapTransitionerControl(
         simultaneousThrows = "2"
         noSimultaneousCatches = true
         noClusteredThrows = false
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 
     fun params(): String {
@@ -69,15 +79,24 @@ fun SiteswapTransitionerControl(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
             //.verticalScroll(rememberScrollState()),
+            .onPreviewKeyEvent {
+                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                    onConfirm(params())
+                    true
+                } else {
+                    false
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // pattern entry section
         PatternInputRow(
             label = stringResource(Res.string.gui_from_pattern),
             value = fromPattern,
-            onValueChange = { fromPattern = it }
+            onValueChange = { fromPattern = it },
+            modifier = Modifier.focusRequester(focusRequester)
         )
 
         // swap button row, aligned to match the structure of PatternInputRow
@@ -224,7 +243,8 @@ fun SiteswapTransitionerControl(
 private fun PatternInputRow(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -241,7 +261,7 @@ private fun PatternInputRow(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.width(250.dp).height(56.dp),
+            modifier = Modifier.width(250.dp).height(56.dp).then(modifier),
             singleLine = true,
             textStyle = MaterialTheme.typography.body1
         )
