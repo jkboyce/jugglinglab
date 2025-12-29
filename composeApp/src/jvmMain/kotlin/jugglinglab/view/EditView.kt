@@ -24,7 +24,7 @@ import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
 class EditView(dim: Dimension?, pat: JMLPattern) : View() {
-    private val ap: AnimationPanel = AnimationEditPanel()
+    private val ap: AnimationPanel = AnimationPanel()
     private val ladderPanel: JPanel
     private val jsp: JSplitPane
 
@@ -78,11 +78,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
 
         ap.removeAllAttachments()
         ap.addAnimationAttachment(newLadder)
-
-        val ap2 = ap
-        if (ap2 is AnimationEditPanel) {
-            ap2.setActiveItem(0)
-        }
+        ap.setActiveItem(0)
 
         ladderPanel.removeAll()
         ladderPanel.add(newLadder, BorderLayout.CENTER)

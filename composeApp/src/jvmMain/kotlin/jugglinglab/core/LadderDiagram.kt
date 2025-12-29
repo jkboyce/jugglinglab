@@ -2,15 +2,13 @@
 // LadderDiagram.kt
 //
 // This class draws the vertical ladder diagram on the right side of Edit view.
-// This version does not include any mouse interaction or editing functions;
-// those are added in EditLadderDiagram.
+// This includes mouse interaction and editing functions.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.core
 
-import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
@@ -32,6 +30,7 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
 import jugglinglab.view.View
+import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -96,7 +95,7 @@ class LadderDiagram(
 
     //---------------------
 
-    private var aep: AnimationEditPanel? = null
+    private var aep: AnimationPanel? = null
 
     private var activeItemHashCode: Int = 0
     private var activeEventItem: LadderEventItem? = null
@@ -1990,9 +1989,7 @@ class LadderDiagram(
     //--------------------------------------------------------------------------
 
     override fun setAnimationPanel(animPanel: AnimationPanel?) {
-        if (animPanel is AnimationEditPanel) {
-            aep = animPanel
-        }
+        aep = animPanel
     }
 
     override fun setJMLPattern(pat: JMLPattern, activeHashCode: Int) {
