@@ -123,7 +123,7 @@ class AnimationEditPanel : AnimationPanel(), MouseListener, MouseMotionListener 
 
     fun addToUndoList(pat: JMLPattern) {
         for (att in attachments) {
-            if (att is EditLadderDiagram) {
+            if (att is LadderDiagram) {
                 att.addToUndoList(pat)
             }
         }

@@ -38,7 +38,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
 
         // add a ladder diagram now to get dimensions correct; will be replaced in
         // restartView()
-        ladderPanel.add(LadderDiagram(pat), BorderLayout.CENTER)
+        ladderPanel.add(LadderDiagram(pat, patternWindow, this), BorderLayout.CENTER)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
@@ -73,11 +73,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
             return
         }
 
-        val newLadder = if (ap is AnimationEditPanel) {
-            EditLadderDiagram(p, patternWindow, this)
-        } else {
-            LadderDiagram(p)
-        }
+        val newLadder = LadderDiagram(p, patternWindow, this)
         newLadder.setAnimationPanel(ap)
 
         ap.removeAllAttachments()
