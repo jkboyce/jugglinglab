@@ -10,6 +10,12 @@ package jugglinglab.notation
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.prop.Prop
+import jugglinglab.ui.builtinHandsNames
+import jugglinglab.ui.builtinHandsStrings
+import jugglinglab.ui.builtinHandsStringResources
+import jugglinglab.ui.builtinBodyNames
+import jugglinglab.ui.builtinBodyStrings
+import jugglinglab.ui.builtinBodyStringResources
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlToStringRounded

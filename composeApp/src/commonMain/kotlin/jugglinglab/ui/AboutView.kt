@@ -1,14 +1,15 @@
 //
-// AboutContent.kt
+// AboutView.kt
 //
 // Composable for the contents of the Juggling Lab About box.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.Constants
 import jugglinglab.util.jlGetAboutBoxPlatform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun AboutContent(onCloseRequest: () -> Unit) {
+fun AboutView(onCloseRequest: () -> Unit) {
     // Set height to IntrinsicSize.Min so the Row height is defined by its children.
     // This allows the Image to stretch to match the height of the Column.
     Row(modifier = Modifier.padding(16.dp).height(IntrinsicSize.Min)) {

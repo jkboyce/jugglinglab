@@ -19,6 +19,7 @@ import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.notation.Pattern
+import jugglinglab.ui.AboutView
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -475,7 +476,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             val composePanel = ComposePanel()
             composePanel.setContent {
                 MaterialTheme {
-                    AboutContent(onCloseRequest = { aboutBox.dispose() })
+                    AboutView(onCloseRequest = { aboutBox.dispose() })
                 }
             }
             aboutBox.contentPane = composePanel

@@ -11,6 +11,7 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.ui.AnimationPrefsControl
 import jugglinglab.util.jlGetStringResource
 import androidx.compose.material.*
 import androidx.compose.ui.awt.ComposePanel
