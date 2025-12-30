@@ -50,7 +50,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-class AnimationPanel : JPanel(), Runnable, MouseListener, MouseMotionListener {
+class AnimationPanel(
+    val state: PatternAnimationState
+) : JPanel(), Runnable, MouseListener, MouseMotionListener {
     val animator: Animator = Animator()
     private var jc: AnimationPrefs = AnimationPrefs()
     private var engine: Thread? = null

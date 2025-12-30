@@ -23,13 +23,15 @@ import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
-class EditView(dim: Dimension?, pat: JMLPattern) : View() {
-    private val ap: AnimationPanel = AnimationPanel()
+class EditView(
+    state: PatternAnimationState
+) : View(state) {
+    private val ap: AnimationPanel = AnimationPanel(state)
     private val ladderPanel: JPanel
     private val jsp: JSplitPane
 
     init {
-        ap.preferredSize = dim
+        ap.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ap.minimumSize = Dimension(10, 10)
 
         ladderPanel = JPanel()
@@ -38,7 +40,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
 
         // add a ladder diagram now to get dimensions correct; will be replaced in
         // restartView()
-        ladderPanel.add(LadderDiagram(pat, patternWindow, this), BorderLayout.CENTER)
+        ladderPanel.add(LadderDiagram(state, patternWindow, this), BorderLayout.CENTER)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
@@ -73,7 +75,7 @@ class EditView(dim: Dimension?, pat: JMLPattern) : View() {
             return
         }
 
-        val newLadder = LadderDiagram(p, patternWindow, this)
+        val newLadder = LadderDiagram(state, patternWindow, this)
         newLadder.setAnimationPanel(ap)
 
         ap.removeAllAttachments()

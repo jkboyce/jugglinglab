@@ -8,6 +8,7 @@ package jugglinglab.view
 
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -15,11 +16,13 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
 
-class SimpleView(dim: Dimension?) : View() {
-    private val ja: AnimationPanel = AnimationPanel()
+class SimpleView(
+    state: PatternAnimationState
+) : View(state) {
+    private val ja: AnimationPanel = AnimationPanel(state)
 
     init {
-        ja.preferredSize = dim
+        ja.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ja.minimumSize = Dimension(10, 10)
         setLayout(BorderLayout())
         add(ja, BorderLayout.CENTER)

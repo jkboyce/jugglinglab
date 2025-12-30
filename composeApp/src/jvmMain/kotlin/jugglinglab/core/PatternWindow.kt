@@ -111,14 +111,16 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         //viewMode = mode
         viewMenu.getItem(mode - 1).setSelected(true)
 
-        val animsize = Dimension(jc.width, jc.height)
-
+        val state = PatternAnimationState(
+            initialPattern = pat,
+            initialPrefs = jc
+        )
         when (mode) {
             AnimationPrefs.VIEW_NONE -> {}
-            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(animsize)
-            AnimationPrefs.VIEW_EDIT -> view = EditView(animsize, pat)
-            AnimationPrefs.VIEW_PATTERN -> view = PatternView(animsize)
-            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(animsize)
+            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(state)
+            AnimationPrefs.VIEW_EDIT -> view = EditView(state)
+            AnimationPrefs.VIEW_PATTERN -> view = PatternView(state)
+            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(state)
         }
 
         view.patternWindow = this
@@ -153,13 +155,14 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             val jc = view.animationPrefs
             val paused = view.isPaused
             val undoIndex = view.undoIndex
-            val animsize = Dimension(jc.width, jc.height)
+            val state = view.state
+            state.clearListeners()
 
             val newview: View = when (mode) {
-                AnimationPrefs.VIEW_SIMPLE -> SimpleView(animsize)
-                AnimationPrefs.VIEW_EDIT -> EditView(animsize, pat)
-                AnimationPrefs.VIEW_PATTERN -> PatternView(animsize)
-                AnimationPrefs.VIEW_SELECTION -> SelectionView(animsize)
+                AnimationPrefs.VIEW_SIMPLE -> SimpleView(state)
+                AnimationPrefs.VIEW_EDIT -> EditView(state)
+                AnimationPrefs.VIEW_PATTERN -> PatternView(state)
+                AnimationPrefs.VIEW_SELECTION -> SelectionView(state)
                 else -> throw JuggleExceptionInternal("setViewMode: problem creating view")
             }
 

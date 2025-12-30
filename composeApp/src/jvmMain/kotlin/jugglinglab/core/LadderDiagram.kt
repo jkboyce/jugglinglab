@@ -68,7 +68,7 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 class LadderDiagram(
-     p: JMLPattern,
+     val state: PatternAnimationState,
      val parentFrame: JFrame?,
      val parentView: View
 ) : JPanel(), AnimationAttachment, MouseListener, MouseMotionListener, ActionListener {
@@ -117,7 +117,7 @@ class LadderDiagram(
     private var dialogControls: MutableList<JComponent>? = null
     private var dialogPd: List<ParameterDescriptor> = emptyList()
 
-    var pattern: JMLPattern = p
+    var pattern: JMLPattern = state.pattern
         private set(pat) {
             removeMouseListener(this)
             removeMouseMotionListener(this)
@@ -147,7 +147,7 @@ class LadderDiagram(
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        setJMLPattern(p)
+        setJMLPattern(state.pattern)
     }
 
     //--------------------------------------------------------------------------

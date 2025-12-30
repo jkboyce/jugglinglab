@@ -14,6 +14,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Animator.WriteGIFMonitor
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.jlHandleFatalException
@@ -30,7 +31,9 @@ import javax.swing.JPanel
 import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
 
-abstract class View : JPanel() {
+abstract class View(
+    val state: PatternAnimationState
+) : JPanel() {
     var patternWindow: PatternWindow? = null
 
     protected var undo: ArrayList<JMLPattern>? = null

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
@@ -27,8 +28,10 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class PatternView(dim: Dimension?) : View(), DocumentListener {
-    private val ja: AnimationPanel = AnimationPanel()
+class PatternView(
+    state: PatternAnimationState
+) : View(state), DocumentListener {
+    private val ja: AnimationPanel = AnimationPanel(state)
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
     private var bpEditedIcon: JLabel? = null
@@ -40,11 +43,11 @@ class PatternView(dim: Dimension?) : View(), DocumentListener {
     private var textEdited: Boolean = false
 
     init {
-        makePanel(dim)
+        makePanel(Dimension(state.prefs.width, state.prefs.height))
         updateButtons()
     }
 
-    private fun makePanel(dim: Dimension?) {
+    private fun makePanel(dim: Dimension) {
         setLayout(BorderLayout())
 
         // animator on the left

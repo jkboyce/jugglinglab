@@ -8,6 +8,7 @@ package jugglinglab.view
 
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -20,8 +21,10 @@ import javax.swing.JLayeredPane
 import javax.swing.JPanel
 import kotlin.math.min
 
-class SelectionView(dim: Dimension) : View() {
-    private val ja: MutableList<AnimationPanel> = MutableList(COUNT) { AnimationPanel() }
+class SelectionView(
+    state: PatternAnimationState
+) : View(state) {
+    private val ja: MutableList<AnimationPanel> = MutableList(COUNT) { AnimationPanel(state) }
     private val layered: JLayeredPane
     private val mutator: Mutator
     private var savedPrefs: AnimationPrefs? = null
@@ -29,7 +32,11 @@ class SelectionView(dim: Dimension) : View() {
     init {
         // JLayeredPane on the left so we can show a grid of animations with an
         // overlay drawn on top
-        layered = makeLayeredPane(dim, makeAnimationGrid(), makeOverlay())
+        layered = makeLayeredPane(
+            Dimension(state.prefs.width, state.prefs.height),
+            makeAnimationGrid(),
+            makeOverlay()
+        )
         mutator = Mutator()
 
         val gb = GridBagLayout()
