@@ -91,7 +91,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     private constructor(pw: PatternWindow) : this(
         pw.getTitle(),
         pw.view.pattern!!,
-        AnimationPrefs(pw.view.animationPrefs)
+        pw.view.animationPrefs.copy()
     )
 
     //--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     private fun createInitialView(pat: JMLPattern, jc: AnimationPrefs?) {
         val jc = jc ?: AnimationPrefs()
         val mode = when {
-            (jc.view != AnimationPrefs.VIEW_NONE) -> jc.view
+            (jc.defaultView != AnimationPrefs.VIEW_NONE) -> jc.defaultView
             (pat.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
                 AnimationPrefs.VIEW_SIMPLE
 

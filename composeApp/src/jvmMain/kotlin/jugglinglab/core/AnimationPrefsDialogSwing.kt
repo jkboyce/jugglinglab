@@ -63,9 +63,9 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         tfHeight.text = oldPrefs.height.toString()
         tfFps.text = jlToStringRounded(oldPrefs.fps, 2)
         tfSlowdown.text = jlToStringRounded(oldPrefs.slowdown, 2)
-        tfBorder.text = oldPrefs.border.toString()
+        tfBorder.text = oldPrefs.borderPixels.toString()
         comboShowground.setSelectedIndex(oldPrefs.showGround)
-        cbPaused.setSelected(oldPrefs.startPause)
+        cbPaused.setSelected(oldPrefs.startPaused)
         cbMousepause.setSelected(oldPrefs.mousePause)
         cbStereo.setSelected(oldPrefs.stereo)
         cbCatchsounds.setSelected(oldPrefs.catchSound)
@@ -282,7 +282,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
 
         // Clone the old preferences so if we get an error we retain as much of
         // it as possible
-        var newjc = AnimationPrefs(oldjc)
+        var newjc = oldjc.copy()
 
         try {
             tempint = tfWidth.getText().toInt()
@@ -323,7 +323,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         try {
             tempint = tfBorder.getText().toInt()
             if (tempint >= 0) {
-                newjc.border = tempint
+                newjc.borderPixels = tempint
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "border")
@@ -331,7 +331,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         }
 
         newjc.showGround = comboShowground.getSelectedIndex()
-        newjc.startPause = cbPaused.isSelected
+        newjc.startPaused = cbPaused.isSelected
         newjc.mousePause = cbMousepause.isSelected
         newjc.stereo = cbStereo.isSelected
         newjc.catchSound = cbCatchsounds.isSelected

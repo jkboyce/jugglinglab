@@ -95,9 +95,9 @@ class Animator {
         initAnimator()
 
         val ca = DoubleArray(2)
-        if (jc.camangle != null) {
-            ca[0] = Math.toRadians(jc.camangle!![0])
-            val theta = min(179.9999, max(0.0001, jc.camangle!![1]))
+        if (jc.defaultCameraAngle != null) {
+            ca[0] = Math.toRadians(jc.defaultCameraAngle!![0])
+            val theta = min(179.9999, max(0.0001, jc.defaultCameraAngle!![1]))
             ca[1] = Math.toRadians(theta)
         } else {
             if (pat!!.numberOfJugglers == 1) {
@@ -372,10 +372,10 @@ class Animator {
         val d = Dimension(dim)
         if (jc.stereo) {
             d.width /= 2
-            ren1!!.initDisplay(d, jc.border, overallMax!!, overallMin!!)
-            ren2!!.initDisplay(d, jc.border, overallMax!!, overallMin!!)
+            ren1!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
+            ren2!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
         } else {
-            ren1!!.initDisplay(d, jc.border, overallMax!!, overallMin!!)
+            ren1!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
         }
     }
 

@@ -205,9 +205,10 @@ class SelectionView(
         var newjc: AnimationPrefs? = null
         if (c != null) {
             savedPrefs = c
-            newjc = AnimationPrefs(c)
             // disable startPause for grid of animations
-            newjc.startPause = false
+            newjc = c.copy(
+                startPaused = false
+            )
         }
 
         ja[CENTER].restartJuggle(p, newjc)

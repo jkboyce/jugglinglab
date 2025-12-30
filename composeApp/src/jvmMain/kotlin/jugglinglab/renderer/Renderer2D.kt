@@ -225,7 +225,7 @@ class Renderer2D : Renderer() {
 
     @Suppress("LocalVariableName")
     @Throws(JuggleExceptionInternal::class)
-    override fun drawFrame(time: Double, pnum: IntArray, hideJugglers: IntArray?, g: Graphics) {
+    override fun drawFrame(time: Double, pnum: IntArray, hideJugglers: List<Int>, g: Graphics) {
         var numobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
 
         // first reset the objects in the object pool
@@ -315,17 +315,8 @@ class Renderer2D : Renderer() {
         Juggler.findJugglerCoordinates(pat, time, jugglervec)
 
         for (i in 1..pat.numberOfJugglers) {
-            if (hideJugglers != null) {
-                var hide = false
-                for (hideJuggler in hideJugglers) {
-                    if (hideJuggler == i) {
-                        hide = true
-                        break
-                    }
-                }
-                if (hide) {
-                    continue
-                }
+            if (i in hideJugglers) {
+                continue
             }
 
             obj[index].type = DrawObject2D.TYPE_BODY

@@ -55,9 +55,9 @@ fun AnimationPrefsControl(
     var height by remember { mutableStateOf(initialPrefs.height.toString()) }
     var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
-    var border by remember { mutableStateOf(initialPrefs.border.toString()) }
+    var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
     var showGround by remember { mutableStateOf(initialPrefs.showGround) }
-    var startPaused by remember { mutableStateOf(initialPrefs.startPause) }
+    var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
     var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
     var stereo by remember { mutableStateOf(initialPrefs.stereo) }
     var catchSound by remember { mutableStateOf(initialPrefs.catchSound) }
@@ -67,7 +67,7 @@ fun AnimationPrefsControl(
 
     // Helper for creating the return object
     fun tryCreatePrefs() {
-        val newPrefs = AnimationPrefs(initialPrefs)
+        val newPrefs = initialPrefs.copy()
 
         // Validate and set numeric fields
         fun parseDouble(valStr: String, name: String): Double {
@@ -84,14 +84,14 @@ fun AnimationPrefsControl(
             newPrefs.height = parseInt(height, "height")
             newPrefs.fps = parseDouble(fps, "fps")
             newPrefs.slowdown = parseDouble(slowdown, "slowdown")
-            newPrefs.border = parseInt(border, "border")
+            newPrefs.borderPixels = parseInt(border, "border")
         } catch (e: Exception) {
             errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
             return
         }
 
         newPrefs.showGround = showGround
-        newPrefs.startPause = startPaused
+        newPrefs.startPaused = startPaused
         newPrefs.mousePause = mousePause
         newPrefs.stereo = stereo
         newPrefs.catchSound = catchSound

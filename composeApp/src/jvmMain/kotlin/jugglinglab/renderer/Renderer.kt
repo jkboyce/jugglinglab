@@ -45,7 +45,7 @@ abstract class Renderer {
     abstract fun getScreenTranslatedCoordinate(coord: Coordinate, dx: Int, dy: Int): Coordinate
 
     @Throws(JuggleExceptionInternal::class)
-    abstract fun drawFrame(time: Double, pnum: IntArray, hideJugglers: IntArray?, g: Graphics)
+    abstract fun drawFrame(time: Double, pnum: IntArray, hideJugglers: List<Int>, g: Graphics)
 
     abstract fun getBackground(): Color
 

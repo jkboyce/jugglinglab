@@ -16,55 +16,22 @@ import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlToStringRounded
 import androidx.compose.ui.unit.IntSize
 
-class AnimationPrefs {
-    var width: Int = WIDTH_DEF
-    var height: Int = HEIGHT_DEF
-    var fps: Double = FPS_DEF
-    var slowdown: Double = SLOWDOWN_DEF
-    var border: Int = BORDER_DEF
-    var showGround: Int = SHOWGROUND_DEF
-    var stereo: Boolean = STEREO_DEF
-    var startPause: Boolean = STARTPAUSE_DEF
-    var mousePause: Boolean = MOUSEPAUSE_DEF
-    var catchSound: Boolean = CATCHSOUND_DEF
-    var bounceSound: Boolean = BOUNCESOUND_DEF
-    var camangle: DoubleArray? = null // in degrees! null means use default
-    var view: Int = VIEW_DEF // one of the values in View
-    var hideJugglers: IntArray? = null
-
-    constructor() : super()
-
-    constructor(jc: AnimationPrefs) {
-        if (jc.width > 0) {
-            width = jc.width
-        }
-        if (jc.height > 0) {
-            height = jc.height
-        }
-        if (jc.slowdown >= 0) {
-            slowdown = jc.slowdown
-        }
-        if (jc.fps >= 0) {
-            fps = jc.fps
-        }
-        if (jc.border >= 0) {
-            border = jc.border
-        }
-        showGround = jc.showGround
-        stereo = jc.stereo
-        startPause = jc.startPause
-        mousePause = jc.mousePause
-        catchSound = jc.catchSound
-        bounceSound = jc.bounceSound
-        if (jc.camangle != null) {
-            camangle = jc.camangle!!.clone()
-        }
-        view = jc.view
-        if (jc.hideJugglers != null) {
-            hideJugglers = jc.hideJugglers!!.clone()
-        }
-    }
-
+data class AnimationPrefs(
+    var width: Int = WIDTH_DEF,
+    var height: Int = HEIGHT_DEF,
+    var fps: Double = FPS_DEF,
+    var slowdown: Double = SLOWDOWN_DEF,
+    var borderPixels: Int = BORDERPIXELS_DEF,
+    var showGround: Int = SHOWGROUND_DEF,
+    var stereo: Boolean = STEREO_DEF,
+    var startPaused: Boolean = STARTPAUSED_DEF,
+    var mousePause: Boolean = MOUSEPAUSE_DEF,
+    var catchSound: Boolean = CATCHSOUND_DEF,
+    var bounceSound: Boolean = BOUNCESOUND_DEF,
+    var defaultCameraAngle: List<Double>? = null,
+    var defaultView: Int = VIEW_DEF, // one of the values in View
+    var hideJugglers: List<Int> = listOf()
+) {
     @Throws(JuggleExceptionUser::class)
     fun fromParameters(pl: ParameterList): AnimationPrefs {
         var tempint: Int
@@ -75,7 +42,7 @@ class AnimationPrefs {
             stereo = value.toBoolean()
         }
         if ((pl.removeParameter("startpaused").also { value = it }) != null) {
-            startPause = value.toBoolean()
+            startPaused = value.toBoolean()
         }
         if ((pl.removeParameter("mousepause").also { value = it }) != null) {
             mousePause = value.toBoolean()
@@ -107,7 +74,7 @@ class AnimationPrefs {
         if ((pl.removeParameter("border").also { value = it }) != null) {
             try {
                 tempint = value!!.toInt()
-                border = tempint
+                borderPixels = tempint
             } catch (_: NumberFormatException) {
                 val message = jlGetStringResource(Res.string.error_number_format, "border")
                 throw JuggleExceptionUser(message)
@@ -154,7 +121,9 @@ class AnimationPrefs {
                 val ca = DoubleArray(2)
                 ca[1] = 90.0  // default if second angle isn't given
 
-                val tokens = value!!.replace(Regex("[(){}]"), "").split(',')
+                val tokens = value!!.filterNot { 
+                    it == '(' || it == ')' || it == '{' || it == '}' 
+                }.split(',')
                 if (tokens.size > 2) {
                     val message = jlGetStringResource(Res.string.error_too_many_elements, "camangle")
                     throw JuggleExceptionUser(message)
@@ -164,31 +133,31 @@ class AnimationPrefs {
                         ca[i] = token.trim().toDouble()
                     }
                 }
-                camangle = ca
+                defaultCameraAngle = ca.toList()
             } catch (_: NumberFormatException) {
                 val message = jlGetStringResource(Res.string.error_number_format, "camangle")
                 throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("view").also { value = it }) != null) {
-            view = -1
+            defaultView = -1
             for (viewIndex in viewNames.indices) {
                 if (value.equals(viewNames[viewIndex], ignoreCase = true)) {
-                    view = viewIndex + 1
+                    defaultView = viewIndex + 1
                 }
             }
 
-            if (view == -1) {
+            if (defaultView == -1) {
                 val message = jlGetStringResource(Res.string.error_unrecognized_view, value)
                 throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("hidejugglers").also { value = it }) != null) {
             try {
-                val tokens = value!!.replace(Regex("[()]"), "").split(',')
+                val tokens = value!!.filterNot { it == '(' || it == ')' }.split(',')
                 hideJugglers = tokens.mapNotNull { token ->
                     token.trim().takeIf { it.isNotEmpty() }?.toInt()
-                }.toIntArray()
+                }.toList()
             } catch (_: NumberFormatException) {
                 val message = jlGetStringResource(Res.string.error_number_format, "hidejugglers")
                 throw JuggleExceptionUser(message)
@@ -227,8 +196,8 @@ class AnimationPrefs {
         if (slowdown != SLOWDOWN_DEF) {
             sb.append("slowdown=").append(jlToStringRounded(slowdown, 2)).append(";")
         }
-        if (border != BORDER_DEF) {
-            sb.append("border=").append(border).append(";")
+        if (borderPixels != BORDERPIXELS_DEF) {
+            sb.append("border=$borderPixels;")
         }
         if (showGround != SHOWGROUND_DEF) {
             when (showGround) {
@@ -238,37 +207,39 @@ class AnimationPrefs {
             }
         }
         if (stereo != STEREO_DEF) {
-            sb.append("stereo=").append(stereo).append(";")
+            sb.append("stereo=$stereo;")
         }
-        if (startPause != STARTPAUSE_DEF) {
-            sb.append("startpaused=").append(startPause).append(";")
+        if (startPaused != STARTPAUSED_DEF) {
+            sb.append("startpaused=$startPaused;")
         }
         if (mousePause != MOUSEPAUSE_DEF) {
-            sb.append("mousepause=").append(mousePause).append(";")
+            sb.append("mousepause=$mousePause;")
         }
         if (catchSound != CATCHSOUND_DEF) {
-            sb.append("catchsound=").append(catchSound).append(";")
+            sb.append("catchsound=$catchSound;")
         }
         if (bounceSound != BOUNCESOUND_DEF) {
-            sb.append("bouncesound=").append(bounceSound).append(";")
+            sb.append("bouncesound=$bounceSound;")
         }
-        if (camangle != null) {
-            sb.append("camangle=(").append(camangle!![0]).append(",").append(camangle!![1]).append(");")
+        if (defaultCameraAngle != null) {
+            sb.append("camangle=(").append(defaultCameraAngle!![0])
+                .append(",").append(defaultCameraAngle!![1])
+                .append(");")
         }
-        if (view != VIEW_DEF) {
-            sb.append("view=").append(viewNames[view - 1]).append(";")
+        if (defaultView != VIEW_DEF) {
+            sb.append("view=").append(viewNames[defaultView - 1]).append(";")
         }
-        if (hideJugglers != null) {
+        if (hideJugglers.isNotEmpty()) {
             sb.append("hidejugglers=(")
-            for (i in hideJugglers!!.indices) {
-                sb.append(hideJugglers!![i])
-                if (i != hideJugglers!!.size - 1) {
+            for ((index, juggler) in hideJugglers.withIndex()) {
+                sb.append(juggler)
+                if (index != hideJugglers.size - 1) {
                     sb.append(",")
                 }
             }
             sb.append(");")
         }
-        if (!sb.isEmpty()) {
+        if (sb.isNotEmpty()) {
             sb.setLength(sb.length - 1)
         }
         return sb.toString()
@@ -304,10 +275,10 @@ class AnimationPrefs {
         const val HEIGHT_DEF: Int = 450
         val FPS_DEF: Double = jlGetScreenFps()
         const val SLOWDOWN_DEF: Double = 2.0
-        const val BORDER_DEF: Int = 0
+        const val BORDERPIXELS_DEF: Int = 0
         const val SHOWGROUND_DEF: Int = GROUND_AUTO
         const val STEREO_DEF: Boolean = false
-        const val STARTPAUSE_DEF: Boolean = false
+        const val STARTPAUSED_DEF: Boolean = false
         const val MOUSEPAUSE_DEF: Boolean = false
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false

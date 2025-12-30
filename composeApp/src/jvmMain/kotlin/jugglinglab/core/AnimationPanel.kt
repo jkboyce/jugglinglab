@@ -309,11 +309,11 @@ class AnimationPanel(
         engineAnimating = false
 
         if (jc.mousePause) {
-            waspaused = jc.startPause
+            waspaused = jc.startPaused
         }
 
         try {
-            if (jc.startPause) {
+            if (jc.startPaused) {
                 message = jlGetStringResource(Res.string.gui_message_click_to_start)
                 repaint()
                 enginePaused = true
