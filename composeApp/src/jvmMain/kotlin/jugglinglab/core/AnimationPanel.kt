@@ -81,8 +81,6 @@ class AnimationPanel(
 
     //----------------------------------
 
-    private var activeItemHashCode: Int = 0
-
     // for when an event is activated/dragged
     private var eventActive: Boolean = false
     private var activeEvent: JMLEvent? = null
@@ -136,7 +134,112 @@ class AnimationPanel(
         handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
         handpathHold = BooleanArray(0)
         posPoints = Array(2) { Array(0) { DoubleArray(2) } }
+
+        state.addListener(onSelectedItemHashChange = {
+            buildSelectionView()
+        })
     }
+
+    //--------------------------------------------------------------------------
+    // Methods to handle changes made within this UI
+    //--------------------------------------------------------------------------
+
+    // Call this to initiate a change in the pattern.
+    //
+    // There are three levels of "pattern restart":
+    // 1. Full restart (reset camera angle and zoom, restart animation at t = 0)
+    // 2. Pattern update (leave camera angle and time unchanged, re-fit the
+    //    animation to the rendering frame)
+    // 3. Pattern update w/o size refit (as #2 but w/o size refit)
+    //
+    // For any edits made in EditLadderDiagram we use restart #2.
+    // For any edits made in AnimationEditPanel we use restart #3 while mouse
+    // dragging is active, then restart #2 on mouse release.
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
+        // Do pattern layout first so if there's an error we don't disrupt the
+        // current animation
+        pat?.layout
+
+        // stop the current animation thread, if one is running
+        killAnimationThread()
+
+        if (newjc != null) {
+            state.update(prefs = newjc)
+        }
+
+        animator.dimension = size
+        animator.restartAnimator(pat, newjc)
+        setBackground(animator.background)
+
+        if (pat != null) {
+            state.update(pattern = pat)
+        }
+
+        engine = Thread(this)
+        engine!!.start()
+
+        if (eventActive) {
+            createEventView()
+        }
+        if (positionActive) {
+            createPositionView()
+        }
+    }
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    fun restartJuggle() = restartJuggle(null, null)
+
+    fun onPatternChange(
+        newPattern: JMLPattern,
+        addToUndo: Boolean = true,
+        fitToFrame: Boolean = true
+    ) {
+        try {
+            if (addToUndo) {
+                addToUndoList(newPattern)
+            }
+            animator.pat = newPattern
+            animator.initAnimator(fitToFrame = fitToFrame)
+            state.update(pattern = newPattern)
+            buildSelectionView()
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+        }
+    }
+
+    fun addToUndoList(pat: JMLPattern) {
+        for (att in attachments) {
+            if (att is LadderDiagram) {
+                att.addToUndoList(pat)
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    // Incoming notifications of changes
+    //--------------------------------------------------------------------------
+
+    fun setJMLPattern(
+        pat: JMLPattern,
+        restart: Boolean = true
+    ) {
+        try {
+            if (restart) {
+                restartJuggle(pat, null)
+            } else {
+                animator.pat = pat
+                animator.initAnimator()
+                state.update(pattern = pat)
+            }
+            buildSelectionView()
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, pat))
+        }
+    }
+
+    //--------------------------------------------------------------------------
 
     private fun loadAudioClips() {
         try {
@@ -264,43 +367,6 @@ class AnimationPanel(
     fun removeAllAttachments() = attachments.clear()
 
     fun addAnimationAttachment(att: AnimationAttachment) = attachments.add(att)
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
-        // Do pattern layout first so if there's an error we don't disrupt the
-        // current animation
-        pat?.layout
-
-        // stop the current animation thread, if one is running
-        killAnimationThread()
-
-        if (newjc != null) {
-            state.update(prefs = newjc)
-        }
-
-        animator.dimension = size
-        animator.restartAnimator(pat, newjc)
-        setBackground(animator.background)
-
-        if (pat != null) {
-            for (att in attachments) {
-                att.setJMLPattern(pat)
-            }
-        }
-
-        engine = Thread(this)
-        engine!!.start()
-
-        if (eventActive) {
-            createEventView()
-        }
-        if (positionActive) {
-            createPositionView()
-        }
-    }
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle() = restartJuggle(null, null)
 
     override fun run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY)
@@ -510,67 +576,11 @@ class AnimationPanel(
         // AnimationPanel we're attached to
         fun setAnimationPanel(animPanel: AnimationPanel?)
 
-        // JMLPattern being animated, and (optionally if nonzero) an item in
-        // the pattern that is selected/active
-        fun setJMLPattern(pat: JMLPattern, activeHashCode: Int = 0)
-
-        // active event, position, or transition in the pattern
-        fun setActiveItem(activeHashCode: Int)
-
         // simulation time (seconds)
         fun setTime(t: Double)
 
         // force a redraw
         fun repaintAttachment()
-    }
-
-    //--------------------------------------------------------------------------
-    // Methods to handle changes made within this UI
-    //--------------------------------------------------------------------------
-
-    // Call this to initiate a change in the pattern.
-    //
-    // There are three levels of "pattern restart":
-    // 1. Full restart (reset camera angle and zoom, restart animation at t = 0)
-    // 2. Pattern update (leave camera angle and time unchanged, re-fit the
-    //    animation to the rendering frame)
-    // 3. Pattern update w/o size refit (as #2 but w/o size refit)
-    //
-    // For any edits made in EditLadderDiagram we use restart #2.
-    // For any edits made in AnimationEditPanel we use restart #3 while mouse
-    // dragging is active, then restart #2 on mouse release.
-
-    fun onPatternChange(
-        newPattern: JMLPattern,
-        addToUndo: Boolean = true,
-        fitToFrame: Boolean = true
-    ) {
-        try {
-            if (addToUndo) {
-                addToUndoList(newPattern)
-            }
-            animator.pat = newPattern
-            animator.initAnimator(fitToFrame = fitToFrame)
-            for (att in attachments) {
-                att.setJMLPattern(newPattern, activeHashCode = activeItemHashCode)
-            }
-            onNewActiveItem(activeItemHashCode)
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
-        }
-    }
-
-    @Throws(JuggleExceptionInternal::class)
-    fun onNewActiveItem(hash: Int) {
-        setActiveItem(hash)
-    }
-
-    fun addToUndoList(pat: JMLPattern) {
-        for (att in attachments) {
-            if (att is LadderDiagram) {
-                att.addToUndoList(pat)
-            }
-        }
     }
 
     //--------------------------------------------------------------------------
@@ -646,10 +656,7 @@ class AnimationPanel(
                                 }?.event?.jlHashCode
                                     ?: throw JuggleExceptionInternal("Error 2 in AEP.mousePressed()")
 
-                                setActiveItem(code)
-                                for (att in attachments) {
-                                    att.setActiveItem(code)
-                                }
+                                state.update(selectedItemHashCode = code)
                             }
 
                             draggingXz = true
@@ -867,12 +874,12 @@ class AnimationPanel(
                     }
                     val newPosition = activePosition!!.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
-                    activeItemHashCode = newPosition.jlHashCode
                     onPatternChange(
                         JMLPattern.fromPatternBuilder(rec),
                         addToUndo = false,
                         fitToFrame = false
                     )
+                    state.update(selectedItemHashCode = newPosition.jlHashCode)
                 } else {
                     deltaX = mx - startX
                     deltaY = my - startY
@@ -909,12 +916,12 @@ class AnimationPanel(
                             val record = PatternBuilder.fromJMLPattern(pattern!!)
                             val index = record.events.indexOf(activeEventPrimary)
                             record.events[index] = newPrimary
-                            activeItemHashCode = newEvent.jlHashCode
                             onPatternChange(
                                 JMLPattern.fromPatternBuilder(record),
                                 addToUndo = false,
                                 fitToFrame = false
                             )
+                            state.update(selectedItemHashCode = newEvent.jlHashCode)
                         }
                     }
 
@@ -926,12 +933,12 @@ class AnimationPanel(
                         }
                         val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                         rec.positions[index] = newPosition
-                        activeItemHashCode = newPosition.jlHashCode
                         onPatternChange(
                             JMLPattern.fromPatternBuilder(rec),
                             addToUndo = false,
                             fitToFrame = false
                         )
+                        state.update(selectedItemHashCode = newPosition.jlHashCode)
                     }
                 }
             } else if (!draggingCamera) {
@@ -983,32 +990,11 @@ class AnimationPanel(
     override fun mouseMoved(e: MouseEvent?) {}
 
     //--------------------------------------------------------------------------
-    // Incoming notifications of changes
+    // Helper functions related to event editing
     //--------------------------------------------------------------------------
 
-    fun setJMLPattern(
-        pat: JMLPattern,
-        activeHashCode: Int,
-        restart: Boolean = true
-    ) {
-        try {
-            if (restart) {
-                restartJuggle(pat, null)
-            } else {
-                animator.pat = pat
-                animator.initAnimator()
-                for (att in attachments) {
-                    att.setJMLPattern(pat)
-                }
-            }
-            setActiveItem(activeHashCode)
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pat))
-        }
-    }
-
     @Throws(JuggleExceptionInternal::class)
-    fun setActiveItem(activeHashCode: Int) {
+    fun buildSelectionView() {
         // reset event-related fields
         activeEvent = null
         activeEventPrimary = null
@@ -1022,7 +1008,7 @@ class AnimationPanel(
         positionActive = false
 
         for ((ev, evPrimary) in pattern!!.loopEvents) {
-            if (ev.jlHashCode == activeHashCode) {
+            if (ev.jlHashCode == state.selectedItemHashCode) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
                 eventActive = true
@@ -1030,7 +1016,7 @@ class AnimationPanel(
                 break
             } else if (ev.transitions.withIndex().any { (transNum, _) ->
                     val trHash = ev.jlHashCode + 23 + transNum * 27
-                    trHash == activeHashCode
+                    trHash == state.selectedItemHashCode
                 }) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
@@ -1040,7 +1026,7 @@ class AnimationPanel(
             }
         }
         for (pos in pattern!!.positions) {
-            if (pos.jlHashCode == activeHashCode) {
+            if (pos.jlHashCode == state.selectedItemHashCode) {
                 activePosition = pos
                 positionActive = true
                 createPositionView()
@@ -1049,10 +1035,6 @@ class AnimationPanel(
         }
         repaint()
     }
-
-    //--------------------------------------------------------------------------
-    // Helper functions related to event editing
-    //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class)
     private fun createEventView() {

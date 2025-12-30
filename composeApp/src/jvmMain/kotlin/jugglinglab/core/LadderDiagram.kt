@@ -97,7 +97,6 @@ class LadderDiagram(
 
     private var aep: AnimationPanel? = null
 
-    private var activeItemHashCode: Int = 0
     private var activeEventItem: LadderEventItem? = null
     private var activePositionItem: LadderPositionItem? = null
     private var itemWasSelected: Boolean = false // for detecting de-selecting clicks
@@ -147,7 +146,40 @@ class LadderDiagram(
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        setJMLPattern(state.pattern)
+        pattern = state.pattern
+        addMouseListener(this)
+        addMouseMotionListener(this)
+
+        state.addListener(onSelectedItemHashChange = {
+            setActiveItem(state.selectedItemHashCode)
+        })
+        state.addListener(onPatternChange = {
+            pattern = state.pattern
+            addMouseListener(this)
+            addMouseMotionListener(this)
+        })
+    }
+
+    //--------------------------------------------------------------------------
+    // Methods to handle changes made within this UI
+    //--------------------------------------------------------------------------
+
+    // Call this to initiate a change in the pattern. The AnimationEditPanel
+    // notifies us of the new pattern through the AnimationAttachment interface
+    // below.
+
+    fun onPatternChange(
+        newPattern: JMLPattern,
+        undoable: Boolean = true
+    ) {
+        if (undoable) {
+            addToUndoList(newPattern)
+        }
+        aep?.setJMLPattern(newPattern, restart = false)
+    }
+
+    fun addToUndoList(pat: JMLPattern) {
+        parentView.addToUndoList(pat)
     }
 
     //--------------------------------------------------------------------------
@@ -731,37 +763,6 @@ class LadderDiagram(
             get() = position.jlHashCode
     }
 
-    //----------------------------------
-    //--------------------------------------------------------------------------
-    // Methods to handle changes made within this UI
-    //--------------------------------------------------------------------------
-
-    // Call this to initiate a change in the pattern. The AnimationEditPanel
-    // notifies us of the new pattern through the AnimationAttachment interface
-    // below.
-
-    fun onPatternChange(
-        newPattern: JMLPattern,
-        undoable: Boolean = true
-    ) {
-        if (undoable) {
-            addToUndoList(newPattern)
-        }
-        aep?.setJMLPattern(newPattern, activeItemHashCode, restart = false)
-    }
-
-    fun onNewActiveItem(hash: Int) {
-        try {
-            aep?.setActiveItem(hash)
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
-        }
-    }
-
-    fun addToUndoList(pat: JMLPattern) {
-        parentView.addToUndoList(pat)
-    }
-
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
     //--------------------------------------------------------------------------
@@ -795,14 +796,14 @@ class LadderDiagram(
                     animPaused = aep2.isPaused
                     aep2.isPaused = true
                     aep2.time = newT
-                    activeItemHashCode = if (activeEventItem != null) {
-                        activeEventItem!!.event.jlHashCode
+                    val code = if (activeEventItem != null) {
+                        activeEventItem!!.jlHashCode  // activeEventItem!!.event.jlHashCode
                     } else if (activePositionItem != null) {
                         activePositionItem!!.position.jlHashCode
                     } else {
                         0
                     }
-                    onNewActiveItem(activeItemHashCode)
+                    state.update(selectedItemHashCode = code)
                 }
 
                 makePopupMenu(popupItem).show(this, me.getX(), me.getY())
@@ -819,8 +820,7 @@ class LadderDiagram(
                             if (oldEventitem == activeEventItem) {
                                 itemWasSelected = true
                             }
-                            activeItemHashCode = activeEventItem!!.jlHashCode
-                            onNewActiveItem(activeItemHashCode)
+                            state.update(selectedItemHashCode = activeEventItem!!.jlHashCode)
                             if (activeEventItem!!.type == LadderItem.TYPE_TRANSITION) {
                                 // only allow dragging of TYPE_EVENT
                                 needsHandling = false
@@ -846,7 +846,6 @@ class LadderDiagram(
                                 if (oldPositionitem == activePositionItem) {
                                     itemWasSelected = true
                                 }
-                                activeItemHashCode = activePositionItem!!.jlHashCode
                                 guiState = STATE_MOVING_POSITION
                                 activeEventItem = null
                                 startY = me.getY()
@@ -854,7 +853,7 @@ class LadderDiagram(
                                 startYHigh = activePositionItem!!.yHigh
                                 startT = activePositionItem!!.position.t
                                 findPositionLimits(activePositionItem!!)
-                                onNewActiveItem(activeItemHashCode)
+                                state.update(selectedItemHashCode = activePositionItem!!.jlHashCode)
                                 needsHandling = false
                             }
                         }
@@ -870,7 +869,7 @@ class LadderDiagram(
                                 animPaused = aep2.isPaused
                                 aep2.isPaused = true
                                 aep2.time = newtime
-                                onNewActiveItem(0)
+                                state.update(selectedItemHashCode = 0)
                             }
                         }
                     }
@@ -909,14 +908,14 @@ class LadderDiagram(
                             animPaused = aep2.isPaused
                             aep2.isPaused = true
                             aep2.time = newtime
-                            activeItemHashCode = if (activeEventItem != null) {
+                            val code = if (activeEventItem != null) {
                                 activeEventItem!!.event.jlHashCode
                             } else if (activePositionItem != null) {
                                 activePositionItem!!.position.jlHashCode
                             } else {
                                 0
                             }
-                            onNewActiveItem(activeItemHashCode)
+                            state.update(selectedItemHashCode = code)
                             aep2.repaint()
                         }
 
@@ -952,8 +951,7 @@ class LadderDiagram(
                         } else if (itemWasSelected) {
                             // clicked without moving --> deselect
                             activeEventItem = null
-                            activeItemHashCode = 0
-                            onNewActiveItem(0)
+                            state.update(selectedItemHashCode = 0)
                             repaint()
                         }
                     }
@@ -965,8 +963,7 @@ class LadderDiagram(
                             addToUndoList(pattern)
                         } else if (itemWasSelected) {
                             activePositionItem = null
-                            activeItemHashCode = 0
-                            onNewActiveItem(0)
+                            state.update(selectedItemHashCode = 0)
                             repaint()
                         }
                     }
@@ -1044,6 +1041,23 @@ class LadderDiagram(
     //--------------------------------------------------------------------------
     // Utility methods for mouse interactions
     //--------------------------------------------------------------------------
+
+    fun setActiveItem(activeHashCode: Int) {
+        activeEventItem = null
+        activePositionItem = null
+
+        for (item in ladderEventItems) {
+            if (item.jlHashCode == activeHashCode) {
+                activeEventItem = item
+            }
+        }
+        for (item in ladderPositionItems) {
+            if (item.jlHashCode == activeHashCode) {
+                activePositionItem = item
+            }
+        }
+        repaint()
+    }
 
     // Set `deltaYMin` and `deltaYMax` for a selected event, determining the
     // number of pixels it is allowed to move up or down.
@@ -1178,8 +1192,8 @@ class LadderDiagram(
 
         record.selectPrimaryEvents()
         val newPattern = JMLPattern.fromPatternBuilder(record)
-        activeItemHashCode = newEvent.jlHashCode
         onPatternChange(newPattern, undoable = false)
+        state.update(selectedItemHashCode = newEvent.jlHashCode)
     }
 
     private fun findPositionLimits(item: LadderPositionItem) {
@@ -1270,8 +1284,8 @@ class LadderDiagram(
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
         val newPosition = pos.copy(t = newt)
         rec.positions[index] = newPosition
-        activeItemHashCode = newPosition.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
+        state.update(selectedItemHashCode = newPosition.jlHashCode)
     }
 
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
@@ -1374,8 +1388,8 @@ class LadderDiagram(
         record.events.add(newEvent)
         record.fixHolds()
         record.selectPrimaryEvents()
-        activeItemHashCode = newEvent.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(record))
+        state.update(selectedItemHashCode = newEvent.jlHashCode)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1387,8 +1401,8 @@ class LadderDiagram(
         val evRemove = (popupItem as LadderEventItem).primary
         val record = PatternBuilder.fromJMLPattern(pattern)
         record.events.remove(evRemove)
-        activeItemHashCode = 0
         onPatternChange(JMLPattern.fromPatternBuilder(record))
+        state.update(selectedItemHashCode = 0)
     }
 
     private fun addPositionToJuggler() {
@@ -1425,8 +1439,8 @@ class LadderDiagram(
         )
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.add(pos)
-        activeItemHashCode = pos.jlHashCode
         onPatternChange(JMLPattern.fromPatternBuilder(rec))
+        state.update(selectedItemHashCode = pos.jlHashCode)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1437,8 +1451,8 @@ class LadderDiagram(
         val pos = (popupItem as LadderPositionItem).position
         val rec = PatternBuilder.fromJMLPattern(pattern)
         rec.positions.remove(pos)
-        activeItemHashCode = 0
         onPatternChange(JMLPattern.fromPatternBuilder(rec))
+        state.update(selectedItemHashCode = 0)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1749,9 +1763,10 @@ class LadderDiagram(
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
-        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode + 23 +
+        val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (popupItem as LadderEventItem).transNum * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
+        state.update(selectedItemHashCode = code)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1769,9 +1784,10 @@ class LadderDiagram(
         val record = PatternBuilder.fromJMLPattern(pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
-        activeItemHashCode = (popupItem as LadderEventItem).event.jlHashCode + 23 +
+        val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (newPrimary.transitions.size - 1) * 27
         onPatternChange(JMLPattern.fromPatternBuilder(record))
+        state.update(selectedItemHashCode = code)
     }
 
     // Helper for defineProp() and defineThrow().
@@ -1990,39 +2006,6 @@ class LadderDiagram(
 
     override fun setAnimationPanel(animPanel: AnimationPanel?) {
         aep = animPanel
-    }
-
-    override fun setJMLPattern(pat: JMLPattern, activeHashCode: Int) {
-        pattern = pat
-        if (activeHashCode != 0) {
-            // use updated jlHashCode from the animation panel
-            setActiveItem(activeHashCode)
-        } else {
-            // otherwise try to reactivate previous active item
-            setActiveItem(activeItemHashCode)
-        }
-        addMouseListener(this)
-        addMouseMotionListener(this)
-    }
-
-    override fun setActiveItem(activeHashCode: Int) {
-        activeItemHashCode = 0
-        activeEventItem = null
-        activePositionItem = null
-
-        for (item in ladderEventItems) {
-            if (item.jlHashCode == activeHashCode) {
-                activeItemHashCode = activeHashCode
-                activeEventItem = item
-            }
-        }
-        for (item in ladderPositionItems) {
-            if (item.jlHashCode == activeHashCode) {
-                activeItemHashCode = activeHashCode
-                activePositionItem = item
-            }
-        }
-        repaint()
     }
 
     override fun setTime(t: Double) {

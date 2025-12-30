@@ -31,7 +31,7 @@ class PatternAnimationState(
     var zoom: Double by mutableStateOf(1.0)
 
     // Selection State
-    var selectedItemHash: Int by mutableStateOf(0)
+    var selectedItemHashCode: Int by mutableStateOf(0)
 
     // Helper to update the state
     fun update(
@@ -41,7 +41,7 @@ class PatternAnimationState(
         isPaused: Boolean? = null,
         cameraAngle: List<Double>? = null,
         zoom: Double? = null,
-        selectedItemHash: Int? = null
+        selectedItemHashCode: Int? = null
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs
@@ -49,7 +49,7 @@ class PatternAnimationState(
         if (isPaused != null) this.isPaused = isPaused
         if (cameraAngle != null) this.cameraAngle = cameraAngle
         if (zoom != null) this.zoom = zoom
-        if (selectedItemHash != null) this.selectedItemHash = selectedItemHash
+        if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
         
         if (pattern != null) {
             for (callback in onPatternChange) callback()
@@ -69,7 +69,7 @@ class PatternAnimationState(
         if (zoom != null) {
             for (callback in onZoomChange) callback()
         }
-        if (selectedItemHash != null) {
+        if (selectedItemHashCode != null) {
             for (callback in onSelectedItemHashChange) callback()
         }
     }
@@ -87,13 +87,13 @@ class PatternAnimationState(
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
 
     fun addListener(
-        onPatternChange: (() -> Unit)?,
-        onPrefsChange: (() -> Unit)?,
-        onTimeChange: (() -> Unit)?,
-        onIsPausedChanged: (() -> Unit)?,
-        onCameraAngleChange: (() -> Unit)?,
-        onZoomChange: (() -> Unit)?,
-        onSelectedItemHashChange: (() -> Unit)?
+        onPatternChange: (() -> Unit)? = null,
+        onPrefsChange: (() -> Unit)? = null,
+        onTimeChange: (() -> Unit)? = null,
+        onIsPausedChanged: (() -> Unit)? = null,
+        onCameraAngleChange: (() -> Unit)? = null,
+        onZoomChange: (() -> Unit)? = null,
+        onSelectedItemHashChange: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
         if (onPrefsChange != null) this.onPrefsChange.add(onPrefsChange)

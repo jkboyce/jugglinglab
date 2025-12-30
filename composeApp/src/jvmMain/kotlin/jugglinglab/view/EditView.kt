@@ -80,7 +80,7 @@ class EditView(
 
         ap.removeAllAttachments()
         ap.addAnimationAttachment(newLadder)
-        ap.setActiveItem(0)
+        state.update(selectedItemHashCode = 0)
 
         ladderPanel.removeAll()
         ladderPanel.add(newLadder, BorderLayout.CENTER)
