@@ -69,7 +69,7 @@ class EditView(
 
         ap.restartJuggle(p, c)
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.size.width, animationPrefs.size.height))
+            Dimension(animationPrefs.width, animationPrefs.height))
 
         if (p == null) {
             return

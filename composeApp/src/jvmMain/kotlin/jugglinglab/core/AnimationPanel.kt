@@ -26,7 +26,6 @@ import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import kotlin.math.abs
-import androidx.compose.ui.unit.IntSize
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPosition
 import jugglinglab.jml.PatternBuilder
@@ -198,7 +197,8 @@ class AnimationPanel(
                         }
 
                         if (hasResized) {
-                            jc.size = IntSize(size.width, size.height)
+                            val newJc = jc.copy(width = size.width, height = size.height)
+                            jc = newJc
                         }
                         hasResized = true
                     } catch (e: Exception) {

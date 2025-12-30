@@ -101,7 +101,7 @@ class ApplicationPanelSwing(
                     try {
                         val pl = control.parameterList
                         val p = control.newPattern().fromParameters(pl)
-                        val jc = (AnimationPrefs()).fromParameters(pl)
+                        val jc = AnimationPrefs.fromParameters(pl)
                         pl.errorIfParametersLeft()
 
                         val notation = p.notationName

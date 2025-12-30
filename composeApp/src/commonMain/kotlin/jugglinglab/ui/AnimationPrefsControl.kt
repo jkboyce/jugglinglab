@@ -67,7 +67,7 @@ fun AnimationPrefsControl(
 
     // Helper for creating the return object
     fun tryCreatePrefs() {
-        val newPrefs = initialPrefs.copy()
+        var newPrefs = initialPrefs
 
         // Validate and set numeric fields
         fun parseDouble(valStr: String, name: String): Double {
@@ -80,28 +80,32 @@ fun AnimationPrefsControl(
         }
 
         try {
-            newPrefs.width = parseInt(width, "width")
-            newPrefs.height = parseInt(height, "height")
-            newPrefs.fps = parseDouble(fps, "fps")
-            newPrefs.slowdown = parseDouble(slowdown, "slowdown")
-            newPrefs.borderPixels = parseInt(border, "border")
+            newPrefs = newPrefs.copy(
+                width = parseInt(width, "width"),
+                height = parseInt(height, "height"),
+                fps = parseDouble(fps, "fps"),
+                slowdown = parseDouble(slowdown, "slowdown"),
+                borderPixels = parseInt(border, "border")
+            )
         } catch (e: Exception) {
             errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
             return
         }
 
-        newPrefs.showGround = showGround
-        newPrefs.startPaused = startPaused
-        newPrefs.mousePause = mousePause
-        newPrefs.stereo = stereo
-        newPrefs.catchSound = catchSound
-        newPrefs.bounceSound = bounceSound
+        newPrefs = newPrefs.copy(
+            showGround = showGround,
+            startPaused = startPaused,
+            mousePause = mousePause,
+            stereo = stereo,
+            catchSound = catchSound,
+            bounceSound = bounceSound
+        )
 
         // Process manual settings
         if (manualSettings.isNotBlank()) {
             try {
                 // We effectively merge the current object state with the manual string
-                newPrefs.fromString("$newPrefs;$manualSettings")
+                newPrefs = AnimationPrefs.fromString("$newPrefs;$manualSettings")
             } catch (jeu: JuggleExceptionUser) {
                 errorMessage = jeu.message
                 return

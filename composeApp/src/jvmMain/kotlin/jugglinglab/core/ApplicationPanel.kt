@@ -146,7 +146,7 @@ open class ApplicationPanel(
         return { pl ->
             try {
                 val p = SiteswapPattern().fromParameters(pl)
-                val jc = (AnimationPrefs()).fromParameters(pl)
+                val jc = AnimationPrefs.fromParameters(pl)
                 pl.errorIfParametersLeft()
 
                 // make the JML pattern

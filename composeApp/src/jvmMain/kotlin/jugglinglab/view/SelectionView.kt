@@ -220,7 +220,7 @@ class SelectionView(
         }
 
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.size.width, animationPrefs.size.height))
+            Dimension(animationPrefs.width, animationPrefs.height))
 
         if (p != null) {
             patternWindow?.setTitle(p.title)

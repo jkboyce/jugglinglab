@@ -279,15 +279,12 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
     private fun readDialogBox(oldjc: AnimationPrefs): AnimationPrefs {
         var tempint: Int
         var tempdouble: Double
-
-        // Clone the old preferences so if we get an error we retain as much of
-        // it as possible
-        var newjc = oldjc.copy()
+        var newjc = oldjc
 
         try {
             tempint = tfWidth.getText().toInt()
             if (tempint >= 0) {
-                newjc.width = tempint
+                newjc = newjc.copy(width = tempint)
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "width")
@@ -296,7 +293,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         try {
             tempint = tfHeight.getText().toInt()
             if (tempint >= 0) {
-                newjc.height = tempint
+                newjc = newjc.copy(height = tempint)
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "height")
@@ -305,7 +302,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         try {
             tempdouble = tfFps.getText().toDouble()
             if (tempdouble > 0.0) {
-                newjc.fps = tempdouble
+                newjc = newjc.copy(fps = tempdouble)
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "fps")
@@ -314,7 +311,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         try {
             tempdouble = tfSlowdown.getText().toDouble()
             if (tempdouble > 0.0) {
-                newjc.slowdown = tempdouble
+                newjc = newjc.copy(slowdown = tempdouble)
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "slowdown")
@@ -323,23 +320,25 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         try {
             tempint = tfBorder.getText().toInt()
             if (tempint >= 0) {
-                newjc.borderPixels = tempint
+                newjc = newjc.copy(borderPixels = tempint)
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "border")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
 
-        newjc.showGround = comboShowground.getSelectedIndex()
-        newjc.startPaused = cbPaused.isSelected
-        newjc.mousePause = cbMousepause.isSelected
-        newjc.stereo = cbStereo.isSelected
-        newjc.catchSound = cbCatchsounds.isSelected
-        newjc.bounceSound = cbBouncesounds.isSelected
+        newjc = newjc.copy(
+            showGround = comboShowground.getSelectedIndex(),
+            startPaused = cbPaused.isSelected,
+            mousePause = cbMousepause.isSelected,
+            stereo = cbStereo.isSelected,
+            catchSound = cbCatchsounds.isSelected,
+            bounceSound = cbBouncesounds.isSelected
+        )
 
         if (!tfOther.getText().trim { it <= ' ' }.isEmpty()) {
             try {
-                newjc = AnimationPrefs().fromString(newjc.toString() + ";" + tfOther.getText())
+                newjc = AnimationPrefs.fromString("$newjc;" + tfOther.getText())
             } catch (jeu: JuggleExceptionUser) {
                 jlHandleUserException(this@AnimationPrefsDialogSwing, jeu.message)
             }

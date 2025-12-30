@@ -369,7 +369,7 @@ object JugglingLab {
 
                 try {
                     val pl = ParameterList(jlargs.removeAt(i))
-                    val jc = AnimationPrefs().fromParameters(pl)
+                    val jc = AnimationPrefs.fromParameters(pl)
                     pl.errorIfParametersLeft()
                     return jc
                 } catch (jeu: JuggleExceptionUser) {
@@ -619,7 +619,7 @@ object JugglingLab {
             val anim = Animator()
             if (jc == null) {
                 jc = anim.animationPrefs
-                jc.fps = 33.3 // default frames per sec for GIFs
+                jc = jc.copy(fps = 33.3)  // default frames per sec for GIFs
                 // Note the GIF header specifies inter-frame delay in terms of
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
                 // 25, 20, ... are precisely achieveable.

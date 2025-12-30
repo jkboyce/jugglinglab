@@ -114,9 +114,8 @@ class JMLPatternList() {
         if (rec.animprefs == null) {
             return null
         }
-        val ap = AnimationPrefs()
         val params = ParameterList(rec.animprefs)
-        ap.fromParameters(params)
+        val ap = AnimationPrefs.fromParameters(params)
         params.errorIfParametersLeft()
         return ap
     }
