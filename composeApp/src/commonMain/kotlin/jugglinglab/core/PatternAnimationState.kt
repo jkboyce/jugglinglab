@@ -34,14 +34,14 @@ class PatternAnimationState(
     var selectedItemHash: Int by mutableStateOf(0)
 
     // Helper to update the state
-    fun updateState(
-        pattern: JMLPattern?,
-        prefs: AnimationPrefs?,
-        time: Double?,
-        isPaused: Boolean?,
-        cameraAngle: List<Double>?,
-        zoom: Double?,
-        selectedItemHash: Int?
+    fun update(
+        pattern: JMLPattern? = null,
+        prefs: AnimationPrefs? = null,
+        time: Double? = null,
+        isPaused: Boolean? = null,
+        cameraAngle: List<Double>? = null,
+        zoom: Double? = null,
+        selectedItemHash: Int? = null
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs

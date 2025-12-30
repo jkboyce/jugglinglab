@@ -53,7 +53,6 @@ class AnimationPanel(
     val state: PatternAnimationState
 ) : JPanel(), Runnable, MouseListener, MouseMotionListener {
     val animator: Animator = Animator()
-    private var jc: AnimationPrefs = AnimationPrefs()
     private var engine: Thread? = null
     private var engineRunning: Boolean = false
     private var enginePaused: Boolean = false
@@ -197,8 +196,8 @@ class AnimationPanel(
                         }
 
                         if (hasResized) {
-                            val newJc = jc.copy(width = size.width, height = size.height)
-                            jc = newJc
+                            val newJc = state.prefs.copy(width = size.width, height = size.height)
+                            state.update(prefs = newJc)
                         }
                         hasResized = true
                     } catch (e: Exception) {
@@ -276,7 +275,7 @@ class AnimationPanel(
         killAnimationThread()
 
         if (newjc != null) {
-            jc = newjc
+            state.update(prefs = newjc)
         }
 
         animator.dimension = size
@@ -308,12 +307,12 @@ class AnimationPanel(
         engineRunning = true // ok to start painting
         engineAnimating = false
 
-        if (jc.mousePause) {
-            waspaused = jc.startPaused
+        if (state.prefs.mousePause) {
+            waspaused = state.prefs.startPaused
         }
 
         try {
-            if (jc.startPaused) {
+            if (state.prefs.startPaused) {
                 message = jlGetStringResource(Res.string.gui_message_click_to_start)
                 repaint()
                 enginePaused = true
@@ -331,7 +330,7 @@ class AnimationPanel(
             var oldtime: Double
             var newtime: Double
 
-            if (jc.mousePause) {
+            if (state.prefs.mousePause) {
                 if (outsideValid) {
                     this.isPaused = outside
                 } else {
@@ -368,7 +367,7 @@ class AnimationPanel(
                     this.time += animator.simIntervalSecs
                     newtime = this.time
 
-                    if (jc.catchSound && catchclip != null) {
+                    if (state.prefs.catchSound && catchclip != null) {
                         // use synchronized here to prevent editing actions in
                         // EditLadderDiagram from creating data consistency problems
                         val pattemp = animator.pat!!
@@ -393,7 +392,7 @@ class AnimationPanel(
                             }
                         }
                     }
-                    if (jc.bounceSound && bounceclip != null) {
+                    if (state.prefs.bounceSound && bounceclip != null) {
                         val pattemp = animator.pat!!
                         synchronized(pattemp) {
                             for (path in 1..pattemp.numberOfPaths) {
@@ -482,7 +481,7 @@ class AnimationPanel(
         get() = animator.pat
 
     val animationPrefs: AnimationPrefs
-        get() = jc
+        get() = state.prefs
 
     var zoomLevel: Double
         get() = animator.zoomLevel
@@ -590,7 +589,7 @@ class AnimationPanel(
         // reports simultaneous enter/press events when the user mouses down in
         // the component; we want to not treat this as a click, but just use it
         // to get focus back.
-        if (jc.mousePause && lastpress == lastenter) return
+        if (state.prefs.mousePause && lastpress == lastenter) return
         if (!engineAnimating) return
         if (writingGIF) return
 
@@ -602,7 +601,7 @@ class AnimationPanel(
                 val mx = me.getX()
                 val my = me.getY()
 
-                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * size.width / 2
 
                     if (showYDragControl) {
@@ -671,7 +670,7 @@ class AnimationPanel(
                 val mx = me.getX()
                 val my = me.getY()
 
-                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * size.width / 2
 
                     if (showZDragControl) {
@@ -752,7 +751,7 @@ class AnimationPanel(
     }
 
     override fun mouseReleased(me: MouseEvent) {
-        if (jc.mousePause && lastpress == lastenter) return
+        if (state.prefs.mousePause && lastpress == lastenter) return
         if (writingGIF) return
         if (!engineAnimating && engine != null && engine!!.isAlive) {
             isPaused = !enginePaused
@@ -793,7 +792,7 @@ class AnimationPanel(
 
     override fun mouseEntered(me: MouseEvent) {
         lastenter = me.getWhen()
-        if (jc.mousePause && !writingGIF) {
+        if (state.prefs.mousePause && !writingGIF) {
             isPaused = waspaused
         }
         outside = false
@@ -801,7 +800,7 @@ class AnimationPanel(
     }
 
     override fun mouseExited(me: MouseEvent?) {
-        if (jc.mousePause && !writingGIF) {
+        if (state.prefs.mousePause && !writingGIF) {
             waspaused = isPaused
             isPaused = true
         }
@@ -1108,7 +1107,7 @@ class AnimationPanel(
 
         // Determine screen coordinates of visual representations for events.
         // Note the first event in `visible_events` is the selected one.
-        val rendererCount = if (jc.stereo) 2 else 1
+        val rendererCount = if (state.prefs.stereo) 2 else 1
         eventPoints =
             Array(visibleEvents.size) {
                 Array(rendererCount) {
@@ -1191,7 +1190,7 @@ class AnimationPanel(
 
         val pat = pattern!!
         val ev = activeEvent!!
-        val rendererCount = if (jc.stereo) 2 else 1
+        val rendererCount = if (state.prefs.stereo) 2 else 1
         val numHandpathPoints =
             ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
         handpathPoints =
@@ -1220,8 +1219,8 @@ class AnimationPanel(
         val d = size
         var g2 = g
 
-        for (i in 0..<(if (jc.stereo) 2 else 1)) {
-            if (jc.stereo) {
+        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
+            if (state.prefs.stereo) {
                 if (i == 0) {
                     g2 = g.create(0, 0, d.width / 2, d.height)
                 } else {
@@ -1329,7 +1328,7 @@ class AnimationPanel(
 
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
 
-        for (i in 0..<(if (jc.stereo) 2 else 1)) {
+        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) animator.ren1 else animator.ren2
 
             // translate by one pixel and see how far it is in juggler space
@@ -1385,10 +1384,10 @@ class AnimationPanel(
         val d = size
         var g2 = g
 
-        for (i in 0..<(if (jc.stereo) 2 else 1)) {
+        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) animator.ren1 else animator.ren2
 
-            if (jc.stereo) {
+            if (state.prefs.stereo) {
                 g2 = when (i) {
                     0 -> g.create(0, 0, d.width / 2, d.height)
                     else -> g.create(d.width / 2, 0, d.width / 2, d.height)
@@ -1488,9 +1487,9 @@ class AnimationPanel(
         // only draw grid when looking down from above
         if (cameraAngle[1] > Math.toRadians(GRID_SHOW_DEG)) return
 
-        for (i in 0..<(if (jc.stereo) 2 else 1)) {
+        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val g2 =
-                if (jc.stereo) {
+                if (state.prefs.stereo) {
                     if (i == 0) {
                         g.create(0, 0, size.width / 2, size.height) as Graphics2D
                     } else {
@@ -1584,9 +1583,9 @@ class AnimationPanel(
                 val dx = doubleArrayOf(0.0, 0.0)
                 val dy = doubleArrayOf(0.0, 0.0)
                 val dz = doubleArrayOf(0.0, 0.0)
-                val f = if (jc.stereo) 0.5 else 1.0
+                val f = if (state.prefs.stereo) 0.5 else 1.0
 
-                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     dx[0] += f * (eventPoints[0][i][11][0] - eventPoints[0][i][4][0])
                     dx[1] += f * (eventPoints[0][i][11][1] - eventPoints[0][i][4][1])
                     dy[0] += f * (eventPoints[0][i][12][0] - eventPoints[0][i][4][0])
@@ -1659,9 +1658,9 @@ class AnimationPanel(
                 val dx = doubleArrayOf(0.0, 0.0)
                 val dy = doubleArrayOf(0.0, 0.0)
                 val dz = doubleArrayOf(0.0, 0.0)
-                val f = (if (jc.stereo) 0.5 else 1.0)
+                val f = (if (state.prefs.stereo) 0.5 else 1.0)
 
-                for (i in 0..<(if (jc.stereo) 2 else 1)) {
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     dx[0] += f * (posPoints[i][11][0] - posPoints[i][4][0])
                     dx[1] += f * (posPoints[i][11][1] - posPoints[i][4][1])
                     dy[0] += f * (posPoints[i][12][0] - posPoints[i][4][0])
