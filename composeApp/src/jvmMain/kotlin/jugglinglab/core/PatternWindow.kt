@@ -189,7 +189,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
     // Used for testing whether a given JMLPattern is already being animated.
     val jlHashCode: Int
-        get() = view.jlHashCode
+        get() = view.state.pattern.jlHashCode
 
     // For determining if the current window is maximized in the UI.
     val isWindowMaximized: Boolean

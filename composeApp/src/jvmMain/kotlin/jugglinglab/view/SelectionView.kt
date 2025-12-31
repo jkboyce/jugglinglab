@@ -92,9 +92,9 @@ class SelectionView(
                         return
                     }
                     try {
-                        this@SelectionView.restartView(ja[num].pattern, null)
+                        this@SelectionView.restartView(ja[num].state.pattern, null)
                         if (num != CENTER) {
-                            addToUndoList(ja[CENTER].pattern)
+                            addToUndoList(ja[CENTER].state.pattern)
                         }
                     } catch (jeu: JuggleExceptionUser) {
                         jlHandleUserException(parent, jeu.message)

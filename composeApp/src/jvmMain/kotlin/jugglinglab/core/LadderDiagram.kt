@@ -65,11 +65,12 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.math.roundToInt
 
 class LadderDiagram(
-     val state: PatternAnimationState,
-     val parentFrame: JFrame?,
-     val parentView: View
+    val state: PatternAnimationState,
+    val parentFrame: JFrame?,
+    val parentView: View
 ) : JPanel(), AnimationAttachment, MouseListener, MouseMotionListener, ActionListener {
     private var ladderWidth: Int = 0 // pixel dimensions of entire panel
     private var ladderHeight: Int = 0
@@ -113,13 +114,14 @@ class LadderDiagram(
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        adjustLayoutToPattern()
+        changeLadderPattern()
 
         state.addListener(onSelectedItemHashChange = {
-            adjustActiveItem()
+            findActiveItem()
+            repaint()
         })
         state.addListener(onPatternChange = {
-            adjustLayoutToPattern()
+            changeLadderPattern()
         })
         state.addListener(onTimeChange = {
             updateTrackerPosition()
@@ -131,20 +133,6 @@ class LadderDiagram(
     // Methods to handle changes made within this UI
     //--------------------------------------------------------------------------
 
-    // Call this to initiate a change in the pattern. The AnimationEditPanel
-    // notifies us of the new pattern through the AnimationAttachment interface
-    // below.
-
-    fun onPatternChange(
-        newPattern: JMLPattern,
-        undoable: Boolean = true
-    ) {
-        if (undoable) {
-            addToUndoList(newPattern)
-        }
-        state.update(pattern = newPattern)
-    }
-
     fun addToUndoList(pat: JMLPattern) {
         parentView.addToUndoList(pat)
     }
@@ -153,24 +141,9 @@ class LadderDiagram(
     // Methods to respond to state changes
     //--------------------------------------------------------------------------
 
-    fun adjustActiveItem() {
-        activeEventItem = null
-        activePositionItem = null
+    // Respond to a change in the pattern.
 
-        for (item in ladderEventItems) {
-            if (item.jlHashCode == state.selectedItemHashCode) {
-                activeEventItem = item
-            }
-        }
-        for (item in ladderPositionItems) {
-            if (item.jlHashCode == state.selectedItemHashCode) {
-                activePositionItem = item
-            }
-        }
-        repaint()
-    }
-
-    fun adjustLayoutToPattern() {
+    private fun changeLadderPattern() {
         removeMouseListener(this)
         removeMouseMotionListener(this)
 
@@ -190,89 +163,40 @@ class LadderDiagram(
             prefWidth = max(prefWidth, minWidth)
             preferredSize = Dimension(prefWidth, 1)
             minimumSize = Dimension(minWidth, 1)
-            createView()
+            createLadderView()
+            findActiveItem()
             addMouseListener(this)
             addMouseMotionListener(this)
         }
     }
 
-    //--------------------------------------------------------------------------
-    // Methods to interact with ladder items
-    //--------------------------------------------------------------------------
+    // Respond to a change in the selected item hashcode.
 
-    private fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
+    private fun findActiveItem() {
+        activeEventItem = null
+        activePositionItem = null
+
         for (item in ladderEventItems) {
-            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
-                return item
+            if (item.jlHashCode == state.selectedItemHashCode) {
+                activeEventItem = item
             }
         }
-        return null
-    }
-
-    private fun getSelectedLadderPosition(x: Int, y: Int): LadderPositionItem? {
         for (item in ladderPositionItems) {
-            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
-                return item
+            if (item.jlHashCode == state.selectedItemHashCode) {
+                activePositionItem = item
             }
         }
-        return null
     }
 
-    @Suppress("SameParameterValue")
-    private fun getSelectedLadderPath(x: Int, y: Int, slop: Int): LadderPathItem? {
-        var result: LadderPathItem? = null
-        var dmin = 0.0
-
-        if (y < (BORDER_TOP - slop) || y > (ladderHeight - BORDER_TOP + slop)) {
-            return null
-        }
-
-        for (item in ladderPathItems) {
-            var d: Double
-
-            if (item.type == LadderItem.TYPE_SELF) {
-                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
-                    continue
-                }
-                d = ((x - item.xCenter) * (x - item.xCenter) +
-                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
-                d = abs(sqrt(d) - item.radius)
-            } else {
-                val xmin = min(item.xStart, item.xEnd)
-                val xmax = max(item.xStart, item.xEnd)
-
-                if (x < (xmin - slop) || x > (xmax + slop)) {
-                    continue
-                }
-                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
-                    continue
-                }
-                d = ((item.xEnd - item.xStart) * (y - item.yStart)
-                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
-                d = abs(d) / sqrt(
-                    ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
-                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
-                )
-            }
-
-            if (d.toInt() < slop) {
-                if (result == null || d < dmin) {
-                    result = item
-                    dmin = d
-                }
-            }
-        }
-        return result
-    }
+    // Respond to a change in simulation time.
 
     private fun updateTrackerPosition() {
         val loopStart = state.pattern.loopStartTime
         val loopEnd = state.pattern.loopEndTime
         trackerY = (
-            0.5 +
-                (ladderHeight - 2 * BORDER_TOP).toDouble() *
+            (ladderHeight - 2 * BORDER_TOP).toDouble() *
                 (state.time - loopStart) / (loopEnd - loopStart)
-            ).toInt() + BORDER_TOP
+            ).roundToInt() + BORDER_TOP
     }
 
     //--------------------------------------------------------------------------
@@ -281,8 +205,9 @@ class LadderDiagram(
 
     // Create lists of all the elements in the ladder diagram.
 
-    private fun createView() {
-        hasSwitchDelaySymmetry = state.pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
+    private fun createLadderView() {
+        hasSwitchDelaySymmetry =
+            state.pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
         hasSwitchSymmetry = state.pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
 
         val loopStart = state.pattern.loopStartTime
@@ -358,12 +283,12 @@ class LadderDiagram(
             }
         }
 
-        updateView()
+        mapViewToScreen()
     }
 
     // Assign screen locations to all the elements in the ladder diagram.
 
-    private fun updateView() {
+    private fun mapViewToScreen() {
         ladderWidth = size.width
         ladderHeight = size.height
 
@@ -476,7 +401,7 @@ class LadderDiagram(
         updateTrackerPosition()
     }
 
-    // Paint the latter on the screen.
+    // Paint the ladder on the screen.
     //
     // Return true if ladder was drawn successfully, false otherwise.
 
@@ -499,7 +424,7 @@ class LadderDiagram(
         // check if ladder was resized
         val dim = size
         if (dim.width != ladderWidth || dim.height != ladderHeight) {
-            updateView()
+            mapViewToScreen()
         }
 
         // first erase the background
@@ -676,7 +601,6 @@ class LadderDiagram(
 
     open class LadderItem {
         var type: Int = 0
-
         open val jlHashCode: Int = 0
 
         companion object {
@@ -740,6 +664,8 @@ class LadderDiagram(
         override val jlHashCode: Int
             get() = position.jlHashCode
     }
+
+    // Mouse-related items below
 
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
@@ -1013,6 +939,75 @@ class LadderDiagram(
     override fun mouseMoved(e: MouseEvent?) {}
 
     //--------------------------------------------------------------------------
+    // Methods to find ladder items from mouse coordinates
+    //--------------------------------------------------------------------------
+
+    private fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
+        for (item in ladderEventItems) {
+            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getSelectedLadderPosition(x: Int, y: Int): LadderPositionItem? {
+        for (item in ladderPositionItems) {
+            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
+                return item
+            }
+        }
+        return null
+    }
+
+    @Suppress("SameParameterValue")
+    private fun getSelectedLadderPath(x: Int, y: Int, slop: Int): LadderPathItem? {
+        var result: LadderPathItem? = null
+        var dmin = 0.0
+
+        if (y < (BORDER_TOP - slop) || y > (ladderHeight - BORDER_TOP + slop)) {
+            return null
+        }
+
+        for (item in ladderPathItems) {
+            var d: Double
+
+            if (item.type == LadderItem.TYPE_SELF) {
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
+                    continue
+                }
+                d = ((x - item.xCenter) * (x - item.xCenter) +
+                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
+                d = abs(sqrt(d) - item.radius)
+            } else {
+                val xmin = min(item.xStart, item.xEnd)
+                val xmax = max(item.xStart, item.xEnd)
+
+                if (x < (xmin - slop) || x > (xmax + slop)) {
+                    continue
+                }
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
+                    continue
+                }
+                d = ((item.xEnd - item.xStart) * (y - item.yStart)
+                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
+                d = abs(d) / sqrt(
+                    ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
+                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
+                )
+            }
+
+            if (d.toInt() < slop) {
+                if (result == null || d < dmin) {
+                    result = item
+                    dmin = d
+                }
+            }
+        }
+        return result
+    }
+
+    //--------------------------------------------------------------------------
     // Utility methods for mouse interactions
     //--------------------------------------------------------------------------
 
@@ -1148,9 +1143,10 @@ class LadderDiagram(
         }
 
         record.selectPrimaryEvents()
-        val newPattern = JMLPattern.fromPatternBuilder(record)
-        onPatternChange(newPattern, undoable = false)
-        state.update(selectedItemHashCode = newEvent.jlHashCode)
+        state.update(
+            pattern = JMLPattern.fromPatternBuilder(record),
+            selectedItemHashCode = newEvent.jlHashCode
+        )
     }
 
     private fun findPositionLimits(item: LadderPositionItem) {
@@ -1241,8 +1237,10 @@ class LadderDiagram(
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
         val newPosition = pos.copy(t = newt)
         rec.positions[index] = newPosition
-        onPatternChange(JMLPattern.fromPatternBuilder(rec), undoable = false)
-        state.update(selectedItemHashCode = newPosition.jlHashCode)
+        state.update(
+            pattern = JMLPattern.fromPatternBuilder(rec),
+            selectedItemHashCode = newPosition.jlHashCode
+        )
     }
 
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
@@ -1345,8 +1343,12 @@ class LadderDiagram(
         record.events.add(newEvent)
         record.fixHolds()
         record.selectPrimaryEvents()
-        onPatternChange(JMLPattern.fromPatternBuilder(record))
-        state.update(selectedItemHashCode = newEvent.jlHashCode)
+        val newPattern = JMLPattern.fromPatternBuilder(record)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = newEvent.jlHashCode
+        )
+        addToUndoList(newPattern)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1358,8 +1360,12 @@ class LadderDiagram(
         val evRemove = (popupItem as LadderEventItem).primary
         val record = PatternBuilder.fromJMLPattern(state.pattern)
         record.events.remove(evRemove)
-        onPatternChange(JMLPattern.fromPatternBuilder(record))
-        state.update(selectedItemHashCode = 0)
+        val newPattern = JMLPattern.fromPatternBuilder(record)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = 0
+        )
+        addToUndoList(newPattern)
     }
 
     private fun addPositionToJuggler() {
@@ -1396,8 +1402,12 @@ class LadderDiagram(
         )
         val rec = PatternBuilder.fromJMLPattern(state.pattern)
         rec.positions.add(pos)
-        onPatternChange(JMLPattern.fromPatternBuilder(rec))
-        state.update(selectedItemHashCode = pos.jlHashCode)
+        val newPattern = JMLPattern.fromPatternBuilder(rec)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = pos.jlHashCode
+        )
+        addToUndoList(newPattern)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1408,8 +1418,12 @@ class LadderDiagram(
         val pos = (popupItem as LadderPositionItem).position
         val rec = PatternBuilder.fromJMLPattern(state.pattern)
         rec.positions.remove(pos)
-        onPatternChange(JMLPattern.fromPatternBuilder(rec))
-        state.update(selectedItemHashCode = 0)
+        val newPattern = JMLPattern.fromPatternBuilder(rec)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = 0
+        )
+        addToUndoList(newPattern)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1560,7 +1574,9 @@ class LadderDiagram(
                 rec.propAssignment[pn - 1] = rec.props.size
             }
 
-            onPatternChange(JMLPattern.fromPatternBuilder(rec))
+            val newPattern = JMLPattern.fromPatternBuilder(rec)
+            state.update(pattern = newPattern)
+            addToUndoList(newPattern)
             jd.dispose()
         }
 
@@ -1676,7 +1692,9 @@ class LadderDiagram(
             val record = PatternBuilder.fromJMLPattern(state.pattern)
             val index = record.events.indexOf(evPrimary)
             record.events[index] = newPrimary
-            onPatternChange(JMLPattern.fromPatternBuilder(record))
+            val newPattern = JMLPattern.fromPatternBuilder(record)
+            state.update(pattern = newPattern)
+            addToUndoList(newPattern)
             jd.dispose()
         }
 
@@ -1722,8 +1740,12 @@ class LadderDiagram(
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (popupItem as LadderEventItem).transNum * 27
-        onPatternChange(JMLPattern.fromPatternBuilder(record))
-        state.update(selectedItemHashCode = code)
+        val newPattern = JMLPattern.fromPatternBuilder(record)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = code
+        )
+        addToUndoList(newPattern)
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1743,8 +1765,12 @@ class LadderDiagram(
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (newPrimary.transitions.size - 1) * 27
-        onPatternChange(JMLPattern.fromPatternBuilder(record))
-        state.update(selectedItemHashCode = code)
+        val newPattern = JMLPattern.fromPatternBuilder(record)
+        state.update(
+            pattern = newPattern,
+            selectedItemHashCode = code
+        )
+        addToUndoList(newPattern)
     }
 
     // Helper for defineProp() and defineThrow().
@@ -2039,7 +2065,11 @@ class LadderDiagram(
         // label the tracker line with the time
         if (guiState == STATE_MOVING_TRACKER) {
             gr.color = COLOR_TRACKER
-            gr.drawString(jlToStringRounded(state.time, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
+            gr.drawString(
+                jlToStringRounded(state.time, 2) + " s",
+                ladderWidth / 2 - 18,
+                trackerY - 5
+            )
         }
     }
 

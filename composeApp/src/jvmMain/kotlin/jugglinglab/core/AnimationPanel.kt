@@ -139,7 +139,7 @@ class AnimationPanel(
             try {
                 buildSelectionView()
             } catch (e: Exception) {
-                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
         state.addListener(onPatternChange = {
@@ -148,7 +148,7 @@ class AnimationPanel(
                 animator.initAnimator(fitToFrame = true)
                 buildSelectionView()
             } catch (e: Exception) {
-                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
         state.addListener(onZoomChange = {
@@ -283,7 +283,7 @@ class AnimationPanel(
                         }
                         hasResized = true
                     } catch (e: Exception) {
-                        jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+                        jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
                     }
                 }
             })
@@ -510,9 +510,6 @@ class AnimationPanel(
         g.drawString(message, x, y)
     }
 
-    val pattern: JMLPattern
-        get() = state.pattern
-
     fun disposeAnimation() {
         killAnimationThread()
     }
@@ -589,9 +586,9 @@ class AnimationPanel(
                                 // the event visibleEvents[j] might be outside the
                                 // animation loop; find the instance inside the loop
                                 val image =
-                                    pattern.allEvents.find { it.event == visibleEvents[j] }
+                                    state.pattern.allEvents.find { it.event == visibleEvents[j] }
                                         ?: throw JuggleExceptionInternal("Error 1 in AEP.mousePressed()")
-                                val code = pattern.loopEvents.find {
+                                val code = state.pattern.loopEvents.find {
                                     it.primary == image.primary &&
                                         it.event.juggler == image.event.juggler &&
                                         it.event.hand == image.event.hand
@@ -695,7 +692,7 @@ class AnimationPanel(
                 }
             }
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -734,7 +731,7 @@ class AnimationPanel(
             positionStart = null
             repaint()
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -810,7 +807,7 @@ class AnimationPanel(
                     while (finalAngle < 0) {
                         finalAngle += 360.0
                     }
-                    val rec = PatternBuilder.fromJMLPattern(pattern)
+                    val rec = PatternBuilder.fromJMLPattern(state.pattern)
                     val index = rec.positions.indexOf(activePosition!!)
                     if (index < 0) {
                         throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
@@ -853,7 +850,7 @@ class AnimationPanel(
                             z = newPrimaryCoordinate.z
                         )
 
-                        val record = PatternBuilder.fromJMLPattern(pattern)
+                        val record = PatternBuilder.fromJMLPattern(state.pattern)
                         val index = record.events.indexOf(activeEventPrimary)
                         record.events[index] = newPrimary
                         state.update(
@@ -863,7 +860,7 @@ class AnimationPanel(
                     }
 
                     if (positionActive) {
-                        val rec = PatternBuilder.fromJMLPattern(pattern)
+                        val rec = PatternBuilder.fromJMLPattern(state.pattern)
                         val index = rec.positions.indexOf(activePosition!!)
                         if (index < 0) {
                             throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
@@ -918,7 +915,7 @@ class AnimationPanel(
                 repaint()
             }
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -942,7 +939,7 @@ class AnimationPanel(
         activePosition = null
         positionActive = false
 
-        for ((ev, evPrimary) in pattern.loopEvents) {
+        for ((ev, evPrimary) in state.pattern.loopEvents) {
             if (ev.jlHashCode == state.selectedItemHashCode) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
@@ -960,7 +957,7 @@ class AnimationPanel(
                 break
             }
         }
-        for (pos in pattern.positions) {
+        for (pos in state.pattern.positions) {
             if (pos.jlHashCode == state.selectedItemHashCode) {
                 activePosition = pos
                 positionActive = true
@@ -975,7 +972,7 @@ class AnimationPanel(
     private fun createEventView() {
         if (!eventActive) return
 
-        val pat = pattern
+        val pat = state.pattern
         val ev = activeEvent!!
         handpathStartTime = ev.t
         handpathEndTime = ev.t
@@ -1105,7 +1102,7 @@ class AnimationPanel(
     private fun createHandpathView() {
         if (!eventActive) return
 
-        val pat = pattern
+        val pat = state.pattern
         val ev = activeEvent!!
         val rendererCount = if (state.prefs.stereo) 2 else 1
         val numHandpathPoints =
@@ -1687,7 +1684,7 @@ class AnimationPanel(
                 drawPositions(g)
             } catch (e: Exception) {
                 killAnimationThread()
-                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         }
     }

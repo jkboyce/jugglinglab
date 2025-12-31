@@ -35,13 +35,10 @@ abstract class View(
 ) : JPanel() {
     var patternWindow: PatternWindow? = null
 
-    protected var undo: MutableList<JMLPattern>? = null
+    protected var undo: MutableList<JMLPattern> = mutableListOf()
 
     var undoIndex: Int = 0
         protected set
-
-    val jlHashCode: Int
-        get() = state.pattern.jlHashCode
 
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality.
@@ -63,9 +60,9 @@ abstract class View(
     fun addToUndoList(p: JMLPattern) {
         try {
             ++undoIndex
-            undo!!.add(undoIndex, p)
-            while (undoIndex + 1 < undo!!.size) {
-                undo!!.removeAt(undoIndex + 1)
+            undo.add(undoIndex, p)
+            while (undoIndex + 1 < undo.size) {
+                undo.removeAt(undoIndex + 1)
             }
             patternWindow?.updateUndoMenu()
         } catch (jeu: JuggleExceptionUser) {
@@ -87,8 +84,8 @@ abstract class View(
             return
         try {
             --undoIndex
-            restartView(undo!![undoIndex], null)
-            if (undoIndex == 0 || undoIndex == undo!!.size - 2) {
+            restartView(undo[undoIndex], null)
+            if (undoIndex == 0 || undoIndex == undo.size - 2) {
                 patternWindow?.updateUndoMenu()
             }
         } catch (jeu: JuggleExceptionUser) {
@@ -101,12 +98,12 @@ abstract class View(
 
     @Throws(JuggleExceptionInternal::class)
     fun redoEdit() {
-        if (undoIndex == undo!!.size - 1)
+        if (undoIndex == undo.size - 1)
             return
         try {
             ++undoIndex
-            restartView(undo!![undoIndex], null)
-            if (undoIndex == 1 || undoIndex == undo!!.size - 1) {
+            restartView(undo[undoIndex], null)
+            if (undoIndex == 1 || undoIndex == undo.size - 1) {
                 patternWindow?.updateUndoMenu()
             }
         } catch (jeu: JuggleExceptionUser) {
