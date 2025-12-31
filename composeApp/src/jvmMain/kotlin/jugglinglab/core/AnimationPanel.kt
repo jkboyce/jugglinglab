@@ -138,6 +138,28 @@ class AnimationPanel(
         state.addListener(onSelectedItemHashChange = {
             buildSelectionView()
         })
+        state.addListener(onPatternChange = {
+            try {
+                animator.pat = state.pattern
+                animator.initAnimator(fitToFrame = true)
+                buildSelectionView()
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            }
+        })
+        state.addListener(onZoomChange = {
+            if (!writingGIF) {
+                animator.zoomLevel = state.zoom
+                try {
+                    createEventView()
+                } catch (jei: JuggleExceptionInternal) {
+                    jei.pattern = state.pattern
+                    jlHandleFatalException(jei)
+                }
+                createPositionView()
+                repaint()
+            }
+        })
     }
 
     //--------------------------------------------------------------------------
@@ -179,63 +201,16 @@ class AnimationPanel(
 
         engine = Thread(this)
         engine!!.start()
-
-        if (eventActive) {
-            createEventView()
-        }
-        if (positionActive) {
-            createPositionView()
-        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle() = restartJuggle(null, null)
-
-    fun onPatternChange(
-        newPattern: JMLPattern,
-        addToUndo: Boolean = true,
-        fitToFrame: Boolean = true
-    ) {
-        try {
-            if (addToUndo) {
-                addToUndoList(newPattern)
-            }
-            animator.pat = newPattern
-            animator.initAnimator(fitToFrame = fitToFrame)
-            state.update(pattern = newPattern)
-            buildSelectionView()
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
-        }
-    }
 
     fun addToUndoList(pat: JMLPattern) {
         for (att in attachments) {
             if (att is LadderDiagram) {
                 att.addToUndoList(pat)
             }
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    // Incoming notifications of changes
-    //--------------------------------------------------------------------------
-
-    fun setJMLPattern(
-        pat: JMLPattern,
-        restart: Boolean = true
-    ) {
-        try {
-            if (restart) {
-                restartJuggle(pat, null)
-            } else {
-                animator.pat = pat
-                animator.initAnimator()
-                state.update(pattern = pat)
-            }
-            buildSelectionView()
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pat))
         }
     }
 
@@ -363,8 +338,6 @@ class AnimationPanel(
         }
         return result
     }
-
-    fun removeAllAttachments() = attachments.clear()
 
     fun addAnimationAttachment(att: AnimationAttachment) = attachments.add(att)
 
@@ -543,27 +516,8 @@ class AnimationPanel(
         g.drawString(message, x, y)
     }
 
-    val pattern: JMLPattern?
-        get() = animator.pat
-
-    val animationPrefs: AnimationPrefs
-        get() = state.prefs
-
-    var zoomLevel: Double
-        get() = animator.zoomLevel
-        set(z) {
-            if (!writingGIF) {
-                animator.zoomLevel = z
-                try {
-                    createEventView()
-                } catch (jei: JuggleExceptionInternal) {
-                    jei.pattern = pattern
-                    jlHandleFatalException(jei)
-                }
-                createPositionView()
-                repaint()
-            }
-        }
+    val pattern: JMLPattern
+        get() = state.pattern
 
     fun disposeAnimation() {
         killAnimationThread()
@@ -647,9 +601,9 @@ class AnimationPanel(
                                 // the event visibleEvents[j] might be outside the
                                 // animation loop; find the instance inside the loop
                                 val image =
-                                    pattern!!.allEvents.find { it.event == visibleEvents[j] }
+                                    pattern.allEvents.find { it.event == visibleEvents[j] }
                                         ?: throw JuggleExceptionInternal("Error 1 in AEP.mousePressed()")
-                                val code = pattern!!.loopEvents.find {
+                                val code = pattern.loopEvents.find {
                                     it.primary == image.primary &&
                                         it.event.juggler == image.event.juggler &&
                                         it.event.hand == image.event.hand
@@ -769,7 +723,8 @@ class AnimationPanel(
             val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
             if ((eventActive || positionActive) && dragging && mouseMoved) {
-                onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
+                addToUndoList(state.pattern)
+                //onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
             }
 
             if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
@@ -867,19 +822,17 @@ class AnimationPanel(
                     while (finalAngle < 0) {
                         finalAngle += 360.0
                     }
-                    val rec = PatternBuilder.fromJMLPattern(pattern!!)
+                    val rec = PatternBuilder.fromJMLPattern(pattern)
                     val index = rec.positions.indexOf(activePosition!!)
                     if (index < 0) {
                         throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
                     }
                     val newPosition = activePosition!!.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
-                    onPatternChange(
-                        JMLPattern.fromPatternBuilder(rec),
-                        addToUndo = false,
-                        fitToFrame = false
+                    state.update(
+                        pattern = JMLPattern.fromPatternBuilder(rec),
+                        selectedItemHashCode = newPosition.jlHashCode
                     )
-                    state.update(selectedItemHashCode = newPosition.jlHashCode)
                 } else {
                     deltaX = mx - startX
                     deltaY = my - startY
@@ -912,33 +865,27 @@ class AnimationPanel(
                             z = newPrimaryCoordinate.z
                         )
 
-                        if (pattern != null) {
-                            val record = PatternBuilder.fromJMLPattern(pattern!!)
-                            val index = record.events.indexOf(activeEventPrimary)
-                            record.events[index] = newPrimary
-                            onPatternChange(
-                                JMLPattern.fromPatternBuilder(record),
-                                addToUndo = false,
-                                fitToFrame = false
-                            )
-                            state.update(selectedItemHashCode = newEvent.jlHashCode)
-                        }
+                        val record = PatternBuilder.fromJMLPattern(pattern)
+                        val index = record.events.indexOf(activeEventPrimary)
+                        record.events[index] = newPrimary
+                        state.update(
+                            pattern = JMLPattern.fromPatternBuilder(record),
+                            selectedItemHashCode = newEvent.jlHashCode
+                        )
                     }
 
                     if (positionActive) {
-                        val rec = PatternBuilder.fromJMLPattern(pattern!!)
+                        val rec = PatternBuilder.fromJMLPattern(pattern)
                         val index = rec.positions.indexOf(activePosition!!)
                         if (index < 0) {
                             throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
                         }
                         val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                         rec.positions[index] = newPosition
-                        onPatternChange(
-                            JMLPattern.fromPatternBuilder(rec),
-                            addToUndo = false,
-                            fitToFrame = false
+                        state.update(
+                            pattern = JMLPattern.fromPatternBuilder(rec),
+                            selectedItemHashCode = newPosition.jlHashCode
                         )
-                        state.update(selectedItemHashCode = newPosition.jlHashCode)
                     }
                 }
             } else if (!draggingCamera) {
@@ -1007,7 +954,7 @@ class AnimationPanel(
         activePosition = null
         positionActive = false
 
-        for ((ev, evPrimary) in pattern!!.loopEvents) {
+        for ((ev, evPrimary) in pattern.loopEvents) {
             if (ev.jlHashCode == state.selectedItemHashCode) {
                 activeEvent = ev
                 activeEventPrimary = evPrimary
@@ -1025,7 +972,7 @@ class AnimationPanel(
                 break
             }
         }
-        for (pos in pattern!!.positions) {
+        for (pos in pattern.positions) {
             if (pos.jlHashCode == state.selectedItemHashCode) {
                 activePosition = pos
                 positionActive = true
@@ -1040,7 +987,7 @@ class AnimationPanel(
     private fun createEventView() {
         if (!eventActive) return
 
-        val pat = pattern!!
+        val pat = pattern
         val ev = activeEvent!!
         handpathStartTime = ev.t
         handpathEndTime = ev.t
@@ -1170,7 +1117,7 @@ class AnimationPanel(
     private fun createHandpathView() {
         if (!eventActive) return
 
-        val pat = pattern!!
+        val pat = pattern
         val ev = activeEvent!!
         val rendererCount = if (state.prefs.stereo) 2 else 1
         val numHandpathPoints =

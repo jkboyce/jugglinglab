@@ -90,8 +90,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private constructor(pw: PatternWindow) : this(
         pw.getTitle(),
-        pw.view.pattern!!,
-        pw.view.animationPrefs.copy()
+        pw.view.state.pattern,
+        pw.view.state.prefs
     )
 
     //--------------------------------------------------------------------------
@@ -151,9 +151,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             viewMenu.getItem(mode - 1).setSelected(true)
 
             // items to carry over from old view to the new
-            val pat = view.pattern!!
-            val jc = view.animationPrefs
-            val paused = view.isPaused
+            val pat = view.state.pattern
+            val jc = view.state.prefs
+            val paused = view.state.isPaused
             val undoIndex = view.undoIndex
             val state = view.state
             state.clearListeners()
@@ -167,9 +167,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             }
 
             newview.patternWindow = this
-            newview.isPaused = paused
             newview.setOpaque(true)
             newview.isDoubleBuffered = true
+            state.update(isPaused = paused)
             contentPane = newview
 
             if (isWindowMaximized) validate() else pack()
@@ -181,11 +181,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             view = newview
         }
 
-    val pattern: JMLPattern?
-        get() = view.pattern
+    val pattern: JMLPattern
+        get() = view.state.pattern
 
     val animationPrefs: AnimationPrefs
-        get() = view.animationPrefs
+        get() = view.state.prefs
 
     // Used for testing whether a given JMLPattern is already being animated.
     val jlHashCode: Int
@@ -266,7 +266,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     // is colorable. Call this when the pattern changes.
 
     fun updateColorsMenu() {
-        colorsMenu.isEnabled = (view.pattern?.isColorable ?: false)
+        colorsMenu.isEnabled = view.state.pattern.isColorable
     }
 
     private fun createViewMenu(): JMenu {
@@ -423,7 +423,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                         else -> "{$colorName}"
                     }
                     try {
-                        val newpat = view.pattern!!.withPropColors(colorString)
+                        val newpat = view.state.pattern.withPropColors(colorString)
                         view.restartView(newpat, null)
                         view.addToUndoList(newpat)
                     } catch (_: JuggleExceptionUser) {
@@ -506,7 +506,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 lastJmlFilename = f.getName()
                 try {
                     val fw = FileWriter(f)
-                    view.pattern!!.writeJML(fw, writeTitle = true, writeInfo = true)
+                    view.state.pattern.writeJML(fw, writeTitle = true, writeInfo = true)
                     fw.close()
                 } catch (fnfe: FileNotFoundException) {
                     throw JuggleExceptionInternal("FileNotFound: ${fnfe.message}")
@@ -557,7 +557,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 }
                 optimizerWrapper?.let {
                     try {
-                        val newPat = it.optimize(view.pattern!!)
+                        val newPat = it.optimize(view.state.pattern)
                         view.restartView(newPat, null)
                         view.addToUndoList(newPat)
                     } catch (ite: InvocationTargetException) {
@@ -573,7 +573,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
-                    val newpat = view.pattern!!.withInvertedXAxis(flipXCoordinate = false)
+                    val newpat = view.state.pattern.withInvertedXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -583,7 +583,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTX -> {
                 try {
-                    val newpat = view.pattern!!.withInvertedXAxis()
+                    val newpat = view.state.pattern.withInvertedXAxis()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -593,7 +593,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTTIME -> {
                 try {
-                    val newpat = view.pattern!!.withInvertedTime()
+                    val newpat = view.state.pattern.withInvertedTime()
                     view.restartView(newpat, null)
                     view.addToUndoList(newpat)
                 } catch (e: JuggleExceptionUser) {
@@ -604,7 +604,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.VIEW_RESTART -> view.restartView()
 
             MenuCommand.VIEW_ANIMPREFS -> {
-                val jc = view.animationPrefs
+                val jc = view.state.prefs
                 val japd = if (jlIsSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
                 val newjc = japd.getPrefs(jc)
 
@@ -623,12 +623,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.VIEW_UNDO -> view.undoEdit()
             MenuCommand.VIEW_REDO -> view.redoEdit()
-            MenuCommand.VIEW_ZOOMIN -> if (view.zoomLevel < (MAX_ZOOM / ZOOM_PER_STEP)) {
-                view.zoomLevel *= ZOOM_PER_STEP
+            MenuCommand.VIEW_ZOOMIN -> if (view.state.zoom < (MAX_ZOOM / ZOOM_PER_STEP)) {
+                view.state.update(zoom = view.state.zoom * ZOOM_PER_STEP)
             }
 
-            MenuCommand.VIEW_ZOOMOUT -> if (view.zoomLevel > (MIN_ZOOM * ZOOM_PER_STEP)) {
-                view.zoomLevel /= ZOOM_PER_STEP
+            MenuCommand.VIEW_ZOOMOUT -> if (view.state.zoom > (MIN_ZOOM * ZOOM_PER_STEP)) {
+                view.state.update(zoom = view.state.zoom / ZOOM_PER_STEP)
             }
 
             MenuCommand.HELP_ABOUT -> ApplicationWindow.showAboutBox()
@@ -642,11 +642,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
-        tf.text = view.pattern!!.title
+        tf.text = view.state.pattern.title
 
         val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val rec = PatternBuilder.fromJMLPattern(view.pattern!!)
+            val rec = PatternBuilder.fromJMLPattern(view.state.pattern)
             rec.setTitleString(tf.getText())
             val newpat = JMLPattern.fromPatternBuilder(rec)
             view.restartView(newpat, null)
@@ -668,7 +668,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         jd.setResizable(false)
         jd.setLocationRelativeTo(this)
         jd.isVisible = true
-        this.setTitle(view.pattern!!.title)
+        this.setTitle(view.state.pattern.title)
     }
 
     private fun changeTiming() {
@@ -703,7 +703,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 return@addActionListener
             }
             if (scale > 0.0) {
-                val newpat = view.pattern!!.withScaledTime(scale)
+                val newpat = view.state.pattern.withScaledTime(scale)
                 view.restartView(newpat, null)
                 view.addToUndoList(newpat)
             }

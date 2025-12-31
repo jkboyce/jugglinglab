@@ -36,7 +36,7 @@ class SimpleView(
     override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
         ja.restartJuggle(p, c)
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.width, animationPrefs.height))
+            Dimension(state.prefs.width, state.prefs.height))
         if (p != null) {
             patternWindow?.setTitle(p.title)
             patternWindow?.updateColorsMenu()
@@ -55,40 +55,20 @@ class SimpleView(
         ja.preferredSize = d
     }
 
-    override val pattern: JMLPattern?
-        get() = ja.pattern
-
-    override val animationPrefs: AnimationPrefs
-        get() = ja.animationPrefs
-
-    override var zoomLevel: Double
-        get() = ja.zoomLevel
-        set(z) {
-            ja.zoomLevel = z
-        }
-
-    override var isPaused: Boolean
-        get() = ja.isPaused
-        set(pause) {
-            if (ja.message == null) {
-                ja.isPaused = pause
-            }
-        }
-
     override fun disposeView() {
         ja.disposeAnimation()
     }
 
     override fun writeGIF(f: File) {
         ja.writingGIF = true
-        val origpause = isPaused
-        isPaused = true
+        val origpause = state.isPaused
+        state.update(isPaused = true)
         patternWindow?.setResizable(false)
 
         val cleanup =
             Runnable {
                 ja.writingGIF = false
-                isPaused = origpause
+                state.update(isPaused = origpause)
                 patternWindow?.setResizable(true)
             }
 

@@ -220,7 +220,7 @@ class SelectionView(
         }
 
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.width, animationPrefs.height))
+            Dimension(state.prefs.width, state.prefs.height))
 
         if (p != null) {
             patternWindow?.setTitle(p.title)
@@ -249,30 +249,6 @@ class SelectionView(
         layered.preferredSize = Dimension(width, height)
     }
 
-    override val pattern: JMLPattern?
-        get() = ja[CENTER].pattern
-
-    override val animationPrefs: AnimationPrefs
-        get() = savedPrefs!!
-
-    override var zoomLevel: Double
-        get() = ja[CENTER].zoomLevel
-        set(z) {
-            for (ap in ja) {
-                ap.zoomLevel = z
-            }
-        }
-
-    override var isPaused: Boolean
-        get() = ja[CENTER].isPaused
-        set(pause) {
-            if (ja[CENTER].message == null) {
-                for (ap in ja) {
-                    ap.isPaused = pause
-                }
-            }
-        }
-
     override fun disposeView() {
         for (ap in ja) {
             ap.disposeAnimation()
@@ -283,8 +259,8 @@ class SelectionView(
         for (ap in ja) {
             ap.writingGIF = true
         }
-        val origpause = isPaused
-        isPaused = true
+        val origpause = state.isPaused
+        state.update(isPaused = true)
         patternWindow?.setResizable(false)
 
         val cleanup =
@@ -292,7 +268,7 @@ class SelectionView(
                 for (ap in ja) {
                     ap.writingGIF = false
                 }
-                isPaused = origpause
+                state.update(isPaused = origpause)
                 patternWindow?.setResizable(true)
             }
 

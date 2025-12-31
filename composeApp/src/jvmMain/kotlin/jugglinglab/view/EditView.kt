@@ -34,13 +34,14 @@ class EditView(
         ap.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ap.minimumSize = Dimension(10, 10)
 
+        val ladder = LadderDiagram(state, patternWindow, this)
+        ladder.setAnimationPanel(ap)
+        ap.addAnimationAttachment(ladder)
+
         ladderPanel = JPanel()
         ladderPanel.setLayout(BorderLayout())
         ladderPanel.setBackground(Color.white)
-
-        // add a ladder diagram now to get dimensions correct; will be replaced in
-        // restartView()
-        ladderPanel.add(LadderDiagram(state, patternWindow, this), BorderLayout.CENTER)
+        ladderPanel.add(ladder, BorderLayout.CENTER)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
@@ -65,16 +66,17 @@ class EditView(
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
         val changingJugglers =
-            (p != null && pattern != null && p.numberOfJugglers != pattern!!.numberOfJugglers)
+            (p != null && p.numberOfJugglers != state.pattern.numberOfJugglers)
 
         ap.restartJuggle(p, c)
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.width, animationPrefs.height))
+            Dimension(state.prefs.width, state.prefs.height))
 
         if (p == null) {
             return
         }
 
+        /*
         val newLadder = LadderDiagram(state, patternWindow, this)
         newLadder.setAnimationPanel(ap)
 
@@ -84,7 +86,7 @@ class EditView(
 
         ladderPanel.removeAll()
         ladderPanel.add(newLadder, BorderLayout.CENTER)
-
+        */
         if (changingJugglers && parent != null) {
             // the next line gets the JSplitPane divider to reset during layout
             jsp.resetToPreferredSizes()
@@ -117,41 +119,21 @@ class EditView(
         jsp.resetToPreferredSizes()
     }
 
-    override val pattern: JMLPattern?
-        get() = ap.pattern
-
-    override val animationPrefs: AnimationPrefs
-        get() = ap.animationPrefs
-
-    override var zoomLevel: Double
-        get() = ap.zoomLevel
-        set(z) {
-            ap.zoomLevel = z
-        }
-
-    override var isPaused: Boolean
-        get() = ap.isPaused
-        set(pause) {
-            if (ap.message == null) {
-                ap.isPaused = pause
-            }
-        }
-
     override fun disposeView() {
         ap.disposeAnimation()
     }
 
     override fun writeGIF(f: File) {
         ap.writingGIF = true
-        val origpause = isPaused
-        isPaused = true
+        val origpause = state.isPaused
+        state.update(isPaused = true)
         jsp.isEnabled = false
         patternWindow?.isResizable = false
 
         val cleanup =
             Runnable {
                 ap.writingGIF = false
-                isPaused = origpause
+                state.update(isPaused = origpause)
                 jsp.isEnabled = true
                 patternWindow?.isResizable = true
             }

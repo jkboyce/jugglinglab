@@ -158,13 +158,7 @@ class PatternView(
             return
         }
 
-        val pat = pattern
-
-        if (pat == null) {
-            rbBp.setEnabled(false)
-            bpEditedIcon?.isVisible = false
-            rbJml.setEnabled(false)
-        } else if (pat.basePatternNotation == null || pat.basePatternConfig == null) {
+        if (!state.pattern.hasBasePattern) {
             // no base pattern set
             rbBp.setEnabled(false)
             bpEditedIcon?.isVisible = false
@@ -172,12 +166,12 @@ class PatternView(
             rbJml.setSelected(true)
         } else {
             rbBp.setEnabled(true)
-            bpEditedIcon?.isVisible = pat.isBasePatternEdited
+            bpEditedIcon?.isVisible = state.pattern.isBasePatternEdited
             rbJml.setEnabled(true)
         }
 
         if (rbBp.isSelected) {
-            compile.setEnabled(pat != null && (pat.isBasePatternEdited || textEdited))
+            compile.setEnabled(state.pattern.isBasePatternEdited || textEdited)
             revert.setEnabled(textEdited)
         } else if (rbJml.isSelected) {
             compile.setEnabled(textEdited)
@@ -189,9 +183,9 @@ class PatternView(
     // that was there.
     private fun reloadTextArea() {
         if (rbBp.isSelected) {
-            ta.text = pattern!!.basePatternConfig!!.replace(";", ";\n")
+            ta.text = state.pattern.basePatternConfig!!.replace(";", ";\n")
         } else if (rbJml.isSelected) {
-            ta.text = pattern.toString()
+            ta.text = state.pattern.toString()
         }
 
         ta.setCaretPosition(0)
@@ -212,7 +206,7 @@ class PatternView(
     private fun compilePattern() {
         try {
             if (rbBp.isSelected) {
-                val notation = pattern!!.basePatternNotation!!
+                val notation = state.pattern.basePatternNotation!!
                 val config = ta.getText().replace("\n", "").trim { it <= ' ' }
                 val newpat = JMLPattern.fromBasePattern(notation, config)
                 restartView(newpat, null)
@@ -247,7 +241,7 @@ class PatternView(
     override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
         ja.restartJuggle(p, c)
         setAnimationPanelPreferredSize(
-            Dimension(animationPrefs.width, animationPrefs.height))
+            Dimension(state.prefs.width, state.prefs.height))
 
         if (p != null) {
             val notation = p.basePatternNotation
@@ -282,26 +276,6 @@ class PatternView(
         jsp.resetToPreferredSizes()
     }
 
-    override val pattern: JMLPattern?
-        get() = ja.pattern
-
-    override val animationPrefs: AnimationPrefs
-        get() = ja.animationPrefs
-
-    override var zoomLevel: Double
-        get() = ja.zoomLevel
-        set(z) {
-            ja.zoomLevel = z
-        }
-
-    override var isPaused: Boolean
-        get() = ja.isPaused
-        set(pause) {
-            if (ja.message == null) {
-                ja.isPaused = pause
-            }
-        }
-
     override fun disposeView() {
         ja.disposeAnimation()
     }
@@ -309,15 +283,15 @@ class PatternView(
     override fun writeGIF(f: File) {
         ja.writingGIF = true
         updateButtons()
-        val origpause = isPaused
-        isPaused = true
+        val origpause = state.isPaused
+        state.update(isPaused = true)
         jsp.isEnabled = false
         patternWindow?.isResizable = false
 
         val cleanup =
             Runnable {
                 ja.writingGIF = false
-                isPaused = origpause
+                state.update(isPaused = origpause)
                 updateButtons()
                 jsp.isEnabled = true
                 patternWindow?.isResizable = true

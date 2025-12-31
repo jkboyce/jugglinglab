@@ -116,47 +116,16 @@ class LadderDiagram(
     private var dialogControls: MutableList<JComponent>? = null
     private var dialogPd: List<ParameterDescriptor> = emptyList()
 
-    var pattern: JMLPattern = state.pattern
-        private set(pat) {
-            removeMouseListener(this)
-            removeMouseMotionListener(this)
-            field = pat
-
-            val jugglers = pat.numberOfJugglers
-            if (jugglers > MAX_JUGGLERS) {
-                // allocate enough space for a "too many jugglers" message; see paintLadder()
-                val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
-                val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
-                preferredSize = Dimension(mwidth, 1)
-                minimumSize = Dimension(mwidth, 1)
-            } else {
-                var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
-                val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
-                val widthMult = doubleArrayOf(1.0, 1.0, 0.85, 0.72, 0.65, 0.55)
-                prefWidth = (prefWidth.toDouble() *
-                    (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
-                prefWidth = max(prefWidth, minWidth)
-                preferredSize = Dimension(prefWidth, 1)
-                minimumSize = Dimension(minWidth, 1)
-
-                createView()
-            }
-        }
-
     init {
         setBackground(COLOR_BACKGROUND)
         setOpaque(false)
-        pattern = state.pattern
-        addMouseListener(this)
-        addMouseMotionListener(this)
+        adjustLayoutToPattern()
 
         state.addListener(onSelectedItemHashChange = {
-            setActiveItem(state.selectedItemHashCode)
+            adjustActiveItem()
         })
         state.addListener(onPatternChange = {
-            pattern = state.pattern
-            addMouseListener(this)
-            addMouseMotionListener(this)
+            adjustLayoutToPattern()
         })
     }
 
@@ -175,11 +144,58 @@ class LadderDiagram(
         if (undoable) {
             addToUndoList(newPattern)
         }
-        aep?.setJMLPattern(newPattern, restart = false)
+        state.update(pattern = newPattern)
     }
 
     fun addToUndoList(pat: JMLPattern) {
         parentView.addToUndoList(pat)
+    }
+
+    //--------------------------------------------------------------------------
+    // Methods to respond to state changes
+    //--------------------------------------------------------------------------
+
+    fun adjustActiveItem() {
+        activeEventItem = null
+        activePositionItem = null
+
+        for (item in ladderEventItems) {
+            if (item.jlHashCode == state.selectedItemHashCode) {
+                activeEventItem = item
+            }
+        }
+        for (item in ladderPositionItems) {
+            if (item.jlHashCode == state.selectedItemHashCode) {
+                activePositionItem = item
+            }
+        }
+        repaint()
+    }
+
+    fun adjustLayoutToPattern() {
+        removeMouseListener(this)
+        removeMouseMotionListener(this)
+
+        val jugglers = state.pattern.numberOfJugglers
+        if (jugglers > MAX_JUGGLERS) {
+            // allocate enough space for a "too many jugglers" message; see paintLadder()
+            val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
+            val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
+            preferredSize = Dimension(mwidth, 1)
+            minimumSize = Dimension(mwidth, 1)
+        } else {
+            var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
+            val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
+            val widthMult = doubleArrayOf(1.0, 1.0, 0.85, 0.72, 0.65, 0.55)
+            prefWidth = (prefWidth.toDouble() *
+                (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
+            prefWidth = max(prefWidth, minWidth)
+            preferredSize = Dimension(prefWidth, 1)
+            minimumSize = Dimension(minWidth, 1)
+            createView()
+            addMouseListener(this)
+            addMouseMotionListener(this)
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -252,8 +268,8 @@ class LadderDiagram(
     }
 
     private fun updateTrackerPosition() {
-        val loopStart = pattern.loopStartTime
-        val loopEnd = pattern.loopEndTime
+        val loopStart = state.pattern.loopStartTime
+        val loopEnd = state.pattern.loopEndTime
         trackerY = (
             0.5 +
                 (ladderHeight - 2 * BORDER_TOP).toDouble() *
@@ -268,15 +284,15 @@ class LadderDiagram(
     // Create lists of all the elements in the ladder diagram.
 
     private fun createView() {
-        hasSwitchDelaySymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
-        hasSwitchSymmetry = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
+        hasSwitchDelaySymmetry = state.pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
+        hasSwitchSymmetry = state.pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
 
-        val loopStart = pattern.loopStartTime
-        val loopEnd = pattern.loopEndTime
+        val loopStart = state.pattern.loopStartTime
+        val loopEnd = state.pattern.loopEndTime
 
         // create events (black circles on the vertical lines representing hands)
         ladderEventItems = buildList {
-            for (ei in pattern.loopEvents) {
+            for (ei in state.pattern.loopEvents) {
                 val item = LadderEventItem(
                     event = ei.event,
                     primary = ei.primary
@@ -301,11 +317,11 @@ class LadderDiagram(
 
         // create paths (lines and arcs)
         ladderPathItems = buildList {
-            for ((indexEv, ei) in pattern.allEvents.withIndex()) {
+            for ((indexEv, ei) in state.pattern.allEvents.withIndex()) {
                 for ((indexTr, tr) in ei.event.transitions.withIndex()) {
                     // add item that starts on event `ei.event`, transition `tr`
 
-                    val endEi = pattern.allEvents
+                    val endEi = state.pattern.allEvents
                         .asSequence()
                         .drop(indexEv + 1)
                         .firstOrNull { it.event.transitions.any { tr2 -> tr2.path == tr.path } }
@@ -335,7 +351,7 @@ class LadderDiagram(
 
         // create juggler positions
         ladderPositionItems = buildList {
-            for (pos in pattern.positions) {
+            for (pos in state.pattern.positions) {
                 if (pos.t in loopStart..<loopEnd) {
                     val item = LadderPositionItem(pos)
                     item.type = LadderItem.TYPE_POSITION
@@ -356,8 +372,8 @@ class LadderDiagram(
         // calculate placements of hands and jugglers
         val scale: Double =
             ladderWidth.toDouble() / (BORDER_SIDES * 2 +
-                JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) +
-                pattern.numberOfJugglers)
+                JUGGLER_SEPARATION * (state.pattern.numberOfJugglers - 1) +
+                state.pattern.numberOfJugglers)
         leftX = (scale * BORDER_SIDES + 0.5).toInt()
         rightX = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
         jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
@@ -367,8 +383,8 @@ class LadderDiagram(
         im = null
         framesUntilImageDraw = IMAGE_DRAW_WAIT
 
-        val loopStart = pattern.loopStartTime
-        val loopEnd = pattern.loopEndTime
+        val loopStart = state.pattern.loopStartTime
+        val loopEnd = state.pattern.loopEndTime
 
         // set locations of events and transitions
         for (item in ladderEventItems) {
@@ -428,7 +444,7 @@ class LadderDiagram(
                 val xt = 0.5 * (item.xStart + item.xEnd).toDouble()
                 val yt = 0.5 * (item.yStart + item.yEnd).toDouble()
                 val b: Double =
-                    SELFTHROW_WIDTH * (ladderWidth.toDouble() / pattern.numberOfJugglers)
+                    SELFTHROW_WIDTH * (ladderWidth.toDouble() / state.pattern.numberOfJugglers)
                 var d = 0.5 * (a * a / b - b)
                 if (d < (0.5 * b)) {
                     d = 0.5 * b
@@ -472,7 +488,7 @@ class LadderDiagram(
     // Return true if ladder was drawn successfully, false otherwise.
 
     private fun paintLadder(gr: Graphics): Boolean {
-        if (pattern.numberOfJugglers > MAX_JUGGLERS) {
+        if (state.pattern.numberOfJugglers > MAX_JUGGLERS) {
             val dim = size
             gr.font = MSGFONT
             val fm = gr.fontMetrics
@@ -555,7 +571,7 @@ class LadderDiagram(
 
             // draw the lines representing the hands
             g.color = COLOR_HANDS
-            for (j in 0..<pattern.numberOfJugglers) {
+            for (j in 0..<state.pattern.numberOfJugglers) {
                 for (i in -1..1) {
                     g.drawLine(
                         leftX + i + j * jugglerDeltaX,
@@ -665,7 +681,7 @@ class LadderDiagram(
                         // color ball representation with the prop's color
                         val tr = item.event.transitions[item.transNum]
                         val propnum = animpropnum[tr.path - 1]
-                        gr.color = pattern.getProp(propnum).getEditorColor().toAwtColor()
+                        gr.color = state.pattern.getProp(propnum).getEditorColor().toAwtColor()
                     }
                     gr.fillOval(
                         item.xLow,
@@ -790,7 +806,7 @@ class LadderDiagram(
                 popupX = me.getX()
                 popupY = me.getY()
                 if (aep2 != null) {
-                    val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                    val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
                         (ladderHeight - 2 * BORDER_TOP).toDouble()
                     val newT = (my - BORDER_TOP).toDouble() * scale
                     animPaused = aep2.isPaused
@@ -863,7 +879,7 @@ class LadderDiagram(
                             trackerY = my
                             if (aep2 != null) {
                                 val scale =
-                                    ((pattern.loopEndTime - pattern.loopStartTime)
+                                    ((state.pattern.loopEndTime - state.pattern.loopStartTime)
                                         / (ladderHeight - 2 * BORDER_TOP).toDouble())
                                 val newtime = (my - BORDER_TOP).toDouble() * scale
                                 animPaused = aep2.isPaused
@@ -883,11 +899,11 @@ class LadderDiagram(
                 repaint()
             }
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
-    override fun mouseReleased(me: MouseEvent?) {
+    override fun mouseReleased(me: MouseEvent) {
         val aep2 = aep
         if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
             return
@@ -895,14 +911,14 @@ class LadderDiagram(
 
         try {
             // on Windows the popup triggers here
-            if (me!!.isPopupTrigger) {
+            if (me.isPopupTrigger) {
                 when (guiState) {
                     STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
                         // skip this code for MOVING_TRACKER state, since already executed in
                         // mousePressed() above
                         if (guiState != STATE_MOVING_TRACKER && aep2 != null) {
                             val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
-                            val scale = ((pattern.loopEndTime - pattern.loopStartTime)
+                            val scale = ((state.pattern.loopEndTime - state.pattern.loopStartTime)
                                 / (ladderHeight - 2 * BORDER_TOP).toDouble())
                             val newtime = (my - BORDER_TOP).toDouble() * scale
                             animPaused = aep2.isPaused
@@ -947,12 +963,10 @@ class LadderDiagram(
                         guiState = STATE_INACTIVE
                         if (deltaY != 0) {
                             deltaY = 0
-                            addToUndoList(pattern)
+                            addToUndoList(state.pattern)
                         } else if (itemWasSelected) {
                             // clicked without moving --> deselect
-                            activeEventItem = null
                             state.update(selectedItemHashCode = 0)
-                            repaint()
                         }
                     }
 
@@ -960,11 +974,9 @@ class LadderDiagram(
                         guiState = STATE_INACTIVE
                         if (deltaY != 0) {
                             deltaY = 0
-                            addToUndoList(pattern)
+                            addToUndoList(state.pattern)
                         } else if (itemWasSelected) {
-                            activePositionItem = null
                             state.update(selectedItemHashCode = 0)
-                            repaint()
                         }
                     }
 
@@ -978,7 +990,7 @@ class LadderDiagram(
                 }
             }
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -1023,7 +1035,7 @@ class LadderDiagram(
                     trackerY = my
                     repaint()
                     if (aep2 != null) {
-                        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+                        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
                             (ladderHeight - 2 * BORDER_TOP).toDouble()
                         val newtime = (my - BORDER_TOP).toDouble() * scale
                         aep2.time = newtime
@@ -1032,7 +1044,7 @@ class LadderDiagram(
                 }
             }
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -1042,35 +1054,18 @@ class LadderDiagram(
     // Utility methods for mouse interactions
     //--------------------------------------------------------------------------
 
-    fun setActiveItem(activeHashCode: Int) {
-        activeEventItem = null
-        activePositionItem = null
-
-        for (item in ladderEventItems) {
-            if (item.jlHashCode == activeHashCode) {
-                activeEventItem = item
-            }
-        }
-        for (item in ladderPositionItems) {
-            if (item.jlHashCode == activeHashCode) {
-                activePositionItem = item
-            }
-        }
-        repaint()
-    }
-
     // Set `deltaYMin` and `deltaYMax` for a selected event, determining the
     // number of pixels it is allowed to move up or down.
 
     private fun findEventLimits(item: LadderEventItem) {
-        var tMin = pattern.loopStartTime
-        var tMax = pattern.loopEndTime
+        var tMin = state.pattern.loopStartTime
+        var tMax = state.pattern.loopEndTime
         val evPaths = item.event.transitions.filter { it.isThrowOrCatch }.map { it.path }.toList()
 
         // other events with throws/catches using the same paths define the
         // limits of how far the item can move
 
-        pattern.allEvents
+        state.pattern.allEvents
             .filter { it.primary != item.primary }
             .filter { it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths } }
             .forEach {
@@ -1081,7 +1076,7 @@ class LadderDiagram(
                 }
             }
 
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         deltaYMin = ((tMin - item.event.t) / scale).toInt()
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
@@ -1093,7 +1088,7 @@ class LadderDiagram(
 
     private fun getClippedEventTime(item: LadderEventItem, me: MouseEvent): Int {
         val dy = min(max(me.getY() - startY, deltaYMin), deltaYMax)
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         val newT = startT + dy * scale  // unclipped new event time
 
@@ -1104,7 +1099,7 @@ class LadderDiagram(
 
         while (true) {
             var changed = false
-            pattern.allEvents
+            state.pattern.allEvents
                 .filter { it.primary != item.primary }
                 .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
                 .forEach {
@@ -1151,14 +1146,14 @@ class LadderDiagram(
 
     @Throws(JuggleExceptionInternal::class)
     private fun moveEventInPattern(item: LadderEventItem) {
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         val newT = run {
             val tempT = startT + deltaY * scale
-            if (tempT < pattern.loopStartTime + scale) {
-                pattern.loopStartTime  // within 1 pixel of top
-            } else if (tempT >= pattern.loopEndTime) {
-                pattern.loopEndTime - 0.0001
+            if (tempT < state.pattern.loopStartTime + scale) {
+                state.pattern.loopStartTime  // within 1 pixel of top
+            } else if (tempT >= state.pattern.loopEndTime) {
+                state.pattern.loopEndTime - 0.0001
             } else {
                 tempT
             }
@@ -1167,7 +1162,7 @@ class LadderDiagram(
         // new event to swap in for `item.event`
         val newEvent = item.event.copy(t = newT)
 
-        val record = PatternBuilder.fromJMLPattern(pattern)
+        val record = PatternBuilder.fromJMLPattern(state.pattern)
         val index = record.events.indexOf(item.primary)
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.moveEventInPattern()")
         if (item.event == item.primary) {
@@ -1197,10 +1192,10 @@ class LadderDiagram(
     }
 
     private fun findPositionLimits(item: LadderPositionItem) {
-        val tmin = pattern.loopStartTime
-        val tmax = pattern.loopEndTime
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
+        val tmin = state.pattern.loopStartTime
+        val tmax = state.pattern.loopEndTime
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         deltaYMin = ((tmin - item.position.t) / scale).toInt()
         deltaYMax = ((tmax - item.position.t) / scale).toInt()
@@ -1214,8 +1209,8 @@ class LadderDiagram(
         var dy = me.getY() - startY
         dy = min(max(dy, deltaYMin), deltaYMax)
 
-        val scale =
-            (pattern.loopEndTime - pattern.loopStartTime) / (ladderHeight - 2 * BORDER_TOP).toDouble()
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
+            (ladderHeight - 2 * BORDER_TOP).toDouble()
         val shift = dy * scale
         val newt = startT + shift // unclipped new event time
 
@@ -1228,7 +1223,7 @@ class LadderDiagram(
         do {
             changed = false
 
-            for (pos in pattern.positions) {
+            for (pos in state.pattern.positions) {
                 if (pos != position && pos.juggler == position.juggler) {
                     val posExclMin: Double = pos.t - MIN_POSITION_SEP_TIME
                     val posExclMax: Double = pos.t + MIN_POSITION_SEP_TIME
@@ -1269,17 +1264,17 @@ class LadderDiagram(
 
     private fun movePositionInPattern(item: LadderPositionItem) {
         val pos = item.position
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
 
         var newt = startT + deltaY * scale
-        if (newt < pattern.loopStartTime + scale) {
-            newt = pattern.loopStartTime // within 1 pixel of top
-        } else if (newt >= pattern.loopEndTime) {
-            newt = pattern.loopEndTime - 0.0001
+        if (newt < state.pattern.loopStartTime + scale) {
+            newt = state.pattern.loopStartTime // within 1 pixel of top
+        } else if (newt >= state.pattern.loopEndTime) {
+            newt = state.pattern.loopEndTime - 0.0001
         }
 
-        val rec = PatternBuilder.fromJMLPattern(pattern)
+        val rec = PatternBuilder.fromJMLPattern(state.pattern)
         val index = rec.positions.indexOf(pos)
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
         val newPosition = pos.copy(t = newt)
@@ -1344,7 +1339,7 @@ class LadderDiagram(
             }
             finishPopup()
         } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
@@ -1352,29 +1347,29 @@ class LadderDiagram(
     private fun addEventToHand(hand: Int) {
         val juggler = run {
             var jug = 1
-            if (pattern.numberOfJugglers > 1) {
+            if (state.pattern.numberOfJugglers > 1) {
                 var mouseX = popupX
                 val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
-                while (jug <= pattern.numberOfJugglers) {
+                while (jug <= state.pattern.numberOfJugglers) {
                     if (mouseX < jugglerRightPx) {
                         break
                     }
                     mouseX -= jugglerDeltaX
                     ++jug
                 }
-                jug = min(jug, pattern.numberOfJugglers)
+                jug = min(jug, state.pattern.numberOfJugglers)
             }
             jug
         }
 
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         val newTime = (popupY - BORDER_TOP).toDouble() * scale
         val newGlobalCoordinate = Coordinate()
-        pattern.layout.getHandCoordinate(juggler, hand, newTime, newGlobalCoordinate)
+        state.pattern.layout.getHandCoordinate(juggler, hand, newTime, newGlobalCoordinate)
 
         val newLocalCoordinate =
-            pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
+            state.pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
         val newEvent = JMLEvent(
             x = newLocalCoordinate.x,
             y = newLocalCoordinate.y,
@@ -1384,7 +1379,7 @@ class LadderDiagram(
             hand = hand
         )
 
-        val record = PatternBuilder.fromJMLPattern(pattern)
+        val record = PatternBuilder.fromJMLPattern(state.pattern)
         record.events.add(newEvent)
         record.fixHolds()
         record.selectPrimaryEvents()
@@ -1399,7 +1394,7 @@ class LadderDiagram(
             throw JuggleExceptionInternal("LadderDiagram illegal remove event")
         }
         val evRemove = (popupItem as LadderEventItem).primary
-        val record = PatternBuilder.fromJMLPattern(pattern)
+        val record = PatternBuilder.fromJMLPattern(state.pattern)
         record.events.remove(evRemove)
         onPatternChange(JMLPattern.fromPatternBuilder(record))
         state.update(selectedItemHashCode = 0)
@@ -1408,36 +1403,36 @@ class LadderDiagram(
     private fun addPositionToJuggler() {
         val juggler = run {
             var jug = 1
-            if (pattern.numberOfJugglers > 1) {
+            if (state.pattern.numberOfJugglers > 1) {
                 var mouseX = popupX
                 val jugglerRightPx = (leftX + rightX + jugglerDeltaX) / 2
-                while (jug <= pattern.numberOfJugglers) {
+                while (jug <= state.pattern.numberOfJugglers) {
                     if (mouseX < jugglerRightPx) {
                         break
                     }
                     mouseX -= jugglerDeltaX
                     ++jug
                 }
-                jug = min(jug, pattern.numberOfJugglers)
+                jug = min(jug, state.pattern.numberOfJugglers)
             }
             jug
         }
 
-        val scale = (pattern.loopEndTime - pattern.loopStartTime) /
+        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (ladderHeight - 2 * BORDER_TOP).toDouble()
         val newTime = (popupY - BORDER_TOP).toDouble() * scale
 
         val newGlobalCoordinate = Coordinate()
-        pattern.layout.getJugglerPosition(juggler, newTime, newGlobalCoordinate)
+        state.pattern.layout.getJugglerPosition(juggler, newTime, newGlobalCoordinate)
         val pos = JMLPosition(
             x = newGlobalCoordinate.x,
             y = newGlobalCoordinate.y,
             z = newGlobalCoordinate.z,
             t = newTime,
-            angle = pattern.layout.getJugglerAngle(juggler, newTime),
+            angle = state.pattern.layout.getJugglerAngle(juggler, newTime),
             juggler = juggler
         )
-        val rec = PatternBuilder.fromJMLPattern(pattern)
+        val rec = PatternBuilder.fromJMLPattern(state.pattern)
         rec.positions.add(pos)
         onPatternChange(JMLPattern.fromPatternBuilder(rec))
         state.update(selectedItemHashCode = pos.jlHashCode)
@@ -1449,7 +1444,7 @@ class LadderDiagram(
             throw JuggleExceptionInternal("LadderDiagram illegal remove position")
         }
         val pos = (popupItem as LadderPositionItem).position
-        val rec = PatternBuilder.fromJMLPattern(pattern)
+        val rec = PatternBuilder.fromJMLPattern(state.pattern)
         rec.positions.remove(pos)
         onPatternChange(JMLPattern.fromPatternBuilder(rec))
         state.update(selectedItemHashCode = 0)
@@ -1477,7 +1472,7 @@ class LadderDiagram(
 
         val animpropnum = aep!!.animator.animPropNum
         val propnum = animpropnum!![pn - 1]
-        val startprop = pattern.getProp(propnum)
+        val startprop = state.pattern.getProp(propnum)
         val prtypes: List<String> = Prop.builtinProps
 
         val jd = JDialog(parentFrame, jlGetStringResource(Res.string.gui_define_prop), true)
@@ -1550,7 +1545,7 @@ class LadderDiagram(
                 return@addActionListener
             }
 
-            val rec = PatternBuilder.fromJMLPattern(pattern)
+            val rec = PatternBuilder.fromJMLPattern(state.pattern)
 
             // sync paths with current prop list
             for (i in 0..<rec.numberOfPaths) {
@@ -1716,7 +1711,7 @@ class LadderDiagram(
                     this[(popupItem as LadderEventItem).transNum] = newTransition
                 }
             )
-            val record = PatternBuilder.fromJMLPattern(pattern)
+            val record = PatternBuilder.fromJMLPattern(state.pattern)
             val index = record.events.indexOf(evPrimary)
             record.events[index] = newPrimary
             onPatternChange(JMLPattern.fromPatternBuilder(record))
@@ -1760,7 +1755,7 @@ class LadderDiagram(
             }
         )
 
-        val record = PatternBuilder.fromJMLPattern(pattern)
+        val record = PatternBuilder.fromJMLPattern(state.pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
@@ -1781,7 +1776,7 @@ class LadderDiagram(
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
         val newPrimary = evPrimary.withoutTransition(tr).withTransition(tr)  // adds at end
 
-        val record = PatternBuilder.fromJMLPattern(pattern)
+        val record = PatternBuilder.fromJMLPattern(state.pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +

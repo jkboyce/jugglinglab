@@ -26,7 +26,6 @@ import java.awt.Dimension
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.*
 import javax.swing.JPanel
 import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
@@ -36,13 +35,13 @@ abstract class View(
 ) : JPanel() {
     var patternWindow: PatternWindow? = null
 
-    protected var undo: ArrayList<JMLPattern>? = null
+    protected var undo: MutableList<JMLPattern>? = null
 
     var undoIndex: Int = 0
         protected set
 
     val jlHashCode: Int
-        get() = pattern?.jlHashCode ?: 0
+        get() = state.pattern.jlHashCode
 
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality.
@@ -54,7 +53,7 @@ abstract class View(
 
     // For the PatternWindow to pass into a newly-initialized view.
 
-    fun setUndoList(u: ArrayList<JMLPattern>, uIndex: Int) {
+    fun setUndoList(u: MutableList<JMLPattern>, uIndex: Int) {
         undo = u
         undoIndex = uIndex
     }
@@ -138,14 +137,6 @@ abstract class View(
 
     abstract fun setAnimationPanelPreferredSize(d: Dimension)
 
-    abstract val pattern: JMLPattern?
-
-    abstract val animationPrefs: AnimationPrefs
-
-    abstract var zoomLevel: Double
-
-    abstract var isPaused: Boolean
-
     abstract fun disposeView()
 
     abstract fun writeGIF(f: File)
@@ -186,7 +177,7 @@ abstract class View(
                     get() = (pm.isCanceled() || interrupted())
             }
 
-            val jc = ap.animationPrefs
+            val jc = ap.state.prefs
             fps = if (jc.fps == AnimationPrefs.FPS_DEF) 33.3 else jc.fps
 
             // Note the GIF header specifies inter-frame delay in terms of
