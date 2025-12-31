@@ -255,7 +255,7 @@ class PatternListPanel private constructor() : JPanel() {
         var notation: String? = "jml"
         var anim: String? = null
 
-        val pattern = pw.pattern!!
+        val pattern = pw.pattern
         var patnode: JMLNode?
         try {
             patnode = pattern.rootNode!!.findNode("pattern")

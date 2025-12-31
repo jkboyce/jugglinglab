@@ -52,25 +52,25 @@ class PatternAnimationState(
         if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
         
         if (pattern != null) {
-            for (callback in onPatternChange) callback()
+            onPatternChange.forEach { it() }
         }
         if (prefs != null) {
-            for (callback in onPrefsChange) callback()
+            onPrefsChange.forEach { it() }
         }
         if (time != null) {
-            for (callback in onTimeChange) callback()
+            onTimeChange.forEach { it() }
         }
         if (isPaused != null) {
-            for (callback in onIsPausedChange) callback()
+            onIsPausedChange.forEach { it() }
         }
         if (cameraAngle != null) {
-            for (callback in onCameraAngleChange) callback()
+            onCameraAngleChange.forEach { it() }
         }
         if (zoom != null) {
-            for (callback in onZoomChange) callback()
+            onZoomChange.forEach { it() }
         }
         if (selectedItemHashCode != null) {
-            for (callback in onSelectedItemHashChange) callback()
+            onSelectedItemHashChange.forEach { it() }
         }
     }
 
