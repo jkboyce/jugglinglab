@@ -39,7 +39,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
-import java.awt.image.BufferedImage
 import java.net.MalformedURLException
 import java.util.Locale
 import javax.swing.ImageIcon
@@ -78,7 +77,6 @@ class LadderDiagram(
     private var leftX: Int = 0
     private var jugglerDeltaX: Int = 0 // horizontal offset between jugglers (px)
     private var guiState: Int = STATE_INACTIVE // one of STATE_x values above
-    private var simTime: Double = 0.0
     private var trackerY: Int = BORDER_TOP
     private var hasSwitchSymmetry: Boolean = false
     private var hasSwitchDelaySymmetry: Boolean = false
@@ -86,10 +84,6 @@ class LadderDiagram(
     private var ladderEventItems: List<LadderEventItem> = emptyList()
     private var ladderPathItems: List<LadderPathItem> = emptyList()
     private var ladderPositionItems: List<LadderPositionItem> = emptyList()
-
-    private var im: BufferedImage? = null
-    private var imageValid: Boolean = false
-    private var framesUntilImageDraw: Int = 0
 
     private var animPaused: Boolean = false
 
@@ -126,6 +120,10 @@ class LadderDiagram(
         })
         state.addListener(onPatternChange = {
             adjustLayoutToPattern()
+        })
+        state.addListener(onTimeChange = {
+            updateTrackerPosition()
+            repaint()
         })
     }
 
@@ -273,7 +271,7 @@ class LadderDiagram(
         trackerY = (
             0.5 +
                 (ladderHeight - 2 * BORDER_TOP).toDouble() *
-                (simTime - loopStart) / (loopEnd - loopStart)
+                (state.time - loopStart) / (loopEnd - loopStart)
             ).toInt() + BORDER_TOP
     }
 
@@ -377,11 +375,6 @@ class LadderDiagram(
         leftX = (scale * BORDER_SIDES + 0.5).toInt()
         rightX = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
         jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
-
-        // invalidate cached image of ladder diagram
-        imageValid = false
-        im = null
-        framesUntilImageDraw = IMAGE_DRAW_WAIT
 
         val loopStart = state.pattern.loopStartTime
         val loopEnd = state.pattern.loopEndTime
@@ -487,23 +480,21 @@ class LadderDiagram(
     //
     // Return true if ladder was drawn successfully, false otherwise.
 
-    private fun paintLadder(gr: Graphics): Boolean {
+    private fun paintLadder(g: Graphics): Boolean {
         if (state.pattern.numberOfJugglers > MAX_JUGGLERS) {
             val dim = size
-            gr.font = MSGFONT
-            val fm = gr.fontMetrics
+            g.font = MSGFONT
+            val fm = g.fontMetrics
             val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
             val mwidth = fm.stringWidth(message)
             val x = max((dim.width - mwidth) / 2, 0)
             val y = (dim.height + fm.height) / 2
-            gr.color = COLOR_BACKGROUND
-            gr.fillRect(0, 0, dim.width, dim.height)
-            gr.color = Color.black
-            gr.drawString(message, x, y)
+            g.color = COLOR_BACKGROUND
+            g.fillRect(0, 0, dim.width, dim.height)
+            g.color = Color.black
+            g.drawString(message, x, y)
             return false
         }
-
-        var g = gr
 
         // check if ladder was resized
         val dim = size
@@ -511,158 +502,129 @@ class LadderDiagram(
             updateView()
         }
 
-        // TODO: remove image caching?
+        // first erase the background
+        g.color = COLOR_BACKGROUND
+        g.fillRect(0, 0, ladderWidth, ladderHeight)
 
-        val rebuildLadderImage = (!imageValid && --framesUntilImageDraw <= 0)
+        // draw the lines signifying symmetries
+        g.color = COLOR_SYMMETRIES
+        g.drawLine(0, BORDER_TOP, ladderWidth, BORDER_TOP)
+        g.drawLine(0, ladderHeight - BORDER_TOP, ladderWidth, ladderHeight - BORDER_TOP)
+        if (hasSwitchSymmetry) {
+            g.drawLine(
+                leftX, ladderHeight - BORDER_TOP / 2,
+                ladderWidth - leftX, ladderHeight - BORDER_TOP / 2
+            )
+            g.drawLine(
+                leftX,
+                ladderHeight - BORDER_TOP / 2,
+                leftX + leftX,
+                ladderHeight - BORDER_TOP * 3 / 4
+            )
+            g.drawLine(
+                leftX,
+                ladderHeight - BORDER_TOP / 2,
+                leftX + leftX,
+                ladderHeight - BORDER_TOP / 4
+            )
+            g.drawLine(
+                ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
+                ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP * 3 / 4
+            )
+            g.drawLine(
+                ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
+                ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP / 4
+            )
+        }
+        if (hasSwitchDelaySymmetry) {
+            g.drawLine(0, ladderHeight / 2, ladderWidth, ladderHeight / 2)
+        }
 
-        if (rebuildLadderImage) {
-            im = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .defaultScreenDevice
-                .defaultConfiguration
-                .createCompatibleImage(ladderWidth, ladderHeight, Transparency.OPAQUE)
-            g = im!!.graphics
-
-            if (g is Graphics2D) {
-                g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
+        // draw the lines representing the hands
+        g.color = COLOR_HANDS
+        for (j in 0..<state.pattern.numberOfJugglers) {
+            for (i in -1..1) {
+                g.drawLine(
+                    leftX + i + j * jugglerDeltaX,
+                    BORDER_TOP,
+                    leftX + i + j * jugglerDeltaX,
+                    ladderHeight - BORDER_TOP
+                )
+                g.drawLine(
+                    rightX + i + j * jugglerDeltaX,
+                    BORDER_TOP,
+                    rightX + i + j * jugglerDeltaX,
+                    ladderHeight - BORDER_TOP
                 )
             }
         }
 
-        if (!imageValid) {
-            // first erase the background
-            g.color = COLOR_BACKGROUND
-            g.fillRect(0, 0, ladderWidth, ladderHeight)
+        // draw paths
+        val clip = g.clip
 
-            // draw the lines signifying symmetries
-            g.color = COLOR_SYMMETRIES
-            g.drawLine(0, BORDER_TOP, ladderWidth, BORDER_TOP)
-            g.drawLine(0, ladderHeight - BORDER_TOP, ladderWidth, ladderHeight - BORDER_TOP)
-            if (hasSwitchSymmetry) {
-                g.drawLine(
-                    leftX, ladderHeight - BORDER_TOP / 2,
-                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2
-                )
-                g.drawLine(
-                    leftX,
-                    ladderHeight - BORDER_TOP / 2,
-                    leftX + leftX,
-                    ladderHeight - BORDER_TOP * 3 / 4
-                )
-                g.drawLine(
-                    leftX,
-                    ladderHeight - BORDER_TOP / 2,
-                    leftX + leftX,
-                    ladderHeight - BORDER_TOP / 4
-                )
-                g.drawLine(
-                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
-                    ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP * 3 / 4
-                )
-                g.drawLine(
-                    ladderWidth - leftX, ladderHeight - BORDER_TOP / 2,
-                    ladderWidth - 2 * leftX, ladderHeight - BORDER_TOP / 4
+        for (item in ladderPathItems) {
+            g.color = item.color
+
+            if (item.type != LadderItem.TYPE_PASS) {
+                g.clipRect(
+                    leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
+                    BORDER_TOP,
+                    rightX - leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
+                    ladderHeight - 2 * BORDER_TOP
                 )
             }
-            if (hasSwitchDelaySymmetry) {
-                g.drawLine(0, ladderHeight / 2, ladderWidth, ladderHeight / 2)
-            }
 
-            // draw the lines representing the hands
-            g.color = COLOR_HANDS
-            for (j in 0..<state.pattern.numberOfJugglers) {
-                for (i in -1..1) {
-                    g.drawLine(
-                        leftX + i + j * jugglerDeltaX,
-                        BORDER_TOP,
-                        leftX + i + j * jugglerDeltaX,
-                        ladderHeight - BORDER_TOP
+            if (item.type == LadderItem.TYPE_CROSS) {
+                g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
+            } else if (item.type == LadderItem.TYPE_HOLD) {
+                g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
+            } else if (item.type == LadderItem.TYPE_PASS) {
+                val gdash = g.create() as Graphics2D
+                val dashed: Stroke =
+                    BasicStroke(
+                        2f,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_BEVEL,
+                        1f,
+                        floatArrayOf(7f, 3f),
+                        0f
                     )
-                    g.drawLine(
-                        rightX + i + j * jugglerDeltaX,
-                        BORDER_TOP,
-                        rightX + i + j * jugglerDeltaX,
-                        ladderHeight - BORDER_TOP
-                    )
-                }
-            }
+                gdash.stroke = dashed
+                gdash.clipRect(
+                    leftX,
+                    BORDER_TOP,
+                    ladderWidth - leftX,
+                    ladderHeight - 2 * BORDER_TOP
+                )
 
-            // draw paths
-            val clip = g.clip
-
-            for (item in ladderPathItems) {
-                g.color = item.color
-
-                if (item.type != LadderItem.TYPE_PASS) {
+                gdash.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
+                gdash.dispose()
+            } else if (item.type == LadderItem.TYPE_SELF) {
+                if (item.yEnd >= BORDER_TOP) {
                     g.clipRect(
                         leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
-                        BORDER_TOP,
+                        item.yStart,
                         rightX - leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
-                        ladderHeight - 2 * BORDER_TOP
+                        item.yEnd - item.yStart
+                    )
+                    g.drawOval(
+                        item.xCenter - item.radius,
+                        item.yCenter - item.radius,
+                        2 * item.radius,
+                        2 * item.radius
                     )
                 }
-
-                if (item.type == LadderItem.TYPE_CROSS) {
-                    g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
-                } else if (item.type == LadderItem.TYPE_HOLD) {
-                    g.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
-                } else if (item.type == LadderItem.TYPE_PASS) {
-                    val gdash = g.create() as Graphics2D
-                    val dashed: Stroke =
-                        BasicStroke(
-                            2f,
-                            BasicStroke.CAP_BUTT,
-                            BasicStroke.JOIN_BEVEL,
-                            1f,
-                            floatArrayOf(7f, 3f),
-                            0f
-                        )
-                    gdash.stroke = dashed
-                    gdash.clipRect(
-                        leftX,
-                        BORDER_TOP,
-                        ladderWidth - leftX,
-                        ladderHeight - 2 * BORDER_TOP
-                    )
-
-                    gdash.drawLine(item.xStart, item.yStart, item.xEnd, item.yEnd)
-                    gdash.dispose()
-                } else if (item.type == LadderItem.TYPE_SELF) {
-                    if (item.yEnd >= BORDER_TOP) {
-                        g.clipRect(
-                            leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
-                            item.yStart,
-                            rightX - leftX + (item.startEvent.juggler - 1) * jugglerDeltaX,
-                            item.yEnd - item.yStart
-                        )
-                        g.drawOval(
-                            item.xCenter - item.radius,
-                            item.yCenter - item.radius,
-                            2 * item.radius,
-                            2 * item.radius
-                        )
-                    }
-                }
-                g.clip = clip
             }
-        }
-
-        if (rebuildLadderImage) {
-            imageValid = true
-        }
-
-        if (imageValid) {
-            gr.drawImage(im, 0, 0, this)
+            g.clip = clip
         }
 
         // draw positions
         for (item in ladderPositionItems) {
             if (item.yLow >= BORDER_TOP || item.yHigh <= ladderHeight + BORDER_TOP) {
-                gr.color = COLOR_BACKGROUND
-                gr.fillRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
-                gr.color = COLOR_POSITIONS
-                gr.drawRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
+                g.color = COLOR_BACKGROUND
+                g.fillRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
+                g.color = COLOR_POSITIONS
+                g.drawRect(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
             }
         }
 
@@ -671,27 +633,27 @@ class LadderDiagram(
 
         for (item in ladderEventItems) {
             if (item.type == LadderItem.TYPE_EVENT) {
-                gr.color = COLOR_HANDS
-                gr.fillOval(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
+                g.color = COLOR_HANDS
+                g.fillOval(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
             } else {
                 if (item.yLow >= BORDER_TOP || item.yHigh <= ladderHeight + BORDER_TOP) {
                     if (animpropnum == null) {
-                        gr.color = COLOR_BACKGROUND
+                        g.color = COLOR_BACKGROUND
                     } else {
                         // color ball representation with the prop's color
                         val tr = item.event.transitions[item.transNum]
                         val propnum = animpropnum[tr.path - 1]
-                        gr.color = state.pattern.getProp(propnum).getEditorColor().toAwtColor()
+                        g.color = state.pattern.getProp(propnum).getEditorColor().toAwtColor()
                     }
-                    gr.fillOval(
+                    g.fillOval(
                         item.xLow,
                         item.yLow,
                         item.xHigh - item.xLow,
                         item.yHigh - item.yLow
                     )
 
-                    gr.color = COLOR_HANDS
-                    gr.drawOval(
+                    g.color = COLOR_HANDS
+                    g.drawOval(
                         item.xLow,
                         item.yLow,
                         item.xHigh - item.xLow,
@@ -702,8 +664,8 @@ class LadderDiagram(
         }
 
         // draw the tracker line showing the time
-        gr.color = COLOR_TRACKER
-        gr.drawLine(0, trackerY, ladderWidth, trackerY)
+        g.color = COLOR_TRACKER
+        g.drawLine(0, trackerY, ladderWidth, trackerY)
 
         return true
     }
@@ -2003,13 +1965,6 @@ class LadderDiagram(
         aep = animPanel
     }
 
-    override fun setTime(t: Double) {
-        if (simTime == t) return
-        simTime = t
-        updateTrackerPosition()
-        repaint()
-    }
-
     //--------------------------------------------------------------------------
     // javax.swing.JComponent methods
     //--------------------------------------------------------------------------
@@ -2084,7 +2039,7 @@ class LadderDiagram(
         // label the tracker line with the time
         if (guiState == STATE_MOVING_TRACKER) {
             gr.color = COLOR_TRACKER
-            gr.drawString(jlToStringRounded(simTime, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
+            gr.drawString(jlToStringRounded(state.time, 2) + " s", ladderWidth / 2 - 18, trackerY - 5)
         }
     }
 
@@ -2218,7 +2173,6 @@ class LadderDiagram(
         val COLOR_POSITIONS: Color? = Color.black
         val COLOR_SYMMETRIES: Color? = Color.lightGray
         val COLOR_TRACKER: Color? = Color.red
-        const val IMAGE_DRAW_WAIT: Int = 5 // frames
 
         // GUI states
         const val STATE_INACTIVE: Int = 0

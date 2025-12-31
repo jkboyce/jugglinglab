@@ -487,9 +487,7 @@ class AnimationPanel(
         get() = simTime
         set(time) {
             simTime = time
-            for (att in attachments) {
-                att.setTime(time)
-            }
+            state.update(time = time)
         }
 
     var cameraAngle: DoubleArray
@@ -525,9 +523,6 @@ class AnimationPanel(
     interface AnimationAttachment {
         // AnimationPanel we're attached to
         fun setAnimationPanel(animPanel: AnimationPanel?)
-
-        // simulation time (seconds)
-        fun setTime(t: Double)
     }
 
     //--------------------------------------------------------------------------
