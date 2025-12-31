@@ -2010,10 +2010,6 @@ class LadderDiagram(
         repaint()
     }
 
-    override fun repaintAttachment() {
-        repaint()
-    }
-
     //--------------------------------------------------------------------------
     // javax.swing.JComponent methods
     //--------------------------------------------------------------------------

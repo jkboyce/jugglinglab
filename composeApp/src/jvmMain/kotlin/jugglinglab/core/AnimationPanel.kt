@@ -136,7 +136,11 @@ class AnimationPanel(
         posPoints = Array(2) { Array(0) { DoubleArray(2) } }
 
         state.addListener(onSelectedItemHashChange = {
-            buildSelectionView()
+            try {
+                buildSelectionView()
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, pattern))
+            }
         })
         state.addListener(onPatternChange = {
             try {
@@ -304,7 +308,7 @@ class AnimationPanel(
 
         if (eventActive) {
             a = -Math.toRadians(
-                animator.pat!!.layout.getJugglerAngle(
+                state.pattern.layout.getJugglerAngle(
                     activeEvent!!.juggler,
                     activeEvent!!.t
                 )
@@ -312,8 +316,8 @@ class AnimationPanel(
         } else if (positionActive) {
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
-        } else if (animator.pat!!.numberOfJugglers == 1) {
-            a = -Math.toRadians(animator.pat!!.layout.getJugglerAngle(1, time))
+        } else if (state.pattern.numberOfJugglers == 1) {
+            a = -Math.toRadians(state.pattern.layout.getJugglerAngle(1, time))
         } else {
             snapHorizontal = false
         }
@@ -381,9 +385,9 @@ class AnimationPanel(
             engineAnimating = true
 
             while (true) {
-                this.time = animator.pat!!.loopStartTime
+                this.time = state.pattern.loopStartTime
 
-                while (this.time < (animator.pat!!.loopEndTime - 0.5 * animator.simIntervalSecs)) {
+                while (this.time < (state.pattern.loopEndTime - 0.5 * animator.simIntervalSecs)) {
                     repaint()
                     realTimeWait =
                         animator.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
@@ -407,47 +411,39 @@ class AnimationPanel(
                     newtime = this.time
 
                     if (state.prefs.catchSound && catchclip != null) {
-                        // use synchronized here to prevent editing actions in
-                        // EditLadderDiagram from creating data consistency problems
-                        val pattemp = animator.pat!!
-                        synchronized(pattemp) {
-                            for (path in 1..pattemp.numberOfPaths) {
-                                if (pattemp.layout.getPathCatchVolume(
-                                        path,
-                                        oldtime,
-                                        newtime
-                                    ) > 0.0
-                                ) {
-                                    // do audio playback on the EDT -- not strictly
-                                    // necessary but it seems to work better on Linux
-                                    SwingUtilities.invokeLater {
-                                        if (catchclip!!.isActive) {
-                                            catchclip!!.stop()
-                                        }
-                                        catchclip!!.framePosition = 0
-                                        catchclip!!.start()
+                        for (path in 1..state.pattern.numberOfPaths) {
+                            if (state.pattern.layout.getPathCatchVolume(
+                                    path,
+                                    oldtime,
+                                    newtime
+                                ) > 0.0
+                            ) {
+                                // do audio playback on the EDT -- not strictly
+                                // necessary but it seems to work better on Linux
+                                SwingUtilities.invokeLater {
+                                    if (catchclip!!.isActive) {
+                                        catchclip!!.stop()
                                     }
+                                    catchclip!!.framePosition = 0
+                                    catchclip!!.start()
                                 }
                             }
                         }
                     }
                     if (state.prefs.bounceSound && bounceclip != null) {
-                        val pattemp = animator.pat!!
-                        synchronized(pattemp) {
-                            for (path in 1..pattemp.numberOfPaths) {
-                                if (pattemp.layout.getPathBounceVolume(
-                                        path,
-                                        oldtime,
-                                        newtime
-                                    ) > 0.0
-                                ) {
-                                    SwingUtilities.invokeLater {
-                                        if (bounceclip!!.isActive) {
-                                            bounceclip!!.stop()
-                                        }
-                                        bounceclip!!.framePosition = 0
-                                        bounceclip!!.start()
+                        for (path in 1..state.pattern.numberOfPaths) {
+                            if (state.pattern.layout.getPathBounceVolume(
+                                    path,
+                                    oldtime,
+                                    newtime
+                                ) > 0.0
+                            ) {
+                                SwingUtilities.invokeLater {
+                                    if (bounceclip!!.isActive) {
+                                        bounceclip!!.stop()
                                     }
+                                    bounceclip!!.framePosition = 0
+                                    bounceclip!!.start()
                                 }
                             }
                         }
@@ -532,9 +528,6 @@ class AnimationPanel(
 
         // simulation time (seconds)
         fun setTime(t: Double)
-
-        // force a redraw
-        fun repaintAttachment()
     }
 
     //--------------------------------------------------------------------------
