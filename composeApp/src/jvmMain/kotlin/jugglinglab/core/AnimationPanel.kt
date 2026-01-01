@@ -693,6 +693,7 @@ class AnimationPanel(
 
             if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
                 isPaused = !enginePaused
+                getParent().dispatchEvent(me)  // for SelectionView
             }
 
             draggingCamera = false
