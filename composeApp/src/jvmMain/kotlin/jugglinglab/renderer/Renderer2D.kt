@@ -118,7 +118,6 @@ class Renderer2D : Renderer() {
             // NEW ALGORITHM
 
             // make the x-coordinate origin at the center of the view
-
             val maxabsx = max(abs(adjustedMin.x), abs(adjustedMax.x))
             adjustedMin.x = -maxabsx
             adjustedMax.x = maxabsx

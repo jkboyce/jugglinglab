@@ -150,7 +150,7 @@ class AnimationPanel(
         state.addListener(onPrefsChange = {
             animator.changeAnimatorPattern(fitToFrame = true)
             // reset camera angle in case prefs changed the default camangle
-            state.resetCameraAngle()
+            state.update(cameraAngle = state.defaultCameraAngle())
         })
         state.addListener(onCameraAngleChange = {
             animator.changeAnimatorCameraAngle()

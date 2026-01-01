@@ -29,7 +29,7 @@ class PatternAnimationState(
     var time: Double by mutableStateOf(0.0)
     var isPaused: Boolean by mutableStateOf(false)
     //var clock: Long by mutableStateOf(0L)
-    var cameraAngle: List<Double> by mutableStateOf(listOf(0.0, Math.toRadians(90.0)))  // radians
+    var cameraAngle: List<Double> by mutableStateOf(defaultCameraAngle())  // radians
     var zoom: Double by mutableStateOf(1.0)
     var selectedItemHashCode: Int by mutableStateOf(0)
 
@@ -117,13 +117,9 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
     }
 
-    init {
-        resetCameraAngle()
-    }
-
     // Reset the camera angle to initial value.
 
-    fun resetCameraAngle() {
+    fun defaultCameraAngle(): List<Double> {
         val ca = DoubleArray(2)
         if (prefs.defaultCameraAngle != null) {
             ca[0] = Math.toRadians(prefs.defaultCameraAngle!![0])
@@ -138,7 +134,7 @@ class PatternAnimationState(
                 ca[1] = Math.toRadians(70.0)
             }
         }
-        update(cameraAngle = ca.toList())
+        return ca.toList()
     }
 
     //--------------------------------------------------------------------------
