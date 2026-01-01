@@ -773,7 +773,7 @@ class LadderDiagram(
                     val newT = (my - BORDER_TOP).toDouble() * scale
                     animPaused = aep2.isPaused
                     aep2.isPaused = true
-                    aep2.time = newT
+                    state.update(time = newT)
                     val code = if (activeEventItem != null) {
                         activeEventItem!!.jlHashCode  // activeEventItem!!.event.jlHashCode
                     } else if (activePositionItem != null) {
@@ -843,11 +843,10 @@ class LadderDiagram(
                                 val scale =
                                     ((state.pattern.loopEndTime - state.pattern.loopStartTime)
                                         / (ladderHeight - 2 * BORDER_TOP).toDouble())
-                                val newtime = (my - BORDER_TOP).toDouble() * scale
+                                val newTime = (my - BORDER_TOP).toDouble() * scale
                                 animPaused = aep2.isPaused
                                 aep2.isPaused = true
-                                aep2.time = newtime
-                                state.update(selectedItemHashCode = 0)
+                                state.update(time = newTime, selectedItemHashCode = 0)
                             }
                         }
                     }
@@ -882,10 +881,9 @@ class LadderDiagram(
                             val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
                             val scale = ((state.pattern.loopEndTime - state.pattern.loopStartTime)
                                 / (ladderHeight - 2 * BORDER_TOP).toDouble())
-                            val newtime = (my - BORDER_TOP).toDouble() * scale
+                            val newTime = (my - BORDER_TOP).toDouble() * scale
                             animPaused = aep2.isPaused
                             aep2.isPaused = true
-                            aep2.time = newtime
                             val code = if (activeEventItem != null) {
                                 activeEventItem!!.event.jlHashCode
                             } else if (activePositionItem != null) {
@@ -893,7 +891,7 @@ class LadderDiagram(
                             } else {
                                 0
                             }
-                            state.update(selectedItemHashCode = code)
+                            state.update(time = newTime, selectedItemHashCode = code)
                             aep2.repaint()
                         }
 
@@ -999,8 +997,8 @@ class LadderDiagram(
                     if (aep2 != null) {
                         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
                             (ladderHeight - 2 * BORDER_TOP).toDouble()
-                        val newtime = (my - BORDER_TOP).toDouble() * scale
-                        aep2.time = newtime
+                        val newTime = (my - BORDER_TOP).toDouble() * scale
+                        state.update(time = newTime)
                         aep2.repaint()
                     }
                 }

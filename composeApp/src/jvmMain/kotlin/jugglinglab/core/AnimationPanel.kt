@@ -57,7 +57,6 @@ class AnimationPanel(
     private var engineRunning: Boolean = false
     private var enginePaused: Boolean = false
     var engineAnimating: Boolean = false
-    private var simTime: Double = 0.0
     var writingGIF: Boolean = false
     var message: String? = null
 
@@ -312,7 +311,7 @@ class AnimationPanel(
             // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
         } else if (state.pattern.numberOfJugglers == 1) {
-            a = -Math.toRadians(state.pattern.layout.getJugglerAngle(1, time))
+            a = -Math.toRadians(state.pattern.layout.getJugglerAngle(1, state.time))
         } else {
             snapHorizontal = false
         }
@@ -378,9 +377,9 @@ class AnimationPanel(
             engineAnimating = true
 
             while (true) {
-                this.time = state.pattern.loopStartTime
+                state.update(time = state.pattern.loopStartTime)
 
-                while (this.time < (state.pattern.loopEndTime - 0.5 * animator.simIntervalSecs)) {
+                while (state.time < (state.pattern.loopEndTime - 0.5 * animator.simIntervalSecs)) {
                     repaint()
                     realTimeWait =
                         animator.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
@@ -399,9 +398,9 @@ class AnimationPanel(
                         }
                     }
 
-                    oldtime = this.time
-                    this.time += animator.simIntervalSecs
-                    newtime = this.time
+                    oldtime = state.time
+                    state.update(time = state.time + animator.simIntervalSecs)
+                    newtime = state.time
 
                     if (state.prefs.catchSound && catchclip != null) {
                         for (path in 1..state.pattern.numberOfPaths) {
@@ -473,14 +472,6 @@ class AnimationPanel(
                 (this as Object).notify()  // wake up wait() in run() method
             }
             enginePaused = wanttopause
-        }
-
-    @set:Synchronized
-    var time: Double
-        get() = simTime
-        set(time) {
-            simTime = time
-            state.update(time = time)
         }
 
     private fun drawString(message: String, g: Graphics) {
@@ -1665,7 +1656,7 @@ class AnimationPanel(
             try {
                 animator.drawBackground(g)
                 drawGrid(g)
-                animator.drawFrame(time, g, draggingCamera, false)
+                animator.drawFrame(state.time, g, draggingCamera, false)
                 drawEvents(g)
                 drawPositions(g)
             } catch (e: Exception) {
