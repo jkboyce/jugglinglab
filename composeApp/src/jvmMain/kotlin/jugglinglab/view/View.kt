@@ -123,7 +123,7 @@ abstract class View(
     // - this method is responsible for setting preferred sizes of all UI
     //   elements, since it may be followed by layout
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView(p: JMLPattern?, c: AnimationPrefs?)
+    abstract fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?)
 
     // restart without changing pattern or preferences
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

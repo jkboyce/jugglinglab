@@ -24,7 +24,7 @@ import kotlin.math.min
 class SelectionView(
     state: PatternAnimationState
 ) : View(state) {
-    private val ja: MutableList<AnimationPanel> = MutableList(COUNT) { AnimationPanel(state) }
+    private val ja: List<AnimationPanel> = List(COUNT) { AnimationPanel(state) }
     private val layered: JLayeredPane
     private val mutator: Mutator
     private var savedPrefs: AnimationPrefs? = null
@@ -201,29 +201,29 @@ class SelectionView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
-        var newjc: AnimationPrefs? = null
-        if (c != null) {
-            savedPrefs = c
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
+        var newPrefs: AnimationPrefs? = null
+        if (prefs != null) {
+            savedPrefs = prefs
             // disable startPause for grid of animations
-            newjc = c.copy(
+            newPrefs = prefs.copy(
                 startPaused = false
             )
         }
 
-        ja[CENTER].restartJuggle(p, newjc)
+        ja[CENTER].restartJuggle(pattern, newPrefs)
         for (i in 0..<COUNT) {
             if (i != CENTER) {
-                val newp = (if (p == null) null else mutator.mutatePattern(p))
-                ja[i].restartJuggle(newp, newjc)
+                val newp = if (pattern == null) null else mutator.mutatePattern(pattern)
+                ja[i].restartJuggle(newp, newPrefs)
             }
         }
 
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
 
-        if (p != null) {
-            patternWindow?.setTitle(p.title)
+        if (pattern != null) {
+            patternWindow?.setTitle(pattern.title)
             patternWindow?.updateColorsMenu()
         }
     }

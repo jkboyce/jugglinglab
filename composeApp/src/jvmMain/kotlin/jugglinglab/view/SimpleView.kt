@@ -33,12 +33,12 @@ class SimpleView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
-        ja.restartJuggle(p, c)
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
+        ja.restartJuggle(pattern, prefs)
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
-        if (p != null) {
-            patternWindow?.setTitle(p.title)
+        if (pattern != null) {
+            patternWindow?.setTitle(pattern.title)
             patternWindow?.updateColorsMenu()
         }
     }

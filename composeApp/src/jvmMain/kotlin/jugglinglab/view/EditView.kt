@@ -19,7 +19,6 @@ import java.awt.ComponentOrientation
 import java.awt.Dimension
 import java.io.File
 import java.util.*
-import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
@@ -27,28 +26,21 @@ class EditView(
     state: PatternAnimationState
 ) : View(state) {
     private val ap: AnimationPanel = AnimationPanel(state)
-    private val ladderPanel: JPanel
+    private val ladder = LadderDiagram(state, patternWindow, this)
     private val jsp: JSplitPane
 
     init {
         ap.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ap.minimumSize = Dimension(10, 10)
-
-        val ladder = LadderDiagram(state, patternWindow, this)
-        ladder.setAnimationPanel(ap)
         ap.addAnimationAttachment(ladder)
-
-        ladderPanel = JPanel()
-        ladderPanel.setLayout(BorderLayout())
-        ladderPanel.setBackground(Color.white)
-        ladderPanel.add(ladder, BorderLayout.CENTER)
+        ladder.setAnimationPanel(ap)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {
-            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ap, ladderPanel)
+            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ap, ladder)
             jsp.setResizeWeight(1.0)
         } else {
-            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladderPanel, ap)
+            jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ladder, ap)
             jsp.setResizeWeight(0.0)
         }
         jsp.setBorder(EmptyBorder(0, 0, 0, 0))
@@ -64,29 +56,15 @@ class EditView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
-        val changingJugglers =
-            (p != null && p.numberOfJugglers != state.pattern.numberOfJugglers)
-
-        ap.restartJuggle(p, c)
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
+        ap.restartJuggle(pattern, prefs)
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
 
-        if (p == null) {
-            return
-        }
+        if (pattern == null) return
 
-        /*
-        val newLadder = LadderDiagram(state, patternWindow, this)
-        newLadder.setAnimationPanel(ap)
-
-        ap.removeAllAttachments()
-        ap.addAnimationAttachment(newLadder)
-        state.update(selectedItemHashCode = 0)
-
-        ladderPanel.removeAll()
-        ladderPanel.add(newLadder, BorderLayout.CENTER)
-        */
+        val changingJugglers =
+            (pattern.numberOfJugglers != state.pattern.numberOfJugglers)
         if (changingJugglers && parent != null) {
             // the next line gets the JSplitPane divider to reset during layout
             jsp.resetToPreferredSizes()
@@ -100,9 +78,9 @@ class EditView(
                 }
             }
         } else {
-            ladderPanel.validate() // to make ladder redraw
+            ladder.validate() // to make ladder redraw
         }
-        patternWindow?.setTitle(p.title)
+        patternWindow?.setTitle(pattern.title)
         patternWindow?.updateColorsMenu()
     }
 

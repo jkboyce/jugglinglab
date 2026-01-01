@@ -238,29 +238,28 @@ class PatternView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(p: JMLPattern?, c: AnimationPrefs?) {
-        ja.restartJuggle(p, c)
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
+        ja.restartJuggle(pattern, prefs)
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
+        if (pattern == null) return
 
-        if (p != null) {
-            val notation = p.basePatternNotation
-            val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
-            rbBp.setText(message)
+        val notation = pattern.basePatternNotation
+        val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
+        rbBp.setText(message)
 
-            if (!(rbBp.isSelected || rbJml.isSelected)) {
-                if (notation == null) {
-                    rbJml.setSelected(true)
-                } else {
-                    rbBp.setSelected(true)
-                }
+        if (!(rbBp.isSelected || rbJml.isSelected)) {
+            if (notation == null) {
+                rbJml.setSelected(true)
+            } else {
+                rbBp.setSelected(true)
             }
-
-            updateButtons()
-            reloadTextArea()
-            patternWindow?.setTitle(p.title)
-            patternWindow?.updateColorsMenu()
         }
+
+        updateButtons()
+        reloadTextArea()
+        patternWindow?.setTitle(pattern.title)
+        patternWindow?.updateColorsMenu()
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

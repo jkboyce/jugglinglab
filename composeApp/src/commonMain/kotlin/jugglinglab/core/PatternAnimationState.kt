@@ -113,4 +113,6 @@ class PatternAnimationState(
         onZoomChange.clear()
         onSelectedItemHashChange.clear()
     }
+
+
 }
