@@ -113,16 +113,18 @@ class LadderDiagram(
         setOpaque(false)
         changeLadderPattern()
 
-        state.addListener(onSelectedItemHashChange = {
-            findActiveItem()
-            repaint()
-        })
         state.addListener(onPatternChange = {
             changeLadderPattern()
         })
         state.addListener(onTimeChange = {
             updateTrackerPosition()
             repaint()
+        })
+        state.addListener(onSelectedItemHashChange = {
+            findActiveItem()
+            if (state.isPaused) {
+                repaint()
+            }
         })
     }
 
@@ -767,21 +769,19 @@ class LadderDiagram(
 
                 popupX = me.getX()
                 popupY = me.getY()
-                if (aep2 != null) {
-                    val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-                        (ladderHeight - 2 * BORDER_TOP).toDouble()
-                    val newT = (my - BORDER_TOP).toDouble() * scale
-                    animPaused = state.isPaused
-                    state.update(isPaused = true, time = newT)
-                    val code = if (activeEventItem != null) {
-                        activeEventItem!!.jlHashCode  // activeEventItem!!.event.jlHashCode
-                    } else if (activePositionItem != null) {
-                        activePositionItem!!.position.jlHashCode
-                    } else {
-                        0
-                    }
-                    state.update(selectedItemHashCode = code)
+
+                val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
+                    (ladderHeight - 2 * BORDER_TOP).toDouble()
+                val newTime = (my - BORDER_TOP).toDouble() * scale
+                animPaused = state.isPaused
+                val code = if (activeEventItem != null) {
+                    activeEventItem!!.jlHashCode
+                } else if (activePositionItem != null) {
+                    activePositionItem!!.jlHashCode
+                } else {
+                    0
                 }
+                state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
 
                 makePopupMenu(popupItem).show(this, me.getX(), me.getY())
             } else {
@@ -875,7 +875,7 @@ class LadderDiagram(
                     STATE_INACTIVE, STATE_MOVING_EVENT, STATE_MOVING_POSITION, STATE_MOVING_TRACKER -> {
                         // skip this code for MOVING_TRACKER state, since already executed in
                         // mousePressed() above
-                        if (guiState != STATE_MOVING_TRACKER && aep2 != null) {
+                        if (guiState != STATE_MOVING_TRACKER) {
                             val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
                             val scale = ((state.pattern.loopEndTime - state.pattern.loopStartTime)
                                 / (ladderHeight - 2 * BORDER_TOP).toDouble())
@@ -888,8 +888,7 @@ class LadderDiagram(
                             } else {
                                 0
                             }
-                            state.update(isPaused = true, time = newTime, selectedItemHashCode = code)
-                            aep2.repaint()
+                            state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
                         }
 
                         guiState = STATE_POPUP
@@ -900,8 +899,7 @@ class LadderDiagram(
                         }
                         popupX = me.getX()
                         popupY = me.getY()
-                        popupItem =
-                            (if (activeEventItem != null) activeEventItem else activePositionItem)
+                        popupItem = if (activeEventItem != null) activeEventItem else activePositionItem
                         if (popupItem == null) {
                             popupItem = getSelectedLadderPath(me.getX(), me.getY(), PATH_SLOP)
                         }
@@ -990,14 +988,10 @@ class LadderDiagram(
 
                 STATE_MOVING_TRACKER -> {
                     trackerY = my
-                    repaint()
-                    if (aep2 != null) {
-                        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-                            (ladderHeight - 2 * BORDER_TOP).toDouble()
-                        val newTime = (my - BORDER_TOP).toDouble() * scale
-                        state.update(time = newTime)
-                        aep2.repaint()
-                    }
+                    val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
+                        (ladderHeight - 2 * BORDER_TOP).toDouble()
+                    val newTime = (my - BORDER_TOP).toDouble() * scale
+                    state.update(time = newTime)
                 }
             }
         } catch (e: Exception) {

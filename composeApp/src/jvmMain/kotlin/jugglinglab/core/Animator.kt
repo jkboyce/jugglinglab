@@ -316,9 +316,6 @@ class Animator(
         }
     }
 
-    val background: Color
-        get() = ren1.getBackground()
-
     // Output a GIF of the pattern to OutputStream `os`.
     //
     // Optional parameter `wgm` monitors the progress and allows the user to

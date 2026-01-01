@@ -152,6 +152,9 @@ class AnimationPanel(
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
+        state.addListener(onTimeChange = {
+            repaint()
+        })
         state.addListener(onIsPausedChanged = {
             if (!state.isPaused) {
                 synchronized(this) {
@@ -376,7 +379,6 @@ class AnimationPanel(
                 state.update(time = state.pattern.loopStartTime)
 
                 while (state.time < (state.pattern.loopEndTime - 0.5 * animator.simIntervalSecs)) {
-                    repaint()
                     realTimeWait =
                         animator.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
 
