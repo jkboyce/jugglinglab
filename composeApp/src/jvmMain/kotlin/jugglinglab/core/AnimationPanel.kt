@@ -54,8 +54,6 @@ class AnimationPanel(
 ) : JPanel(), Runnable, MouseListener, MouseMotionListener {
     val animator: Animator = Animator(state)
     private var engine: Thread? = null
-    private var engineRunning: Boolean = false
-    private var enginePaused: Boolean = false
     var engineAnimating: Boolean = false
     var writingGIF: Boolean = false
     var message: String? = null
@@ -132,40 +130,58 @@ class AnimationPanel(
         handpathHold = BooleanArray(0)
         posPoints = Array(2) { Array(0) { DoubleArray(2) } }
 
-        state.addListener(onSelectedItemHashChange = {
-            try {
-                buildSelectionView()
-            } catch (e: Exception) {
-                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
-            }
-        })
         state.addListener(onPatternChange = {
             try {
                 animator.changeAnimatorPattern(fitToFrame = true)
                 buildSelectionView()
+                if (state.isPaused) {
+                    repaint()
+                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
         state.addListener(onPrefsChange = {
-            animator.changeAnimatorPattern(fitToFrame = true)
-            // reset camera angle in case prefs changed the default camangle
-            state.update(cameraAngle = state.defaultCameraAngle())
+            try {
+                animator.changeAnimatorPattern(fitToFrame = true)
+                buildSelectionView()
+                if (state.isPaused) {
+                    repaint()
+                }
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            }
+        })
+        state.addListener(onIsPausedChanged = {
+            if (!state.isPaused) {
+                synchronized(this) {
+                    (this as Object).notify()  // wake up wait() in run() method
+                }
+            }
         })
         state.addListener(onCameraAngleChange = {
             animator.changeAnimatorCameraAngle()
         })
         state.addListener(onZoomChange = {
-            if (!writingGIF) {
-                animator.zoomLevel = state.zoom
-                try {
-                    createEventView()
-                } catch (jei: JuggleExceptionInternal) {
-                    jei.pattern = state.pattern
-                    jlHandleFatalException(jei)
+            try {
+                if (!writingGIF) {
+                    animator.zoomLevel = state.zoom
+                    buildSelectionView()
+                    if (state.isPaused) {
+                        repaint()
+                    }                }
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            }
+        })
+        state.addListener(onSelectedItemHashChange = {
+            try {
+                buildSelectionView()
+                if (state.isPaused) {
+                    repaint()
                 }
-                createPositionView()
-                repaint()
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
     }
@@ -188,27 +204,20 @@ class AnimationPanel(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
-        // Do pattern layout first so if there's an error we don't disrupt the
-        // current animation
+        // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
-        // stop the current animation thread, if one is running
         killAnimationThread()
 
-        if (newjc != null) {
-            state.update(prefs = newjc)
-        }
+        if (pat != null) state.update(pattern = pat)
+        if (newjc != null) state.update(prefs = newjc)
+        state.update(
+            isPaused = state.prefs.startPaused,
+            cameraAngle = state.defaultCameraAngle(),
+            zoom = 1.0
+        )
 
-        animator.changeAnimatorPattern()
-        animator.changeAnimatorCameraAngle()
-        setBackground(animator.background)
-
-        if (pat != null) {
-            state.update(pattern = pat)
-        }
-
-        engine = Thread(this)
-        engine!!.start()
+        engine = Thread(this).apply { start() }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -250,16 +259,6 @@ class AnimationPanel(
                     try {
                         if (!engineAnimating) return
                         if (writingGIF) return
-
-                        if (eventActive) {
-                            createEventView()
-                        }
-                        if (positionActive) {
-                            createPositionView()
-                        }
-                        if (isPaused) {
-                            repaint()
-                        }
 
                         // Don't update the preferred animation size if the enclosing
                         // window is maximized
@@ -339,7 +338,6 @@ class AnimationPanel(
 
     override fun run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY)
-        engineRunning = true // ok to start painting
         engineAnimating = false
 
         if (state.prefs.mousePause) {
@@ -350,14 +348,12 @@ class AnimationPanel(
             if (state.prefs.startPaused) {
                 message = jlGetStringResource(Res.string.gui_message_click_to_start)
                 repaint()
-                enginePaused = true
-                while (enginePaused) {
+                while (state.isPaused) {
                     synchronized(this) {
                         (this as Object).wait()
                     }
                 }
             }
-
             message = null
 
             var realTimeStart = System.currentTimeMillis()
@@ -367,9 +363,9 @@ class AnimationPanel(
 
             if (state.prefs.mousePause) {
                 if (outsideValid) {
-                    this.isPaused = outside
+                    state.update(isPaused = outside)
                 } else {
-                    this.isPaused = true // assume mouse is outside animator, if not known
+                    state.update(isPaused = true) // assume mouse is outside animator, if not known
                 }
                 waspaused = false
             }
@@ -392,7 +388,7 @@ class AnimationPanel(
 
                     realTimeStart = System.currentTimeMillis()
 
-                    while (enginePaused) {
+                    while (state.isPaused) {
                         synchronized(this) {
                             (this as Object).wait()
                         }
@@ -450,29 +446,19 @@ class AnimationPanel(
     // stop the current animation thread, if one is running
     private fun killAnimationThread() {
         try {
-            if (engine != null && engine!!.isAlive) {
-                engine!!.interrupt()
-                engine!!.join()
+            engine?.apply {
+                if (isAlive) {
+                    interrupt()
+                    join()
+                }
             }
         } catch (_: InterruptedException) {
         } finally {
             engine = null
-            engineRunning = false
-            enginePaused = false
             engineAnimating = false
             message = null
         }
     }
-
-    @set:Synchronized
-    var isPaused: Boolean
-        get() = enginePaused
-        set(wanttopause) {
-            if (enginePaused && !wanttopause) {
-                (this as Object).notify()  // wake up wait() in run() method
-            }
-            enginePaused = wanttopause
-        }
 
     private fun drawString(message: String, g: Graphics) {
         val fm = g.fontMetrics
@@ -670,7 +656,7 @@ class AnimationPanel(
         if (state.prefs.mousePause && lastpress == lastenter) return
         if (writingGIF) return
         if (!engineAnimating && engine != null && engine!!.isAlive) {
-            isPaused = !enginePaused
+            state.update(isPaused = !state.isPaused)
             return
         }
 
@@ -683,7 +669,7 @@ class AnimationPanel(
             }
 
             if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
-                isPaused = !enginePaused
+                state.update(isPaused = !state.isPaused)
                 getParent().dispatchEvent(me)  // for SelectionView
             }
 
@@ -711,7 +697,7 @@ class AnimationPanel(
     override fun mouseEntered(me: MouseEvent) {
         lastenter = me.getWhen()
         if (state.prefs.mousePause && !writingGIF) {
-            isPaused = waspaused
+            state.update(isPaused = waspaused)
         }
         outside = false
         outsideValid = true
@@ -719,8 +705,8 @@ class AnimationPanel(
 
     override fun mouseExited(me: MouseEvent?) {
         if (state.prefs.mousePause && !writingGIF) {
-            waspaused = isPaused
-            isPaused = true
+            waspaused = state.isPaused
+            state.update(isPaused = true)
         }
         outside = true
         outsideValid = true
@@ -888,7 +874,7 @@ class AnimationPanel(
                 createPositionView()
             }
 
-            if (isPaused) {
+            if (state.isPaused) {
                 repaint()
             }
         } catch (e: Exception) {
@@ -942,7 +928,6 @@ class AnimationPanel(
                 break
             }
         }
-        repaint()
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1652,7 +1637,7 @@ class AnimationPanel(
 
         if (message != null) {
             drawString(message!!, g)
-        } else if (engineRunning && !writingGIF) {
+        } else if (!writingGIF) {
             try {
                 animator.drawBackground(g)
                 drawGrid(g)

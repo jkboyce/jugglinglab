@@ -26,8 +26,8 @@ class PatternAnimationState(
 
     var pattern: JMLPattern by mutableStateOf(initialPattern)
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
-    var time: Double by mutableStateOf(0.0)
-    var isPaused: Boolean by mutableStateOf(false)
+    var time: Double by mutableStateOf(initialPattern.loopStartTime)
+    var isPaused: Boolean by mutableStateOf(initialPrefs.startPaused)
     //var clock: Long by mutableStateOf(0L)
     var cameraAngle: List<Double> by mutableStateOf(defaultCameraAngle())  // radians
     var zoom: Double by mutableStateOf(1.0)
@@ -117,7 +117,7 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
     }
 
-    // Reset the camera angle to initial value.
+    // Return the default camera angle for the current pattern.
 
     fun defaultCameraAngle(): List<Double> {
         val ca = DoubleArray(2)
