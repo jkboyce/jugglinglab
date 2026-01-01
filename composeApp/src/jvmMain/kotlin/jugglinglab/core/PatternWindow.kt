@@ -618,12 +618,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.VIEW_UNDO -> view.undoEdit()
             MenuCommand.VIEW_REDO -> view.redoEdit()
-            MenuCommand.VIEW_ZOOMIN -> if (view.state.zoom < (MAX_ZOOM / ZOOM_PER_STEP)) {
-                view.state.update(zoom = view.state.zoom * ZOOM_PER_STEP)
+            MenuCommand.VIEW_ZOOMIN -> if (view.zoom < (MAX_ZOOM / ZOOM_PER_STEP)) {
+                view.zoom *= ZOOM_PER_STEP
             }
 
-            MenuCommand.VIEW_ZOOMOUT -> if (view.state.zoom > (MIN_ZOOM * ZOOM_PER_STEP)) {
-                view.state.update(zoom = view.state.zoom / ZOOM_PER_STEP)
+            MenuCommand.VIEW_ZOOMOUT -> if (view.zoom > (MIN_ZOOM * ZOOM_PER_STEP)) {
+                view.zoom /= ZOOM_PER_STEP
             }
 
             MenuCommand.HELP_ABOUT -> ApplicationWindow.showAboutBox()

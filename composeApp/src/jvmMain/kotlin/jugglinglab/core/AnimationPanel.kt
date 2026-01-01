@@ -52,7 +52,7 @@ import kotlin.math.sin
 class AnimationPanel(
     val state: PatternAnimationState
 ) : JPanel(), Runnable, MouseListener, MouseMotionListener {
-    val animator: Animator = Animator()
+    val animator: Animator = Animator(state)
     private var engine: Thread? = null
     private var engineRunning: Boolean = false
     private var enginePaused: Boolean = false
@@ -74,7 +74,8 @@ class AnimationPanel(
     private var startY: Int = 0
     private var lastX: Int = 0
     private var lastY: Int = 0
-    private var dragcamangle: DoubleArray? = null
+    // this angle is before camera snapping; value in state is after snapping
+    private var dragCameraAngle: List<Double> = listOf(0.0, 0.0)
 
     //----------------------------------
 
@@ -141,12 +142,19 @@ class AnimationPanel(
         })
         state.addListener(onPatternChange = {
             try {
-                animator.pat = state.pattern
-                animator.initAnimator(fitToFrame = true)
+                animator.changeAnimatorPattern(fitToFrame = true)
                 buildSelectionView()
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
+        })
+        state.addListener(onPrefsChange = {
+            animator.changeAnimatorPattern(fitToFrame = true)
+            // reset camera angle in case prefs changed the default camangle
+            state.resetCameraAngle()
+        })
+        state.addListener(onCameraAngleChange = {
+            animator.changeAnimatorCameraAngle()
         })
         state.addListener(onZoomChange = {
             if (!writingGIF) {
@@ -192,8 +200,8 @@ class AnimationPanel(
             state.update(prefs = newjc)
         }
 
-        animator.dimension = size
-        animator.restartAnimator(pat, newjc)
+        animator.changeAnimatorPattern()
+        animator.changeAnimatorCameraAngle()
         setBackground(animator.background)
 
         if (pat != null) {
@@ -239,14 +247,11 @@ class AnimationPanel(
 
         addComponentListener(
             object : ComponentAdapter() {
-                var hasResized: Boolean = false
-
                 override fun componentResized(e: ComponentEvent?) {
                     try {
                         if (!engineAnimating) return
                         if (writingGIF) return
 
-                        animator.dimension = size
                         if (eventActive) {
                             createEventView()
                         }
@@ -266,11 +271,10 @@ class AnimationPanel(
                             }
                         }
 
-                        if (hasResized) {
-                            val newJc = state.prefs.copy(width = size.width, height = size.height)
-                            state.update(prefs = newJc)
+                        if (state.prefs.width != size.width || state.prefs.height != size.height) {
+                            val newPrefs = state.prefs.copy(width = size.width, height = size.height)
+                            state.update(prefs = newPrefs)
                         }
-                        hasResized = true
                     } catch (e: Exception) {
                         jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
                     }
@@ -278,7 +282,9 @@ class AnimationPanel(
             })
     }
 
-    private fun snapCamera(ca: DoubleArray): DoubleArray {
+    // Snap the camera to specific preferred directions.
+
+    private fun snapCamera(ca: List<Double>): List<Double> {
         val result = DoubleArray(2)
         result[0] = ca[0]
         result[1] = ca[1]
@@ -329,7 +335,7 @@ class AnimationPanel(
                 result[0] = a + 1.5 * Math.PI
             }
         }
-        return result
+        return result.toList()
     }
 
     override fun run() {
@@ -475,12 +481,6 @@ class AnimationPanel(
         set(time) {
             simTime = time
             state.update(time = time)
-        }
-
-    var cameraAngle: DoubleArray
-        get() = animator.cameraAngle
-        set(ca) {
-            animator.cameraAngle = ca
         }
 
     private fun drawString(message: String, g: Graphics) {
@@ -857,7 +857,7 @@ class AnimationPanel(
                 draggingCamera = true
                 lastX = startX
                 lastY = startY
-                dragcamangle = animator.cameraAngle
+                dragCameraAngle = state.cameraAngle
             }
 
             if (draggingCamera) {
@@ -865,22 +865,28 @@ class AnimationPanel(
                 val dy = me.getY() - lastY
                 lastX = me.getX()
                 lastY = me.getY()
-                val ca = dragcamangle
-                ca!![0] += dx.toDouble() * 0.02
-                ca[1] -= dy.toDouble() * 0.02
-                if (ca[1] < Math.toRadians(0.0001)) {
-                    ca[1] = Math.toRadians(0.0001)
+                var ca0 = dragCameraAngle[0]
+                var ca1 = dragCameraAngle[1]
+                ca0 += dx.toDouble() * 0.02
+                ca1 -= dy.toDouble() * 0.02
+                if (ca1 < Math.toRadians(0.0001)) {
+                    ca1 = Math.toRadians(0.0001)
                 }
-                if (ca[1] > Math.toRadians(179.9999)) {
-                    ca[1] = Math.toRadians(179.9999)
+                if (ca1 > Math.toRadians(179.9999)) {
+                    ca1 = Math.toRadians(179.9999)
                 }
-                while (ca[0] < 0) {
-                    ca[0] += Math.toRadians(360.0)
+                while (ca0 < 0) {
+                    ca0 += 2.0 * Math.PI
                 }
-                while (ca[0] >= Math.toRadians(360.0)) {
-                    ca[0] -= Math.toRadians(360.0)
+                while (ca0 >= 2.0 * Math.PI) {
+                    ca0 -= 2.0 * Math.PI
                 }
-                animator.cameraAngle = snapCamera(ca)
+                dragCameraAngle = listOf(ca0, ca1)
+                state.update(cameraAngle = snapCamera(dragCameraAngle))
+
+                // send event to the parent so that SelectionView can update
+                // camera angles of other animations
+                getParent().dispatchEvent(me)
             }
 
             if (eventActive && draggingCamera) {
@@ -1015,7 +1021,7 @@ class AnimationPanel(
 
                 // translate by one pixel and see how far it is in juggler space
                 val c = pat.layout.getGlobalCoordinate(ev2)
-                val c2 = ren!!.getScreenTranslatedCoordinate(c, 1, 0)
+                val c2 = ren.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2)  // pixels/cm
 
                 val ca = ren.cameraAngle
@@ -1092,7 +1098,7 @@ class AnimationPanel(
         handpathHold = BooleanArray(numHandpathPoints)
 
         for (i in 0..<rendererCount) {
-            val ren = (if (i == 0) animator.ren1 else animator.ren2)!!
+            val ren = if (i == 0) animator.ren1 else animator.ren2
             val c = Coordinate()
 
             for (j in 0..<numHandpathPoints) {
@@ -1230,7 +1236,7 @@ class AnimationPanel(
                 activePosition!!.coordinate,
                 Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM)
             )
-            val c2 = ren!!.getScreenTranslatedCoordinate(c!!, 1, 0)
+            val c2 = ren.getScreenTranslatedCoordinate(c!!, 1, 0)
             val dl = 1.0 / distance(c, c2)  // pixels/cm
 
             val ca = ren.cameraAngle
@@ -1337,12 +1343,12 @@ class AnimationPanel(
             }
 
             if (!draggingAngle) {
-                if (draggingZ || (cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
+                if (draggingZ || (state.cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
                     // line dropping down to projection on ground (z = 0)
                     val c = currentCoordinate
                     val z = c.z
                     c.z = 0.0
-                    val xyProjection = ren!!.getXY(c)
+                    val xyProjection = ren.getXY(c)
                     g2.drawLine(
                         xyProjection[0],
                         xyProjection[1],
@@ -1379,7 +1385,7 @@ class AnimationPanel(
         if (g !is Graphics2D) return
 
         // only draw grid when looking down from above
-        if (cameraAngle[1] > Math.toRadians(GRID_SHOW_DEG)) return
+        if (state.cameraAngle[1] > Math.toRadians(GRID_SHOW_DEG)) return
 
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val g2 =
@@ -1397,7 +1403,7 @@ class AnimationPanel(
             val ren = if (i == 0) animator.ren1 else animator.ren2
 
             // Figure out pixel deltas for 1cm vectors along x and y axes
-            val center = ren!!.getXY(Coordinate(0.0, 0.0, 0.0))
+            val center = ren.getXY(Coordinate(0.0, 0.0, 0.0))
             val dx = ren.getXY(Coordinate(100.0, 0.0, 0.0))
             val dy = ren.getXY(Coordinate(0.0, 100.0, 0.0))
             val xaxisSpacing = doubleArrayOf(

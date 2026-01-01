@@ -75,6 +75,7 @@ class SelectionView(
     private fun makeAnimationGrid(): JPanel {
         val grid = JPanel(GridLayout(ROWS, COLUMNS))
         for (ap in ja) {
+            ap.state.resetCameraAngle()
             grid.add(ap)
         }
 
@@ -125,10 +126,10 @@ class SelectionView(
                     if (num == COUNT) {
                         return
                     }
-                    val ca = ja[num].cameraAngle
+                    val ca = ja[num].state.cameraAngle
                     for (i in 0..<COUNT) {
                         if (i != num) {
-                            ja[i].cameraAngle = ca
+                            ja[i].state.update(cameraAngle = ca)
                         }
                     }
                 }
@@ -210,9 +211,7 @@ class SelectionView(
         if (prefs != null) {
             savedPrefs = prefs
             // disable startPause for grid of animations
-            newPrefs = prefs.copy(
-                startPaused = false
-            )
+            newPrefs = prefs.copy(startPaused = false)
         }
 
         ja[CENTER].restartJuggle(pattern, newPrefs)
@@ -252,6 +251,14 @@ class SelectionView(
         val height: Int = ROWS * d.height
         layered.preferredSize = Dimension(width, height)
     }
+
+    override var zoom: Double
+        get() = ja[CENTER].state.zoom
+        set(z) {
+            for (ap in ja) {
+                ap.state.update(zoom = z)
+            }
+        }
 
     override fun disposeView() {
         for (ap in ja) {

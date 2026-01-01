@@ -13,27 +13,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import jugglinglab.jml.JMLPattern
+import kotlin.math.max
+import kotlin.math.min
 
 class PatternAnimationState(
     initialPattern: JMLPattern,
     initialPrefs: AnimationPrefs
 ) {
+    //--------------------------------------------------------------------------
+    // State variables
+    //--------------------------------------------------------------------------
+
     var pattern: JMLPattern by mutableStateOf(initialPattern)
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
-
-    // Animation State
     var time: Double by mutableStateOf(0.0)
     var isPaused: Boolean by mutableStateOf(false)
     //var clock: Long by mutableStateOf(0L)
-
-    // View State
-    var cameraAngle: List<Double> by mutableStateOf(listOf(0.0, 90.0))
+    var cameraAngle: List<Double> by mutableStateOf(listOf(0.0, Math.toRadians(90.0)))  // radians
     var zoom: Double by mutableStateOf(1.0)
-
-    // Selection State
     var selectedItemHashCode: Int by mutableStateOf(0)
 
-    // Helper to update the state
+    //--------------------------------------------------------------------------
+    // Helper to update the state and notify listeners
+    //--------------------------------------------------------------------------
+
     fun update(
         pattern: JMLPattern? = null,
         prefs: AnimationPrefs? = null,
@@ -74,10 +77,7 @@ class PatternAnimationState(
         }
     }
 
-    //--------------------------------------------------------------------------
-    // Callbacks when there are changes – target removal
-    //--------------------------------------------------------------------------
-
+    // callbacks
     val onPatternChange = mutableListOf<() -> Unit>()
     val onPrefsChange = mutableListOf<() -> Unit>()
     val onTimeChange = mutableListOf<() -> Unit>()
@@ -117,6 +117,30 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
     }
 
+    init {
+        resetCameraAngle()
+    }
+
+    // Reset the camera angle to initial value.
+
+    fun resetCameraAngle() {
+        val ca = DoubleArray(2)
+        if (prefs.defaultCameraAngle != null) {
+            ca[0] = Math.toRadians(prefs.defaultCameraAngle!![0])
+            val theta = min(179.9999, max(0.0001, prefs.defaultCameraAngle!![1]))
+            ca[1] = Math.toRadians(theta)
+        } else {
+            if (pattern.numberOfJugglers == 1) {
+                ca[0] = Math.toRadians(0.0)
+                ca[1] = Math.toRadians(90.0)
+            } else {
+                ca[0] = Math.toRadians(340.0)
+                ca[1] = Math.toRadians(70.0)
+            }
+        }
+        update(cameraAngle = ca.toList())
+    }
+
     //--------------------------------------------------------------------------
     // Undo list to support undo/redo for pattern edits
     //--------------------------------------------------------------------------
@@ -124,7 +148,8 @@ class PatternAnimationState(
     val undoList: MutableList<JMLPattern> = mutableListOf(initialPattern)
     var undoIndex: Int = 0
 
-    // Add the current pattern to the undo list.
+    // Add the current pattern to the undo list. See View for other undo-related
+    // methods.
 
     fun addCurrentToUndoList() {
         ++undoIndex

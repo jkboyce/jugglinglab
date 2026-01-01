@@ -33,7 +33,6 @@ import jugglinglab.util.OpenFilesServer
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlGetStringResource
 import java.awt.Desktop
-import java.awt.Dimension
 import java.awt.desktop.AboutEvent
 import java.io.*
 import java.nio.file.Path
@@ -608,7 +607,7 @@ object JugglingLab {
 
     // Output an animated GIF of the pattern.
 
-    private fun doTogif(pat: JMLPattern?, outpath: Path?, jc: AnimationPrefs?) {
+    private fun doTogif(pat: JMLPattern, outpath: Path?, jc: AnimationPrefs?) {
         var jc = jc
         if (outpath == null) {
             println("Error: No output path specified for animated GIF")
@@ -616,16 +615,13 @@ object JugglingLab {
         }
 
         try {
-            val anim = Animator()
             if (jc == null) {
-                jc = anim.animationPrefs
-                jc = jc.copy(fps = 33.3)  // default frames per sec for GIFs
+                jc = AnimationPrefs(fps = 33.3)  // default frames per sec for GIFs
                 // Note the GIF header specifies inter-frame delay in terms of
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
                 // 25, 20, ... are precisely achieveable.
             }
-            anim.dimension = Dimension(jc.width, jc.height)
-            anim.restartAnimator(pat, jc)
+            val anim = Animator(PatternAnimationState(pat, jc))
             anim.writeGIF(FileOutputStream(outpath.toFile()), null, jc.fps)
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")

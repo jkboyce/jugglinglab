@@ -100,6 +100,11 @@ abstract class View(
 
     abstract fun setAnimationPanelPreferredSize(d: Dimension)
 
+    // control zoom at the View level because of SelectionView
+    open var zoom: Double
+        get() = state.zoom
+        set(z) = state.update(zoom = z)
+
     abstract fun disposeView()
 
     abstract fun writeGIF(f: File)

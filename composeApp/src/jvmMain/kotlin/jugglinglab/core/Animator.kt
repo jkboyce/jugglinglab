@@ -13,7 +13,6 @@
 package jugglinglab.core
 
 import jugglinglab.jml.HandLink
-import jugglinglab.jml.JMLPattern
 import jugglinglab.renderer.Renderer
 import jugglinglab.renderer.Renderer2D
 import jugglinglab.util.Coordinate
@@ -21,7 +20,6 @@ import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.max
 import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.JuggleExceptionInternal
-import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import java.awt.*
 import java.awt.image.BufferedImage
@@ -40,13 +38,12 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.max
-import kotlin.math.min
 
-class Animator {
-    var pat: JMLPattern? = null
-    private var jc: AnimationPrefs = AnimationPrefs()
-    var ren1: Renderer? = null
-    var ren2: Renderer? = null
+class Animator(
+    val state: PatternAnimationState
+) {
+    var ren1: Renderer = Renderer2D()
+    var ren2: Renderer = Renderer2D()
     private var overallMax: Coordinate? = null
     private var overallMin: Coordinate? = null
 
@@ -59,99 +56,65 @@ class Animator {
         private set
     private var invPathPerm: Permutation? = null
 
-    // camera angles for viewing
-    private var camangle: DoubleArray = DoubleArray(2)  // in radians
-    private var camangle1: DoubleArray = DoubleArray(2)  // for stereo display
-    private var camangle2: DoubleArray = DoubleArray(2)
-
-    private var dim: Dimension? = null
-
-    // Do a full (re)start of the animator with a new pattern, new animation
-    // preferences, or both. Passing in null indicates no update for that item.
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartAnimator(newpat: JMLPattern?, newjc: AnimationPrefs?) {
-        if (newpat != null) {
-            newpat.layout
-            pat = newpat
-        }
-        if (newjc != null) {
-            jc = newjc
-        }
-
-        if (pat == null) {
-            return
-        }
-
-        ren1 = Renderer2D()
-        ren1!!.setPattern(pat!!)
-        if (jc.stereo) {
-            ren2 = Renderer2D()
-            ren2!!.setPattern(pat!!)
-        } else {
-            ren2 = null
-        }
-
-        initAnimator()
-
-        val ca = DoubleArray(2)
-        if (jc.defaultCameraAngle != null) {
-            ca[0] = Math.toRadians(jc.defaultCameraAngle!![0])
-            val theta = min(179.9999, max(0.0001, jc.defaultCameraAngle!![1]))
-            ca[1] = Math.toRadians(theta)
-        } else {
-            if (pat!!.numberOfJugglers == 1) {
-                ca[0] = Math.toRadians(0.0)
-                ca[1] = Math.toRadians(90.0)
-            } else {
-                ca[0] = Math.toRadians(340.0)
-                ca[1] = Math.toRadians(70.0)
-            }
-        }
-        cameraAngle = ca
+    init {
+        // sync the renderers to the initial pattern
+        changeAnimatorPattern()
+        changeAnimatorCameraAngle()
     }
 
-    var dimension: Dimension
-        get() = Dimension(dim)
-        set(d) {
-            dim = Dimension(d)
-            if (ren1 != null) {
-                syncRenderersToSize()
-            }
+    // Propagate a change in pattern to update the renderers and
+    // other data structures. Rescale the drawing so that the pattern
+    // and key parts of the juggler are visible.
+
+    fun changeAnimatorPattern(fitToFrame: Boolean = true) {
+        val pattern = state.pattern
+        val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+            (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
+        ren1.setPattern(pattern)
+        ren1.setGround(sg)
+        if (state.prefs.stereo) {
+            ren2.setPattern(pattern)
+            ren2.setGround(sg)
         }
 
-    var cameraAngle: DoubleArray
-        get() = doubleArrayOf(camangle[0], camangle[1])
-        set(ca) {
-            while (ca[0] < 0) {
-                ca[0] += 2 * Math.PI
-            }
-            while (ca[0] >= 2 * Math.PI) {
-                ca[0] -= 2 * Math.PI
-            }
-
-            camangle[0] = ca[0]
-            camangle[1] = ca[1]
-
-            if (jc.stereo) {
-                camangle1[0] = ca[0] - STEREO_SEPARATION_RADIANS / 2
-                camangle1[1] = ca[1]
-                ren1!!.cameraAngle = camangle1
-                camangle2[0] = ca[0] + STEREO_SEPARATION_RADIANS / 2
-                camangle2[1] = ca[1]
-                ren2!!.cameraAngle = camangle2
-            } else {
-                camangle1[0] = ca[0]
-                camangle1[1] = ca[1]
-                ren1!!.cameraAngle = camangle1
-            }
+        if (fitToFrame) {
+            findMaxMin()
+            syncRenderersToSize()
         }
 
-    fun drawBackground(g: Graphics) {
-        val dimen = dim!!
-        g.color = ren1!!.getBackground()
-        g.fillRect(0, 0, dimen.width, dimen.height)
+        // figure out timing constants; this in effect adjusts fps to get an integer
+        // number of frames in one repetition of the pattern
+        numFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * state.prefs.fps).toInt()
+        simIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / numFrames
+        realIntervalMillis = (1000.0 * simIntervalSecs * state.prefs.slowdown).toLong()
+
+        animPropNum = IntArray(pattern.numberOfPaths)
+        for (i in 0..<pattern.numberOfPaths) {
+            animPropNum!![i] = pattern.getPropAssignment(i + 1)
+        }
+        invPathPerm = pattern.pathPermutation!!.inverse
     }
+
+    // Propagate a change in camera angle to the renderers.
+
+    fun changeAnimatorCameraAngle() {
+        val ca = doubleArrayOf(state.cameraAngle[0], state.cameraAngle[1])
+        while (ca[0] < 0) {
+            ca[0] += 2 * Math.PI
+        }
+        while (ca[0] >= 2 * Math.PI) {
+            ca[0] -= 2 * Math.PI
+        }
+
+        if (state.prefs.stereo) {
+            ren1.cameraAngle = doubleArrayOf(ca[0] - STEREO_SEPARATION_RADIANS / 2, ca[1])
+            ren2.cameraAngle = doubleArrayOf(ca[0] + STEREO_SEPARATION_RADIANS / 2, ca[1])
+        } else {
+            ren1.cameraAngle = ca
+        }
+    }
+
+    // Draw the frame of juggling
 
     @Suppress("UnnecessaryVariable")
     @Throws(JuggleExceptionInternal::class)
@@ -160,20 +123,19 @@ class Animator {
             drawBackground(g)
         }
 
-        if (jc.stereo) {
+        if (state.prefs.stereo) {
             val apn = animPropNum!!
-            val dimen = dim!!
-            ren1!!.drawFrame(
-                simTime, apn, jc.hideJugglers, g.create(0, 0, dimen.width / 2, dimen.height)
+            ren1.drawFrame(
+                simTime, apn, state.prefs.hideJugglers, g.create(0, 0, state.prefs.width / 2, state.prefs.height)
             )
-            ren2!!.drawFrame(
+            ren2.drawFrame(
                 simTime,
                 apn,
-                jc.hideJugglers,
-                g.create(dimen.width / 2, 0, dimen.width / 2, dimen.height)
+                state.prefs.hideJugglers,
+                g.create(state.prefs.width / 2, 0, state.prefs.width / 2, state.prefs.height)
             )
         } else {
-            ren1!!.drawFrame(simTime, animPropNum!!, jc.hideJugglers, g)
+            ren1.drawFrame(simTime, animPropNum!!, state.prefs.hideJugglers, g)
         }
 
         if (drawAxes) {
@@ -181,8 +143,8 @@ class Animator {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             }
 
-            for (i in 0..<(if (jc.stereo) 2 else 1)) {
-                val ren = (if (i == 0) ren1 else ren2)!!
+            for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
+                val ren = if (i == 0) ren1 else ren2
                 val ca = ren.cameraAngle
                 val theta = ca[0]
                 val phi = ca[1]
@@ -190,7 +152,7 @@ class Animator {
                 val xya = 30.0
                 val xyb = xya * cos(phi)
                 val zlen = xya * sin(phi)
-                val cx = 38 + i * (dim!!.width / 2)
+                val cx = 38 + i * (state.prefs.width / 2)
                 val cy = 45
                 val xx = cx + (0.5 - xya * cos(theta)).toInt()
                 val xy = cy + (0.5 + xyb * sin(theta)).toInt()
@@ -213,12 +175,17 @@ class Animator {
         }
     }
 
+    fun drawBackground(g: Graphics) {
+        g.color = ren1.getBackground()
+        g.fillRect(0, 0, state.prefs.width, state.prefs.height)
+    }
+
     // After each cycle through the pattern we need to assign props to new paths,
     // to maintain continuity. After pat.getPeriod() times through this the props
     // will return to their original assignments.
 
     fun advanceProps() {
-        val paths = pat!!.numberOfPaths
+        val paths = state.pattern.numberOfPaths
         val temppropnum = IntArray(paths)
 
         for (i in 0..<paths) {
@@ -227,43 +194,13 @@ class Animator {
         System.arraycopy(temppropnum, 0, animPropNum!!, 0, paths)
     }
 
-    // Rescale the animator so that the pattern and key parts of the juggler
-    // are visible. Call this whenever the pattern changes.
-
-    fun initAnimator(fitToFrame: Boolean = true) {
-        val pattern = pat!!
-        val sg = (jc.showGround == AnimationPrefs.GROUND_ON ||
-                (jc.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
-        ren1!!.setPattern(pattern)
-        ren1!!.setGround(sg)
-        if (jc.stereo) {
-            ren2!!.setPattern(pattern)
-            ren2!!.setGround(sg)
-        }
-
-        if (fitToFrame) {
-            findMaxMin()
-            syncRenderersToSize()
-        }
-
-        // figure out timing constants; this in effect adjusts fps to get an integer
-        // number of frames in one repetition of the pattern
-        numFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * jc.slowdown * jc.fps).toInt()
-        simIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / numFrames
-        realIntervalMillis = (1000.0 * simIntervalSecs * jc.slowdown).toLong()
-
-        animPropNum = IntArray(pattern.numberOfPaths)
-        for (i in 0..<pattern.numberOfPaths) {
-            animPropNum!![i] = pattern.getPropAssignment(i + 1)
-        }
-        invPathPerm = pattern.pathPermutation!!.inverse
-    }
-
     var zoomLevel: Double
-        get() = ren1?.getZoomLevel() ?: 1.0
+        get() = ren1.getZoomLevel()
         set(z) {
-            ren1?.setZoomLevel(z)
-            ren2?.setZoomLevel(z)
+            ren1.setZoomLevel(z)
+            if (state.prefs.stereo) {
+                ren2.setZoomLevel(z)
+            }
         }
 
     // Find the overall bounding box of the juggler and pattern, in real-space
@@ -271,7 +208,7 @@ class Animator {
     // and `overallmax`, which determine a bounding box.
 
     private fun findMaxMin() {
-        val pattern = pat!!
+        val pattern = state.pattern
 
         // Step 1: Work out a bounding box that contains all paths through space
         // for the pattern, including the props
@@ -325,8 +262,8 @@ class Animator {
         // the juggler's rotation angle when `handmax` and `handmin` are
         // achieved. So we create a bounding box that contains the hand
         // regardless of rotation angle.
-        val hwmax = ren1!!.handWindowMax
-        val hwmin = ren1!!.handWindowMin
+        val hwmax = ren1.handWindowMax
+        val hwmin = ren1.handWindowMin
         hwmax.x = max(
             max(abs(hwmax.x), abs(hwmin.x)),
             max(abs(hwmax.y), abs(hwmin.y))
@@ -342,8 +279,8 @@ class Animator {
         // Step 3: Find a bounding box that contains the juggler's body
         // at all times, incorporating any juggler movements as well as the
         // physical extent of the juggler's body.
-        val jwmax = ren1!!.jugglerWindowMax
-        val jwmin = ren1!!.jugglerWindowMin
+        val jwmax = ren1.jugglerWindowMax
+        val jwmin = ren1.jugglerWindowMin
 
         // Step 4: Combine the pattern, hand, and juggler bounding boxes into
         // an overall bounding box.
@@ -369,21 +306,18 @@ class Animator {
     // renderer so it can calculate a zoom factor.
 
     private fun syncRenderersToSize() {
-        val d = Dimension(dim)
-        if (jc.stereo) {
+        val d = Dimension(state.prefs.width, state.prefs.height)
+        if (state.prefs.stereo) {
             d.width /= 2
-            ren1!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
-            ren2!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
+            ren1.initDisplay(d, state.prefs.borderPixels, overallMax!!, overallMin!!)
+            ren2.initDisplay(d, state.prefs.borderPixels, overallMax!!, overallMin!!)
         } else {
-            ren1!!.initDisplay(d, jc.borderPixels, overallMax!!, overallMin!!)
+            ren1.initDisplay(d, state.prefs.borderPixels, overallMax!!, overallMin!!)
         }
     }
 
     val background: Color
-        get() = ren1!!.getBackground()
-
-    val animationPrefs: AnimationPrefs
-        get() = jc
+        get() = ren1.getBackground()
 
     // Output a GIF of the pattern to OutputStream `os`.
     //
@@ -396,14 +330,13 @@ class Animator {
 
     @Throws(IOException::class, JuggleExceptionInternal::class)
     fun writeGIF(os: OutputStream, wgm: WriteGIFMonitor?, fps: Double) {
-        val pattern = pat!!
-        val dimen = dim!!
+        val pattern = state.pattern
         val iw = ImageIO.getImageWritersByFormatName("gif").next()
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
         iw.setOutput(ios)
         iw.prepareWriteSequence(null)
 
-        val image = BufferedImage(dimen.width, dimen.height, BufferedImage.TYPE_INT_RGB)
+        val image = BufferedImage(state.prefs.width, state.prefs.height, BufferedImage.TYPE_INT_RGB)
         val g = image.createGraphics()
         // antialiased rendering creates too many distinct color values for
         // GIF to handle well
@@ -415,9 +348,9 @@ class Animator {
         }
 
         // our own local versions of these three fps-related quantities
-        val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * jc.slowdown * fps).toInt()
+        val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * fps).toInt()
         val gifSimIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / gifNumFrames
-        val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * jc.slowdown).toLong().toDouble()
+        val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * state.prefs.slowdown).toLong().toDouble()
 
         val totalframes = pattern.periodWithProps * gifNumFrames
         var framecount = 0
