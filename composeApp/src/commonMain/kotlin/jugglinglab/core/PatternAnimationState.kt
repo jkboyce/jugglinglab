@@ -85,6 +85,7 @@ class PatternAnimationState(
     val onCameraAngleChange = mutableListOf<() -> Unit>()
     val onZoomChange = mutableListOf<() -> Unit>()
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
+    val onNewPatternUndo = mutableListOf<() -> Unit>()
 
     fun addListener(
         onPatternChange: (() -> Unit)? = null,
@@ -93,7 +94,8 @@ class PatternAnimationState(
         onIsPausedChanged: (() -> Unit)? = null,
         onCameraAngleChange: (() -> Unit)? = null,
         onZoomChange: (() -> Unit)? = null,
-        onSelectedItemHashChange: (() -> Unit)? = null
+        onSelectedItemHashChange: (() -> Unit)? = null,
+        onNewPatternUndo: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
         if (onPrefsChange != null) this.onPrefsChange.add(onPrefsChange)
@@ -102,9 +104,10 @@ class PatternAnimationState(
         if (onCameraAngleChange != null) this.onCameraAngleChange.add(onCameraAngleChange)
         if (onZoomChange != null) this.onZoomChange.add(onZoomChange)
         if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
+        if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
 
-    fun clearListeners() {
+    fun removeAllListeners() {
         onPatternChange.clear()
         onPrefsChange.clear()
         onTimeChange.clear()
@@ -114,5 +117,21 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
     }
 
+    //--------------------------------------------------------------------------
+    // Undo list to support undo/redo for pattern edits
+    //--------------------------------------------------------------------------
 
+    val undoList: MutableList<JMLPattern> = mutableListOf(initialPattern)
+    var undoIndex: Int = 0
+
+    // Add the current pattern to the undo list.
+
+    fun addCurrentToUndoList() {
+        ++undoIndex
+        undoList.add(undoIndex, pattern)
+        while (undoIndex + 1 < undoList.size) {
+            undoList.removeAt(undoIndex + 1)
+        }
+        onNewPatternUndo.forEach { it() }
+    }
 }

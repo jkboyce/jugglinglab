@@ -13,6 +13,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
+import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
@@ -29,8 +30,9 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 class PatternView(
-    state: PatternAnimationState
-) : View(state), DocumentListener {
+    state: PatternAnimationState,
+    patternWindow: PatternWindow
+) : View(state, patternWindow), DocumentListener {
     private val ja: AnimationPanel = AnimationPanel(state)
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
@@ -210,7 +212,7 @@ class PatternView(
                 val config = ta.getText().replace("\n", "").trim { it <= ' ' }
                 val newpat = JMLPattern.fromBasePattern(notation, config)
                 restartView(newpat, null)
-                addToUndoList(newpat)
+                state.addCurrentToUndoList()
             } else if (rbJml.isSelected) {
                 val newpat = JMLPattern.fromJMLString(ta.getText())
                 // set the title in the base pattern
@@ -218,7 +220,7 @@ class PatternView(
                 record.setTitleString(newpat.title)
                 val newpat2 = JMLPattern.fromPatternBuilder(record)
                 restartView(newpat2, null)
-                addToUndoList(newpat2)
+                state.addCurrentToUndoList()
             }
         } catch (jeu: JuggleExceptionUser) {
             lab.setText(jeu.message)
@@ -258,8 +260,8 @@ class PatternView(
 
         updateButtons()
         reloadTextArea()
-        patternWindow?.setTitle(pattern.title)
-        patternWindow?.updateColorsMenu()
+        patternWindow.setTitle(pattern.title)
+        patternWindow.updateColorsMenu()
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -285,7 +287,7 @@ class PatternView(
         val origpause = state.isPaused
         state.update(isPaused = true)
         jsp.isEnabled = false
-        patternWindow?.isResizable = false
+        patternWindow.isResizable = false
 
         val cleanup =
             Runnable {
@@ -293,7 +295,7 @@ class PatternView(
                 state.update(isPaused = origpause)
                 updateButtons()
                 jsp.isEnabled = true
-                patternWindow?.isResizable = true
+                patternWindow.isResizable = true
             }
 
         GIFWriter(ja, f, cleanup)

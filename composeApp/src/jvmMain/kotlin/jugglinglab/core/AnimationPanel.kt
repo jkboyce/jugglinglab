@@ -76,9 +76,6 @@ class AnimationPanel(
     private var lastY: Int = 0
     private var dragcamangle: DoubleArray? = null
 
-    // attached objects to be notified of events
-    private var attachments: MutableList<AnimationAttachment> = mutableListOf()
-
     //----------------------------------
 
     // for when an event is activated/dragged
@@ -210,14 +207,6 @@ class AnimationPanel(
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle() = restartJuggle(null, null)
 
-    fun addToUndoList(pat: JMLPattern) {
-        for (att in attachments) {
-            if (att is LadderDiagram) {
-                att.addToUndoList(pat)
-            }
-        }
-    }
-
     //--------------------------------------------------------------------------
 
     private fun loadAudioClips() {
@@ -342,8 +331,6 @@ class AnimationPanel(
         }
         return result
     }
-
-    fun addAnimationAttachment(att: AnimationAttachment) = attachments.add(att)
 
     override fun run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY)
@@ -512,14 +499,6 @@ class AnimationPanel(
 
     fun disposeAnimation() {
         killAnimationThread()
-    }
-
-    // Interface for other elements to implement, to be notified by
-    // AnimationPanel about simulation time updates, etc.
-
-    interface AnimationAttachment {
-        // AnimationPanel we're attached to
-        fun setAnimationPanel(animPanel: AnimationPanel?)
     }
 
     //--------------------------------------------------------------------------
@@ -708,7 +687,7 @@ class AnimationPanel(
             val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
             if ((eventActive || positionActive) && dragging && mouseMoved) {
-                addToUndoList(state.pattern)
+                state.addCurrentToUndoList()
                 //onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
             }
 

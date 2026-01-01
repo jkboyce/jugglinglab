@@ -31,15 +31,9 @@ import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
 
 abstract class View(
-    val state: PatternAnimationState
+    val state: PatternAnimationState,
+    val patternWindow: PatternWindow
 ) : JPanel() {
-    var patternWindow: PatternWindow? = null
-
-    protected var undo: MutableList<JMLPattern> = mutableListOf()
-
-    var undoIndex: Int = 0
-        protected set
-
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality.
     //
@@ -48,45 +42,17 @@ abstract class View(
     // embed the View in something other than a PatternWindow in the future.
     //--------------------------------------------------------------------------
 
-    // For the PatternWindow to pass into a newly-initialized view.
-
-    fun setUndoList(u: MutableList<JMLPattern>, uIndex: Int) {
-        undo = u
-        undoIndex = uIndex
-    }
-
-    // Add a pattern to the undo list.
-
-    fun addToUndoList(p: JMLPattern) {
-        try {
-            ++undoIndex
-            undo.add(undoIndex, p)
-            while (undoIndex + 1 < undo.size) {
-                undo.removeAt(undoIndex + 1)
-            }
-            patternWindow?.updateUndoMenu()
-        } catch (jeu: JuggleExceptionUser) {
-            // pattern was animated before so user error should not occur
-            jlHandleFatalException(
-                JuggleExceptionInternal(jeu.message ?: "", p)
-            )
-        } catch (jei: JuggleExceptionInternal) {
-            jei.pattern = p
-            jlHandleFatalException(jei)
-        }
-    }
-
     // Undo to the previous save state.
 
     @Throws(JuggleExceptionInternal::class)
     fun undoEdit() {
-        if (undoIndex == 0)
+        if (state.undoIndex == 0)
             return
         try {
-            --undoIndex
-            restartView(undo[undoIndex], null)
-            if (undoIndex == 0 || undoIndex == undo.size - 2) {
-                patternWindow?.updateUndoMenu()
+            --state.undoIndex
+            restartView(state.undoList[state.undoIndex], null)
+            if (state.undoIndex == 0 || state.undoIndex == state.undoList.size - 2) {
+                patternWindow.updateUndoMenu()
             }
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur
@@ -98,13 +64,13 @@ abstract class View(
 
     @Throws(JuggleExceptionInternal::class)
     fun redoEdit() {
-        if (undoIndex == undo.size - 1)
+        if (state.undoIndex == state.undoList.size - 1)
             return
         try {
-            ++undoIndex
-            restartView(undo[undoIndex], null)
-            if (undoIndex == 1 || undoIndex == undo.size - 1) {
-                patternWindow?.updateUndoMenu()
+            ++state.undoIndex
+            restartView(state.undoList[state.undoIndex], null)
+            if (state.undoIndex == 1 || state.undoIndex == state.undoList.size - 1) {
+                patternWindow.updateUndoMenu()
             }
         } catch (jeu: JuggleExceptionUser) {
             // pattern was animated before so user error should not occur

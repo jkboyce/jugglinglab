@@ -9,6 +9,7 @@ package jugglinglab.view
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
+import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -22,9 +23,12 @@ import javax.swing.JPanel
 import kotlin.math.min
 
 class SelectionView(
-    state: PatternAnimationState
-) : View(state) {
-    private val ja: List<AnimationPanel> = List(COUNT) { AnimationPanel(state) }
+    state: PatternAnimationState,
+    patternWindow: PatternWindow
+) : View(state, patternWindow) {
+    private val ja: List<AnimationPanel> = List(COUNT) {
+        AnimationPanel(if (it == CENTER) state else PatternAnimationState(state.pattern, state.prefs))
+    }
     private val layered: JLayeredPane
     private val mutator: Mutator
     private var savedPrefs: AnimationPrefs? = null
@@ -94,7 +98,7 @@ class SelectionView(
                     try {
                         this@SelectionView.restartView(ja[num].state.pattern, null)
                         if (num != CENTER) {
-                            addToUndoList(ja[CENTER].state.pattern)
+                            ja[CENTER].state.addCurrentToUndoList()
                         }
                     } catch (jeu: JuggleExceptionUser) {
                         jlHandleUserException(parent, jeu.message)
@@ -223,8 +227,8 @@ class SelectionView(
             Dimension(state.prefs.width, state.prefs.height))
 
         if (pattern != null) {
-            patternWindow?.setTitle(pattern.title)
-            patternWindow?.updateColorsMenu()
+            patternWindow.setTitle(pattern.title)
+            patternWindow.updateColorsMenu()
         }
     }
 
@@ -261,7 +265,7 @@ class SelectionView(
         }
         val origpause = state.isPaused
         state.update(isPaused = true)
-        patternWindow?.setResizable(false)
+        patternWindow.setResizable(false)
 
         val cleanup =
             Runnable {
@@ -269,7 +273,7 @@ class SelectionView(
                     ap.writingGIF = false
                 }
                 state.update(isPaused = origpause)
-                patternWindow?.setResizable(true)
+                patternWindow.setResizable(true)
             }
 
         GIFWriter(ja[CENTER], f, cleanup)

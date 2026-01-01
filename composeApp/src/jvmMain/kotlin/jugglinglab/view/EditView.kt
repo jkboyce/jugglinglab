@@ -23,16 +23,16 @@ import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
 class EditView(
-    state: PatternAnimationState
-) : View(state) {
+    state: PatternAnimationState,
+    patternWindow: PatternWindow
+) : View(state, patternWindow) {
     private val ap: AnimationPanel = AnimationPanel(state)
-    private val ladder = LadderDiagram(state, patternWindow, this)
+    private val ladder = LadderDiagram(state, patternWindow)
     private val jsp: JSplitPane
 
     init {
         ap.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ap.minimumSize = Dimension(10, 10)
-        ap.addAnimationAttachment(ladder)
         ladder.setAnimationPanel(ap)
 
         val loc = Locale.getDefault()
@@ -68,20 +68,16 @@ class EditView(
         if (changingJugglers && parent != null) {
             // the next line gets the JSplitPane divider to reset during layout
             jsp.resetToPreferredSizes()
-
-            if (patternWindow != null) {
-                val pw2 = patternWindow!!
-                if (pw2.isWindowMaximized) {
-                    pw2.validate()
-                } else {
-                    pw2.pack()
-                }
+            if (patternWindow.isWindowMaximized) {
+                patternWindow.validate()
+            } else {
+                patternWindow.pack()
             }
         } else {
             ladder.validate() // to make ladder redraw
         }
-        patternWindow?.setTitle(pattern.title)
-        patternWindow?.updateColorsMenu()
+        patternWindow.setTitle(pattern.title)
+        patternWindow.updateColorsMenu()
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -106,14 +102,14 @@ class EditView(
         val origpause = state.isPaused
         state.update(isPaused = true)
         jsp.isEnabled = false
-        patternWindow?.isResizable = false
+        patternWindow.isResizable = false
 
         val cleanup =
             Runnable {
                 ap.writingGIF = false
                 state.update(isPaused = origpause)
                 jsp.isEnabled = true
-                patternWindow?.isResizable = true
+                patternWindow.isResizable = true
             }
 
         GIFWriter(ap, f, cleanup)

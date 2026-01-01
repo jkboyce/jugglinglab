@@ -44,13 +44,12 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     lateinit var windowMenu: JMenu
         private set
 
-    private var undo: ArrayList<JMLPattern> = ArrayList()
     private var lastJmlFilename: String? = null
 
     init {
         createMenus()
         createInitialView(pat, jc)
-        view.addToUndoList(pat)
+        updateUndoMenu()
 
         location = nextScreenLocation
         isVisible = true
@@ -99,31 +98,32 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun createInitialView(pat: JMLPattern, jc: AnimationPrefs?) {
-        val jc = jc ?: AnimationPrefs()
+    private fun createInitialView(pattern: JMLPattern, prefs: AnimationPrefs?) {
+        val jc = prefs ?: AnimationPrefs()
         val mode = when {
             (jc.defaultView != AnimationPrefs.VIEW_NONE) -> jc.defaultView
-            (pat.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
+            (pattern.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
                 AnimationPrefs.VIEW_SIMPLE
 
             else -> AnimationPrefs.VIEW_EDIT
         }
-        //viewMode = mode
         viewMenu.getItem(mode - 1).setSelected(true)
 
         val state = PatternAnimationState(
-            initialPattern = pat,
+            initialPattern = pattern,
             initialPrefs = jc
         )
+        state.addListener(onNewPatternUndo = {
+            updateUndoMenu()
+        })
         when (mode) {
             AnimationPrefs.VIEW_NONE -> {}
-            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(state)
-            AnimationPrefs.VIEW_EDIT -> view = EditView(state)
-            AnimationPrefs.VIEW_PATTERN -> view = PatternView(state)
-            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(state)
+            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(state, this)
+            AnimationPrefs.VIEW_EDIT -> view = EditView(state, this)
+            AnimationPrefs.VIEW_PATTERN -> view = PatternView(state, this)
+            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(state, this)
         }
 
-        view.patternWindow = this
         view.setOpaque(true)
         view.isDoubleBuffered = true
         contentPane = view
@@ -133,8 +133,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         setBackground(Color.white)
         pack()
 
-        view.restartView(pat, jc)
-        view.setUndoList(undo, -1)
+        view.restartView(pattern, jc)
     }
 
     @set:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -150,33 +149,28 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             // `mode` is one of the View.VIEW_X constants.
             viewMenu.getItem(mode - 1).setSelected(true)
 
-            // items to carry over from old view to the new
-            val pat = view.state.pattern
-            val jc = view.state.prefs
-            val paused = view.state.isPaused
-            val undoIndex = view.undoIndex
-            val state = view.state
-            state.clearListeners()
-
-            val newview: View = when (mode) {
-                AnimationPrefs.VIEW_SIMPLE -> SimpleView(state)
-                AnimationPrefs.VIEW_EDIT -> EditView(state)
-                AnimationPrefs.VIEW_PATTERN -> PatternView(state)
-                AnimationPrefs.VIEW_SELECTION -> SelectionView(state)
-                else -> throw JuggleExceptionInternal("setViewMode: problem creating view")
+            // move the state from the old view to the new
+            val state = view.state.apply {
+                removeAllListeners()
+                update(selectedItemHashCode = 0)
+                addListener(onNewPatternUndo = { updateUndoMenu() })
             }
 
-            newview.patternWindow = this
-            newview.setOpaque(true)
-            newview.isDoubleBuffered = true
-            state.update(isPaused = paused)
-            contentPane = newview
+            val newview: View = when (mode) {
+                AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this)
+                AnimationPrefs.VIEW_EDIT -> EditView(state, this)
+                AnimationPrefs.VIEW_PATTERN -> PatternView(state, this)
+                AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this)
+                else -> throw JuggleExceptionInternal("setViewMode: problem creating view")
+            }.apply {
+                setOpaque(true)
+                isDoubleBuffered = true
+            }
 
+            contentPane = newview
             if (isWindowMaximized) validate() else pack()
 
-            newview.restartView(pat, jc)
-            newview.setUndoList(undo, undoIndex)
-
+            newview.restartView(state.pattern, state.prefs)
             view.disposeView()
             view = newview
         }
@@ -319,9 +313,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     }
 
     fun updateUndoMenu() {
-        val undoIndex = view.undoIndex
+        val undoIndex = view.state.undoIndex
         val undoEnabled = (undoIndex > 0)
-        val redoEnabled = (undoIndex < undo.size - 1)
+        val redoEnabled = (undoIndex < view.state.undoList.size - 1)
 
         for (i in 0..<viewMenu.itemCount) {
             val jmi = viewMenu.getItem(i)
@@ -425,7 +419,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     try {
                         val newpat = view.state.pattern.withPropColors(colorString)
                         view.restartView(newpat, null)
-                        view.addToUndoList(newpat)
+                        view.state.addCurrentToUndoList()
                     } catch (_: JuggleExceptionUser) {
                         throw JuggleExceptionInternal("Error in FILE_PROPCOLORS")
                     }
@@ -559,7 +553,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     try {
                         val newPat = it.optimize(view.state.pattern)
                         view.restartView(newPat, null)
-                        view.addToUndoList(newPat)
+                        view.state.addCurrentToUndoList()
                     } catch (ite: InvocationTargetException) {
                         // Unwrap the actual exception thrown by the optimizer
                         when (val cause = ite.cause) {
@@ -575,7 +569,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 try {
                     val newpat = view.state.pattern.withInvertedXAxis(flipXCoordinate = false)
                     view.restartView(newpat, null)
-                    view.addToUndoList(newpat)
+                    view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_SWAPHANDS: ${e.message}")
                 }
@@ -585,7 +579,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 try {
                     val newpat = view.state.pattern.withInvertedXAxis()
                     view.restartView(newpat, null)
-                    view.addToUndoList(newpat)
+                    view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_INVERTX: ${e.message}")
                 }
@@ -595,7 +589,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 try {
                     val newpat = view.state.pattern.withInvertedTime()
                     view.restartView(newpat, null)
-                    view.addToUndoList(newpat)
+                    view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_INVERTTIME: ${e.message}")
                 }
@@ -605,7 +599,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.VIEW_ANIMPREFS -> {
                 val jc = view.state.prefs
-                val japd = if (jlIsSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
+                val japd =
+                    if (jlIsSwing()) AnimationPrefsDialogSwing(this) else AnimationPrefsDialog(this)
                 val newjc = japd.getPrefs(jc)
 
                 if (newjc != jc) {
@@ -650,7 +645,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             rec.setTitleString(tf.getText())
             val newpat = JMLPattern.fromPatternBuilder(rec)
             view.restartView(newpat, null)
-            view.addToUndoList(newpat)
+            view.state.addCurrentToUndoList()
             jd.dispose()
         }
 
@@ -705,7 +700,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             if (scale > 0.0) {
                 val newpat = view.state.pattern.withScaledTime(scale)
                 view.restartView(newpat, null)
-                view.addToUndoList(newpat)
+                view.state.addCurrentToUndoList()
             }
             jd.dispose()
         }
@@ -761,7 +756,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         private val TILE_OFFSET: Point = Point(25, 25)
         private var tileLocations: ArrayList<Point> = ArrayList()
         private var nextTileNum: Int = 0
-        
+
         /** Defines the contract for the optional optimizer module. */
         private interface OptimizerWrapper {
             fun optimize(pat: JMLPattern): JMLPattern
@@ -773,11 +768,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         private val optimizerWrapper: OptimizerWrapper? by lazy {
             runCatching {
                 val optimizerClass = Class.forName("jugglinglab.optimizer.Optimizer")
-                val optimizerAvailableMethod: Method = optimizerClass.getMethod("optimizerAvailable")
+                val optimizerAvailableMethod: Method =
+                    optimizerClass.getMethod("optimizerAvailable")
                 val canOptimize = optimizerAvailableMethod.invoke(null) as? Boolean ?: false
 
                 if (canOptimize) {
-                    val optimizeMethod: Method = optimizerClass.getMethod("optimize", JMLPattern::class.java)
+                    val optimizeMethod: Method =
+                        optimizerClass.getMethod("optimize", JMLPattern::class.java)
                     // Return an object that implements our wrapper interface
                     object : OptimizerWrapper {
                         override fun optimize(pat: JMLPattern): JMLPattern =

@@ -9,6 +9,7 @@ package jugglinglab.view
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
+import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -17,8 +18,9 @@ import java.awt.Dimension
 import java.io.File
 
 class SimpleView(
-    state: PatternAnimationState
-) : View(state) {
+    state: PatternAnimationState,
+    patternWindow: PatternWindow
+) : View(state, patternWindow) {
     private val ja: AnimationPanel = AnimationPanel(state)
 
     init {
@@ -38,8 +40,8 @@ class SimpleView(
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
         if (pattern != null) {
-            patternWindow?.setTitle(pattern.title)
-            patternWindow?.updateColorsMenu()
+            patternWindow.setTitle(pattern.title)
+            patternWindow.updateColorsMenu()
         }
     }
 
@@ -63,13 +65,13 @@ class SimpleView(
         ja.writingGIF = true
         val origpause = state.isPaused
         state.update(isPaused = true)
-        patternWindow?.setResizable(false)
+        patternWindow.setResizable(false)
 
         val cleanup =
             Runnable {
                 ja.writingGIF = false
                 state.update(isPaused = origpause)
-                patternWindow?.setResizable(true)
+                patternWindow.setResizable(true)
             }
 
         GIFWriter(ja, f, cleanup)

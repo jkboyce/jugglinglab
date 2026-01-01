@@ -10,7 +10,6 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.AnimationPanel.AnimationAttachment
 import jugglinglab.jml.*
 import jugglinglab.path.Path
 import jugglinglab.path.Path.Companion.newPath
@@ -29,7 +28,6 @@ import jugglinglab.util.jlJfc
 import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.toAwtColor
-import jugglinglab.view.View
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -69,9 +67,8 @@ import kotlin.math.roundToInt
 
 class LadderDiagram(
     val state: PatternAnimationState,
-    val parentFrame: JFrame?,
-    val parentView: View
-) : JPanel(), AnimationAttachment, MouseListener, MouseMotionListener, ActionListener {
+    val parentFrame: JFrame?
+) : JPanel(), MouseListener, MouseMotionListener, ActionListener {
     private var ladderWidth: Int = 0 // pixel dimensions of entire panel
     private var ladderHeight: Int = 0
     private var rightX: Int = 0 // right/left hand pos. for juggler 1 (px)
@@ -129,12 +126,9 @@ class LadderDiagram(
         })
     }
 
-    //--------------------------------------------------------------------------
-    // Methods to handle changes made within this UI
-    //--------------------------------------------------------------------------
-
-    fun addToUndoList(pat: JMLPattern) {
-        parentView.addToUndoList(pat)
+    // target removal
+    fun setAnimationPanel(animPanel: AnimationPanel?) {
+        aep = animPanel
     }
 
     //--------------------------------------------------------------------------
@@ -401,6 +395,88 @@ class LadderDiagram(
         updateTrackerPosition()
     }
 
+    //--------------------------------------------------------------------------
+    // javax.swing.JComponent methods
+    //--------------------------------------------------------------------------
+
+    override fun paintComponent(gr: Graphics) {
+        if (gr is Graphics2D) {
+            gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        }
+
+        if (!paintLadder(gr)) return
+
+        // draw the box around the selected position
+        val api = activePositionItem
+        if (api != null) {
+            gr.color = COLOR_SELECTION
+            gr.drawLine(
+                api.xLow - 1,
+                api.yLow - 1,
+                api.xHigh + 1,
+                api.yLow - 1
+            )
+            gr.drawLine(
+                api.xHigh + 1,
+                api.yLow - 1,
+                api.xHigh + 1,
+                api.yHigh + 1
+            )
+            gr.drawLine(
+                api.xHigh + 1,
+                api.yHigh + 1,
+                api.xLow,
+                api.yHigh + 1
+            )
+            gr.drawLine(
+                api.xLow - 1,
+                api.yHigh + 1,
+                api.xLow - 1,
+                api.yLow - 1
+            )
+        }
+
+        // draw the box around the selected event
+        val aei = activeEventItem
+        if (aei != null) {
+            gr.color = COLOR_SELECTION
+            gr.drawLine(
+                aei.xLow - 1,
+                aei.yLow - 1,
+                aei.xHigh + 1,
+                aei.yLow - 1
+            )
+            gr.drawLine(
+                aei.xHigh + 1,
+                aei.yLow - 1,
+                aei.xHigh + 1,
+                aei.yHigh + 1
+            )
+            gr.drawLine(
+                aei.xHigh + 1,
+                aei.yHigh + 1,
+                aei.xLow,
+                aei.yHigh + 1
+            )
+            gr.drawLine(
+                aei.xLow - 1,
+                aei.yHigh + 1,
+                aei.xLow - 1,
+                aei.yLow - 1
+            )
+        }
+
+        // label the tracker line with the time
+        if (guiState == STATE_MOVING_TRACKER) {
+            gr.color = COLOR_TRACKER
+            gr.drawString(
+                jlToStringRounded(state.time, 2) + " s",
+                ladderWidth / 2 - 18,
+                trackerY - 5
+            )
+        }
+    }
+
     // Paint the ladder on the screen.
     //
     // Return true if ladder was drawn successfully, false otherwise.
@@ -665,8 +741,6 @@ class LadderDiagram(
             get() = position.jlHashCode
     }
 
-    // Mouse-related items below
-
     //--------------------------------------------------------------------------
     // java.awt.event.MouseListener methods
     //--------------------------------------------------------------------------
@@ -851,7 +925,7 @@ class LadderDiagram(
                         guiState = STATE_INACTIVE
                         if (deltaY != 0) {
                             deltaY = 0
-                            addToUndoList(state.pattern)
+                            state.addCurrentToUndoList()
                         } else if (itemWasSelected) {
                             // clicked without moving --> deselect
                             state.update(selectedItemHashCode = 0)
@@ -862,7 +936,7 @@ class LadderDiagram(
                         guiState = STATE_INACTIVE
                         if (deltaY != 0) {
                             deltaY = 0
-                            addToUndoList(state.pattern)
+                            state.addCurrentToUndoList()
                         } else if (itemWasSelected) {
                             state.update(selectedItemHashCode = 0)
                         }
@@ -1348,7 +1422,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = newEvent.jlHashCode
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1365,7 +1439,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = 0
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     private fun addPositionToJuggler() {
@@ -1407,7 +1481,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = pos.jlHashCode
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1423,7 +1497,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = 0
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1576,7 +1650,7 @@ class LadderDiagram(
 
             val newPattern = JMLPattern.fromPatternBuilder(rec)
             state.update(pattern = newPattern)
-            addToUndoList(newPattern)
+            state.addCurrentToUndoList()
             jd.dispose()
         }
 
@@ -1694,7 +1768,7 @@ class LadderDiagram(
             record.events[index] = newPrimary
             val newPattern = JMLPattern.fromPatternBuilder(record)
             state.update(pattern = newPattern)
-            addToUndoList(newPattern)
+            state.addCurrentToUndoList()
             jd.dispose()
         }
 
@@ -1745,7 +1819,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = code
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -1770,7 +1844,7 @@ class LadderDiagram(
             pattern = newPattern,
             selectedItemHashCode = code
         )
-        addToUndoList(newPattern)
+        state.addCurrentToUndoList()
     }
 
     // Helper for defineProp() and defineThrow().
@@ -1980,96 +2054,6 @@ class LadderDiagram(
         if (guiState == STATE_POPUP) {
             guiState = STATE_INACTIVE
             aep?.isPaused = animPaused
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    // AnimationPanel.AnimationAttachment methods
-    //--------------------------------------------------------------------------
-
-    override fun setAnimationPanel(animPanel: AnimationPanel?) {
-        aep = animPanel
-    }
-
-    //--------------------------------------------------------------------------
-    // javax.swing.JComponent methods
-    //--------------------------------------------------------------------------
-
-    override fun paintComponent(gr: Graphics) {
-        if (gr is Graphics2D) {
-            gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        }
-
-        if (!paintLadder(gr)) return
-
-        // draw the box around the selected position
-        val api = activePositionItem
-        if (api != null) {
-            gr.color = COLOR_SELECTION
-            gr.drawLine(
-                api.xLow - 1,
-                api.yLow - 1,
-                api.xHigh + 1,
-                api.yLow - 1
-            )
-            gr.drawLine(
-                api.xHigh + 1,
-                api.yLow - 1,
-                api.xHigh + 1,
-                api.yHigh + 1
-            )
-            gr.drawLine(
-                api.xHigh + 1,
-                api.yHigh + 1,
-                api.xLow,
-                api.yHigh + 1
-            )
-            gr.drawLine(
-                api.xLow - 1,
-                api.yHigh + 1,
-                api.xLow - 1,
-                api.yLow - 1
-            )
-        }
-
-        // draw the box around the selected event
-        val aei = activeEventItem
-        if (aei != null) {
-            gr.color = COLOR_SELECTION
-            gr.drawLine(
-                aei.xLow - 1,
-                aei.yLow - 1,
-                aei.xHigh + 1,
-                aei.yLow - 1
-            )
-            gr.drawLine(
-                aei.xHigh + 1,
-                aei.yLow - 1,
-                aei.xHigh + 1,
-                aei.yHigh + 1
-            )
-            gr.drawLine(
-                aei.xHigh + 1,
-                aei.yHigh + 1,
-                aei.xLow,
-                aei.yHigh + 1
-            )
-            gr.drawLine(
-                aei.xLow - 1,
-                aei.yHigh + 1,
-                aei.xLow - 1,
-                aei.yLow - 1
-            )
-        }
-
-        // label the tracker line with the time
-        if (guiState == STATE_MOVING_TRACKER) {
-            gr.color = COLOR_TRACKER
-            gr.drawString(
-                jlToStringRounded(state.time, 2) + " s",
-                ladderWidth / 2 - 18,
-                trackerY - 5
-            )
         }
     }
 
