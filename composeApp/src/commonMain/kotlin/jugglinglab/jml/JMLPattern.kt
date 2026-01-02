@@ -124,13 +124,13 @@ data class JMLPattern(
         for (i in 0..<size) {
             if (done[i]) continue
 
-            val cycle = perm.cycleOf(i + 1)
+            val cycle = perm.cycleOf(i + 1).toMutableList()
             for (j in 0..<cycle.size) {
                 done[cycle[j] - 1] = true
                 cycle[j] = propAssignment[cycle[j] - 1]
             }
-            // find the period of the current cycle
-            for (cperiod in 1..<cycle.size) {
+            // find the period `cperiod` of the current cycle
+            for (cperiod in 1..cycle.size) {
                 if (cycle.size % cperiod != 0) continue
 
                 var matches = true
