@@ -273,18 +273,18 @@ class Permutation {
         return reverses
     }
 
-    fun equals(p: Permutation?): Boolean {
-        if (p == null) {
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Permutation) {
             return false
         }
-        if (reverses != p.hasReverses()) {
+        if (reverses != other.hasReverses()) {
             return false
         }
-        if (this.size != p.size) {
+        if (size != other.size) {
             return false
         }
-        for (i in 1..this.size) {
-            if (map(i) != p.map(i)) {
+        for (i in 1..size) {
+            if (map(i) != other.map(i)) {
                 return false
             }
         }
@@ -413,16 +413,16 @@ class Permutation {
         return ord
     }
 
-    fun cycleOf(elem: Int): IntArray {
+    fun cycleOf(elem: Int): List<Int> {
         val ord = orderOf(elem)
-        val result = IntArray(ord)
         var term = elem
 
-        for (i in 0..<ord) {
-            result[i] = term
-            term = mapping[if (reverses) term + size else term - 1]
+        return buildList {
+            repeat (ord) {
+                add(term)
+                term = mapping[if (reverses) term + size else term - 1]
+            }
         }
-        return result
     }
 
     companion object {
