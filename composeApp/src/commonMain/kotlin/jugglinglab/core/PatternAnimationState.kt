@@ -29,9 +29,10 @@ class PatternAnimationState(
     var time: Double by mutableStateOf(initialPattern.loopStartTime)
     var isPaused: Boolean by mutableStateOf(initialPrefs.startPaused)
     //var clock: Long by mutableStateOf(0L)
-    var cameraAngle: List<Double> by mutableStateOf(defaultCameraAngle())  // radians
+    var cameraAngle: List<Double> by mutableStateOf(initialCameraAngle())  // radians
     var zoom: Double by mutableStateOf(1.0)
     var selectedItemHashCode: Int by mutableStateOf(0)
+    var propForPath: List<Int> by mutableStateOf(initialPropForPath())
 
     //--------------------------------------------------------------------------
     // Helper to update the state and notify listeners
@@ -44,7 +45,8 @@ class PatternAnimationState(
         isPaused: Boolean? = null,
         cameraAngle: List<Double>? = null,
         zoom: Double? = null,
-        selectedItemHashCode: Int? = null
+        selectedItemHashCode: Int? = null,
+        propForPath: List<Int>? = null
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs
@@ -53,6 +55,7 @@ class PatternAnimationState(
         if (cameraAngle != null) this.cameraAngle = cameraAngle
         if (zoom != null) this.zoom = zoom
         if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
+        if (propForPath != null) this.propForPath = propForPath
         
         if (pattern != null) {
             onPatternChange.forEach { it() }
@@ -75,6 +78,9 @@ class PatternAnimationState(
         if (selectedItemHashCode != null) {
             onSelectedItemHashChange.forEach { it() }
         }
+        if (propForPath != null) {
+            onPropForPathChange.forEach { it() }
+        }
     }
 
     // callbacks
@@ -85,6 +91,7 @@ class PatternAnimationState(
     val onCameraAngleChange = mutableListOf<() -> Unit>()
     val onZoomChange = mutableListOf<() -> Unit>()
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
+    val onPropForPathChange = mutableListOf<() -> Unit>()
     val onNewPatternUndo = mutableListOf<() -> Unit>()
 
     fun addListener(
@@ -95,6 +102,7 @@ class PatternAnimationState(
         onCameraAngleChange: (() -> Unit)? = null,
         onZoomChange: (() -> Unit)? = null,
         onSelectedItemHashChange: (() -> Unit)? = null,
+        onPropForPathChange: (() -> Unit)? = null,
         onNewPatternUndo: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
@@ -104,6 +112,7 @@ class PatternAnimationState(
         if (onCameraAngleChange != null) this.onCameraAngleChange.add(onCameraAngleChange)
         if (onZoomChange != null) this.onZoomChange.add(onZoomChange)
         if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
+        if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
 
@@ -115,11 +124,13 @@ class PatternAnimationState(
         onCameraAngleChange.clear()
         onZoomChange.clear()
         onSelectedItemHashChange.clear()
+        onPropForPathChange.clear()
+        onNewPatternUndo.clear()
     }
 
-    // Return the default camera angle for the current pattern.
+    // Return the initial camera angle for the current pattern.
 
-    fun defaultCameraAngle(): List<Double> {
+    fun initialCameraAngle(): List<Double> {
         val ca = DoubleArray(2)
         if (prefs.defaultCameraAngle != null) {
             ca[0] = Math.toRadians(prefs.defaultCameraAngle!![0])
@@ -135,6 +146,26 @@ class PatternAnimationState(
             }
         }
         return ca.toList()
+    }
+
+    // Return the initial mapping of paths to props, for the current pattern.
+
+    fun initialPropForPath(): List<Int> {
+        return (1..pattern.numberOfPaths).map { pattern.getPropAssignment(it) }
+    }
+
+    // Advance the path-to-prop mapping after a cycle through the pattern.
+    // After pattern.periodWithProps times through this the props return to
+    // their initial assignments.
+
+    fun advancePropForPath() {
+        val paths = pattern.numberOfPaths
+        val newPropForPath = IntArray(paths)
+        val inversePathPerm = pattern.pathPermutation!!.inverse
+        for (i in 0..<paths) {
+            newPropForPath[inversePathPerm.map(i + 1) - 1] = propForPath[i]
+        }
+        update(propForPath = newPropForPath.toList())
     }
 
     //--------------------------------------------------------------------------

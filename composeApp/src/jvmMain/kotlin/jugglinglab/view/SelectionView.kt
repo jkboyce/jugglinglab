@@ -75,7 +75,7 @@ class SelectionView(
     private fun makeAnimationGrid(): JPanel {
         val grid = JPanel(GridLayout(ROWS, COLUMNS))
         for (ap in ja) {
-            ap.state.update(cameraAngle = ap.state.defaultCameraAngle())
+            ap.state.update(cameraAngle = ap.state.initialCameraAngle())
             grid.add(ap)
         }
 

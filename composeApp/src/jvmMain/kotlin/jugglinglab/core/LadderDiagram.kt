@@ -87,8 +87,6 @@ class LadderDiagram(
 
     //---------------------
 
-    private var aep: AnimationPanel? = null
-
     private var activeEventItem: LadderEventItem? = null
     private var activePositionItem: LadderPositionItem? = null
     private var itemWasSelected: Boolean = false // for detecting de-selecting clicks
@@ -126,11 +124,6 @@ class LadderDiagram(
                 repaint()
             }
         })
-    }
-
-    // target removal
-    fun setAnimationPanel(animPanel: AnimationPanel?) {
-        aep = animPanel
     }
 
     //--------------------------------------------------------------------------
@@ -632,7 +625,7 @@ class LadderDiagram(
         }
 
         // draw events
-        val animpropnum: IntArray? = aep?.animator?.animPropNum
+        val animpropnum = state.propForPath
 
         for (item in ladderEventItems) {
             if (item.type == LadderItem.TYPE_EVENT) {
@@ -640,14 +633,10 @@ class LadderDiagram(
                 g.fillOval(item.xLow, item.yLow, item.xHigh - item.xLow, item.yHigh - item.yLow)
             } else {
                 if (item.yLow >= BORDER_TOP || item.yHigh <= ladderHeight + BORDER_TOP) {
-                    if (animpropnum == null) {
-                        g.color = COLOR_BACKGROUND
-                    } else {
-                        // color ball representation with the prop's color
-                        val tr = item.event.transitions[item.transNum]
-                        val propnum = animpropnum[tr.path - 1]
-                        g.color = state.pattern.getProp(propnum).getEditorColor().toAwtColor()
-                    }
+                    // color ball representation with the prop's color
+                    val tr = item.event.transitions[item.transNum]
+                    val propnum = animpropnum[tr.path - 1]
+                    g.color = state.pattern.getProp(propnum).getEditorColor().toAwtColor()
                     g.fillOval(
                         item.xLow,
                         item.yLow,
@@ -748,11 +737,6 @@ class LadderDiagram(
     //--------------------------------------------------------------------------
 
     override fun mousePressed(me: MouseEvent) {
-        val aep2 = aep
-        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
-            return
-        }
-
         try {
             var my = me.getY()
             my = min(max(my, BORDER_TOP), ladderHeight - BORDER_TOP)
@@ -838,14 +822,12 @@ class LadderDiagram(
                         if (needsHandling) {
                             guiState = STATE_MOVING_TRACKER
                             trackerY = my
-                            if (aep2 != null) {
-                                val scale =
-                                    ((state.pattern.loopEndTime - state.pattern.loopStartTime)
-                                        / (ladderHeight - 2 * BORDER_TOP).toDouble())
-                                val newTime = (my - BORDER_TOP).toDouble() * scale
-                                animPaused = state.isPaused
-                                state.update(isPaused = true, time = newTime, selectedItemHashCode = 0)
-                            }
+                            val scale =
+                                ((state.pattern.loopEndTime - state.pattern.loopStartTime)
+                                    / (ladderHeight - 2 * BORDER_TOP).toDouble())
+                            val newTime = (my - BORDER_TOP).toDouble() * scale
+                            animPaused = state.isPaused
+                            state.update(isPaused = true, time = newTime, selectedItemHashCode = 0)
                         }
                     }
 
@@ -863,11 +845,6 @@ class LadderDiagram(
     }
 
     override fun mouseReleased(me: MouseEvent) {
-        val aep2 = aep
-        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
-            return
-        }
-
         try {
             // on Windows the popup triggers here
             if (me.isPopupTrigger) {
@@ -960,11 +937,6 @@ class LadderDiagram(
     //--------------------------------------------------------------------------
 
     override fun mouseDragged(me: MouseEvent) {
-        val aep2 = aep
-        if (aep2 != null && (aep2.writingGIF || !aep2.engineAnimating)) {
-            return
-        }
-
         try {
             val my = min(max(me.getY(), BORDER_TOP), ladderHeight - BORDER_TOP)
 
@@ -1509,8 +1481,8 @@ class LadderDiagram(
             pn = (popupItem as LadderPathItem).pathNum
         }
 
-        val animpropnum = aep!!.animator.animPropNum
-        val propnum = animpropnum!![pn - 1]
+        val animpropnum = state.propForPath
+        val propnum = animpropnum[pn - 1]
         val startprop = state.pattern.getProp(propnum)
         val prtypes: List<String> = Prop.builtinProps
 

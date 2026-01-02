@@ -134,6 +134,7 @@ class AnimationPanel(
             try {
                 animator.changeAnimatorPattern(fitToFrame = true)
                 buildSelectionView()
+                state.update(propForPath = state.initialPropForPath())
                 if (state.isPaused) {
                     repaint()
                 }
@@ -216,8 +217,9 @@ class AnimationPanel(
         if (newjc != null) state.update(prefs = newjc)
         state.update(
             isPaused = state.prefs.startPaused,
-            cameraAngle = state.defaultCameraAngle(),
-            zoom = 1.0
+            cameraAngle = state.initialCameraAngle(),
+            zoom = 1.0,
+            propForPath = state.initialPropForPath()
         )
 
         engine = Thread(this).apply { start() }
@@ -439,7 +441,7 @@ class AnimationPanel(
                         }
                     }
                 }
-                animator.advanceProps()
+                state.advancePropForPath()
             }
         } catch (_: InterruptedException) {
         }

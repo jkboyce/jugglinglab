@@ -224,7 +224,7 @@ class Renderer2D : Renderer() {
 
     @Suppress("LocalVariableName")
     @Throws(JuggleExceptionInternal::class)
-    override fun drawFrame(time: Double, pnum: IntArray, hideJugglers: List<Int>, g: Graphics) {
+    override fun drawFrame(time: Double, pnum: List<Int>, hideJugglers: List<Int>, g: Graphics) {
         var numobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
 
         // first reset the objects in the object pool

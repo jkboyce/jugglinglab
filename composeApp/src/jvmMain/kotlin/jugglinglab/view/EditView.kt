@@ -33,7 +33,6 @@ class EditView(
     init {
         ap.preferredSize = Dimension(state.prefs.width, state.prefs.height)
         ap.minimumSize = Dimension(10, 10)
-        ladder.setAnimationPanel(ap)
 
         val loc = Locale.getDefault()
         if (ComponentOrientation.getOrientation(loc) == ComponentOrientation.LEFT_TO_RIGHT) {

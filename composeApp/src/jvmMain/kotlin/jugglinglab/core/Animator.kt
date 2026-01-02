@@ -20,7 +20,6 @@ import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.max
 import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.JuggleExceptionInternal
-import jugglinglab.util.Permutation
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -52,9 +51,6 @@ class Animator(
         private set
     var realIntervalMillis: Long = 0
         private set
-    var animPropNum: IntArray? = null
-        private set
-    private var invPathPerm: Permutation? = null
 
     init {
         // sync the renderers to the initial pattern
@@ -87,12 +83,6 @@ class Animator(
         numFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * state.prefs.fps).toInt()
         simIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / numFrames
         realIntervalMillis = (1000.0 * simIntervalSecs * state.prefs.slowdown).toLong()
-
-        animPropNum = IntArray(pattern.numberOfPaths)
-        for (i in 0..<pattern.numberOfPaths) {
-            animPropNum!![i] = pattern.getPropAssignment(i + 1)
-        }
-        invPathPerm = pattern.pathPermutation!!.inverse
     }
 
     // Propagate a change in camera angle to the renderers.
@@ -124,18 +114,20 @@ class Animator(
         }
 
         if (state.prefs.stereo) {
-            val apn = animPropNum!!
             ren1.drawFrame(
-                simTime, apn, state.prefs.hideJugglers, g.create(0, 0, state.prefs.width / 2, state.prefs.height)
+                simTime,
+                state.propForPath,
+                state.prefs.hideJugglers,
+                g.create(0, 0, state.prefs.width / 2, state.prefs.height)
             )
             ren2.drawFrame(
                 simTime,
-                apn,
+                state.propForPath,
                 state.prefs.hideJugglers,
                 g.create(state.prefs.width / 2, 0, state.prefs.width / 2, state.prefs.height)
             )
         } else {
-            ren1.drawFrame(simTime, animPropNum!!, state.prefs.hideJugglers, g)
+            ren1.drawFrame(simTime, state.propForPath, state.prefs.hideJugglers, g)
         }
 
         if (drawAxes) {
@@ -178,20 +170,6 @@ class Animator(
     fun drawBackground(g: Graphics) {
         g.color = ren1.getBackground()
         g.fillRect(0, 0, state.prefs.width, state.prefs.height)
-    }
-
-    // After each cycle through the pattern we need to assign props to new paths,
-    // to maintain continuity. After pat.getPeriod() times through this the props
-    // will return to their original assignments.
-
-    fun advanceProps() {
-        val paths = state.pattern.numberOfPaths
-        val temppropnum = IntArray(paths)
-
-        for (i in 0..<paths) {
-            temppropnum[invPathPerm!!.map(i + 1) - 1] = animPropNum!![i]
-        }
-        System.arraycopy(temppropnum, 0, animPropNum!!, 0, paths)
     }
 
     var zoomLevel: Double
@@ -340,9 +318,7 @@ class Animator(
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
 
         // reset prop assignments to generate an identical GIF every time
-        for (i in 0..<pattern.numberOfPaths) {
-            animPropNum!![i] = pattern.getPropAssignment(i + 1)
-        }
+        state.update(propForPath = state.initialPropForPath())
 
         // our own local versions of these three fps-related quantities
         val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * fps).toInt()
@@ -385,7 +361,7 @@ class Animator(
                 }
             }
 
-            advanceProps()
+            state.advancePropForPath()
         }
 
         g.dispose()
