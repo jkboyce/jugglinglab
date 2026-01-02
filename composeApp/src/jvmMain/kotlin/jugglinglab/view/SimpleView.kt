@@ -15,7 +15,6 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.io.File
 
 class SimpleView(
     state: PatternAnimationState,
@@ -59,21 +58,5 @@ class SimpleView(
 
     override fun disposeView() {
         ja.disposeAnimation()
-    }
-
-    override fun writeGIF(f: File) {
-        ja.writingGIF = true
-        val origpause = state.isPaused
-        state.update(isPaused = true)
-        patternWindow.setResizable(false)
-
-        val cleanup =
-            Runnable {
-                ja.writingGIF = false
-                state.update(isPaused = origpause)
-                patternWindow.setResizable(true)
-            }
-
-        GIFWriter(ja, f, cleanup)
     }
 }

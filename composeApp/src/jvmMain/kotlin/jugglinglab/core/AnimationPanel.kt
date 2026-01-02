@@ -55,8 +55,7 @@ class AnimationPanel(
 ) : JPanel(), Runnable, MouseListener, MouseMotionListener {
     val drawer: FrameDrawer = FrameDrawer(state)
     private var engine: Thread? = null
-    var engineAnimating: Boolean = false
-    var writingGIF: Boolean = false
+    var animationRunning: Boolean = false
     var message: String? = null
 
     private var catchclip: Clip? = null
@@ -169,12 +168,11 @@ class AnimationPanel(
         })
         state.addListener(onZoomChange = {
             try {
-                if (!writingGIF) {
-                    drawer.zoomLevel = state.zoom
-                    buildSelectionView()
-                    if (state.isPaused) {
-                        repaint()
-                    }                }
+                drawer.zoomLevel = state.zoom
+                buildSelectionView()
+                if (state.isPaused) {
+                    repaint()
+                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
@@ -264,8 +262,7 @@ class AnimationPanel(
             object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent?) {
                     try {
-                        if (!engineAnimating) return
-                        if (writingGIF) return
+                        if (!animationRunning) return
 
                         // Don't update the preferred animation size if the enclosing
                         // window is maximized
@@ -345,7 +342,7 @@ class AnimationPanel(
 
     override fun run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY)
-        engineAnimating = false
+        animationRunning = false
 
         if (state.prefs.mousePause) {
             waspaused = state.prefs.startPaused
@@ -377,7 +374,7 @@ class AnimationPanel(
                 waspaused = false
             }
 
-            engineAnimating = true
+            animationRunning = true
 
             while (true) {
                 state.update(time = state.pattern.loopStartTime)
@@ -461,7 +458,7 @@ class AnimationPanel(
         } catch (_: InterruptedException) {
         } finally {
             engine = null
-            engineAnimating = false
+            animationRunning = false
             message = null
         }
     }
@@ -501,8 +498,7 @@ class AnimationPanel(
         // the component; we want to not treat this as a click, but just use it
         // to get focus back.
         if (state.prefs.mousePause && lastpress == lastenter) return
-        if (!engineAnimating) return
-        if (writingGIF) return
+        if (!animationRunning) return
 
         try {
             startX = me.getX()
@@ -665,8 +661,7 @@ class AnimationPanel(
 
     override fun mouseReleased(me: MouseEvent) {
         if (state.prefs.mousePause && lastpress == lastenter) return
-        if (writingGIF) return
-        if (!engineAnimating && engine != null && engine!!.isAlive) {
+        if (!animationRunning && engine != null && engine!!.isAlive) {
             state.update(isPaused = !state.isPaused)
             return
         }
@@ -709,7 +704,7 @@ class AnimationPanel(
 
     override fun mouseEntered(me: MouseEvent) {
         lastenter = me.getWhen()
-        if (state.prefs.mousePause && !writingGIF) {
+        if (state.prefs.mousePause) {
             state.update(isPaused = waspaused)
         }
         outside = false
@@ -717,7 +712,7 @@ class AnimationPanel(
     }
 
     override fun mouseExited(me: MouseEvent?) {
-        if (state.prefs.mousePause && !writingGIF) {
+        if (state.prefs.mousePause) {
             waspaused = state.isPaused
             state.update(isPaused = true)
         }
@@ -730,8 +725,7 @@ class AnimationPanel(
     //--------------------------------------------------------------------------
 
     override fun mouseDragged(me: MouseEvent) {
-        if (!engineAnimating) return
-        if (writingGIF) return
+        if (!animationRunning) return
 
         try {
             if (dragging) {
@@ -1650,7 +1644,7 @@ class AnimationPanel(
 
         if (message != null) {
             drawString(message!!, g)
-        } else if (!writingGIF) {
+        } else {
             try {
                 drawer.drawBackground(g)
                 drawGrid(g)

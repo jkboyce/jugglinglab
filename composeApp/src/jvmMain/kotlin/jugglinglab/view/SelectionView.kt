@@ -17,7 +17,6 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.*
 import java.awt.event.*
-import java.io.File
 import javax.swing.JLayeredPane
 import javax.swing.JPanel
 import kotlin.math.min
@@ -264,26 +263,6 @@ class SelectionView(
         for (ap in ja) {
             ap.disposeAnimation()
         }
-    }
-
-    override fun writeGIF(f: File) {
-        for (ap in ja) {
-            ap.writingGIF = true
-        }
-        val origpause = state.isPaused
-        state.update(isPaused = true)
-        patternWindow.setResizable(false)
-
-        val cleanup =
-            Runnable {
-                for (ap in ja) {
-                    ap.writingGIF = false
-                }
-                state.update(isPaused = origpause)
-                patternWindow.setResizable(true)
-            }
-
-        GIFWriter(ja[CENTER], f, cleanup)
     }
 
     companion object {

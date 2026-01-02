@@ -24,7 +24,6 @@ import jugglinglab.util.jlConstraints
 import jugglinglab.util.jlGetStringResource
 import java.awt.*
 import java.awt.event.ActionEvent
-import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -148,18 +147,9 @@ class PatternView(
         revert.addActionListener { _: ActionEvent? -> revertPattern() }
     }
 
-    // Update the button configs when a radio button is pressed, the base
-    // pattern or JML pattern changes, or we start/stop writing an animated GIF.
+    // Update the button configs when a radio button is pressed or the base
+    // pattern or JML pattern changes.
     private fun updateButtons() {
-        if (ja.writingGIF) {
-            // writing a GIF
-            rbBp.setEnabled(false)
-            rbJml.setEnabled(false)
-            compile.setEnabled(false)
-            revert.setEnabled(false)
-            return
-        }
-
         if (!state.pattern.hasBasePattern) {
             // no base pattern set
             rbBp.setEnabled(false)
@@ -279,26 +269,6 @@ class PatternView(
 
     override fun disposeView() {
         ja.disposeAnimation()
-    }
-
-    override fun writeGIF(f: File) {
-        ja.writingGIF = true
-        updateButtons()
-        val origpause = state.isPaused
-        state.update(isPaused = true)
-        jsp.isEnabled = false
-        patternWindow.isResizable = false
-
-        val cleanup =
-            Runnable {
-                ja.writingGIF = false
-                state.update(isPaused = origpause)
-                updateButtons()
-                jsp.isEnabled = true
-                patternWindow.isResizable = true
-            }
-
-        GIFWriter(ja, f, cleanup)
     }
 
     //--------------------------------------------------------------------------

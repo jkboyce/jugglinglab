@@ -17,8 +17,7 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.ComponentOrientation
 import java.awt.Dimension
-import java.io.File
-import java.util.*
+import java.util.Locale
 import javax.swing.JSplitPane
 import javax.swing.border.EmptyBorder
 
@@ -94,23 +93,5 @@ class EditView(
 
     override fun disposeView() {
         ap.disposeAnimation()
-    }
-
-    override fun writeGIF(f: File) {
-        ap.writingGIF = true
-        val origpause = state.isPaused
-        state.update(isPaused = true)
-        jsp.isEnabled = false
-        patternWindow.isResizable = false
-
-        val cleanup =
-            Runnable {
-                ap.writingGIF = false
-                state.update(isPaused = origpause)
-                jsp.isEnabled = true
-                patternWindow.isResizable = true
-            }
-
-        GIFWriter(ap, f, cleanup)
     }
 }

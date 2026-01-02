@@ -11,12 +11,12 @@
 package jugglinglab.view
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
+import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
@@ -107,19 +107,32 @@ abstract class View(
 
     abstract fun disposeView()
 
-    abstract fun writeGIF(f: File)
-
     //--------------------------------------------------------------------------
-    // Utility class for the various View subclasses to use for writing GIFs.
-    // This does the processing in a thread separate from the EDT.
+    // Saving animated GIFs
     //--------------------------------------------------------------------------
 
-    protected inner class GIFWriter(
-        private val ap: AnimationPanel,
-        private val file: File,
-        private val cleanup: Runnable?
+    fun writeGIF(f: File) {
+        var jc = state.prefs
+        if (jc.fps == AnimationPrefs.FPS_DEF) {
+            jc = AnimationPrefs(fps = 33.3)  // default frames per sec for GIFs
+            // Note the GIF header specifies inter-frame delay in terms of
+            // hundredths of a second, so only `fps` values like 50, 33 1/3,
+            // 25, 20, ... are precisely achieveable.
+        }
+        val gifState = PatternAnimationState(state.pattern, jc)
+        gifState.cameraAngle = state.cameraAngle
+
+        GIFWriter(gifState, f, null)
+    }
+
+    // Utility class for writing GIFs on a thread separate from the EDT.
+
+    inner class GIFWriter(
+        val gifState: PatternAnimationState,
+        val file: File,
+        val cleanup: Runnable?
     ) : Thread() {
-        private val pm =
+        val pm =
             ProgressMonitor(
                 patternWindow,
                 jlGetStringResource(Res.string.gui_saving_animated_gif),
@@ -127,37 +140,29 @@ abstract class View(
                 0,
                 1
             )
-        private val wgm: WriteGIFMonitor
-        private val fps: Double
+
+        val wgm = object : WriteGIFMonitor {
+            override fun update(step: Int, stepsTotal: Int) {
+                SwingUtilities.invokeLater {
+                    pm.setMaximum(stepsTotal)
+                    pm.setProgress(step)
+                }
+            }
+
+            override val isCanceled: Boolean
+                get() = (pm.isCanceled() || interrupted())
+        }
 
         init {
             pm.millisToPopup = 200
-
-            wgm = object : WriteGIFMonitor {
-                override fun update(step: Int, stepsTotal: Int) {
-                    SwingUtilities.invokeLater {
-                        pm.setMaximum(stepsTotal)
-                        pm.setProgress(step)
-                    }
-                }
-
-                override val isCanceled: Boolean
-                    get() = (pm.isCanceled() || interrupted())
-            }
-
-            val jc = ap.state.prefs
-            fps = if (jc.fps == AnimationPrefs.FPS_DEF) 33.3 else jc.fps
-
-            // Note the GIF header specifies inter-frame delay in terms of
-            // hundredths of a second, so only `fps` values like 50, 33 1/3,
-            // 25, 20, ... are precisely achieveable.
             setPriority(MIN_PRIORITY)
             start()
         }
 
         override fun run() {
             try {
-                ap.drawer.writeGIF(FileOutputStream(file), wgm, fps)
+                val drawer = FrameDrawer(gifState)
+                drawer.writeGIF(FileOutputStream(file), wgm, gifState.prefs.fps)
             } catch (_: IOException) {
                 val message = jlGetStringResource(Res.string.error_writing_file, file.toString())
                 jlHandleUserException(parent, message)
