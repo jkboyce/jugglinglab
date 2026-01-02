@@ -24,6 +24,7 @@ import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
+import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleException
@@ -621,8 +622,8 @@ object JugglingLab {
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
                 // 25, 20, ... are precisely achieveable.
             }
-            val anim = Animator(PatternAnimationState(pat, jc))
-            anim.writeGIF(FileOutputStream(outpath.toFile()), null, jc.fps)
+            val drawer = FrameDrawer(PatternAnimationState(pat, jc))
+            drawer.writeGIF(FileOutputStream(outpath.toFile()), null, jc.fps)
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")
         } catch (jei: JuggleExceptionInternal) {

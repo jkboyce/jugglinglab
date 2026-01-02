@@ -29,6 +29,7 @@ import kotlin.math.abs
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPosition
 import jugglinglab.jml.PatternBuilder
+import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
@@ -52,7 +53,7 @@ import kotlin.math.sin
 class AnimationPanel(
     val state: PatternAnimationState
 ) : JPanel(), Runnable, MouseListener, MouseMotionListener {
-    val animator: Animator = Animator(state)
+    val drawer: FrameDrawer = FrameDrawer(state)
     private var engine: Thread? = null
     var engineAnimating: Boolean = false
     var writingGIF: Boolean = false
@@ -132,7 +133,7 @@ class AnimationPanel(
 
         state.addListener(onPatternChange = {
             try {
-                animator.changeAnimatorPattern()
+                drawer.changeAnimatorPattern()
                 buildSelectionView()
                 state.update(propForPath = state.initialPropForPath())
                 if (state.isPaused) {
@@ -144,7 +145,7 @@ class AnimationPanel(
         })
         state.addListener(onPrefsChange = {
             try {
-                animator.changeAnimatorPattern()
+                drawer.changeAnimatorPattern()
                 buildSelectionView()
                 if (state.isPaused) {
                     repaint()
@@ -164,12 +165,12 @@ class AnimationPanel(
             }
         })
         state.addListener(onCameraAngleChange = {
-            animator.changeAnimatorCameraAngle()
+            drawer.changeAnimatorCameraAngle()
         })
         state.addListener(onZoomChange = {
             try {
                 if (!writingGIF) {
-                    animator.zoomLevel = state.zoom
+                    drawer.zoomLevel = state.zoom
                     buildSelectionView()
                     if (state.isPaused) {
                         repaint()
@@ -381,9 +382,9 @@ class AnimationPanel(
             while (true) {
                 state.update(time = state.pattern.loopStartTime)
 
-                while (state.time < (state.pattern.loopEndTime - 0.5 * animator.simIntervalSecs)) {
+                while (state.time < (state.pattern.loopEndTime - 0.5 * drawer.simIntervalSecs)) {
                     realTimeWait =
-                        animator.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
+                        drawer.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
 
                     if (realTimeWait > 0) {
                         Thread.sleep(realTimeWait)
@@ -400,7 +401,7 @@ class AnimationPanel(
                     }
 
                     oldtime = state.time
-                    state.update(time = state.time + animator.simIntervalSecs)
+                    state.update(time = state.time + drawer.simIntervalSecs)
                     newtime = state.time
 
                     if (state.prefs.catchSound && catchclip != null) {
@@ -675,7 +676,7 @@ class AnimationPanel(
 
             if ((eventActive || positionActive) && dragging && mouseMoved) {
                 state.update(fitToFrame = true)
-                animator.changeAnimatorPattern()
+                drawer.changeAnimatorPattern()
                 buildSelectionView()
                 state.addCurrentToUndoList()
             }
@@ -1005,7 +1006,7 @@ class AnimationPanel(
 
         for ((evNum, ev2) in visibleEvents.withIndex()) {
             for (i in 0..<rendererCount) {
-                val ren = if (i == 0) animator.ren1 else animator.ren2
+                val ren = if (i == 0) drawer.ren1 else drawer.ren2
 
                 // translate by one pixel and see how far it is in juggler space
                 val c = pat.layout.getGlobalCoordinate(ev2)
@@ -1086,7 +1087,7 @@ class AnimationPanel(
         handpathHold = BooleanArray(numHandpathPoints)
 
         for (i in 0..<rendererCount) {
-            val ren = if (i == 0) animator.ren1 else animator.ren2
+            val ren = if (i == 0) drawer.ren1 else drawer.ren2
             val c = Coordinate()
 
             for (j in 0..<numHandpathPoints) {
@@ -1217,7 +1218,7 @@ class AnimationPanel(
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
 
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            val ren = if (i == 0) animator.ren1 else animator.ren2
+            val ren = if (i == 0) drawer.ren1 else drawer.ren2
 
             // translate by one pixel and see how far it is in juggler space
             val c = Coordinate.add(
@@ -1273,7 +1274,7 @@ class AnimationPanel(
         var g2 = g
 
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            val ren = if (i == 0) animator.ren1 else animator.ren2
+            val ren = if (i == 0) drawer.ren1 else drawer.ren2
 
             if (state.prefs.stereo) {
                 g2 = when (i) {
@@ -1388,7 +1389,7 @@ class AnimationPanel(
                 }
             g2.color = COLOR_GRID
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            val ren = if (i == 0) animator.ren1 else animator.ren2
+            val ren = if (i == 0) drawer.ren1 else drawer.ren2
 
             // Figure out pixel deltas for 1cm vectors along x and y axes
             val center = ren.getXY(Coordinate(0.0, 0.0, 0.0))
@@ -1651,9 +1652,9 @@ class AnimationPanel(
             drawString(message!!, g)
         } else if (!writingGIF) {
             try {
-                animator.drawBackground(g)
+                drawer.drawBackground(g)
                 drawGrid(g)
-                animator.drawFrame(state.time, g, draggingCamera, false)
+                drawer.drawFrame(state.time, g, draggingCamera, false)
                 drawEvents(g)
                 drawPositions(g)
             } catch (e: Exception) {

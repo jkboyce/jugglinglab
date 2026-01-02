@@ -1,5 +1,5 @@
 //
-// Animator.kt
+// FrameDrawer.kt
 //
 // This class draws individual frames of juggling. It is independent of JPanel
 // or other GUI elements so that it can be used in headless mode, e.g., as when
@@ -10,11 +10,12 @@
 
 @file:Suppress("KotlinConstantConditions")
 
-package jugglinglab.core
+package jugglinglab.renderer
 
+import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.Constants
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.HandLink
-import jugglinglab.renderer.Renderer
-import jugglinglab.renderer.Renderer2D
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.max
@@ -38,7 +39,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.max
 
-class Animator(
+class FrameDrawer(
     val state: PatternAnimationState
 ) {
     var ren1: Renderer = Renderer2D()

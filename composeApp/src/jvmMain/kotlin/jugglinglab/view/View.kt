@@ -13,7 +13,7 @@ package jugglinglab.view
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
-import jugglinglab.core.Animator.WriteGIFMonitor
+import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.core.PatternWindow
 import jugglinglab.jml.JMLPattern
@@ -157,7 +157,7 @@ abstract class View(
 
         override fun run() {
             try {
-                ap.animator.writeGIF(FileOutputStream(file), wgm, fps)
+                ap.drawer.writeGIF(FileOutputStream(file), wgm, fps)
             } catch (_: IOException) {
                 val message = jlGetStringResource(Res.string.error_writing_file, file.toString())
                 jlHandleUserException(parent, message)
