@@ -132,7 +132,7 @@ class AnimationPanel(
 
         state.addListener(onPatternChange = {
             try {
-                animator.changeAnimatorPattern(fitToFrame = true)
+                animator.changeAnimatorPattern()
                 buildSelectionView()
                 state.update(propForPath = state.initialPropForPath())
                 if (state.isPaused) {
@@ -144,7 +144,7 @@ class AnimationPanel(
         })
         state.addListener(onPrefsChange = {
             try {
-                animator.changeAnimatorPattern(fitToFrame = true)
+                animator.changeAnimatorPattern()
                 buildSelectionView()
                 if (state.isPaused) {
                     repaint()
@@ -219,7 +219,8 @@ class AnimationPanel(
             isPaused = state.prefs.startPaused,
             cameraAngle = state.initialCameraAngle(),
             zoom = 1.0,
-            propForPath = state.initialPropForPath()
+            propForPath = state.initialPropForPath(),
+            fitToFrame = true
         )
 
         engine = Thread(this).apply { start() }
@@ -532,6 +533,7 @@ class AnimationPanel(
                             deltaY = 0
                             eventStart = activeEvent!!.localCoordinate
                             eventPrimaryStart = activeEventPrimary!!.localCoordinate
+                            state.update(fitToFrame = false)
                             repaint()
                             return
                         }
@@ -565,6 +567,7 @@ class AnimationPanel(
                             deltaY = 0
                             eventStart = activeEvent!!.localCoordinate
                             eventPrimaryStart = activeEventPrimary!!.localCoordinate
+                            state.update(fitToFrame = false)
                             repaint()
                             return
                         }
@@ -597,6 +600,7 @@ class AnimationPanel(
                             deltaX = 0
                             deltaY = 0
                             positionStart = activePosition!!.coordinate
+                            state.update(fitToFrame = false)
                             repaint()
                             return
                         }
@@ -611,6 +615,7 @@ class AnimationPanel(
                             deltaX = 0
                             deltaY = 0
                             positionStart = activePosition!!.coordinate
+                            state.update(fitToFrame = false)
                             repaint()
                             return
                         }
@@ -645,6 +650,7 @@ class AnimationPanel(
                                     posPoints[i][5][0] - posPoints[i][4][0],
                                     posPoints[i][5][1] - posPoints[i][4][1]
                                 )
+                            state.update(fitToFrame = false)
                             repaint()
                             return
                         }
@@ -668,8 +674,10 @@ class AnimationPanel(
             val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
 
             if ((eventActive || positionActive) && dragging && mouseMoved) {
+                state.update(fitToFrame = true)
+                animator.changeAnimatorPattern()
+                buildSelectionView()
                 state.addCurrentToUndoList()
-                //onPatternChange(pattern!!, addToUndo = true, fitToFrame = true)
             }
 
             if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {

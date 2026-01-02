@@ -46,7 +46,6 @@ class Animator(
     private var overallMax: Coordinate? = null
     private var overallMin: Coordinate? = null
 
-    private var numFrames: Int = 0
     var simIntervalSecs: Double = 0.0
         private set
     var realIntervalMillis: Long = 0
@@ -62,7 +61,7 @@ class Animator(
     // other data structures. Rescale the drawing so that the pattern
     // and key parts of the juggler are visible.
 
-    fun changeAnimatorPattern(fitToFrame: Boolean = true) {
+    fun changeAnimatorPattern() {
         val pattern = state.pattern
         val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
             (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
@@ -73,14 +72,14 @@ class Animator(
             ren2.setGround(sg)
         }
 
-        if (fitToFrame) {
+        if (state.fitToFrame) {
             findMaxMin()
             syncRenderersToSize()
         }
 
         // figure out timing constants; this in effect adjusts fps to get an integer
         // number of frames in one repetition of the pattern
-        numFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * state.prefs.fps).toInt()
+        val numFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * state.prefs.fps).toInt()
         simIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / numFrames
         realIntervalMillis = (1000.0 * simIntervalSecs * state.prefs.slowdown).toLong()
     }

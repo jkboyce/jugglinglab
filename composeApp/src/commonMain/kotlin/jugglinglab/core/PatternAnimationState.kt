@@ -33,6 +33,7 @@ class PatternAnimationState(
     var zoom: Double by mutableStateOf(1.0)
     var selectedItemHashCode: Int by mutableStateOf(0)
     var propForPath: List<Int> by mutableStateOf(initialPropForPath())
+    var fitToFrame: Boolean by mutableStateOf(true)
 
     //--------------------------------------------------------------------------
     // Helper to update the state and notify listeners
@@ -46,7 +47,8 @@ class PatternAnimationState(
         cameraAngle: List<Double>? = null,
         zoom: Double? = null,
         selectedItemHashCode: Int? = null,
-        propForPath: List<Int>? = null
+        propForPath: List<Int>? = null,
+        fitToFrame: Boolean? = null
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs
@@ -56,6 +58,7 @@ class PatternAnimationState(
         if (zoom != null) this.zoom = zoom
         if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
         if (propForPath != null) this.propForPath = propForPath
+        if (fitToFrame != null) this.fitToFrame = fitToFrame
         
         if (pattern != null) {
             onPatternChange.forEach { it() }
@@ -81,6 +84,9 @@ class PatternAnimationState(
         if (propForPath != null) {
             onPropForPathChange.forEach { it() }
         }
+        if (fitToFrame != null) {
+            onFitToFrameChange.forEach { it() }
+        }
     }
 
     // callbacks
@@ -92,6 +98,7 @@ class PatternAnimationState(
     val onZoomChange = mutableListOf<() -> Unit>()
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
     val onPropForPathChange = mutableListOf<() -> Unit>()
+    val onFitToFrameChange = mutableListOf<() -> Unit>()
     val onNewPatternUndo = mutableListOf<() -> Unit>()
 
     fun addListener(
@@ -103,6 +110,7 @@ class PatternAnimationState(
         onZoomChange: (() -> Unit)? = null,
         onSelectedItemHashChange: (() -> Unit)? = null,
         onPropForPathChange: (() -> Unit)? = null,
+        onFitToFrameChange: (() -> Unit)? = null,
         onNewPatternUndo: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
@@ -113,6 +121,7 @@ class PatternAnimationState(
         if (onZoomChange != null) this.onZoomChange.add(onZoomChange)
         if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
         if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
+        if (onFitToFrameChange != null) this.onFitToFrameChange.add(onFitToFrameChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
 
@@ -125,6 +134,7 @@ class PatternAnimationState(
         onZoomChange.clear()
         onSelectedItemHashChange.clear()
         onPropForPathChange.clear()
+        onFitToFrameChange.clear()
         onNewPatternUndo.clear()
     }
 
@@ -155,7 +165,7 @@ class PatternAnimationState(
     }
 
     // Advance the path-to-prop mapping after a cycle through the pattern.
-    // After pattern.periodWithProps times through this the props return to
+    // After pattern.periodWithProps times through this, the props return to
     // their initial assignments.
 
     fun advancePropForPath() {
