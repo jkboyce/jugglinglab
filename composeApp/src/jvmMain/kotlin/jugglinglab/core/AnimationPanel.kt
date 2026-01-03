@@ -1,11 +1,10 @@
 //
 // AnimationPanel.kt
 //
-// This class creates the juggling animation on screen. It spawns a thread that
-// loops over time and draws frames. It also interprets some mouse interactions
+// This class creates the juggling animation on screen. It embeds a Composable AnimationView
+// which handles the rendering loop. It also interprets some mouse interactions
 // such as camera drag and click to pause, and supports interactions with on-
-// screen representations of JML events and positions, and to interact with a
-// ladder diagram.
+// screen representations of JML events and positions.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -14,48 +13,57 @@ package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
+import jugglinglab.ui.AnimationLayout
+import jugglinglab.ui.AnimationView
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Graphics
 import java.awt.event.*
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import javax.swing.OverlayLayout
 import kotlin.math.abs
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPosition
 import jugglinglab.jml.PatternBuilder
-import jugglinglab.renderer.FrameDrawer
+import jugglinglab.renderer.ComposeRenderer
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlIsNearLine
-import jugglinglab.util.jlToStringRounded
-import java.awt.BasicStroke
-import java.awt.Graphics2D
-import java.awt.RenderingHints
-import java.awt.Stroke
-import java.awt.geom.Path2D
+import androidx.compose.ui.awt.ComposePanel
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.max
+import kotlin.math.min
 
 class AnimationPanel(
     val state: PatternAnimationState
-) : JPanel(), Runnable, MouseListener, MouseMotionListener {
-    val drawer: FrameDrawer = FrameDrawer(state)
-    private var engine: Thread? = null
-    var animationRunning: Boolean = false
+) : JPanel(), MouseListener, MouseMotionListener {
+    // Replacement for FrameDrawer - used only for calculations in this panel (selection logic)
+    private val calculationRenderer = ComposeRenderer()
+    private val calculationRenderer2 = ComposeRenderer() // Stereo
+
+    private val composePanel = ComposePanel()
+    private val inputPanel = JPanel()
+    
+    // AnimationLayout holds the display data for overlays
+    private var currentLayout: AnimationLayout? = null
+
+    // We pass a mutable state or just force recomposition. Since AnimationView takes layout as param, 
+    // we can re-set the content when layout updates? Or use a MutableState inside.
+    private val layoutState = androidx.compose.runtime.mutableStateOf<AnimationLayout?>(null)
+
     var message: String? = null
 
     private var catchclip: Clip? = null
@@ -88,8 +96,8 @@ class AnimationPanel(
     private var eventStart: Coordinate? = null
     private var eventPrimaryStart: Coordinate? = null
     private var visibleEvents: List<JMLEvent> = listOf()
-    private var eventPoints: Array<Array<Array<DoubleArray>>>
-    private var handpathPoints: Array<Array<DoubleArray>>
+    private var eventPoints: Array<Array<Array<DoubleArray>>> = Array(0) { Array(0) { Array(0) { DoubleArray(0) } } }
+    private var handpathPoints: Array<Array<DoubleArray>> = Array(0) { Array(0) { DoubleArray(0) } }
     private var handpathStartTime: Double = 0.0
     private var handpathEndTime: Double = 0.0
     private var handpathHold: BooleanArray = BooleanArray(0)
@@ -98,7 +106,7 @@ class AnimationPanel(
     private var positionActive: Boolean = false
     private var activePosition: JMLPosition? = null
 
-    private var posPoints: Array<Array<DoubleArray>>
+    private var posPoints: Array<Array<DoubleArray>> = Array(0) { Array(0) { DoubleArray(0) } }
     private var draggingXy: Boolean = false
     private var draggingZ: Boolean = false
     private var draggingAngle: Boolean = false
@@ -116,63 +124,58 @@ class AnimationPanel(
 
     // for when either an event or position is being dragged
     private var dragging: Boolean = false
-    private var draggingLeft: Boolean = false // for stereo mode; may not be necessary?
+    private var draggingLeft: Boolean = false // for stereo mode
     private var deltaX: Int = 0
     private var deltaY: Int = 0 // extent of drag action (pixels)
 
     init {
-        setOpaque(true)
+        layout = OverlayLayout(this)
+        inputPanel.isOpaque = false // Transparent overlay for receiving mouse events
+        
+        add(inputPanel)
+        add(composePanel)
+
+        composePanel.setContent {
+             AnimationView(
+                 state = state,
+                 layout = layoutState.value,
+                 onFrame = { time -> onAnimationFrame(time) }
+             )
+        }
+
         loadAudioClips()
         initHandlers()
-
-        eventPoints = Array(0) { Array(1) { Array(0) { DoubleArray(2) } } }
-        handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
-        handpathHold = BooleanArray(0)
-        posPoints = Array(2) { Array(0) { DoubleArray(2) } }
+        
+        // Initialize renderers
+        updateCalculationRenderers()
+        
+        // Initial build
+        buildSelectionView()
 
         state.addListener(onPatternChange = {
             try {
-                drawer.changeAnimatorPattern()
+                updateCalculationRenderers()
                 buildSelectionView()
-                state.update(propForPath = state.initialPropForPath())
-                if (state.isPaused) {
-                    repaint()
-                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
         state.addListener(onPrefsChange = {
             try {
-                drawer.changeAnimatorPattern()
+                updateCalculationRenderers()
                 buildSelectionView()
-                if (state.isPaused) {
-                    repaint()
-                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
-        state.addListener(onTimeChange = {
-            repaint()
-        })
-        state.addListener(onIsPausedChanged = {
-            if (!state.isPaused) {
-                synchronized(this) {
-                    (this as Object).notify()  // wake up wait() in run() method
-                }
-            }
-        })
         state.addListener(onCameraAngleChange = {
-            drawer.changeAnimatorCameraAngle()
+            updateCalculationRenderers()
+            buildSelectionView()
         })
         state.addListener(onZoomChange = {
             try {
-                drawer.zoomLevel = state.zoom
+                updateCalculationRenderers()
                 buildSelectionView()
-                if (state.isPaused) {
-                    repaint()
-                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
@@ -180,28 +183,74 @@ class AnimationPanel(
         state.addListener(onSelectedItemHashChange = {
             try {
                 buildSelectionView()
-                if (state.isPaused) {
-                    repaint()
-                }
             } catch (e: Exception) {
                 jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
         })
     }
+    
+    private var lastAudioCheckTime: Double = 0.0
 
-    //--------------------------------------------------------------------------
-    // Methods to handle changes made within this UI
-    //--------------------------------------------------------------------------
+    private fun onAnimationFrame(currentTime: Double) {
+        val oldTime = lastAudioCheckTime
+        val newTime = currentTime
+        lastAudioCheckTime = currentTime
+        
+        // Audio Logic
+        if (state.prefs.catchSound && catchclip != null) {
+            for (path in 1..state.pattern.numberOfPaths) {
+                if (state.pattern.layout.getPathCatchVolume(path, oldTime, newTime) > 0.0) {
+                    SwingUtilities.invokeLater {
+                         if (catchclip!!.isActive) catchclip!!.stop()
+                         catchclip!!.framePosition = 0
+                         catchclip!!.start()
+                    }
+                }
+            }
+        }
+        if (state.prefs.bounceSound && bounceclip != null) {
+             for (path in 1..state.pattern.numberOfPaths) {
+                if (state.pattern.layout.getPathBounceVolume(path, oldTime, newTime) > 0.0) {
+                    SwingUtilities.invokeLater {
+                        if (bounceclip!!.isActive) bounceclip!!.stop()
+                        bounceclip!!.framePosition = 0
+                        bounceclip!!.start()
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun updateCalculationRenderers() {
+        if (width > 0 && height > 0) {
+            val (overallMin, overallMax) = calculateBoundingBox(state)
+            
+            if (state.prefs.stereo) {
+                calculationRenderer.initDisplay(width/2, height, state.prefs.borderPixels, overallMax, overallMin)
+                calculationRenderer2.initDisplay(width/2, height, state.prefs.borderPixels, overallMax, overallMin)
+            } else {
+                calculationRenderer.initDisplay(width, height, state.prefs.borderPixels, overallMax, overallMin)
+            }
+        }
 
-    // (Re)start the juggling with default camera position and other settings,
-    // with optionally a new pattern and/or preferences.
+        calculationRenderer.setPattern(state.pattern)
+        calculationRenderer.zoomLevel = state.zoom
+        
+        val ca = state.cameraAngle.toDoubleArray()
+        if (state.prefs.stereo) {
+            calculationRenderer2.setPattern(state.pattern)
+            calculationRenderer2.zoomLevel = state.zoom
+            val sep = 0.10
+            calculationRenderer.cameraAngle = doubleArrayOf(ca[0] - sep/2, ca[1])
+            calculationRenderer2.cameraAngle = doubleArrayOf(ca[0] + sep/2, ca[1])
+        } else {
+            calculationRenderer.cameraAngle = ca
+        }
+    }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
-        // Do layout first so an error won't disrupt the current animation
         pat?.layout
-
-        killAnimationThread()
 
         if (pat != null) state.update(pattern = pat)
         if (newjc != null) state.update(prefs = newjc)
@@ -212,14 +261,10 @@ class AnimationPanel(
             propForPath = state.initialPropForPath(),
             fitToFrame = true
         )
-
-        engine = Thread(this).apply { start() }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle() = restartJuggle(null, null)
-
-    //--------------------------------------------------------------------------
 
     private fun loadAudioClips() {
         try {
@@ -244,28 +289,22 @@ class AnimationPanel(
 
     @Throws(JuggleExceptionInternal::class)
     private fun initHandlers() {
-        addMouseListener(this)
-        addMouseMotionListener(this)
+        inputPanel.addMouseListener(this)
+        inputPanel.addMouseMotionListener(this)
 
         addComponentListener(
             object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent?) {
                     try {
-                        if (!animationRunning) return
-
-                        // Don't update the preferred animation size if the enclosing
-                        // window is maximized
                         val comp = SwingUtilities.getRoot(this@AnimationPanel)
-                        if (comp is PatternWindow) {
-                            if (comp.isWindowMaximized) {
-                                return
-                            }
-                        }
+                        if (comp is PatternWindow && comp.isWindowMaximized) return
 
                         if (state.prefs.width != size.width || state.prefs.height != size.height) {
                             val newPrefs = state.prefs.copy(width = size.width, height = size.height)
                             state.update(prefs = newPrefs)
                         }
+                        updateCalculationRenderers()
+                        buildSelectionView()
                     } catch (e: Exception) {
                         jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
                     }
@@ -273,16 +312,13 @@ class AnimationPanel(
             })
     }
 
-    // Snap the camera to specific preferred directions.
-
     private fun snapCamera(ca: List<Double>): List<Double> {
         val result = DoubleArray(2)
         result[0] = ca[0]
         result[1] = ca[1]
 
-        // vertical snap to equator and north/south poles
         if (result[1] < SNAPANGLE) {
-            result[1] = Math.toRadians(0.0001) // avoid gimbal lock
+            result[1] = Math.toRadians(0.0001)
         } else if (anglediff(Math.toRadians(90.0) - result[1]) < SNAPANGLE) {
             result[1] = Math.toRadians(90.0)
         } else if (result[1] > (Math.toRadians(180.0) - SNAPANGLE)) {
@@ -293,14 +329,8 @@ class AnimationPanel(
         var snapHorizontal = true
 
         if (eventActive) {
-            a = -Math.toRadians(
-                state.pattern.layout.getJugglerAngle(
-                    activeEvent!!.juggler,
-                    activeEvent!!.t
-                )
-            )
+            a = -Math.toRadians(state.pattern.layout.getJugglerAngle(activeEvent!!.juggler, activeEvent!!.t))
         } else if (positionActive) {
-            // a = -Math.toRadians(anim.pat.getJugglerAngle(position.getJuggler(), position.getT()));
             a = 0.0
         } else if (state.pattern.numberOfJugglers == 1) {
             a = -Math.toRadians(state.pattern.layout.getJugglerAngle(1, state.time))
@@ -309,186 +339,29 @@ class AnimationPanel(
         }
 
         if (snapHorizontal) {
-            while (a < 0) {
-                a += Math.toRadians(360.0)
-            }
-            while (a >= Math.toRadians(360.0)) {
-                a -= Math.toRadians(360.0)
-            }
+            while (a < 0) a += Math.toRadians(360.0)
+            while (a >= Math.toRadians(360.0)) a -= Math.toRadians(360.0)
 
-            if (anglediff(a - result[0]) < SNAPANGLE) {
-                result[0] = a
-            } else if (anglediff(a + 0.5 * Math.PI - result[0]) < SNAPANGLE) {
-                result[0] = a + 0.5 * Math.PI
-            } else if (anglediff(a + Math.PI - result[0]) < SNAPANGLE) {
-                result[0] = a + Math.PI
-            } else if (anglediff(a + 1.5 * Math.PI - result[0]) < SNAPANGLE) {
-                result[0] = a + 1.5 * Math.PI
-            }
+            if (anglediff(a - result[0]) < SNAPANGLE) result[0] = a
+            else if (anglediff(a + 0.5 * Math.PI - result[0]) < SNAPANGLE) result[0] = a + 0.5 * Math.PI
+            else if (anglediff(a + Math.PI - result[0]) < SNAPANGLE) result[0] = a + Math.PI
+            else if (anglediff(a + 1.5 * Math.PI - result[0]) < SNAPANGLE) result[0] = a + 1.5 * Math.PI
         }
         return result.toList()
     }
 
-    override fun run() {
-        Thread.currentThread().setPriority(Thread.MIN_PRIORITY)
-        animationRunning = false
-
-        if (state.prefs.mousePause) {
-            waspaused = state.prefs.startPaused
-        }
-
-        try {
-            if (state.prefs.startPaused) {
-                message = jlGetStringResource(Res.string.gui_message_click_to_start)
-                repaint()
-                while (state.isPaused) {
-                    synchronized(this) {
-                        (this as Object).wait()
-                    }
-                }
-            }
-            message = null
-
-            var realTimeStart = System.currentTimeMillis()
-            var realTimeWait: Long
-            var oldtime: Double
-            var newtime: Double
-
-            if (state.prefs.mousePause) {
-                if (outsideValid) {
-                    state.update(isPaused = outside)
-                } else {
-                    state.update(isPaused = true) // assume mouse is outside animator, if not known
-                }
-                waspaused = false
-            }
-
-            animationRunning = true
-
-            while (true) {
-                state.update(time = state.pattern.loopStartTime)
-
-                while (state.time < (state.pattern.loopEndTime - 0.5 * drawer.simIntervalSecs)) {
-                    realTimeWait =
-                        drawer.realIntervalMillis - (System.currentTimeMillis() - realTimeStart)
-
-                    if (realTimeWait > 0) {
-                        Thread.sleep(realTimeWait)
-                    } else if (engine == null || Thread.interrupted()) {
-                        throw InterruptedException()
-                    }
-
-                    realTimeStart = System.currentTimeMillis()
-
-                    while (state.isPaused) {
-                        synchronized(this) {
-                            (this as Object).wait()
-                        }
-                    }
-
-                    oldtime = state.time
-                    state.update(time = state.time + drawer.simIntervalSecs)
-                    newtime = state.time
-
-                    if (state.prefs.catchSound && catchclip != null) {
-                        for (path in 1..state.pattern.numberOfPaths) {
-                            if (state.pattern.layout.getPathCatchVolume(
-                                    path,
-                                    oldtime,
-                                    newtime
-                                ) > 0.0
-                            ) {
-                                // do audio playback on the EDT -- not strictly
-                                // necessary but it seems to work better on Linux
-                                SwingUtilities.invokeLater {
-                                    if (catchclip!!.isActive) {
-                                        catchclip!!.stop()
-                                    }
-                                    catchclip!!.framePosition = 0
-                                    catchclip!!.start()
-                                }
-                            }
-                        }
-                    }
-                    if (state.prefs.bounceSound && bounceclip != null) {
-                        for (path in 1..state.pattern.numberOfPaths) {
-                            if (state.pattern.layout.getPathBounceVolume(
-                                    path,
-                                    oldtime,
-                                    newtime
-                                ) > 0.0
-                            ) {
-                                SwingUtilities.invokeLater {
-                                    if (bounceclip!!.isActive) {
-                                        bounceclip!!.stop()
-                                    }
-                                    bounceclip!!.framePosition = 0
-                                    bounceclip!!.start()
-                                }
-                            }
-                        }
-                    }
-                }
-                state.advancePropForPath()
-            }
-        } catch (_: InterruptedException) {
-        }
-    }
-
-    // stop the current animation thread, if one is running
-    private fun killAnimationThread() {
-        try {
-            engine?.apply {
-                if (isAlive) {
-                    interrupt()
-                    join()
-                }
-            }
-        } catch (_: InterruptedException) {
-        } finally {
-            engine = null
-            animationRunning = false
-            message = null
-        }
-    }
-
-    private fun drawString(message: String, g: Graphics) {
-        val fm = g.fontMetrics
-        val messageWidth = fm.stringWidth(message)
-
-        val dim = size
-        val x = if (dim.width > messageWidth) (dim.width - messageWidth) / 2 else 0
-        val y = (dim.height + fm.height) / 2
-
-        g.color = Color.white
-        g.fillRect(0, 0, dim.width, dim.height)
-        g.color = Color.black
-        g.drawString(message, x, y)
-    }
 
     fun disposeAnimation() {
-        killAnimationThread()
+        state.update(isPaused = true)
     }
-
-    //--------------------------------------------------------------------------
-    // java.awt.event.MouseListener methods
-    //--------------------------------------------------------------------------
 
     private var lastpress: Long = 0L
     private var lastenter: Long = 1L
 
     override fun mousePressed(me: MouseEvent) {
         lastpress = me.getWhen()
-
-        // The following (and its equivalent in mouseReleased()) is a hack to
-        // swallow a mouseclick when the browser stops reporting enter/exit
-        // events because the user has clicked on something else. The system
-        // reports simultaneous enter/press events when the user mouses down in
-        // the component; we want to not treat this as a click, but just use it
-        // to get focus back.
         if (state.prefs.mousePause && lastpress == lastenter) return
-        if (!animationRunning) return
-
+        
         try {
             startX = me.getX()
             startY = me.getY()
@@ -501,60 +374,43 @@ class AnimationPanel(
                     val t = i * size.width / 2
 
                     if (showYDragControl) {
-                        draggingY =
-                            jlIsNearLine(
-                                mx - t,
-                                my,
-                                eventPoints[0][i][5][0].roundToInt(),
-                                eventPoints[0][i][5][1].roundToInt(),
-                                eventPoints[0][i][6][0].roundToInt(),
-                                eventPoints[0][i][6][1].roundToInt(),
-                                4
-                            )
-
+                        draggingY = jlIsNearLine(
+                            mx - t, my,
+                            eventPoints[0][i][5][0].roundToInt(), eventPoints[0][i][5][1].roundToInt(),
+                            eventPoints[0][i][6][0].roundToInt(), eventPoints[0][i][6][1].roundToInt(),
+                            4
+                        )
                         if (draggingY) {
                             dragging = true
                             draggingLeft = (i == 0)
-                            deltaX = 0
-                            deltaY = 0
+                            deltaX = 0; deltaY = 0
                             eventStart = activeEvent!!.localCoordinate
                             eventPrimaryStart = activeEventPrimary!!.localCoordinate
                             state.update(fitToFrame = false)
-                            repaint()
                             return
                         }
                     }
 
                     if (showXzDragControl) {
                         for (j in eventPoints.indices) {
-                            if (!isInsidePolygon(mx - t, my, eventPoints[j], i, FACE_XZ)) {
-                                continue
-                            }
+                            if (!isInsidePolygon(mx - t, my, eventPoints[j], i, FACE_XZ)) continue
                             if (j > 0) {
-                                // the event visibleEvents[j] might be outside the
-                                // animation loop; find the instance inside the loop
-                                val image =
-                                    state.pattern.allEvents.find { it.event == visibleEvents[j] }
-                                        ?: throw JuggleExceptionInternal("Error 1 in AEP.mousePressed()")
+                                val image = state.pattern.allEvents.find { it.event == visibleEvents[j] }
+                                    ?: throw JuggleExceptionInternal("Error 1 in AEP.mousePressed()")
                                 val code = state.pattern.loopEvents.find {
                                     it.primary == image.primary &&
-                                        it.event.juggler == image.event.juggler &&
-                                        it.event.hand == image.event.hand
-                                }?.event?.jlHashCode
-                                    ?: throw JuggleExceptionInternal("Error 2 in AEP.mousePressed()")
-
+                                    it.event.juggler == image.event.juggler &&
+                                    it.event.hand == image.event.hand
+                                }?.event?.jlHashCode ?: throw JuggleExceptionInternal("Error 2 in AEP.mousePressed()")
                                 state.update(selectedItemHashCode = code)
                             }
-
                             draggingXz = true
                             dragging = true
                             draggingLeft = (i == 0)
-                            deltaX = 0
-                            deltaY = 0
+                            deltaX = 0; deltaY = 0
                             eventStart = activeEvent!!.localCoordinate
                             eventPrimaryStart = activeEventPrimary!!.localCoordinate
                             state.update(fitToFrame = false)
-                            repaint()
                             return
                         }
                     }
@@ -564,82 +420,50 @@ class AnimationPanel(
             if (positionActive) {
                 val mx = me.getX()
                 val my = me.getY()
-
                 for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * size.width / 2
 
                     if (showZDragControl) {
-                        draggingZ =
-                            jlIsNearLine(
-                                mx - t,
-                                my,
-                                posPoints[i][4][0].roundToInt(),
-                                posPoints[i][4][1].roundToInt(),
-                                posPoints[i][6][0].roundToInt(),
-                                posPoints[i][6][1].roundToInt(),
-                                4
-                            )
-
+                        draggingZ = jlIsNearLine(
+                            mx - t, my,
+                            posPoints[i][4][0].roundToInt(), posPoints[i][4][1].roundToInt(),
+                            posPoints[i][6][0].roundToInt(), posPoints[i][6][1].roundToInt(), 4
+                        )
                         if (draggingZ) {
                             dragging = true
                             draggingLeft = (i == 0)
-                            deltaX = 0
-                            deltaY = 0
+                            deltaX = 0; deltaY = 0
                             positionStart = activePosition!!.coordinate
                             state.update(fitToFrame = false)
-                            repaint()
                             return
                         }
                     }
-
                     if (showXyDragControl) {
                         draggingXy = isInsidePolygon(mx - t, my, posPoints, i, FACE_XY)
-
                         if (draggingXy) {
                             dragging = true
                             draggingLeft = (i == 0)
-                            deltaX = 0
-                            deltaY = 0
+                            deltaX = 0; deltaY = 0
                             positionStart = activePosition!!.coordinate
                             state.update(fitToFrame = false)
-                            repaint()
                             return
                         }
                     }
-
                     if (showAngleDragControl) {
                         val dmx = mx - t - posPoints[i][5][0].roundToInt()
                         val dmy = my - posPoints[i][5][1].roundToInt()
                         draggingAngle = (dmx * dmx + dmy * dmy < 49.0)
-
                         if (draggingAngle) {
                             dragging = true
                             draggingLeft = (i == 0)
-                            deltaX = 0
-                            deltaY = 0
+                            deltaX = 0; deltaY = 0
                             startAngle = Math.toRadians(activePosition!!.angle)
-
-                            // record pixel coordinates of x and y unit vectors
-                            // in juggler's frame, at start of angle drag
-                            startDx =
-                                doubleArrayOf(
-                                    posPoints[i][11][0] - posPoints[i][4][0],
-                                    posPoints[i][11][1] - posPoints[i][4][1]
-                                )
-                            startDy =
-                                doubleArrayOf(
-                                    posPoints[i][12][0] - posPoints[i][4][0],
-                                    posPoints[i][12][1] - posPoints[i][4][1]
-                                )
-                            startControl =
-                                doubleArrayOf(
-                                    posPoints[i][5][0] - posPoints[i][4][0],
-                                    posPoints[i][5][1] - posPoints[i][4][1]
-                                )
+                            startDx = doubleArrayOf(posPoints[i][11][0] - posPoints[i][4][0], posPoints[i][11][1] - posPoints[i][4][1])
+                            startDy = doubleArrayOf(posPoints[i][12][0] - posPoints[i][4][0], posPoints[i][12][1] - posPoints[i][4][1])
+                            startControl = doubleArrayOf(posPoints[i][5][0] - posPoints[i][4][0], posPoints[i][5][1] - posPoints[i][4][1])
                             state.update(fitToFrame = false)
-                            repaint()
                             return
-                        }
+                     }
                     }
                 }
             }
@@ -650,9 +474,13 @@ class AnimationPanel(
 
     override fun mouseReleased(me: MouseEvent) {
         if (state.prefs.mousePause && lastpress == lastenter) return
-        if (!animationRunning && engine != null && engine!!.isAlive) {
-            state.update(isPaused = !state.isPaused)
-            return
+        
+        if (!draggingCamera && !dragging) {
+            val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
+            if (!mouseMoved) {
+                state.update(isPaused = !state.isPaused)
+                parent.dispatchEvent(me)
+            }
         }
 
         try {
@@ -660,14 +488,9 @@ class AnimationPanel(
 
             if ((eventActive || positionActive) && dragging && mouseMoved) {
                 state.update(fitToFrame = true)
-                drawer.changeAnimatorPattern()
+                updateCalculationRenderers()
                 buildSelectionView()
                 state.addCurrentToUndoList()
-            }
-
-            if (!mouseMoved && !dragging && engine != null && engine!!.isAlive) {
-                state.update(isPaused = !state.isPaused)
-                getParent().dispatchEvent(me)  // for SelectionView
             }
 
             draggingCamera = false
@@ -683,7 +506,6 @@ class AnimationPanel(
             eventStart = null
             eventPrimaryStart = null
             positionStart = null
-            repaint()
         } catch (e: Exception) {
             jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
@@ -693,9 +515,7 @@ class AnimationPanel(
 
     override fun mouseEntered(me: MouseEvent) {
         lastenter = me.getWhen()
-        if (state.prefs.mousePause) {
-            state.update(isPaused = waspaused)
-        }
+        if (state.prefs.mousePause) state.update(isPaused = waspaused)
         outside = false
         outsideValid = true
     }
@@ -709,78 +529,38 @@ class AnimationPanel(
         outsideValid = true
     }
 
-    //--------------------------------------------------------------------------
-    // java.awt.event.MouseMotionListener methods
-    //--------------------------------------------------------------------------
-
     override fun mouseDragged(me: MouseEvent) {
-        if (!animationRunning) return
-
         try {
             if (dragging) {
                 val mx = me.getX()
                 val my = me.getY()
 
                 if (draggingAngle) {
-                    // shift pixel coords of control point by mouse drag
-                    val dcontrol = doubleArrayOf(
-                        startControl[0] + mx - startX,
-                        startControl[1] + my - startY
-                    )
-
-                    // re-express the control point location in coordinate system
-                    // of juggler:
-                    //
-                    // dcontrol_x = A * startDx_x + B * startDy_x;
-                    // dcontrol_y = A * startDx_y + B * startDy_y;
-                    //
-                    // then (A, B) are coordinates of shifted control
-                    // point, in juggler space
-                    val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
-                    val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
-                    val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
-                    deltaAngle = -atan2(-a, -b)
-
-                    // snap the angle to the four cardinal directions
-                    val newAngle = startAngle + deltaAngle
-                    if (anglediff(newAngle) < SNAPANGLE / 2) {
-                        deltaAngle = -startAngle
-                    } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAPANGLE / 2) {
-                        deltaAngle = -startAngle - 0.5 * Math.PI
-                    } else if (anglediff(newAngle + Math.PI) < SNAPANGLE / 2) {
-                        deltaAngle = -startAngle + Math.PI
-                    } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAPANGLE / 2) {
-                        deltaAngle = -startAngle + 0.5 * Math.PI
-                    }
-
-                    var finalAngle = Math.toDegrees(startAngle + deltaAngle)
-                    while (finalAngle > 360) {
-                        finalAngle -= 360.0
-                    }
-                    while (finalAngle < 0) {
-                        finalAngle += 360.0
-                    }
-                    val rec = PatternBuilder.fromJMLPattern(state.pattern)
-                    val index = rec.positions.indexOf(activePosition!!)
-                    if (index < 0) {
-                        throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
-                    }
-                    val newPosition = activePosition!!.copy(angle = finalAngle)
-                    rec.positions[index] = newPosition
-                    state.update(
-                        pattern = JMLPattern.fromPatternBuilder(rec),
-                        selectedItemHashCode = newPosition.jlHashCode
-                    )
+                     val dcontrol = doubleArrayOf(startControl[0] + mx - startX, startControl[1] + my - startY)
+                     val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
+                     val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
+                     val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
+                     deltaAngle = -atan2(-a, -b)
+                     
+                     val newAngle = startAngle + deltaAngle
+                     var finalAngle = Math.toDegrees(newAngle)
+                     while (finalAngle > 360) finalAngle -= 360.0
+                     while (finalAngle < 0) finalAngle += 360.0
+                     
+                     val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                     val index = rec.positions.indexOf(activePosition!!)
+                     if (index < 0) throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
+                     val newPosition = activePosition!!.copy(angle = finalAngle)
+                     rec.positions[index] = newPosition
+                     state.update(pattern = JMLPattern.fromPatternBuilder(rec), selectedItemHashCode = newPosition.jlHashCode)
+                     createPositionView()
                 } else {
-                    deltaX = mx - startX
-                    deltaY = my - startY
-
-                    // Get updated event/position coordinate based on mouse position.
-                    // This modifies deltaX, deltaY based on snapping and projection.
-                    val cc = currentCoordinate
-
-                    if (eventActive) {
-                        var deltalc = sub(cc, eventStart)!!
+                     deltaX = mx - startX
+                     deltaY = my - startY
+                     val cc = currentCoordinate
+                     
+                     if (eventActive) {
+                         var deltalc = sub(cc, eventStart)!!
                         deltalc = Coordinate.truncate(deltalc, 1e-7)
 
                         val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
@@ -793,10 +573,7 @@ class AnimationPanel(
                         if (activeEvent!!.hand != activeEventPrimary!!.hand) {
                             deltalc.x = -deltalc.x
                         }
-                        val newPrimaryCoordinate = Coordinate.add(
-                            eventPrimaryStart,
-                            deltalc
-                        )!!
+                        val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
                         val newPrimary = activeEventPrimary!!.copy(
                             x = newPrimaryCoordinate.x,
                             y = newPrimaryCoordinate.y,
@@ -810,10 +587,10 @@ class AnimationPanel(
                             pattern = JMLPattern.fromPatternBuilder(record),
                             selectedItemHashCode = newEvent.jlHashCode
                         )
-                    }
-
-                    if (positionActive) {
-                        val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                         createEventView()
+                     }
+                     if (positionActive) {
+                         val rec = PatternBuilder.fromJMLPattern(state.pattern)
                         val index = rec.positions.indexOf(activePosition!!)
                         if (index < 0) {
                             throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
@@ -824,8 +601,10 @@ class AnimationPanel(
                             pattern = JMLPattern.fromPatternBuilder(rec),
                             selectedItemHashCode = newPosition.jlHashCode
                         )
-                    }
+                        createPositionView()
+                     }
                 }
+                updateLayout()
             } else if (!draggingCamera) {
                 draggingCamera = true
                 lastX = startX
@@ -842,51 +621,26 @@ class AnimationPanel(
                 var ca1 = dragCameraAngle[1]
                 ca0 += dx.toDouble() * 0.02
                 ca1 -= dy.toDouble() * 0.02
-                if (ca1 < Math.toRadians(0.0001)) {
-                    ca1 = Math.toRadians(0.0001)
-                }
-                if (ca1 > Math.toRadians(179.9999)) {
-                    ca1 = Math.toRadians(179.9999)
-                }
-                while (ca0 < 0) {
-                    ca0 += 2.0 * Math.PI
-                }
-                while (ca0 >= 2.0 * Math.PI) {
-                    ca0 -= 2.0 * Math.PI
-                }
+                if (ca1 < Math.toRadians(0.0001)) ca1 = Math.toRadians(0.0001)
+                if (ca1 > Math.toRadians(179.9999)) ca1 = Math.toRadians(179.9999)
+                while (ca0 < 0) ca0 += 2.0 * Math.PI
+                while (ca0 >= 2.0 * Math.PI) ca0 -= 2.0 * Math.PI
+                
                 dragCameraAngle = listOf(ca0, ca1)
                 state.update(cameraAngle = snapCamera(dragCameraAngle))
-
-                // send event to the parent so that SelectionView can update
-                // camera angles of other animations
-                getParent().dispatchEvent(me)
+                parent.dispatchEvent(me)
             }
+            if (eventActive && draggingCamera) { createEventView(); updateLayout() }
+            if (positionActive && (draggingCamera || draggingAngle)) { createPositionView(); updateLayout() }
 
-            if (eventActive && draggingCamera) {
-                createEventView()
-            }
-
-            if (positionActive && (draggingCamera || draggingAngle)) {
-                createPositionView()
-            }
-
-            if (state.isPaused) {
-                repaint()
-            }
         } catch (e: Exception) {
             jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
     override fun mouseMoved(e: MouseEvent?) {}
-
-    //--------------------------------------------------------------------------
-    // Helper functions related to event editing
-    //--------------------------------------------------------------------------
-
-    @Throws(JuggleExceptionInternal::class)
+    
     fun buildSelectionView() {
-        // reset event-related fields
         activeEvent = null
         activeEventPrimary = null
         eventActive = false
@@ -894,7 +648,6 @@ class AnimationPanel(
         visibleEvents = mutableListOf()
         handpathPoints = Array(1) { Array(0) { DoubleArray(2) } }
 
-        // reset position-related fields
         activePosition = null
         positionActive = false
 
@@ -924,12 +677,25 @@ class AnimationPanel(
                 break
             }
         }
+        updateLayout()
+    }
+    
+    private fun updateLayout() {
+        layoutState.value = AnimationLayout(
+            eventPoints = eventPoints,
+            handpathPoints = handpathPoints,
+            handpathHold = handpathHold,
+            posPoints = posPoints,
+            showXzDragControl = showXzDragControl,
+            showYDragControl = showYDragControl,
+            showXyDragControl = showXyDragControl,
+            showZDragControl = showZDragControl,
+            showAngleDragControl = showAngleDragControl
+        )
     }
 
-    @Throws(JuggleExceptionInternal::class)
     private fun createEventView() {
         if (!eventActive) return
-
         val pat = state.pattern
         val ev = activeEvent!!
         handpathStartTime = ev.t
@@ -937,71 +703,39 @@ class AnimationPanel(
 
         val index = pat.allEvents.indexOfFirst { it.event == ev }
         if (index == -1) {
-            // pattern changed and the previously-active event is no longer
-            // present; deactivate and return
             eventActive = false
             activeEvent = null
             return
         }
 
-        // identify events to display on-screen
         visibleEvents = buildList {
             add(ev)
-
-            for (image in pat.allEvents.subList(index + 1, pat.allEvents.size).filter {
-                it.event.hand == ev.hand && it.event.juggler == ev.juggler
-            }) {
+            for (image in pat.allEvents.subList(index + 1, pat.allEvents.size).filter { it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
                 handpathEndTime = max(handpathEndTime, image.event.t)
-                if (image.primary != activeEventPrimary) {
-                    add(image.event)
-                } else {
-                    break
-                }
-                if (image.event.hasThrowOrCatch) {
-                    break
-                }
+                if (image.primary != activeEventPrimary) add(image.event) else break
+                if (image.event.hasThrowOrCatch) break
             }
-
-            for (image in pat.allEvents.subList(0, index).asReversed().filter {
-                it.event.hand == ev.hand && it.event.juggler == ev.juggler
-            }) {
+            for (image in pat.allEvents.subList(0, index).asReversed().filter { it.event.hand == ev.hand && it.event.juggler == ev.juggler }) {
                 handpathStartTime = min(handpathStartTime, image.event.t)
-                if (image.primary != activeEventPrimary) {
-                    add(image.event)
-                } else {
-                    break
-                }
-                if (image.event.hasThrowOrCatch) {
-                    break
-                }
+                if (image.primary != activeEventPrimary) add(image.event) else break
+                if (image.event.hasThrowOrCatch) break
             }
         }
-
-        // Determine screen coordinates of visual representations for events.
-        // Note the first event in `visible_events` is the selected one.
+        
         val rendererCount = if (state.prefs.stereo) 2 else 1
-        eventPoints =
-            Array(visibleEvents.size) {
-                Array(rendererCount) {
-                    Array(EVENT_CONTROL_POINTS.size) { DoubleArray(2) }
-                }
-            }
-
+        eventPoints = Array(visibleEvents.size) { Array(rendererCount) { Array(EVENT_CONTROL_POINTS.size) { DoubleArray(2) } } }
+        
         for ((evNum, ev2) in visibleEvents.withIndex()) {
             for (i in 0..<rendererCount) {
-                val ren = if (i == 0) drawer.ren1 else drawer.ren2
-
-                // translate by one pixel and see how far it is in juggler space
+                val ren = if (i == 0) calculationRenderer else calculationRenderer2 // Use local renderers
                 val c = pat.layout.getGlobalCoordinate(ev2)
                 val c2 = ren.getScreenTranslatedCoordinate(c, 1, 0)
-                val dl = 1.0 / distance(c, c2)  // pixels/cm
-
+                val dl = 1.0 / distance(c, c2)
+                
                 val ca = ren.cameraAngle
                 val theta = ca[0] + Math.toRadians(pat.layout.getJugglerAngle(ev2.juggler, ev2.t))
                 val phi = ca[1]
-
-                // matrix translating global coordinates (in cm) to screen
-                // coordinates (in pixels)
+                
                 val dlc = dl * cos(phi)
                 val dls = dl * sin(phi)
                 val dxx = -dl * cos(theta)
@@ -1010,211 +744,62 @@ class AnimationPanel(
                 val dyy = dlc * cos(theta)
                 val dzx = 0.0
                 val dzy = -dls
-
+                
                 val center = ren.getXY(c)
-
+                val targetPoints = if (ev2 == activeEvent) EVENT_CONTROL_POINTS else UNSELECTED_EVENT_POINTS
+                
+                for (j in targetPoints.indices) {
+                    eventPoints[evNum][i][j][0] = center[0].toDouble() + dxx * targetPoints[j][0] + dyx * targetPoints[j][1] + dzx * targetPoints[j][2]
+                    eventPoints[evNum][i][j][1] = center[1].toDouble() + dxy * targetPoints[j][0] + dyy * targetPoints[j][1] + dzy * targetPoints[j][2]
+                }
+                
                 if (ev2 == activeEvent) {
-                    for (j in EVENT_CONTROL_POINTS.indices) {
-                        eventPoints[0][i][j][0] =
-                            (center[0].toDouble() +
-                                dxx * EVENT_CONTROL_POINTS[j][0] +
-                                dyx * EVENT_CONTROL_POINTS[j][1] +
-                                dzx * EVENT_CONTROL_POINTS[j][2])
-                        eventPoints[0][i][j][1] =
-                            (center[1].toDouble() +
-                                dxy * EVENT_CONTROL_POINTS[j][0] +
-                                dyy * EVENT_CONTROL_POINTS[j][1] +
-                                dzy * EVENT_CONTROL_POINTS[j][2])
-                    }
-
-                    showXzDragControl =
-                        (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
-                            && (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG)
-                            || anglediff(theta - Math.PI) < Math.toRadians(XZ_CONTROL_SHOW_DEG))
-                            )
-                    showYDragControl =
-                        !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG)
-                            && (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG)
-                            || anglediff(theta - Math.PI) < Math.toRadians(Y_CONTROL_SHOW_DEG))
-                            )
-                } else {
-                    for (j in UNSELECTED_EVENT_POINTS.indices) {
-                        eventPoints[evNum][i][j][0] =
-                            (center[0].toDouble() +
-                                dxx * UNSELECTED_EVENT_POINTS[j][0] +
-                                dyx * UNSELECTED_EVENT_POINTS[j][1] +
-                                dzx * UNSELECTED_EVENT_POINTS[j][2])
-                        eventPoints[evNum][i][j][1] =
-                            (center[1].toDouble() +
-                                dxy * UNSELECTED_EVENT_POINTS[j][0] +
-                                dyy * UNSELECTED_EVENT_POINTS[j][1] +
-                                dzy * UNSELECTED_EVENT_POINTS[j][2])
-                    }
+                    showXzDragControl = (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
+                        (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG) || anglediff(theta - Math.PI) < Math.toRadians(XZ_CONTROL_SHOW_DEG)))
+                    showYDragControl = !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG) &&
+                        (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG) || anglediff(theta - Math.PI) < Math.toRadians(Y_CONTROL_SHOW_DEG)))
                 }
             }
         }
         createHandpathView()
     }
-
-    @Throws(JuggleExceptionInternal::class)
+    
     private fun createHandpathView() {
         if (!eventActive) return
-
         val pat = state.pattern
         val ev = activeEvent!!
         val rendererCount = if (state.prefs.stereo) 2 else 1
-        val numHandpathPoints =
-            ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
-        handpathPoints =
-            Array(rendererCount) { Array(numHandpathPoints) { DoubleArray(2) } }
+        val numHandpathPoints = ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
+        handpathPoints = Array(rendererCount) { Array(numHandpathPoints) { DoubleArray(2) } }
         handpathHold = BooleanArray(numHandpathPoints)
-
+        
         for (i in 0..<rendererCount) {
-            val ren = if (i == 0) drawer.ren1 else drawer.ren2
-            val c = Coordinate()
-
-            for (j in 0..<numHandpathPoints) {
-                val t: Double = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
-                pat.layout.getHandCoordinate(ev.juggler, ev.hand, t, c)
-                val point = ren.getXY(c)
-                handpathPoints[i][j][0] = point[0].toDouble()
-                handpathPoints[i][j][1] = point[1].toDouble()
-                handpathHold[j] = pat.layout.isHandHolding(ev.juggler, ev.hand, t + 0.0001)
-            }
+             val ren = if (i == 0) calculationRenderer else calculationRenderer2
+             val c = Coordinate()
+             for (j in 0..<numHandpathPoints) {
+                 val t = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
+                 pat.layout.getHandCoordinate(ev.juggler, ev.hand, t, c)
+                 val point = ren.getXY(c)
+                 handpathPoints[i][j][0] = point[0].toDouble()
+                 handpathPoints[i][j][1] = point[1].toDouble()
+                 handpathHold[j] = pat.layout.isHandHolding(ev.juggler, ev.hand, t + 0.0001)
+             }
         }
     }
-
-    @Throws(JuggleExceptionInternal::class)
-    private fun drawEvents(g: Graphics) {
-        if (!eventActive) return
-
-        val d = size
-        var g2 = g
-
-        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            if (state.prefs.stereo) {
-                if (i == 0) {
-                    g2 = g.create(0, 0, d.width / 2, d.height)
-                } else {
-                    g2 = g.create(d.width / 2, 0, d.width / 2, d.height)
-                }
-            }
-
-            if (g2 is Graphics2D) {
-                g2.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-                )
-            }
-
-            // draw hand path
-            val numHandpathPoints = handpathPoints[0].size
-            val pathSolid = Path2D.Double()
-            val pathDashed = Path2D.Double()
-            var lastPath: Path2D? = null
-
-            for (j in 0..<numHandpathPoints - 1) {
-                val path = if (handpathHold[j]) pathSolid else pathDashed
-                if (path != lastPath || path.getCurrentPoint() == null) {
-                    path.moveTo(handpathPoints[i][j][0], handpathPoints[i][j][1])
-                    path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
-                } else {
-                    path.lineTo(handpathPoints[i][j + 1][0], handpathPoints[i][j + 1][1])
-                }
-                lastPath = path
-            }
-
-            if (pathDashed.getCurrentPoint() != null) {
-                val gdash = g2.create() as Graphics2D
-                val dashed: Stroke =
-                    BasicStroke(
-                        1f,
-                        BasicStroke.CAP_BUTT,
-                        BasicStroke.JOIN_BEVEL,
-                        1f,
-                        floatArrayOf(5f, 3f),
-                        0f
-                    )
-                gdash.stroke = dashed
-                gdash.color = COLOR_HANDPATH
-                gdash.draw(pathDashed)
-                gdash.dispose()
-            }
-
-            if (pathSolid.getCurrentPoint() != null) {
-                val gsolid = g2.create() as Graphics2D
-                gsolid.color = COLOR_HANDPATH
-                gsolid.draw(pathSolid)
-                gsolid.dispose()
-            }
-
-            // draw event
-            g2.color = COLOR_EVENTS
-
-            // dot at center
-            g2.fillOval(
-                eventPoints[0][i][4][0].roundToInt() - 2,
-                eventPoints[0][i][4][1].roundToInt() - 2,
-                5,
-                5
-            )
-
-            if (showXzDragControl || dragging) {
-                // edges of xz plane control
-                drawLine(g2, eventPoints[0], i, 0, 1)
-                drawLine(g2, eventPoints[0], i, 1, 2)
-                drawLine(g2, eventPoints[0], i, 2, 3)
-                drawLine(g2, eventPoints[0], i, 3, 0)
-
-                for (j in 1..<eventPoints.size) {
-                    drawLine(g2, eventPoints[j], i, 0, 1)
-                    drawLine(g2, eventPoints[j], i, 1, 2)
-                    drawLine(g2, eventPoints[j], i, 2, 3)
-                    drawLine(g2, eventPoints[j], i, 3, 0)
-                    g2.fillOval(
-                        eventPoints[j][i][4][0].roundToInt() - 1,
-                        eventPoints[j][i][4][1].roundToInt() - 1,
-                        3,
-                        3
-                    )
-                }
-            }
-
-            if (showYDragControl && (!dragging || draggingY)) {
-                // y-axis control pointing forward/backward
-                drawLine(g2, eventPoints[0], i, 5, 6)
-                drawLine(g2, eventPoints[0], i, 5, 7)
-                drawLine(g2, eventPoints[0], i, 5, 8)
-                drawLine(g2, eventPoints[0], i, 6, 9)
-                drawLine(g2, eventPoints[0], i, 6, 10)
-            }
-        }
-    }
-
-    //--------------------------------------------------------------------------
-    // Helper functions related to position editing
-    //--------------------------------------------------------------------------
-
+    
     private fun createPositionView() {
         if (!positionActive) return
-
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
-
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            val ren = if (i == 0) drawer.ren1 else drawer.ren2
-
-            // translate by one pixel and see how far it is in juggler space
-            val c = Coordinate.add(
-                activePosition!!.coordinate,
-                Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM)
-            )
+            val ren = if (i == 0) calculationRenderer else calculationRenderer2
+            val c = Coordinate.add(activePosition!!.coordinate, Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM))
             val c2 = ren.getScreenTranslatedCoordinate(c!!, 1, 0)
-            val dl = 1.0 / distance(c, c2)  // pixels/cm
-
+            val dl = 1.0 / distance(c, c2)
+            
             val ca = ren.cameraAngle
             val theta = ca[0] + Math.toRadians(activePosition!!.angle)
             val phi = ca[1]
-
+            
             val dlc = dl * cos(phi)
             val dls = dl * sin(phi)
             val dxx = -dl * cos(theta)
@@ -1223,457 +808,34 @@ class AnimationPanel(
             val dyy = dlc * cos(theta)
             val dzx = 0.0
             val dzy = -dls
-
+            
             val center = ren.getXY(c)
             for (j in POS_CONTROL_POINTS.indices) {
-                posPoints[i][j][0] =
-                    (center[0].toDouble() +
-                        dxx * POS_CONTROL_POINTS[j][0] +
-                        dyx * POS_CONTROL_POINTS[j][1] +
-                        dzx * POS_CONTROL_POINTS[j][2])
-                posPoints[i][j][1] =
-                    (center[1].toDouble() +
-                        dxy * POS_CONTROL_POINTS[j][0] +
-                        dyy * POS_CONTROL_POINTS[j][1] +
-                        dzy * POS_CONTROL_POINTS[j][2])
+                posPoints[i][j][0] = center[0].toDouble() + dxx * POS_CONTROL_POINTS[j][0] + dyx * POS_CONTROL_POINTS[j][1] + dzx * POS_CONTROL_POINTS[j][2]
+                posPoints[i][j][1] = center[1].toDouble() + dxy * POS_CONTROL_POINTS[j][0] + dyy * POS_CONTROL_POINTS[j][1] + dzy * POS_CONTROL_POINTS[j][2]
             }
-
-            showAngleDragControl =
-                (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - ANGLE_CONTROL_SHOW_DEG))
-            showXyDragControl =
-                (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - XY_CONTROL_SHOW_DEG))
-            showZDragControl =
-                (anglediff(phi - Math.PI / 2) < Math.toRadians(90 - Z_CONTROL_SHOW_DEG))
+            
+            showAngleDragControl = (anglediff(phi - Math.PI/2) > Math.toRadians(90 - ANGLE_CONTROL_SHOW_DEG))
+            showXyDragControl = (anglediff(phi - Math.PI/2) > Math.toRadians(90 - XY_CONTROL_SHOW_DEG))
+            showZDragControl = (anglediff(phi - Math.PI/2) < Math.toRadians(90 - Z_CONTROL_SHOW_DEG))
         }
     }
-
-    @Throws(JuggleExceptionInternal::class)
-    private fun drawPositions(g: Graphics) {
-        if (!positionActive) {
-            return
-        }
-
-        val d = size
-        var g2 = g
-
-        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            val ren = if (i == 0) drawer.ren1 else drawer.ren2
-
-            if (state.prefs.stereo) {
-                g2 = when (i) {
-                    0 -> g.create(0, 0, d.width / 2, d.height)
-                    else -> g.create(d.width / 2, 0, d.width / 2, d.height)
-                }
-            }
-
-            if (g2 is Graphics2D) {
-                g2.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-                )
-            }
-
-            g2.color = COLOR_POSITIONS
-
-            // dot at center
-            g2.fillOval(
-                posPoints[i][4][0].roundToInt() - 2,
-                posPoints[i][4][1].roundToInt() - 2,
-                5,
-                5
-            )
-
-            if (showXyDragControl || dragging) {
-                // edges of xy plane control
-                drawLine(g2, posPoints, i, 0, 1)
-                drawLine(g2, posPoints, i, 1, 2)
-                drawLine(g2, posPoints, i, 2, 3)
-                drawLine(g2, posPoints, i, 3, 0)
-            }
-
-            if (showZDragControl && (!dragging || draggingZ)) {
-                // z-axis control pointing upward
-                drawLine(g2, posPoints, i, 4, 6)
-                drawLine(g2, posPoints, i, 6, 7)
-                drawLine(g2, posPoints, i, 6, 8)
-            }
-
-            if (showAngleDragControl && (!dragging || draggingAngle)) {
-                // angle-changing control pointing backward
-                drawLine(g2, posPoints, i, 4, 5)
-                g2.fillOval(
-                    posPoints[i][5][0].roundToInt() - 4,
-                    posPoints[i][5][1].roundToInt() - 4,
-                    10,
-                    10
-                )
-            }
-
-            if (draggingAngle) {
-                // sighting line during angle rotation
-                drawLine(g2, posPoints, i, 9, 10)
-            }
-
-            if (!draggingAngle) {
-                if (draggingZ || (state.cameraAngle[1] <= Math.toRadians(GRID_SHOW_DEG))) {
-                    // line dropping down to projection on ground (z = 0)
-                    val c = currentCoordinate
-                    val z = c.z
-                    c.z = 0.0
-                    val xyProjection = ren.getXY(c)
-                    g2.drawLine(
-                        xyProjection[0],
-                        xyProjection[1],
-                        posPoints[i][4][0].roundToInt(),
-                        posPoints[i][4][1].roundToInt()
-                    )
-                    g2.fillOval(xyProjection[0] - 2, xyProjection[1] - 2, 5, 5)
-
-                    if (draggingZ) {
-                        // z-label on the line
-                        val y = max(
-                            max(posPoints[i][0][1], posPoints[i][1][1]),
-                            max(posPoints[i][2][1], posPoints[i][3][1])
-                        )
-                        val messageY = y.roundToInt() + 40
-
-                        g2.color = Color.black
-                        g2.drawString(
-                            "z = " + jlToStringRounded(z, 1) + " cm", xyProjection[0] + 5, messageY
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // In position editing mode, draw an xy grid at ground level (z = 0).
-
-    @Suppress("UnnecessaryVariable")
-    private fun drawGrid(g: Graphics) {
-        if (!positionActive) return
-
-        // need a Graphics2D object for setStroke() below
-        if (g !is Graphics2D) return
-
-        // only draw grid when looking down from above
-        if (state.cameraAngle[1] > Math.toRadians(GRID_SHOW_DEG)) return
-
-        for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-            val g2 =
-                if (state.prefs.stereo) {
-                    if (i == 0) {
-                        g.create(0, 0, size.width / 2, size.height) as Graphics2D
-                    } else {
-                        g.create(size.width / 2, 0, size.width / 2, size.height) as Graphics2D
-                    }
-                } else {
-                    g
-                }
-            g2.color = COLOR_GRID
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            val ren = if (i == 0) drawer.ren1 else drawer.ren2
-
-            // Figure out pixel deltas for 1cm vectors along x and y axes
-            val center = ren.getXY(Coordinate(0.0, 0.0, 0.0))
-            val dx = ren.getXY(Coordinate(100.0, 0.0, 0.0))
-            val dy = ren.getXY(Coordinate(0.0, 100.0, 0.0))
-            val xaxisSpacing = doubleArrayOf(
-                XY_GRID_SPACING_CM * ((dx[0] - center[0]).toDouble() / 100.0),
-                XY_GRID_SPACING_CM * ((dx[1] - center[1]).toDouble() / 100.0)
-            )
-            val yaxisSpacing = doubleArrayOf(
-                XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0),
-                XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
-            )
-
-            val axis1 = xaxisSpacing
-            val axis2 = yaxisSpacing
-
-            // Find which grid intersections are visible on screen by solving
-            // for the grid coordinates at the four corners.
-            val det = axis1[0] * axis2[1] - axis1[1] * axis2[0]
-            var mmin = 0
-            var mmax = 0
-            var nmin = 0
-            var nmax = 0
-            for (j in 0..3) {
-                val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
-                val b = ((if (j < 2) 0 else size.height) - center[1]).toDouble()
-                val m = (axis2[1] * a - axis2[0] * b) / det
-                val n = (-axis1[1] * a + axis1[0] * b) / det
-                val mint = floor(m).toInt()
-                val nint = floor(n).toInt()
-                mmin = if (j == 0) mint else min(mmin, mint)
-                mmax = if (j == 0) mint + 1 else max(mmax, mint + 1)
-                nmin = if (j == 0) nint else min(nmin, nint)
-                nmax = if (j == 0) nint + 1 else max(nmax, nint + 1)
-            }
-
-            for (j in mmin..mmax) {
-                val x1 = (center[0] + j * axis1[0] + nmin * axis2[0]).roundToInt()
-                val y1 = (center[1] + j * axis1[1] + nmin * axis2[1]).roundToInt()
-                val x2 = (center[0] + j * axis1[0] + nmax * axis2[0]).roundToInt()
-                val y2 = (center[1] + j * axis1[1] + nmax * axis2[1]).roundToInt()
-                if (j == 0) {
-                    g2.stroke = BasicStroke(3f)
-                }
-                g2.drawLine(x1, y1, x2, y2)
-                if (j == 0) {
-                    g2.stroke = BasicStroke(1f)
-                }
-            }
-            for (j in nmin..nmax) {
-                val x1 = (center[0] + mmin * axis1[0] + j * axis2[0]).roundToInt()
-                val y1 = (center[1] + mmin * axis1[1] + j * axis2[1]).roundToInt()
-                val x2 = (center[0] + mmax * axis1[0] + j * axis2[0]).roundToInt()
-                val y2 = (center[1] + mmax * axis1[1] + j * axis2[1]).roundToInt()
-                if (j == 0) {
-                    g2.stroke = BasicStroke(3f)
-                }
-                g2.drawLine(x1, y1, x2, y2)
-                if (j == 0) {
-                    g2.stroke = BasicStroke(1f)
-                }
-            }
-        }
-    }
-
-    @get:Throws(JuggleExceptionInternal::class)
-    private val currentCoordinate: Coordinate
-        get() {
-            if (eventActive) {
-                if (!dragging) {
-                    return activeEvent!!.localCoordinate
-                }
-
-                val c = eventStart!!.copy()
-
-                // screen (pixel) offset of a 1cm offset in each of the cardinal
-                // directions in the juggler's coordinate system (i.e., global
-                // coordinates rotated by the juggler's angle)
-                val dx = doubleArrayOf(0.0, 0.0)
-                val dy = doubleArrayOf(0.0, 0.0)
-                val dz = doubleArrayOf(0.0, 0.0)
-                val f = if (state.prefs.stereo) 0.5 else 1.0
-
-                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-                    dx[0] += f * (eventPoints[0][i][11][0] - eventPoints[0][i][4][0])
-                    dx[1] += f * (eventPoints[0][i][11][1] - eventPoints[0][i][4][1])
-                    dy[0] += f * (eventPoints[0][i][12][0] - eventPoints[0][i][4][0])
-                    dy[1] += f * (eventPoints[0][i][12][1] - eventPoints[0][i][4][1])
-                    dz[0] += f * (eventPoints[0][i][13][0] - eventPoints[0][i][4][0])
-                    dz[1] += f * (eventPoints[0][i][13][1] - eventPoints[0][i][4][1])
-                }
-
-                if (draggingXz) {
-                    // express deltaX, deltaY in terms of dx, dz above
-                    //
-                    // deltaX = A * dxx + B * dzx;
-                    // deltaY = A * dxy + B * dzy;
-                    //
-                    // then c.x += A
-                    //      c.z += B
-                    val det = dx[0] * dz[1] - dx[1] * dz[0]
-                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
-                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
-
-                    c.x += a
-                    c.z += b
-
-                    // Snap to z = 0 in local coordinates ("normal" throwing height)
-                    if (abs(c.z) < YZ_EVENT_SNAP_CM) {
-                        deltaY += (dz[1] * (-c.z)).roundToInt()
-                        c.z = 0.0
-                    }
-                }
-
-                if (draggingY) {
-                    // express deltaX, deltaY in terms of dy, dz above
-                    //
-                    // deltaX = A * dyx + B * dzx;
-                    // deltaY = A * dyy + B * dzy;
-                    //
-                    // then c.y += A
-                    val det = dy[0] * dz[1] - dy[1] * dz[0]
-                    if (abs(det) > 1.0e-4) {
-                        val a = (dz[1] * deltaX - dz[0] * deltaY) / det
-                        c.y += a
-                    } else {
-                        c.y += deltaY / dy[1]
-                    }
-
-                    // Snap to y = 0 in local coordinates ("normal" throwing depth)
-                    if (abs(c.y) < YZ_EVENT_SNAP_CM) {
-                        c.y = 0.0
-                    }
-
-                    // Calculate deltaX, deltaX that put the event closest to its
-                    // final location
-                    deltaX = ((c.y - eventStart!!.y) * dy[0]).roundToInt()
-                    deltaY = ((c.y - eventStart!!.y) * dy[1]).roundToInt()
-                }
-
-                return c
-            }
-
-            if (positionActive) {
-                if (!draggingXy && !draggingZ) {
-                    return activePosition!!.coordinate
-                }
-
-                val c = positionStart!!.copy()
-
-                // screen (pixel) offset of a 1cm offset in each of the cardinal
-                // directions in the position's coordinate system (i.e., global
-                // coordinates rotated by the position's angle)
-                val dx = doubleArrayOf(0.0, 0.0)
-                val dy = doubleArrayOf(0.0, 0.0)
-                val dz = doubleArrayOf(0.0, 0.0)
-                val f = (if (state.prefs.stereo) 0.5 else 1.0)
-
-                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-                    dx[0] += f * (posPoints[i][11][0] - posPoints[i][4][0])
-                    dx[1] += f * (posPoints[i][11][1] - posPoints[i][4][1])
-                    dy[0] += f * (posPoints[i][12][0] - posPoints[i][4][0])
-                    dy[1] += f * (posPoints[i][12][1] - posPoints[i][4][1])
-                    dz[0] += f * (posPoints[i][13][0] - posPoints[i][4][0])
-                    dz[1] += f * (posPoints[i][13][1] - posPoints[i][4][1])
-                }
-
-                if (draggingXy) {
-                    // express deltaX, deltaY in terms of dx, dy above
-                    //
-                    // deltaX = A * dxx + B * dyx;
-                    // deltaY = A * dxy + B * dyy;
-                    //
-                    // then position.x += A
-                    //      position.y += B
-                    val det = dx[0] * dy[1] - dx[1] * dy[0]
-                    val a = (dy[1] * deltaX - dy[0] * deltaY) / det
-                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
-
-                    // transform changes to global coordinates
-                    val angle = Math.toRadians(activePosition!!.angle)
-                    c.x += a * cos(angle) - b * sin(angle)
-                    c.y += a * sin(angle) + b * cos(angle)
-
-                    // Snap to selected grid lines
-                    var snapped = false
-                    val oldcx = c.x
-                    val oldcy = c.y
-
-                    var closestGrid: Double =
-                        XY_GRID_SPACING_CM * (c.x / XY_GRID_SPACING_CM).roundToInt()
-                    if (abs(c.x - closestGrid) < XYZ_GRID_POSITION_SNAP_CM) {
-                        c.x = closestGrid
-                        snapped = true
-                    }
-                    closestGrid =
-                        XY_GRID_SPACING_CM * (c.y / XY_GRID_SPACING_CM).roundToInt()
-                    if (abs(c.y - closestGrid) < XYZ_GRID_POSITION_SNAP_CM) {
-                        c.y = closestGrid
-                        snapped = true
-                    }
-
-                    if (snapped) {
-                        // calculate `deltaX` and `deltaY` that get us closest to the snapped
-                        // position
-                        val deltacx = c.x - oldcx
-                        val deltacy = c.y - oldcy
-                        val deltaa = deltacx * cos(angle) + deltacy * sin(angle)
-                        val deltab = -deltacx * sin(angle) + deltacy * cos(angle)
-                        val deltaXpx = dx[0] * deltaa + dy[0] * deltab
-                        val deltaYpx = dx[1] * deltaa + dy[1] * deltab
-
-                        deltaX += deltaXpx.roundToInt()
-                        deltaY += deltaYpx.roundToInt()
-                    }
-                }
-
-                if (draggingZ) {
-                    deltaX = 0 // constrain movement to be vertical
-                    c.z += deltaY / dz[1]
-
-                    if (abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
-                        deltaY += (dz[1] * (100 - c.z)).roundToInt()
-                        c.z = 100.0
-                    }
-                }
-
-                return c
-            }
-
-            throw JuggleExceptionInternal("problem in AnimationEditPanel::currentCoordinate()")
-        }
-
-    private fun drawLine(
-        g: Graphics,
-        array: Array<Array<DoubleArray>>,
-        index: Int,
-        p1: Int,
-        p2: Int
-    ) {
-        g.drawLine(
-            array[index][p1][0].roundToInt(),
-            array[index][p1][1].roundToInt(),
-            array[index][p2][0].roundToInt(),
-            array[index][p2][1].roundToInt()
-        )
-    }
-
-    //--------------------------------------------------------------------------
-    // javax.swing.JComponent methods
-    //--------------------------------------------------------------------------
-
-    override fun paintComponent(g: Graphics) {
-        if (g is Graphics2D) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        }
-
-        if (message != null) {
-            drawString(message!!, g)
-        } else {
-            try {
-                drawer.drawBackground(g)
-                drawGrid(g)
-                drawer.drawFrame(state.time, g, draggingCamera, false)
-                drawEvents(g)
-                drawPositions(g)
-            } catch (e: Exception) {
-                killAnimationThread()
-                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
-            }
-        }
-    }
-
+    
     companion object {
         val SNAPANGLE: Double = Math.toRadians(8.0)
-
         fun anglediff(delta: Double): Double {
             var delta = delta
-            while (delta > Math.PI) {
-                delta -= 2 * Math.PI
-            }
-            while (delta <= -Math.PI) {
-                delta += 2 * Math.PI
-            }
+            while (delta > Math.PI) delta -= 2 * Math.PI
+            while (delta <= -Math.PI) delta += 2 * Math.PI
             return abs(delta)
         }
-
-        // constants for rendering events
+        
         private const val EVENT_BOX_HW_CM: Double = 5.0
         private const val UNSELECTED_BOX_HW_CM: Double = 2.0
         private const val YZ_EVENT_SNAP_CM: Double = 3.0
         private const val XZ_CONTROL_SHOW_DEG: Double = 60.0
         private const val Y_CONTROL_SHOW_DEG: Double = 30.0
-        private val COLOR_EVENTS: Color = Color.green
-
-        // constants for rendering hand path
-        private const val HANDPATH_POINT_SEP_TIME: Double = 0.005 // secs
-        private val COLOR_HANDPATH: Color = Color.lightGray
-
-        // constants for rendering positions
+        private const val HANDPATH_POINT_SEP_TIME: Double = 0.005
         private const val POSITION_BOX_HW_CM: Double = 10.0
         private const val POSITION_BOX_Z_OFFSET_CM: Double = 0.0
         private const val XY_GRID_SPACING_CM: Double = 20.0
@@ -1682,34 +844,26 @@ class AnimationPanel(
         private const val ANGLE_CONTROL_SHOW_DEG: Double = 70.0
         private const val XY_CONTROL_SHOW_DEG: Double = 70.0
         private const val Z_CONTROL_SHOW_DEG: Double = 30.0
-        private val COLOR_POSITIONS: Color = Color.green
-        private val COLOR_GRID: Color = Color.lightGray
-
-        // points in the juggler's coordinate system that are used for drawing the
-        // onscreen representation of a selected event
+         
         private val EVENT_CONTROL_POINTS: List<DoubleArray> = listOf(
-            // corners of square representing xz movement control
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, -EVENT_BOX_HW_CM),
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, EVENT_BOX_HW_CM),
             doubleArrayOf(EVENT_BOX_HW_CM, 0.0, EVENT_BOX_HW_CM),
             doubleArrayOf(EVENT_BOX_HW_CM, 0.0, -EVENT_BOX_HW_CM),
-            doubleArrayOf(0.0, 0.0, 0.0),  // center
-            doubleArrayOf(0.0, 10.0, 0.0),  // end 1 of y-axis control
-            doubleArrayOf(0.0, -10.0, 0.0),  // end 2 of y-axis control
-            doubleArrayOf(0.0, 7.0, 2.0),  // arrow at end 1 of y-axis control
+            doubleArrayOf(0.0, 0.0, 0.0),
+            doubleArrayOf(0.0, 10.0, 0.0),
+            doubleArrayOf(0.0, -10.0, 0.0),
+            doubleArrayOf(0.0, 7.0, 2.0),
             doubleArrayOf(0.0, 7.0, -2.0),
-            doubleArrayOf(0.0, -7.0, 2.0),  // arrow at end 2 of y-axis control
-            doubleArrayOf(0.0, -7.0, -2.0),  // used for moving the event
-
+            doubleArrayOf(0.0, -7.0, 2.0),
+            doubleArrayOf(0.0, -7.0, -2.0),
             doubleArrayOf(1.0, 0.0, 0.0),
             doubleArrayOf(0.0, 1.0, 0.0),
             doubleArrayOf(0.0, 0.0, 1.0),
         )
 
-        // faces in terms of indices in EVENT_CONTROL_POINTS[]
         private val FACE_XZ: IntArray = intArrayOf(0, 1, 2, 3)
 
-        // points for an event that is not selected (active)
         private val UNSELECTED_EVENT_POINTS: List<DoubleArray> = listOf(
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, -UNSELECTED_BOX_HW_CM),
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, UNSELECTED_BOX_HW_CM),
@@ -1718,32 +872,25 @@ class AnimationPanel(
             doubleArrayOf(0.0, 0.0, 0.0),
         )
 
-        // points in the juggler's coordinate system that are used for drawing the
-        // onscreen representation of a selected position
         private val POS_CONTROL_POINTS: List<DoubleArray> = listOf(
-            // corners of square representing xy movement control
             doubleArrayOf(-POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(-POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0.0),
-            doubleArrayOf(0.0, 0.0, 0.0),  // center
-            doubleArrayOf(0.0, -20.0, 0.0),  // angle control point
-            doubleArrayOf(0.0, 0.0, 20.0),  // end of z-vector control
-            doubleArrayOf(2.0, 0.0, 17.0),  // arrow at end of z-vector control
+            doubleArrayOf(0.0, 0.0, 0.0),
+            doubleArrayOf(0.0, -20.0, 0.0),
+            doubleArrayOf(0.0, 0.0, 20.0),
+            doubleArrayOf(2.0, 0.0, 17.0),
             doubleArrayOf(-2.0, 0.0, 17.0),
-            doubleArrayOf(0.0, -250.0, 0.0),  // direction-sighting line when dragging angle
-            doubleArrayOf(0.0, 250.0, 0.0),  // used for moving the position
-
+            doubleArrayOf(0.0, -250.0, 0.0),
+            doubleArrayOf(0.0, 250.0, 0.0),
             doubleArrayOf(1.0, 0.0, 0.0),
             doubleArrayOf(0.0, 1.0, 0.0),
             doubleArrayOf(0.0, 0.0, 1.0),
         )
 
-        // faces in terms of indices in pos_control_points[]
         private val FACE_XY: IntArray = intArrayOf(0, 1, 2, 3)
-
-        // Test whether a point (x, y) lies inside a polygon.
-
+        
         private fun isInsidePolygon(
             x: Int,
             y: Int,
@@ -1759,8 +906,6 @@ class AnimationPanel(
                 val yi = array[index][points[i]][1].roundToInt()
                 val xj = array[index][points[j]][0].roundToInt()
                 val yj = array[index][points[j]][1].roundToInt()
-
-                // note we only evaluate the second term when yj != yi:
                 val intersect = (yi > y) != (yj > y) &&
                     x < (xj - xi) * (y - yi) / (yj - yi) + xi
                 if (intersect) {
@@ -1770,5 +915,141 @@ class AnimationPanel(
             }
             return inside
         }
+    }
+    
+    private val currentCoordinate: Coordinate
+        get() {
+            if (eventActive) {
+                if (!dragging) return activeEvent!!.localCoordinate
+                val c = eventStart!!.copy()
+                val dx = doubleArrayOf(0.0, 0.0)
+                val dy = doubleArrayOf(0.0, 0.0)
+                val dz = doubleArrayOf(0.0, 0.0)
+                val f = if (state.prefs.stereo) 0.5 else 1.0
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
+                    dx[0] += f * (eventPoints[0][i][11][0] - eventPoints[0][i][4][0])
+                    dx[1] += f * (eventPoints[0][i][11][1] - eventPoints[0][i][4][1])
+                    dy[0] += f * (eventPoints[0][i][12][0] - eventPoints[0][i][4][0])
+                    dy[1] += f * (eventPoints[0][i][12][1] - eventPoints[0][i][4][1])
+                    dz[0] += f * (eventPoints[0][i][13][0] - eventPoints[0][i][4][0])
+                    dz[1] += f * (eventPoints[0][i][13][1] - eventPoints[0][i][4][1])
+                }
+                if (draggingXz) {
+                    val det = dx[0] * dz[1] - dx[1] * dz[0]
+                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
+                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
+                    c.x += a
+                    c.z += b
+                    if (abs(c.z) < YZ_EVENT_SNAP_CM) {
+                        deltaY += (dz[1] * (-c.z)).roundToInt()
+                        c.z = 0.0
+                    }
+                }
+                if (draggingY) {
+                    val det = dy[0] * dz[1] - dy[1] * dz[0]
+                    if (abs(det) > 1.0e-4) {
+                        val a = (dz[1] * deltaX - dz[0] * deltaY) / det
+                        c.y += a
+                    } else {
+                        c.y += deltaY / dy[1]
+                    }
+                    if (abs(c.y) < YZ_EVENT_SNAP_CM) c.y = 0.0
+                    deltaX = ((c.y - eventStart!!.y) * dy[0]).roundToInt()
+                    deltaY = ((c.y - eventStart!!.y) * dy[1]).roundToInt()
+                }
+                return c
+             }
+             
+            if (positionActive) {
+                if (!draggingXy && !draggingZ) return activePosition!!.coordinate
+                val c = positionStart!!.copy()
+                val dx = doubleArrayOf(0.0, 0.0)
+                val dy = doubleArrayOf(0.0, 0.0)
+                val dz = doubleArrayOf(0.0, 0.0)
+                val f = if (state.prefs.stereo) 0.5 else 1.0
+                for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
+                    dx[0] += f * (posPoints[i][11][0] - posPoints[i][4][0])
+                    dx[1] += f * (posPoints[i][11][1] - posPoints[i][4][1])
+                    dy[0] += f * (posPoints[i][12][0] - posPoints[i][4][0])
+                    dy[1] += f * (posPoints[i][12][1] - posPoints[i][4][1])
+                    dz[0] += f * (posPoints[i][13][0] - posPoints[i][4][0])
+                    dz[1] += f * (posPoints[i][13][1] - posPoints[i][4][1])
+                }
+                if (draggingXy) {
+                    val det = dx[0] * dy[1] - dx[1] * dy[0]
+                    val a = (dy[1] * deltaX - dy[0] * deltaY) / det
+                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
+                    val angle = Math.toRadians(activePosition!!.angle)
+                    c.x += a * cos(angle) - b * sin(angle)
+                    c.y += a * sin(angle) + b * cos(angle)
+                    
+                    var snapped = false
+                    val oldcx = c.x
+                    val oldcy = c.y
+                    val closestGridX = XY_GRID_SPACING_CM * (c.x / XY_GRID_SPACING_CM).roundToInt()
+                    if (abs(c.x - closestGridX) < XYZ_GRID_POSITION_SNAP_CM) { c.x = closestGridX; snapped = true }
+                    val closestGridY = XY_GRID_SPACING_CM * (c.y / XY_GRID_SPACING_CM).roundToInt()
+                    if (abs(c.y - closestGridY) < XYZ_GRID_POSITION_SNAP_CM) { c.y = closestGridY; snapped = true }
+                    
+                    if (snapped) {
+                         val deltacx = c.x - oldcx
+                         val deltacy = c.y - oldcy
+                         val deltaa = deltacx * cos(angle) + deltacy * sin(angle)
+                         val deltab = -deltacx * sin(angle) + deltacy * cos(angle)
+                         val deltaXpx = dx[0] * deltaa + dy[0] * deltab
+                         val deltaYpx = dx[1] * deltaa + dy[1] * deltab
+                         deltaX += deltaXpx.roundToInt()
+                         deltaY += deltaYpx.roundToInt()
+                    }
+                }
+                if (draggingZ) {
+                    deltaX = 0
+                    c.z += deltaY / dz[1]
+                    if (abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
+                        deltaY += (dz[1] * (100 - c.z)).roundToInt()
+                        c.z = 100.0
+                    }
+                    if (abs(c.z) < XYZ_GRID_POSITION_SNAP_CM) {
+                        deltaY += (dz[1] * (-c.z)).roundToInt()
+                        c.z = 0.0
+                    }
+                }
+                return c
+             }
+             
+             return Coordinate() 
+        }
+    
+    // Helper to match AnimationView's logic
+    private fun calculateBoundingBox(state: PatternAnimationState): Pair<Coordinate, Coordinate> {
+        val pattern = state.pattern
+        
+        var patternMax: Coordinate? = null
+        var patternMin: Coordinate? = null
+        for (i in 1..pattern.numberOfPaths) {
+             patternMax = Coordinate.max(patternMax, pattern.layout.getPathMax(i))
+             patternMin = Coordinate.min(patternMin, pattern.layout.getPathMin(i))
+        }
+        
+        var propMax: Coordinate? = null
+        var propMin: Coordinate? = null
+        for (i in 1..pattern.numberOfProps) {
+            propMax = Coordinate.max(propMax, pattern.getProp(i).getMax())
+            propMin = Coordinate.min(propMin, pattern.getProp(i).getMin())
+        }
+        
+        if (patternMax != null && patternMin != null) {
+            patternMax = Coordinate.add(patternMax, propMax)
+            patternMin = Coordinate.add(patternMin, propMin)
+        }
+        
+        val safeMax = patternMax ?: Coordinate(100.0, 100.0, 100.0)
+        val safeMin = patternMin ?: Coordinate(-100.0, -100.0, -100.0)
+        
+        safeMax.z = kotlin.math.max(safeMax.z, 180.0)
+        safeMin.x = kotlin.math.min(safeMin.x, -50.0)
+        safeMax.x = kotlin.math.max(safeMax.x, 50.0)
+        
+        return Pair(safeMin, safeMax)
     }
 }
