@@ -193,17 +193,8 @@ class AnimationPanel(
     // Methods to handle changes made within this UI
     //--------------------------------------------------------------------------
 
-    // Call this to initiate a change in the pattern.
-    //
-    // There are three levels of "pattern restart":
-    // 1. Full restart (reset camera angle and zoom, restart animation at t = 0)
-    // 2. Pattern update (leave camera angle and time unchanged, re-fit the
-    //    animation to the rendering frame)
-    // 3. Pattern update w/o size refit (as #2 but w/o size refit)
-    //
-    // For any edits made in EditLadderDiagram we use restart #2.
-    // For any edits made in AnimationEditPanel we use restart #3 while mouse
-    // dragging is active, then restart #2 on mouse release.
+    // (Re)start the juggling with default camera position and other settings,
+    // with optionally a new pattern and/or preferences.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
@@ -238,7 +229,6 @@ class AnimationPanel(
             catchclip = AudioSystem.getLine(info) as Clip?
             catchclip!!.open(catchAudioIn)
         } catch (_: Exception) {
-            // System.out.println("Error loading catch.au: " + e.getMessage());
             catchclip = null
         }
         try {
@@ -248,7 +238,6 @@ class AnimationPanel(
             bounceclip = AudioSystem.getLine(info) as Clip?
             bounceclip!!.open(bounceAudioIn)
         } catch (_: Exception) {
-            // System.out.println("Error loading bounce.au: " + e.getMessage());
             bounceclip = null
         }
     }
