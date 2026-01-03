@@ -1,5 +1,5 @@
 //
-// LadderDiagram.kt
+// LadderDiagramPanel.kt
 //
 // This class draws the vertical ladder diagram on the right side of Edit view.
 // This includes mouse interaction and editing functions.
@@ -35,7 +35,7 @@ import javax.swing.event.PopupMenuListener
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.*
 
-class LadderDiagram(
+class LadderDiagramPanel(
     val state: PatternAnimationState,
     val parentFrame: JFrame?
 ) : JPanel(), MouseListener, MouseMotionListener, ActionListener {
@@ -1329,7 +1329,7 @@ class LadderDiagram(
                                     "png"
                                 )
                             )
-                            val result = jlJfc.showOpenDialog(this@LadderDiagram)
+                            val result = jlJfc.showOpenDialog(this@LadderDiagramPanel)
                             if (result != JFileChooser.APPROVE_OPTION) {
                                 return
                             }
