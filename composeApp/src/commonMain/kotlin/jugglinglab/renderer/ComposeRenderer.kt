@@ -1,3 +1,11 @@
+//
+// ComposeRenderer.kt
+//
+// Class that draws the juggling into the frame using Compose DrawScope.
+//
+// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+//
+
 package jugglinglab.renderer
 
 import androidx.compose.ui.geometry.Offset
@@ -7,13 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.ImageBitmap
-import jugglinglab.core.Constants
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.Coordinate
-import jugglinglab.util.Coordinate.Companion.max
-import jugglinglab.util.Coordinate.Companion.min
-import jugglinglab.util.JuggleExceptionInternal
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
@@ -22,12 +25,6 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-//
-// ComposeRenderer.kt
-//
-// Class that draws the juggling into the frame using Compose DrawScope.
-// Standalone class ported from Renderer2D.kt.
-//
 class ComposeRenderer {
     // Properties formerly inherited from Renderer
     var zoomLevel: Double = 1.0

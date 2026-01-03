@@ -1,10 +1,15 @@
+//
+// AnimationLayout.kt
+//
+// Data class to hold the selection view data structures. These are calculated by
+// AnimationPanel and passed to AnimationView for rendering, and also used by
+// AnimationPanel to interpret mouse events.
+//
+// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+//
+
 package jugglinglab.ui
 
-/**
- * Data class to hold the selection view data structures.
- * These are calculated by AnimationPanel and passed to AnimationView for rendering,
- * and also used by AnimationPanel to interpret mouse events.
- */
 data class AnimationLayout(
     // Screen coordinates of visual representations for events.
     // [event index][stereo view 0/1][control point index][x/y]

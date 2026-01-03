@@ -11,15 +11,12 @@
 
 package jugglinglab.core
 
-import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLPattern
 import jugglinglab.ui.AnimationLayout
 import jugglinglab.ui.AnimationView
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.event.*
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
@@ -35,13 +32,11 @@ import jugglinglab.renderer.ComposeRenderer
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.Coordinate.Companion.sub
-import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlIsNearLine
 import androidx.compose.ui.awt.ComposePanel
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
-import kotlin.math.floor
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.max
@@ -193,13 +188,12 @@ class AnimationPanel(
 
     private fun onAnimationFrame(currentTime: Double) {
         val oldTime = lastAudioCheckTime
-        val newTime = currentTime
         lastAudioCheckTime = currentTime
         
         // Audio Logic
         if (state.prefs.catchSound && catchclip != null) {
             for (path in 1..state.pattern.numberOfPaths) {
-                if (state.pattern.layout.getPathCatchVolume(path, oldTime, newTime) > 0.0) {
+                if (state.pattern.layout.getPathCatchVolume(path, oldTime, currentTime) > 0.0) {
                     SwingUtilities.invokeLater {
                          if (catchclip!!.isActive) catchclip!!.stop()
                          catchclip!!.framePosition = 0
@@ -210,7 +204,7 @@ class AnimationPanel(
         }
         if (state.prefs.bounceSound && bounceclip != null) {
              for (path in 1..state.pattern.numberOfPaths) {
-                if (state.pattern.layout.getPathBounceVolume(path, oldTime, newTime) > 0.0) {
+                if (state.pattern.layout.getPathBounceVolume(path, oldTime, currentTime) > 0.0) {
                     SwingUtilities.invokeLater {
                         if (bounceclip!!.isActive) bounceclip!!.stop()
                         bounceclip!!.framePosition = 0
@@ -1046,9 +1040,9 @@ class AnimationPanel(
         val safeMax = patternMax ?: Coordinate(100.0, 100.0, 100.0)
         val safeMin = patternMin ?: Coordinate(-100.0, -100.0, -100.0)
         
-        safeMax.z = kotlin.math.max(safeMax.z, 180.0)
-        safeMin.x = kotlin.math.min(safeMin.x, -50.0)
-        safeMax.x = kotlin.math.max(safeMax.x, 50.0)
+        safeMax.z = max(safeMax.z, 180.0)
+        safeMin.x = min(safeMin.x, -50.0)
+        safeMax.x = max(safeMax.x, 50.0)
         
         return Pair(safeMin, safeMax)
     }

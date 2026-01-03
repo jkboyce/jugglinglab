@@ -1,3 +1,11 @@
+//
+// AnimationView.kt
+//
+// Composable juggling animation.
+//
+// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+//
+
 package jugglinglab.ui
 
 import androidx.compose.foundation.Canvas
@@ -6,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -23,10 +30,6 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.renderer.ComposeRenderer
 import jugglinglab.util.Coordinate
-import jugglinglab.util.JuggleExceptionInternal
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.roundToInt
 
 @Composable
 fun AnimationView(
@@ -119,7 +122,7 @@ fun AnimationView(
             val height = size.height.toInt()
             val borderPixels = state.prefs.borderPixels
 
-            val (minC, maxC) = calculateBoundingBox(state, renderer1)
+            val (minC, maxC) = calculateBoundingBox(state)
             
             if (state.prefs.stereo) {
                 val w = width / 2
@@ -300,7 +303,7 @@ private fun DrawScope.drawPositions(layout: AnimationLayout?, viewIndex: Int, sc
     }
 }
 
-private fun calculateBoundingBox(state: PatternAnimationState, ren: ComposeRenderer): Pair<Coordinate, Coordinate> {
+private fun calculateBoundingBox(state: PatternAnimationState): Pair<Coordinate, Coordinate> {
     val pattern = state.pattern
     
     var patternMax: Coordinate? = null
