@@ -25,7 +25,7 @@ class EditView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
-    private val ap: AnimationPanel = AnimationPanel(state)
+    private val ap = AnimationPanel(state)
     private val ladder = LadderDiagramPanel(state, patternWindow)
     private val jsp: JSplitPane
 

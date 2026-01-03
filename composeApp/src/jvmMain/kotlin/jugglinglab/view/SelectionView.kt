@@ -25,7 +25,7 @@ class SelectionView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
-    private val ja: List<AnimationPanel> = List(COUNT) {
+    private val ja = List(COUNT) {
         AnimationPanel(if (it == CENTER) state else PatternAnimationState(state.pattern, state.prefs))
     }
     private val layered: JLayeredPane
