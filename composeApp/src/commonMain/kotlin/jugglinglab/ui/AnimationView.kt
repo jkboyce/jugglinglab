@@ -66,7 +66,7 @@ fun AnimationView(
             while (ca[0] >= 2 * Math.PI) ca[0] -= 2 * Math.PI
 
             if (state.prefs.stereo) {
-                val separation = 0.10 // STEREO_SEPARATION_RADIANS
+                val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
                 renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
                 renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
             } else {
@@ -120,12 +120,12 @@ fun AnimationView(
             val width = size.width.toInt()
             val height = size.height.toInt()
             val borderPixels = state.prefs.borderPixels
-            val (minC, maxC) = layout.boundingBox
+            val (overallMin, overallMax) = layout.boundingBox
 
             if (state.prefs.stereo) {
                 val w = width / 2
-                renderer1.initDisplay(w, height, borderPixels, maxC, minC)
-                renderer2.initDisplay(w, height, borderPixels, maxC, minC)
+                renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
+                renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
 
                 withTransform({ translate(left = 0f, top = 0f) }) {
                     renderer1.drawFrame(
@@ -149,7 +149,7 @@ fun AnimationView(
                     drawPositions(layout, 1, this, density)
                 }
             } else {
-                renderer1.initDisplay(width, height, borderPixels, maxC, minC)
+                renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
                 renderer1.drawFrame(
                     state.time,
                     state.propForPath,

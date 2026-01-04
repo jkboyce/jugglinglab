@@ -93,7 +93,7 @@ class AnimationLayout(
 
     private fun initRenderers() {
         if (width > 0 && height > 0) {
-            val (overallMin, overallMax) = calculateBoundingBox()
+            val (overallMin, overallMax) = boundingBox
 
             if (state.prefs.stereo) {
                 calcRenderer1.initDisplay(
@@ -128,9 +128,9 @@ class AnimationLayout(
         if (state.prefs.stereo) {
             calcRenderer2.setPattern(state.pattern)
             calcRenderer2.zoomLevel = state.zoom
-            val sep = 0.10
-            calcRenderer1.cameraAngle = doubleArrayOf(ca[0] - sep / 2, ca[1])
-            calcRenderer2.cameraAngle = doubleArrayOf(ca[0] + sep / 2, ca[1])
+            val separation = STEREO_SEPARATION_RADIANS
+            calcRenderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
+            calcRenderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
         } else {
             calcRenderer1.cameraAngle = ca
         }
@@ -321,6 +321,8 @@ class AnimationLayout(
             while (delta <= -Math.PI) delta += 2 * Math.PI
             return abs(delta)
         }
+
+        const val STEREO_SEPARATION_RADIANS: Double = 0.1
 
         private const val EVENT_BOX_HW_CM: Double = 5.0
         private const val UNSELECTED_BOX_HW_CM: Double = 2.0
