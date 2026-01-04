@@ -25,11 +25,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.*
 
 @Composable
 fun LadderDiagramView(
     layout: LadderLayout,
     state: PatternAnimationState,
+    onPress: (Offset, Boolean) -> Unit,
+    onDrag: (Offset) -> Unit,
+    onRelease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val trackerY = layout.timeToY(state.time)
@@ -37,30 +41,29 @@ fun LadderDiagramView(
     val propForPath = state.propForPath
     val textMeasurer = rememberTextMeasurer()
 
-    /*
-    LaunchedEffect(state) {
-        var lastFrameTime = withFrameNanos { it }
+    Canvas(modifier = modifier.fillMaxSize().pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent()
+                val change = event.changes.first()
+                val offset = change.position
+                // Check if right mouse button is pressed (secondary button)
+                // Note: isSecondaryPressed might need careful check across platforms
+                val isPopup = (event.buttons.isSecondaryPressed)
 
-        while (isActive) {
-            // update 'state.clock' when the next display frame is ready
-            withFrameNanos { currentFrameTime ->
-                // Calculate time difference in seconds
-                val dt = (currentFrameTime - lastFrameTime) /
-                    (1_000_000_000.0 * state.prefs.slowdown)
-                lastFrameTime = currentFrameTime
-
-                if (!state.isPaused) {
-                    // Advance the simulation time
-                    state.time += dt
+                if (change.changedToDown()) {
+                    onPress(offset, isPopup)
+                    change.consume()
+                } else if (change.pressed && change.positionChanged()) {
+                    onDrag(offset)
+                    change.consume()
+                } else if (change.changedToUp()) {
+                    onRelease()
+                    change.consume()
                 }
-
-                //state.clock = currentFrameTime
             }
         }
-    }
-    */
-
-    Canvas(modifier = modifier.fillMaxSize()) {
+    }) {
         val width = size.width
         val height = size.height
 
