@@ -8,6 +8,10 @@
 
 package jugglinglab.ui
 
+import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.PatternAnimationState
+import jugglinglab.renderer.ComposeRenderer
+import jugglinglab.util.Coordinate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,10 +30,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalDensity
-import jugglinglab.core.AnimationPrefs
-import jugglinglab.core.PatternAnimationState
-import jugglinglab.renderer.ComposeRenderer
-import jugglinglab.util.Coordinate
 
 @Composable
 fun AnimationView(

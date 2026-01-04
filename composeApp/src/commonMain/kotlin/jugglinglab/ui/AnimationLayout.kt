@@ -1,7 +1,7 @@
 //
 // AnimationLayout.kt
 //
-// Data class to hold the selection view data structures. These are calculated by
+// Class to hold the selection view data structures. These are calculated by
 // AnimationPanel and passed to AnimationView for rendering, and also used by
 // AnimationPanel to interpret mouse events.
 //
@@ -10,7 +10,7 @@
 
 package jugglinglab.ui
 
-data class AnimationLayout(
+class AnimationLayout(
     // Screen coordinates of visual representations for events.
     // [event index][stereo view 0/1][control point index][x/y]
     val eventPoints: Array<Array<Array<DoubleArray>>> = Array(0) { Array(0) { Array(0) { DoubleArray(0) } } },
@@ -33,6 +33,7 @@ data class AnimationLayout(
     val showZDragControl: Boolean = false,
     val showAngleDragControl: Boolean = false
 ) {
+    /*
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -64,4 +65,5 @@ data class AnimationLayout(
         result = 31 * result + showAngleDragControl.hashCode()
         return result
     }
+     */
 }

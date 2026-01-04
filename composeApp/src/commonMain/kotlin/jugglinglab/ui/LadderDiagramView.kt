@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LadderDiagramView(
-    layout: LadderLayout,
     state: PatternAnimationState,
+    layout: LadderLayout,
     modifier: Modifier = Modifier
 ) {
     val trackerY = layout.timeToY(state.time)

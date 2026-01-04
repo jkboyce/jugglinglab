@@ -8,6 +8,8 @@
 
 package jugglinglab.renderer
 
+import jugglinglab.jml.JMLPattern
+import jugglinglab.util.Coordinate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -15,8 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import jugglinglab.jml.JMLPattern
-import jugglinglab.util.Coordinate
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max

@@ -98,7 +98,7 @@ class LadderDiagramPanel(
                     currentDensity = density
                 }
 
-                LadderDiagramView(layout, state)
+                LadderDiagramView(state = state, layout = layout)
             }
         }
 
@@ -149,6 +149,97 @@ class LadderDiagramPanel(
             inputPanel.addMouseListener(this)
             inputPanel.addMouseMotionListener(this)
         }
+    }
+
+    //--------------------------------------------------------------------------
+    // Methods to find ladder items
+    //--------------------------------------------------------------------------
+
+    // Return the currently selected item.
+
+    private fun activeLadderItem(): LadderItem? {
+        val layout = currentLayout ?: return null
+        val activeItemHash = state.selectedItemHashCode
+
+        for (item in layout.eventItems) {
+            if (item.jlHashCode == activeItemHash) {
+                return item
+            }
+        }
+        for (item in layout.positionItems) {
+            if (item.jlHashCode == activeItemHash) {
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
+        val layout = currentLayout ?: return null
+        for (item in layout.eventItems) {
+            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getSelectedLadderPosition(x: Int, y: Int): LadderPositionItem? {
+        val layout = currentLayout ?: return null
+        for (item in layout.positionItems) {
+            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
+                return item
+            }
+        }
+        return null
+    }
+
+    @Suppress("SameParameterValue")
+    private fun getSelectedLadderPath(x: Int, y: Int, slop: Int): LadderPathItem? {
+        val layout = currentLayout ?: return null
+        var result: LadderPathItem? = null
+        var dmin = 0.0
+
+        if (y < (layout.borderTop - slop) || y > (layout.height - layout.borderTop + slop)) {
+            return null
+        }
+
+        for (item in layout.pathItems) {
+            var d: Double
+
+            if (item.type == LadderItem.TYPE_SELF) {
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
+                    continue
+                }
+                d = ((x - item.xCenter) * (x - item.xCenter) +
+                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
+                d = abs(sqrt(d) - item.radius)
+            } else {
+                val xmin = min(item.xStart, item.xEnd)
+                val xmax = max(item.xStart, item.xEnd)
+
+                if (x < (xmin - slop) || x > (xmax + slop)) {
+                    continue
+                }
+                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
+                    continue
+                }
+                d = ((item.xEnd - item.xStart) * (y - item.yStart)
+                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
+                d = abs(d) / sqrt(
+                    ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
+                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
+                )
+            }
+
+            if (d.toInt() < slop) {
+                if (result == null || d < dmin) {
+                    result = item
+                    dmin = d
+                }
+            }
+        }
+        return result
     }
 
     //--------------------------------------------------------------------------
@@ -369,97 +460,6 @@ class LadderDiagramPanel(
     }
 
     override fun mouseMoved(e: MouseEvent?) {}
-
-    //--------------------------------------------------------------------------
-    // Methods to find ladder items
-    //--------------------------------------------------------------------------
-
-    // Return the currently selected item.
-
-    private fun activeLadderItem(): LadderItem? {
-        val layout = currentLayout ?: return null
-        val activeItemHash = state.selectedItemHashCode
-
-        for (item in layout.eventItems) {
-            if (item.jlHashCode == activeItemHash) {
-                return item
-            }
-        }
-        for (item in layout.positionItems) {
-            if (item.jlHashCode == activeItemHash) {
-                return item
-            }
-        }
-        return null
-    }
-
-    private fun getSelectedLadderEvent(x: Int, y: Int): LadderEventItem? {
-        val layout = currentLayout ?: return null
-        for (item in layout.eventItems) {
-            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
-                return item
-            }
-        }
-        return null
-    }
-
-    private fun getSelectedLadderPosition(x: Int, y: Int): LadderPositionItem? {
-        val layout = currentLayout ?: return null
-        for (item in layout.positionItems) {
-            if (x >= item.xLow && x <= item.xHigh && y >= item.yLow && y <= item.yHigh) {
-                return item
-            }
-        }
-        return null
-    }
-
-    @Suppress("SameParameterValue")
-    private fun getSelectedLadderPath(x: Int, y: Int, slop: Int): LadderPathItem? {
-        val layout = currentLayout ?: return null
-        var result: LadderPathItem? = null
-        var dmin = 0.0
-
-        if (y < (layout.borderTop - slop) || y > (layout.height - layout.borderTop + slop)) {
-            return null
-        }
-
-        for (item in layout.pathItems) {
-            var d: Double
-
-            if (item.type == LadderItem.TYPE_SELF) {
-                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
-                    continue
-                }
-                d = ((x - item.xCenter) * (x - item.xCenter) +
-                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
-                d = abs(sqrt(d) - item.radius)
-            } else {
-                val xmin = min(item.xStart, item.xEnd)
-                val xmax = max(item.xStart, item.xEnd)
-
-                if (x < (xmin - slop) || x > (xmax + slop)) {
-                    continue
-                }
-                if (y < (item.yStart - slop) || y > (item.yEnd + slop)) {
-                    continue
-                }
-                d = ((item.xEnd - item.xStart) * (y - item.yStart)
-                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
-                d = abs(d) / sqrt(
-                    ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
-                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
-                )
-            }
-
-            if (d.toInt() < slop) {
-                if (result == null || d < dmin) {
-                    result = item
-                    dmin = d
-                }
-            }
-        }
-        return result
-    }
 
     //--------------------------------------------------------------------------
     // Utility methods for mouse interactions
