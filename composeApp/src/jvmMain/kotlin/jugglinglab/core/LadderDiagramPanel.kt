@@ -94,8 +94,8 @@ class LadderDiagramPanel(
                 }
 
                 SideEffect {
-                    currentLayout = layout
                     currentDensity = density
+                    currentLayout = layout
                 }
 
                 LadderDiagramView(state = state, layout = layout)

@@ -37,29 +37,6 @@ fun LadderDiagramView(
     val propForPath = state.propForPath
     val textMeasurer = rememberTextMeasurer()
 
-    /*
-    LaunchedEffect(state) {
-        var lastFrameTime = withFrameNanos { it }
-
-        while (isActive) {
-            // update 'state.clock' when the next display frame is ready
-            withFrameNanos { currentFrameTime ->
-                // Calculate time difference in seconds
-                val dt = (currentFrameTime - lastFrameTime) /
-                    (1_000_000_000.0 * state.prefs.slowdown)
-                lastFrameTime = currentFrameTime
-
-                if (!state.isPaused) {
-                    // Advance the simulation time
-                    state.time += dt
-                }
-
-                //state.clock = currentFrameTime
-            }
-        }
-    }
-    */
-
     Canvas(modifier = modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height

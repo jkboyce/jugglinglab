@@ -32,7 +32,7 @@ class ComposeRenderer {
             field = value
             setZoom(value)
         }
-    
+
     var cameraAngle: DoubleArray = doubleArrayOf(0.0, 0.0)
         set(value) {
             field = doubleArrayOf(value[0], value[1])
@@ -40,10 +40,10 @@ class ComposeRenderer {
                 calculateCameraMatrix()
             }
         }
-        
+
     private var background: Color = Color.White
     var showground: Boolean = false
-    
+
     // Internal fields
     private var cameracenter: JLVector? = null
     private var m: JLMatrix = JLMatrix()
@@ -82,7 +82,7 @@ class ComposeRenderer {
         obj2 = MutableList(maxobjects) { DrawObject2D(maxobjects) }
         jugglervec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
     }
-    
+
     fun setGround(show: Boolean) {
         this.showground = show
     }
@@ -249,13 +249,13 @@ class ComposeRenderer {
                 val y1 = obj[index].coord[0].y.roundToInt().toFloat()
                 val x2 = obj[index].coord[1].x.roundToInt().toFloat()
                 val y2 = obj[index].coord[1].y.roundToInt().toFloat()
-                
+
                 // Bounding box for line
                 val left = min(x1, x2)
                 val top = min(y1, y2)
                 val right = max(x1, x2)
                 val bottom = max(y1, y2)
-                
+
                 obj[index].boundingbox = Rect(left, top, max(left + 1f, right), max(top + 1f, bottom))
                 index++
             }
@@ -277,12 +277,12 @@ class ComposeRenderer {
             getXYZ(jugglervec[i - 1][9]!!, obj[index].coord[5]) // left head top
             getXYZ(jugglervec[i - 1][10]!!, obj[index].coord[6]) // right head bottom
             getXYZ(jugglervec[i - 1][11]!!, obj[index].coord[7]) // right head top
-            
+
             var xmin = obj[index].coord[0].x.roundToInt()
             var xmax = xmin
             var ymin = obj[index].coord[0].y.roundToInt()
             var ymax = ymin
-            
+
             for (j in 1..7) {
                 val x = obj[index].coord[j].x.roundToInt()
                 val y = obj[index].coord[j].y.roundToInt()
@@ -371,24 +371,24 @@ class ComposeRenderer {
                     val pr = pat.getProp(pnum[ob.number - 1])
                     val x = ob.coord[0].x.roundToInt()
                     val y = ob.coord[0].y.roundToInt()
-                    
+
                     val image = pr.getProp2DImage(zoom, cameraAngle)
-                    
+
                     if (image != null) {
-                         val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                         drawScope.drawImage(
-                             image = image,
-                             topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat())
-                         )
+                        val center = pr.getProp2DCenter(zoom, cameraAngle)!!
+                        drawScope.drawImage(
+                            image = image,
+                            topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat())
+                        )
                     } else {
                         val size = pr.getProp2DSize(zoom, cameraAngle)
                         if (size != null) {
                             val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                             drawScope.drawOval(
-                                 color = pr.getEditorColor(), 
-                                 topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat()),
-                                 size = Size(size.width.toFloat(), size.height.toFloat())
-                             )
+                            drawScope.drawOval(
+                                color = pr.getEditorColor(),
+                                topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat()),
+                                size = Size(size.width.toFloat(), size.height.toFloat())
+                            )
                         }
                     }
                 }
@@ -403,19 +403,19 @@ class ComposeRenderer {
                     drawScope.drawPath(path, background)
                     drawScope.drawPath(path, Color.Black, style = Stroke(2f))
 
-                    val LheadBx = ob.coord[4].x
-                    val LheadBy = ob.coord[4].y
-                    val LheadTy = ob.coord[5].y
-                    val RheadBx = ob.coord[6].x
-                    val RheadBy = ob.coord[6].y
-                    
-                    if (abs(RheadBx - LheadBx) > 2.0) {
+                    val lHeadBx = ob.coord[4].x
+                    val lHeadBy = ob.coord[4].y
+                    val lHeadTy = ob.coord[5].y
+                    val rHeadBx = ob.coord[6].x
+                    val rHeadBy = ob.coord[6].y
+
+                    if (abs(rHeadBx - lHeadBx) > 2.0) {
                         val headPath = Path()
                         for (j in 0..<polysides) {
-                            headx[j] = (0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx))).roundToInt()
-                            heady[j] = (0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy))
-                                + (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx - LheadBx)).roundToInt()
-                            
+                            headx[j] = (0.5 * (lHeadBx + rHeadBx + headcos[j] * (rHeadBx - lHeadBx))).roundToInt()
+                            heady[j] = (0.5 * (lHeadBy + lHeadTy + headsin[j] * (lHeadBy - lHeadTy))
+                                    + (headx[j] - lHeadBx) * (rHeadBy - lHeadBy) / (rHeadBx - lHeadBx)).roundToInt()
+
                             if (j == 0) headPath.moveTo(headx[j].toFloat(), heady[j].toFloat())
                             else headPath.lineTo(headx[j].toFloat(), heady[j].toFloat())
                         }
@@ -423,10 +423,11 @@ class ComposeRenderer {
                         drawScope.drawPath(headPath, background)
                         drawScope.drawPath(headPath, Color.Black, style = Stroke(2f))
                     } else {
-                        val h = sqrt((LheadBy - LheadTy) * (LheadBy - LheadTy) + (RheadBy - LheadBy) * (RheadBy - LheadBy))
-                        val hx = (0.5 * (LheadBx + RheadBx)).toFloat()
-                        val hy1 = (0.5 * (LheadTy + RheadBy + h)).toFloat()
-                        val hy2 = (0.5 * (LheadTy + RheadBy - h)).toFloat()
+                        val h =
+                            sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
+                        val hx = (0.5 * (lHeadBx + rHeadBx)).toFloat()
+                        val hy1 = (0.5 * (lHeadTy + rHeadBy + h)).toFloat()
+                        val hy2 = (0.5 * (lHeadTy + rHeadBy - h)).toFloat()
                         drawScope.drawLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = 2f)
                     }
                 }
@@ -476,9 +477,11 @@ class ComposeRenderer {
                     TYPE_BODY -> {
                         vectorProduct(obj.coord[0], obj.coord[1], obj.coord[2], tempv)
                         if (tempv.z == 0.0) return false
-                        val z = obj.coord[0].z - (tempv.x * (coord[0].x - obj.coord[0].x) + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z
+                        val z =
+                            obj.coord[0].z - (tempv.x * (coord[0].x - obj.coord[0].x) + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z
                         return (coord[0].z < z)
                     }
+
                     TYPE_LINE -> return (isBoxCoveringLine(this, obj) == 1)
                 }
 
@@ -486,14 +489,17 @@ class ComposeRenderer {
                     TYPE_PROP -> {
                         vectorProduct(coord[0], coord[1], coord[2], tempv)
                         if (tempv.z == 0.0) return false
-                        val z = coord[0].z - (tempv.x * (obj.coord[0].x - coord[0].x) + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z
+                        val z =
+                            coord[0].z - (tempv.x * (obj.coord[0].x - coord[0].x) + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z
                         return (z < obj.coord[0].z)
                     }
+
                     TYPE_BODY -> {
                         var d = 0.0
                         for (i in 0..3) d += (coord[i].z - obj.coord[i].z)
                         return (d < 0.0)
                     }
+
                     TYPE_LINE -> return (isBoxCoveringLine(this, obj) == 1)
                 }
 
@@ -521,7 +527,8 @@ class ComposeRenderer {
                 val x = line.coord[i].x
                 val y = line.coord[i].y
                 if (box.boundingbox.contains(Offset((x + 0.5).toFloat(), (y + 0.5).toFloat()))) {
-                    val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
+                    val zb =
+                        (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
                     if (line.coord[i].z < (zb - SLOP)) return -1
                     endinbb = true
                 }
@@ -530,32 +537,36 @@ class ComposeRenderer {
 
             var intersection = false
             // Check top/bottom edges of bbox
-             for (i in 0..1) {
+            for (i in 0..1) {
                 val x = (if (i == 0) box.boundingbox.left else box.boundingbox.right).toDouble()
                 if (x < min(line.coord[0].x, line.coord[1].x) || x > max(line.coord[0].x, line.coord[1].x)) continue
                 if (line.coord[1].x == line.coord[0].x) continue
-                
-                val y = line.coord[0].y + (line.coord[1].y - line.coord[0].y) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x)
+
+                val y =
+                    line.coord[0].y + (line.coord[1].y - line.coord[0].y) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x)
                 if (y < box.boundingbox.top || y > box.boundingbox.bottom) continue
-                
+
                 intersection = true
                 val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
-                val zl = (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
+                val zl =
+                    (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
                 if (zl < (zb - SLOP)) return -1
             }
-            
+
             // Check left/right edges of bbox
             for (i in 0..1) {
                 val y = (if (i == 0) box.boundingbox.top else box.boundingbox.bottom).toDouble()
                 if (y < min(line.coord[0].y, line.coord[1].y) || y > max(line.coord[0].y, line.coord[1].y)) continue
                 if (line.coord[1].y == line.coord[0].y) continue
-                
-                val x = line.coord[0].x + (line.coord[1].x - line.coord[0].x) * (y - line.coord[0].y) / (line.coord[1].y - line.coord[0].y)
+
+                val x =
+                    line.coord[0].x + (line.coord[1].x - line.coord[0].x) * (y - line.coord[0].y) / (line.coord[1].y - line.coord[0].y)
                 if (x < box.boundingbox.left || x > box.boundingbox.right) continue
-                
+
                 intersection = true
                 val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
-                val zl = (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
+                val zl =
+                    (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
                 if (zl < (zb - SLOP)) return -1
             }
 
