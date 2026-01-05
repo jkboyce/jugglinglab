@@ -209,16 +209,14 @@ class ComposeRenderer {
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pat.getProp(pnum[i - 1])
-            if (pr.getProp2DImage(zoom, cameraAngle) != null) {
-                val center = pr.getProp2DCenter(zoom, cameraAngle)
-                val size = pr.getProp2DSize(zoom, cameraAngle)
-                obj[index].boundingbox = Rect(
-                    (x - center!!.width).toFloat(),
-                    (y - center.height).toFloat(),
-                    (x - center.width + size!!.width).toFloat(),
-                    (y - center.height + size.height).toFloat()
-                )
-            }
+            val center = pr.getProp2DCenter(zoom, cameraAngle)
+            val size = pr.getProp2DSize(zoom, cameraAngle)
+            obj[index].boundingbox = Rect(
+                (x - center!!.width).toFloat(),
+                (y - center.height).toFloat(),
+                (x - center.width + size!!.width).toFloat(),
+                (y - center.height + size.height).toFloat()
+            )
             propmin = min(propmin, pr.getMin()!!.z)
             index++
         }
@@ -241,7 +239,7 @@ class ComposeRenderer {
                     tempv2.z = tempv1.z
                 }
                 tempv2.y = propmin
-                tempv1.y = tempv2.y
+                tempv1.y = propmin
 
                 getXYZ(tempv1, obj[index].coord[0])
                 getXYZ(tempv2, obj[index].coord[1])
@@ -322,7 +320,7 @@ class ComposeRenderer {
         }
         numobjects = index
 
-        // Depth sorting
+        // figure out which display elements are covering which other elements
         for (i in 0..<numobjects) {
             for (j in 0..<numobjects) {
                 if (j == i) continue
@@ -333,36 +331,44 @@ class ComposeRenderer {
             obj[i].drawn = false
         }
 
+        // figure out a drawing order
         index = 0
-        var changed = true
-        while (changed) {
-            changed = false
-            for (i in 0..<numobjects) {
-                if (obj[i].drawn) continue
-
-                var candraw = true
-                for (j in obj[i].covering.indices) {
-                    if (!obj[i].covering[j].drawn) {
-                        candraw = false
-                        break
+        for (pass in 1..2) {
+            // first assign a drawing order based on "covering" constraints
+            var changed = true
+            while (changed) {
+                changed = false
+                for (i in 0..<numobjects) {
+                    if (obj[i].drawn) {
+                        continue
+                    }
+                    if (obj[i].covering.all { it.drawn }) {
+                        obj2[index] = obj[i]
+                        obj[i].drawn = true
+                        index++
+                        changed = true
                     }
                 }
-                if (candraw) {
-                    obj2[index] = obj[i]
-                    obj[i].drawn = true
-                    index++
-                    changed = true
+            }
+
+            // We sometimes get situations where A > B > C > A from a covering
+            // standpoint, and the objects aren't yet drawn. On pass 1 we draw
+            // the lines next, then resume the above algorithm in pass 2. At the
+            // end of pass 2 we draw everything remaining in arbitrary order.
+            for (i in 0..<numobjects) {
+                if (obj[i].drawn) {
+                    continue
                 }
+                if (pass == 1 && obj[i].type != DrawObject2D.TYPE_LINE) {
+                    continue
+                }
+                obj2[index] = obj[i]
+                obj[i].drawn = true
+                index++
             }
         }
-        for (i in 0..<numobjects) {
-            if (obj[i].drawn) continue
-            obj2[index] = obj[i]
-            obj[i].drawn = true
-            index++
-        }
 
-        // Draw sorted objects
+        // draw the objects in the sorted order
         for (i in 0..<numobjects) {
             val ob = obj2[i]
 
@@ -462,7 +468,7 @@ class ComposeRenderer {
         var number: Int = 0
         var coord: MutableList<JLVector> = MutableList(8) { JLVector() }
         var boundingbox: Rect = Rect.Zero
-        var covering: MutableList<DrawObject2D> = ArrayList(numobjects)
+        var covering: MutableList<DrawObject2D> = mutableListOf()
         var drawn: Boolean = false
         var tempv: JLVector = JLVector()
 
@@ -477,8 +483,8 @@ class ComposeRenderer {
                     TYPE_BODY -> {
                         vectorProduct(obj.coord[0], obj.coord[1], obj.coord[2], tempv)
                         if (tempv.z == 0.0) return false
-                        val z =
-                            obj.coord[0].z - (tempv.x * (coord[0].x - obj.coord[0].x) + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z
+                        val z = obj.coord[0].z -
+                                (tempv.x * (coord[0].x - obj.coord[0].x) + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z
                         return (coord[0].z < z)
                     }
 
@@ -489,8 +495,8 @@ class ComposeRenderer {
                     TYPE_PROP -> {
                         vectorProduct(coord[0], coord[1], coord[2], tempv)
                         if (tempv.z == 0.0) return false
-                        val z =
-                            coord[0].z - (tempv.x * (obj.coord[0].x - coord[0].x) + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z
+                        val z = coord[0].z -
+                                (tempv.x * (obj.coord[0].x - coord[0].x) + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z
                         return (z < obj.coord[0].z)
                     }
 
