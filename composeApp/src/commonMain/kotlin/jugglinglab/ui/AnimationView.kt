@@ -12,7 +12,6 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.renderer.ComposeRenderer
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,13 +27,21 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalDensity
 
 @Composable
 fun AnimationView(
-    state: PatternAnimationState,
     layout: AnimationLayout,
-    onFrame: (Double) -> Unit  // Callback with current animation time for sound playback
+    state: PatternAnimationState,
+    onPress: (Offset) -> Unit,
+    onDrag: (Offset) -> Unit,
+    onRelease: () -> Unit,
+    onFrame: (Double) -> Unit,  // callback with current animation time for sound playback
+    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current.density
 
@@ -113,43 +120,41 @@ fun AnimationView(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawRect(color = Color.White)
+    Canvas(modifier = modifier.fillMaxSize()
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    val change = event.changes.first()
+                    val offset = change.position
 
-            val width = size.width.toInt()
-            val height = size.height.toInt()
-            val borderPixels = state.prefs.borderPixels
-            val (overallMin, overallMax) = layout.boundingBox
-
-            if (state.prefs.stereo) {
-                val w = width / 2
-                renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
-                renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
-
-                withTransform({ translate(left = 0f, top = 0f) }) {
-                    renderer1.drawFrame(
-                        state.time,
-                        state.propForPath,
-                        state.prefs.hideJugglers,
-                        this
-                    )
-                    drawEventOverlays(layout, 0, this, density)
-                    drawPositions(layout, 0, this, density)
+                    if (change.changedToDown()) {
+                        onPress(offset)
+                        change.consume()
+                    } else if (change.pressed && change.positionChanged()) {
+                        onDrag(offset)
+                        change.consume()
+                    } else if (change.changedToUp()) {
+                        onRelease()
+                        change.consume()
+                    }
                 }
+            }
+        }
+    ) {
+        drawRect(color = Color.White)
 
-                withTransform({ translate(left = w.toFloat(), top = 0f) }) {
-                    renderer2.drawFrame(
-                        state.time,
-                        state.propForPath,
-                        state.prefs.hideJugglers,
-                        this
-                    )
-                    drawEventOverlays(layout, 1, this, density)
-                    drawPositions(layout, 1, this, density)
-                }
-            } else {
-                renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
+        val width = size.width.toInt()
+        val height = size.height.toInt()
+        val borderPixels = state.prefs.borderPixels
+        val (overallMin, overallMax) = layout.boundingBox
+
+        if (state.prefs.stereo) {
+            val w = width / 2
+            renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
+            renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
+
+            withTransform({ translate(left = 0f, top = 0f) }) {
                 renderer1.drawFrame(
                     state.time,
                     state.propForPath,
@@ -159,6 +164,27 @@ fun AnimationView(
                 drawEventOverlays(layout, 0, this, density)
                 drawPositions(layout, 0, this, density)
             }
+
+            withTransform({ translate(left = w.toFloat(), top = 0f) }) {
+                renderer2.drawFrame(
+                    state.time,
+                    state.propForPath,
+                    state.prefs.hideJugglers,
+                    this
+                )
+                drawEventOverlays(layout, 1, this, density)
+                drawPositions(layout, 1, this, density)
+            }
+        } else {
+            renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
+            renderer1.drawFrame(
+                state.time,
+                state.propForPath,
+                state.prefs.hideJugglers,
+                this
+            )
+            drawEventOverlays(layout, 0, this, density)
+            drawPositions(layout, 0, this, density)
         }
     }
 }

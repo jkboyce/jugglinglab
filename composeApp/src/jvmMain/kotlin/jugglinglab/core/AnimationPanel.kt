@@ -116,8 +116,11 @@ class AnimationPanel(
                 }
 
                 AnimationView(
-                    state = state,
                     layout = layout,
+                    state = state,
+                    onPress = { offset -> handlePress(offset) },
+                    onDrag = { offset -> handleDrag(offset) },
+                    onRelease = { handleRelease() },
                     onFrame = { time -> onAnimationFrame(time) }
                 )
             }
@@ -215,7 +218,6 @@ class AnimationPanel(
             oldTime -= (state.pattern.loopEndTime - state.pattern.loopStartTime)
         }
 
-        // Audio Logic
         if (state.prefs.catchSound && catchClip != null) {
             for (path in 1..state.pattern.numberOfPaths) {
                 if (state.pattern.layout.getPathCatchVolume(path, oldTime, currentTime) > 0.0) {
@@ -238,6 +240,26 @@ class AnimationPanel(
                 }
             }
         }
+    }
+
+    //--------------------------------------------------------------------------
+    // Mouse event handlers (called from Compose)
+    //--------------------------------------------------------------------------
+
+    private fun handlePress(offset: androidx.compose.ui.geometry.Offset) {
+        val mx = offset.x.toInt()
+        val my = offset.y.toInt()
+        //mousePressedLogic(mx, my)
+    }
+
+    private fun handleDrag(offset: androidx.compose.ui.geometry.Offset) {
+        val mx = offset.x.toInt()
+        val my = offset.y.toInt()
+        //mouseDraggedLogic(mx, my)
+    }
+
+    private fun handleRelease() {
+        //mouseReleasedLogic()
     }
 
     //--------------------------------------------------------------------------
