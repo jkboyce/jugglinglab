@@ -22,340 +22,273 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
     private var tf2: JTextField
     private var tf3: JTextField
     private var tf4: JTextField
-    private var tf5: JTextField /*tf6,*/
-    private var tf7: JTextField /*tf8,*/
-    private var tf9: JTextField
-    private var cb1: JRadioButton
-    private var cb2: JRadioButton /*cb3,*/
-    private var cb4: JRadioButton
-    private var cb5: JRadioButton
-    private var cb6: JRadioButton
+    private var tf5: JTextField
+    private var tf7: JTextField
+
+    // Filters
     private var cb7: JCheckBox
     private var cb8: JCheckBox
     private var cb9: JCheckBox
     private var cb10: JCheckBox
-    private var cb12: JCheckBox
-    private var cb13: JCheckBox
-    private var cb14: JCheckBox
+
+    // Passing Filters
     private var cb15: JCheckBox
-    private var cb16: JCheckBox
     private var cb17: JCheckBox
     private var cb18: JCheckBox
+
+    // Multiplexing Filters
+    private var cb13: JCheckBox
+    private var cb14: JCheckBox
+    private var cb16: JCheckBox
+
     private var lab1: JLabel
-    private var lab2: JLabel /*lab3,*/
-    private var lab4: JLabel /*lab5,*/
-    private var lab13: JLabel
-    private var c1: JComboBox<String?>
+    private var lab2: JLabel
+    private var lab4: JLabel
+
+    // ComboBoxes on left
+    private var comboJugglers: JComboBox<String>
+    private var comboRhythm: JComboBox<String>
+    private var comboMultiplexing: JComboBox<String>
+    private var comboCompositions: JComboBox<String>
 
     init {
         setOpaque(false)
         val gb = GridBagLayout()
         setLayout(gb)
 
-        val p2 = JPanel()  // top section
-        p2.setLayout(gb)
-        val lab6 = JLabel(jlGetStringResource(Res.string.gui_balls))
-        p2.add(lab6)
-        gb.setConstraints(
-            lab6, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
-        )
+        // --- Top Section: Balls, Max Throw, Period ---
+        val pTop = JPanel()
+        pTop.setLayout(gb)
+
+        val labBalls = JLabel(jlGetStringResource(Res.string.gui_balls))
+        pTop.add(labBalls)
+        gb.setConstraints(labBalls, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3)))
+
         tf1 = JTextField(3)
-        p2.add(tf1)
+        pTop.add(tf1)
         gb.setConstraints(tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
-        val lab7 = JLabel(jlGetStringResource(Res.string.gui_max__throw))
-        p2.add(lab7)
-        gb.setConstraints(
-            lab7, jlConstraints(GridBagConstraints.LINE_END, 2, 0, Insets(0, 15, 0, 3))
-        )
+
+        val labMaxThrow = JLabel(jlGetStringResource(Res.string.gui_max__throw))
+        pTop.add(labMaxThrow)
+        gb.setConstraints(labMaxThrow, jlConstraints(GridBagConstraints.LINE_END, 2, 0, Insets(0, 15, 0, 3)))
+
         tf2 = JTextField(3)
-        p2.add(tf2)
+        pTop.add(tf2)
         gb.setConstraints(tf2, jlConstraints(GridBagConstraints.LINE_START, 3, 0))
-        val lab8 = JLabel(jlGetStringResource(Res.string.gui_period))
-        p2.add(lab8)
-        gb.setConstraints(
-            lab8, jlConstraints(GridBagConstraints.LINE_END, 4, 0, Insets(0, 15, 0, 3))
-        )
+
+        val labPeriod = JLabel(jlGetStringResource(Res.string.gui_period))
+        pTop.add(labPeriod)
+        gb.setConstraints(labPeriod, jlConstraints(GridBagConstraints.LINE_END, 4, 0, Insets(0, 15, 0, 3)))
+
         tf3 = JTextField(3)
-        p2.add(tf3)
+        pTop.add(tf3)
         gb.setConstraints(tf3, jlConstraints(GridBagConstraints.LINE_START, 5, 0))
 
-        val p6 = JPanel() // Jugglers/Rhythm section
-        p6.setLayout(gb)
-        val lab14 = JLabel(jlGetStringResource(Res.string.gui_jugglers))
-        p6.add(lab14)
-        gb.setConstraints(lab14, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
-        c1 = JComboBox<String?>()
-        for (i in 1..6) c1.addItem("$i   ")
-        p6.add(c1)
-        gb.setConstraints(
-            c1, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
-        )
-        val lab9 = JLabel(jlGetStringResource(Res.string.gui_rhythm))
-        p6.add(lab9)
-        gb.setConstraints(
-            lab9, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(8, 0, 0, 0))
-        )
-        val bg1 = ButtonGroup()
-        cb1 = JRadioButton(jlGetStringResource(Res.string.gui_asynch))
-        bg1.add(cb1)
-        p6.add(cb1)
-        gb.setConstraints(
-            cb1, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
-        )
-        cb2 = JRadioButton(jlGetStringResource(Res.string.gui_synch))
-        bg1.add(cb2)
-        p6.add(cb2)
-        gb.setConstraints(
-            cb2, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0))
-        )
-        /*
-        cb3 = new JRadioButton("passing");
-        bg1.add(cb3);
-        p6.add(cb3);
-        gb.setConstraints(cb3, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 5,
-                                                new Insets(0, 10, 0, 0)));
-        */
-        val p7 = JPanel() // Compositions section
-        p7.setLayout(gb)
-        val lab10 = JLabel(jlGetStringResource(Res.string.gui_compositions))
-        p7.add(lab10)
-        gb.setConstraints(
-            lab10, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(5, 0, 0, 0))
-        )
-        val bg2 = ButtonGroup()
-        cb5 = JRadioButton(jlGetStringResource(Res.string.gui_all))
-        bg2.add(cb5)
-        p7.add(cb5)
-        gb.setConstraints(
-            cb5, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
-        )
-        cb4 = JRadioButton(jlGetStringResource(Res.string.gui_non_obvious))
-        bg2.add(cb4)
-        p7.add(cb4)
-        gb.setConstraints(
-            cb4, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
-        )
-        cb6 = JRadioButton(jlGetStringResource(Res.string.gui_none__prime_only_))
-        bg2.add(cb6)
-        p7.add(cb6)
-        gb.setConstraints(
-            cb6, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
-        )
+        add(pTop)
+        gb.setConstraints(pTop, jlConstraints(GridBagConstraints.CENTER, 0, 0, Insets(BORDER, BORDER, 5, BORDER)))
 
-        val p8 = JPanel() // Find section
-        p8.setLayout(gb)
-        val lab11 = JLabel(jlGetStringResource(Res.string.gui_find))
-        p8.add(lab11)
-        gb.setConstraints(lab11, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
+        // --- Main Section: Settings (Left) & Filters (Right) ---
+        val pMain = JPanel()
+        pMain.setLayout(gb)
+
+        // Left Column: Settings
+        val pLeft = JPanel()
+        pLeft.setLayout(gb)
+
+        // Jugglers
+        val labJugglers = JLabel(jlGetStringResource(Res.string.gui_jugglers))
+        pLeft.add(labJugglers)
+        gb.setConstraints(labJugglers, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
+
+        comboJugglers = JComboBox()
+        for (i in 1..6) comboJugglers.addItem("$i")
+        pLeft.add(comboJugglers)
+        val cJugglers = jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
+        cJugglers.fill = GridBagConstraints.HORIZONTAL
+        gb.setConstraints(comboJugglers, cJugglers)
+
+        // Rhythm
+        val labRhythm = JLabel(jlGetStringResource(Res.string.gui_rhythm))
+        pLeft.add(labRhythm)
+        gb.setConstraints(labRhythm, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(8, 0, 0, 0)))
+
+        comboRhythm = JComboBox()
+        comboRhythm.addItem(jlGetStringResource(Res.string.gui_asynch))
+        comboRhythm.addItem(jlGetStringResource(Res.string.gui_synch))
+        pLeft.add(comboRhythm)
+        val cRhythm = jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
+        cRhythm.fill = GridBagConstraints.HORIZONTAL
+        gb.setConstraints(comboRhythm, cRhythm)
+
+        // Multiplexing
+        val labMultiplexing = JLabel(jlGetStringResource(Res.string.gui_multiplexing))
+        pLeft.add(labMultiplexing)
+        gb.setConstraints(labMultiplexing, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(8, 0, 0, 0)))
+
+        comboMultiplexing = JComboBox()
+        comboMultiplexing.addItem(jlGetStringResource(Res.string.gui_multiplexing_none))
+        comboMultiplexing.addItem("2")
+        comboMultiplexing.addItem("3")
+        comboMultiplexing.addItem("4")
+        pLeft.add(comboMultiplexing)
+        val cMultiplexing = jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0))
+        cMultiplexing.fill = GridBagConstraints.HORIZONTAL
+        gb.setConstraints(comboMultiplexing, cMultiplexing)
+
+        // Compositions
+        val labCompositions = JLabel(jlGetStringResource(Res.string.gui_compositions))
+        pLeft.add(labCompositions)
+        gb.setConstraints(labCompositions, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(8, 0, 0, 0)))
+
+        comboCompositions = JComboBox()
+        comboCompositions.addItem(jlGetStringResource(Res.string.gui_all))
+        comboCompositions.addItem(jlGetStringResource(Res.string.gui_non_obvious))
+        comboCompositions.addItem(jlGetStringResource(Res.string.gui_none__prime_only_))
+        pLeft.add(comboCompositions)
+        val cCompositions = jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0))
+        cCompositions.fill = GridBagConstraints.HORIZONTAL
+        gb.setConstraints(comboCompositions, cCompositions)
+
+        pMain.add(pLeft)
+        // Reduced right inset from 20 to 5 to reduce space between columns
+        gb.setConstraints(pLeft, jlConstraints(GridBagConstraints.FIRST_LINE_START, 0, 0, Insets(0, 0, 0, 5)))
+
+        // Right Column: Filters
+        val pRight = JPanel()
+        pRight.setLayout(gb)
+
+        val labFind = JLabel(jlGetStringResource(Res.string.gui_find))
+        pRight.add(labFind)
+        gb.setConstraints(labFind, jlConstraints(GridBagConstraints.LINE_START, 0, 0))
+
         cb7 = JCheckBox(jlGetStringResource(Res.string.gui_ground_state_patterns), null)
-        p8.add(cb7)
-        gb.setConstraints(
-            cb7, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb7)
+        gb.setConstraints(cb7, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 10, 0, 0)))
+
         cb8 = JCheckBox(jlGetStringResource(Res.string.gui_excited_state_patterns), null)
-        p8.add(cb8)
-        gb.setConstraints(
-            cb8, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb8)
+        gb.setConstraints(cb8, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0)))
+
         cb9 = JCheckBox(jlGetStringResource(Res.string.gui_transition_throws), null)
-        p8.add(cb9)
-        gb.setConstraints(
-            cb9, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb9)
+        gb.setConstraints(cb9, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0)))
+
         cb10 = JCheckBox(jlGetStringResource(Res.string.gui_pattern_rotations), null)
-        p8.add(cb10)
-        gb.setConstraints(
-            cb10, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb10)
+        gb.setConstraints(cb10, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0)))
+
+        // Passing specific filters
         cb17 = JCheckBox(jlGetStringResource(Res.string.gui_juggler_permutations), null)
-        p8.add(cb17)
-        gb.setConstraints(
-            cb17, jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb17)
+        gb.setConstraints(cb17, jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0)))
+
         cb15 = JCheckBox(jlGetStringResource(Res.string.gui_connected_patterns), null)
-        p8.add(cb15)
-        gb.setConstraints(
-            cb15, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb15)
+        gb.setConstraints(cb15, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 10, 0, 0)))
+
         cb18 = JCheckBox(jlGetStringResource(Res.string.gui_symmetric_patterns), null)
-        p8.add(cb18)
-        gb.setConstraints(
-            cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb18)
+        gb.setConstraints(cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0)))
 
-        val p9 = JPanel()  // Multiplexing section
-        p9.setLayout(gb)
-        cb12 = JCheckBox(jlGetStringResource(Res.string.gui_multiplexing), null)
-        cb12.setHorizontalTextPosition(SwingConstants.LEFT)
-        p9.add(cb12)
-        gb.setConstraints(
-            cb12, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(1, 0, 0, 0))
-        )
-
-        val p3 = JPanel()
-        p3.setLayout(gb)
-        lab13 = JLabel(jlGetStringResource(Res.string.gui_simultaneous_throws))
-        p3.add(lab13)
-        gb.setConstraints(
-            lab13, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
-        )
-        tf9 = JTextField(3)
-        p3.add(tf9)
-        gb.setConstraints(tf9, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
-
-        p9.add(p3)
-        gb.setConstraints(
-            p3, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 15, 0, 0))
-        )
-
+        // Multiplexing specific filters
         cb13 = JCheckBox(jlGetStringResource(Res.string.gui_no_simultaneous_catches), null)
-        p9.add(cb13)
-        gb.setConstraints(
-            cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb13)
+        gb.setConstraints(cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 8, Insets(0, 10, 0, 0)))
 
         cb14 = JCheckBox(jlGetStringResource(Res.string.gui_no_clustered_throws), null)
-        p9.add(cb14)
-        gb.setConstraints(
-            cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb14)
+        gb.setConstraints(cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 9, Insets(0, 10, 0, 0)))
 
         cb16 = JCheckBox(jlGetStringResource(Res.string.gui_true_multiplexing), null)
-        p9.add(cb16)
-        gb.setConstraints(
-            cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0))
-        )
+        pRight.add(cb16)
+        gb.setConstraints(cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 10, Insets(0, 10, 0, 0)))
 
-        val p4 = JPanel()  // entire middle section
-        p4.setLayout(gb)
-        p4.add(p6)
-        gb.setConstraints(p6, jlConstraints(GridBagConstraints.FIRST_LINE_START, 0, 0))
-        p4.add(p7)
-        gb.setConstraints(p7, jlConstraints(GridBagConstraints.FIRST_LINE_START, 0, 1))
-        p4.add(p8)
-        gb.setConstraints(p8, jlConstraints(GridBagConstraints.FIRST_LINE_START, 1, 0))
-        p4.add(p9)
-        gb.setConstraints(p9, jlConstraints(GridBagConstraints.FIRST_LINE_START, 1, 1))
+        pMain.add(pRight)
+        gb.setConstraints(pRight, jlConstraints(GridBagConstraints.FIRST_LINE_START, 1, 0))
 
-        val p1 = JPanel()  // bottom section
-        p1.setLayout(gb)
+        add(pMain)
+        gb.setConstraints(pMain, jlConstraints(GridBagConstraints.CENTER, 0, 1, Insets(5, BORDER, 5, BORDER)))
+
+        // --- Bottom Section ---
+        val pBottom = JPanel()
+        pBottom.setLayout(gb)
+
         lab1 = JLabel(jlGetStringResource(Res.string.gui_exclude_these_throws))
-        p1.add(lab1)
-        gb.setConstraints(
-            lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
-        )
+        pBottom.add(lab1)
+        gb.setConstraints(lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3)))
+
         tf4 = JTextField(10)
-        p1.add(tf4)
+        pBottom.add(tf4)
         gb.setConstraints(tf4, jlConstraints(GridBagConstraints.LINE_START, 1, 0))
+
         lab2 = JLabel(jlGetStringResource(Res.string.gui_include_these_throws))
-        p1.add(lab2)
-        gb.setConstraints(
-            lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 0, 3))
-        )
+        pBottom.add(lab2)
+        gb.setConstraints(lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 0, 3)))
+
         tf5 = JTextField(10)
-        p1.add(tf5)
+        pBottom.add(tf5)
         gb.setConstraints(tf5, jlConstraints(GridBagConstraints.LINE_START, 1, 1))
-        /*
-        tf6 = new JTextField(10);
-        p1.add(tf6);
-        gb.setConstraints(tf6, JLFunc.constraints(GridBagConstraints.LINE_START, 0, 2));
-        */
+
         lab4 = JLabel(jlGetStringResource(Res.string.gui_passing_communication_delay))
-        p1.add(lab4)
-        gb.setConstraints(
-            lab4, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(3, 0, 0, 3))
-        )
+        pBottom.add(lab4)
+        gb.setConstraints(lab4, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(3, 0, 0, 3)))
+
         tf7 = JTextField(3)
-        p1.add(tf7)
-        gb.setConstraints(
-            tf7, jlConstraints(GridBagConstraints.LINE_START, 1, 2, Insets(3, 0, 0, 0))
-        )
-        /*
-        tf8 = new JTextField(3);
-        p1.add(tf8);
-        gb.setConstraints(tf8, JLFunc.constraints(GridBagConstraints.LINE_END, 0, 4));
-        lab3 = new JLabel(guistrings.getString("Exclude_these_passes"));
-        p1.add(lab3);
-        gb.setConstraints(lab3, JLFunc.constraints(GridBagConstraints.LINE_END, 1, 2,
-                                                new Insets(0, 0, 0, 3)));
-        lab5 = new JLabel("Passing leader slot number");
-        p1.add(lab5);
-        gb.setConstraints(lab5, JLFunc.constraints(GridBagConstraints.LINE_START, 1, 4,
-                                                new Insets(0, 0, 0, 3)));
-        */
-        add(p2)
-        gb.setConstraints(
-            p2,
-            jlConstraints(GridBagConstraints.CENTER, 0, 0, Insets(BORDER, BORDER, 5, BORDER))
-        )
-        add(p4)
-        gb.setConstraints(
-            p4, jlConstraints(GridBagConstraints.CENTER, 0, 1, Insets(5, BORDER, 5, BORDER))
-        )
-        add(p1)
-        gb.setConstraints(
-            p1, jlConstraints(GridBagConstraints.CENTER, 0, 2, Insets(5, BORDER, 5, BORDER))
-        )
+        pBottom.add(tf7)
+        gb.setConstraints(tf7, jlConstraints(GridBagConstraints.LINE_START, 1, 2, Insets(3, 0, 0, 0)))
 
-        // add action listeners to enable/disable items depending on context
-        c1.addItemListener { _: ItemEvent? ->
-            if (c1.getSelectedIndex() > 0) {
-                // lab3.setEnabled(true);
-                // lab5.setEnabled(true);
-                // tf6.setEnabled(true);
-                cb15.setEnabled(true)
-                cb17.setEnabled(cb7.isSelected && cb8.isSelected)
-                cb18.setEnabled(true)
+        add(pBottom)
+        gb.setConstraints(pBottom, jlConstraints(GridBagConstraints.CENTER, 0, 2, Insets(5, BORDER, 5, BORDER)))
+
+        // --- Event Listeners ---
+
+        // Jugglers listener
+        comboJugglers.addItemListener { _: ItemEvent? ->
+            val jugglers = comboJugglers.selectedIndex + 1
+            if (jugglers > 1) {
+                cb15.isEnabled = true
+                cb17.isEnabled = cb7.isSelected && cb8.isSelected
+                cb18.isEnabled = true
                 if (cb7.isSelected && !cb8.isSelected) {
-                    lab4.setEnabled(true)
-                    tf7.setEnabled(true)
+                    lab4.isEnabled = true
+                    tf7.isEnabled = true
                 } else {
-                    lab4.setEnabled(false)
-                    tf7.setEnabled(false)
+                    lab4.isEnabled = false
+                    tf7.isEnabled = false
                 }
-                // tf8.setEnabled(true);
-                // lab1.setText(guistrings.getString("Exclude_these_self_throws"));
-                // lab2.setText(guistrings.getString("Include_these_self_throws"));
             } else {
-                // lab3.setEnabled(false);
-                // lab5.setEnabled(false);
-                // tf6.setEnabled(false);
-                cb15.setEnabled(false)
-                cb17.setEnabled(false)
-                cb18.setEnabled(false)
-                lab4.setEnabled(false)
-                tf7.setEnabled(false)
-                // tf8.setEnabled(false);
-                // lab1.setText(guistrings.getString("Exclude_these_throws"));
-                // lab2.setText(guistrings.getString("Include_these_throws"));
+                cb15.isEnabled = false
+                cb17.isEnabled = false
+                cb18.isEnabled = false
+                lab4.isEnabled = false
+                tf7.isEnabled = false
             }
-            // Transfer focus back up so that the run button works
-            c1.transferFocus()
+            comboJugglers.transferFocus()
         }
 
-        cb12.addItemListener { _: ItemEvent? ->
-            val active = cb12.isSelected
-            cb13.setEnabled(active)
-            cb14.setEnabled(active)
-            lab13.setEnabled(active)
-            tf9.setEnabled(active)
-            cb16.setEnabled(active)
+        // Multiplexing listener
+        comboMultiplexing.addItemListener { _: ItemEvent? ->
+            val isMultiplexing = comboMultiplexing.selectedIndex > 0
+            cb13.isEnabled = isMultiplexing
+            cb14.isEnabled = isMultiplexing
+            cb16.isEnabled = isMultiplexing
         }
 
-        val temp =
-            ActionListener { _: ActionEvent? ->
-                if (!cb7.isSelected || cb8.isSelected) {
-                    lab4.setEnabled(false)
-                    tf7.setEnabled(false)
-                } else {
-                    if (c1.getSelectedIndex() > 0) {
-                        lab4.setEnabled(true)
-                        tf7.setEnabled(true)
-                    }
+        // ground/excited state options affect other checkboxes
+        val temp = ActionListener { _: ActionEvent? ->
+            val jugglers = comboJugglers.selectedIndex + 1
+            if (!cb7.isSelected || cb8.isSelected) {
+                lab4.isEnabled = false
+                tf7.isEnabled = false
+            } else {
+                if (jugglers > 1) {
+                    lab4.isEnabled = true
+                    tf7.isEnabled = true
                 }
-                cb17.setEnabled(cb7.isSelected && cb8.isSelected && (c1.getSelectedIndex() > 0))
-                cb9.setEnabled(cb8.isSelected)
             }
+            cb17.isEnabled = cb7.isSelected && cb8.isSelected && (jugglers > 1)
+            cb9.isEnabled = cb8.isSelected
+        }
         cb7.addActionListener(temp)
         cb8.addActionListener(temp)
 
@@ -366,68 +299,68 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         tf1.text = "5"  // balls
         tf2.text = "7"  // max throw
         tf3.text = "5"  // period
-        cb1.setSelected(true)  // asynch mode
-        cb5.setSelected(true)  // show all compositions
-        cb7.setSelected(true)  // ground state patterns
-        cb8.setSelected(true)  // excited state patterns
-        cb9.setSelected(false)  // starting/ending sequences
-        cb10.setSelected(false)  // pattern rotations
-        cb17.setSelected(false)  // juggler permutations
-        cb15.setSelected(true)  // connected patterns
-        cb18.setSelected(false)  // symmetric patterns
-        cb12.setSelected(false)  // multiplexing
-        tf9.text = "2"  // number of multiplexed throws
-        cb13.setSelected(true)  // no simultaneous catches
-        cb14.setSelected(false)  // allow clustered throws
-        cb16.setSelected(false)  // true multiplexing
+
+        comboRhythm.selectedIndex = 0  // asynch
+        comboCompositions.selectedIndex = 0  // all
+        comboMultiplexing.selectedIndex = 0 // none
+
+        cb7.isSelected = true  // ground state
+        cb8.isSelected = true  // excited state
+        cb9.isSelected = false  // starting/ending sequences
+        cb10.isSelected = false  // pattern rotations
+
+        comboJugglers.selectedIndex = 0 // one juggler
+        cb17.isSelected = false  // juggler permutations
+        cb15.isSelected = true  // connected patterns
+        cb18.isSelected = false  // symmetric patterns
+
+        cb13.isSelected = true  // no simultaneous catches
+        cb14.isSelected = false  // allow clustered throws
+        cb16.isSelected = true  // true multiplexing
+
         tf4.text = ""  // excluded throws
         tf5.text = ""  // included throws
-        // tf6.setText("");  // excluded passes
         tf7.text = "0" // passing communication delay
-        // tf8.setText("1");  // passing leader slot number
-        c1.setSelectedIndex(0)  // one juggler
 
-        // lab3.setEnabled(false);
-        cb9.setEnabled(true)
-        cb17.setEnabled(false)
-        cb15.setEnabled(false)
-        cb18.setEnabled(false)
-        lab4.setEnabled(false)  // passing communication delay
-        // lab5.setEnabled(false);
-        // tf6.setEnabled(false);
-        tf7.setEnabled(false)
+        // Enablement logic
+        cb9.isEnabled = true
 
-        // tf8.setEnabled(false);
-        lab13.setEnabled(false)  // number of multiplexed throws label
-        tf9.setEnabled(false)
-        cb13.setEnabled(false)
-        cb14.setEnabled(false)
-        cb16.setEnabled(false)
+        // Passing disabled
+        cb17.isEnabled = false
+        cb15.isEnabled = false
+        cb18.isEnabled = false
+        lab4.isEnabled = false
+        tf7.isEnabled = false
+
+        // Multiplexing disabled
+        cb13.isEnabled = false
+        cb14.isEnabled = false
+        cb16.isEnabled = false
     }
 
     val params: String
         get() {
             val sb = StringBuilder(256)
 
-            var maxthrow = tf2.getText()
+            var maxthrow = tf2.text
             if (maxthrow.trim { it <= ' ' }.isEmpty()) {
                 maxthrow = "-"
             }
-            var period = tf3.getText()
+            var period = tf3.text
             if (period.trim { it <= ' ' }.isEmpty()) {
                 period = "-"
             }
 
-            sb.append(tf1.getText()).append(" ").append(maxthrow).append(" ").append(period)
+            sb.append(tf1.text).append(" ").append(maxthrow).append(" ").append(period)
 
-            if (cb2.isSelected) {
+            if (comboRhythm.selectedIndex == 1) {
                 sb.append(" -s")
             }
-            val jugglers = c1.getSelectedIndex() + 1
+            val jugglers = comboJugglers.selectedIndex + 1
             if (jugglers > 1) {
                 sb.append(" -j ").append(jugglers)
-                if (tf7.isEnabled && !tf7.getText().isEmpty()) {
-                    sb.append(" -d ").append(tf7.getText()).append(" -l 1")
+                if (tf7.isEnabled && !tf7.text.isEmpty()) {
+                    sb.append(" -d ").append(tf7.text).append(" -l 1")
                 }
 
                 if (cb17.isEnabled) {
@@ -443,11 +376,13 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
                     sb.append(" -sym")
                 }
             }
-            if (cb5.isSelected) {
-                sb.append(" -f")
-            } else if (cb6.isSelected) {
-                sb.append(" -prime")
+
+            // Compositions: 0=All (-f), 1=Non-obvious (default), 2=Prime (-prime)
+            when (comboCompositions.selectedIndex) {
+                0 -> sb.append(" -f")
+                2 -> sb.append(" -prime")
             }
+
             if (cb7.isSelected && !cb8.isSelected) {
                 sb.append(" -g")
             } else if (!cb7.isSelected && cb8.isSelected) {
@@ -459,8 +394,9 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
             if (cb10.isSelected) {
                 sb.append(" -rot")
             }
-            if (cb12.isSelected && !tf9.getText().isEmpty()) {
-                sb.append(" -m ").append(tf9.getText())
+            if (comboMultiplexing.selectedIndex > 0) {
+                val muxVal = comboMultiplexing.selectedItem as String
+                sb.append(" -m ").append(muxVal)
                 if (!cb13.isSelected) {
                     sb.append(" -mf")
                 }
@@ -471,11 +407,11 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
                     sb.append(" -mt")
                 }
             }
-            if (!tf4.getText().isEmpty()) {
-                sb.append(" -x ").append(tf4.getText())
+            if (!tf4.text.isEmpty()) {
+                sb.append(" -x ").append(tf4.text)
             }
-            if (!tf5.getText().isEmpty()) {
-                sb.append(" -i ").append(tf5.getText())
+            if (!tf5.text.isEmpty()) {
+                sb.append(" -i ").append(tf5.text)
             }
             sb.append(" -n")
 
