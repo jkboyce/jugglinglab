@@ -176,7 +176,7 @@ class LadderDiagram(
             if (isPopup) {
                 guiState = STATE_POPUP
                 popupItem = getSelectedLadderEvent(mx, my) ?: getSelectedLadderPosition(mx, my)
-                    ?: getSelectedLadderPath(mx, my, (PATH_SLOP * currentDensity).toInt())
+                    ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
                 popupX = mx
                 popupY = my
 
@@ -185,7 +185,7 @@ class LadderDiagram(
                 val code = popupItem?.jlHashCode ?: 0
                 state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
 
-                makePopupMenu(popupItem).show(composePanel, mx, my)
+                makePopupMenu(popupItem).show(composePanel, (mx / currentDensity).toInt(), (my / currentDensity).toInt())
                 return
             }
 
@@ -1514,7 +1514,7 @@ class LadderDiagram(
         val MSGFONT: Font = Font("SansSerif", Font.PLAIN, 12)
 
         // geometric constants in pixels
-        const val PATH_SLOP: Int = 5
+        const val PATH_SLOP_DP: Int = 5
 
         // minimum time (seconds) between a throw and another event with transitions
         private const val MIN_THROW_SEP_TIME: Double = 0.05
