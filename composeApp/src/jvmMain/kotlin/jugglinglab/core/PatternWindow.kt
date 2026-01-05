@@ -487,7 +487,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 fname = jlSanitizeFilename(fname)
                 jlJfc.setSelectedFile(File(fname))
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
-
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
@@ -522,7 +521,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 fname = jlSanitizeFilename(fname)
                 jlJfc.setSelectedFile(File(fname))
                 jlJfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
-
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
@@ -552,7 +550,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 optimizerWrapper?.let {
                     try {
                         val newPat = it.optimize(view.state.pattern)
-                        view.restartView(newPat, null)
+                        view.restartView(newPat, null, coldRestart = false)
                         view.state.addCurrentToUndoList()
                     } catch (ite: InvocationTargetException) {
                         // Unwrap the actual exception thrown by the optimizer
