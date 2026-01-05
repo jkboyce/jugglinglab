@@ -8,9 +8,16 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is written in Kotlin and uses standard Swing components, so it should run on any platform supported by Java 11 or later. The project is built with [Gradle](https://gradle.org/) and scripts in ``/bin`` run the compiled jar.
+Juggling Lab is written in Kotlin and uses standard Swing components, so it should run on any platform supported by Java 11 or later. Clone the repository and play around with it! I always appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
 
-Clone the repository and play around with it! I always appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
+Juggling Lab is undergoing a transition from Swing to Compose Multiplatform, which will let us bring Juggling Lab to mobile and the web. By default it runs with the legacy Swing UI, but you can enable the Compose UI as described below (note it's still rough around the edges).
+
+**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). You can run these commands in the base directory of the repo:
+- `gradlew run` – compile and run Juggling Lab
+- `gradlew run -PJLcompose` – compile and run with the experimental Compose-based interface
+- `gradlew build` – build the combined JAR file `/bin/JugglingLab.jar` (this is mostly for distributing the desktop application)
+
+**Working on Juggling Lab code.** Since Juggling Lab is evolving into a Compose Multiplatform application, the best IDE to use is [IntelliJ IDEA](https://www.jetbrains.com/idea/) from JetBrains. Opening the repo in IDEA configures the relevant plugins. Currently two run configurations are available in the dropdown at the top of the project window: `jugglinglab [run]` and `jugglinglab [run Compose]`.
 
 ## Contributors
 
@@ -34,6 +41,7 @@ Over that long span of time the project has seen contributions from many people,
 - Herve Nicol – Bug fixes
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
+- Greg Phillips – Compose Multiplatform refactoring help and ideas
 - Romain Richard and Frédéric Rayar – [Android version](https://code.google.com/archive/p/jugglinglab/) ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
 - Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - Daniel Simu – Bug reports, many design suggestions
