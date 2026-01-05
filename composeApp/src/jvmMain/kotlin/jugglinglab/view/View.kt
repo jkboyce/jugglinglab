@@ -50,7 +50,7 @@ abstract class View(
             return
         try {
             --state.undoIndex
-            restartView(state.undoList[state.undoIndex], null)
+            restartView(state.undoList[state.undoIndex], null, coldRestart = false)
             if (state.undoIndex == 0 || state.undoIndex == state.undoList.size - 2) {
                 patternWindow.updateUndoMenu()
             }
@@ -68,7 +68,7 @@ abstract class View(
             return
         try {
             ++state.undoIndex
-            restartView(state.undoList[state.undoIndex], null)
+            restartView(state.undoList[state.undoIndex], null, coldRestart = false)
             if (state.undoIndex == 1 || state.undoIndex == state.undoList.size - 1) {
                 patternWindow.updateUndoMenu()
             }
@@ -88,8 +88,9 @@ abstract class View(
     // - a null argument means no update for that item
     // - this method is responsible for setting preferred sizes of all UI
     //   elements, since it may be followed by layout
+    // - 'coldRestart = true' resets camera angle, zoom, and prop assignments
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?)
+    abstract fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
 
     // restart without changing pattern or preferences
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

@@ -34,8 +34,8 @@ class SimpleView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
-        ja.restartJuggle(pattern, prefs)
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        ja.restartJuggle(pattern, prefs, coldRestart)
         setAnimationPanelPreferredSize(
             Dimension(state.prefs.width, state.prefs.height))
         if (pattern != null) {

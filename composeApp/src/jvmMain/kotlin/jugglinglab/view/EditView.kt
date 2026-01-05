@@ -54,10 +54,11 @@ class EditView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
-        ap.restartJuggle(pattern, prefs)
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        ap.restartJuggle(pattern, prefs, coldRestart)
         setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height))
+            Dimension(state.prefs.width, state.prefs.height)
+        )
 
         if (pattern == null) return
 

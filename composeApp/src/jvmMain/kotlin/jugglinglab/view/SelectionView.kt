@@ -205,7 +205,7 @@ class SelectionView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         var newPrefs: AnimationPrefs? = null
         if (prefs != null) {
             savedPrefs = prefs
@@ -213,11 +213,11 @@ class SelectionView(
             newPrefs = prefs.copy(startPaused = false)
         }
 
-        ja[CENTER].restartJuggle(pattern, newPrefs)
+        ja[CENTER].restartJuggle(pattern, newPrefs, coldRestart)
         for (i in 0..<COUNT) {
             if (i != CENTER) {
                 val newp = if (pattern == null) null else mutator.mutatePattern(pattern)
-                ja[i].restartJuggle(newp, newPrefs)
+                ja[i].restartJuggle(newp, newPrefs, coldRestart)
             }
         }
 

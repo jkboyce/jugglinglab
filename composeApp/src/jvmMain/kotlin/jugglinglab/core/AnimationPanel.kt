@@ -206,23 +206,27 @@ class AnimationPanel(
     // dragging is active, then restart #2 on mouse release.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
+    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
         // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
-        killAnimationThread()
+        if (coldRestart) {
+            killAnimationThread()
+        }
 
         if (pat != null) state.update(pattern = pat)
         if (newjc != null) state.update(prefs = newjc)
-        state.update(
-            isPaused = state.prefs.startPaused,
-            cameraAngle = state.initialCameraAngle(),
-            zoom = 1.0,
-            propForPath = state.initialPropForPath(),
-            fitToFrame = true
-        )
 
-        engine = Thread(this).apply { start() }
+        if (coldRestart) {
+            state.update(
+                isPaused = state.prefs.startPaused,
+                cameraAngle = state.initialCameraAngle(),
+                zoom = 1.0,
+                propForPath = state.initialPropForPath(),
+                fitToFrame = true
+            )
+            engine = Thread(this).apply { start() }
+        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
