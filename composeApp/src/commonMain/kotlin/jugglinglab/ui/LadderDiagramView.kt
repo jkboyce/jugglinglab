@@ -1,8 +1,8 @@
 //
 // LadderDiagramView.kt
 //
-// This is a Composable UI displaying the ladder diagram that can
-// accompany the main juggler animation.
+// Composable UI displaying the ladder diagram that can accompany the main
+// juggler animation.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -12,6 +12,7 @@ package jugglinglab.ui
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.util.jlToStringRounded
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,29 +43,37 @@ fun LadderDiagramView(
     val propForPath = state.propForPath
     val textMeasurer = rememberTextMeasurer()
 
-    Canvas(modifier = modifier.fillMaxSize().pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent()
-                val change = event.changes.first()
-                val offset = change.position
-                // Check if right mouse button is pressed (secondary button)
-                // Note: isSecondaryPressed might need careful check across platforms
-                val isPopup = (event.buttons.isSecondaryPressed)
+    Canvas(modifier = modifier.fillMaxSize()
+        .pointerInput(Unit) {
+            // handle long press for touch (Android/iOS)
+            detectTapGestures(
+                onLongPress = { offset ->
+                    onPress(offset, true)  // treat long press as popup trigger
+                }
+            )
+        }
+        .pointerInput(Unit) {
+            // other touch events are handled as left mouse clicks
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    val change = event.changes.first()
+                    val offset = change.position
+                    val isPopup = event.buttons.isSecondaryPressed
 
-                if (change.changedToDown()) {
-                    onPress(offset, isPopup)
-                    change.consume()
-                } else if (change.pressed && change.positionChanged()) {
-                    onDrag(offset)
-                    change.consume()
-                } else if (change.changedToUp()) {
-                    onRelease()
-                    change.consume()
+                    if (change.changedToDown()) {
+                        onPress(offset, isPopup)
+                        change.consume()
+                    } else if (change.pressed && change.positionChanged()) {
+                        onDrag(offset)
+                        change.consume()
+                    } else if (change.changedToUp()) {
+                        onRelease()
+                        change.consume()
+                    }
                 }
             }
-        }
-    }) {
+        }) {
         val width = size.width
         val height = size.height
 
