@@ -36,33 +36,36 @@ internal class SiteswapTransitionerControlSwing : JPanel() {
         val lab1 = JLabel(jlGetStringResource(Res.string.gui_from_pattern))
         p1.add(lab1)
         gb.setConstraints(
-            lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 10, 3))
+            lab1, jlConstraints(GridBagConstraints.LINE_END, 0, 0, Insets(0, 0, 0, 3))
         )
         tf1 = JTextField(15)
         p1.add(tf1)
         gb.setConstraints(
-            tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 0, 10, 0))
-        )
-
-        val lab2 = JLabel(jlGetStringResource(Res.string.gui_to_pattern))
-        p1.add(lab2)
-        gb.setConstraints(
-            lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 1, Insets(0, 0, 10, 3))
-        )
-        tf2 = JTextField(15)
-        p1.add(tf2)
-        gb.setConstraints(
-            tf2, jlConstraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 0, 10, 0))
+            tf1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 0, 0, 0))
         )
 
         val but1 = JButton("\u2195")
+        but1.font = but1.font.deriveFont(but1.font.size * 1.5f)
         but1.addActionListener { _: ActionEvent? ->
             val temp = tf1.getText()
             tf1.text = tf2.getText()
             tf2.text = temp
         }
         p1.add(but1)
-        gb.setConstraints(but1, jlConstraints(GridBagConstraints.LINE_START, 1, 2))
+        gb.setConstraints(
+            but1, jlConstraints(GridBagConstraints.CENTER, 1, 1, Insets(5, 0, 5, 0))
+        )
+
+        val lab2 = JLabel(jlGetStringResource(Res.string.gui_to_pattern))
+        p1.add(lab2)
+        gb.setConstraints(
+            lab2, jlConstraints(GridBagConstraints.LINE_END, 0, 2, Insets(0, 0, 10, 3))
+        )
+        tf2 = JTextField(15)
+        p1.add(tf2)
+        gb.setConstraints(
+            tf2, jlConstraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 0, 10, 0))
+        )
 
         val p2 = JPanel() // multiplexing section
         p2.setLayout(gb)

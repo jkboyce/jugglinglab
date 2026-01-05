@@ -25,11 +25,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.*
 
 @Composable
 fun LadderDiagramView(
-    state: PatternAnimationState,
     layout: LadderLayout,
+    state: PatternAnimationState,
+    onPress: (Offset, Boolean) -> Unit,
+    onDrag: (Offset) -> Unit,
+    onRelease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val trackerY = layout.timeToY(state.time)
@@ -37,7 +42,29 @@ fun LadderDiagramView(
     val propForPath = state.propForPath
     val textMeasurer = rememberTextMeasurer()
 
-    Canvas(modifier = modifier.fillMaxSize()) {
+    Canvas(modifier = modifier.fillMaxSize().pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent()
+                val change = event.changes.first()
+                val offset = change.position
+                // Check if right mouse button is pressed (secondary button)
+                // Note: isSecondaryPressed might need careful check across platforms
+                val isPopup = (event.buttons.isSecondaryPressed)
+
+                if (change.changedToDown()) {
+                    onPress(offset, isPopup)
+                    change.consume()
+                } else if (change.pressed && change.positionChanged()) {
+                    onDrag(offset)
+                    change.consume()
+                } else if (change.changedToUp()) {
+                    onRelease()
+                    change.consume()
+                }
+            }
+        }
+    }) {
         val width = size.width
         val height = size.height
 
@@ -182,9 +209,15 @@ fun LadderDiagramView(
                 text = text,
                 style = TextStyle(color = Color.Red, fontSize = 13.sp)
             )
+            val textSize = textLayoutResult.size
+            val padding = 3.dp.toPx()
+
             drawText(
                 textLayoutResult = textLayoutResult,
-                topLeft = Offset(width / 2 - 26, (trackerY - 33).toFloat())
+                topLeft = Offset(
+                    x = (width - textSize.width) / 2f,
+                    y = trackerY.toFloat() - textSize.height - padding
+                )
             )
         }
     }
