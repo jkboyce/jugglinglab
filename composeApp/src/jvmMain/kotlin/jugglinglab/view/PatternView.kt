@@ -8,7 +8,6 @@
 
 package jugglinglab.view
 
-import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
@@ -22,6 +21,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlGetImageResource
 import jugglinglab.util.jlConstraints
 import jugglinglab.util.jlGetStringResource
+import androidx.compose.ui.graphics.toAwtImage
 import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
@@ -112,7 +112,7 @@ class PatternView(
 
         // split pane dividing the two
         jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls)
-        jsp.setResizeWeight(0.75) // % extra space allocated to left (animation) side
+        jsp.setResizeWeight(0.0) // % extra space allocated to left (animation) side
 
         add(jsp, BorderLayout.CENTER)
 
@@ -233,7 +233,9 @@ class PatternView(
     override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         ja.restartJuggle(pattern, prefs, coldRestart)
         setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height))
+            Dimension(state.prefs.width, state.prefs.height)
+        )
+
         if (pattern == null) return
 
         val notation = pattern.basePatternNotation
