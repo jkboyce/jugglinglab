@@ -55,6 +55,7 @@ class Renderer2D : Renderer() {
     private lateinit var obj: MutableList<DrawObject2D>
     private lateinit var obj2: MutableList<DrawObject2D>
     private lateinit var jugglervec: Array<Array<JLVector?>>
+
     // private var propmin: Double = 0.0 // for drawing floor
     private var tempc: Coordinate = Coordinate()
     private var tempv1: JLVector = JLVector()
@@ -70,8 +71,8 @@ class Renderer2D : Renderer() {
     override fun setPattern(pat: JMLPattern) {
         this.pat = pat
         val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
-        obj = MutableList(maxobjects) { DrawObject2D(maxobjects) }
-        obj2 = MutableList(maxobjects) { DrawObject2D(maxobjects) }
+        obj = MutableList(maxobjects) { DrawObject2D() }
+        obj2 = MutableList(maxobjects) { DrawObject2D() }
         jugglervec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
     }
 
@@ -248,14 +249,12 @@ class Renderer2D : Renderer() {
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pat.getProp(pnum[i - 1])
-            if (pr.getProp2DImage(zoom, cameraangle) != null) {
-                val center = pr.getProp2DCenter(zoom, cameraangle)
-                val size = pr.getProp2DSize(zoom, cameraangle)
-                obj[index].boundingbox.x = x - center!!.width
-                obj[index].boundingbox.y = y - center.height
-                obj[index].boundingbox.width = size!!.width
-                obj[index].boundingbox.height = size.height
-            }
+            val center = pr.getProp2DCenter(zoom, cameraangle)
+            val size = pr.getProp2DSize(zoom, cameraangle)
+            obj[index].boundingbox.x = x - center!!.width
+            obj[index].boundingbox.y = y - center.height
+            obj[index].boundingbox.width = size!!.width
+            obj[index].boundingbox.height = size.height
             propmin = min(propmin, pr.getMin()!!.z)
             index++
         }
@@ -284,7 +283,7 @@ class Renderer2D : Renderer() {
                     tempv2.z = tempv1.z
                 }
                 tempv2.y = propmin
-                tempv1.y = tempv2.y
+                tempv1.y = propmin
 
                 getXYZ(tempv1, obj[index].coord[0])
                 getXYZ(tempv2, obj[index].coord[1])
@@ -338,19 +337,11 @@ class Renderer2D : Renderer() {
             ymin = ymax
             for (j in 1..7) {
                 val x = obj[index].coord[j].x.roundToInt()
+                xmin = min(xmin, x)
+                xmax = max(xmax, x)
                 val y = obj[index].coord[j].y.roundToInt()
-                if (x < xmin) {
-                    xmin = x
-                }
-                if (x > xmax) {
-                    xmax = x
-                }
-                if (y < ymin) {
-                    ymin = y
-                }
-                if (y > ymax) {
-                    ymax = y
-                }
+                ymin = min(ymin, y)
+                ymax = max(ymax, y)
             }
             // inset bb by one pixel to avoid intersection at shoulder:
             obj[index].boundingbox.x = xmin + 1
@@ -453,40 +444,39 @@ class Renderer2D : Renderer() {
 
         // figure out a drawing order
         index = 0
-        var changed = true
-        while (changed) {
-            changed = false
+        for (pass in 1..2) {
+            // first assign a drawing order based on "covering" constraints
+            var changed = true
+            while (changed) {
+                changed = false
+                for (i in 0..<numobjects) {
+                    if (obj[i].drawn) {
+                        continue
+                    }
+                    if (obj[i].covering.all { it.drawn }) {
+                        obj2[index] = obj[i]
+                        obj[i].drawn = true
+                        index++
+                        changed = true
+                    }
+                }
+            }
 
+            // We sometimes get situations where A > B > C > A from a covering
+            // standpoint, and the objects aren't yet drawn. On pass 1 we draw
+            // the lines next, then resume the above algorithm in pass 2. At the
+            // end of pass 2 we draw everything remaining in arbitrary order.
             for (i in 0..<numobjects) {
                 if (obj[i].drawn) {
                     continue
                 }
-
-                var candraw = true
-                for (j in obj[i].covering.indices) {
-                    val temp = obj[i].covering[j]
-                    if (!temp.drawn) {
-                        candraw = false
-                        break
-                    }
+                if (pass == 1 && obj[i].type != DrawObject2D.TYPE_LINE) {
+                    continue
                 }
-                if (candraw) {
-                    obj2[index] = obj[i]
-                    obj[i].drawn = true
-                    index++
-                    changed = true
-                }
+                obj2[index] = obj[i]
+                obj[i].drawn = true
+                index++
             }
-        }
-        // just in case there were some that couldn't be drawn:
-        for (i in 0..<numobjects) {
-            if (obj[i].drawn) {
-                continue
-            }
-            obj2[index] = obj[i]
-            obj[i].drawn = true
-            index++
-            // System.out.println("got undrawable item, type "+obj[i].type);
         }
 
         // draw the objects in the sorted order
@@ -520,19 +510,16 @@ class Renderer2D : Renderer() {
 
                     val LheadBx = ob.coord[4].x
                     val LheadBy = ob.coord[4].y
-                    // double LheadTx = ob.coord[5].x;
                     val LheadTy = ob.coord[5].y
                     val RheadBx = ob.coord[6].x
                     val RheadBy = ob.coord[6].y
 
-                    // double RheadTx = ob.coord[7].x;
-                    // double RheadTy = ob.coord[7].y;
                     if (abs(RheadBx - LheadBx) > 2.0) {
                         // head is at least 2 pixels wide; draw it as a polygon
                         for (j in 0..<polysides) {
                             headx[j] = (0.5 * (LheadBx + RheadBx + headcos[j] * (RheadBx - LheadBx))).roundToInt()
                             heady[j] = (0.5 * (LheadBy + LheadTy + headsin[j] * (LheadBy - LheadTy))
-                                + (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx - LheadBx)).roundToInt()
+                                    + (headx[j] - LheadBx) * (RheadBy - LheadBy) / (RheadBx - LheadBx)).roundToInt()
                         }
 
                         g.color = background
@@ -565,16 +552,25 @@ class Renderer2D : Renderer() {
             }
 
             /*
-              g.setColor(Color.black);
-              g.drawLine(ob.boundingbox.x, ob.boundingbox.y,
-                         ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y);
-              g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y,
-                         ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1);
-              g.drawLine(ob.boundingbox.x+ob.boundingbox.width-1, ob.boundingbox.y+ob.boundingbox.height-1,
-                         ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1);
-              g.drawLine(ob.boundingbox.x, ob.boundingbox.y+ob.boundingbox.height-1,
-                         ob.boundingbox.x, ob.boundingbox.y);
-              */
+            // draw bounding boxes
+            g.color = Color.black
+            g.drawLine(
+                ob.boundingbox.x, ob.boundingbox.y,
+                ob.boundingbox.x + ob.boundingbox.width - 1, ob.boundingbox.y
+            )
+            g.drawLine(
+                ob.boundingbox.x + ob.boundingbox.width - 1, ob.boundingbox.y,
+                ob.boundingbox.x + ob.boundingbox.width - 1, ob.boundingbox.y + ob.boundingbox.height - 1
+            )
+            g.drawLine(
+                ob.boundingbox.x + ob.boundingbox.width - 1, ob.boundingbox.y + ob.boundingbox.height - 1,
+                ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height - 1
+            )
+            g.drawLine(
+                ob.boundingbox.x, ob.boundingbox.y + ob.boundingbox.height - 1,
+                ob.boundingbox.x, ob.boundingbox.y
+            )
+            */
         }
     }
 
@@ -602,7 +598,7 @@ class Renderer2D : Renderer() {
             return max!!
         }
 
-     override val jugglerWindowMin: Coordinate
+    override val jugglerWindowMin: Coordinate
         get() {
             var min = pat.layout.getJugglerMin(1)
             for (i in 2..pat.numberOfJugglers) {
@@ -619,13 +615,13 @@ class Renderer2D : Renderer() {
     //--------------------------------------------------------------------------
     // Class for defining the objects to draw
     //--------------------------------------------------------------------------
-    
-    class DrawObject2D(numobjects: Int) {
+
+    class DrawObject2D {
         var type: Int = 0
         var number: Int = 0  // path number or juggler number
         var coord: MutableList<JLVector> = MutableList(8) { JLVector() }
         var boundingbox: Rectangle = Rectangle()
-        var covering: MutableList<DrawObject2D> = ArrayList(numobjects)
+        var covering: MutableList<DrawObject2D> = mutableListOf()
         var drawn: Boolean = false
         var tempv: JLVector = JLVector()
 
