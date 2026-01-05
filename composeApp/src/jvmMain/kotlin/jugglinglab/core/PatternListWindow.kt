@@ -390,7 +390,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     companion object {
         // used for tiling the windows on the screen as they're created
         private const val NUM_TILES: Int = 8
-        private val TILE_START: Point = Point(0, 620)
+        private val TILE_START: Point = Point(0, 580)
         private val TILE_OFFSET: Point = Point(25, 25)
         private var tileLocations: ArrayList<Point> = ArrayList()
         private var nextTileNum: Int = 0
