@@ -108,6 +108,35 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     exclude("**/ortools-linux*")
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
+    // Exclude unused Material Icons themes to reduce JAR size
+    exclude("androidx/compose/material/icons/twotone/**")
+    exclude("androidx/compose/material/icons/rounded/**")
+    exclude("androidx/compose/material/icons/outlined/**")
+    exclude("androidx/compose/material/icons/sharp/**")
+
+    // Exclude Multik native libraries for non-target platforms
+    // Note: This produces a platform-specific JAR based on the build environment
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = if (project.hasProperty("targetArch")) {
+        (project.property("targetArch") as String).lowercase()
+    } else {
+        System.getProperty("os.arch").lowercase()
+    }
+    val isMac = osName.contains("mac")
+    val isWindows = osName.contains("win")
+    val isLinux = osName.contains("nux") || osName.contains("nix")
+    val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+
+    if (!isMac || !isArm64) exclude("lib/macosArm64/**")
+    if (!isMac || isArm64) exclude("lib/macosX64/**")
+    if (!isWindows) exclude("lib/mingwX64/**")
+    if (!isLinux) exclude("lib/linuxX64/**")
+    exclude("lib/arm64-v8a/**")
+
+    // Exclude unneeded drawing libraries
+    if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
+    if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
+
     // Ensure native libs are unpacked before this runs
     dependsOn(unpackOrtNatives)
 }
