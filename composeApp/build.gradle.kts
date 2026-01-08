@@ -10,7 +10,7 @@
 //
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-//import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -54,6 +54,14 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             // Juggling Lab specific
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
+
+            // Add native OR-Tools dependency based on current platform
+            val osName = System.getProperty("os.name").lowercase()
+            val osArch = System.getProperty("os.arch").lowercase()
+            val isMac = osName.contains("mac")
+            val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+            val classifier = if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains("win")) "win32-x86-64" else "linux-x86-64"
+            runtimeOnly("com.google.ortools:ortools-$classifier:${Versions.ORTOOLS_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
@@ -65,19 +73,32 @@ compose.desktop {
     application {
         val isCompose = project.hasProperty("JLcompose")
         mainClass = "jugglinglab.JugglingLabKt"
+
         jvmArgs += listOf(
             "-Xss2048k",
             "-Dfile.encoding=UTF-8",
             "-DJL_run_as_bundle=true",
             "-DJL_compose_ui=$isCompose",
-            "--enable-native-access=ALL-UNNAMED"
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xdock:name=Juggling Lab"
         )
-        /*
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.jugglinglab"
+            packageName = "Juggling Lab"
             packageVersion = "1.6.7"
-        }*/
+
+            macOS {
+                //iconFile.set(project.file("launcher-icons/icon.icns"))
+                dockName = "Juggling Lab"
+            }
+            windows {
+                //iconFile.set(project.file("launcher-icons/icon.ico"))
+            }
+            linux {
+                //iconFile.set(project.file("launcher-icons/icon.png"))
+            }
+        }
     }
 }
 
@@ -101,20 +122,22 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     archiveClassifier.set("")
     destinationDirectory.set(file("${project.rootDir}/bin"))
 
-    // Excludes
+    // Exclude several things that aren't needed from the JAR
+
+    // OR-Tools binaries
     exclude("com/google/ortools/Loader.class")
     exclude("**/ortools-darwin*")
     exclude("**/ortools-win32*")
     exclude("**/ortools-linux*")
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
-    // Exclude unused Material Icons themes to reduce JAR size
+    // Unused Material Icons themes
     exclude("androidx/compose/material/icons/twotone/**")
     exclude("androidx/compose/material/icons/rounded/**")
     exclude("androidx/compose/material/icons/outlined/**")
     exclude("androidx/compose/material/icons/sharp/**")
 
-    // Exclude Multik native libraries for non-target platforms
+    // Multik native libraries for non-target platforms
     // Note: This produces a platform-specific JAR based on the build environment
     val osName = System.getProperty("os.name").lowercase()
     val osArch = if (project.hasProperty("targetArch")) {
@@ -136,9 +159,6 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     // Exclude unneeded drawing libraries
     if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
     if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
-
-    // Ensure native libs are unpacked before this runs
-    dependsOn(unpackOrtNatives)
 }
 
 // Custom task to unpack the OR-Tools native libraries
@@ -173,4 +193,17 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
 // Ensure the `build` task also creates the final executable JAR
 tasks.named("build") {
     dependsOn(shadowJar)
+}
+
+// Configure the run task to use the unpacked native libraries
+tasks.withType<JavaExec>().configureEach {
+    dependsOn(unpackOrtNatives)
+
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = System.getProperty("os.arch").lowercase()
+    val isMac = osName.contains("mac")
+    val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+    val classifier = if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains("win")) "win32-x86-64" else "linux-x86-64"
+
+    systemProperty("java.library.path", "${project.rootDir}/bin/ortools-lib/ortools-$classifier")
 }
