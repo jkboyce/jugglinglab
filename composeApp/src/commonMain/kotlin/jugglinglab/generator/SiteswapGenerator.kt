@@ -1693,8 +1693,10 @@ class SiteswapGeneratorConfig {
                 -1
             } else if (args[1].matches("^[0-9]+$".toRegex())) {
                 args[1].toInt()  // numbers only
-            } else {
+            } else if (args[1].length == 1 && args[1][0] in 'a'..'z') {
                 args[1].toInt(36)  // 'a' = 10, 'b' = 11, ...
+            } else {
+                throw NumberFormatException()
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(
@@ -1823,7 +1825,7 @@ class SiteswapGeneratorConfig {
     // Configure the multiplexing-related items.
 
     private fun configMultiplexing(trueMultiplex: Boolean) {
-        // The following variable slot_size serves two functions. It is the size
+        // The following variable slotSize serves two functions. It is the size
         // of a slot used in the multiplexing filter, and it is the number of
         // throws allocated in memory. The number of throws needs to be larger
         // than L sometimes, since these same structures are used to find
