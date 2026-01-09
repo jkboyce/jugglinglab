@@ -443,6 +443,8 @@ object JugglingLab {
             SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
+        } catch (e: Exception) {
+            println(e.message)
         }
 
         if (jc != null) {
