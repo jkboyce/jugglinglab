@@ -54,14 +54,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             // Juggling Lab specific
             implementation("com.google.ortools:ortools-java:${Versions.ORTOOLS_VERSION}")
-
-            // Add native OR-Tools dependency based on current platform
-            val osName = System.getProperty("os.name").lowercase()
-            val osArch = System.getProperty("os.arch").lowercase()
-            val isMac = osName.contains("mac")
-            val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
-            val classifier = if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains("win")) "win32-x86-64" else "linux-x86-64"
-            runtimeOnly("com.google.ortools:ortools-$classifier:${Versions.ORTOOLS_VERSION}")
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
