@@ -427,10 +427,10 @@ private fun StyledDropdown(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(50.dp)
             .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
             .clickable { expanded = true }
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -445,7 +445,7 @@ private fun StyledDropdown(
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = "Dropdown",
-                tint = Color.LightGray
+                tint = Color.Gray
             )
         }
 
