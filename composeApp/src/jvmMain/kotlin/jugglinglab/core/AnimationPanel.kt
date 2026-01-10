@@ -37,6 +37,7 @@ import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlIsNearLine
 import jugglinglab.util.jlToStringRounded
 import java.awt.BasicStroke
+import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.Stroke
@@ -190,20 +191,8 @@ class AnimationPanel(
     }
 
     //--------------------------------------------------------------------------
-    // Methods to handle changes made within this UI
+    // Methods to (re)start the animator
     //--------------------------------------------------------------------------
-
-    // Call this to initiate a change in the pattern.
-    //
-    // There are three levels of "pattern restart":
-    // 1. Full restart (reset camera angle and zoom, restart animation at t = 0)
-    // 2. Pattern update (leave camera angle and time unchanged, re-fit the
-    //    animation to the rendering frame)
-    // 3. Pattern update w/o size refit (as #2 but w/o size refit)
-    //
-    // For any edits made in EditLadderDiagram we use restart #2.
-    // For any edits made in AnimationEditPanel we use restart #3 while mouse
-    // dragging is active, then restart #2 on mouse release.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {

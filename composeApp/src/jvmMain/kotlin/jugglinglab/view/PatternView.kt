@@ -266,7 +266,6 @@ class PatternView(
 
     override fun setAnimationPanelPreferredSize(d: Dimension) {
         ja.preferredSize = d
-        jsp.resetToPreferredSizes()
     }
 
     override fun disposeView() {

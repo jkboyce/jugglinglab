@@ -72,8 +72,6 @@ class EditView(
             } else {
                 patternWindow.pack()
             }
-        } else {
-            ladder.validate() // to make ladder redraw
         }
         patternWindow.setTitle(pattern.title)
         patternWindow.updateColorsMenu()
@@ -89,7 +87,6 @@ class EditView(
 
     override fun setAnimationPanelPreferredSize(d: Dimension) {
         ap.preferredSize = d
-        jsp.resetToPreferredSizes()
     }
 
     override fun disposeView() {
