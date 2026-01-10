@@ -71,8 +71,7 @@ compose.desktop {
             "-Dfile.encoding=UTF-8",
             "-DJL_run_as_bundle=true",
             "-DJL_compose_ui=$isCompose",
-            "--enable-native-access=ALL-UNNAMED",
-            "-Xdock:name=Juggling Lab"
+            "--enable-native-access=ALL-UNNAMED"
         )
 
         nativeDistributions {
