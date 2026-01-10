@@ -15,6 +15,8 @@ import jugglinglab.ui.AnimationPrefsControl
 import jugglinglab.util.jlGetStringResource
 import androidx.compose.material.*
 import androidx.compose.ui.awt.ComposePanel
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.JDialog
 import javax.swing.JFrame
 
@@ -28,6 +30,13 @@ open class AnimationPrefsDialog(private val parentFrame: JFrame?) : JDialog(
     init {
         isResizable = false
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
+
+        addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                result = null
+                isVisible = false
+            }
+        })
     }
 
     open fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
