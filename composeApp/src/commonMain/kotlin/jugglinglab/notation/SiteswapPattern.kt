@@ -150,6 +150,9 @@ class SiteswapPattern : MHNPattern() {
                 tme.errorColumn
             )
             throw JuggleExceptionUser(message)
+        } catch (t: Throwable) {
+            val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
+            throw JuggleExceptionUser(message)
         }
 
         // Use tree to fill in MHNPattern internal variables
