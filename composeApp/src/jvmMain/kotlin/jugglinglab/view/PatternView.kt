@@ -8,7 +8,6 @@
 
 package jugglinglab.view
 
-import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
@@ -22,6 +21,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlGetImageResource
 import jugglinglab.util.jlConstraints
 import jugglinglab.util.jlGetStringResource
+import androidx.compose.ui.graphics.toAwtImage
 import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
@@ -112,7 +112,7 @@ class PatternView(
 
         // split pane dividing the two
         jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls)
-        jsp.setResizeWeight(0.75) // % extra space allocated to left (animation) side
+        jsp.setResizeWeight(0.0) // % extra space allocated to left (animation) side
 
         add(jsp, BorderLayout.CENTER)
 
@@ -230,28 +230,34 @@ class PatternView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?) {
-        ja.restartJuggle(pattern, prefs)
-        setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height))
-        if (pattern == null) return
+    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
-        val notation = pattern.basePatternNotation
-        val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
-        rbBp.setText(message)
-
-        if (!(rbBp.isSelected || rbJml.isSelected)) {
-            if (notation == null) {
-                rbJml.setSelected(true)
-            } else {
-                rbBp.setSelected(true)
-            }
+        ja.restartJuggle(pattern, prefs, coldRestart)
+        if (sizeChanged) {
+            setAnimationPanelPreferredSize(
+                Dimension(state.prefs.width, state.prefs.height)
+            )
+            jsp.resetToPreferredSizes()
         }
+        if (pattern != null) {
+            val notation = pattern.basePatternNotation
+            val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
+            rbBp.setText(message)
 
-        updateButtons()
-        reloadTextArea()
-        patternWindow.setTitle(pattern.title)
-        patternWindow.updateColorsMenu()
+            if (!(rbBp.isSelected || rbJml.isSelected)) {
+                if (notation == null) {
+                    rbJml.setSelected(true)
+                } else {
+                    rbBp.setSelected(true)
+                }
+            }
+
+            updateButtons()
+            reloadTextArea()
+            patternWindow.setTitle(pattern.title)
+            patternWindow.updateColorsMenu()
+        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -264,7 +270,6 @@ class PatternView(
 
     override fun setAnimationPanelPreferredSize(d: Dimension) {
         ja.preferredSize = d
-        jsp.resetToPreferredSizes()
     }
 
     override fun disposeView() {

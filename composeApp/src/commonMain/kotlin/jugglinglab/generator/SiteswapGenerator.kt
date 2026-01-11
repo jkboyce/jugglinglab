@@ -35,6 +35,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.util.*
 import kotlin.math.max
+import kotlin.math.min
 
 class SiteswapGenerator : Generator() {
     // generator configuration
@@ -43,7 +44,6 @@ class SiteswapGenerator : Generator() {
     // working variables, initialized at runtime
     private lateinit var state: Array<Array<IntArray>>
     private var lTarget: Int = 0
-    private lateinit var rhythm: Array<Array<IntArray>>
     private lateinit var throwsLeft: Array<IntArray>
     private lateinit var holes: Array<IntArray>
     private lateinit var throwTo: Array<Array<IntArray>>
@@ -129,33 +129,22 @@ class SiteswapGenerator : Generator() {
     // Non-public methods below
     //--------------------------------------------------------------------------
 
-    // Allocate space for the states, rhythms, and throws in the pattern, plus
+    // Allocate working arrays for the states and throws in the pattern, plus
     // other incidental variables.
 
     private fun allocateWorkspace() {
-        // last index below is not `ht` because of findStartEnd()
+        // last index below is not `config.ht` because of findStartEnd()
         state =
             Array(config.lMax + 1) { Array(config.hands) { IntArray(config.groundStateLength) } }
         holes =
             Array(config.hands) { IntArray(config.lMax + config.ht) }
-        // first index below is not `l` because of findStartEnd()
+        // first index below is not `config.lMax` because of findStartEnd()
         throwTo =
             Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
         throwValue =
             Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
 
-        rhythm = Array(config.slotSize + 1) { Array(config.hands) { IntArray(config.ht) } }
-        for (i in 0..<(config.slotSize + 1)) {
-            for (j in 0..<config.hands) {
-                for (k in 0..<config.ht) {
-                    rhythm[i][j][k] = config.multiplex *
-                        config.rhythmRepunit[j][(k + i) % config.rhythmPeriod]
-                }
-            }
-        }
-
         if (config.mpflag != 0) {
-            // space for filter variables
             mpFilter =
                 Array(config.lMax + 1) { Array(config.hands) { Array(config.slotSize) { IntArray(3) } } }
         }
@@ -165,6 +154,15 @@ class SiteswapGenerator : Generator() {
         if (config.connectedPatternsFlag) {
             connections = BooleanArray(config.jugglers)
         }
+    }
+
+    // Return the maximum number of balls allowed at position (hand, index)
+    // in our state, on beat `beat`. This is dictated by our throwing rhythm and
+    // the multiplexing settings.
+
+    private fun rhythm(beat: Int, hand: Int, index: Int): Int {
+        return config.multiplex *
+                config.rhythmRepunit[hand][(beat + index) % config.rhythmPeriod]
     }
 
     // Generate all patterns.
@@ -283,7 +281,7 @@ class SiteswapGenerator : Generator() {
         var j = minTo // ensures each state is generated only once
         for (i in minValue..<config.ht) {
             while (j < config.hands) {
-                if (state[0][j][i] < rhythm[0][j][i]) {
+                if (state[0][j][i] < rhythm(0, j, i)) {
                     state[0][j][i] = state[0][j][i] + 1
                     if (i < lTarget || state[0][j][i] <= state[0][j][i - lTarget]) {
                         num += findPatterns(ballsPlaced + 1, i, j) // next ball
@@ -584,7 +582,7 @@ class SiteswapGenerator : Generator() {
         // check #2: if multiplexing, look for clustered throws if disallowed
         if (!config.mpClusteredFlag) {
             for (i in 0..<config.hands) {
-                if (rhythm[beat][i][0] != 0) {
+                if (rhythm(beat, i, 0) != 0) {
                     var j = 0
                     while (j < config.maxOccupancy && throwValue[beat][i][j] != 0) {
                         for (l in 0..<j) {
@@ -607,7 +605,7 @@ class SiteswapGenerator : Generator() {
             // or make no throw.
             var ballsThrown = 0
             for (h in 0..<config.hands) {
-                if (rhythm[beat][h][0] != 0) {
+                if (rhythm(beat, h, 0) != 0) {
                     ++ballsThrown
                     if (state[beat][h][0] != 1 && config.personNumber[h] != config.leaderPerson) {
                         return false
@@ -623,7 +621,7 @@ class SiteswapGenerator : Generator() {
             var ballsLeft = config.n
             placeballs@ for (i in 0..<config.ht) {
                 for (h in 0..<config.hands) {
-                    if (rhythm[beat + 1][h][i] == 0)
+                    if (rhythm(beat + 1, h, i) == 0)
                         continue
                     --ballsLeft
                     if (ballsLeft < ballsThrown) {
@@ -807,7 +805,7 @@ class SiteswapGenerator : Generator() {
                                 var k = 0
                                 while (k < config.maxOccupancy && throwValue[i][j][k] > 0) {
                                     scoretemp += 4 * throwValue[i][j][k] * (2 * config.maxOccupancy) *
-                                        (2 * config.maxOccupancy)
+                                            (2 * config.maxOccupancy)
                                     if (throwTo[i][j][k] != j) {
                                         scoretemp += 2 * (2 * config.maxOccupancy)
                                         if (config.personNumber[throwTo[i][j][k]] != (m + 1)) {
@@ -961,14 +959,16 @@ class SiteswapGenerator : Generator() {
     // to beat2 mod rhythm_period.
 
     private fun compareThrows(beat1: Int, beat2: Int): Int {
+        assert(beat1 >= 0 && beat1 <= config.lMax)
+        assert(beat2 >= 0 && beat2 <= config.lMax)
+
         val value1 = throwValue[beat1]
         val to1 = throwTo[beat1]
         val value2 = throwValue[beat2]
         val to2 = throwTo[beat2]
-        val rhy = rhythm[beat1] // same as beat2 since throws comparable
 
         for (i in 0..<config.hands) {
-            for (j in 0..<rhy[i][0]) {
+            for (j in 0..<rhythm(beat1, i, 0)) {
                 if (value1[i][j] > value2[i][j]) {
                     return 1
                 } else if (value1[i][j] < value2[i][j]) {
@@ -1040,7 +1040,7 @@ class SiteswapGenerator : Generator() {
     // Output the throws for a given beat to a StringBuilder.
 
     private fun outputBeat(beat: Int, sb: StringBuilder) {
-        val canThrow = rhythm[beat].any { it[0] != 0 }
+        val canThrow = (0..<config.hands).any { rhythm(beat, it, 0) != 0 }
         if (!canThrow) {
             return  // skip output for this beat
         }
@@ -1060,7 +1060,7 @@ class SiteswapGenerator : Generator() {
                 ++hiHand
             }
 
-            val numHandsThrowing = (loHand..<hiHand).count { rhythm[beat][it][0] != 0 }
+            val numHandsThrowing = (loHand..<hiHand).count { rhythm(beat, it, 0) != 0 }
             if (numHandsThrowing > 0) {
                 var parens = false
 
@@ -1071,7 +1071,7 @@ class SiteswapGenerator : Generator() {
                 }
 
                 for (j in loHand..<hiHand) {
-                    if (rhythm[beat][j][0] == 0) {
+                    if (rhythm(beat, j, 0) == 0) {
                         continue  // hand isn't supposed to throw
                     }
 
@@ -1693,8 +1693,10 @@ class SiteswapGeneratorConfig {
                 -1
             } else if (args[1].matches("^[0-9]+$".toRegex())) {
                 args[1].toInt()  // numbers only
-            } else {
+            } else if (args[1].length == 1 && args[1][0] in 'a'..'z') {
                 args[1].toInt(36)  // 'a' = 10, 'b' = 11, ...
+            } else {
+                throw NumberFormatException()
             }
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(
@@ -1750,6 +1752,8 @@ class SiteswapGeneratorConfig {
         if (ht == -1) {
             ht = n * lMax
         }
+        // no throws greater than `n * lMax` due to average rule
+        ht = min(ht, n * lMax)
         if (ht < 1) {
             val message = jlGetStringResource(Res.string.error_generator_height_too_small)
             throw JuggleExceptionUser(message)
@@ -1823,7 +1827,7 @@ class SiteswapGeneratorConfig {
     // Configure the multiplexing-related items.
 
     private fun configMultiplexing(trueMultiplex: Boolean) {
-        // The following variable slot_size serves two functions. It is the size
+        // The following variable slotSize serves two functions. It is the size
         // of a slot used in the multiplexing filter, and it is the number of
         // throws allocated in memory. The number of throws needs to be larger
         // than L sometimes, since these same structures are used to find

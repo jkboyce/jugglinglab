@@ -135,18 +135,21 @@ class AnimationPanel(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?) {
+    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
+        // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
         if (pat != null) state.update(pattern = pat)
         if (newjc != null) state.update(prefs = newjc)
-        state.update(
-            isPaused = state.prefs.startPaused,
-            cameraAngle = state.initialCameraAngle(),
-            zoom = 1.0,
-            propForPath = state.initialPropForPath(),
-            fitToFrame = true
-        )
+        if (coldRestart) {
+            state.update(
+                isPaused = state.prefs.startPaused,
+                cameraAngle = state.initialCameraAngle(),
+                zoom = 1.0,
+                propForPath = state.initialPropForPath(),
+                fitToFrame = true
+            )
+        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

@@ -10,7 +10,7 @@
 //
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-//import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -65,6 +65,7 @@ compose.desktop {
     application {
         val isCompose = project.hasProperty("JLcompose")
         mainClass = "jugglinglab.JugglingLabKt"
+
         jvmArgs += listOf(
             "-Xss2048k",
             "-Dfile.encoding=UTF-8",
@@ -72,12 +73,23 @@ compose.desktop {
             "-DJL_compose_ui=$isCompose",
             "--enable-native-access=ALL-UNNAMED"
         )
-        /*
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.jugglinglab"
-            packageVersion = "1.6.7"
-        }*/
+            packageName = "Juggling Lab"
+            packageVersion = "1.6.8"
+
+            macOS {
+                //iconFile.set(project.file("launcher-icons/icon.icns"))
+                dockName = "Juggling Lab"
+            }
+            windows {
+                //iconFile.set(project.file("launcher-icons/icon.ico"))
+            }
+            linux {
+                //iconFile.set(project.file("launcher-icons/icon.png"))
+            }
+        }
     }
 }
 
@@ -101,15 +113,43 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     archiveClassifier.set("")
     destinationDirectory.set(file("${project.rootDir}/bin"))
 
-    // Excludes
+    // Exclude several things that aren't needed from the JAR
+
+    // OR-Tools binaries
     exclude("com/google/ortools/Loader.class")
     exclude("**/ortools-darwin*")
     exclude("**/ortools-win32*")
     exclude("**/ortools-linux*")
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
-    // Ensure native libs are unpacked before this runs
-    dependsOn(unpackOrtNatives)
+    // Unused Material Icons themes
+    exclude("androidx/compose/material/icons/twotone/**")
+    exclude("androidx/compose/material/icons/rounded/**")
+    exclude("androidx/compose/material/icons/outlined/**")
+    exclude("androidx/compose/material/icons/sharp/**")
+
+    // Multik native libraries for non-target platforms
+    // Note: This produces a platform-specific JAR based on the build environment
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = if (project.hasProperty("targetArch")) {
+        (project.property("targetArch") as String).lowercase()
+    } else {
+        System.getProperty("os.arch").lowercase()
+    }
+    val isMac = osName.contains("mac")
+    val isWindows = osName.contains("win")
+    val isLinux = osName.contains("nux") || osName.contains("nix")
+    val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+
+    if (!isMac || !isArm64) exclude("lib/macosArm64/**")
+    if (!isMac || isArm64) exclude("lib/macosX64/**")
+    if (!isWindows) exclude("lib/mingwX64/**")
+    if (!isLinux) exclude("lib/linuxX64/**")
+    exclude("lib/arm64-v8a/**")
+
+    // Exclude unneeded drawing libraries
+    if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
+    if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
 }
 
 // Custom task to unpack the OR-Tools native libraries
@@ -144,4 +184,17 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
 // Ensure the `build` task also creates the final executable JAR
 tasks.named("build") {
     dependsOn(shadowJar)
+}
+
+// Configure the run task to use the unpacked native libraries
+tasks.withType<JavaExec>().configureEach {
+    dependsOn(unpackOrtNatives)
+
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = System.getProperty("os.arch").lowercase()
+    val isMac = osName.contains("mac")
+    val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+    val classifier = if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains("win")) "win32-x86-64" else "linux-x86-64"
+
+    systemProperty("java.library.path", "${project.rootDir}/bin/ortools-lib/ortools-$classifier")
 }

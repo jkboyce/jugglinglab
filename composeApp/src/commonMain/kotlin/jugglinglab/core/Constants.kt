@@ -9,8 +9,8 @@ package jugglinglab.core
 import jugglinglab.curve.Curve
 
 object Constants {
-    const val VERSION: String = "1.6.7"
-    const val YEAR: String = "2025"
+    const val VERSION: String = "1.6.8"
+    const val YEAR: String = "2026"
 
     const val SITE_URL: String = "http://jugglinglab.org"
     const val DOWNLOAD_URL: String = "https://jugglinglab.org/#download"

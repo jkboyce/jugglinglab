@@ -418,7 +418,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     }
                     try {
                         val newpat = view.state.pattern.withPropColors(colorString)
-                        view.restartView(newpat, null)
+                        view.restartView(newpat, null, coldRestart = false)
                         view.state.addCurrentToUndoList()
                     } catch (_: JuggleExceptionUser) {
                         throw JuggleExceptionInternal("Error in FILE_PROPCOLORS")
@@ -487,7 +487,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 fname = jlSanitizeFilename(fname)
                 jlJfc.setSelectedFile(File(fname))
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
-
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
@@ -522,7 +521,6 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 fname = jlSanitizeFilename(fname)
                 jlJfc.setSelectedFile(File(fname))
                 jlJfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
-
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
@@ -552,7 +550,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 optimizerWrapper?.let {
                     try {
                         val newPat = it.optimize(view.state.pattern)
-                        view.restartView(newPat, null)
+                        view.restartView(newPat, null, coldRestart = false)
                         view.state.addCurrentToUndoList()
                     } catch (ite: InvocationTargetException) {
                         // Unwrap the actual exception thrown by the optimizer
@@ -568,7 +566,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
                     val newpat = view.state.pattern.withInvertedXAxis(flipXCoordinate = false)
-                    view.restartView(newpat, null)
+                    view.restartView(newpat, null, coldRestart = false)
                     view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_SWAPHANDS: ${e.message}")
@@ -578,7 +576,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_INVERTX -> {
                 try {
                     val newpat = view.state.pattern.withInvertedXAxis()
-                    view.restartView(newpat, null)
+                    view.restartView(newpat, null, coldRestart = false)
                     view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_INVERTX: ${e.message}")
@@ -588,7 +586,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_INVERTTIME -> {
                 try {
                     val newpat = view.state.pattern.withInvertedTime()
-                    view.restartView(newpat, null)
+                    view.restartView(newpat, null, coldRestart = false)
                     view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
                     throw JuggleExceptionInternal("Error in FILE_INVERTTIME: ${e.message}")
@@ -607,7 +605,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     view.restartView(null, newjc)
 
                     if (newjc.width != jc.width || newjc.height != jc.height) {
-                        if (this.isWindowMaximized) {
+                        if (isWindowMaximized) {
                             validate()
                         } else {
                             pack()

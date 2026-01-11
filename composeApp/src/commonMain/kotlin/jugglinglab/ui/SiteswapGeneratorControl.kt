@@ -196,10 +196,11 @@ fun SiteswapGeneratorControl(
         // Split Section: Settings (Left) vs Filters (Right)
         Row(
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
             // LEFT COLUMN (Settings)
             Column(
-                modifier = Modifier.weight(1f).padding(end = 16.dp)
+                modifier = Modifier.weight(1f)
             ) {
                 // Jugglers
                 Text(text = stringResource(Res.string.gui_jugglers), style = MaterialTheme.typography.body1)
@@ -251,8 +252,10 @@ fun SiteswapGeneratorControl(
                 )
             }
 
+            Spacer(modifier = Modifier.width(30.dp))
+
             // RIGHT COLUMN (Filters)
-            Column(modifier = Modifier.weight(1.3f)) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(text = stringResource(Res.string.gui_find), style = MaterialTheme.typography.body1)
                 CompactCheckbox(stringResource(Res.string.gui_ground_state_patterns), groundState) { groundState = it }
                 CompactCheckbox(stringResource(Res.string.gui_excited_state_patterns), excitedState) { excitedState = it }
@@ -427,10 +430,10 @@ private fun StyledDropdown(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(50.dp)
             .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
             .clickable { expanded = true }
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -445,7 +448,7 @@ private fun StyledDropdown(
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = "Dropdown",
-                tint = Color.LightGray
+                tint = Color.Gray
             )
         }
 

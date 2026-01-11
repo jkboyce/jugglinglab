@@ -12,7 +12,7 @@
 
 package jugglinglab
 
-import jugglinglab.composeapp.generated.resources.*
+//import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.*
 import jugglinglab.core.ApplicationWindow.Companion.openJMLFile
 import jugglinglab.core.ApplicationWindow.Companion.showAboutBox
@@ -32,7 +32,7 @@ import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.OpenFilesServer
 import jugglinglab.util.ParameterList
-import jugglinglab.util.jlGetStringResource
+//import jugglinglab.util.jlGetStringResource
 import java.awt.Desktop
 import java.awt.desktop.AboutEvent
 import java.io.*
@@ -174,7 +174,7 @@ object JugglingLab {
 
         // Any remaining arguments that parsing didn't consume?
         if (jlargs.isNotEmpty()) {
-            //System.setProperty("java.awt.headless", "true")
+            System.setProperty("java.awt.headless", "true")
             val arglist = jlargs.joinToString(", ")
             println("Error: Unrecognized input: $arglist")
             return
@@ -186,7 +186,7 @@ object JugglingLab {
         }
 
         // All remaining modes are headless (no GUI)
-        //System.setProperty("java.awt.headless", "true")
+        System.setProperty("java.awt.headless", "true")
 
         if (firstarg == "togif") {
             doTogif(pat, outpath, jc)
@@ -231,7 +231,7 @@ object JugglingLab {
         // See ApplicationWindow.registerOpenFilesHandler()
         val noOpenFilesHandler =
             (!Desktop.isDesktopSupported()
-                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
+                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
 
         if (noOpenFilesHandler) {
             // use a different mechanism to try to hand off the open requests to
@@ -239,7 +239,7 @@ object JugglingLab {
             files.removeIf { OpenFilesServer.tryOpenFile(it) }
 
             if (files.isEmpty()) {
-                //System.setProperty("java.awt.headless", "true")
+                System.setProperty("java.awt.headless", "true")
                 if (Constants.DEBUG_OPEN_SERVER) {
                     println("Open file command handed off; quitting")
                 }
@@ -258,7 +258,8 @@ object JugglingLab {
                     try {
                         openJMLFile(file)
                     } catch (jeu: JuggleExceptionUser) {
-                        val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
+                        // val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
+                        val message = "Problem reading from file \"${file.getName()}\""
                         val msg = message + ":\n" + jeu.message
                         jlHandleUserException(null, msg)
                     }
@@ -296,7 +297,7 @@ object JugglingLab {
         if (files.isEmpty()) {
             val output = "Error: Expected file path(s), none provided"
             if (isCLI) {
-                //System.setProperty("java.awt.headless", "true")
+                System.setProperty("java.awt.headless", "true")
                 println(output)
             } else {
                 jlHandleUserException(null, output) // should never happen
@@ -308,7 +309,8 @@ object JugglingLab {
     // Show the help message.
 
     private fun doHelp(firstarg: String?) {
-        //System.setProperty("java.awt.headless", "true")
+        System.setProperty("java.awt.headless", "true")
+        /*
         val arg1 = jlGetStringResource(Res.string.gui_version, Constants.VERSION)
         var output = "Juggling Lab " + arg1.lowercase(Locale.getDefault()) + "\n"
         val arg2 = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
@@ -316,9 +318,57 @@ object JugglingLab {
         output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
         output += jlGetStringResource(Res.string.gui_cli_help1)
         var examples = jlGetStringResource(Res.string.gui_cli_help2)
+        */
+        var output = "Juggling Lab version ${Constants.VERSION}\n" +
+                "Copyright © 2002-${Constants.YEAR} Jack Boyce and the Juggling Lab contributors\n" +
+                "This program is released under the GNU General Public License v2\n\n" +
+                "This is the command line interface to Juggling Lab. Recognized options:\n\n" +
+                "   jlab start\n" + "      Launches the application.\n\n" +
+                "   jlab open <file1.jml> <file2.jml> ...\n" +
+                "      Launches the application and opens the listed JML files.\n\n" +
+                "   jlab anim <pattern> [-prefs <prefs>]\n" +
+                "      Opens a window with an animation of the given pattern, using the\n" +
+                "      given (optional) animation preferences.\n\n" +
+                "   jlab gen <gen_options> [-out <path>]\n" +
+                "      Runs the siteswap generator and prints a list of patterns, using the\n" +
+                "      given set of generator options to define the number of objects, etc.\n" +
+                "      Type \"jlab gen\" with no options for a help message. The output may\n" +
+                "      optionally be written to a file.\n\n" +
+                "   jlab trans <pattern A> <pattern B> [-options] [-out <path>]\n" +
+                "      Runs the siteswap transition-finder and prints a list of transitions\n" +
+                "      from pattern A to pattern B. Type \"jlab trans\" for a help message. The\n" +
+                "      output may optionally be written to a file.\n\n" +
+                "   jlab togif <pattern> [-prefs <prefs>] -out <path>\n" +
+                "      Saves a pattern animation to a file as an animated GIF, using the\n" +
+                "      given (optional) animation preferences.\n\n" +
+                "   jlab tojml <pattern> [-out <path>]\n" +
+                "      Converts a pattern to JML notation, Juggling Lab's internal XML-based\n" +
+                "      pattern description. This may optionally be written to a file.\n\n" +
+                "   jlab verify [-tojml] <file1.jml> <file2.jml> ... [-out <path>]\n" +
+                "      Checks the validity of the listed JML files. For pattern list files, the\n" +
+                "      validity of each line within the list is verified. The output may\n" +
+                "      optionally be written to a file.\n\nPattern input:\n" +
+                "   <pattern> can take one of three formats:\n\n" +
+                "   1. A pattern in siteswap notation, for example 771 or (6x,4)(4,6x).\n" +
+                "   2. A siteswap pattern annotated with additional settings, in a semi-\n" +
+                "      colon separated format. This is described in more detail at\n" +
+                "      https://jugglinglab.org/html/sspanel.html\n" +
+                "   3. A JML pattern read in from a file, using the format '-jml <path>'.\n\n" +
+                "Animation preferences input:\n" +
+                "   <prefs> are optional and are used to override Juggling Lab's default\n" +
+                "   preferences. These are given in a semicolon-separated format. See\n" +
+                "   https://jugglinglab.org/html/animinfo.html\n\n" +
+                "NOTE: Care should be taken when using characters that may be interpreted in\n" +
+                "special ways by the command line interpreter. On Windows use double quotes\n" +
+                "around settings to avoid confusion, and single quotes on macOS/Unix.\n\n"
+        var examples = "Examples:\n   jlab anim '(6x,4)*'\n" +
+                "   jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif\n" +
+                "   jlab anim -jml my_favorite_pattern.jml\n" +
+                "   jlab anim 771 -prefs 'stereo=true;width=800;height=600'\n" +
+                "   jlab anim 5B -prefs 'bouncesound=true'\n   jlab gen 5 7 5\n   jlab trans 5 771"
         if (isWindows) {
             // replace single quotes with double quotes in Windows examples
-            examples = examples.replace("'".toRegex(), "\"")
+            examples = examples.replace("'", "\"")
         }
         output += examples
         println(output)
@@ -393,6 +443,8 @@ object JugglingLab {
             SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
+        } catch (e: Exception) {
+            println(e.message)
         }
 
         if (jc != null) {
@@ -403,7 +455,7 @@ object JugglingLab {
     // Run the siteswap transitioner.
 
     private fun doTrans(outpath: Path?, jc: AnimationPrefs?) {
-        //System.setProperty("java.awt.headless", "true")
+        System.setProperty("java.awt.headless", "true")
         try {
             var ps = System.out
             if (outpath != null) {
@@ -424,7 +476,7 @@ object JugglingLab {
     // verified.
 
     private fun doVerify(outpath: Path?, jc: AnimationPrefs?) {
-        //System.setProperty("java.awt.headless", "true")
+        System.setProperty("java.awt.headless", "true")
         val doJmlOutput = run {
             val index = jlargs.indexOfFirst { it.equals("-tojml", ignoreCase = true) }
             if (index == -1) {
@@ -572,8 +624,10 @@ object JugglingLab {
                 when (parser.fileType) {
                     JMLParser.JML_PATTERN ->
                         return JMLPattern.fromJMLNode(parser.tree!!)
+
                     JMLParser.JML_LIST ->
                         println("Error: JML file cannot be a pattern list")
+
                     else -> println("Error: File is not valid JML")
                 }
             } catch (jeu: JuggleExceptionUser) {

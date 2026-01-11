@@ -3,8 +3,8 @@
 
 #define MyAppName "Juggling Lab"
 #define MyOutputFileName "JugglingLab"
-#define MyAppVersion "1.6.7"
-#define MyAppYear "2025"
+#define MyAppVersion "1.6.8"
+#define MyAppYear "2026"
 #define MyAppExeName "Juggling Lab.exe"
 #define MyAppIconsName "Juggling Lab.ico"
 #define MyAppDocIconsName "JML_document.ico"
