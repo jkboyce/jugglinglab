@@ -55,26 +55,26 @@ class EditView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.width))
+
         ap.restartJuggle(pattern, prefs, coldRestart)
-        setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height)
-        )
+        if (sizeChanged) {
+            // The containing window will do a layout (validate() or pack()) in
+            // PatternWindow.doMenuCommand(MenuCommand.VIEW_ANIMPREFS). Before
+            // that, here we set the panels' preferred sizes so the layout
+            // manager will allocate the right amount of space.
+            setAnimationPanelPreferredSize(
+                Dimension(state.prefs.width, state.prefs.height)
+            )
+            ladder.preferredSize = Dimension(ladder.size.width, state.prefs.height)
 
-        if (pattern == null) return
-
-        val changingJugglers =
-            (pattern.numberOfJugglers != state.pattern.numberOfJugglers)
-        if (changingJugglers && parent != null) {
-            // the next line gets the JSplitPane divider to reset during layout
+            // This makes the JSplitPane divider reset during layout
             jsp.resetToPreferredSizes()
-            if (patternWindow.isWindowMaximized) {
-                patternWindow.validate()
-            } else {
-                patternWindow.pack()
-            }
         }
-        patternWindow.setTitle(pattern.title)
-        patternWindow.updateColorsMenu()
+        if (pattern != null) {
+            patternWindow.setTitle(pattern.title)
+            patternWindow.updateColorsMenu()
+        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

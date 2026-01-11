@@ -206,6 +206,8 @@ class SelectionView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.width))
+
         var newPrefs: AnimationPrefs? = null
         if (prefs != null) {
             savedPrefs = prefs
@@ -221,9 +223,11 @@ class SelectionView(
             }
         }
 
-        setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height))
-
+        if (sizeChanged) {
+            setAnimationPanelPreferredSize(
+                Dimension(state.prefs.width, state.prefs.height)
+            )
+        }
         if (pattern != null) {
             patternWindow.setTitle(pattern.title)
             patternWindow.updateColorsMenu()

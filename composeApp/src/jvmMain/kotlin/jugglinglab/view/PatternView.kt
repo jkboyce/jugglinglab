@@ -231,29 +231,33 @@ class PatternView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.width))
+
         ja.restartJuggle(pattern, prefs, coldRestart)
-        setAnimationPanelPreferredSize(
-            Dimension(state.prefs.width, state.prefs.height)
-        )
-
-        if (pattern == null) return
-
-        val notation = pattern.basePatternNotation
-        val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
-        rbBp.setText(message)
-
-        if (!(rbBp.isSelected || rbJml.isSelected)) {
-            if (notation == null) {
-                rbJml.setSelected(true)
-            } else {
-                rbBp.setSelected(true)
-            }
+        if (sizeChanged) {
+            setAnimationPanelPreferredSize(
+                Dimension(state.prefs.width, state.prefs.height)
+            )
+            jsp.resetToPreferredSizes()
         }
+        if (pattern != null) {
+            val notation = pattern.basePatternNotation
+            val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
+            rbBp.setText(message)
 
-        updateButtons()
-        reloadTextArea()
-        patternWindow.setTitle(pattern.title)
-        patternWindow.updateColorsMenu()
+            if (!(rbBp.isSelected || rbJml.isSelected)) {
+                if (notation == null) {
+                    rbJml.setSelected(true)
+                } else {
+                    rbBp.setSelected(true)
+                }
+            }
+
+            updateButtons()
+            reloadTextArea()
+            patternWindow.setTitle(pattern.title)
+            patternWindow.updateColorsMenu()
+        }
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

@@ -605,7 +605,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                     view.restartView(null, newjc)
 
                     if (newjc.width != jc.width || newjc.height != jc.height) {
-                        if (this.isWindowMaximized) {
+                        if (isWindowMaximized) {
                             validate()
                         } else {
                             pack()

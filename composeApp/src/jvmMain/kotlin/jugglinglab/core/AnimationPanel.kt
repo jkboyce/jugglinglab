@@ -37,7 +37,6 @@ import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlIsNearLine
 import jugglinglab.util.jlToStringRounded
 import java.awt.BasicStroke
-import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.Stroke
