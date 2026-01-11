@@ -31,7 +31,7 @@ class UpdateChecker : Thread() {
     override fun run() {
         // first download the Juggling Lab home page, looking for the line
         // containing version information; fail quietly if something went wrong
-        val line: String = line ?: return
+        val line: String = versionStringLine ?: return
 
         // Use regular expression matching to find the span tag with
         // id "versionstring" surrounding the version number string we want
@@ -53,7 +53,7 @@ class UpdateChecker : Thread() {
     }
 
     companion object {
-        private val line: String?
+        private val versionStringLine: String?
             // Download the Juggling Lab home page and return the line with version
             get() {
                 var instream: InputStream? = null
