@@ -206,7 +206,7 @@ class SelectionView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
-        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.width))
+        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
         var newPrefs: AnimationPrefs? = null
         if (prefs != null) {
