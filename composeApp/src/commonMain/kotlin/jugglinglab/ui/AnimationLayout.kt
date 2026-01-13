@@ -17,10 +17,13 @@
 
 package jugglinglab.ui
 
+import jugglinglab.core.Constants
 import jugglinglab.core.PatternAnimationState
+import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPosition
 import jugglinglab.renderer.ComposeRenderer
+import jugglinglab.renderer.Juggler
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.JuggleExceptionInternal
@@ -78,6 +81,10 @@ class AnimationLayout(
     var showAngleDragControl: Boolean = false
 
     init {
+        if (Constants.DEBUG_LAYOUT) {
+            println("AnimationLayout.init() number $layoutCount")
+            ++layoutCount
+        }
         initRenderers()
 
         val activeEventImage = getActiveEvent(state)
@@ -284,37 +291,116 @@ class AnimationLayout(
         }
     }
 
+    val handWindowMax: Coordinate
+        get() = Coordinate(Juggler.HAND_OUT, 0.0, 1.0)
+
+    val handWindowMin: Coordinate
+        get() = Coordinate(-Juggler.HAND_IN, 0.0, -1.0)
+
+    val jugglerWindowMax: Coordinate
+        get() {
+            var max = state.pattern.layout.getJugglerMax(1)
+            for (i in 2..state.pattern.numberOfJugglers) {
+                max = Coordinate.max(max, state.pattern.layout.getJugglerMax(i))
+            }
+
+            max = Coordinate.add(
+                max,
+                Coordinate(
+                    Juggler.SHOULDER_HW,
+                    Juggler.SHOULDER_HW,  // Juggler.HEAD_HW,
+                    Juggler.SHOULDER_H + Juggler.NECK_H + Juggler.HEAD_H
+                )
+            )
+            return max!!
+        }
+
+    val jugglerWindowMin: Coordinate
+        get() {
+            var min = state.pattern.layout.getJugglerMin(1)
+            for (i in 2..state.pattern.numberOfJugglers) {
+                min = Coordinate.min(min, state.pattern.layout.getJugglerMin(i))
+            }
+
+            min = Coordinate.add(
+                min,
+                Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0.0)
+            )
+            return min!!
+        }
+
     private fun calculateBoundingBox(): Pair<Coordinate, Coordinate> {
+        val pattern = state.pattern
+
+        // Step 1: Work out a bounding box that contains all paths through space
+        // for the pattern, including the props
         var patternMax: Coordinate? = null
         var patternMin: Coordinate? = null
-        for (i in 1..state.pattern.numberOfPaths) {
-            patternMax = Coordinate.max(patternMax, state.pattern.layout.getPathMax(i))
-            patternMin = Coordinate.min(patternMin, state.pattern.layout.getPathMin(i))
+        for (i in 1..pattern.numberOfPaths) {
+            patternMax = Coordinate.max(patternMax, pattern.layout.getPathMax(i))
+            patternMin = Coordinate.min(patternMin, pattern.layout.getPathMin(i))
         }
 
         var propMax: Coordinate? = null
         var propMin: Coordinate? = null
-        for (i in 1..state.pattern.numberOfProps) {
-            propMax = Coordinate.max(propMax, state.pattern.getProp(i).getMax())
-            propMin = Coordinate.min(propMin, state.pattern.getProp(i).getMin())
+        for (i in 1..pattern.numberOfProps) {
+            propMax = Coordinate.max(propMax, pattern.getProp(i).getMax())
+            propMin = Coordinate.min(propMin, pattern.getProp(i).getMin())
         }
 
+        // Make sure props are entirely visible along all paths. In principle
+        // not all props go on all paths so this could be done more carefully.
         if (patternMax != null && patternMin != null) {
             patternMax = Coordinate.add(patternMax, propMax)
             patternMin = Coordinate.add(patternMin, propMin)
         }
 
-        val safeMax = patternMax ?: Coordinate(100.0, 100.0, 100.0)
-        val safeMin = patternMin ?: Coordinate(-100.0, -100.0, -100.0)
+        // Step 2: Work out a bounding box that contains the hands at all times,
+        // factoring in the physical extent of the hands.
+        var handMax: Coordinate? = null
+        var handMin: Coordinate? = null
+        for (i in 1..pattern.numberOfJugglers) {
+            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
+            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
+            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
+            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
 
-        safeMax.z = max(safeMax.z, 180.0)
-        safeMin.x = min(safeMin.x, -50.0)
-        safeMax.x = max(safeMax.x, 50.0)
+            if (Constants.DEBUG_LAYOUT) {
+                println("Data from AnimationLayout.findMaxMin():")
+                println("Hand max $i left = " + pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
+                println("Hand min $i left = " + pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
+                println("Hand max $i right = " + pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
+                println("Hand min $i right = " + pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+            }
+        }
 
-        return Pair(safeMin, safeMax)
+        // The renderer's hand window is in local coordinates. We don't know
+        // the juggler's rotation angle where `handMax` and `handMin` are
+        // achieved. So we create a bounding box that contains the hand
+        // regardless of rotation angle.
+        handWindowMax.x = max(
+            max(abs(handWindowMax.x), abs(handWindowMin.x)),
+            max(abs(handWindowMax.y), abs(handWindowMin.y))
+        )
+        handWindowMin.x = -handWindowMax.x
+        handWindowMax.y = handWindowMax.x
+        handWindowMin.y = handWindowMin.x
+
+        // make sure hands are entirely visible
+        handMax = Coordinate.add(handMax, handWindowMax)
+        handMin = Coordinate.add(handMin, handWindowMin)
+
+        // Step 3: Combine the pattern, hand, and juggler bounding boxes into an
+        // overall bounding box.
+        val overallMax = Coordinate.max(patternMax, Coordinate.max(handMax, jugglerWindowMax))
+        val overallMin = Coordinate.min(patternMin, Coordinate.min(handMin, jugglerWindowMin))
+
+        return Pair(overallMin!!, overallMax!!)
     }
 
     companion object {
+        private var layoutCount = 0
+
         fun anglediff(delta: Double): Double {
             var delta = delta
             while (delta > Math.PI) delta -= 2 * Math.PI

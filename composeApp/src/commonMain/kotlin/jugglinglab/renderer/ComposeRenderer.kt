@@ -26,7 +26,6 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class ComposeRenderer {
-    // Properties formerly inherited from Renderer
     var zoomLevel: Double = 1.0
         set(value) {
             field = value
@@ -36,7 +35,7 @@ class ComposeRenderer {
     var cameraAngle: DoubleArray = doubleArrayOf(0.0, 0.0)
         set(value) {
             field = doubleArrayOf(value[0], value[1])
-            if (cameracenter != null) {
+            if (cameraCenter != null) {
                 calculateCameraMatrix()
             }
         }
@@ -45,21 +44,21 @@ class ComposeRenderer {
     var showground: Boolean = false
 
     // Internal fields
-    private var cameracenter: JLVector? = null
+    private var cameraCenter: JLVector? = null
     private var m: JLMatrix = JLMatrix()
     private var width: Int = 0
     private var height: Int = 0
     private var viewport: Rect? = null
-    private lateinit var pat: JMLPattern
+    private lateinit var pattern: JMLPattern
     private var zoom: Double = 0.0 // pixels/cm
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
-    private var originx: Int = 0
-    private var originz: Int = 0
+    private var originX: Int = 0
+    private var originZ: Int = 0
     private var polysides: Int = 40 // # sides in polygon for head
     private var headcos: DoubleArray = DoubleArray(polysides)
     private var headsin: DoubleArray = DoubleArray(polysides)
-    private var headx: IntArray = IntArray(polysides)
-    private var heady: IntArray = IntArray(polysides)
+    private var headX: IntArray = IntArray(polysides)
+    private var headY: IntArray = IntArray(polysides)
 
     private lateinit var obj: MutableList<DrawObject2D>
     private lateinit var obj2: MutableList<DrawObject2D>
@@ -76,27 +75,27 @@ class ComposeRenderer {
     }
 
     fun setPattern(pat: JMLPattern) {
-        this.pat = pat
+        pattern = pat
         val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
-        obj = MutableList(maxobjects) { DrawObject2D(maxobjects) }
-        obj2 = MutableList(maxobjects) { DrawObject2D(maxobjects) }
+        obj = MutableList(maxobjects) { DrawObject2D() }
+        obj2 = MutableList(maxobjects) { DrawObject2D() }
         jugglervec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
     }
 
     fun setGround(show: Boolean) {
-        this.showground = show
+        showground = show
     }
 
-    fun initDisplay(w: Int, h: Int, border: Int, overallmax: Coordinate, overallmin: Coordinate) {
+    fun initDisplay(w: Int, h: Int, border: Int, overallMax: Coordinate, overallMin: Coordinate) {
         width = w
         height = h
         viewport = Rect(border.toFloat(), border.toFloat(), (width - border).toFloat(), (height - border).toFloat())
 
-        val adjustedMax = Coordinate(overallmax.x, overallmax.y, overallmax.z)
-        val adjustedMin = Coordinate(overallmin.x, overallmin.y, overallmin.z)
+        val adjustedMax = overallMax.copy()
+        val adjustedMin = overallMin.copy()
 
         if (DrawObject2D.ORIGINAL_ZOOM) {
-            if (pat.numberOfJugglers == 1) {
+            if (pattern.numberOfJugglers == 1) {
                 adjustedMin.z -= 0.3 * max(abs(adjustedMin.y), abs(adjustedMax.y))
                 adjustedMax.z += 5.0
             } else {
@@ -106,9 +105,9 @@ class ComposeRenderer {
                 adjustedMax.z += 0.4 * max(tempx, tempy)
             }
 
-            val maxabsx = max(abs(adjustedMin.x), abs(adjustedMax.x))
-            adjustedMin.x = -maxabsx
-            adjustedMax.x = maxabsx
+            val maxAbsX = max(abs(adjustedMin.x), abs(adjustedMax.x))
+            adjustedMin.x = -maxAbsX
+            adjustedMax.x = maxAbsX
 
             zoomOrig = min(
                 viewport!!.width.toDouble() / (adjustedMax.x - adjustedMin.x),
@@ -130,7 +129,7 @@ class ComposeRenderer {
             )
         }
 
-        cameracenter = JLVector(
+        cameraCenter = JLVector(
             0.5 * (adjustedMax.x + adjustedMin.x),
             0.5 * (adjustedMax.z + adjustedMin.z),
             0.5 * (adjustedMax.y + adjustedMin.y)
@@ -142,22 +141,22 @@ class ComposeRenderer {
     private fun setZoom(zoomfactor: Double) {
         this.zoom = zoomOrig * zoomfactor
 
-        if (viewport != null && cameracenter != null) {
-            originx = (viewport!!.left + 0.5 * viewport!!.width - zoom * cameracenter!!.x).roundToInt()
-            originz = (viewport!!.top + 0.5 * viewport!!.height + zoom * cameracenter!!.y).roundToInt()
+        if (viewport != null && cameraCenter != null) {
+            originX = (viewport!!.left + 0.5 * viewport!!.width - zoom * cameraCenter!!.x).roundToInt()
+            originZ = (viewport!!.top + 0.5 * viewport!!.height + zoom * cameraCenter!!.y).roundToInt()
             calculateCameraMatrix()
         }
     }
 
     private fun calculateCameraMatrix() {
-        m = JLMatrix.shiftMatrix(-cameracenter!!.x, -cameracenter!!.y, -cameracenter!!.z)
+        m = JLMatrix.shiftMatrix(-cameraCenter!!.x, -cameraCenter!!.y, -cameraCenter!!.z)
         m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraAngle[0], 0.0))
         m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraAngle[1], 0.0, 0.0))
-        m.transform(JLMatrix.shiftMatrix(cameracenter!!.x, cameracenter!!.y, cameracenter!!.z))
+        m.transform(JLMatrix.shiftMatrix(cameraCenter!!.x, cameraCenter!!.y, cameraCenter!!.z))
 
         m.transform(JLMatrix.scaleMatrix(1.0, -1.0, 1.0))
         m.transform(JLMatrix.scaleMatrix(zoom))
-        m.transform(JLMatrix.shiftMatrix(originx.toDouble(), originz.toDouble(), 0.0))
+        m.transform(JLMatrix.shiftMatrix(originX.toDouble(), originZ.toDouble(), 0.0))
     }
 
     fun getXY(coord: Coordinate): IntArray {
@@ -188,9 +187,9 @@ class ComposeRenderer {
     }
 
     fun drawFrame(time: Double, pnum: List<Int>, hideJugglers: List<Int>, drawScope: DrawScope) {
-        var numobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
+        var numObjects = 5 * pattern.numberOfJugglers + pattern.numberOfPaths + 18
 
-        for (i in 0..<numobjects) {
+        for (i in 0..<numObjects) {
             obj[i].covering.clear()
         }
 
@@ -198,17 +197,17 @@ class ComposeRenderer {
 
         // Props
         var propmin = 0.0
-        for (i in 1..pat.numberOfPaths) {
+        for (i in 1..pattern.numberOfPaths) {
             obj[index].type = DrawObject2D.TYPE_PROP
             obj[index].number = i
-            pat.layout.getPathCoordinate(i, time, tempc)
+            pattern.layout.getPathCoordinate(i, time, tempc)
             if (!tempc.isValid) {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
             getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
-            val pr = pat.getProp(pnum[i - 1])
+            val pr = pattern.getProp(pnum[i - 1])
             val center = pr.getProp2DCenter(zoom, cameraAngle)
             val size = pr.getProp2DSize(zoom, cameraAngle)
             obj[index].boundingbox = Rect(
@@ -260,9 +259,9 @@ class ComposeRenderer {
         }
 
         // Jugglers
-        Juggler.findJugglerCoordinates(pat, time, jugglervec)
+        Juggler.findJugglerCoordinates(pattern, time, jugglervec)
 
-        for (i in 1..pat.numberOfJugglers) {
+        for (i in 1..pattern.numberOfJugglers) {
             if (i in hideJugglers) continue
 
             obj[index].type = DrawObject2D.TYPE_BODY
@@ -318,11 +317,11 @@ class ComposeRenderer {
                 }
             }
         }
-        numobjects = index
+        numObjects = index
 
         // figure out which display elements are covering which other elements
-        for (i in 0..<numobjects) {
-            for (j in 0..<numobjects) {
+        for (i in 0..<numObjects) {
+            for (j in 0..<numObjects) {
                 if (j == i) continue
                 if (obj[i].isCovering(obj[j])) {
                     obj[i].covering.add(obj[j])
@@ -338,7 +337,7 @@ class ComposeRenderer {
             var changed = true
             while (changed) {
                 changed = false
-                for (i in 0..<numobjects) {
+                for (i in 0..<numObjects) {
                     if (obj[i].drawn) {
                         continue
                     }
@@ -355,7 +354,7 @@ class ComposeRenderer {
             // standpoint, and the objects aren't yet drawn. On pass 1 we draw
             // the lines next, then resume the above algorithm in pass 2. At the
             // end of pass 2 we draw everything remaining in arbitrary order.
-            for (i in 0..<numobjects) {
+            for (i in 0..<numObjects) {
                 if (obj[i].drawn) {
                     continue
                 }
@@ -369,12 +368,12 @@ class ComposeRenderer {
         }
 
         // draw the objects in the sorted order
-        for (i in 0..<numobjects) {
+        for (i in 0..<numObjects) {
             val ob = obj2[i]
 
             when (ob.type) {
                 DrawObject2D.TYPE_PROP -> {
-                    val pr = pat.getProp(pnum[ob.number - 1])
+                    val pr = pattern.getProp(pnum[ob.number - 1])
                     val x = ob.coord[0].x.roundToInt()
                     val y = ob.coord[0].y.roundToInt()
 
@@ -418,12 +417,12 @@ class ComposeRenderer {
                     if (abs(rHeadBx - lHeadBx) > 2.0) {
                         val headPath = Path()
                         for (j in 0..<polysides) {
-                            headx[j] = (0.5 * (lHeadBx + rHeadBx + headcos[j] * (rHeadBx - lHeadBx))).roundToInt()
-                            heady[j] = (0.5 * (lHeadBy + lHeadTy + headsin[j] * (lHeadBy - lHeadTy))
-                                    + (headx[j] - lHeadBx) * (rHeadBy - lHeadBy) / (rHeadBx - lHeadBx)).roundToInt()
+                            headX[j] = (0.5 * (lHeadBx + rHeadBx + headcos[j] * (rHeadBx - lHeadBx))).roundToInt()
+                            headY[j] = (0.5 * (lHeadBy + lHeadTy + headsin[j] * (lHeadBy - lHeadTy))
+                                    + (headX[j] - lHeadBx) * (rHeadBy - lHeadBy) / (rHeadBx - lHeadBx)).roundToInt()
 
-                            if (j == 0) headPath.moveTo(headx[j].toFloat(), heady[j].toFloat())
-                            else headPath.lineTo(headx[j].toFloat(), heady[j].toFloat())
+                            if (j == 0) headPath.moveTo(headX[j].toFloat(), headY[j].toFloat())
+                            else headPath.lineTo(headX[j].toFloat(), headY[j].toFloat())
                         }
                         headPath.close()
                         drawScope.drawPath(headPath, background)
@@ -463,7 +462,7 @@ class ComposeRenderer {
         ob.boundingbox = Rect(left, top, max(left + 1f, right), max(top + 1f, bottom))
     }
 
-    class DrawObject2D(numobjects: Int) {
+    class DrawObject2D {
         var type: Int = 0
         var number: Int = 0
         var coord: MutableList<JLVector> = MutableList(8) { JLVector() }
