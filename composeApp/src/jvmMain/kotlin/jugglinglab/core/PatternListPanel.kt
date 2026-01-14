@@ -32,11 +32,10 @@ import kotlin.collections.ArrayList
 
 class PatternListPanel(
     val patternList: JMLPatternList,
-    val parentFrame: JFrame? = null,
+    val parentFrame: PatternListWindow? = null,
     val animTarget: View? = null
 ) : JPanel() {
     private lateinit var list: JList<PatternRecord>
-    var hasUnsavedChanges: Boolean = false
 
     // for mouse/popup menu handling
     private var didPopup: Boolean = false
@@ -135,9 +134,6 @@ class PatternListPanel(
     }
 
     fun clearList() {
-        if (listModel.size > 0) {
-            hasUnsavedChanges = true
-        }
         listModel.clearModel()
     }
 
@@ -270,8 +266,6 @@ class PatternListPanel(
         } else {
             list.setSelectedIndex(row)
         }
-
-        hasUnsavedChanges = true
     }
 
     // Open a dialog to allow the user to insert a line of text.
@@ -289,7 +283,6 @@ class PatternListPanel(
             } else {
                 list.setSelectedIndex(row)
             }
-            hasUnsavedChanges = true
         }
 
         dialog!!.isVisible = true
@@ -305,7 +298,6 @@ class PatternListPanel(
             rec.display = tf!!.getText()
             dialog!!.dispose()
             listModel.update(row)
-            hasUnsavedChanges = true
         }
 
         dialog!!.isVisible = true
@@ -418,7 +410,6 @@ class PatternListPanel(
                     val rec = t.getTransferData(PATTERN_FLAVOR) as PatternRecord
                     listModel.add(index, PatternRecord(rec))
                     list.setSelectedIndex(index)
-                    hasUnsavedChanges = true
                     return true
                 }
 
@@ -434,7 +425,6 @@ class PatternListPanel(
                         listModel.add(index, rec)
                     }
                     list.setSelectedIndex(index)
-                    hasUnsavedChanges = true
                     return true
                 }
             } catch (e: Exception) {
@@ -453,8 +443,6 @@ class PatternListPanel(
                 if (!listModel.remove(data.rec)) {
                     jlHandleFatalException(JuggleExceptionInternal("PLP: exportDone()"))
                 }
-
-                hasUnsavedChanges = true
             }
 
             draggingOut = false

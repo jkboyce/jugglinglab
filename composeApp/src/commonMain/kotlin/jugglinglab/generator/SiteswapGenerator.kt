@@ -107,10 +107,10 @@ class SiteswapGenerator : Generator() {
                     target?.addResult(message, null, null)
                 }
             }
-            target?.completed()
 
             return num
         } finally {
+            target?.completed()
             if (Constants.DEBUG_GENERATOR) {
                 val millis = System.currentTimeMillis() - startTimeMillis
                 System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000)

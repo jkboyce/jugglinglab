@@ -11,7 +11,6 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.generator.Generator
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
@@ -154,7 +153,7 @@ open class ApplicationPanel(
                 val notation = p.notationName
                 val config: String = p.toString()
                 val pat = fromBasePattern(notation, config)
-                if (!bringToFront(pat.jlHashCode)) {
+                if (!PatternWindow.bringToFront(pat.jlHashCode)) {
                     if (animtarget != null) {
                         animtarget.restartView(pat, jc)
                     } else {

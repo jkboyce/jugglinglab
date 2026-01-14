@@ -45,6 +45,7 @@ class PatternListWindow(
     val jlHashCode: Int
         get() = patternList.jlHashCode
 
+    private var lastJlHashCode: Int = 0
     private var lastJmlFilename: String? = null
 
     init {
@@ -56,6 +57,7 @@ class PatternListWindow(
         } else {
             setTitle(patternListPanel.patternList.title)
         }
+        setContentsClean()
         location = nextScreenLocation
         isVisible = true
 
@@ -94,6 +96,10 @@ class PatternListWindow(
 
     fun setJmlFilename(fname: String?) {
         lastJmlFilename = fname
+    }
+
+    fun setContentsClean() {
+        lastJlHashCode = patternList.jlHashCode
     }
 
     //--------------------------------------------------------------------------
@@ -225,7 +231,7 @@ class PatternListWindow(
                 val fw = FileWriter(f)
                 patternListPanel.patternList.writeJML(fw)
                 fw.close()
-                patternListPanel.hasUnsavedChanges = false
+                setContentsClean()
             } catch (fnfe: FileNotFoundException) {
                 throw JuggleExceptionInternal("File not found on save: " + fnfe.message)
             } catch (ioe: IOException) {
@@ -265,6 +271,7 @@ class PatternListWindow(
                 val fw = FileWriter(f)
                 patternListPanel.patternList.writeText(fw)
                 fw.close()
+                setContentsClean()
             } catch (fnfe: FileNotFoundException) {
                 throw JuggleExceptionInternal("File not found on save: " + fnfe.message)
             } catch (ioe: IOException) {
@@ -281,9 +288,8 @@ class PatternListWindow(
                     parser.parse(sw.toString())
                     JMLPatternList(jmlNode = parser.tree)
                 }
-                val newplw = PatternListWindow(patternList = pl)
-                newplw.patternListPanel.patternList.title = "$title copy"
-                newplw.title = "$title copy"
+                pl.title = "$title copy"
+                PatternListWindow(patternList = pl)
             }
 
             MenuCommand.FILE_TITLE -> changeTitle()
@@ -345,7 +351,7 @@ class PatternListWindow(
     //--------------------------------------------------------------------------
 
     override fun dispose() {
-        if (patternListPanel.hasUnsavedChanges) {
+        if (lastJlHashCode != patternList.jlHashCode) {
             val message = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
             val title = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
@@ -362,7 +368,7 @@ class PatternListWindow(
                         jlHandleFatalException(je)
                         return
                     }
-                    if (patternListPanel.hasUnsavedChanges) {
+                    if (lastJlHashCode != patternList.jlHashCode) {
                         return  // user canceled out of save dialog
                     }
                 }
