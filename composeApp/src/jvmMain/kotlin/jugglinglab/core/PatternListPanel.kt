@@ -30,11 +30,11 @@ import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
 import kotlin.collections.ArrayList
 
-class PatternListPanel private constructor() : JPanel() {
-    val patternList: JMLPatternList = JMLPatternList()
-
-    private var parentFrame: JFrame? = null
-    private var animTarget: View? = null
+class PatternListPanel(
+    val patternList: JMLPatternList,
+    val parentFrame: JFrame? = null,
+    val animTarget: View? = null
+) : JPanel() {
     private lateinit var list: JList<PatternRecord>
     var hasUnsavedChanges: Boolean = false
 
@@ -52,14 +52,7 @@ class PatternListPanel private constructor() : JPanel() {
     init {
         makePanel()
         setOpaque(false)
-    }
-
-    constructor(parentFrame: JFrame?) : this() {
-        this.parentFrame = parentFrame
-    }
-
-    constructor(target: View?) : this() {
-        setTargetView(target)
+        // listModel.updateAll()
     }
 
     //--------------------------------------------------------------------------
@@ -130,7 +123,7 @@ class PatternListPanel private constructor() : JPanel() {
             val ap = patternList.getAnimationPrefsForLine(row)
 
             if (animTarget != null) {
-                animTarget!!.restartView(pat, ap)
+                animTarget.restartView(pat, ap)
             } else {
                 PatternWindow(pat.title, pat, ap)
             }
@@ -148,20 +141,10 @@ class PatternListPanel private constructor() : JPanel() {
         listModel.clearModel()
     }
 
-    fun setTargetView(target: View?) {
-        animTarget = target
-    }
-
     // Used by GeneratorTarget.
 
     fun addPattern(display: String, animprefs: String?, notation: String?, anim: String?) {
         listModel.add(PatternRecord(display, animprefs, notation, anim, null, null, null))
-    }
-
-    // Sync the view with the underlying JMLPatternList. Used during JML load.
-
-    fun updateView() {
-        listModel.updateAll()
     }
 
     private fun makePopupMenu(): JPopupMenu {
@@ -570,6 +553,7 @@ class PatternListPanel private constructor() : JPanel() {
 
         fun update(index: Int) = fireContentsChanged(this, index, index)
 
+        @Suppress("unused")
         fun updateAll() = fireContentsChanged(this, 0, size)
 
         fun clearModel() {

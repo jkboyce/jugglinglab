@@ -14,6 +14,7 @@ import jugglinglab.generator.*
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
+import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.Pattern
 import jugglinglab.notation.SiteswapNotationControlSwing
 import jugglinglab.util.*
@@ -60,7 +61,7 @@ class ApplicationPanelSwing(
 
         var pl = patlist
         if (pl == null && patlisttab) {
-            pl = PatternListPanel(animtarget)
+            pl = PatternListPanel(patternList = JMLPatternList(), animTarget = animtarget)
         }
         if (trans != null) {
             addTransitionerControl(trans, pl)
@@ -158,7 +159,7 @@ class ApplicationPanelSwing(
                                 trans.initTransitioner(transControl.params)
                                 val title =
                                     trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(title, this)
+                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
                                 val pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
                                 if (plp != null) {
@@ -228,7 +229,7 @@ class ApplicationPanelSwing(
                                 gen.initGenerator(genControl.params)
                                 val title =
                                     gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(title, this)
+                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
                                 val pwot = GeneratorTargetPatternList(pw.patternListPanel)
                                 gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME)
                                 if (plp != null) {

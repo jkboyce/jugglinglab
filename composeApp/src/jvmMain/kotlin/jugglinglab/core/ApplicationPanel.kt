@@ -18,6 +18,7 @@ import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.Transitioner
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
+import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.notation.Pattern
 import jugglinglab.ui.SiteswapNotationControl
@@ -79,7 +80,7 @@ open class ApplicationPanel(
         // resources needed by the control panels
         var pl = patlist
         if (pl == null && havePatternListTab) {
-            pl = PatternListPanel(animtarget)
+            pl = PatternListPanel(patternList = JMLPatternList(), animTarget = animtarget)
         }
         val trans = newTransitioner(Pattern.builtinNotations[notationNum - 1])
         val gen = newGenerator(Pattern.builtinNotations[notationNum - 1])
@@ -189,7 +190,7 @@ open class ApplicationPanel(
                             } else {
                                 val title =
                                     trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(title, this)
+                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
                                 pwot = GeneratorTargetPatternList(pw.patternListPanel)
                             }
                             trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME)
@@ -246,7 +247,7 @@ open class ApplicationPanel(
                             } else {
                                 val title =
                                     gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(title, this)
+                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
                                 gtpl = GeneratorTargetPatternList(pw.patternListPanel)
                             }
                             gen.runGenerator(gtpl, MAX_PATTERNS, MAX_TIME)

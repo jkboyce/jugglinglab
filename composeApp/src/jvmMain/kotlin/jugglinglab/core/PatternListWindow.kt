@@ -8,8 +8,8 @@ package jugglinglab.core
 
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLParser
+import jugglinglab.jml.JMLPatternList
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -29,19 +29,33 @@ import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 
-class PatternListWindow(title: String?) : JFrame(), ActionListener {
-    lateinit var patternListPanel: PatternListPanel
-        private set
+class PatternListWindow(
+    windowTitle: String? = null,
+    val patternList: JMLPatternList = JMLPatternList(),
+    val generatorThread: Thread? = null
+) : JFrame(), ActionListener {
+    val patternListPanel = PatternListPanel(
+        patternList = patternList,
+        parentFrame = this
+    )
+
     var windowMenu: JMenu? = null
         private set
+
+    val jlHashCode: Int
+        get() = patternList.jlHashCode
+
     private var lastJmlFilename: String? = null
 
     init {
         createMenus()
         createContents()
-        patternListPanel.patternList.title = title
-        setTitle(title)
-
+        if (windowTitle != null) {
+            patternListPanel.patternList.title = windowTitle
+            setTitle(windowTitle)
+        } else {
+            setTitle(patternListPanel.patternList.title)
+        }
         location = nextScreenLocation
         isVisible = true
 
@@ -50,6 +64,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent?) {
                     try {
+                        generatorThread?.interrupt()
                         doMenuCommand(MenuCommand.FILE_CLOSE)
                     } catch (je: JuggleException) {
                         jlHandleFatalException(je)
@@ -61,40 +76,10 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     }
 
     //--------------------------------------------------------------------------
-    // Alternate constructors
-    //--------------------------------------------------------------------------
-
-    // Load from parsed JML.
-
-    constructor(root: JMLNode?) : this("") {
-        if (root != null) {
-            patternListPanel.patternList.readJML(root)
-            patternListPanel.updateView()
-            setTitle(patternListPanel.patternList.title)
-        }
-    }
-
-    // Target of a (running) pattern generator.
-
-    constructor(title: String?, gen: Thread) : this(title) {
-        val generator: Thread = gen
-        addWindowListener(
-            object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent?) {
-                    try {
-                        generator.interrupt()
-                    } catch (_: Exception) {
-                    }
-                }
-            })
-    }
-
-    //--------------------------------------------------------------------------
     // Methods to create and manage window contents
     //--------------------------------------------------------------------------
 
     private fun createContents() {
-        patternListPanel = PatternListPanel(this)
         patternListPanel.isDoubleBuffered = true
         contentPane = patternListPanel
 
@@ -289,11 +274,14 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             }
 
             MenuCommand.FILE_DUPLICATE -> {
-                val sw = StringWriter()
-                patternListPanel.patternList.writeJML(sw)
-                val parser = JMLParser()
-                parser.parse(sw.toString())
-                val newplw = PatternListWindow(parser.tree!!)
+                val pl = run {
+                    val sw = StringWriter()
+                    patternListPanel.patternList.writeJML(sw)
+                    val parser = JMLParser()
+                    parser.parse(sw.toString())
+                    JMLPatternList(jmlNode = parser.tree)
+                }
+                val newplw = PatternListWindow(patternList = pl)
                 newplw.patternListPanel.patternList.title = "$title copy"
                 newplw.title = "$title copy"
             }
@@ -319,7 +307,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         okbutton.addActionListener { _: ActionEvent? ->
             val newtitle = tf.getText()
             patternListPanel.patternList.title = newtitle
-            title = newtitle
+            setTitle(newtitle)
             jd.dispose()
         }
 
@@ -414,6 +402,21 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 }
                 return loc
             }
+
+        // Check if a given list is already loaded, and if so then bring that
+        // window to the front.
+        //
+        // Returns true if the list was found, false if not.
+
+        fun bringToFront(hash: Int): Boolean {
+            for (fr in getFrames()) {
+                if (fr is PatternListWindow && fr.isVisible && fr.jlHashCode == hash) {
+                    SwingUtilities.invokeLater { fr.toFront() }
+                    return true
+                }
+            }
+            return false
+        }
 
         private val fileItems: List<String?> = listOf(
             "New Pattern",

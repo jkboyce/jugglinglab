@@ -14,10 +14,10 @@
 package jugglinglab.core
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.PatternWindow.Companion.bringToFront
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
+import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.Pattern
 import jugglinglab.ui.AboutView
 import jugglinglab.util.*
@@ -115,8 +115,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             notationmenu.getItem(Pattern.NOTATION_SITESWAP - 1).setSelected(true)
         }
 
-        this.windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
-        mb.add(this.windowMenu)
+        windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
+        mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
@@ -442,15 +442,18 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     JMLParser.JML_PATTERN -> {
                         val pat = JMLPattern.fromJMLNode(parser.tree!!)
                         pat.layout
-                        if (!bringToFront(pat.jlHashCode)) {
+                        if (!PatternWindow.bringToFront(pat.jlHashCode)) {
                             val pw = PatternWindow(pat.title, pat, AnimationPrefs())
                             pw.setJMLFilename(jmlf.getName())
                         }
                     }
 
                     JMLParser.JML_LIST -> {
-                        val plw = PatternListWindow(parser.tree)
-                        plw.setJmlFilename(jmlf.getName())
+                        val pl = JMLPatternList(parser.tree)
+                        if (!PatternListWindow.bringToFront(pl.jlHashCode)) {
+                            val plw = PatternListWindow(patternList = pl)
+                            plw.setJmlFilename(jmlf.getName())
+                        }
                     }
 
                     else -> {
