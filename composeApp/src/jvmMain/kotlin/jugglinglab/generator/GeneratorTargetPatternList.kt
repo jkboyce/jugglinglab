@@ -40,6 +40,6 @@ class GeneratorTargetPatternList(val listTarget: PatternListPanel) : GeneratorTa
     }
 
     override fun completed() {
-        SwingUtilities.invokeLater { listTarget.parentFrame?.setContentsClean() }
+        SwingUtilities.invokeLater { listTarget.parentFrame?.onGeneratorDone() }
     }
 }

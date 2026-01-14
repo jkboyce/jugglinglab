@@ -32,7 +32,7 @@ import kotlin.math.max
 class PatternListWindow(
     windowTitle: String? = null,
     val patternList: JMLPatternList = JMLPatternList(),
-    val generatorThread: Thread? = null
+    var generatorThread: Thread? = null
 ) : JFrame(), ActionListener {
     val patternListPanel = PatternListPanel(
         patternList = patternList,
@@ -45,17 +45,18 @@ class PatternListWindow(
     val jlHashCode: Int
         get() = patternList.jlHashCode
 
-    private var lastJlHashCode: Int = 0
     private var lastJmlFilename: String? = null
+    private var lastCleanJlHashCode: Int = 0
 
     init {
         createMenus()
         createContents()
         if (windowTitle != null) {
-            patternListPanel.patternList.title = windowTitle
-            setTitle(windowTitle)
-        } else {
-            setTitle(patternListPanel.patternList.title)
+            patternList.title = windowTitle
+        }
+        setTitle(patternList.title)
+        if (generatorThread != null) {
+            setTitle("$title (running)")
         }
         setContentsClean()
         location = nextScreenLocation
@@ -66,7 +67,6 @@ class PatternListWindow(
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent?) {
                     try {
-                        generatorThread?.interrupt()
                         doMenuCommand(MenuCommand.FILE_CLOSE)
                     } catch (je: JuggleException) {
                         jlHandleFatalException(je)
@@ -98,8 +98,14 @@ class PatternListWindow(
         lastJmlFilename = fname
     }
 
-    fun setContentsClean() {
-        lastJlHashCode = patternList.jlHashCode
+    private fun setContentsClean() {
+        lastCleanJlHashCode = jlHashCode
+    }
+
+    fun onGeneratorDone() {
+        setContentsClean()
+        setTitle(patternList.title)
+        generatorThread = null
     }
 
     //--------------------------------------------------------------------------
@@ -109,8 +115,8 @@ class PatternListWindow(
     private fun createMenus() {
         val mb = JMenuBar()
         mb.add(createFileMenu())
-        this.windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
-        mb.add(this.windowMenu)
+        windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
+        mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
@@ -190,7 +196,7 @@ class PatternListWindow(
         }
     }
 
-    private enum class MenuCommand {
+    enum class MenuCommand {
         FILE_NONE,
         FILE_NEWPAT,
         FILE_NEWPL,
@@ -205,7 +211,7 @@ class PatternListWindow(
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun doMenuCommand(action: MenuCommand) {
+    fun doMenuCommand(action: MenuCommand) {
         when (action) {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
@@ -229,7 +235,7 @@ class PatternListWindow(
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
-                patternListPanel.patternList.writeJML(fw)
+                patternList.writeJML(fw)
                 fw.close()
                 setContentsClean()
             } catch (fnfe: FileNotFoundException) {
@@ -269,7 +275,7 @@ class PatternListWindow(
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
-                patternListPanel.patternList.writeText(fw)
+                patternList.writeText(fw)
                 fw.close()
                 setContentsClean()
             } catch (fnfe: FileNotFoundException) {
@@ -283,7 +289,7 @@ class PatternListWindow(
             MenuCommand.FILE_DUPLICATE -> {
                 val pl = run {
                     val sw = StringWriter()
-                    patternListPanel.patternList.writeJML(sw)
+                    patternList.writeJML(sw)
                     val parser = JMLParser()
                     parser.parse(sw.toString())
                     JMLPatternList(jmlNode = parser.tree)
@@ -307,13 +313,13 @@ class PatternListWindow(
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
-        tf.text = patternListPanel.patternList.title
+        tf.text = patternList.title
 
         val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val newtitle = tf.getText()
-            patternListPanel.patternList.title = newtitle
-            setTitle(newtitle)
+            val newTitle = tf.getText()
+            patternList.title = newTitle
+            setTitle(newTitle)
             jd.dispose()
         }
 
@@ -337,12 +343,12 @@ class PatternListWindow(
     // java.awt.Frame methods
     //--------------------------------------------------------------------------
 
-    override fun setTitle(newTitle: String?) {
-        var title = newTitle
-        if (title.isNullOrEmpty()) {
-            title = jlGetStringResource(Res.string.gui_plwindow_default_window_title)
+    override fun setTitle(title: String?) {
+        var newTitle = title
+        if (newTitle.isNullOrEmpty()) {
+            newTitle = jlGetStringResource(Res.string.gui_plwindow_default_window_title)
         }
-        super.setTitle(title)
+        super.setTitle(newTitle)
         ApplicationWindow.updateWindowMenus()
     }
 
@@ -351,7 +357,13 @@ class PatternListWindow(
     //--------------------------------------------------------------------------
 
     override fun dispose() {
-        if (lastJlHashCode != patternList.jlHashCode) {
+        if (generatorThread != null) {
+            generatorThread?.interrupt()
+            setContentsClean()
+            generatorThread = null
+        }
+
+        if (lastCleanJlHashCode != jlHashCode) {
             val message = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
             val title = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
@@ -368,7 +380,7 @@ class PatternListWindow(
                         jlHandleFatalException(je)
                         return
                     }
-                    if (lastJlHashCode != patternList.jlHashCode) {
+                    if (lastCleanJlHashCode != jlHashCode) {
                         return  // user canceled out of save dialog
                     }
                 }

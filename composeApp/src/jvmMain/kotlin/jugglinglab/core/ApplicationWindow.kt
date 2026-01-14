@@ -16,15 +16,10 @@ package jugglinglab.core
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.Pattern
 import jugglinglab.ui.AboutView
 import jugglinglab.util.*
-import jugglinglab.util.jlHandleFatalException
-import jugglinglab.util.jlHandleUserException
-import jugglinglab.util.OpenFilesServer.cleanup
-import jugglinglab.util.OpenFilesServer.startOpenFilesServer
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.awt.ComposePanel
 import org.jetbrains.compose.resources.StringResource
@@ -73,7 +68,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // There are two ways we can handle requests from the OS to open files:
         // with a OpenFilesHandler (macOS) and with our own OpenFilesServer (Windows)
         if (!registerOpenFilesHandler()) {
-            startOpenFilesServer()
+            OpenFilesServer.startOpenFilesServer()
         }
 
         // launch a background thread to check for updates online
@@ -227,19 +222,29 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         when (action) {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> newPattern()
-            MenuCommand.FILE_NEWPL -> (PatternListWindow("")).setTitle(null)
+            MenuCommand.FILE_NEWPL -> PatternListWindow()
             MenuCommand.FILE_OPEN -> openJMLFile()
             MenuCommand.FILE_EXIT -> {
+                for (fr in getFrames()) {
+                    if (fr is PatternListWindow && fr.isVisible) {
+                        fr.doMenuCommand(PatternListWindow.MenuCommand.FILE_CLOSE)
+                        if (fr.isVisible) {
+                            // user canceled out of save dialog, abort the quit
+                            return
+                        }
+                    }
+                }
+
                 val noOpenFilesHandler =
                     (!Desktop.isDesktopSupported()
                             || !Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE))
-
                 if (noOpenFilesHandler) {
                     if (Constants.DEBUG_OPEN_SERVER) {
                         println("cleaning up server")
                     }
-                    cleanup()
+                    OpenFilesServer.cleanup()
                 }
+
                 exitProcess(0)
             }
 
@@ -402,7 +407,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         @Throws(JuggleExceptionInternal::class)
         fun newPattern() {
             try {
-                val pat = fromBasePattern("Siteswap", "pattern=3")
+                val pat = JMLPattern.fromBasePattern("Siteswap", "pattern=3")
                 val pw = PatternWindow("3", pat, AnimationPrefs())
                 pw.viewMode = AnimationPrefs.VIEW_PATTERN
             } catch (jeu: JuggleExceptionUser) {
