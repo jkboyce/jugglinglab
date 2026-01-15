@@ -113,14 +113,16 @@ class LadderLayout(
             }
         }
 
-        // 2. Map to screen (Logic from mapViewToScreen)
+        // 2. Map to screen
 
+        // distance between left/right hands of each juggler is 1.0 in these
+        // dimensionless units; translate to pixels
         val scale: Double = width.toDouble() / (BORDER_SIDES * 2 +
             JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) +
             pattern.numberOfJugglers)
-        leftX = (scale * BORDER_SIDES + 0.5).toInt()
-        rightX = (scale * (BORDER_SIDES + 1.0) + 0.5).toInt()
-        jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION) + 0.5).toInt()
+        leftX = (scale * BORDER_SIDES).roundToInt()
+        rightX = (scale * (BORDER_SIDES + 1.0)).roundToInt()
+        jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION)).roundToInt()
 
         // Set locations of events
         for (item in eventItems) {
@@ -231,7 +233,7 @@ class LadderLayout(
     }
 }
 
-// Data classes moved from LadderDiagram
+// Classes to hold the items in the view
 
 open class LadderItem {
     var type: Int = 0

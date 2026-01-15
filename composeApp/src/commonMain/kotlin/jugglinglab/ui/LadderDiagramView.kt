@@ -109,7 +109,7 @@ fun LadderDiagramView(
 
         // 4. Paths
         for (item in layout.pathItems) {
-            val pathColor = Color.Black // Default, could be customized
+            val pathColor = Color.Black
 
             if (item.type == LadderItem.TYPE_CROSS || item.type == LadderItem.TYPE_HOLD) {
                 clipRect(
@@ -144,9 +144,9 @@ fun LadderDiagramView(
                 if (item.yEnd >= layout.borderTop) {
                     clipRect(
                         left = (layout.leftX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat(),
-                        top = item.yStart.toFloat().coerceAtLeast(layout.borderTop.toFloat()),
+                        top = layout.borderTop.toFloat(),
                         right = (layout.rightX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat(),
-                        bottom = item.yEnd.toFloat().coerceAtMost(height - layout.borderTop)
+                        bottom = height - layout.borderTop
                     ) {
                         drawCircle(
                             pathColor,
