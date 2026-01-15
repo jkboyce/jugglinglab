@@ -1,5 +1,5 @@
 //
-// LadderDiagramView.kt
+// LadderView.kt
 //
 // This is a Composable UI displaying the ladder diagram that can
 // accompany the main juggler animation.
@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.pointer.*
 
 @Composable
-fun LadderDiagramView(
+fun LadderView(
     layout: LadderLayout,
     state: PatternAnimationState,
     onPress: (Offset, Boolean) -> Unit,

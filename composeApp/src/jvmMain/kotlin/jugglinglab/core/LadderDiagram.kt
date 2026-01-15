@@ -95,7 +95,7 @@ class LadderDiagram(
                     currentDensity = density
                 }
 
-                LadderDiagramView(
+                LadderView(
                     layout = layout,
                     state = state,
                     onPress = { offset, isPopup -> handlePress(offset, isPopup) },
