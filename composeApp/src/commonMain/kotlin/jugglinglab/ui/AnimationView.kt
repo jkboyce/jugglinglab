@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
@@ -155,25 +156,29 @@ fun AnimationView(
             renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
 
             withTransform({ translate(left = 0f, top = 0f) }) {
-                renderer1.drawFrame(
-                    state.time,
-                    state.propForPath,
-                    state.prefs.hideJugglers,
-                    this
-                )
-                drawEventOverlays(layout, 0, this, density)
-                drawPositions(layout, 0, this, density)
+                clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                    renderer1.drawFrame(
+                        state.time,
+                        state.propForPath,
+                        state.prefs.hideJugglers,
+                        this
+                    )
+                    drawEventOverlays(layout, 0, this, density)
+                    drawPositions(layout, 0, this, density)
+                }
             }
 
             withTransform({ translate(left = w.toFloat(), top = 0f) }) {
-                renderer2.drawFrame(
-                    state.time,
-                    state.propForPath,
-                    state.prefs.hideJugglers,
-                    this
-                )
-                drawEventOverlays(layout, 1, this, density)
-                drawPositions(layout, 1, this, density)
+                clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                    renderer2.drawFrame(
+                        state.time,
+                        state.propForPath,
+                        state.prefs.hideJugglers,
+                        this
+                    )
+                    drawEventOverlays(layout, 1, this, density)
+                    drawPositions(layout, 1, this, density)
+                }
             }
         } else {
             renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
@@ -226,7 +231,11 @@ private fun drawEventOverlays(
                 }
             }
 
-            scope.drawPath(pathSolid, Color.LightGray, style = Stroke(width = 2f))
+            scope.drawPath(
+                pathSolid,
+                Color.LightGray,
+                style = Stroke(width = 2f)
+            )
             scope.drawPath(
                 pathDashed,
                 Color.LightGray,

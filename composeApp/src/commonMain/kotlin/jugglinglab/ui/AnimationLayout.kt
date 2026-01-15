@@ -1,9 +1,9 @@
 //
 // AnimationLayout.kt
 //
-// Class to hold the selection view data structures. These are calculated by
-// AnimationPanel and passed to AnimationView for rendering, and also used by
-// AnimationPanel to interpret mouse events.
+// Class to hold the selection view data structures. These are used by
+// AnimationView for rendering, and also by AnimationPanel to interpret mouse
+// events.
 //
 // All coordinates here are logical coordinates, as distinct from pixel
 // coordinates, which are logical coordinates multiplied by a display-
