@@ -38,4 +38,8 @@ class GeneratorTargetPatternList(val listTarget: PatternListPanel) : GeneratorTa
         // Note we may not be running on the event dispatch thread
         SwingUtilities.invokeLater { listTarget.addPattern(display, null, notation, anim) }
     }
+
+    override fun completed() {
+        SwingUtilities.invokeLater { listTarget.parentFrame?.onGeneratorDone() }
+    }
 }

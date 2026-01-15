@@ -1,8 +1,8 @@
 //
 // Generator.kt
 //
-// This class defines a general object that is capable of generating tricks
-// and converting them into commands that the animator understands.
+// This class defines a general object that is capable of generating patterns
+// in some notation.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -22,20 +22,14 @@ abstract class Generator {
     // return the notation name
     abstract val notationName: String
 
-    // return a startup text message
-    abstract val startupMessage: String
-
     // use command line args
     @Throws(JuggleExceptionUser::class)
     abstract fun initGenerator(args: List<String>)
 
-    // run the generator with no limits
+    // run the generator with bounds on space and time; negative numbers mean
+    // no limits
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun runGenerator(t: GeneratorTarget): Int
-
-    // run the generator with bounds on space and time
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun runGenerator(t: GeneratorTarget, maxNum: Int, secs: Double): Int
+    abstract fun runGenerator(t: GeneratorTarget, maxNum: Int = -1, secs: Double = -1.0): Int
 
     companion object {
         // The built-in generators

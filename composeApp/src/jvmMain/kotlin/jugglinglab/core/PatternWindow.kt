@@ -181,7 +181,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     val animationPrefs: AnimationPrefs
         get() = view.state.prefs
 
-    // Used for testing whether a given JMLPattern is already being animated.
+    // For checking whether a given JMLPattern is already being animated.
     val jlHashCode: Int
         get() = view.state.pattern.jlHashCode
 

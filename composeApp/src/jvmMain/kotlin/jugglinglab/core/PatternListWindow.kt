@@ -8,8 +8,8 @@ package jugglinglab.core
 
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.jml.JMLNode
 import jugglinglab.jml.JMLParser
+import jugglinglab.jml.JMLPatternList
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -29,19 +29,36 @@ import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 
-class PatternListWindow(title: String?) : JFrame(), ActionListener {
-    lateinit var patternListPanel: PatternListPanel
-        private set
+class PatternListWindow(
+    windowTitle: String? = null,
+    val patternList: JMLPatternList = JMLPatternList(),
+    var generatorThread: Thread? = null
+) : JFrame(), ActionListener {
+    val patternListPanel = PatternListPanel(
+        patternList = patternList,
+        parentFrame = this
+    )
+
     var windowMenu: JMenu? = null
         private set
+
+    val jlHashCode: Int
+        get() = patternList.jlHashCode
+
     private var lastJmlFilename: String? = null
+    private var lastCleanJlHashCode: Int = 0
 
     init {
         createMenus()
         createContents()
-        patternListPanel.patternList.title = title
-        setTitle(title)
-
+        if (windowTitle != null) {
+            patternList.title = windowTitle
+        }
+        setTitle(patternList.title)
+        if (generatorThread != null) {
+            setTitle("$title (running)")
+        }
+        setContentsClean()
         location = nextScreenLocation
         isVisible = true
 
@@ -61,40 +78,10 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     }
 
     //--------------------------------------------------------------------------
-    // Alternate constructors
-    //--------------------------------------------------------------------------
-
-    // Load from parsed JML.
-
-    constructor(root: JMLNode?) : this("") {
-        if (root != null) {
-            patternListPanel.patternList.readJML(root)
-            patternListPanel.updateView()
-            setTitle(patternListPanel.patternList.title)
-        }
-    }
-
-    // Target of a (running) pattern generator.
-
-    constructor(title: String?, gen: Thread) : this(title) {
-        val generator: Thread = gen
-        addWindowListener(
-            object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent?) {
-                    try {
-                        generator.interrupt()
-                    } catch (_: Exception) {
-                    }
-                }
-            })
-    }
-
-    //--------------------------------------------------------------------------
     // Methods to create and manage window contents
     //--------------------------------------------------------------------------
 
     private fun createContents() {
-        patternListPanel = PatternListPanel(this)
         patternListPanel.isDoubleBuffered = true
         contentPane = patternListPanel
 
@@ -111,6 +98,16 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         lastJmlFilename = fname
     }
 
+    private fun setContentsClean() {
+        lastCleanJlHashCode = jlHashCode
+    }
+
+    fun onGeneratorDone() {
+        setContentsClean()
+        setTitle(patternList.title)
+        generatorThread = null
+    }
+
     //--------------------------------------------------------------------------
     // Menu creation and handlers
     //--------------------------------------------------------------------------
@@ -118,8 +115,8 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     private fun createMenus() {
         val mb = JMenuBar()
         mb.add(createFileMenu())
-        this.windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
-        mb.add(this.windowMenu)
+        windowMenu = JMenu(jlGetStringResource(Res.string.gui_window))
+        mb.add(windowMenu)
         mb.add(createHelpMenu())
         jMenuBar = mb
     }
@@ -199,7 +196,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         }
     }
 
-    private enum class MenuCommand {
+    enum class MenuCommand {
         FILE_NONE,
         FILE_NEWPAT,
         FILE_NEWPL,
@@ -214,7 +211,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun doMenuCommand(action: MenuCommand) {
+    fun doMenuCommand(action: MenuCommand) {
         when (action) {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
@@ -238,9 +235,9 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
-                patternListPanel.patternList.writeJML(fw)
+                patternList.writeJML(fw)
                 fw.close()
-                patternListPanel.hasUnsavedChanges = false
+                setContentsClean()
             } catch (fnfe: FileNotFoundException) {
                 throw JuggleExceptionInternal("File not found on save: " + fnfe.message)
             } catch (ioe: IOException) {
@@ -278,8 +275,9 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
-                patternListPanel.patternList.writeText(fw)
+                patternList.writeText(fw)
                 fw.close()
+                setContentsClean()
             } catch (fnfe: FileNotFoundException) {
                 throw JuggleExceptionInternal("File not found on save: " + fnfe.message)
             } catch (ioe: IOException) {
@@ -289,13 +287,15 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
             }
 
             MenuCommand.FILE_DUPLICATE -> {
-                val sw = StringWriter()
-                patternListPanel.patternList.writeJML(sw)
-                val parser = JMLParser()
-                parser.parse(sw.toString())
-                val newplw = PatternListWindow(parser.tree!!)
-                newplw.patternListPanel.patternList.title = "$title copy"
-                newplw.title = "$title copy"
+                val pl = run {
+                    val sw = StringWriter()
+                    patternList.writeJML(sw)
+                    val parser = JMLParser()
+                    parser.parse(sw.toString())
+                    JMLPatternList(jmlNode = parser.tree)
+                }
+                pl.title = "$title copy"
+                PatternListWindow(patternList = pl)
             }
 
             MenuCommand.FILE_TITLE -> changeTitle()
@@ -313,13 +313,13 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
         jd.contentPane.setLayout(gb)
 
         val tf = JTextField(20)
-        tf.text = patternListPanel.patternList.title
+        tf.text = patternList.title
 
         val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val newtitle = tf.getText()
-            patternListPanel.patternList.title = newtitle
-            title = newtitle
+            val newTitle = tf.getText()
+            patternList.title = newTitle
+            setTitle(newTitle)
             jd.dispose()
         }
 
@@ -343,12 +343,12 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     // java.awt.Frame methods
     //--------------------------------------------------------------------------
 
-    override fun setTitle(newTitle: String?) {
-        var title = newTitle
-        if (title.isNullOrEmpty()) {
-            title = jlGetStringResource(Res.string.gui_plwindow_default_window_title)
+    override fun setTitle(title: String?) {
+        var newTitle = title
+        if (newTitle.isNullOrEmpty()) {
+            newTitle = jlGetStringResource(Res.string.gui_plwindow_default_window_title)
         }
-        super.setTitle(title)
+        super.setTitle(newTitle)
         ApplicationWindow.updateWindowMenus()
     }
 
@@ -357,7 +357,13 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
     //--------------------------------------------------------------------------
 
     override fun dispose() {
-        if (patternListPanel.hasUnsavedChanges) {
+        if (generatorThread != null) {
+            generatorThread?.interrupt()
+            setContentsClean()
+            generatorThread = null
+        }
+
+        if (lastCleanJlHashCode != jlHashCode) {
             val message = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
             val title = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
@@ -374,7 +380,7 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                         jlHandleFatalException(je)
                         return
                     }
-                    if (patternListPanel.hasUnsavedChanges) {
+                    if (lastCleanJlHashCode != jlHashCode) {
                         return  // user canceled out of save dialog
                     }
                 }
@@ -414,6 +420,21 @@ class PatternListWindow(title: String?) : JFrame(), ActionListener {
                 }
                 return loc
             }
+
+        // Check if a given list is already loaded, and if so then bring that
+        // window to the front.
+        //
+        // Returns true if the list was found, false if not.
+
+        fun bringToFront(hash: Int): Boolean {
+            for (fr in getFrames()) {
+                if (fr is PatternListWindow && fr.isVisible && fr.jlHashCode == hash) {
+                    SwingUtilities.invokeLater { fr.toFront() }
+                    return true
+                }
+            }
+            return false
+        }
 
         private val fileItems: List<String?> = listOf(
             "New Pattern",

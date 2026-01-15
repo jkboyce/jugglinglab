@@ -18,7 +18,9 @@ import jugglinglab.util.ParameterList
 import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlCompareVersions
 
-class JMLPatternList() {
+class JMLPatternList(
+    jmlNode: JMLNode? = null
+) {
     var loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
 
     var title: String? = null
@@ -36,20 +38,23 @@ class JMLPatternList() {
     val size: Int
         get() = if (BLANK_AT_END) model.size - 1 else model.size
 
+    val jlHashCode: Int
+        get() {
+            val sb = StringBuilder()
+            writeJML(sb)
+            return sb.toString().hashCode()
+        }
+
     init {
         clearModel()
+        if (jmlNode != null) {
+            readJML(jmlNode)
+        }
     }
 
     //--------------------------------------------------------------------------
     // Methods to define the pattern list
     //--------------------------------------------------------------------------
-
-    // Construct from a JML tree.
-
-    @Throws(JuggleExceptionUser::class)
-    constructor(root: JMLNode) : this() {
-        readJML(root)
-    }
 
     fun clearModel() {
         model.clear()
@@ -125,7 +130,7 @@ class JMLPatternList() {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class)
-    fun readJML(root: JMLNode) {
+    private fun readJML(root: JMLNode) {
         var current: JMLNode = root
 
         if (current.nodeType.equals("#root")) {
@@ -190,7 +195,8 @@ class JMLPatternList() {
                 }
 
                 val rec = PatternRecord(
-                    display, animprefs, notation, anim, patnode, infonode)
+                    display, animprefs, notation, anim, patnode, infonode
+                )
                 addLine(-1, rec)
             } else {
                 val message = jlGetStringResource(Res.string.error_illegal_tag)
@@ -200,20 +206,17 @@ class JMLPatternList() {
     }
 
     fun writeJML(wr: Appendable) {
-        for (i in JMLDefs.jmlPrefix.indices) {
-            wr.append(JMLDefs.jmlPrefix[i]).append('\n')
-        }
-
+        JMLDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
         wr.append("<jml version=\"${xmlescape(JMLDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<patternlist>\n")
-        if (title != null && !title!!.isEmpty()) {
+        if (title?.isNotEmpty() ?: false) {
             wr.append("<title>${xmlescape(title!!)}</title>\n")
         }
-        if (info != null && !info!!.isEmpty()) {
+        if (info?.isNotEmpty() ?: false) {
             wr.append("<info>${xmlescape(info!!)}</info>\n")
         }
 
-        val empty = (model.size == (if (BLANK_AT_END) 1 else 0))
+        val empty = (model.size == if (BLANK_AT_END) 1 else 0)
         if (!empty) {
             wr.append('\n')
         }
@@ -279,15 +282,12 @@ class JMLPatternList() {
 
         wr.append("</patternlist>\n")
         wr.append("</jml>\n")
-        for (i in JMLDefs.jmlSuffix.indices) {
-            wr.append(JMLDefs.jmlSuffix[i]).append('\n')
-        }
+        JMLDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
     fun writeText(wr: Appendable) {
         for (i in 0..<(if (BLANK_AT_END) model.size - 1 else model.size)) {
-            val rec = model[i]
-            wr.append(rec.display).append('\n')
+            wr.append(model[i].display).append('\n')
         }
     }
 
@@ -355,13 +355,13 @@ class JMLPatternList() {
             notation = not?.trim()
             anim = ani?.trim()
             patnode = pnode
-            
+
             if (inode == null) {
                 info = null
                 tags = null
                 return
             }
-            
+
             val infoString = inode.nodeValue
             info = if (!infoString.isNullOrBlank()) {
                 infoString.trim()
@@ -372,7 +372,7 @@ class JMLPatternList() {
                 tags = null
                 return
             }
-            
+
             val infotags: ArrayList<String> = ArrayList()
             tagstr.split(',')
                 .map { it.trim() }

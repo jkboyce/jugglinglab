@@ -67,17 +67,10 @@ class SiteswapGenerator : Generator() {
 
     override val notationName: String = "Siteswap"
 
-    override val startupMessage: String = "Welcome to the J2 Siteswap Generator"
-
     @Throws(JuggleExceptionUser::class)
     override fun initGenerator(args: List<String>) {
         config = SiteswapGeneratorConfig(args)
         allocateWorkspace()
-    }
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runGenerator(t: GeneratorTarget): Int {
-        return runGenerator(t, -1, -1.0)  // no limits
     }
 
     @Suppress("SimplifyBooleanWithConstants")
@@ -114,10 +107,10 @@ class SiteswapGenerator : Generator() {
                     target?.addResult(message, null, null)
                 }
             }
-            target?.completed()
 
             return num
         } finally {
+            target?.completed()
             if (Constants.DEBUG_GENERATOR) {
                 val millis = System.currentTimeMillis() - startTimeMillis
                 System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000)
