@@ -84,7 +84,7 @@ class SelectionView(
                 // AnimationPanel objects dispatches it to us in its
                 // mouseReleased() method.
                 override fun mouseReleased(me: MouseEvent) {
-                    val c = me.component
+                    val c = me.component.parent
                     var num = 0
                     while (num < COUNT) {
                         if (c === this@SelectionView.ja[num]) {
@@ -114,7 +114,7 @@ class SelectionView(
                 // user drags the mouse for a camera angle change. Copy to the
                 // other animations.
                 override fun mouseDragged(me: MouseEvent) {
-                    val c = me.component
+                    val c = me.component.parent
                     var num = 0
                     while (num < COUNT) {
                         if (c === this@SelectionView.ja[num]) {
