@@ -1,5 +1,5 @@
 //
-// LadderLayout.kt
+// LadderDiagramLayout.kt
 //
 // This class calculates and holds the layout data for the ladder diagram.
 //
@@ -11,7 +11,7 @@ package jugglinglab.ui
 import jugglinglab.jml.*
 import kotlin.math.*
 
-class LadderLayout(
+class LadderDiagramLayout(
     val pattern: JMLPattern,
     val width: Int,
     val height: Int,

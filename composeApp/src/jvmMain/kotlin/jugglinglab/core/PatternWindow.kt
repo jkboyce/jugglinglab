@@ -102,7 +102,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val jc = prefs ?: AnimationPrefs()
         val mode = when {
             (jc.defaultView != AnimationPrefs.VIEW_NONE) -> jc.defaultView
-            (pattern.numberOfJugglers > LadderDiagram.MAX_JUGGLERS) ->
+            (pattern.numberOfJugglers > LadderDiagramPanel.MAX_JUGGLERS) ->
                 AnimationPrefs.VIEW_SIMPLE
 
             else -> AnimationPrefs.VIEW_EDIT

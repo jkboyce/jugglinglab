@@ -26,7 +26,7 @@ class EditView(
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
     private val ap: AnimationPanel = AnimationPanel(state)
-    private val ladder = LadderDiagram(state, patternWindow)
+    private val ladder = LadderDiagramPanel(state, patternWindow)
     private val jsp: JSplitPane
 
     init {

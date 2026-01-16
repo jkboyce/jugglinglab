@@ -1,5 +1,5 @@
 //
-// LadderDiagram.kt
+// LadderDiagramPanel.kt
 //
 // This class draws the vertical ladder diagram on the right side of Edit view.
 // This includes mouse interaction and editing functions.
@@ -35,16 +35,16 @@ import javax.swing.event.PopupMenuListener
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.*
 
-class LadderDiagram(
+class LadderDiagramPanel(
     val state: PatternAnimationState,
     val parentFrame: JFrame?
 ) : JPanel(), ActionListener {
     private val composePanel = ComposePanel()
-    private var currentLayout: LadderLayout? = null
+    private var currentLayout: LadderDiagramLayout? = null
     private var currentDensity: Float = 1.0f
 
     private var guiState: Int = STATE_INACTIVE
-    private var trackerY: Int = LadderLayout.BORDER_TOP_DP
+    private var trackerY: Int = LadderDiagramLayout.BORDER_TOP_DP
 
     private var animWasPaused: Boolean = false
 
@@ -87,7 +87,7 @@ class LadderDiagram(
                 } else {
                     // just in case the onPatternChange listener hasn't
                     // fired yet (can this happen?)
-                    LadderLayout(state.pattern, widthPx, heightPx, density)
+                    LadderDiagramLayout(state.pattern, widthPx, heightPx, density)
                 }
 
                 SideEffect {
@@ -95,7 +95,7 @@ class LadderDiagram(
                     currentDensity = density
                 }
 
-                LadderView(
+                LadderDiagramView(
                     layout = layout,
                     state = state,
                     onPress = { offset, isPopup -> handlePress(offset, isPopup) },
@@ -138,7 +138,7 @@ class LadderDiagram(
             minimumSize = Dimension(minWidth, 1)
 
             if (width > 0 && height > 0) {
-                currentLayout = LadderLayout(
+                currentLayout = LadderDiagramLayout(
                     state.pattern,
                     (width * currentDensity).toInt(),
                     (height * currentDensity).toInt(),
@@ -1286,7 +1286,7 @@ class LadderDiagram(
                                     "png"
                                 )
                             )
-                            val result = jlJfc.showOpenDialog(this@LadderDiagram)
+                            val result = jlJfc.showOpenDialog(this@LadderDiagramPanel)
                             if (result != JFileChooser.APPROVE_OPTION) {
                                 return
                             }
