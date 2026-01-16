@@ -204,9 +204,7 @@ class AnimationPanel(
             })
     }
 
-    fun disposeAnimation() {
-        state.update(isPaused = true)
-    }
+    fun disposeAnimation() {}
 
     //--------------------------------------------------------------------------
     // Callback to play sound clips if needed
