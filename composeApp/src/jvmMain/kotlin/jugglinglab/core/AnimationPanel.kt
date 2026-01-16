@@ -13,6 +13,8 @@ package jugglinglab.core
 
 import jugglinglab.ui.AnimationLayout
 import jugglinglab.ui.AnimationView
+import jugglinglab.ui.AnimationLayout.Companion.getActiveEvent
+import jugglinglab.ui.AnimationLayout.Companion.getActivePosition
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
@@ -33,8 +35,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
-import jugglinglab.ui.AnimationLayout.Companion.getActiveEvent
-import jugglinglab.ui.AnimationLayout.Companion.getActivePosition
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -49,16 +49,6 @@ class AnimationPanel(
 
     private var catchClip: Clip? = null
     private var bounceClip: Clip? = null
-
-    // optional callbacks for when camera angle is changed and when mouse is
-    // clicked w/o dragging; used by SelectionView
-    var onCameraChange: ((List<Double>) -> Unit)? = null
-    var onSimpleMouseClick: (() -> Unit)? = null
-
-    // for pause on mouse away
-    private var wasPaused: Boolean = false
-    private var mouseOutside: Boolean = false
-    private var mouseOutsideIsValid: Boolean = false
 
     // for camera dragging
     private var draggingCamera: Boolean = false
@@ -157,7 +147,9 @@ class AnimationPanel(
             )
             if (state.prefs.mousePause) {
                 // start with mouse assumed outside, and paused
-                handleExit()
+                wasPaused = state.isPaused
+                state.update(isPaused = true)
+                mouseOutsideIsValid = false
             }
         }
     }
@@ -254,6 +246,10 @@ class AnimationPanel(
     // Mouse event handlers (called from AnimationView)
     //--------------------------------------------------------------------------
 
+    // for pause on mouse away
+    private var wasPaused: Boolean = false
+    private var mouseOutsideIsValid: Boolean = false
+
     private fun handlePress(offset: Offset) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
@@ -274,22 +270,25 @@ class AnimationPanel(
         if (state.prefs.mousePause) {
             state.update(isPaused = wasPaused)
         }
-        mouseOutside = false
         mouseOutsideIsValid = true
     }
 
     private fun handleExit() {
-        if (state.prefs.mousePause) {
+        if (state.prefs.mousePause && mouseOutsideIsValid) {
             wasPaused = state.isPaused
             state.update(isPaused = true)
         }
-        mouseOutside = true
         mouseOutsideIsValid = true
     }
 
     //--------------------------------------------------------------------------
     // Mouse handlers
     //--------------------------------------------------------------------------
+
+    // optional callbacks for when camera angle is changed and when mouse is
+    // clicked w/o dragging; used by SelectionView
+    var onCameraChange: ((List<Double>) -> Unit)? = null
+    var onSimpleMouseClick: (() -> Unit)? = null
 
     private fun mousePressedLogic(mx: Int, my: Int) {
         try {
