@@ -11,13 +11,13 @@
 package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.notation.ssparser.SiteswapTreeItem
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import jugglinglab.notation.ssparser.SiteswapTreeItem
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.skia.Image
+import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -209,6 +209,23 @@ expect fun jlParseFiniteDouble(input: String): Double
 // the decimal point, with trailing '.' and '0's suppressed.
 
 expect fun jlToStringRounded(value: Double, digits: Int): String
+
+//------------------------------------------------------------------------------
+// Helpers for message display and error handling
+//------------------------------------------------------------------------------
+
+// Handle an informational message.
+
+expect fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?)
+
+// Handle a recoverable user error.
+
+expect fun jlHandleUserException(parent: Any?, msg: String?)
+
+// Handle a fatal exception. The intent is that these exceptions only happen in
+// the event of a bug in Juggling Lab.
+
+expect fun jlHandleFatalException(e: Exception)
 
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
