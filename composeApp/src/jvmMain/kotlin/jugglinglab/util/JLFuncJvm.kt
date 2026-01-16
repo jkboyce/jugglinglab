@@ -12,9 +12,7 @@ package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.JugglingLab
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.SiteswapParser
@@ -73,10 +71,10 @@ actual fun jlToStringRounded(value: Double, digits: Int): String {
 
 // Show an informational message dialog.
 
-fun jlHandleUserMessage(parent: Component?, title: String?, msg: String?) {
+actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
-            parent,
+            parent as Component,
             msg,
             title,
             JOptionPane.INFORMATION_MESSAGE
@@ -86,10 +84,10 @@ fun jlHandleUserMessage(parent: Component?, title: String?, msg: String?) {
 
 // Show a message dialog for a recoverable user error.
 
-fun jlHandleUserException(parent: Component?, msg: String?) {
+actual fun jlHandleUserException(parent: Any?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
-            parent,
+            parent as Component,
             msg,
             "Error",
             JOptionPane.ERROR_MESSAGE
@@ -102,7 +100,7 @@ fun jlHandleUserException(parent: Component?, msg: String?) {
 // the event of a bug in Juggling Lab, and so we invite users to email us this
 // information.
 
-fun jlHandleFatalException(e: Exception) {
+actual fun jlHandleFatalException(e: Exception) {
     SwingUtilities.invokeLater { showInternalErrorWindow(e) }
 }
 
@@ -370,14 +368,6 @@ actual fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap {
 //------------------------------------------------------------------------------
 // Other
 //------------------------------------------------------------------------------
-
-// Helper extension function to convert Compose Color to AWT Color.
-
-fun Color.toAwtColor(): java.awt.Color {
-    // 1. toArgb() returns a 32-bit Int in ARGB format (Alpha in bits 24-31)
-    // 2. We pass 'true' to the AWT constructor to indicate the Int includes Alpha
-    return Color(this.toArgb(), true)
-}
 
 // Return the native screen refresh rate.
 
