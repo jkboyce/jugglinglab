@@ -34,6 +34,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalDensity
+import jugglinglab.util.JuggleExceptionInternal
+import jugglinglab.util.jlHandleFatalException
 
 @Composable
 fun AnimationView(
@@ -44,6 +46,7 @@ fun AnimationView(
     onRelease: () -> Unit,
     onEnter: () -> Unit = {},
     onExit: () -> Unit = {},
+    onLayoutUpdate: (AnimationLayout) -> Unit = {},
     onFrame: (Double) -> Unit,  // callback with current animation time for sound playback
     modifier: Modifier = Modifier,
 ) {
@@ -53,12 +56,12 @@ fun AnimationView(
     val renderer1 = remember { ComposeRenderer() }
     val renderer2 = remember { ComposeRenderer() }
 
-    // Update renderers when pattern changes
     SideEffect {
+        // Update renderers when pattern changes
         try {
             val pattern = state.pattern
             val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
-                (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
+                    (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
 
             renderer1.setPattern(pattern)
             renderer1.setGround(sg)
@@ -83,14 +86,15 @@ fun AnimationView(
             } else {
                 renderer1.cameraAngle = ca
             }
+
+            onLayoutUpdate(layout)
         } catch (e: Exception) {
-            // jlHandleFatalException not available in commonMain, log to console or ignore
-            println("Error in AnimationView SideEffect: ${e.message}")
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
-    // Animation Loop
     LaunchedEffect(state.isPaused) {
+        // Animation loop
         if (!state.isPaused) {
             val startTime = withFrameNanos { it }
             var lastFrameTime = startTime
@@ -101,19 +105,13 @@ fun AnimationView(
                 withFrameNanos { frameTimeNanos ->
                     val deltaNanos = frameTimeNanos - lastFrameTime
                     lastFrameTime = frameTimeNanos
-
                     val deltaRealSecs = deltaNanos / 1_000_000_000.0
                     val deltaSimSecs = deltaRealSecs / state.prefs.slowdown
-
-                    // Update state time
                     var newTime = state.time + deltaSimSecs
 
-                    // Loop logic
                     if (newTime >= state.pattern.loopEndTime) {
                         val overflow = newTime - state.pattern.loopEndTime
                         newTime = state.pattern.loopStartTime + (overflow % loopDuration)
-
-                        // Advance props
                         state.advancePropForPath()
                     }
 
@@ -124,31 +122,32 @@ fun AnimationView(
         }
     }
 
-    Canvas(modifier = modifier.fillMaxSize()
-        .pointerInput(Unit) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    val change = event.changes.first()
-                    val offset = change.position
+    Canvas(
+        modifier = modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.first()
+                        val offset = change.position
 
-                    if (event.type == PointerEventType.Enter) {
-                        onEnter()
-                    } else if (event.type == PointerEventType.Exit) {
-                        onExit()
-                    } else if (change.changedToDown()) {
-                        onPress(offset)
-                        change.consume()
-                    } else if (change.pressed && change.positionChanged()) {
-                        onDrag(offset)
-                        change.consume()
-                    } else if (change.changedToUp()) {
-                        onRelease()
-                        change.consume()
+                        if (event.type == PointerEventType.Enter) {
+                            onEnter()
+                        } else if (event.type == PointerEventType.Exit) {
+                            onExit()
+                        } else if (change.changedToDown()) {
+                            onPress(offset / density)
+                            change.consume()
+                        } else if (change.pressed && change.positionChanged()) {
+                            onDrag(offset / density)
+                            change.consume()
+                        } else if (change.changedToUp()) {
+                            onRelease()
+                            change.consume()
+                        }
                     }
                 }
             }
-        }
     ) {
         drawRect(color = Color.White)
 
