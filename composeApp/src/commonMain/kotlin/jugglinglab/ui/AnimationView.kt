@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalDensity
 
 @Composable
@@ -41,6 +42,8 @@ fun AnimationView(
     onPress: (Offset) -> Unit,
     onDrag: (Offset) -> Unit,
     onRelease: () -> Unit,
+    onEnter: () -> Unit = {},
+    onExit: () -> Unit = {},
     onFrame: (Double) -> Unit,  // callback with current animation time for sound playback
     modifier: Modifier = Modifier,
 ) {
@@ -129,7 +132,11 @@ fun AnimationView(
                     val change = event.changes.first()
                     val offset = change.position
 
-                    if (change.changedToDown()) {
+                    if (event.type == PointerEventType.Enter) {
+                        onEnter()
+                    } else if (event.type == PointerEventType.Exit) {
+                        onExit()
+                    } else if (change.changedToDown()) {
                         onPress(offset)
                         change.consume()
                     } else if (change.pressed && change.positionChanged()) {

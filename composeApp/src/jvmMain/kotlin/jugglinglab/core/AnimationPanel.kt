@@ -21,16 +21,17 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.jlIsNearLine
+import java.awt.BorderLayout
 import java.awt.event.*
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import javax.swing.OverlayLayout
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import jugglinglab.ui.AnimationLayout.Companion.getActiveEvent
 import jugglinglab.ui.AnimationLayout.Companion.getActivePosition
@@ -42,17 +43,22 @@ import kotlin.math.sin
 
 class AnimationPanel(
     val state: PatternAnimationState
-) : JPanel(), MouseListener, MouseMotionListener {
+) : JPanel() {
     private val composePanel = ComposePanel()
-    private val inputPanel = JPanel()
     var message: String? = null
 
     private var catchClip: Clip? = null
     private var bounceClip: Clip? = null
 
-    private var wasPaused: Boolean = false // for pause on mouse away
-    private var outside: Boolean = false
-    private var outsideValid: Boolean = false
+    // optional callbacks for when camera angle is changed and when mouse is
+    // clicked w/o dragging; used by SelectionView
+    var onCameraChange: ((List<Double>) -> Unit)? = null
+    var onSimpleMouseClick: (() -> Unit)? = null
+
+    // for pause on mouse away
+    private var wasPaused: Boolean = false
+    private var mouseOutside: Boolean = false
+    private var mouseOutsideIsValid: Boolean = false
 
     // for camera dragging
     private var draggingCamera: Boolean = false
@@ -64,7 +70,7 @@ class AnimationPanel(
     // this angle is before camera snapping; value in state is after snapping
     private var dragCameraAngle: List<Double> = listOf(0.0, 0.0)
 
-    // Event/position editing items below
+    // Event/position editing items below --------------------------------------
 
     // data for selected event/position overlays, expressed in logical coordinates
     private var currentLayout = AnimationLayout(state, width, height)
@@ -95,10 +101,8 @@ class AnimationPanel(
     private var deltaY: Int = 0 // extent of drag action (pixels)
 
     init {
-        layout = OverlayLayout(this)
-        inputPanel.isOpaque = false
-        add(inputPanel)
-        add(composePanel)
+        layout = BorderLayout()
+        add(composePanel, BorderLayout.CENTER)
 
         composePanel.setContent {
             BoxWithConstraints {
@@ -121,6 +125,8 @@ class AnimationPanel(
                     onPress = { offset -> handlePress(offset) },
                     onDrag = { offset -> handleDrag(offset) },
                     onRelease = { handleRelease() },
+                    onEnter = { handleEnter() },
+                    onExit = { handleExit() },
                     onFrame = { time -> onAnimationFrame(time) }
                 )
             }
@@ -149,6 +155,10 @@ class AnimationPanel(
                 propForPath = state.initialPropForPath(),
                 fitToFrame = true
             )
+            if (state.prefs.mousePause) {
+                // start with mouse assumed outside, and paused
+                handleExit()
+            }
         }
     }
 
@@ -182,9 +192,6 @@ class AnimationPanel(
 
     @Throws(JuggleExceptionInternal::class)
     private fun initHandlers() {
-        inputPanel.addMouseListener(this)
-        inputPanel.addMouseMotionListener(this)
-
         addComponentListener(
             object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent?) {
@@ -244,46 +251,54 @@ class AnimationPanel(
     }
 
     //--------------------------------------------------------------------------
-    // Mouse event handlers (called from Compose)
+    // Mouse event handlers (called from AnimationView)
     //--------------------------------------------------------------------------
 
-    private fun handlePress(offset: androidx.compose.ui.geometry.Offset) {
+    private fun handlePress(offset: Offset) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
-        //mousePressedLogic(mx, my)
+        mousePressedLogic(mx, my)
     }
 
-    private fun handleDrag(offset: androidx.compose.ui.geometry.Offset) {
+    private fun handleDrag(offset: Offset) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
-        //mouseDraggedLogic(mx, my)
+        mouseDraggedLogic(mx, my)
     }
 
     private fun handleRelease() {
-        //mouseReleasedLogic()
+        mouseReleasedLogic()
+    }
+
+    private fun handleEnter() {
+        if (state.prefs.mousePause) {
+            state.update(isPaused = wasPaused)
+        }
+        mouseOutside = false
+        mouseOutsideIsValid = true
+    }
+
+    private fun handleExit() {
+        if (state.prefs.mousePause) {
+            wasPaused = state.isPaused
+            state.update(isPaused = true)
+        }
+        mouseOutside = true
+        mouseOutsideIsValid = true
     }
 
     //--------------------------------------------------------------------------
-    // java.awt.event.MouseListener methods
+    // Mouse handlers
     //--------------------------------------------------------------------------
 
-    private var lastpress: Long = 0L
-    private var lastenter: Long = 1L
-
-    override fun mousePressed(me: MouseEvent) {
-        lastpress = me.getWhen()
-        if (state.prefs.mousePause && lastpress == lastenter) return
-
+    private fun mousePressedLogic(mx: Int, my: Int) {
         try {
             val layout = currentLayout
-            startX = me.getX()
-            startY = me.getY()
+            startX = mx
+            startY = my
 
             val activeEventImage = getActiveEvent(state)
             if (activeEventImage != null) {
-                val mx = me.getX()
-                val my = me.getY()
-
                 for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * size.width / 2
 
@@ -318,8 +333,8 @@ class AnimationPanel(
                                         ?: throw JuggleExceptionInternal("Error 1 in AP.mousePressed()")
                                 val code = state.pattern.loopEvents.find {
                                     it.primary == image.primary &&
-                                        it.event.juggler == image.event.juggler &&
-                                        it.event.hand == image.event.hand
+                                            it.event.juggler == image.event.juggler &&
+                                            it.event.hand == image.event.hand
                                 }?.event?.jlHashCode
                                     ?: throw JuggleExceptionInternal("Error 2 in AP.mousePressed()")
                                 state.update(selectedItemHashCode = code)
@@ -340,8 +355,6 @@ class AnimationPanel(
                 val activePosition = getActivePosition(state)
 
                 if (activePosition != null) {
-                    val mx = me.getX()
-                    val my = me.getY()
                     for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                         val t = i * size.width / 2
 
@@ -406,23 +419,19 @@ class AnimationPanel(
         }
     }
 
-    override fun mouseReleased(me: MouseEvent) {
-        if (state.prefs.mousePause && lastpress == lastenter) return
-
-        val mouseMoved = (me.getX() != startX) || (me.getY() != startY)
-
+    private fun mouseReleasedLogic() {
         if (!draggingCamera && !dragging) {
-            if (!mouseMoved) {
-                state.update(isPaused = !state.isPaused)
-                parent.dispatchEvent(me)
-            }
+            // if `draggingCamera` and `dragging` are both false then
+            // mouseDraggedLogic() was never called
+            state.update(isPaused = !state.isPaused)
+            onSimpleMouseClick?.invoke()
         }
 
         try {
             val activeEventImage = getActiveEvent(state)
             val activePosition = getActivePosition(state)
 
-            if ((activeEventImage != null || activePosition != null) && dragging && mouseMoved) {
+            if ((activeEventImage != null || activePosition != null) && dragging) {
                 state.update(fitToFrame = true)
                 state.addCurrentToUndoList()
             }
@@ -445,36 +454,9 @@ class AnimationPanel(
         }
     }
 
-    override fun mouseClicked(e: MouseEvent?) {}
-
-    override fun mouseEntered(me: MouseEvent) {
-        lastenter = me.getWhen()
-        if (state.prefs.mousePause) {
-            state.update(isPaused = wasPaused)
-        }
-        outside = false
-        outsideValid = true
-    }
-
-    override fun mouseExited(me: MouseEvent?) {
-        if (state.prefs.mousePause) {
-            wasPaused = state.isPaused
-            state.update(isPaused = true)
-        }
-        outside = true
-        outsideValid = true
-    }
-
-    //--------------------------------------------------------------------------
-    // java.awt.event.MouseMotionListener methods
-    //--------------------------------------------------------------------------
-
-    override fun mouseDragged(me: MouseEvent) {
+    private fun mouseDraggedLogic(mx: Int, my: Int) {
         try {
             if (dragging) {
-                val mx = me.getX()
-                val my = me.getY()
-
                 if (draggingAngle) {
                     val dcontrol =
                         doubleArrayOf(startControl[0] + mx - startX, startControl[1] + my - startY)
@@ -558,10 +540,10 @@ class AnimationPanel(
             }
 
             if (draggingCamera) {
-                val dx = me.getX() - lastX
-                val dy = me.getY() - lastY
-                lastX = me.getX()
-                lastY = me.getY()
+                val dx = mx - lastX
+                val dy = my - lastY
+                lastX = mx
+                lastY = my
                 var ca0 = dragCameraAngle[0]
                 var ca1 = dragCameraAngle[1]
                 ca0 += dx.toDouble() * 0.02
@@ -573,14 +555,12 @@ class AnimationPanel(
 
                 dragCameraAngle = listOf(ca0, ca1)
                 state.update(cameraAngle = snapCamera(dragCameraAngle))
-                parent.dispatchEvent(me)  // for SelectionView
+                onCameraChange?.invoke(dragCameraAngle)
             }
         } catch (e: Exception) {
             jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
-
-    override fun mouseMoved(e: MouseEvent?) {}
 
     //--------------------------------------------------------------------------
     // Utility methods for mouse interactions
@@ -780,7 +760,7 @@ class AnimationPanel(
                 val xj = array[index][points[j]][0].roundToInt()
                 val yj = array[index][points[j]][1].roundToInt()
                 val intersect = (yi > y) != (yj > y) &&
-                    x < (xj - xi) * (y - yi) / (yj - yi) + xi
+                        x < (xj - xi) * (y - yi) / (yj - yi) + xi
                 if (intersect) {
                     inside = !inside
                 }

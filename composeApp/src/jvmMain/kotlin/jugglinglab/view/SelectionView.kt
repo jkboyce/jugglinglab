@@ -73,66 +73,32 @@ class SelectionView(
 
     private fun makeAnimationGrid(): JPanel {
         val grid = JPanel(GridLayout(ROWS, COLUMNS))
-        for (ap in ja) {
+        for ((index, ap) in ja.withIndex()) {
             ap.state.update(cameraAngle = ap.state.initialCameraAngle())
             grid.add(ap)
+
+            ap.onCameraChange = { ca ->
+                for (i in 0..<COUNT) {
+                    if (ap !== ja[i]) {
+                        ja[i].state.update(cameraAngle = ca)
+                    }
+                }
+            }
+
+            ap.onSimpleMouseClick = {
+                try {
+                    restartView(ja[index].state.pattern, null)
+                    if (index != CENTER) {
+                        ja[CENTER].state.addCurrentToUndoList()
+                    }
+                } catch (jeu: JuggleExceptionUser) {
+                    jlHandleUserException(parent, jeu.message)
+                } catch (jei: JuggleExceptionInternal) {
+                    jlHandleFatalException(jei)
+                }
+            }
         }
-
-        grid.addMouseListener(
-            object : MouseAdapter() {
-                // will only receive mouseReleased events here when one of the
-                // AnimationPanel objects dispatches it to us in its
-                // mouseReleased() method.
-                override fun mouseReleased(me: MouseEvent) {
-                    val c = me.component.parent
-                    var num = 0
-                    while (num < COUNT) {
-                        if (c === this@SelectionView.ja[num]) {
-                            break
-                        }
-                        ++num
-                    }
-                    if (num == COUNT) {
-                        return
-                    }
-                    try {
-                        this@SelectionView.restartView(ja[num].state.pattern, null)
-                        if (num != CENTER) {
-                            ja[CENTER].state.addCurrentToUndoList()
-                        }
-                    } catch (jeu: JuggleExceptionUser) {
-                        jlHandleUserException(parent, jeu.message)
-                    } catch (jei: JuggleExceptionInternal) {
-                        jlHandleFatalException(jei)
-                    }
-                }
-            })
-
-        grid.addMouseMotionListener(
-            object : MouseMotionAdapter() {
-                // Dispatched here from one of the AnimationPanels when the
-                // user drags the mouse for a camera angle change. Copy to the
-                // other animations.
-                override fun mouseDragged(me: MouseEvent) {
-                    val c = me.component.parent
-                    var num = 0
-                    while (num < COUNT) {
-                        if (c === this@SelectionView.ja[num]) {
-                            break
-                        }
-                        ++num
-                    }
-                    if (num == COUNT) {
-                        return
-                    }
-                    val ca = ja[num].state.cameraAngle
-                    for (i in 0..<COUNT) {
-                        if (i != num) {
-                            ja[i].state.update(cameraAngle = ca)
-                        }
-                    }
-                }
-            })
+        
         grid.setOpaque(true)
         return grid
     }
