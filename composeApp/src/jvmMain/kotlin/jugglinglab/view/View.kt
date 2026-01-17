@@ -115,7 +115,7 @@ abstract class View(
     fun writeGIF(f: File) {
         var jc = state.prefs
         if (jc.fps == AnimationPrefs.FPS_DEF) {
-            jc = AnimationPrefs(fps = 33.3)  // default frames per sec for GIFs
+            jc = jc.copy(fps = 33.3)  // default frames per sec for GIFs
             // Note the GIF header specifies inter-frame delay in terms of
             // hundredths of a second, so only `fps` values like 50, 33 1/3,
             // 25, 20, ... are precisely achieveable.
