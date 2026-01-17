@@ -44,6 +44,21 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     lateinit var windowMenu: JMenu
         private set
 
+    private val wheelListener = AWTEventListener { e ->
+        if (e is MouseWheelEvent && SwingUtilities.getWindowAncestor(e.component) == this) {
+            e.consume()
+            try {
+                if (e.wheelRotation > 0) {
+                    doMenuCommand(MenuCommand.VIEW_ZOOMIN)
+                } else if (e.wheelRotation < 0) {
+                    doMenuCommand(MenuCommand.VIEW_ZOOMOUT)
+                }
+            } catch (je: JuggleException) {
+                jlHandleFatalException(je)
+            }
+        }
+    }
+
     private var lastJmlFilename: String? = null
 
     init {
@@ -66,19 +81,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 }
             })
 
-        addMouseWheelListener { mwe: MouseWheelEvent? ->
-            mwe!!.consume() // or it triggers twice
-            try {
-                if (mwe.getWheelRotation() > 0) {
-                    // scrolling up -> zoom in
-                    doMenuCommand(MenuCommand.VIEW_ZOOMIN)
-                } else if (mwe.getWheelRotation() < 0) {
-                    doMenuCommand(MenuCommand.VIEW_ZOOMOUT)
-                }
-            } catch (je: JuggleException) {
-                jlHandleFatalException(je)
-            }
-        }
+        Toolkit.getDefaultToolkit()
+            .addAWTEventListener(wheelListener, AWTEvent.MOUSE_WHEEL_EVENT_MASK)
 
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
@@ -739,6 +743,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     override fun dispose() {
         super.dispose()
         view.disposeView()
+        Toolkit.getDefaultToolkit().removeAWTEventListener(wheelListener)
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
 

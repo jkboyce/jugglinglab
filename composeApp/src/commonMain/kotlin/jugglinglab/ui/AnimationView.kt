@@ -50,13 +50,12 @@ fun AnimationView(
     onFrame: (Double) -> Unit,  // callback with current animation time for sound playback
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current.density
-
     // two renderers for stereo support
     val renderer1 = remember { ComposeRenderer() }
     val renderer2 = remember { ComposeRenderer() }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val density = LocalDensity.current.density
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
         val width = (widthPx / density).toInt()
