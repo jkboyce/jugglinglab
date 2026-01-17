@@ -15,7 +15,7 @@ class LadderDiagramLayout(
     val pattern: JMLPattern,
     val width: Int,
     val height: Int,
-    density: Float
+    val density: Float
 ) {
     var eventItems: List<LadderEventItem> = emptyList()
     var pathItems: List<LadderPathItem> = emptyList()
@@ -118,8 +118,8 @@ class LadderDiagramLayout(
         // distance between left/right hands of each juggler is 1.0 in these
         // dimensionless units; translate to pixels
         val scale: Double = width.toDouble() / (BORDER_SIDES * 2 +
-            JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) +
-            pattern.numberOfJugglers)
+                JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) +
+                pattern.numberOfJugglers)
         leftX = (scale * BORDER_SIDES).roundToInt()
         rightX = (scale * (BORDER_SIDES + 1.0)).roundToInt()
         jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION)).roundToInt()
@@ -129,8 +129,8 @@ class LadderDiagramLayout(
             val ev = item.event
             var eventX: Int =
                 ((if (ev.hand == HandLink.LEFT_HAND) leftX else rightX)
-                    + (ev.juggler - 1) * jugglerDeltaX
-                    - transitionRadius)
+                        + (ev.juggler - 1) * jugglerDeltaX
+                        - transitionRadius)
             val eventY: Int = timeToY(ev.t) - transitionRadius
 
             if (item.type != LadderItem.TYPE_EVENT) {
@@ -153,7 +153,7 @@ class LadderDiagramLayout(
                     (leftX + (item.transnumStart + 1) * 2 * transitionRadius)
                 else
                     (rightX - (item.transnumStart + 1) * 2 * transitionRadius))
-                    + (item.startEvent.juggler - 1) * jugglerDeltaX)
+                        + (item.startEvent.juggler - 1) * jugglerDeltaX)
             item.yStart = timeToY(item.startEvent.t)
             item.yEnd = timeToY(item.endEvent.t)
 
@@ -163,12 +163,12 @@ class LadderDiagramLayout(
                     (leftX + (slot + 1) * 2 * transitionRadius)
                 else
                     (rightX - (slot + 1) * 2 * transitionRadius))
-                    + (item.endEvent.juggler - 1) * jugglerDeltaX)
+                        + (item.endEvent.juggler - 1) * jugglerDeltaX)
 
                 if (item.type == LadderItem.TYPE_SELF) {
                     val a = 0.5 * sqrt(
                         ((item.xStart - item.xEnd) * (item.xStart - item.xEnd)).toDouble() +
-                            ((item.yStart - item.yEnd) * (item.yStart - item.yEnd)).toDouble()
+                                ((item.yStart - item.yEnd) * (item.yStart - item.yEnd)).toDouble()
                     )
                     val xt = 0.5 * (item.xStart + item.xEnd).toDouble()
                     val yt = 0.5 * (item.yStart + item.yEnd).toDouble()
@@ -183,7 +183,7 @@ class LadderDiagramLayout(
                     val yc = yt + mult * d * (item.xStart.toDouble() - xt) / a
                     val rad = sqrt(
                         (item.xStart.toDouble() - xc) * (item.xStart.toDouble() - xc)
-                            + (item.yStart.toDouble() - yc) * (item.yStart.toDouble() - yc)
+                                + (item.yStart.toDouble() - yc) * (item.yStart.toDouble() - yc)
                     )
                     item.xCenter = (0.5 + xc).toInt()
                     item.yCenter = (0.5 + yc).toInt()
@@ -210,7 +210,7 @@ class LadderDiagramLayout(
         val loopStart = pattern.loopStartTime
         val loopEnd = pattern.loopEndTime
         return ((0.5 + (height - 2 * borderTop).toDouble() *
-            (time - loopStart) / (loopEnd - loopStart)).toInt() + borderTop)
+                (time - loopStart) / (loopEnd - loopStart)).toInt() + borderTop)
     }
 
     fun yToTime(y: Int): Double {
