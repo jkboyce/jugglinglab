@@ -17,10 +17,7 @@ import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.newProp
 import jugglinglab.ui.*
 import jugglinglab.util.*
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.awt.ComposePanel
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
@@ -73,43 +70,22 @@ class LadderDiagramPanel(
         add(composePanel, BorderLayout.CENTER)
 
         composePanel.setContent {
-            BoxWithConstraints {
-                val widthPx = constraints.maxWidth
-                val heightPx = constraints.maxHeight
-                val density = LocalDensity.current.density
-
-                val cachedLayout = currentLayout
-                val layout = if (cachedLayout != null &&
-                    cachedLayout.pattern === state.pattern &&
-                    cachedLayout.width == widthPx &&
-                    cachedLayout.height == heightPx
-                ) {
-                    cachedLayout
-                } else {
-                    // just in case the onPatternChange listener hasn't
-                    // fired yet (can this happen?)
-                    LadderDiagramLayout(state.pattern, widthPx, heightPx, density)
-                }
-
-                SideEffect {
-                    currentDensity = density
+            LadderDiagramView(
+                state = state,
+                onPress = { offset, isPopup -> handlePress(offset, isPopup) },
+                onDrag = { offset -> handleDrag(offset) },
+                onRelease = { handleRelease() },
+                onLayoutUpdate = { layout ->
                     currentLayout = layout
+                    currentDensity = layout.density
                 }
-
-                LadderDiagramView(
-                    layout = layout,
-                    state = state,
-                    onPress = { offset, isPopup -> handlePress(offset, isPopup) },
-                    onDrag = { offset -> handleDrag(offset) },
-                    onRelease = { handleRelease() }
-                )
-            }
+            )
         }
 
-        changeLadderPattern()
+        updateLadderDimensions()
 
         state.addListener(onPatternChange = {
-            changeLadderPattern()
+            updateLadderDimensions()
         })
     }
 
@@ -119,7 +95,7 @@ class LadderDiagramPanel(
 
     // Respond to a change in the pattern.
 
-    private fun changeLadderPattern() {
+    private fun updateLadderDimensions() {
         val jugglers = state.pattern.numberOfJugglers
         if (jugglers > MAX_JUGGLERS) {
             // allocate enough space for a "too many jugglers" message
@@ -137,15 +113,6 @@ class LadderDiagramPanel(
             prefWidth = max(prefWidth, minWidth)
             preferredSize = Dimension(prefWidth, 1)
             minimumSize = Dimension(minWidth, 1)
-
-            if (width > 0 && height > 0) {
-                currentLayout = LadderDiagramLayout(
-                    state.pattern,
-                    (width * currentDensity).toInt(),
-                    (height * currentDensity).toInt(),
-                    currentDensity
-                )
-            }
         }
     }
 
@@ -176,6 +143,7 @@ class LadderDiagramPanel(
     private fun mousePressedLogic(mx: Int, my: Int, isPopup: Boolean) {
         try {
             val layout = currentLayout ?: return
+            if (layout.pattern !== state.pattern) return
 
             if (isPopup) {
                 guiState = STATE_POPUP
@@ -261,6 +229,8 @@ class LadderDiagramPanel(
     private fun mouseDraggedLogic(mx: Int, my: Int) {
         try {
             val layout = currentLayout ?: return
+            if (layout.pattern !== state.pattern) return
+
             val ladderHeight = layout.height
             val myClamped = min(max(my, layout.borderTop), ladderHeight - layout.borderTop)
 
