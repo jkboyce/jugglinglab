@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -149,17 +150,16 @@ class LadderDiagramPanel(
     }
 
     //--------------------------------------------------------------------------
-    // Mouse event handlers (called from Compose)
+    // Mouse event handlers
     //--------------------------------------------------------------------------
 
-    private fun handlePress(offset: androidx.compose.ui.geometry.Offset, isPopup: Boolean) {
+    private fun handlePress(offset: Offset, isPopup: Boolean) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
-        // No density multiplication needed as Compose returns pixels matching Canvas size
         mousePressedLogic(mx, my, isPopup)
     }
 
-    private fun handleDrag(offset: androidx.compose.ui.geometry.Offset) {
+    private fun handleDrag(offset: Offset) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
         mouseDraggedLogic(mx, my)
@@ -168,6 +168,10 @@ class LadderDiagramPanel(
     private fun handleRelease() {
         mouseReleasedLogic()
     }
+
+    //--------------------------------------------------------------------------
+    // Mouse internal logic
+    //--------------------------------------------------------------------------
 
     private fun mousePressedLogic(mx: Int, my: Int, isPopup: Boolean) {
         try {

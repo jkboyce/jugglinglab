@@ -152,7 +152,7 @@ class AnimationController(
     }
 
     //--------------------------------------------------------------------------
-    // Internal Logic
+    // Mouse internal logic
     //--------------------------------------------------------------------------
 
     private fun mousePressedLogic(mx: Int, my: Int) {
