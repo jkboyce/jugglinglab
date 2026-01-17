@@ -11,7 +11,10 @@ package jugglinglab.ui
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.renderer.ComposeRenderer
+import jugglinglab.util.JuggleExceptionInternal
+import jugglinglab.util.jlHandleFatalException
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,16 +33,13 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import jugglinglab.util.JuggleExceptionInternal
-import jugglinglab.util.jlHandleFatalException
 
 @Composable
 fun AnimationView(
-    layout: AnimationLayout,
     state: PatternAnimationState,
     onPress: (Offset) -> Unit,
     onDrag: (Offset) -> Unit,
@@ -52,150 +52,167 @@ fun AnimationView(
 ) {
     val density = LocalDensity.current.density
 
-    // We maintain two renderers for stereo support
+    // two renderers for stereo support
     val renderer1 = remember { ComposeRenderer() }
     val renderer2 = remember { ComposeRenderer() }
 
-    SideEffect {
-        // Update renderers when pattern changes
-        try {
-            val pattern = state.pattern
-            val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
-                    (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val widthPx = constraints.maxWidth
+        val heightPx = constraints.maxHeight
+        val width = (widthPx / density).toInt()
+        val height = (heightPx / density).toInt()
 
-            renderer1.setPattern(pattern)
-            renderer1.setGround(sg)
-            renderer1.zoomLevel = state.zoom
-
-            if (state.prefs.stereo) {
-                renderer2.setPattern(pattern)
-                renderer2.setGround(sg)
-                renderer2.zoomLevel = state.zoom
-            }
-
-            // Sync camera angles
-            val ca = doubleArrayOf(state.cameraAngle[0], state.cameraAngle[1])
-            // Normalize angle
-            while (ca[0] < 0) ca[0] += 2 * Math.PI
-            while (ca[0] >= 2 * Math.PI) ca[0] -= 2 * Math.PI
-
-            if (state.prefs.stereo) {
-                val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
-                renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
-                renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
-            } else {
-                renderer1.cameraAngle = ca
-            }
-
-            onLayoutUpdate(layout)
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        val layout = remember(
+            state.pattern,
+            state.prefs.stereo,
+            state.prefs.borderPixels,
+            state.cameraAngle,
+            state.zoom,
+            state.selectedItemHashCode,
+            width,
+            height
+        ) {
+            AnimationLayout(state, width, height)
         }
-    }
 
-    LaunchedEffect(state.isPaused) {
-        // Animation loop
-        if (!state.isPaused) {
-            val startTime = withFrameNanos { it }
-            var lastFrameTime = startTime
+        SideEffect {
+            // update renderers on every recomposition
+            try {
+                val pattern = state.pattern
+                val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
 
-            val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
+                renderer1.setPattern(pattern)
+                renderer1.setGround(sg)
+                renderer1.zoomLevel = state.zoom
+                if (state.prefs.stereo) {
+                    renderer2.setPattern(pattern)
+                    renderer2.setGround(sg)
+                    renderer2.zoomLevel = state.zoom
+                }
 
-            while (true) {
-                withFrameNanos { frameTimeNanos ->
-                    val deltaNanos = frameTimeNanos - lastFrameTime
-                    lastFrameTime = frameTimeNanos
-                    val deltaRealSecs = deltaNanos / 1_000_000_000.0
-                    val deltaSimSecs = deltaRealSecs / state.prefs.slowdown
-                    var newTime = state.time + deltaSimSecs
+                val ca = doubleArrayOf(state.cameraAngle[0], state.cameraAngle[1])
+                while (ca[0] < 0) ca[0] += 2 * Math.PI
+                while (ca[0] >= 2 * Math.PI) ca[0] -= 2 * Math.PI
+                if (state.prefs.stereo) {
+                    val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
+                    renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
+                    renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
+                } else {
+                    renderer1.cameraAngle = ca
+                }
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            }
+        }
 
-                    if (newTime >= state.pattern.loopEndTime) {
-                        val overflow = newTime - state.pattern.loopEndTime
-                        newTime = state.pattern.loopStartTime + (overflow % loopDuration)
-                        state.advancePropForPath()
+        LaunchedEffect(layout) {
+            onLayoutUpdate(layout)
+        }
+
+        LaunchedEffect(state.isPaused) {
+            // Animation loop
+            if (!state.isPaused) {
+                val startTime = withFrameNanos { it }
+                var lastFrameTime = startTime
+                val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
+
+                while (true) {
+                    withFrameNanos { frameTimeNanos ->
+                        val deltaNanos = frameTimeNanos - lastFrameTime
+                        lastFrameTime = frameTimeNanos
+                        val deltaRealSecs = deltaNanos / 1_000_000_000.0
+                        val deltaSimSecs = deltaRealSecs / state.prefs.slowdown
+                        var newTime = state.time + deltaSimSecs
+
+                        if (newTime >= state.pattern.loopEndTime) {
+                            val overflow = newTime - state.pattern.loopEndTime
+                            newTime = state.pattern.loopStartTime + (overflow % loopDuration)
+                            state.advancePropForPath()
+                        }
+
+                        state.update(time = newTime)
+                        onFrame(newTime)
                     }
-
-                    state.update(time = newTime)
-                    onFrame(newTime)
                 }
             }
         }
-    }
 
-    Canvas(
-        modifier = modifier.fillMaxSize()
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.first()
-                        val offset = change.position
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.first()
+                            val offset = change.position
 
-                        if (event.type == PointerEventType.Enter) {
-                            onEnter()
-                        } else if (event.type == PointerEventType.Exit) {
-                            onExit()
-                        } else if (change.changedToDown()) {
-                            onPress(offset / density)
-                            change.consume()
-                        } else if (change.pressed && change.positionChanged()) {
-                            onDrag(offset / density)
-                            change.consume()
-                        } else if (change.changedToUp()) {
-                            onRelease()
-                            change.consume()
+                            if (event.type == PointerEventType.Enter) {
+                                onEnter()
+                            } else if (event.type == PointerEventType.Exit) {
+                                onExit()
+                            } else if (change.changedToDown()) {
+                                onPress(offset / density)
+                                change.consume()
+                            } else if (change.pressed && change.positionChanged()) {
+                                onDrag(offset / density)
+                                change.consume()
+                            } else if (change.changedToUp()) {
+                                onRelease()
+                                change.consume()
+                            }
                         }
                     }
                 }
-            }
-    ) {
-        drawRect(color = Color.White)
+        ) {
+            drawRect(color = Color.White)
 
-        val width = size.width.toInt()
-        val height = size.height.toInt()
-        val borderPixels = state.prefs.borderPixels
-        val (overallMin, overallMax) = layout.boundingBox
+            val width = size.width.toInt()
+            val height = size.height.toInt()
+            val borderPixels = state.prefs.borderPixels
+            val (overallMin, overallMax) = layout.boundingBox
 
-        if (state.prefs.stereo) {
-            val w = width / 2
-            renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
-            renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
+            if (state.prefs.stereo) {
+                val w = width / 2
+                renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
+                renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
 
-            withTransform({ translate(left = 0f, top = 0f) }) {
-                clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                    renderer1.drawFrame(
-                        state.time,
-                        state.propForPath,
-                        state.prefs.hideJugglers,
-                        this
-                    )
-                    drawEventOverlays(layout, 0, this, density)
-                    drawPositions(layout, 0, this, density)
+                withTransform({ translate(left = 0f, top = 0f) }) {
+                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        renderer1.drawFrame(
+                            state.time,
+                            state.propForPath,
+                            state.prefs.hideJugglers,
+                            this
+                        )
+                        drawEventOverlays(layout, 0, this, density)
+                        drawPositions(layout, 0, this, density)
+                    }
                 }
-            }
 
-            withTransform({ translate(left = w.toFloat(), top = 0f) }) {
-                clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                    renderer2.drawFrame(
-                        state.time,
-                        state.propForPath,
-                        state.prefs.hideJugglers,
-                        this
-                    )
-                    drawEventOverlays(layout, 1, this, density)
-                    drawPositions(layout, 1, this, density)
+                withTransform({ translate(left = w.toFloat(), top = 0f) }) {
+                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        renderer2.drawFrame(
+                            state.time,
+                            state.propForPath,
+                            state.prefs.hideJugglers,
+                            this
+                        )
+                        drawEventOverlays(layout, 1, this, density)
+                        drawPositions(layout, 1, this, density)
+                    }
                 }
+            } else {
+                renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
+                renderer1.drawFrame(
+                    state.time,
+                    state.propForPath,
+                    state.prefs.hideJugglers,
+                    this
+                )
+                drawEventOverlays(layout, 0, this, density)
+                drawPositions(layout, 0, this, density)
             }
-        } else {
-            renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
-            renderer1.drawFrame(
-                state.time,
-                state.propForPath,
-                state.prefs.hideJugglers,
-                this
-            )
-            drawEventOverlays(layout, 0, this, density)
-            drawPositions(layout, 0, this, density)
         }
     }
 }

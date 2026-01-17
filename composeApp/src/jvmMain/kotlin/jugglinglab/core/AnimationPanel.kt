@@ -12,7 +12,6 @@
 package jugglinglab.core
 
 import jugglinglab.ui.AnimationController
-import jugglinglab.ui.AnimationLayout
 import jugglinglab.ui.AnimationView
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.jlHandleFatalException
@@ -25,9 +24,7 @@ import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.awt.ComposePanel
-import androidx.compose.ui.platform.LocalDensity
 
 class AnimationPanel(
     val state: PatternAnimationState
@@ -47,28 +44,16 @@ class AnimationPanel(
         add(composePanel, BorderLayout.CENTER)
 
         composePanel.setContent {
-            BoxWithConstraints {
-                val widthPx = constraints.maxWidth
-                val heightPx = constraints.maxHeight
-                val density = LocalDensity.current.density
-
-                // Calculate logical dimensions for the layout
-                val width = (widthPx / density).toInt()
-                val height = (heightPx / density).toInt()
-                val layout = AnimationLayout(state, width, height)
-
-                AnimationView(
-                    layout = layout,
-                    state = state,
-                    onPress = { offset -> controller.handlePress(offset) },
-                    onDrag = { offset -> controller.handleDrag(offset) },
-                    onRelease = { controller.handleRelease() },
-                    onEnter = { controller.handleEnter() },
-                    onExit = { controller.handleExit() },
-                    onLayoutUpdate = { layout -> controller.updateLayout(layout) },
-                    onFrame = { time -> onAnimationFrame(time) }
-                )
-            }
+            AnimationView(
+                state = state,
+                onPress = { offset -> controller.handlePress(offset) },
+                onDrag = { offset -> controller.handleDrag(offset) },
+                onRelease = { controller.handleRelease() },
+                onEnter = { controller.handleEnter() },
+                onExit = { controller.handleExit() },
+                onLayoutUpdate = { layout -> controller.updateLayout(layout) },
+                onFrame = { time -> onAnimationFrame(time) }
+            )
         }
 
         loadAudioClips()
