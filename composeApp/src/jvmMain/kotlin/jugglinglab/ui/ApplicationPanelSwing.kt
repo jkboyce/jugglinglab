@@ -16,7 +16,6 @@ import jugglinglab.generator.Transitioner.Companion.newTransitioner
 import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.Pattern
-import jugglinglab.notation.SiteswapNotationControlSwing
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException

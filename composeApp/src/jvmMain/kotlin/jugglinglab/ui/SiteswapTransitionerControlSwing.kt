@@ -4,7 +4,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.generator
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.jlConstraints
