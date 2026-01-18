@@ -14,15 +14,13 @@ package jugglinglab
 
 //import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.*
-import jugglinglab.core.ApplicationWindow.Companion.openJMLFile
-import jugglinglab.core.ApplicationWindow.Companion.showAboutBox
-import jugglinglab.core.PatternWindow.Companion.setExitOnLastClose
+import jugglinglab.ui.ApplicationWindow
+import jugglinglab.ui.PatternWindow
 import jugglinglab.generator.GeneratorTargetBasic
 import jugglinglab.generator.SiteswapGenerator
 import jugglinglab.generator.SiteswapTransitioner
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.jlHandleFatalException
@@ -213,7 +211,7 @@ object JugglingLab {
         if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)) {
             return
         }
-        Desktop.getDesktop().setAboutHandler { _: AboutEvent? -> showAboutBox() }
+        Desktop.getDesktop().setAboutHandler { _: AboutEvent? -> ApplicationWindow.showAboutBox() }
     }
 
     // Open the JML file(s) whose paths are given as command-line arguments.
@@ -256,7 +254,7 @@ object JugglingLab {
 
                 for (file in files) {
                     try {
-                        openJMLFile(file)
+                        ApplicationWindow.openJMLFile(file)
                     } catch (jeu: JuggleExceptionUser) {
                         // val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                         val message = "Problem reading from file \"${file.getName()}\""
@@ -641,7 +639,7 @@ object JugglingLab {
         // otherwise assume pattern is in siteswap notation
         try {
             val config = jlargs.removeFirst()
-            return fromBasePattern("siteswap", config)
+            return JMLPattern.fromBasePattern("siteswap", config)
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")
         } catch (jei: JuggleExceptionInternal) {
@@ -656,7 +654,7 @@ object JugglingLab {
         SwingUtilities.invokeLater {
             registerAboutHandler()
             PatternWindow(pat.title, pat, jc)
-            setExitOnLastClose(true)
+            PatternWindow.setExitOnLastClose(true)
         }
     }
 

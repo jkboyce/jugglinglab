@@ -10,13 +10,25 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JMLEvent
+import jugglinglab.jml.JMLPosition
+import jugglinglab.jml.PatternBuilder
+import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
+import jugglinglab.util.Coordinate
+import jugglinglab.util.Coordinate.Companion.distance
+import jugglinglab.util.Coordinate.Companion.sub
+import jugglinglab.util.jlGetStringResource
+import jugglinglab.util.jlIsNearLine
+import jugglinglab.util.jlToStringRounded
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.*
@@ -25,22 +37,12 @@ import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import kotlin.math.abs
-import jugglinglab.jml.JMLEvent
-import jugglinglab.jml.JMLPosition
-import jugglinglab.jml.PatternBuilder
-import jugglinglab.renderer.FrameDrawer
-import jugglinglab.util.Coordinate
-import jugglinglab.util.Coordinate.Companion.distance
-import jugglinglab.util.Coordinate.Companion.sub
-import jugglinglab.util.jlGetStringResource
-import jugglinglab.util.jlIsNearLine
-import jugglinglab.util.jlToStringRounded
 import java.awt.BasicStroke
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.Stroke
 import java.awt.geom.Path2D
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos

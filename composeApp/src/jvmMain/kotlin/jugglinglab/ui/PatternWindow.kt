@@ -9,15 +9,17 @@
 
 @file:Suppress("KotlinConstantConditions")
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.Constants
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
-import jugglinglab.ui.LadderDiagramLayout
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException

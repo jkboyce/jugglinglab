@@ -6,7 +6,7 @@
 
 @file:Suppress("KotlinConstantConditions", "SimplifyBooleanWithConstants")
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.JMLNode

@@ -4,10 +4,11 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.Constants
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.util.*

@@ -12,11 +12,11 @@ package jugglinglab.view
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
-import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.core.PatternWindow
+import jugglinglab.ui.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.renderer.FrameDrawer
+import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal

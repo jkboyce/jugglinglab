@@ -12,7 +12,7 @@
 package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.ApplicationWindow
+import jugglinglab.ui.ApplicationWindow
 import java.awt.Desktop
 import java.io.*
 import java.net.ServerSocket

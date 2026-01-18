@@ -6,10 +6,10 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.PatternWindow.Companion.bringToFront
+import jugglinglab.core.AnimationPrefs
 import jugglinglab.generator.*
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
@@ -109,7 +109,7 @@ class ApplicationPanelSwing(
                         val config: String = p.toString()
                         val pat = fromBasePattern(notation, config)
                         pat.layout
-                        if (bringToFront(pat.jlHashCode)) {
+                        if (PatternWindow.bringToFront(pat.jlHashCode)) {
                             return@addActionListener
                         }
 

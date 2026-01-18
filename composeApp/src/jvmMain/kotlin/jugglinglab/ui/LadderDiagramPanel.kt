@@ -7,15 +7,15 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.*
 import jugglinglab.path.Path
 import jugglinglab.path.Path.Companion.newPath
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.newProp
-import jugglinglab.ui.*
 import jugglinglab.util.*
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.geometry.Offset

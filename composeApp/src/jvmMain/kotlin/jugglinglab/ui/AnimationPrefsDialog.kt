@@ -8,10 +8,10 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.ui.AnimationPrefsControl
+import jugglinglab.core.AnimationPrefs
 import jugglinglab.util.jlGetStringResource
 import androidx.compose.material.*
 import androidx.compose.ui.awt.ComposePanel

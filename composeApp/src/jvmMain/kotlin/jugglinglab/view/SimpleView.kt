@@ -6,10 +6,10 @@
 
 package jugglinglab.view
 
-import jugglinglab.core.AnimationPanel
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.core.PatternWindow
+import jugglinglab.ui.AnimationPanel
+import jugglinglab.ui.PatternWindow
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser

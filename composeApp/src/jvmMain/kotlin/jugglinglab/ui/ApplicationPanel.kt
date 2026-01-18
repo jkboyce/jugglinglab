@@ -8,9 +8,10 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.AnimationPrefs
 import jugglinglab.generator.Generator
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
@@ -20,9 +21,6 @@ import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.notation.Pattern
-import jugglinglab.ui.SiteswapNotationControl
-import jugglinglab.ui.SiteswapGeneratorControl
-import jugglinglab.ui.SiteswapTransitionerControl
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException

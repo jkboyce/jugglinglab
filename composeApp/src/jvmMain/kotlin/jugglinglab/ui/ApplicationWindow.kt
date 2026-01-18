@@ -11,14 +11,15 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.core
+package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.core.AnimationPrefs
+import jugglinglab.core.Constants
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.notation.Pattern
-import jugglinglab.ui.AboutView
 import jugglinglab.util.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.awt.ComposePanel

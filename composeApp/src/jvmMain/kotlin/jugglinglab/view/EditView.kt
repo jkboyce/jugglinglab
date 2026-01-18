@@ -11,6 +11,9 @@ package jugglinglab.view
 
 import jugglinglab.core.*
 import jugglinglab.jml.JMLPattern
+import jugglinglab.ui.AnimationPanel
+import jugglinglab.ui.LadderDiagramPanel
+import jugglinglab.ui.PatternWindow
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.BorderLayout
