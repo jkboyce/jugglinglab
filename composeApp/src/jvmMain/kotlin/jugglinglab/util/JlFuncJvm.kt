@@ -3,7 +3,7 @@
 //
 // Some useful functions.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")

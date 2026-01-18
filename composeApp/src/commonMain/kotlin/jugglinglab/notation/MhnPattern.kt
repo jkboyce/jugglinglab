@@ -15,7 +15,7 @@
 // representation of an MHN pattern to JML. Any notation that builds on MHN can
 // avoid duplicating this functionality.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")

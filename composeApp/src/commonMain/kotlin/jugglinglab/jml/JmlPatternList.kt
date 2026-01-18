@@ -4,7 +4,7 @@
 // This class represents a JML pattern list. This is the data model; the
 // visualization is in PatternListPanel and PatternListWindow.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml

@@ -4,7 +4,7 @@
 // This class contains all the state variables needed to draw a frame of
 // the pattern animation, including the ladder diagram.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.core

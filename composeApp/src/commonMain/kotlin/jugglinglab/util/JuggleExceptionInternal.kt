@@ -8,7 +8,7 @@
 // Other exception types can be wrapped by an instance of this class so that
 // a JmlPattern can be attached and displayed in the error dialog box.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.util

@@ -24,7 +24,7 @@
 //   Bug fix to find_start_end() on 02/18/99
 //------------------------------------------------------------------------------
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")

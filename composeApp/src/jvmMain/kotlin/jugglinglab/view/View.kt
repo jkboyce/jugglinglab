@@ -5,7 +5,7 @@
 // Subclasses of this are used to show different pattern views, which the
 // user can select from a menu on the pattern window.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.view

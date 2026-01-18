@@ -4,7 +4,7 @@
 // This type describes a path through 3D space, used to model hand movements as
 // well as juggler positions/angles.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("EmptyRange")

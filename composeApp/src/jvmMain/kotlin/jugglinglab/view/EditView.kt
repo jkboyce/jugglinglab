@@ -4,7 +4,7 @@
 // This view provides the ability to edit a pattern visually. It features a
 // ladder diagram on the right and an animator on the left.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.view

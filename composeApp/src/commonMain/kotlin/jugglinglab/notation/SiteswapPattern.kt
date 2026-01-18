@@ -5,7 +5,7 @@
 // used by Juggling Lab. The real work here is to parse siteswap notation into
 // the internal format used by MhnPattern.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")

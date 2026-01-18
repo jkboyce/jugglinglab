@@ -8,7 +8,7 @@
 // It does this by adjusting the throw and catch positions, leaving throw and
 // catch times unchanged.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")

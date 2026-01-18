@@ -5,7 +5,7 @@
 // the throw of a specific object to some later element in the matrix. It can
 // also have a value of zero (`targetindex` == `index`), meaning no throw.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.notation

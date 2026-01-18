@@ -15,7 +15,7 @@
 // trigger a Windows firewall warning that requires user approval, so we default
 // to the other. Neither uses OS-specific APIs so they should be fairly portable.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")

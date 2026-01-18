@@ -4,7 +4,7 @@
 // This class adds Hand Siteswap (HSS) functionality to Juggling Lab's
 // siteswap notation component.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.notation

@@ -3,7 +3,7 @@
 //
 // This class calculates the coordinates of the juggler elbows, shoulders, etc.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.renderer

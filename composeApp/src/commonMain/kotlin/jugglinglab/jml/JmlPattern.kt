@@ -7,7 +7,7 @@
 // The `layout` value creates an instance of LaidoutPattern that physically
 // lays out the pattern, ready for animation.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")
