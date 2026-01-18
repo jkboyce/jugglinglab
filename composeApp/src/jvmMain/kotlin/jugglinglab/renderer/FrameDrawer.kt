@@ -15,7 +15,7 @@ package jugglinglab.renderer
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Constants
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.jml.HandLink
+import jugglinglab.jml.JMLEvent
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.max
@@ -222,17 +222,17 @@ class FrameDrawer(
         var handmax: Coordinate? = null
         var handmin: Coordinate? = null
         for (i in 1..pattern.numberOfJugglers) {
-            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, JMLEvent.LEFT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, JMLEvent.LEFT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, JMLEvent.RIGHT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, JMLEvent.RIGHT_HAND))
 
             if (Constants.DEBUG_LAYOUT) {
                 println("Data from Animator.findMaxMin():")
-                println("Hand max $i left = " + pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-                println("Hand min $i left = " + pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-                println("Hand max $i right = " + pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-                println("Hand min $i right = " + pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+                println("Hand max $i left = " + pattern.layout.getHandMax(i, JMLEvent.LEFT_HAND))
+                println("Hand min $i left = " + pattern.layout.getHandMin(i, JMLEvent.LEFT_HAND))
+                println("Hand max $i right = " + pattern.layout.getHandMax(i, JMLEvent.RIGHT_HAND))
+                println("Hand min $i right = " + pattern.layout.getHandMin(i, JMLEvent.RIGHT_HAND))
             }
         }
 

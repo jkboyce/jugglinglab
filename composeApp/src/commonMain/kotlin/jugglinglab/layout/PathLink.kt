@@ -4,7 +4,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.jml
+package jugglinglab.layout
 
 import jugglinglab.path.Path
 import jugglinglab.util.Coordinate

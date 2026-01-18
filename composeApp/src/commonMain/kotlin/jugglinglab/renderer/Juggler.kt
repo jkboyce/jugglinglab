@@ -8,7 +8,7 @@
 
 package jugglinglab.renderer
 
-import jugglinglab.jml.HandLink
+import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
@@ -55,8 +55,8 @@ object Juggler {
             val coord0 = Coordinate()
             val coord1 = Coordinate()
             val coord2 = Coordinate()
-            pat.layout.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0)
-            pat.layout.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1)
+            pat.layout.getHandCoordinate(juggler, JMLEvent.LEFT_HAND, time, coord0)
+            pat.layout.getHandCoordinate(juggler, JMLEvent.RIGHT_HAND, time, coord1)
             val lefthand = JLVector(coord0.x, coord0.z + LOWER_HAND_HEIGHT, coord0.y)
             val righthand = JLVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
 

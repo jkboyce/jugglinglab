@@ -134,13 +134,13 @@ class LadderDiagramLayout(
         for (item in eventItems) {
             val ev = item.event
             var eventX: Int =
-                ((if (ev.hand == HandLink.LEFT_HAND) leftX else rightX)
+                ((if (ev.hand == JMLEvent.LEFT_HAND) leftX else rightX)
                         + (ev.juggler - 1) * jugglerDeltaX
                         - transitionRadius)
             val eventY: Int = timeToY(ev.t) - transitionRadius
 
             if (item.type != LadderItem.TYPE_EVENT) {
-                if (ev.hand == HandLink.LEFT_HAND) {
+                if (ev.hand == JMLEvent.LEFT_HAND) {
                     eventX += 2 * transitionRadius * (item.transNum + 1)
                 } else {
                     eventX -= 2 * transitionRadius * (item.transNum + 1)
@@ -155,7 +155,7 @@ class LadderDiagramLayout(
         // Set locations of paths
         for (item in pathItems) {
             item.xStart =
-                ((if (item.startEvent.hand == HandLink.LEFT_HAND)
+                ((if (item.startEvent.hand == JMLEvent.LEFT_HAND)
                     (leftX + (item.transnumStart + 1) * 2 * transitionRadius)
                 else
                     (rightX - (item.transnumStart + 1) * 2 * transitionRadius))
@@ -165,7 +165,7 @@ class LadderDiagramLayout(
 
             val slot = item.endEvent.transitions.indexOfFirst { it.path == item.pathNum }
             if (slot != -1) {
-                item.xEnd = ((if (item.endEvent.hand == HandLink.LEFT_HAND)
+                item.xEnd = ((if (item.endEvent.hand == JMLEvent.LEFT_HAND)
                     (leftX + (slot + 1) * 2 * transitionRadius)
                 else
                     (rightX - (slot + 1) * 2 * transitionRadius))
@@ -184,7 +184,7 @@ class LadderDiagramLayout(
                     if (d < (0.5 * b)) {
                         d = 0.5 * b
                     }
-                    val mult = if (item.endEvent.hand == HandLink.LEFT_HAND) -1.0 else 1.0
+                    val mult = if (item.endEvent.hand == JMLEvent.LEFT_HAND) -1.0 else 1.0
                     val xc = xt + mult * d * (yt - item.yStart.toDouble()) / a
                     val yc = yt + mult * d * (item.xStart.toDouble() - xt) / a
                     val rad = sqrt(

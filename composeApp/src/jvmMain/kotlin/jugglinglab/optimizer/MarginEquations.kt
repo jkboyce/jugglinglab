@@ -11,6 +11,7 @@ package jugglinglab.optimizer
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
+import jugglinglab.layout.PathLink
 import jugglinglab.util.*
 import java.util.*
 import kotlin.math.abs
@@ -217,7 +218,7 @@ class MarginEquations(val pat: JMLPattern) {
                             if (mpl1.startEvent.juggler > mpl2.startEvent.juggler) {
                                 canCollide = false
                             } else if (mpl1.startEvent.juggler == mpl2.startEvent.juggler) {
-                                if (mpl1.startEvent.hand == HandLink.LEFT_HAND) {
+                                if (mpl1.startEvent.hand == JMLEvent.LEFT_HAND) {
                                     canCollide = false
                                 }
                             }

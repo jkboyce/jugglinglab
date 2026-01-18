@@ -34,7 +34,6 @@
 package jugglinglab.view
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.jml.HandLink
 import jugglinglab.jml.JMLEvent
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.JMLTransition
@@ -191,7 +190,7 @@ class Mutator {
 
         do {
             juggler = 1 + (pat.numberOfJugglers * Math.random()).toInt()
-            hand = if (Math.random() < 0.5) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+            hand = if (Math.random() < 0.5) JMLEvent.LEFT_HAND else JMLEvent.RIGHT_HAND
 
             // Choose the time at which to add the event. We want to bias the
             // selection so that we tend to pick times not too close to other
@@ -314,7 +313,7 @@ class Mutator {
             result.x += 2.0 * scaleDistance * (Math.random() - 0.5)
             result.z += 2.0 * scaleDistance * (Math.random() - 0.5)
 
-            outsideBox = if (hand == HandLink.LEFT_HAND) {
+            outsideBox = if (hand == JMLEvent.LEFT_HAND) {
                 (result.x < -75 || result.x > 40 || result.z < -20 || result.z > 80)
             } else {
                 (result.x < -40 || result.x > 75 || result.z < -20 || result.z > 80)

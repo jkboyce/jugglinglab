@@ -56,7 +56,7 @@ data class JMLEvent(
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
         wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
         wr.append(" hand=\"$juggler:")
-        wr.append(if (hand == HandLink.LEFT_HAND) "left" else "right")
+        wr.append(if (hand == LEFT_HAND) "left" else "right")
         wr.append("\">\n")
         if (!startTagOnly) {
             for (tr in transitions) {
@@ -113,9 +113,9 @@ data class JMLEvent(
         if (index == -1) {
             newJuggler = 1
             newHand = if (handString.equals("left", ignoreCase = true)) {
-                HandLink.LEFT_HAND
+                LEFT_HAND
             } else if (handString.equals("right", ignoreCase = true)) {
-                HandLink.RIGHT_HAND
+                RIGHT_HAND
             } else {
                 val message = jlGetStringResource(Res.string.error_hand_name)
                 throw JuggleExceptionUser("$message '$handString'")
@@ -124,9 +124,9 @@ data class JMLEvent(
             newJuggler = handString.take(index).toInt()
             val substr = handString.substring(index + 1)
             newHand = if (substr.equals("left", ignoreCase = true)) {
-                HandLink.LEFT_HAND
+                LEFT_HAND
             } else if (substr.equals("right", ignoreCase = true)) {
-                HandLink.RIGHT_HAND
+                RIGHT_HAND
             } else {
                 val message = jlGetStringResource(Res.string.error_hand_name)
                 throw JuggleExceptionUser("$message '$handString'")
@@ -153,11 +153,17 @@ data class JMLEvent(
         )
     }
 
-    //--------------------------------------------------------------------------
-    // Constructing JMLEvents
-    //--------------------------------------------------------------------------
-
     companion object {
+        // hand descriptors
+        const val LEFT_HAND: Int = 1
+        const val RIGHT_HAND: Int = 2
+
+        fun handIndex(handDescriptor: Int) = if (handDescriptor == LEFT_HAND) 0 else 1
+
+        //----------------------------------------------------------------------
+        // Constructing JMLEvents
+        //----------------------------------------------------------------------
+
         @Throws(JuggleExceptionUser::class)
         fun fromJMLNode(
             current: JMLNode,

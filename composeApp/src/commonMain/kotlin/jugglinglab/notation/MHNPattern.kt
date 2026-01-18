@@ -1364,7 +1364,7 @@ abstract class MHNPattern : Pattern() {
                             z = newLocalCoordinate.z,
                             t = sst.throwTime,
                             juggler = j + 1,
-                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                         )
                         calcpos[ev] = newCalcpos
                         rec.events.add(ev)
@@ -1449,7 +1449,7 @@ abstract class MHNPattern : Pattern() {
                             z = newLocalCoordinate.z,
                             t = sst.catchTime,
                             juggler = j + 1,
-                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                         )
 
                         // add all the transitions
@@ -1521,7 +1521,7 @@ abstract class MHNPattern : Pattern() {
                                 z = newLocalCoordinate.z,
                                 t = sst2.catchTime,
                                 juggler = j + 1,
-                                hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND,
+                                hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND,
                                 transitions = listOf(
                                     JMLTransition(
                                         type = JMLTransition.TRANS_CATCH,
@@ -1564,7 +1564,7 @@ abstract class MHNPattern : Pattern() {
                             t = lastcatchtime + di.toDouble() *
                                 (sst.throwTime - lastcatchtime) / numcoords,
                             juggler = sst.juggler,
-                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
@@ -1617,7 +1617,7 @@ abstract class MHNPattern : Pattern() {
                             t = sst.throwTime + di.toDouble() *
                                 (nextcatchtime - sst.throwTime) / numcoords,
                             juggler = sst.juggler,
-                            hand = if (h == RIGHT_HAND) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
@@ -1663,7 +1663,7 @@ abstract class MHNPattern : Pattern() {
                         z = 0.0,
                         t = -1.0,
                         juggler = j + 1,
-                        hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                        hand = if (h == 0) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                     )
                     calcpos[ev] = false
                     rec.events.add(ev)
@@ -1696,7 +1696,7 @@ abstract class MHNPattern : Pattern() {
             }
 
             // figure out which hand it should belong in
-            var hand = HandLink.LEFT_HAND
+            var hand = JMLEvent.LEFT_HAND
             var juggler = 0
 
             top@ for (tempk in 0..<indexes) {
@@ -1705,8 +1705,8 @@ abstract class MHNPattern : Pattern() {
                         for (slot in 0..<maxOccupancy) {
                             val sst = th[tempj][temph][tempk][slot]
                             if (sst != null && sst.pathNum == (k + 1)) {
-                                hand = (if (temph == RIGHT_HAND) HandLink.RIGHT_HAND
-                                else HandLink.LEFT_HAND)
+                                hand = (if (temph == RIGHT_HAND) JMLEvent.RIGHT_HAND
+                                else JMLEvent.LEFT_HAND)
                                 juggler = tempj
                                 break@top
                             }
@@ -1749,7 +1749,7 @@ abstract class MHNPattern : Pattern() {
             val result = JMLPattern.fromPatternBuilder(rec)
 
             for (h in 0..1) {
-                val hand = if (h == 0) HandLink.RIGHT_HAND else HandLink.LEFT_HAND
+                val hand = if (h == 0) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
                 val startEvent: MutableList<JMLEvent?> = MutableList(numberOfJugglers) { null }
 
                 for (image in result.allEvents) {

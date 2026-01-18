@@ -666,8 +666,8 @@ class LadderDiagramPanel(
         try {
             val command = event.getActionCommand() ?: return
             when (command) {
-                "addeventtoleft" -> addEventToHand(HandLink.LEFT_HAND)
-                "addeventtoright" -> addEventToHand(HandLink.RIGHT_HAND)
+                "addeventtoleft" -> addEventToHand(JMLEvent.LEFT_HAND)
+                "addeventtoright" -> addEventToHand(JMLEvent.RIGHT_HAND)
                 "removeevent" -> removeEvent()
                 "addposition" -> addPositionToJuggler()
                 "removeposition" -> removePosition()

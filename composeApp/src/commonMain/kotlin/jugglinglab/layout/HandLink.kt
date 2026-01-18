@@ -7,7 +7,7 @@
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
-package jugglinglab.jml
+package jugglinglab.layout
 
 import jugglinglab.curve.Curve
 
@@ -48,14 +48,5 @@ class HandLink(
             sb.append("\n      no handpath")
         }
         return sb.toString()
-    }
-
-    companion object {
-        @Suppress("unused")
-        const val NO_HAND: Int = 0
-        const val LEFT_HAND: Int = 1
-        const val RIGHT_HAND: Int = 2
-
-        fun index(handdescription: Int) = if (handdescription == LEFT_HAND) 0 else 1
     }
 }

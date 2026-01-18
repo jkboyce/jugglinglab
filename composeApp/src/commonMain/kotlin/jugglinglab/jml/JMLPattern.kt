@@ -17,6 +17,7 @@ package jugglinglab.jml
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLNode.Companion.xmlescape
+import jugglinglab.layout.LaidoutPattern
 import jugglinglab.notation.Pattern
 import jugglinglab.prop.Prop
 import jugglinglab.util.*
@@ -444,10 +445,10 @@ data class JMLPattern(
 
     fun withInvertedXAxis(flipXCoordinate: Boolean = true): JMLPattern {
         val newEvents = events.map {
-            val newHand = if (it.hand == HandLink.LEFT_HAND) {
-                HandLink.RIGHT_HAND
+            val newHand = if (it.hand == JMLEvent.LEFT_HAND) {
+                JMLEvent.RIGHT_HAND
             } else {
-                HandLink.LEFT_HAND
+                JMLEvent.LEFT_HAND
             }
             if (flipXCoordinate) {
                 it.copy(x = -it.x, hand = newHand)

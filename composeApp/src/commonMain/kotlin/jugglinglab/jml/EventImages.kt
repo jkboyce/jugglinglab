@@ -10,6 +10,7 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.Permutation.Companion.lcm
 
+@Suppress("EmptyRange")
 class EventImages(
     val pattern: JMLPattern,
     val primaryEvent: JMLEvent
@@ -107,7 +108,7 @@ class EventImages(
         val newT = (evTime
             + currentLoop.toDouble() * loopTime + currentEntry.toDouble() * (loopTime / numEntries.toDouble()))
         val newJuggler = currentJuggler + 1
-        val newHand = if (currentHand == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+        val newHand = if (currentHand == 0) JMLEvent.LEFT_HAND else JMLEvent.RIGHT_HAND
 
         val newEvent = primaryEvent.copy(
             x = newX,
@@ -137,7 +138,7 @@ class EventImages(
 
     fun hasJMLTransitionForHand(jug: Int, han: Int): Boolean {
         for (i in 0..<numEntries) {
-            if (ea[jug - 1][HandLink.index(han)][i] != null) {
+            if (ea[jug - 1][JMLEvent.handIndex(han)][i] != null) {
                 return true
             }
         }
@@ -150,7 +151,7 @@ class EventImages(
     fun hasVDJMLTransitionForHand(jug: Int, han: Int): Boolean {
         var i = 0
         while (i < numEntries) {
-            if (ea[jug - 1][HandLink.index(han)][i] != null) {
+            if (ea[jug - 1][JMLEvent.handIndex(han)][i] != null) {
                 break
             }
             ++i
@@ -218,7 +219,7 @@ class EventImages(
         loopPerm = pattern.pathPermutation
 
         evJuggler = primaryEvent.juggler - 1
-        evHand = HandLink.index(primaryEvent.hand)
+        evHand = JMLEvent.handIndex(primaryEvent.hand)
         evTransitionCount = primaryEvent.transitions.size
         evTime = primaryEvent.t
 

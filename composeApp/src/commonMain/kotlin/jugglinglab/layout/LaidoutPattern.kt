@@ -9,14 +9,18 @@
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")
 
-package jugglinglab.jml
+package jugglinglab.layout
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
-import jugglinglab.jml.HandLink.Companion.index
+import jugglinglab.jml.EventImages
+import jugglinglab.jml.JMLEvent
+//import jugglinglab.layout.HandLink.Companion.index
+import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JMLTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*
@@ -226,19 +230,19 @@ class LaidoutPattern(val pat: JMLPattern) {
             for (j in 0..<numevents) {
                 if (!hasJMLTransitionForLeft) {
                     hasJMLTransitionForLeft =
-                        ei[j]!!.hasJMLTransitionForHand(i + 1, HandLink.LEFT_HAND)
+                        ei[j]!!.hasJMLTransitionForHand(i + 1, JMLEvent.LEFT_HAND)
                 }
                 if (!hasJMLTransitionForRight) {
                     hasJMLTransitionForRight =
-                        ei[j]!!.hasJMLTransitionForHand(i + 1, HandLink.RIGHT_HAND)
+                        ei[j]!!.hasJMLTransitionForHand(i + 1, JMLEvent.RIGHT_HAND)
                 }
                 if (!hasVDHandJMLTransition[i][0]) {
                     hasVDHandJMLTransition[i][0] =
-                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, HandLink.LEFT_HAND)
+                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, JMLEvent.LEFT_HAND)
                 }
                 if (!hasVDHandJMLTransition[i][1]) {
                     hasVDHandJMLTransition[i][1] =
-                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, HandLink.RIGHT_HAND)
+                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, JMLEvent.RIGHT_HAND)
                 }
             }
             if (!hasJMLTransitionForLeft) {
@@ -304,7 +308,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             // now update the needs arrays, so we know when to stop
             if (maxtime < pat.loopStartTime) {
                 val jug = maxEventImage.event.juggler - 1
-                val han = index(maxEventImage.event.hand)
+                val han = JMLEvent.handIndex(maxEventImage.event.hand)
 
                 if (!hasVDHandJMLTransition[jug][han]) {
                     needHandEvent[jug][han] = false
@@ -398,7 +402,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             // now update the needs arrays, so we know when to stop
             if (mintime > pat.loopEndTime) {
                 val jug = minEventImage.event.juggler - 1
-                val han = index(minEventImage.event.hand)
+                val han = JMLEvent.handIndex(minEventImage.event.hand)
 
                 // if this hand has no throws/catches, then need to build out event list
                 // past a certain time, due to how the hand layout is done in this case
@@ -643,7 +647,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         for (i in 0..<pat.numberOfJugglers) {
             for (h in 0..1) {
-                val hand = if (h == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+                val hand = if (h == 0) JMLEvent.LEFT_HAND else JMLEvent.RIGHT_HAND
 
                 var ev = eventList
                 var lastev: LayoutEvent? = null
@@ -979,7 +983,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     @Throws(JuggleExceptionInternal::class)
     fun getHandCoordinate(juggler: Int, hand: Int, time: Double, newPosition: Coordinate) {
         var time = time
-        val handindex = if (hand == HandLink.LEFT_HAND) 0 else 1
+        val handindex = if (hand == JMLEvent.LEFT_HAND) 0 else 1
 
         while (time < pat.loopStartTime) {
             time += pat.loopEndTime - pat.loopStartTime
@@ -1133,7 +1137,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var result: Coordinate? = null
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
-        val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
+        val handnum = if (hand == JMLEvent.LEFT_HAND) 0 else 1
 
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
@@ -1148,7 +1152,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var result: Coordinate? = null
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
-        val handnum = if (hand == HandLink.LEFT_HAND) 0 else 1
+        val handnum = if (hand == JMLEvent.LEFT_HAND) 0 else 1
 
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve

@@ -8,8 +8,9 @@
 
 @file:Suppress("unused")
 
-package jugglinglab.jml
+package jugglinglab.layout
 
+import jugglinglab.jml.JMLEvent
 import jugglinglab.util.Permutation
 
 class LayoutEvent(
