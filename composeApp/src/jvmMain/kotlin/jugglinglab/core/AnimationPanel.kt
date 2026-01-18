@@ -211,7 +211,8 @@ class AnimationPanel(
                 cameraAngle = state.initialCameraAngle(),
                 zoom = 1.0,
                 propForPath = state.initialPropForPath(),
-                fitToFrame = true
+                fitToFrame = true,
+                time = state.pattern.loopStartTime
             )
             engine = Thread(this).apply { start() }
         }
