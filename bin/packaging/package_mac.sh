@@ -2,7 +2,7 @@
 #
 # Juggling Lab macOS application packager
 #
-# Copyright 2022-2025 by Jack Boyce and the Juggling Lab contributors
+# Copyright 2022-2026 by Jack Boyce and the Juggling Lab contributors
 # Released under the GNU General Public License v2
 #
 # -----------------------------------------------------------------------------

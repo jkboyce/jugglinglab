@@ -6,7 +6,7 @@
 // - `gradlew run -PJLcompose` to build and run with Compose UI
 // - `gradlew build` to build bin/JugglingLab.jar
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
