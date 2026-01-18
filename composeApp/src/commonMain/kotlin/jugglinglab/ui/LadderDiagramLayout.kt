@@ -8,7 +8,13 @@
 
 package jugglinglab.ui
 
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.jml.*
+import jugglinglab.util.jlGetStringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.sp
 import kotlin.math.*
 
 class LadderDiagramLayout(
@@ -221,6 +227,11 @@ class LadderDiagramLayout(
     }
 
     companion object {
+        // overall sizing
+        const val MAX_JUGGLERS: Int = 8
+        const val LADDER_WIDTH_PER_JUGGLER_DP: Int = 150
+        const val LADDER_MIN_WIDTH_PER_JUGGLER_DP: Int = 60
+
         const val BORDER_TOP_DP: Int = 25
         const val TRANSITION_RADIUS_DP: Int = 5
         const val POSITION_RADIUS_DP: Int = 5
@@ -230,6 +241,29 @@ class LadderDiagramLayout(
         const val BORDER_SIDES: Double = 0.15
         const val JUGGLER_SEPARATION: Double = 0.45
         const val SELFTHROW_WIDTH: Double = 0.25
+
+        // Return preferred width of the overall panel, in logical pixels.
+
+        fun getPreferredWidthDp(jugglers: Int, textMeasurer: TextMeasurer): Int {
+            if (jugglers > MAX_JUGGLERS) {
+                // allocate enough space for a "too many jugglers" message
+                val text = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
+                val textLayoutResult = textMeasurer.measure(
+                    text = text,
+                    style = TextStyle(color = Color.Black, fontSize = 13.sp)
+                )
+                // Convert measured pixels to DP
+                val messageWidth = 20 + (textLayoutResult.size.width / textLayoutResult.layoutInput.density.density).toInt()
+                return messageWidth
+            } else {
+                var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER_DP * jugglers
+                val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER_DP * jugglers
+                val widthMult = doubleArrayOf(1.0, 1.0, 0.85, 0.72, 0.65, 0.55)
+                prefWidth = (prefWidth.toDouble() *
+                        (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
+                return max(prefWidth, minWidth)
+            }
+        }
     }
 }
 
