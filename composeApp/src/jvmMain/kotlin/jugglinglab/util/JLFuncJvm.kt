@@ -11,12 +11,11 @@
 package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.JugglingLab
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.SiteswapParser
 import jugglinglab.notation.ssparser.SiteswapTreeItem
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.net.URI
@@ -24,6 +23,8 @@ import java.text.*
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Locale
 import java.util.prefs.Preferences
 import javax.imageio.ImageIO
@@ -229,8 +230,50 @@ fun jlConstraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagC
 }
 
 //------------------------------------------------------------------------------
+// Helpers for execution context information
+//------------------------------------------------------------------------------
+
+// platform
+fun jlIsMacOs() = System.getProperty("os.name").lowercase().startsWith("mac os x")
+fun jlIsWindows() = System.getProperty("os.name").lowercase().startsWith("windows")
+fun jlIsLinux() = System.getProperty("os.name").lowercase().startsWith("linux")
+
+// running from the command line?
+fun jlIsCli() = (System.getenv("JL_WORKING_DIR") != null)
+
+//------------------------------------------------------------------------------
 // Helpers for file opening/saving files
 //------------------------------------------------------------------------------
+
+val jlBaseFileDirectory: Path by lazy {
+    // Decide on a base directory for file operations. First look for working
+    // directory set by an enclosing script, which indicates Juggling Lab is
+    // running from the command line.
+    var workingDir = System.getenv("JL_WORKING_DIR")
+
+    if (workingDir == null) {
+        // Look for a directory saved during previous file operations.
+        try {
+            workingDir = Preferences.userRoot().node("Juggling Lab").get("base_dir", null)
+        } catch (_: Exception) {
+        }
+    }
+
+    if (workingDir == null) {
+        // Otherwise, user.dir (current working directory when Java was invoked)
+        // is the most logical choice, UNLESS we're running in an application
+        // bundle. For bundled apps user.dir is buried inside the app directory
+        // structure so we default to user.home instead.
+        val isBundle = System.getProperty("JL_run_as_bundle")
+        workingDir = if (isBundle != null && isBundle == "true") {
+            System.getProperty("user.home")
+        } else {
+            System.getProperty("user.dir")
+        }
+    }
+
+    Paths.get(workingDir)
+}
 
 val jlJfc: JFileChooser by lazy {
     object : JFileChooser() {
@@ -280,7 +323,7 @@ fun jlSanitizeFilename(fname: String): String {
     val base = if (index >= 0) fname.take(index) else fname
     val extension = if (index >= 0) fname.substring(index) else ""
 
-    if (JugglingLab.isMacOS) {
+    if (jlIsMacOs()) {
         // remove all instances of `:` and `/`
         var b = base.replace("[:/]".toRegex(), "")
 
@@ -294,7 +337,7 @@ fun jlSanitizeFilename(fname: String): String {
         }
 
         return b + extension
-    } else if (JugglingLab.isWindows) {
+    } else if (jlIsWindows()) {
         // remove all instances of `\/?:*"`
         var b = base.replace("[/?:*\"]".toRegex(), "")
 
@@ -308,7 +351,7 @@ fun jlSanitizeFilename(fname: String): String {
         }
 
         return b + extension
-    } else if (JugglingLab.isLinux) {
+    } else if (jlIsLinux()) {
         // change all `/` to `:`
         var b = base.replace("/".toRegex(), ":")
 

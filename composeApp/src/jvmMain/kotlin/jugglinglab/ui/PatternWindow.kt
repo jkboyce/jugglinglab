@@ -11,7 +11,6 @@
 
 package jugglinglab.ui
 
-import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Constants
@@ -19,10 +18,7 @@ import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
-import jugglinglab.prop.Prop.Companion.colorStringResources
 import jugglinglab.util.*
-import jugglinglab.util.jlHandleFatalException
-import jugglinglab.util.jlHandleUserException
 import jugglinglab.view.*
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -231,7 +227,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 })
                 colorsMenu.addSeparator()
                 for (i in Prop.colorNames.indices) {
-                    colorsMenu.add(JMenuItem(jlGetStringResource(colorStringResources[i])).apply {
+                    colorsMenu.add(JMenuItem(jlGetStringResource(Prop.colorStringResources[i])).apply {
                         actionCommand = "colors_${Prop.colorNames[i]}"
                         addActionListener(this@PatternWindow)
                     })
@@ -343,7 +339,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = jlGetStringResource(Res.string.gui_help)
-        if (JugglingLab.isMacOS) {
+        if (jlIsMacOs()) {
             // Menus titled "Help" are handled differently by macOS; only want
             // to have one of them across the entire app.
             menuname += ' '

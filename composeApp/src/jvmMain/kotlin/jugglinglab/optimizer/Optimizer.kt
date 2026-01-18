@@ -16,17 +16,17 @@
 package jugglinglab.optimizer
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.JugglingLab
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.PatternBuilder
+import jugglinglab.util.jlGetStringResource
+import jugglinglab.util.jlIsLinux
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPSolver.ResultStatus
 import com.google.ortools.linearsolver.MPVariable
-import jugglinglab.jml.PatternBuilder
-import jugglinglab.util.jlGetStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -355,7 +355,7 @@ class Optimizer private constructor(pat: JMLPattern) {
                 // The following is helpful to debug issues loading the OR-Tools
                 // libraries on Linux. A common issue is a system version of glibc
                 // that is older than the library requires.
-                if (JugglingLab.isLinux) {
+                if (jlIsLinux()) {
                     println(e)
                 }
             }

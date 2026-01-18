@@ -6,14 +6,11 @@
 
 package jugglinglab.ui
 
-import jugglinglab.JugglingLab
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.JMLParser
 import jugglinglab.jml.JMLPatternList
 import jugglinglab.util.*
-import jugglinglab.util.jlHandleFatalException
-import jugglinglab.util.jlHandleUserException
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -158,7 +155,7 @@ class PatternListWindow(
         var menuname: String = jlGetStringResource(Res.string.gui_help)
         // Menus titled "Help" are handled differently by macOS; only want to
         // have one of them across the entire app.
-        if (JugglingLab.isMacOS) {
+        if (jlIsMacOs()) {
             menuname += ' '
         }
         val helpmenu = JMenu(menuname)
