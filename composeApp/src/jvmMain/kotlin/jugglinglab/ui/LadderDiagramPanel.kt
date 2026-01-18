@@ -4,7 +4,7 @@
 // This class draws the vertical ladder diagram on the right side of Edit view.
 // This includes mouse interaction and editing functions.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.ui

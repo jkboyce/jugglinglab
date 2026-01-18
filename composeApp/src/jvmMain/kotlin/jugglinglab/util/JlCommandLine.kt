@@ -4,7 +4,7 @@
 // This is the entry point for Juggling Lab as a JVM application. It interprets
 // command line arguments and handles them appropriately.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.util

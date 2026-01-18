@@ -4,7 +4,7 @@
 // This class is the window that contains juggling animations. The animation
 // itself is rendered by the View object.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")

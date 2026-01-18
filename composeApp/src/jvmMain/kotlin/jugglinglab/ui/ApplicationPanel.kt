@@ -5,7 +5,7 @@
 // For a given notation type it creates a tabbed pane with separate panels for
 // pattern entry, transitions, and generator.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.ui
