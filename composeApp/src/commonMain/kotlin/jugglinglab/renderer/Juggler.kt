@@ -3,13 +3,13 @@
 //
 // This class calculates the coordinates of the juggler elbows, shoulders, etc.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.renderer
 
-import jugglinglab.jml.HandLink
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlEvent
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import kotlin.math.*
@@ -50,15 +50,15 @@ object Juggler {
 
     @Suppress("LocalVariableName")
     @Throws(JuggleExceptionInternal::class)
-    fun findJugglerCoordinates(pat: JMLPattern, time: Double, result: Array<Array<JLVector?>>) {
+    fun findJugglerCoordinates(pat: JmlPattern, time: Double, result: Array<Array<JlVector?>>) {
         for (juggler in 1..pat.numberOfJugglers) {
             val coord0 = Coordinate()
             val coord1 = Coordinate()
             val coord2 = Coordinate()
-            pat.layout.getHandCoordinate(juggler, HandLink.LEFT_HAND, time, coord0)
-            pat.layout.getHandCoordinate(juggler, HandLink.RIGHT_HAND, time, coord1)
-            val lefthand = JLVector(coord0.x, coord0.z + LOWER_HAND_HEIGHT, coord0.y)
-            val righthand = JLVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
+            pat.layout.getHandCoordinate(juggler, JmlEvent.LEFT_HAND, time, coord0)
+            pat.layout.getHandCoordinate(juggler, JmlEvent.RIGHT_HAND, time, coord1)
+            val lefthand = JlVector(coord0.x, coord0.z + LOWER_HAND_HEIGHT, coord0.y)
+            val righthand = JlVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
 
             pat.layout.getJugglerPosition(juggler, time, coord2)
             val angle = Math.toRadians(pat.layout.getJugglerAngle(juggler, time))
@@ -66,49 +66,49 @@ object Juggler {
             val c = cos(angle)
 
             val leftshoulder =
-                JLVector(
+                JlVector(
                     coord2.x - SHOULDER_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H,
                     coord2.y - SHOULDER_HW * s + SHOULDER_Y * c
                 )
             val rightshoulder =
-                JLVector(
+                JlVector(
                     coord2.x + SHOULDER_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H,
                     coord2.y + SHOULDER_HW * s + SHOULDER_Y * c
                 )
             val leftwaist =
-                JLVector(
+                JlVector(
                     coord2.x - WAIST_HW * c - SHOULDER_Y * s,
                     coord2.z + WAIST_H,
                     coord2.y - WAIST_HW * s + SHOULDER_Y * c
                 )
             val rightwaist =
-                JLVector(
+                JlVector(
                     coord2.x + WAIST_HW * c - SHOULDER_Y * s,
                     coord2.z + WAIST_H,
                     coord2.y + WAIST_HW * s + SHOULDER_Y * c
                 )
             val leftheadbottom =
-                JLVector(
+                JlVector(
                     coord2.x - HEAD_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H + NECK_H,
                     coord2.y - HEAD_HW * s + SHOULDER_Y * c
                 )
             val leftheadtop =
-                JLVector(
+                JlVector(
                     coord2.x - HEAD_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H + NECK_H + HEAD_H,
                     coord2.y - HEAD_HW * s + SHOULDER_Y * c
                 )
             val rightheadbottom =
-                JLVector(
+                JlVector(
                     coord2.x + HEAD_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H + NECK_H,
                     coord2.y + HEAD_HW * s + SHOULDER_Y * c
                 )
             val rightheadtop =
-                JLVector(
+                JlVector(
                     coord2.x + HEAD_HW * c - SHOULDER_Y * s,
                     coord2.z + SHOULDER_H + NECK_H + HEAD_H,
                     coord2.y + HEAD_HW * s + SHOULDER_Y * c
@@ -116,9 +116,9 @@ object Juggler {
 
             val L = LOWER_TOTAL
             val U = UPPER_TOTAL
-            val deltaL = JLVector.sub(lefthand, leftshoulder)
+            val deltaL = JlVector.sub(lefthand, leftshoulder)
             var D = deltaL.length
-            var leftelbow: JLVector? = null
+            var leftelbow: JlVector? = null
             if (D <= (L + U)) {
                 // Calculate the coordinates of the elbows
                 val Lr = sqrt(
@@ -133,22 +133,22 @@ object Juggler {
                 if (factor.isNaN()) {
                     throw JuggleExceptionInternal("NaN in renderer 2")
                 }
-                val Lxsc = JLVector.scale(factor, deltaL)
+                val Lxsc = JlVector.scale(factor, deltaL)
                 val Lalpha = asin(deltaL.y / D)
                 if (Lalpha.isNaN()) {
                     throw JuggleExceptionInternal("NaN in renderer 3")
                 }
                 factor = 1.0 + Lr * tan(Lalpha) / (factor * D)
-                leftelbow = JLVector(
+                leftelbow = JlVector(
                     leftshoulder.x + Lxsc.x * factor,
                     leftshoulder.y + Lxsc.y - Lr * cos(Lalpha),
                     leftshoulder.z + Lxsc.z * factor
                 )
             }
 
-            val deltaR = JLVector.sub(righthand, rightshoulder)
+            val deltaR = JlVector.sub(righthand, rightshoulder)
             D = deltaR.length
-            var rightelbow: JLVector? = null
+            var rightelbow: JlVector? = null
             if (D <= (L + U)) {
                 // Calculate the coordinates of the elbows
                 val Rr = sqrt(
@@ -163,13 +163,13 @@ object Juggler {
                 if (factor.isNaN()) {
                     throw JuggleExceptionInternal("NaN in renderer 5")
                 }
-                val Rxsc = JLVector.scale(factor, deltaR)
+                val Rxsc = JlVector.scale(factor, deltaR)
                 val Ralpha = asin(deltaR.y / D)
                 if (Ralpha.isNaN()) {
                     throw JuggleExceptionInternal("NaN in renderer 6")
                 }
                 factor = 1.0 + Rr * tan(Ralpha) / (factor * D)
-                rightelbow = JLVector(
+                rightelbow = JlVector(
                     rightshoulder.x + Rxsc.x * factor,
                     rightshoulder.y + Rxsc.y - Rr * cos(Ralpha),
                     rightshoulder.z + Rxsc.z * factor

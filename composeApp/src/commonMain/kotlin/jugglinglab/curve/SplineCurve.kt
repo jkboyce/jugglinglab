@@ -11,7 +11,7 @@
 // Any of the velocities may be null, in which case the spline will choose a
 // velocity using one of three optimization goals.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("EmptyRange")

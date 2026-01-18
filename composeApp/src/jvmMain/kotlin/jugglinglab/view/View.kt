@@ -5,18 +5,18 @@
 // Subclasses of this are used to show different pattern views, which the
 // user can select from a menu on the pattern window.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.view
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
-import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.core.PatternWindow
-import jugglinglab.jml.JMLPattern
+import jugglinglab.ui.PatternWindow
+import jugglinglab.jml.JmlPattern
 import jugglinglab.renderer.FrameDrawer
+import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
@@ -90,7 +90,7 @@ abstract class View(
     //   elements, since it may be followed by layout
     // - 'coldRestart = true' resets camera angle, zoom, and prop assignments
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
+    abstract fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
 
     // restart without changing pattern or preferences
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

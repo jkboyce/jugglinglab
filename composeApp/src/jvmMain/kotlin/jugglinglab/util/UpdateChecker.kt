@@ -5,7 +5,7 @@
 // If it finds one, open a dialog box that offers to take the user to the
 // download location.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.util

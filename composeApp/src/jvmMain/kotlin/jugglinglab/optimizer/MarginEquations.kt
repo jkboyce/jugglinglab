@@ -1,7 +1,7 @@
 //
 // MarginEquations.kt
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")
@@ -11,16 +11,17 @@ package jugglinglab.optimizer
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.jml.*
+import jugglinglab.layout.PathLink
 import jugglinglab.util.*
 import java.util.*
 import kotlin.math.abs
 
-class MarginEquations(val pat: JMLPattern) {
+class MarginEquations(val pat: JmlPattern) {
     // number of variables in margin equations
     var varsNum: Int = 0
 
-    // corresponding JMLEvents, one per variable
-    lateinit var varsEvents: MutableList<JMLEvent>
+    // corresponding JmlEvents, one per variable
+    lateinit var varsEvents: MutableList<JmlEvent>
 
     // current values of variables
     lateinit var varsValues: DoubleArray
@@ -57,22 +58,22 @@ class MarginEquations(val pat: JMLPattern) {
         // Step 1: Figure out the variables in the margin equations. Find the primary events
         // in the pattern, in particular the ones that are throws or catches. The x-coordinate
         // of each will be a free variable in our equations.
-        val variableEvents: MutableList<JMLEvent> = mutableListOf()
+        val variableEvents: MutableList<JmlEvent> = mutableListOf()
         var maxValue = 0.0
         var g = 980.0 // cm per second^2
 
         for (ev in pat.events) {
             for (tr in ev.transitions) {
                 val type = tr.type
-                if (type == JMLTransition.TRANS_THROW || type == JMLTransition.TRANS_CATCH ||
-                    type == JMLTransition.TRANS_SOFTCATCH || type == JMLTransition.TRANS_GRABCATCH
+                if (type == JmlTransition.TRANS_THROW || type == JmlTransition.TRANS_CATCH ||
+                    type == JmlTransition.TRANS_SOFTCATCH || type == JmlTransition.TRANS_GRABCATCH
                 ) {
                     ++varsNum
                     variableEvents.add(ev)
                     val coord = ev.localCoordinate
                     if (abs(coord.x) > maxValue) maxValue = abs(coord.x)
 
-                    if (type == JMLTransition.TRANS_THROW) {
+                    if (type == JmlTransition.TRANS_THROW) {
                         val pl = ParameterList(tr.throwMod)
                         val gparam = pl.getParameter("g")
                         if (gparam != null) {
@@ -93,7 +94,7 @@ class MarginEquations(val pat: JMLPattern) {
         }
 
         // Step 2: Set up the arrays containing the current values of our variables, their
-        // minimum and maximum allowed values, and corresponding JMLEvents
+        // minimum and maximum allowed values, and corresponding JmlEvents
         varsEvents = mutableListOf()
         varsValues = DoubleArray(varsNum)
         varsMin = DoubleArray(varsNum)
@@ -111,14 +112,14 @@ class MarginEquations(val pat: JMLPattern) {
                 varsMin[i] = 0.1 * maxValue
                 varsMax[i] = maxValue
 
-                if (type == JMLTransition.TRANS_THROW) {
+                if (type == JmlTransition.TRANS_THROW) {
                     varsMax[i] *= 0.9
                 }
             } else {
                 varsMin[i] = -maxValue
                 varsMax[i] = -0.1 * maxValue
 
-                if (type == JMLTransition.TRANS_THROW) {
+                if (type == JmlTransition.TRANS_THROW) {
                     varsMin[i] *= 0.9
                 }
             }
@@ -176,9 +177,9 @@ class MarginEquations(val pat: JMLPattern) {
         var symSwitchdelay = false
         for (sym in pat.symmetries) {
             when (sym.type) {
-                JMLSymmetry.TYPE_DELAY -> symDelay = sym.delay
-                JMLSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
-                JMLSymmetry.TYPE_SWITCH ->
+                JmlSymmetry.TYPE_DELAY -> symDelay = sym.delay
+                JmlSymmetry.TYPE_SWITCHDELAY -> symSwitchdelay = true
+                JmlSymmetry.TYPE_SWITCH ->
                     throw JuggleExceptionUser(jlGetStringResource(Res.string.error_optimizer_no_switch))
             }
         }
@@ -217,7 +218,7 @@ class MarginEquations(val pat: JMLPattern) {
                             if (mpl1.startEvent.juggler > mpl2.startEvent.juggler) {
                                 canCollide = false
                             } else if (mpl1.startEvent.juggler == mpl2.startEvent.juggler) {
-                                if (mpl1.startEvent.hand == HandLink.LEFT_HAND) {
+                                if (mpl1.startEvent.hand == JmlEvent.LEFT_HAND) {
                                     canCollide = false
                                 }
                             }

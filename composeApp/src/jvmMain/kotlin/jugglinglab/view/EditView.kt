@@ -4,13 +4,16 @@
 // This view provides the ability to edit a pattern visually. It features a
 // ladder diagram on the right and an animator on the left.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.view
 
 import jugglinglab.core.*
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
+import jugglinglab.ui.AnimationPanel
+import jugglinglab.ui.LadderDiagramPanel
+import jugglinglab.ui.PatternWindow
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.BorderLayout
@@ -54,7 +57,7 @@ class EditView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+    override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
         ap.restartJuggle(pattern, prefs, coldRestart)

@@ -2,7 +2,7 @@
 
 REM Windows launcher for Juggling Lab application
 REM
-REM Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+REM Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 REM Released under the GNU General Public License v2
 
 SET "JL_BAT_DIR=%~dp0"

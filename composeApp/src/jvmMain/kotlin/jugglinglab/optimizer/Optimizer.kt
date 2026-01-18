@@ -1,14 +1,14 @@
 //
 // Optimizer.kt
 //
-// Class that optimizes a JMLPattern by maximizing the allowed margin of error
+// Class that optimizes a JmlPattern by maximizing the allowed margin of error
 // in throwing angle. (Maximize the minimum margin of error across all throws
 // in the pattern.)
 //
 // It does this by adjusting the throw and catch positions, leaving throw and
 // catch times unchanged.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")
@@ -16,23 +16,23 @@
 package jugglinglab.optimizer
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.JugglingLab
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
+import jugglinglab.jml.PatternBuilder
+import jugglinglab.util.jlGetStringResource
+import jugglinglab.util.jlIsLinux
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPSolver.ResultStatus
 import com.google.ortools.linearsolver.MPVariable
-import jugglinglab.jml.PatternBuilder
-import jugglinglab.util.jlGetStringResource
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class Optimizer private constructor(pat: JMLPattern) {
-    private val record: PatternBuilder = PatternBuilder.fromJMLPattern(pat)
+class Optimizer private constructor(pat: JmlPattern) {
+    private val record: PatternBuilder = PatternBuilder.fromJmlPattern(pat)
 
     private val me: MarginEquations = MarginEquations(pat)
     private val pinned: BooleanArray =
@@ -324,8 +324,8 @@ class Optimizer private constructor(pat: JMLPattern) {
         }
     }
 
-    private fun getResult(): JMLPattern {
-        return JMLPattern.fromPatternBuilder(record)
+    private fun getResult(): JmlPattern {
+        return JmlPattern.fromPatternBuilder(record)
     }
 
     companion object {
@@ -355,7 +355,7 @@ class Optimizer private constructor(pat: JMLPattern) {
                 // The following is helpful to debug issues loading the OR-Tools
                 // libraries on Linux. A common issue is a system version of glibc
                 // that is older than the library requires.
-                if (JugglingLab.isLinux) {
+                if (jlIsLinux()) {
                     println(e)
                 }
             }
@@ -368,7 +368,7 @@ class Optimizer private constructor(pat: JMLPattern) {
         @Suppress("unused")
         @JvmStatic
         @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-        fun optimize(pat: JMLPattern): JMLPattern {
+        fun optimize(pat: JmlPattern): JmlPattern {
             if (!optimizerAvailable()) {
                 if (Constants.DEBUG_OPTIMIZE) {
                     println("---- Optimizer not loaded, bailing")

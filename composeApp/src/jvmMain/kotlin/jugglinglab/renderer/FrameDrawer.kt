@@ -5,7 +5,7 @@
 // or other GUI elements so that it can be used in headless mode, e.g., as when
 // creating an animated GIF from the command line.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")
@@ -15,7 +15,7 @@ package jugglinglab.renderer
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Constants
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.jml.HandLink
+import jugglinglab.jml.JmlEvent
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.add
 import jugglinglab.util.Coordinate.Companion.max
@@ -222,17 +222,17 @@ class FrameDrawer(
         var handmax: Coordinate? = null
         var handmin: Coordinate? = null
         for (i in 1..pattern.numberOfJugglers) {
-            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-            handmax = max(handmax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-            handmin = min(handmin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, JmlEvent.LEFT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, JmlEvent.LEFT_HAND))
+            handmax = max(handmax, pattern.layout.getHandMax(i, JmlEvent.RIGHT_HAND))
+            handmin = min(handmin, pattern.layout.getHandMin(i, JmlEvent.RIGHT_HAND))
 
             if (Constants.DEBUG_LAYOUT) {
                 println("Data from Animator.findMaxMin():")
-                println("Hand max $i left = " + pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-                println("Hand min $i left = " + pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-                println("Hand max $i right = " + pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-                println("Hand min $i right = " + pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+                println("Hand max $i left = " + pattern.layout.getHandMax(i, JmlEvent.LEFT_HAND))
+                println("Hand min $i left = " + pattern.layout.getHandMin(i, JmlEvent.LEFT_HAND))
+                println("Hand max $i right = " + pattern.layout.getHandMax(i, JmlEvent.RIGHT_HAND))
+                println("Hand min $i right = " + pattern.layout.getHandMin(i, JmlEvent.RIGHT_HAND))
             }
         }
 

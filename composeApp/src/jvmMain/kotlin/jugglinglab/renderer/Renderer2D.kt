@@ -5,7 +5,7 @@
 //
 // It is designed so that no object allocation happens in drawFrame().
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")
@@ -14,7 +14,7 @@ package jugglinglab.renderer
 
 import androidx.compose.ui.graphics.toAwtImage
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.max
 import jugglinglab.util.Coordinate.Companion.min
@@ -34,13 +34,13 @@ import kotlin.math.sqrt
 class Renderer2D : Renderer() {
     // private var renderType: Int = RENDER_FLAT_SOLID
     private var background: Color = Color.white
-    private var cameracenter: JLVector? = null
+    private var cameracenter: JlVector? = null
     private var cameraangle: DoubleArray = DoubleArray(2)
-    private var m: JLMatrix = JLMatrix()
+    private var m: JlMatrix = JlMatrix()
     private var width: Int = 0
     private var height: Int = 0
     private var viewport: Rectangle? = null
-    private lateinit var pat: JMLPattern
+    private lateinit var pat: JmlPattern
     private var zoom: Double = 0.0 // pixels/cm
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
     private var zoomfactor: Double = 1.0 // multiplier of `zoom`
@@ -54,12 +54,12 @@ class Renderer2D : Renderer() {
 
     private lateinit var obj: MutableList<DrawObject2D>
     private lateinit var obj2: MutableList<DrawObject2D>
-    private lateinit var jugglervec: Array<Array<JLVector?>>
+    private lateinit var jugglervec: Array<Array<JlVector?>>
 
     // private var propmin: Double = 0.0 // for drawing floor
     private var tempc: Coordinate = Coordinate()
-    private var tempv1: JLVector = JLVector()
-    private var tempv2: JLVector = JLVector()
+    private var tempv1: JlVector = JlVector()
+    private var tempv2: JlVector = JlVector()
 
     init {
         for (i in 0..<polysides) {
@@ -68,7 +68,7 @@ class Renderer2D : Renderer() {
         }
     }
 
-    override fun setPattern(pat: JMLPattern) {
+    override fun setPattern(pat: JmlPattern) {
         this.pat = pat
         val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
         obj = MutableList(maxobjects) { DrawObject2D() }
@@ -137,7 +137,7 @@ class Renderer2D : Renderer() {
         }
 
         // Pattern center vis-a-vis camera rotation
-        cameracenter = JLVector(
+        cameracenter = JlVector(
             0.5 * (adjustedMax.x + adjustedMin.x),
             0.5 * (adjustedMax.z + adjustedMin.z),
             0.5 * (adjustedMax.y + adjustedMin.y)
@@ -170,14 +170,14 @@ class Renderer2D : Renderer() {
     }
 
     private fun calculateCameraMatrix() {
-        m = JLMatrix.shiftMatrix(-cameracenter!!.x, -cameracenter!!.y, -cameracenter!!.z)
-        m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraangle[0], 0.0))
-        m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0.0, 0.0))
-        m.transform(JLMatrix.shiftMatrix(cameracenter!!.x, cameracenter!!.y, cameracenter!!.z))
+        m = JlMatrix.shiftMatrix(-cameracenter!!.x, -cameracenter!!.y, -cameracenter!!.z)
+        m.transform(JlMatrix.rotateMatrix(0.0, Math.PI - cameraangle[0], 0.0))
+        m.transform(JlMatrix.rotateMatrix(0.5 * Math.PI - cameraangle[1], 0.0, 0.0))
+        m.transform(JlMatrix.shiftMatrix(cameracenter!!.x, cameracenter!!.y, cameracenter!!.z))
 
-        m.transform(JLMatrix.scaleMatrix(1.0, -1.0, 1.0)) // larger y values -> smaller y pixel coord
-        m.transform(JLMatrix.scaleMatrix(zoom))
-        m.transform(JLMatrix.shiftMatrix(originx.toDouble(), originz.toDouble(), 0.0))
+        m.transform(JlMatrix.scaleMatrix(1.0, -1.0, 1.0)) // larger y values -> smaller y pixel coord
+        m.transform(JlMatrix.scaleMatrix(zoom))
+        m.transform(JlMatrix.shiftMatrix(originx.toDouble(), originz.toDouble(), 0.0))
     }
 
     override var cameraAngle: DoubleArray
@@ -197,10 +197,10 @@ class Renderer2D : Renderer() {
         }
 
     override fun getXY(coord: Coordinate): IntArray {
-        return getXY(JLVector(coord.x, coord.z, coord.y))
+        return getXY(JlVector(coord.x, coord.z, coord.y))
     }
 
-    private fun getXY(vec: JLVector): IntArray {
+    private fun getXY(vec: JlVector): IntArray {
         val v = vec.transform(m) // apply camera rotation
         val `val` = IntArray(2)
         `val`[0] = v.x.roundToInt()
@@ -208,7 +208,7 @@ class Renderer2D : Renderer() {
         return `val`
     }
 
-    private fun getXYZ(vec: JLVector, result: JLVector): JLVector {
+    private fun getXYZ(vec: JlVector, result: JlVector): JlVector {
         result.x = vec.x * m.m00 + vec.y * m.m01 + vec.z * m.m02 + m.m03
         result.y = vec.x * m.m10 + vec.y * m.m11 + vec.z * m.m12 + m.m13
         result.z = vec.x * m.m20 + vec.y * m.m21 + vec.z * m.m22 + m.m23
@@ -216,9 +216,9 @@ class Renderer2D : Renderer() {
     }
 
     override fun getScreenTranslatedCoordinate(coord: Coordinate, dx: Int, dy: Int): Coordinate {
-        val v = JLVector(coord.x, coord.z, coord.y)
+        val v = JlVector(coord.x, coord.z, coord.y)
         val s = v.transform(m)
-        val news = JLVector.add(s, JLVector(dx.toDouble(), dy.toDouble(), 0.0))
+        val news = JlVector.add(s, JlVector(dx.toDouble(), dy.toDouble(), 0.0))
         val newv = news.transform(m.inverse())
         return Coordinate(newv.x, newv.z, newv.y)
     }
@@ -245,7 +245,7 @@ class Renderer2D : Renderer() {
             if (!tempc.isValid) {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
-            getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
+            getXYZ(JlVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pat.getProp(pnum[i - 1])
@@ -619,11 +619,11 @@ class Renderer2D : Renderer() {
     class DrawObject2D {
         var type: Int = 0
         var number: Int = 0  // path number or juggler number
-        var coord: MutableList<JLVector> = MutableList(8) { JLVector() }
+        var coord: MutableList<JlVector> = MutableList(8) { JlVector() }
         var boundingbox: Rectangle = Rectangle()
         var covering: MutableList<DrawObject2D> = mutableListOf()
         var drawn: Boolean = false
-        var tempv: JLVector = JLVector()
+        var tempv: JlVector = JlVector()
 
         fun isCovering(obj: DrawObject2D): Boolean {
             if (!boundingbox.intersects(obj.boundingbox)) {
@@ -775,7 +775,7 @@ class Renderer2D : Renderer() {
             return (if (intersection) 1 else 0)
         }
 
-        fun vectorProduct(v1: JLVector, v2: JLVector, v3: JLVector, result: JLVector): JLVector {
+        fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {
             val ax = v2.x - v1.x
             val ay = v2.y - v1.y
             val az = v2.z - v1.z

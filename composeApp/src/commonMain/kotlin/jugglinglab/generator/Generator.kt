@@ -4,7 +4,7 @@
 // This class defines a general object that is capable of generating patterns
 // in some notation.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.generator

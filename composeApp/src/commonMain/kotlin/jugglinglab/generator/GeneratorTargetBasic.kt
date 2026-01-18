@@ -4,7 +4,7 @@
 // Adapter to handle generator output by invoking a lambda on each generator
 // line, or by adding each pattern to a list.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.generator

@@ -3,13 +3,13 @@
 //
 // Adapter to send generator output to a PatternListPanel.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.generator
 
 import jugglinglab.core.Constants
-import jugglinglab.core.PatternListPanel
+import jugglinglab.ui.PatternListPanel
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.util.JuggleException
 import jugglinglab.util.JuggleExceptionInternal

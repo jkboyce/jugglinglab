@@ -4,7 +4,7 @@
 // This is the base class for all Path types in Juggling Lab. A Path describes
 // the movement of an object from one point in spacetime to another.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.path

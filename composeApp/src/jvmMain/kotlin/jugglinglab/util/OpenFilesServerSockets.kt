@@ -4,7 +4,7 @@
 // This implementation of OpenFilesServer uses sockets on a localhost loopback
 // connection to communicate between processes.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions")
@@ -12,7 +12,7 @@
 package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.core.ApplicationWindow
+import jugglinglab.ui.ApplicationWindow
 import java.awt.Desktop
 import java.io.*
 import java.net.ServerSocket
@@ -209,7 +209,7 @@ internal class Connection(var client: Socket) : Thread() {
                             Desktop.getDesktop().requestForeground(true)
                         }
                         try {
-                            ApplicationWindow.openJMLFile(file)
+                            ApplicationWindow.openJmlFile(file)
                         } catch (jeu: JuggleExceptionUser) {
                             val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message

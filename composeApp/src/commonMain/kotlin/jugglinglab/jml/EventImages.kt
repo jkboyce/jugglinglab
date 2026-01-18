@@ -1,7 +1,7 @@
 //
 // EventImages.kt
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml
@@ -10,9 +10,10 @@ import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.Permutation.Companion.lcm
 
+@Suppress("EmptyRange")
 class EventImages(
-    val pattern: JMLPattern,
-    val primaryEvent: JMLEvent
+    val pattern: JmlPattern,
+    val primaryEvent: JmlEvent
 ) {
     private var numJugglers: Int = 0
     private var numPaths: Int = 0
@@ -35,7 +36,7 @@ class EventImages(
     private var currentEntry: Int = 0
 
     init {
-        calcarray()
+        calcArray()
         resetPosition()
     }
 
@@ -107,7 +108,7 @@ class EventImages(
         val newT = (evTime
             + currentLoop.toDouble() * loopTime + currentEntry.toDouble() * (loopTime / numEntries.toDouble()))
         val newJuggler = currentJuggler + 1
-        val newHand = if (currentHand == 0) HandLink.LEFT_HAND else HandLink.RIGHT_HAND
+        val newHand = if (currentHand == 0) JmlEvent.LEFT_HAND else JmlEvent.RIGHT_HAND
 
         val newEvent = primaryEvent.copy(
             x = newX,
@@ -135,9 +136,9 @@ class EventImages(
     // Determine if this event has any transitions for the specified hand, after
     // symmetries are applied.
 
-    fun hasJMLTransitionForHand(jug: Int, han: Int): Boolean {
+    fun hasJmlTransitionForHand(jug: Int, han: Int): Boolean {
         for (i in 0..<numEntries) {
-            if (ea[jug - 1][HandLink.index(han)][i] != null) {
+            if (ea[jug - 1][JmlEvent.handIndex(han)][i] != null) {
                 return true
             }
         }
@@ -147,10 +148,10 @@ class EventImages(
     // Determine if this event has any velocity-defining transitions (e.g., throws)
     // for the specified hand, after symmetries are applied.
 
-    fun hasVDJMLTransitionForHand(jug: Int, han: Int): Boolean {
+    fun hasVdJmlTransitionForHand(jug: Int, han: Int): Boolean {
         var i = 0
         while (i < numEntries) {
-            if (ea[jug - 1][HandLink.index(han)][i] != null) {
+            if (ea[jug - 1][JmlEvent.handIndex(han)][i] != null) {
                 break
             }
             ++i
@@ -158,8 +159,8 @@ class EventImages(
         if (i == numEntries) return false
 
         for (j in 0..<evTransitionCount) {
-            if (transitionType[j] == JMLTransition.TRANS_THROW
-                || transitionType[j] == JMLTransition.TRANS_SOFTCATCH
+            if (transitionType[j] == JmlTransition.TRANS_THROW
+                || transitionType[j] == JmlTransition.TRANS_SOFTCATCH
             ) {
                 return true
             }
@@ -167,7 +168,7 @@ class EventImages(
         return false
     }
 
-    fun hasJMLTransitionForPath(path: Int): Boolean {
+    fun hasJmlTransitionForPath(path: Int): Boolean {
         val cycle = loopPerm!!.cycleOf(path)
 
         for (k in 0..<evTransitionCount) {
@@ -186,12 +187,12 @@ class EventImages(
         return false
     }
 
-    fun hasVDJMLTransitionForPath(path: Int): Boolean {
+    fun hasVdJmlTransitionForPath(path: Int): Boolean {
         val cycle = loopPerm!!.cycleOf(path)
 
         for (k in 0..<evTransitionCount) {
-            if (transitionType[k] != JMLTransition.TRANS_THROW
-                && transitionType[k] != JMLTransition.TRANS_SOFTCATCH
+            if (transitionType[k] != JmlTransition.TRANS_THROW
+                && transitionType[k] != JmlTransition.TRANS_SOFTCATCH
             ) {
                 continue
             }
@@ -211,19 +212,19 @@ class EventImages(
     }
 
     @Throws(JuggleExceptionUser::class)
-    private fun calcarray() {
+    private fun calcArray() {
         numJugglers = pattern.numberOfJugglers
         numPaths = pattern.numberOfPaths
         loopTime = pattern.loopEndTime - pattern.loopStartTime
         loopPerm = pattern.pathPermutation
 
         evJuggler = primaryEvent.juggler - 1
-        evHand = HandLink.index(primaryEvent.hand)
+        evHand = JmlEvent.handIndex(primaryEvent.hand)
         evTransitionCount = primaryEvent.transitions.size
         evTime = primaryEvent.t
 
         val numsyms = pattern.symmetries.size - 1
-        val sym = arrayOfNulls<JMLSymmetry>(numsyms)
+        val sym = arrayOfNulls<JmlSymmetry>(numsyms)
         val symperiod = IntArray(numsyms)
         val deltaentries = IntArray(numsyms)
         var invdelayperm: Permutation? = null
@@ -232,15 +233,15 @@ class EventImages(
         var index = 0
         for (temp in pattern.symmetries) {
             when (temp.type) {
-                JMLSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm.inverse
-                JMLSymmetry.TYPE_SWITCH -> {
+                JmlSymmetry.TYPE_DELAY -> invdelayperm = temp.pathPerm.inverse
+                JmlSymmetry.TYPE_SWITCH -> {
                     sym[index] = temp
                     symperiod[index] = temp.jugglerPerm.order
                     deltaentries[index] = 0
                     index++
                 }
 
-                JMLSymmetry.TYPE_SWITCHDELAY -> {
+                JmlSymmetry.TYPE_SWITCHDELAY -> {
                     sym[index] = temp
                     symperiod[index] = temp.jugglerPerm.order
                     numEntries = lcm(numEntries, symperiod[index])
@@ -314,7 +315,7 @@ class EventImages(
 }
 
 data class EventImage(
-    val event: JMLEvent,
-    val primary: JMLEvent,
+    val event: JmlEvent,
+    val primary: JmlEvent,
     val pathPermFromPrimary: Permutation
 )

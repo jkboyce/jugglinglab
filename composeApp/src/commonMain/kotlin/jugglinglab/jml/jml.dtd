@@ -4,7 +4,7 @@
   Copyright 2002-2022 Jack Boyce and the Juggling Lab contributors
 
   Note this is for informational purposes only; the actual DTD used by
-  Juggling Lab's validating XML parser is in JMLDefs.java.
+  Juggling Lab's validating XML parser is in JmlDefs.java.
 -->
 
 <!ELEMENT jml (pattern|patternlist)>

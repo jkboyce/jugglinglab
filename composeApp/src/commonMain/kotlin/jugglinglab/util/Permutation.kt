@@ -3,7 +3,7 @@
 //
 // This describes a mathematical permutation of objects such as balls or jugglers.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.util

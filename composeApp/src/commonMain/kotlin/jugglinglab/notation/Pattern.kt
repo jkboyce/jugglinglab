@@ -2,15 +2,15 @@
 // Pattern.kt
 //
 // This is the base class for all non-JML pattern types in Juggling Lab.
-// It parses from a string representation and creates a JMLPattern version of
+// It parses from a string representation and creates a JmlPattern version of
 // itself for the animator.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.notation
 
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
@@ -32,7 +32,7 @@ abstract class Pattern {
 
     // convert pattern to JML
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun asJMLPattern(): JMLPattern
+    abstract fun asJmlPattern(): JmlPattern
 
     @Suppress("unused")
     companion object {

@@ -12,7 +12,7 @@
 // Java AWT returns mouse coordinates in logical coordinates. AnimationView
 // applies the density factor to get pixel coordinates for drawing.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.ui

@@ -16,7 +16,7 @@
 // It is wise to avoid editing any of the above files, as JavaCC will
 // overwrite any changes if this file is processed again later.
 //
-// Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 options {

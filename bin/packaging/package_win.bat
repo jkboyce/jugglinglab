@@ -2,7 +2,7 @@
 
 REM Juggling Lab Windows application packager
 REM
-REM Copyright 2022-2025 Jack Boyce and the Juggling Lab contributors
+REM Copyright 2022-2026 Jack Boyce and the Juggling Lab contributors
 REM Released under the GNU General Public License v2
 REM
 REM -----------------------------------------------------------------------------
