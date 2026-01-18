@@ -13,7 +13,7 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.AnimationLayout.Companion.getActiveEvent
 import jugglinglab.ui.AnimationLayout.Companion.getActivePosition
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -89,7 +89,7 @@ class AnimationController(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
+    fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
         // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
@@ -335,13 +335,13 @@ class AnimationController(
                     while (finalAngle < 0) finalAngle += 360.0
 
                     val activePosition = getActivePosition(state)!!
-                    val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                    val rec = PatternBuilder.fromJmlPattern(state.pattern)
                     val index = rec.positions.indexOf(activePosition)
                     if (index < 0) throw JuggleExceptionInternal("Error 1 in AP.mouseDragged()")
                     val newPosition = activePosition.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
                     state.update(
-                        pattern = JMLPattern.fromPatternBuilder(rec),
+                        pattern = JmlPattern.fromPatternBuilder(rec),
                         selectedItemHashCode = newPosition.jlHashCode
                     )
                 } else {
@@ -371,18 +371,18 @@ class AnimationController(
                             z = newPrimaryCoordinate.z
                         )
 
-                        val record = PatternBuilder.fromJMLPattern(state.pattern)
+                        val record = PatternBuilder.fromJmlPattern(state.pattern)
                         val index = record.events.indexOf(activeEventImage.second)
                         record.events[index] = newPrimary
                         state.update(
-                            pattern = JMLPattern.fromPatternBuilder(record),
+                            pattern = JmlPattern.fromPatternBuilder(record),
                             selectedItemHashCode = newEvent.jlHashCode
                         )
                     } else {
                         val activePosition = getActivePosition(state)
 
                         if (activePosition != null) {
-                            val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                            val rec = PatternBuilder.fromJmlPattern(state.pattern)
                             val index = rec.positions.indexOf(activePosition)
                             if (index < 0) {
                                 throw JuggleExceptionInternal("Error 2 in AP.mouseDragged()")
@@ -390,7 +390,7 @@ class AnimationController(
                             val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
                             rec.positions[index] = newPosition
                             state.update(
-                                pattern = JMLPattern.fromPatternBuilder(rec),
+                                pattern = JmlPattern.fromPatternBuilder(rec),
                                 selectedItemHashCode = newPosition.jlHashCode
                             )
                         }

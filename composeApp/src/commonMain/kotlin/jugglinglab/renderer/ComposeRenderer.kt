@@ -8,7 +8,7 @@
 
 package jugglinglab.renderer
 
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.Coordinate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -44,12 +44,12 @@ class ComposeRenderer {
     var showground: Boolean = false
 
     // Internal fields
-    private var cameraCenter: JLVector? = null
-    private var m: JLMatrix = JLMatrix()
+    private var cameraCenter: JlVector? = null
+    private var m: JlMatrix = JlMatrix()
     private var width: Int = 0
     private var height: Int = 0
     private var viewport: Rect? = null
-    private lateinit var pattern: JMLPattern
+    private lateinit var pattern: JmlPattern
     private var zoom: Double = 0.0 // pixels/cm
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
     private var originX: Int = 0
@@ -62,10 +62,10 @@ class ComposeRenderer {
 
     private lateinit var obj: MutableList<DrawObject2D>
     private lateinit var obj2: MutableList<DrawObject2D>
-    private lateinit var jugglervec: Array<Array<JLVector?>>
+    private lateinit var jugglervec: Array<Array<JlVector?>>
     private var tempc: Coordinate = Coordinate()
-    private var tempv1: JLVector = JLVector()
-    private var tempv2: JLVector = JLVector()
+    private var tempv1: JlVector = JlVector()
+    private var tempv2: JlVector = JlVector()
 
     init {
         for (i in 0..<polysides) {
@@ -74,7 +74,7 @@ class ComposeRenderer {
         }
     }
 
-    fun setPattern(pat: JMLPattern) {
+    fun setPattern(pat: JmlPattern) {
         pattern = pat
         val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
         obj = MutableList(maxobjects) { DrawObject2D() }
@@ -129,7 +129,7 @@ class ComposeRenderer {
             )
         }
 
-        cameraCenter = JLVector(
+        cameraCenter = JlVector(
             0.5 * (adjustedMax.x + adjustedMin.x),
             0.5 * (adjustedMax.z + adjustedMin.z),
             0.5 * (adjustedMax.y + adjustedMin.y)
@@ -149,21 +149,21 @@ class ComposeRenderer {
     }
 
     private fun calculateCameraMatrix() {
-        m = JLMatrix.shiftMatrix(-cameraCenter!!.x, -cameraCenter!!.y, -cameraCenter!!.z)
-        m.transform(JLMatrix.rotateMatrix(0.0, Math.PI - cameraAngle[0], 0.0))
-        m.transform(JLMatrix.rotateMatrix(0.5 * Math.PI - cameraAngle[1], 0.0, 0.0))
-        m.transform(JLMatrix.shiftMatrix(cameraCenter!!.x, cameraCenter!!.y, cameraCenter!!.z))
+        m = JlMatrix.shiftMatrix(-cameraCenter!!.x, -cameraCenter!!.y, -cameraCenter!!.z)
+        m.transform(JlMatrix.rotateMatrix(0.0, Math.PI - cameraAngle[0], 0.0))
+        m.transform(JlMatrix.rotateMatrix(0.5 * Math.PI - cameraAngle[1], 0.0, 0.0))
+        m.transform(JlMatrix.shiftMatrix(cameraCenter!!.x, cameraCenter!!.y, cameraCenter!!.z))
 
-        m.transform(JLMatrix.scaleMatrix(1.0, -1.0, 1.0))
-        m.transform(JLMatrix.scaleMatrix(zoom))
-        m.transform(JLMatrix.shiftMatrix(originX.toDouble(), originZ.toDouble(), 0.0))
+        m.transform(JlMatrix.scaleMatrix(1.0, -1.0, 1.0))
+        m.transform(JlMatrix.scaleMatrix(zoom))
+        m.transform(JlMatrix.shiftMatrix(originX.toDouble(), originZ.toDouble(), 0.0))
     }
 
     fun getXY(coord: Coordinate): IntArray {
-        return getXY(JLVector(coord.x, coord.z, coord.y))
+        return getXY(JlVector(coord.x, coord.z, coord.y))
     }
 
-    private fun getXY(vec: JLVector): IntArray {
+    private fun getXY(vec: JlVector): IntArray {
         val v = vec.transform(m)
         val `val` = IntArray(2)
         `val`[0] = v.x.roundToInt()
@@ -171,7 +171,7 @@ class ComposeRenderer {
         return `val`
     }
 
-    private fun getXYZ(vec: JLVector, result: JLVector): JLVector {
+    private fun getXYZ(vec: JlVector, result: JlVector): JlVector {
         result.x = vec.x * m.m00 + vec.y * m.m01 + vec.z * m.m02 + m.m03
         result.y = vec.x * m.m10 + vec.y * m.m11 + vec.z * m.m12 + m.m13
         result.z = vec.x * m.m20 + vec.y * m.m21 + vec.z * m.m22 + m.m23
@@ -179,9 +179,9 @@ class ComposeRenderer {
     }
 
     fun getScreenTranslatedCoordinate(coord: Coordinate, dx: Int, dy: Int): Coordinate {
-        val v = JLVector(coord.x, coord.z, coord.y)
+        val v = JlVector(coord.x, coord.z, coord.y)
         val s = v.transform(m)
-        val news = JLVector.add(s, JLVector(dx.toDouble(), dy.toDouble(), 0.0))
+        val news = JlVector.add(s, JlVector(dx.toDouble(), dy.toDouble(), 0.0))
         val newv = news.transform(m.inverse())
         return Coordinate(newv.x, newv.z, newv.y)
     }
@@ -204,7 +204,7 @@ class ComposeRenderer {
             if (!tempc.isValid) {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
-            getXYZ(JLVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
+            getXYZ(JlVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
             val x = obj[index].coord[0].x.roundToInt()
             val y = obj[index].coord[0].y.roundToInt()
             val pr = pattern.getProp(pnum[i - 1])
@@ -465,11 +465,11 @@ class ComposeRenderer {
     class DrawObject2D {
         var type: Int = 0
         var number: Int = 0
-        var coord: MutableList<JLVector> = MutableList(8) { JLVector() }
+        var coord: MutableList<JlVector> = MutableList(8) { JlVector() }
         var boundingbox: Rect = Rect.Zero
         var covering: MutableList<DrawObject2D> = mutableListOf()
         var drawn: Boolean = false
-        var tempv: JLVector = JLVector()
+        var tempv: JlVector = JlVector()
 
         fun isCovering(obj: DrawObject2D): Boolean {
             if (!boundingbox.overlaps(obj.boundingbox)) {
@@ -578,7 +578,7 @@ class ComposeRenderer {
             return if (intersection) 1 else 0
         }
 
-        fun vectorProduct(v1: JLVector, v2: JLVector, v3: JLVector, result: JLVector): JLVector {
+        fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {
             val ax = v2.x - v1.x
             val ay = v2.y - v1.y
             val az = v2.z - v1.z

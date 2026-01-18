@@ -19,9 +19,8 @@ package jugglinglab.ui
 
 import jugglinglab.core.Constants
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.jml.HandLink
-import jugglinglab.jml.JMLEvent
-import jugglinglab.jml.JMLPosition
+import jugglinglab.jml.JmlEvent
+import jugglinglab.jml.JmlPosition
 import jugglinglab.renderer.ComposeRenderer
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.Coordinate
@@ -50,7 +49,7 @@ class AnimationLayout(
     // Event editing -----------------------------------------------------------
 
     // List of events visible on screen
-    var visibleEvents: List<JMLEvent> = listOf()
+    var visibleEvents: List<JmlEvent> = listOf()
 
     // Screen (logical) coordinates of visual representations for events.
     // [event index][stereo view 0/1][control point index][x/y]
@@ -144,7 +143,7 @@ class AnimationLayout(
     }
 
     @Throws(JuggleExceptionInternal::class)
-    private fun createEventView(activeEvent: JMLEvent, activeEventPrimary: JMLEvent) {
+    private fun createEventView(activeEvent: JmlEvent, activeEventPrimary: JmlEvent) {
         handpathStartTime = activeEvent.t
         handpathEndTime = activeEvent.t
 
@@ -227,7 +226,7 @@ class AnimationLayout(
         createHandpathView(activeEvent)
     }
 
-    private fun createHandpathView(activeEvent: JMLEvent) {
+    private fun createHandpathView(activeEvent: JmlEvent) {
         val rendererCount = if (state.prefs.stereo) 2 else 1
         val numHandpathPoints =
             ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
@@ -250,7 +249,7 @@ class AnimationLayout(
         }
     }
 
-    private fun createPositionView(activePosition: JMLPosition) {
+    private fun createPositionView(activePosition: JmlPosition) {
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) calcRenderer1 else calcRenderer2
@@ -360,17 +359,17 @@ class AnimationLayout(
         var handMax: Coordinate? = null
         var handMin: Coordinate? = null
         for (i in 1..pattern.numberOfJugglers) {
-            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, JmlEvent.LEFT_HAND))
+            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, JmlEvent.LEFT_HAND))
+            handMax = Coordinate.max(handMax, pattern.layout.getHandMax(i, JmlEvent.RIGHT_HAND))
+            handMin = Coordinate.min(handMin, pattern.layout.getHandMin(i, JmlEvent.RIGHT_HAND))
 
             if (Constants.DEBUG_LAYOUT) {
                 println("Data from AnimationLayout.findMaxMin():")
-                println("Hand max $i left = " + pattern.layout.getHandMax(i, HandLink.LEFT_HAND))
-                println("Hand min $i left = " + pattern.layout.getHandMin(i, HandLink.LEFT_HAND))
-                println("Hand max $i right = " + pattern.layout.getHandMax(i, HandLink.RIGHT_HAND))
-                println("Hand min $i right = " + pattern.layout.getHandMin(i, HandLink.RIGHT_HAND))
+                println("Hand max $i left = " + pattern.layout.getHandMax(i, JmlEvent.LEFT_HAND))
+                println("Hand min $i left = " + pattern.layout.getHandMin(i, JmlEvent.LEFT_HAND))
+                println("Hand max $i right = " + pattern.layout.getHandMax(i, JmlEvent.RIGHT_HAND))
+                println("Hand min $i right = " + pattern.layout.getHandMin(i, JmlEvent.RIGHT_HAND))
             }
         }
 
@@ -465,7 +464,7 @@ class AnimationLayout(
             doubleArrayOf(0.0, 0.0, 1.0),
         )
 
-        fun getActiveEvent(state: PatternAnimationState): Pair<JMLEvent, JMLEvent>? {
+        fun getActiveEvent(state: PatternAnimationState): Pair<JmlEvent, JmlEvent>? {
             for ((ev, evPrimary) in state.pattern.loopEvents) {
                 if (ev.jlHashCode == state.selectedItemHashCode) {
                     return Pair(ev, evPrimary)
@@ -479,7 +478,7 @@ class AnimationLayout(
             return null
         }
 
-        fun getActivePosition(state: PatternAnimationState): JMLPosition? {
+        fun getActivePosition(state: PatternAnimationState): JmlPosition? {
             for (pos in state.pattern.positions) {
                 if (pos.jlHashCode == state.selectedItemHashCode) {
                     return pos
