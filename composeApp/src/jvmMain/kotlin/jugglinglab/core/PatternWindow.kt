@@ -17,6 +17,7 @@ import jugglinglab.jml.JMLPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
 import jugglinglab.prop.Prop.Companion.colorStringResources
+import jugglinglab.ui.LadderDiagramLayout
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
@@ -102,7 +103,8 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         val jc = prefs ?: AnimationPrefs()
         val mode = when {
             (jc.defaultView != AnimationPrefs.VIEW_NONE) -> jc.defaultView
-            (pattern.numberOfJugglers > LadderDiagramPanel.MAX_JUGGLERS) ->
+
+            (pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS) ->
                 AnimationPrefs.VIEW_SIMPLE
 
             else -> AnimationPrefs.VIEW_EDIT

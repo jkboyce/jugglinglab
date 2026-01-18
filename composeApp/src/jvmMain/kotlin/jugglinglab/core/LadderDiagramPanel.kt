@@ -20,6 +20,7 @@ import jugglinglab.util.*
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.text.rememberTextMeasurer
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.event.*
@@ -38,30 +39,31 @@ class LadderDiagramPanel(
     val parentFrame: JFrame?
 ) : JPanel(), ActionListener {
     private val composePanel = ComposePanel()
+
+    // layout is for interpreting mouse events
     private var currentLayout: LadderDiagramLayout? = null
     private var currentDensity: Float = 1.0f
 
+    // ui state variables
     private var guiState: Int = STATE_INACTIVE
-    private var trackerY: Int = LadderDiagramLayout.BORDER_TOP_DP
-
-    private var animWasPaused: Boolean = false
-
-    // mouse interaction items below
-
+    private var animWasPaused: Boolean = false // retain paused state when dragging tracker
     private var itemWasSelected: Boolean = false // for detecting de-selecting clicks
 
-    private var startY: Int = 0
+    // for event dragging
+    private var startY: Int = 0  // initial box y-coordinates
     private var startYLow: Int = 0
-    private var startYHigh: Int = 0 // initial box y-coordinates
-    private var startT: Double = 0.0 // initial time
-    private var deltaY: Int = 0
-    private var deltaYMin: Int = 0
-    private var deltaYMax: Int = 0 // limits for dragging up/down
+    private var startYHigh: Int = 0
+    private var startT: Double = 0.0  // initial time
+    private var deltaY: Int = 0  // amount of drag in progress, in pixels
+    private var deltaYMin: Int = 0  // limits for dragging up/down
+    private var deltaYMax: Int = 0
 
+    // for popup menu
     private var popupItem: LadderItem? = null
     private var popupX: Int = 0 // screen coordinates where popup was raised
     private var popupY: Int = 0
 
+    // dialog that's reused for several popup items
     private var dialogControls: MutableList<JComponent>? = null
     private var dialogPd: List<ParameterDescriptor> = emptyList()
 
@@ -70,6 +72,11 @@ class LadderDiagramPanel(
         add(composePanel, BorderLayout.CENTER)
 
         composePanel.setContent {
+            val textMeasurer = rememberTextMeasurer()
+            setPanelDimensions(
+                LadderDiagramLayout.getPreferredWidthDp(state.pattern.numberOfJugglers, textMeasurer)
+            )
+
             LadderDiagramView(
                 state = state,
                 onPress = { offset, isPopup -> handlePress(offset, isPopup) },
@@ -77,41 +84,27 @@ class LadderDiagramPanel(
                 onRelease = { handleRelease() },
                 onLayoutUpdate = { layout ->
                     currentLayout = layout
-                    currentDensity = layout.density
-                }
+                    currentDensity = layout?.density ?: 1.0f
+                },
+                textMeasurer = textMeasurer
             )
         }
-
-        updateLadderDimensions()
-
-        state.addListener(onPatternChange = {
-            updateLadderDimensions()
-        })
     }
 
     //--------------------------------------------------------------------------
-    // Methods to respond to state changes
+    // Initialization
     //--------------------------------------------------------------------------
 
-    // Respond to a change in the pattern.
+    // Set the panel dimensions for layout.
 
-    private fun updateLadderDimensions() {
+    private fun setPanelDimensions(prefWidth: Int) {
         val jugglers = state.pattern.numberOfJugglers
-        if (jugglers > MAX_JUGGLERS) {
-            // allocate enough space for a "too many jugglers" message
-            val message = jlGetStringResource(Res.string.gui_too_many_jugglers, MAX_JUGGLERS)
-            val mwidth = 20 + getFontMetrics(MSGFONT).stringWidth(message)
-            preferredSize = Dimension(mwidth, 1)
-            minimumSize = Dimension(mwidth, 1)
-            currentLayout = null
-        } else {
-            var prefWidth: Int = LADDER_WIDTH_PER_JUGGLER * jugglers
-            val minWidth: Int = LADDER_MIN_WIDTH_PER_JUGGLER * jugglers
-            val widthMult = doubleArrayOf(1.0, 1.0, 0.85, 0.72, 0.65, 0.55)
-            prefWidth = (prefWidth.toDouble() *
-                (if (jugglers >= widthMult.size) 0.5 else widthMult[jugglers])).toInt()
-            prefWidth = max(prefWidth, minWidth)
+        if (jugglers > LadderDiagramLayout.MAX_JUGGLERS) {
             preferredSize = Dimension(prefWidth, 1)
+            minimumSize = Dimension(prefWidth, 1)
+        } else {
+            preferredSize = Dimension(prefWidth, 1)
+            val minWidth: Int = LadderDiagramLayout.LADDER_MIN_WIDTH_PER_JUGGLER_DP * jugglers
             minimumSize = Dimension(minWidth, 1)
         }
     }
@@ -208,7 +201,6 @@ class LadderDiagramPanel(
 
                     if (needsHandling) {
                         guiState = STATE_MOVING_TRACKER
-                        trackerY = my
                         val newTime = layout.yToTime(my)
                         animWasPaused = state.isPaused
                         state.update(isPaused = true, time = newTime, selectedItemHashCode = 0)
@@ -255,7 +247,6 @@ class LadderDiagramPanel(
                 }
 
                 STATE_MOVING_TRACKER -> {
-                    trackerY = myClamped
                     val newTime = layout.yToTime(myClamped)
                     state.update(time = newTime)
                 }
@@ -1481,12 +1472,6 @@ class LadderDiagramPanel(
     }
 
     companion object {
-        // overall sizing
-        const val MAX_JUGGLERS: Int = 8
-        const val LADDER_WIDTH_PER_JUGGLER: Int = 150 // pixels
-        const val LADDER_MIN_WIDTH_PER_JUGGLER: Int = 60
-        val MSGFONT: Font = Font("SansSerif", Font.PLAIN, 12)
-
         // geometric constants in pixels
         const val PATH_SLOP_DP: Int = 5
 

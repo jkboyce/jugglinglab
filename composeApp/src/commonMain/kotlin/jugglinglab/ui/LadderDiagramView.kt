@@ -9,8 +9,10 @@
 
 package jugglinglab.ui
 
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.util.jlToStringRounded
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
@@ -36,67 +39,85 @@ import androidx.compose.ui.input.pointer.*
 @Composable
 fun LadderDiagramView(
     state: PatternAnimationState,
-    onPress: (Offset, Boolean) -> Unit,
-    onDrag: (Offset) -> Unit,
-    onRelease: () -> Unit,
-    onLayoutUpdate: (LadderDiagramLayout) -> Unit = {},
+    onPress: (Offset, Boolean) -> Unit = { _, _ -> },
+    onDrag: (Offset) -> Unit = {},
+    onRelease: () -> Unit = {},
+    onLayoutUpdate: (LadderDiagramLayout?) -> Unit = {},
+    textMeasurer: TextMeasurer = rememberTextMeasurer(),
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val density = LocalDensity.current.density
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
+        val density = LocalDensity.current.density
 
-        val layout = remember(
-            state.pattern,
-            widthPx,
-            heightPx,
-            density
-        ) {
-            LadderDiagramLayout(state.pattern, widthPx, heightPx, density)
+        // layout contains drawing information for on-screen elements
+        val layout = remember(state.pattern, widthPx, heightPx, density) {
+            if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS)
+                null
+            else
+                LadderDiagramLayout(state.pattern, widthPx, heightPx, density)
         }
 
         LaunchedEffect(layout) {
+            // pass layout to containing panel for mouse handling
             onLayoutUpdate(layout)
         }
 
-        val trackerY = layout.timeToY(state.time)
-        val activeItemHash = state.selectedItemHashCode
-        val propForPath = state.propForPath
-        val textMeasurer = rememberTextMeasurer()
+        if (layout == null) {
+            val text = jlGetStringResource(Res.string.gui_too_many_jugglers, LadderDiagramLayout.MAX_JUGGLERS)
+            val textLayoutResult = textMeasurer.measure(
+                text = text,
+                style = TextStyle(color = Color.Black, fontSize = 13.sp)
+            )
+            val textSize = textLayoutResult.size
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawRect(color = Color.White)
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(
+                        x = (widthPx - textSize.width) / 2f,
+                        y = (heightPx - textSize.height) / 2f
+                    )
+                )
+            }
+            return@BoxWithConstraints
+        }
 
         Canvas(
             modifier = Modifier.fillMaxSize()
-            .pointerInput(Unit) {
-                // handle long press for touch (Android/iOS)
-                detectTapGestures(
-                    onLongPress = { offset ->
-                        onPress(offset, true)  // treat long press as popup trigger
-                    }
-                )
-            }
-            .pointerInput(Unit) {
-                // other touch events are handled as left mouse clicks
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.first()
-                        val offset = change.position
-                        val isPopup = event.buttons.isSecondaryPressed
+                .pointerInput(Unit) {
+                    // handle long press for touch (Android/iOS)
+                    detectTapGestures(
+                        onLongPress = { offset ->
+                            onPress(offset, true)  // treat long press as popup trigger
+                        }
+                    )
+                }
+                .pointerInput(Unit) {
+                    // other touch events are handled as left mouse clicks
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.first()
+                            val offset = change.position
+                            val isPopup = event.buttons.isSecondaryPressed
 
-                        if (change.changedToDown()) {
-                            onPress(offset, isPopup)
-                            change.consume()
-                        } else if (change.pressed && change.positionChanged()) {
-                            onDrag(offset)
-                            change.consume()
-                        } else if (change.changedToUp()) {
-                            onRelease()
-                            change.consume()
+                            if (change.changedToDown()) {
+                                onPress(offset, isPopup)
+                                change.consume()
+                            } else if (change.pressed && change.positionChanged()) {
+                                onDrag(offset)
+                                change.consume()
+                            } else if (change.changedToUp()) {
+                                onRelease()
+                                change.consume()
+                            }
                         }
                     }
                 }
-            }) {
+        ) {
             val width = size.width
             val height = size.height
 
@@ -206,6 +227,8 @@ fun LadderDiagramView(
                 }
             }
 
+            val activeItemHash = state.selectedItemHashCode
+
             // 5. Positions
             for (item in layout.positionItems) {
                 if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
@@ -244,7 +267,7 @@ fun LadderDiagramView(
                 } else {
                     if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
                         val tr = item.event.transitions[item.transNum]
-                        val propnum = propForPath[tr.path - 1]
+                        val propnum = state.propForPath[tr.path - 1]
                         val propColor = state.pattern.getProp(propnum).getEditorColor()
 
                         drawOval(propColor, topLeft, size)
@@ -263,6 +286,7 @@ fun LadderDiagramView(
             }
 
             // 7. Tracker
+            val trackerY = layout.timeToY(state.time)
             drawLine(
                 Color.Red,
                 Offset(0f, trackerY.toFloat()),
