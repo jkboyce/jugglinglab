@@ -10,7 +10,7 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.AnimationPanel
 import jugglinglab.ui.PatternWindow
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import java.awt.BorderLayout
@@ -34,7 +34,7 @@ class SimpleView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+    override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
         ja.restartJuggle(pattern, prefs, coldRestart)

@@ -498,7 +498,7 @@ class LadderDiagramPanel(
         // new event to swap in for `item.event`
         val newEvent = item.event.copy(t = newT)
 
-        val record = PatternBuilder.fromJMLPattern(state.pattern)
+        val record = PatternBuilder.fromJmlPattern(state.pattern)
         val index = record.events.indexOf(item.primary)
         if (index < 0) throw JuggleExceptionInternal("Error in LadderDiagram.moveEventInPattern()")
         if (item.event === item.primary) {
@@ -523,7 +523,7 @@ class LadderDiagramPanel(
 
         record.selectPrimaryEvents()
         state.update(
-            pattern = JMLPattern.fromPatternBuilder(record),
+            pattern = JmlPattern.fromPatternBuilder(record),
             selectedItemHashCode = newEvent.jlHashCode
         )
     }
@@ -543,7 +543,7 @@ class LadderDiagramPanel(
     // enforce proximity limits between various event types, as well as hard
     // limits `delta_y_min` and `delta_y_max`.
 
-    private fun getClippedPositionTime(my: Int, position: JMLPosition): Int {
+    private fun getClippedPositionTime(my: Int, position: JmlPosition): Int {
         val layout = currentLayout ?: return 0
         var dy = my - startY
         dy = min(max(dy, deltaYMin), deltaYMax)
@@ -614,13 +614,13 @@ class LadderDiagramPanel(
             newT = state.pattern.loopEndTime - 0.0001
         }
 
-        val rec = PatternBuilder.fromJMLPattern(state.pattern)
+        val rec = PatternBuilder.fromJmlPattern(state.pattern)
         val index = rec.positions.indexOf(pos)
         if (index < 0) throw JuggleExceptionInternal("Error in ELD.movePositionInPattern()")
         val newPosition = pos.copy(t = newT)
         rec.positions[index] = newPosition
         state.update(
-            pattern = JMLPattern.fromPatternBuilder(rec),
+            pattern = JmlPattern.fromPatternBuilder(rec),
             selectedItemHashCode = newPosition.jlHashCode
         )
     }
@@ -666,16 +666,16 @@ class LadderDiagramPanel(
         try {
             val command = event.getActionCommand() ?: return
             when (command) {
-                "addeventtoleft" -> addEventToHand(JMLEvent.LEFT_HAND)
-                "addeventtoright" -> addEventToHand(JMLEvent.RIGHT_HAND)
+                "addeventtoleft" -> addEventToHand(JmlEvent.LEFT_HAND)
+                "addeventtoright" -> addEventToHand(JmlEvent.RIGHT_HAND)
                 "removeevent" -> removeEvent()
                 "addposition" -> addPositionToJuggler()
                 "removeposition" -> removePosition()
                 "defineprop" -> defineProp()
                 "definethrow" -> defineThrow()
-                "changetocatch" -> changeCatchStyleTo(JMLTransition.TRANS_CATCH)
-                "changetosoftcatch" -> changeCatchStyleTo(JMLTransition.TRANS_SOFTCATCH)
-                "changetograbcatch" -> changeCatchStyleTo(JMLTransition.TRANS_GRABCATCH)
+                "changetocatch" -> changeCatchStyleTo(JmlTransition.TRANS_CATCH)
+                "changetosoftcatch" -> changeCatchStyleTo(JmlTransition.TRANS_SOFTCATCH)
+                "changetograbcatch" -> changeCatchStyleTo(JmlTransition.TRANS_GRABCATCH)
                 "makelast" -> makeLastInEvent()
                 else -> throw JuggleExceptionInternal("unknown item in ELD popup")
             }
@@ -711,7 +711,7 @@ class LadderDiagramPanel(
 
         val newLocalCoordinate =
             state.pattern.layout.convertGlobalToLocal(newGlobalCoordinate, juggler, newTime)
-        val newEvent = JMLEvent(
+        val newEvent = JmlEvent(
             x = newLocalCoordinate.x,
             y = newLocalCoordinate.y,
             z = newLocalCoordinate.z,
@@ -720,11 +720,11 @@ class LadderDiagramPanel(
             hand = hand
         )
 
-        val record = PatternBuilder.fromJMLPattern(state.pattern)
+        val record = PatternBuilder.fromJmlPattern(state.pattern)
         record.events.add(newEvent)
         record.fixHolds()
         record.selectPrimaryEvents()
-        val newPattern = JMLPattern.fromPatternBuilder(record)
+        val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = newEvent.jlHashCode
@@ -739,9 +739,9 @@ class LadderDiagramPanel(
             throw JuggleExceptionInternal("LadderDiagram illegal remove event")
         }
         val evRemove = (popupItem as LadderEventItem).primary
-        val record = PatternBuilder.fromJMLPattern(state.pattern)
+        val record = PatternBuilder.fromJmlPattern(state.pattern)
         record.events.remove(evRemove)
-        val newPattern = JMLPattern.fromPatternBuilder(record)
+        val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = 0
@@ -772,7 +772,7 @@ class LadderDiagramPanel(
 
         val newGlobalCoordinate = Coordinate()
         state.pattern.layout.getJugglerPosition(juggler, newTime, newGlobalCoordinate)
-        val pos = JMLPosition(
+        val pos = JmlPosition(
             x = newGlobalCoordinate.x,
             y = newGlobalCoordinate.y,
             z = newGlobalCoordinate.z,
@@ -780,9 +780,9 @@ class LadderDiagramPanel(
             angle = state.pattern.layout.getJugglerAngle(juggler, newTime),
             juggler = juggler
         )
-        val rec = PatternBuilder.fromJMLPattern(state.pattern)
+        val rec = PatternBuilder.fromJmlPattern(state.pattern)
         rec.positions.add(pos)
-        val newPattern = JMLPattern.fromPatternBuilder(rec)
+        val newPattern = JmlPattern.fromPatternBuilder(rec)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = pos.jlHashCode
@@ -796,9 +796,9 @@ class LadderDiagramPanel(
             throw JuggleExceptionInternal("LadderDiagram illegal remove position")
         }
         val pos = (popupItem as LadderPositionItem).position
-        val rec = PatternBuilder.fromJMLPattern(state.pattern)
+        val rec = PatternBuilder.fromJmlPattern(state.pattern)
         rec.positions.remove(pos)
-        val newPattern = JMLPattern.fromPatternBuilder(rec)
+        val newPattern = JmlPattern.fromPatternBuilder(rec)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = 0
@@ -895,13 +895,13 @@ class LadderDiagramPanel(
             try {
                 // fail if prop definition is invalid, before we change the pattern
                 mod = this.dialogParameterList
-                JMLProp(type.lowercase(Locale.getDefault()), mod).prop.isColorable
+                JmlProp(type.lowercase(Locale.getDefault()), mod).prop.isColorable
             } catch (jeu: JuggleExceptionUser) {
                 jlHandleUserException(parentFrame, jeu.message)
                 return@addActionListener
             }
 
-            val rec = PatternBuilder.fromJMLPattern(state.pattern)
+            val rec = PatternBuilder.fromJmlPattern(state.pattern)
 
             // sync paths with current prop list
             for (i in 0..<rec.numberOfPaths) {
@@ -949,12 +949,12 @@ class LadderDiagramPanel(
                 rec.propAssignment[pn - 1] = matchingprop
             } else {
                 // new prop is different
-                val newprop = JMLProp(type.lowercase(Locale.getDefault()), mod)
+                val newprop = JmlProp(type.lowercase(Locale.getDefault()), mod)
                 rec.props.add(newprop)
                 rec.propAssignment[pn - 1] = rec.props.size
             }
 
-            val newPattern = JMLPattern.fromPatternBuilder(rec)
+            val newPattern = JmlPattern.fromPatternBuilder(rec)
             state.update(pattern = newPattern)
             state.addCurrentToUndoList()
             jd.dispose()
@@ -1069,10 +1069,10 @@ class LadderDiagramPanel(
                     this[(popupItem as LadderEventItem).transNum] = newTransition
                 }
             )
-            val record = PatternBuilder.fromJMLPattern(state.pattern)
+            val record = PatternBuilder.fromJmlPattern(state.pattern)
             val index = record.events.indexOf(evPrimary)
             record.events[index] = newPrimary
-            val newPattern = JMLPattern.fromPatternBuilder(record)
+            val newPattern = JmlPattern.fromPatternBuilder(record)
             state.update(pattern = newPattern)
             state.addCurrentToUndoList()
             jd.dispose()
@@ -1115,12 +1115,12 @@ class LadderDiagramPanel(
             }
         )
 
-        val record = PatternBuilder.fromJMLPattern(state.pattern)
+        val record = PatternBuilder.fromJmlPattern(state.pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (popupItem as LadderEventItem).transNum * 27
-        val newPattern = JMLPattern.fromPatternBuilder(record)
+        val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = code
@@ -1140,12 +1140,12 @@ class LadderDiagramPanel(
         val tr = evPrimary.transitions[(popupItem as LadderEventItem).transNum]
         val newPrimary = evPrimary.withoutTransition(tr).withTransition(tr)  // adds at end
 
-        val record = PatternBuilder.fromJMLPattern(state.pattern)
+        val record = PatternBuilder.fromJmlPattern(state.pattern)
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
             (newPrimary.transitions.size - 1) * 27
-        val newPattern = JMLPattern.fromPatternBuilder(record)
+        val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
             selectedItemHashCode = code
@@ -1430,19 +1430,19 @@ class LadderDiagramPanel(
                     return evitem.transNum != (evitem.event.transitions.size - 1)
 
                 "definethrow" ->
-                    return tr.type == JMLTransition.TRANS_THROW
+                    return tr.type == JmlTransition.TRANS_THROW
 
                 "changetocatch" ->
-                    return tr.type == JMLTransition.TRANS_SOFTCATCH
-                        || tr.type == JMLTransition.TRANS_GRABCATCH
+                    return tr.type == JmlTransition.TRANS_SOFTCATCH
+                        || tr.type == JmlTransition.TRANS_GRABCATCH
 
                 "changetosoftcatch" ->
-                    return tr.type == JMLTransition.TRANS_CATCH
-                        || tr.type == JMLTransition.TRANS_GRABCATCH
+                    return tr.type == JmlTransition.TRANS_CATCH
+                        || tr.type == JmlTransition.TRANS_GRABCATCH
 
                 "changetograbcatch" ->
-                    return tr.type == JMLTransition.TRANS_CATCH
-                        || tr.type == JMLTransition.TRANS_SOFTCATCH
+                    return tr.type == JmlTransition.TRANS_CATCH
+                        || tr.type == JmlTransition.TRANS_SOFTCATCH
             }
         } else if (laditem.type == LadderItem.TYPE_POSITION) {
             return !mutableListOf(

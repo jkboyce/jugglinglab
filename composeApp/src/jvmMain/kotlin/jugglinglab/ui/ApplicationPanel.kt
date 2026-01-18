@@ -17,8 +17,8 @@ import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.GeneratorTargetPatternList
 import jugglinglab.generator.Transitioner
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
-import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
-import jugglinglab.jml.JMLPatternList
+import jugglinglab.jml.JmlPattern.Companion.fromBasePattern
+import jugglinglab.jml.JmlPatternList
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.notation.Pattern
 import jugglinglab.util.*
@@ -77,7 +77,7 @@ open class ApplicationPanel(
         // resources needed by the control panels
         var pl = patlist
         if (pl == null && havePatternListTab) {
-            pl = PatternListPanel(patternList = JMLPatternList(), animTarget = animtarget)
+            pl = PatternListPanel(patternList = JmlPatternList(), animTarget = animtarget)
         }
         val trans = newTransitioner(Pattern.builtinNotations[notationNum - 1])
         val gen = newGenerator(Pattern.builtinNotations[notationNum - 1])

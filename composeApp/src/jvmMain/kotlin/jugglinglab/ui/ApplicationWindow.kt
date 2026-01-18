@@ -16,9 +16,9 @@ package jugglinglab.ui
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLParser
-import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPatternList
+import jugglinglab.jml.JmlParser
+import jugglinglab.jml.JmlPattern
+import jugglinglab.jml.JmlPatternList
 import jugglinglab.notation.Pattern
 import jugglinglab.util.*
 import androidx.compose.material.MaterialTheme
@@ -224,7 +224,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> newPattern()
             MenuCommand.FILE_NEWPL -> PatternListWindow()
-            MenuCommand.FILE_OPEN -> openJMLFile()
+            MenuCommand.FILE_OPEN -> openJmlFile()
             MenuCommand.FILE_EXIT -> {
                 for (fr in getFrames()) {
                     if (fr is PatternListWindow && fr.isVisible) {
@@ -278,7 +278,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                     try {
                         for (file in ofe!!.getFiles()) {
                             try {
-                                openJMLFile(file)
+                                openJmlFile(file)
                             } catch (jeu: JuggleExceptionUser) {
                                 val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                                 jlHandleUserException(null, message + ":\n" + jeu.message)
@@ -408,7 +408,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         @Throws(JuggleExceptionInternal::class)
         fun newPattern() {
             try {
-                val pat = JMLPattern.fromBasePattern("Siteswap", "pattern=3")
+                val pat = JmlPattern.fromBasePattern("Siteswap", "pattern=3")
                 val pw = PatternWindow("3", pat, AnimationPrefs())
                 pw.viewMode = AnimationPrefs.VIEW_PATTERN
             } catch (jeu: JuggleExceptionUser) {
@@ -419,7 +419,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // Show the user a file chooser to open a JML file.
 
         @Throws(JuggleExceptionInternal::class)
-        fun openJMLFile() {
+        fun openJmlFile() {
             jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
             if (jlJfc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
                 return
@@ -428,7 +428,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             val file = jlJfc.selectedFile
             if (file != null) {
                 try {
-                    openJMLFile(file)
+                    openJmlFile(file)
                 } catch (jeu: JuggleExceptionUser) {
                     val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                     jlHandleUserException(null, message + ":\n" + jeu.message)
@@ -439,14 +439,14 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // Open a JML file.
 
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun openJMLFile(jmlf: File) {
+        fun openJmlFile(jmlf: File) {
             try {
-                val parser = JMLParser()
+                val parser = JmlParser()
                 parser.parse(jmlf.readText())
 
                 when (parser.fileType) {
-                    JMLParser.JML_PATTERN -> {
-                        val pat = JMLPattern.fromJMLNode(parser.tree!!)
+                    JmlParser.JML_PATTERN -> {
+                        val pat = JmlPattern.fromJmlNode(parser.tree!!)
                         pat.layout
                         if (!PatternWindow.bringToFront(pat.jlHashCode)) {
                             val pw = PatternWindow(pat.title, pat, AnimationPrefs())
@@ -454,8 +454,8 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         }
                     }
 
-                    JMLParser.JML_LIST -> {
-                        val pl = JMLPatternList(parser.tree)
+                    JmlParser.JML_LIST -> {
+                        val pl = JmlPatternList(parser.tree)
                         if (!PatternListWindow.bringToFront(pl.jlHashCode)) {
                             val plw = PatternListWindow(patternList = pl)
                             plw.setJmlFilename(jmlf.getName())

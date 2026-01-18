@@ -15,7 +15,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.Constants
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.prop.Prop
 import jugglinglab.util.*
@@ -35,7 +35,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import kotlin.system.exitProcess
 
-class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFrame(title),
+class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFrame(title),
     ActionListener {
     private lateinit var view: View
     private lateinit var colorsMenu: JMenu
@@ -82,7 +82,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
 
-    // Create a new PatternWindow with the same JMLPattern and default View as
+    // Create a new PatternWindow with the same JmlPattern and default View as
     // an existing PatternWindow.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -97,7 +97,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun createInitialView(pattern: JMLPattern, prefs: AnimationPrefs?) {
+    private fun createInitialView(pattern: JmlPattern, prefs: AnimationPrefs?) {
         val jc = prefs ?: AnimationPrefs()
         val mode = when {
             (jc.defaultView != AnimationPrefs.VIEW_NONE) -> jc.defaultView
@@ -175,13 +175,13 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             view = newview
         }
 
-    val pattern: JMLPattern
+    val pattern: JmlPattern
         get() = view.state.pattern
 
     val animationPrefs: AnimationPrefs
         get() = view.state.prefs
 
-    // For checking whether a given JMLPattern is already being animated.
+    // For checking whether a given JmlPattern is already being animated.
     val jlHashCode: Int
         get() = view.state.pattern.jlHashCode
 
@@ -463,7 +463,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
             MenuCommand.FILE_NEWPL -> (PatternListWindow("")).setTitle(null)
-            MenuCommand.FILE_OPEN -> ApplicationWindow.openJMLFile()
+            MenuCommand.FILE_OPEN -> ApplicationWindow.openJmlFile()
             MenuCommand.FILE_CLOSE -> {
                 dispose()
                 if (exitOnLastClose) {
@@ -499,7 +499,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
                 lastJmlFilename = f.getName()
                 try {
                     val fw = FileWriter(f)
-                    view.state.pattern.writeJML(fw, writeTitle = true, writeInfo = true)
+                    view.state.pattern.writeJml(fw, writeTitle = true, writeInfo = true)
                     fw.close()
                 } catch (fnfe: FileNotFoundException) {
                     throw JuggleExceptionInternal("FileNotFound: ${fnfe.message}")
@@ -639,9 +639,9 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val rec = PatternBuilder.fromJMLPattern(view.state.pattern)
+            val rec = PatternBuilder.fromJmlPattern(view.state.pattern)
             rec.setTitleString(tf.getText())
-            val newpat = JMLPattern.fromPatternBuilder(rec)
+            val newpat = JmlPattern.fromPatternBuilder(rec)
             view.restartView(newpat, null)
             view.state.addCurrentToUndoList()
             jd.dispose()
@@ -757,7 +757,7 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
         /** Defines the contract for the optional optimizer module. */
         private interface OptimizerWrapper {
-            fun optimize(pat: JMLPattern): JMLPattern
+            fun optimize(pat: JmlPattern): JmlPattern
         }
 
         // Lazily load the Optimizer class via reflection. If successful, it creates
@@ -772,11 +772,11 @@ class PatternWindow(title: String?, pat: JMLPattern, jc: AnimationPrefs?) : JFra
 
                 if (canOptimize) {
                     val optimizeMethod: Method =
-                        optimizerClass.getMethod("optimize", JMLPattern::class.java)
+                        optimizerClass.getMethod("optimize", JmlPattern::class.java)
                     // Return an object that implements our wrapper interface
                     object : OptimizerWrapper {
-                        override fun optimize(pat: JMLPattern): JMLPattern =
-                            optimizeMethod.invoke(null, pat) as JMLPattern
+                        override fun optimize(pat: JmlPattern): JmlPattern =
+                            optimizeMethod.invoke(null, pat) as JmlPattern
                     }
                 } else null
             }.getOrNull()

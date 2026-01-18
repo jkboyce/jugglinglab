@@ -1,5 +1,5 @@
 //
-// MHNPattern.kt
+// MhnPattern.kt
 //
 // "Multi-Hand Notation" (name due to Ed Carstens) is a general notation that
 // defines a matrix of hands and discrete event times, and describes patterns as
@@ -30,7 +30,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class MHNPattern : Pattern() {
+abstract class MhnPattern : Pattern() {
     // original config string:
     protected var config: String? = null
 
@@ -63,29 +63,29 @@ abstract class MHNPattern : Pattern() {
         protected set
     var maxOccupancy: Int = 0
         protected set
-    lateinit var th: Array<Array<Array<Array<MHNThrow?>>>>
+    lateinit var th: Array<Array<Array<Array<MhnThrow?>>>>
 
-    protected var hands: MHNHands? = null
-    protected var bodies: MHNBody? = null
+    protected var hands: MhnHands? = null
+    protected var bodies: MhnBody? = null
     var maxThrow: Int = 0
         protected set
     var indexes: Int = 0
-    protected lateinit var symmetries: MutableList<MHNSymmetry>
+    protected lateinit var symmetries: MutableList<MhnSymmetry>
     protected var bps: Double = 0.0
 
-    fun addSymmetry(ss: MHNSymmetry) {
+    fun addSymmetry(ss: MhnSymmetry) {
         symmetries.add(ss)
     }
 
     // Pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.
     //
-    // Note this doesn't create a valid pattern as-is, since MHNNotation doesn't
+    // Note this doesn't create a valid pattern as-is, since MhnNotation doesn't
     // know how to interpret `pattern`. Subclasses like SiteswapPattern should
     // override this to add that functionality.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun fromParameters(pl: ParameterList): MHNPattern {
+    override fun fromParameters(pl: ParameterList): MhnPattern {
         config = pl.toString()
         // `pattern` is the only required parameter
         pattern = pl.removeParameter("pattern")
@@ -114,10 +114,10 @@ abstract class MHNPattern : Pattern() {
             }
         }
         if ((pl.removeParameter("hands").also { temp = it }) != null) {
-            hands = MHNHands(temp!!)
+            hands = MhnHands(temp!!)
         }
         if ((pl.removeParameter("body").also { temp = it }) != null) {
-            bodies = MHNBody(temp!!)
+            bodies = MhnBody(temp!!)
         }
         if ((pl.removeParameter("gravity").also { temp = it }) != null) {
             try {
@@ -228,9 +228,9 @@ abstract class MHNPattern : Pattern() {
 
     // Fill in details of the juggling matrix th[], to prepare for animation
     //
-    // Note that th[] is assumed to be pre-populated with MHNThrows from the
+    // Note that th[] is assumed to be pre-populated with MhnThrows from the
     // parsing step, prior to this. This function fills in missing data elements
-    // in the MHNThrows, connecting them up into a pattern. See MHNThrow.java
+    // in the MhnThrows, connecting them up into a pattern. See MhnThrow.java
     // for more details.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -240,7 +240,7 @@ abstract class MHNPattern : Pattern() {
         // this will find and raise many types of errors in the pattern
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println("-----------------------------------------------------")
-            println("Building internal MHNPattern representation...\n")
+            println("Building internal MhnPattern representation...\n")
             println("findPrimaryThrows()")
         }
         findPrimaryThrows()
@@ -267,7 +267,7 @@ abstract class MHNPattern : Pattern() {
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             val s = internalRepresentation
-            println("\nInternal MHNPattern representation:\n")
+            println("\nInternal MhnPattern representation:\n")
             println(s)
             println("-----------------------------------------------------")
         }
@@ -275,25 +275,25 @@ abstract class MHNPattern : Pattern() {
 
     // Describes an entry in the `th` array, for iteration.
 
-    protected data class MHNThrowEntry(
+    protected data class MhnThrowEntry(
         val i: Int,
         val j: Int,
         val h: Int,
         val slot: Int,
-        val throwInstance: MHNThrow?
+        val throwInstance: MhnThrow?
     )
 
     // Custom iterator (as a Sequence) that traverses the 4D `th` array in the
     // specific order required by the MHN logic: time index, then juggler, then
     // hand, then multiplex slot.
 
-    protected fun Array<Array<Array<Array<MHNThrow?>>>>.mhnIterator():
-        Sequence<MHNThrowEntry> = sequence {
+    protected fun Array<Array<Array<Array<MhnThrow?>>>>.mhnIterator():
+        Sequence<MhnThrowEntry> = sequence {
         for (i in 0..<indexes) {
             for (j in 0..<numberOfJugglers) {
                 for (h in 0..1) {
                     for (slot in 0..<maxOccupancy) {
-                        yield(MHNThrowEntry(i, j, h, slot, this@mhnIterator[j][h][i][slot]))
+                        yield(MhnThrowEntry(i, j, h, slot, this@mhnIterator[j][h][i][slot]))
                     }
                 }
             }
@@ -491,7 +491,7 @@ abstract class MHNPattern : Pattern() {
 
     // Set the `source` field for all throws that don't already have it set.
     //
-    // In doing this we create new MHNThrows that are not part of the juggling
+    // In doing this we create new MhnThrows that are not part of the juggling
     // matrix th[] because they occur before index 0.
 
     @Throws(JuggleExceptionInternal::class)
@@ -510,7 +510,7 @@ abstract class MHNPattern : Pattern() {
                         val sst2 = th[j][h][i + period][slot]!!.source
                             ?: throw JuggleExceptionInternal("Could not get throw source 1")
 
-                        val sst3 = MHNThrow(
+                        val sst3 = MhnThrow(
                             juggler = sst2.juggler,
                             hand = sst2.hand,
                             index = sst2.index - period,
@@ -534,7 +534,7 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    // Set the MHNThrow.catching and MHNThrow.catchnum fields.
+    // Set the MhnThrow.catching and MhnThrow.catchnum fields.
 
     protected fun setCatchOrder() {
         // Figure out the correct catch order for primary throws
@@ -692,7 +692,7 @@ abstract class MHNPattern : Pattern() {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionInternal::class)
-    override fun asJMLPattern(): JMLPattern {
+    override fun asJmlPattern(): JmlPattern {
         if (bpsSet <= 0) {
             // signal that we should calculate bps
             bps = calcBps()
@@ -717,10 +717,10 @@ abstract class MHNPattern : Pattern() {
         record.setTitleString(if (title == null) pattern else title)
 
         // Step 1: Add basic information about the pattern
-        addPropsToJML(record)
-        addSymmetriesToJML(record)
+        addPropsToJml(record)
+        addSymmetriesToJml(record)
 
-        // Step 2: Assign catch and throw times to each MHNThrow in the
+        // Step 2: Assign catch and throw times to each MhnThrow in the
         // juggling matrix
         findCatchThrowTimes()
 
@@ -731,32 +731,32 @@ abstract class MHNPattern : Pattern() {
         // position calculation later on.
         val handtouched = Array(numberOfJugglers) { BooleanArray(2) }
         val pathtouched = BooleanArray(numberOfPaths)
-        val calcpos: MutableMap<JMLEvent, Boolean> = mutableMapOf()
-        addPrimaryEventsToJML(record, handtouched, pathtouched, calcpos)
+        val calcpos: MutableMap<JmlEvent, Boolean> = mutableMapOf()
+        addPrimaryEventsToJml(record, handtouched, pathtouched, calcpos)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 3:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // Step 4: Define a body position for this juggler and beat, if specified
-        addJugglerPositionsToJML(record)
+        addJugglerPositionsToJml(record)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 4:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // Step 5: Add simple positioning events for hands that got no events
-        addEventsForUntouchedHandsToJML(record, handtouched, calcpos)
+        addEventsForUntouchedHandsToJml(record, handtouched, calcpos)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 5:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // Step 6: Add <holding> transitions for paths that got no events
-        addEventsForUntouchedPathsToJML(record, pathtouched, calcpos)
+        addEventsForUntouchedPathsToJml(record, pathtouched, calcpos)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 6:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // save a snapshot in case we need to redo steps 7-9 below
@@ -766,18 +766,18 @@ abstract class MHNPattern : Pattern() {
 
         // Step 7: Add events where there are long gaps for a hand
         if (hands == null) {
-            addEventsForGapsToJML(record, calcpos)
+            addEventsForGapsToJml(record, calcpos)
             if (Constants.DEBUG_PATTERN_CREATION) {
                 println("After step 7:")
-                println(JMLPattern.fromPatternBuilder(record))
+                println(JmlPattern.fromPatternBuilder(record))
             }
         }
 
         // Step 8: Specify positions for events that don't have them defined yet
-        addLocationsForIncompleteEventsToJML(record, calcpos)
+        addLocationsForIncompleteEventsToJml(record, calcpos)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 8:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // Step 9: Add additional <holding> transitions where needed (i.e., a
@@ -785,18 +785,18 @@ abstract class MHNPattern : Pattern() {
         record.fixHolds()
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 9:")
-            println(JMLPattern.fromPatternBuilder(record))
+            println(JmlPattern.fromPatternBuilder(record))
         }
 
         // Step 10: Select the primary events, and build the pattern.
         record.selectPrimaryEvents()
-        var result = JMLPattern.fromPatternBuilder(record)
+        var result = JmlPattern.fromPatternBuilder(record)
         if (Constants.DEBUG_PATTERN_CREATION) {
             println("After step 10:")
             println(result)
         }
 
-        // Step 11: We can now construct a JMLPattern that can be laid out.
+        // Step 11: We can now construct a JmlPattern that can be laid out.
         // If `bps` wasn't manually set then we do a final check: Do a layout and
         // confirm that each throw in the pattern has enough time to satisfy its
         // minimum duration requirement. If not then rescale time (bps) to make
@@ -817,47 +817,47 @@ abstract class MHNPattern : Pattern() {
                     // - re-run the scaling operation
                     // - get a PatternBuilder from the rescaled pattern
                     // - redo steps 7-10 to get the final pattern
-                    addLocationsForIncompleteEventsToJML(recordSnapshot, calcpos)
+                    addLocationsForIncompleteEventsToJml(recordSnapshot, calcpos)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After completion step 8:")
-                        println(JMLPattern.fromPatternBuilder(recordSnapshot))
+                        println(JmlPattern.fromPatternBuilder(recordSnapshot))
                     }
                     recordSnapshot.fixHolds()
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After completion step 9:")
-                        println(JMLPattern.fromPatternBuilder(recordSnapshot))
+                        println(JmlPattern.fromPatternBuilder(recordSnapshot))
                     }
                     val (newResult, _) =
-                        JMLPattern.fromPatternBuilder(recordSnapshot)
+                        JmlPattern.fromPatternBuilder(recordSnapshot)
                             .withScaledTimeToFitThrows(1.01)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After second scaleTimeToFitThrows():")
                         println(newResult)
                     }
-                    val newRecord = PatternBuilder.fromJMLPattern(newResult)
+                    val newRecord = PatternBuilder.fromJmlPattern(newResult)
                     if (Constants.DEBUG_PATTERN_CREATION) {
-                        println("After PatternBuilder.fromJMLPattern():")
-                        println(JMLPattern.fromPatternBuilder(newRecord))
+                        println("After PatternBuilder.fromJmlPattern():")
+                        println(JmlPattern.fromPatternBuilder(newRecord))
                     }
 
                     // redo steps 7-10
-                    addEventsForGapsToJML(newRecord, calcpos)
+                    addEventsForGapsToJml(newRecord, calcpos)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 7:")
-                        println(JMLPattern.fromPatternBuilder(newRecord))
+                        println(JmlPattern.fromPatternBuilder(newRecord))
                     }
-                    addLocationsForIncompleteEventsToJML(newRecord, calcpos)
+                    addLocationsForIncompleteEventsToJml(newRecord, calcpos)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 8:")
-                        println(JMLPattern.fromPatternBuilder(newRecord))
+                        println(JmlPattern.fromPatternBuilder(newRecord))
                     }
                     newRecord.fixHolds()
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 9:")
-                        println(JMLPattern.fromPatternBuilder(newRecord))
+                        println(JmlPattern.fromPatternBuilder(newRecord))
                     }
                     newRecord.selectPrimaryEvents()
-                    result = JMLPattern.fromPatternBuilder(newRecord)
+                    result = JmlPattern.fromPatternBuilder(newRecord)
                     if (Constants.DEBUG_PATTERN_CREATION) {
                         println("After redone step 10:")
                         println(result)
@@ -873,7 +873,7 @@ abstract class MHNPattern : Pattern() {
             result = result.withPropColors(colors!!)
         }
         if (Constants.DEBUG_PATTERN_CREATION) {
-            println("Final result from MHNPattern.asJMLPattern():")
+            println("Final result from MhnPattern.asJmlPattern():")
             println(result)
         }
 
@@ -883,7 +883,7 @@ abstract class MHNPattern : Pattern() {
             // treat as internal error since user input errors should have
             // been caught upstream
             throw JuggleExceptionInternal(
-                "Error in asJMLPattern(): ${e.message}", result
+                "Error in asJmlPattern(): ${e.message}", result
             )
         } catch (jei: JuggleExceptionInternal) {
             jei.pattern = result
@@ -919,15 +919,15 @@ abstract class MHNPattern : Pattern() {
         return result
     }
 
-    protected fun addPropsToJML(rec: PatternBuilder) {
+    protected fun addPropsToJml(rec: PatternBuilder) {
         val mod = if (propdiam != PROPDIAM_DEFAULT) "diam=$propdiam" else null
-        rec.props.add(JMLProp(propName, mod))
+        rec.props.add(JmlProp(propName, mod))
         val pa = MutableList(numberOfPaths) { 1 }
         rec.propAssignment = pa
     }
 
     @Throws(JuggleExceptionUser::class)
-    protected fun addSymmetriesToJML(rec: PatternBuilder) {
+    protected fun addSymmetriesToJml(rec: PatternBuilder) {
         val balls = numberOfPaths
 
         for (sss in symmetries) {
@@ -935,13 +935,13 @@ abstract class MHNPattern : Pattern() {
             val pathmap = IntArray(balls + 1)
 
             when (sss.type) {
-                MHNSymmetry.TYPE_DELAY -> {
-                    symtype = JMLSymmetry.TYPE_DELAY
+                MhnSymmetry.TYPE_DELAY -> {
+                    symtype = JmlSymmetry.TYPE_DELAY
                     for (k in 0..<(indexes - sss.delay)) {
                         for (j in 0..<numberOfJugglers) {
                             for (h in 0..1) {
                                 for (slot in 0..<maxOccupancy) {
-                                    val sst: MHNThrow? = th[j][h][k][slot]
+                                    val sst: MhnThrow? = th[j][h][k][slot]
                                     if (sst != null && sst.pathNum != -1) {
                                         val sst2 = th[j][h][k + sss.delay][slot]
                                             ?: throw JuggleExceptionUser(
@@ -966,9 +966,9 @@ abstract class MHNPattern : Pattern() {
                     }
                 }
 
-                MHNSymmetry.TYPE_SWITCH -> symtype = JMLSymmetry.TYPE_SWITCH
-                MHNSymmetry.TYPE_SWITCHDELAY -> {
-                    symtype = JMLSymmetry.TYPE_SWITCHDELAY
+                MhnSymmetry.TYPE_SWITCH -> symtype = JmlSymmetry.TYPE_SWITCH
+                MhnSymmetry.TYPE_SWITCHDELAY -> {
+                    symtype = JmlSymmetry.TYPE_SWITCHDELAY
 
                     val jugperm = sss.jugglerPerm
                     for (k in 0..<(indexes - sss.delay)) {
@@ -976,7 +976,7 @@ abstract class MHNPattern : Pattern() {
                             for (h in 0..1) {
                                 var slot = 0
                                 while (slot < maxOccupancy) {
-                                    val sst: MHNThrow? = th[j][h][k][slot]
+                                    val sst: MhnThrow? = th[j][h][k][slot]
                                     if (sst != null && sst.pathNum != -1) {
                                         val map = jugperm.map(j + 1)
                                         val newj = abs(map) - 1
@@ -1018,7 +1018,7 @@ abstract class MHNPattern : Pattern() {
                 pathmapstring += pathmap[balls]
             }
 
-            val sym = JMLSymmetry(
+            val sym = JmlSymmetry(
                 type = symtype,
                 numberOfJugglers = sss.numberOfJugglers,
                 numberOfPaths = numberOfPaths,
@@ -1034,7 +1034,7 @@ abstract class MHNPattern : Pattern() {
     // Assign throw and catch times to each element in the juggling matrix.
     //
     // The catch time here refers to that prop's catch immediately prior to the
-    // throw represented by MHNThrow.
+    // throw represented by MhnThrow.
 
     fun findCatchThrowTimes() {
         for (k in 0..<indexes) {
@@ -1172,11 +1172,11 @@ abstract class MHNPattern : Pattern() {
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    protected fun addPrimaryEventsToJML(
+    protected fun addPrimaryEventsToJml(
         rec: PatternBuilder,
         handtouched: Array<BooleanArray>,
         pathtouched: BooleanArray,
-        calcpos: MutableMap<JMLEvent, Boolean>
+        calcpos: MutableMap<JmlEvent, Boolean>
     ) {
         for (j in 0..<numberOfJugglers) {
             for (h in 0..1) {
@@ -1196,7 +1196,7 @@ abstract class MHNPattern : Pattern() {
                     }
 
                     // Event that we will be constructing:
-                    var ev = JMLEvent()
+                    var ev = JmlEvent()
 
                     // Step 3a: Add transitions to the on-beat event (throw or holding transitions)
                     var throwxsum = 0.0
@@ -1295,8 +1295,8 @@ abstract class MHNPattern : Pattern() {
                                 throw JuggleExceptionUser(message)
                             }
                             ev = ev.withTransition(
-                                JMLTransition(
-                                    type = JMLTransition.TRANS_THROW,
+                                JmlTransition(
+                                    type = JmlTransition.TRANS_THROW,
                                     path = sst2.pathNum,
                                     throwType = type,
                                     throwMod = mod
@@ -1316,8 +1316,8 @@ abstract class MHNPattern : Pattern() {
                                 // add holding transition if there's a ball in
                                 // hand and "hands" is specified
                                 ev = ev.withTransition(
-                                    JMLTransition(
-                                        type = JMLTransition.TRANS_HOLDING,
+                                    JmlTransition(
+                                        type = JmlTransition.TRANS_HOLDING,
                                         path = sst2.pathNum,
                                         throwType = type,
                                         throwMod = mod
@@ -1364,7 +1364,7 @@ abstract class MHNPattern : Pattern() {
                             z = newLocalCoordinate.z,
                             t = sst.throwTime,
                             juggler = j + 1,
-                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
                         )
                         calcpos[ev] = newCalcpos
                         rec.events.add(ev)
@@ -1443,13 +1443,13 @@ abstract class MHNPattern : Pattern() {
 
                         lastcatchtime = sst.catchTime
 
-                        var ev = JMLEvent(
+                        var ev = JmlEvent(
                             x = newLocalCoordinate.x,
                             y = newLocalCoordinate.y,
                             z = newLocalCoordinate.z,
                             t = sst.catchTime,
                             juggler = j + 1,
-                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
                         )
 
                         // add all the transitions
@@ -1457,8 +1457,8 @@ abstract class MHNPattern : Pattern() {
                             val sst2 = th[j][h][k][slot] ?: break
                             if (sst2.catching) {
                                 ev = ev.withTransition(
-                                    JMLTransition(
-                                        type = JMLTransition.TRANS_CATCH,
+                                    JmlTransition(
+                                        type = JmlTransition.TRANS_CATCH,
                                         path = sst2.pathNum
                                     )
                                 )
@@ -1467,8 +1467,8 @@ abstract class MHNPattern : Pattern() {
                                     // add holding transition if there's a ball in
                                     // hand and "hands" is specified
                                     ev = ev.withTransition(
-                                        JMLTransition(
-                                            type = JMLTransition.TRANS_HOLDING,
+                                        JmlTransition(
+                                            type = JmlTransition.TRANS_HOLDING,
                                             path = sst2.pathNum
                                         )
                                     )
@@ -1515,16 +1515,16 @@ abstract class MHNPattern : Pattern() {
                             if (sst2.catchNum == (numCatches - 1)) {
                                 lastcatchtime = sst2.catchTime
                             }
-                            val ev = JMLEvent(
+                            val ev = JmlEvent(
                                 x = newLocalCoordinate.x,
                                 y = newLocalCoordinate.y,
                                 z = newLocalCoordinate.z,
                                 t = sst2.catchTime,
                                 juggler = j + 1,
-                                hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND,
+                                hand = if (h == RIGHT_HAND) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND,
                                 transitions = listOf(
-                                    JMLTransition(
-                                        type = JMLTransition.TRANS_CATCH,
+                                    JmlTransition(
+                                        type = JmlTransition.TRANS_CATCH,
                                         path = sst2.pathNum
                                     )
                                 )
@@ -1557,14 +1557,14 @@ abstract class MHNPattern : Pattern() {
                         if (h == LEFT_HAND) {
                             c.x = -c.x
                         }
-                        val ev = JMLEvent(
+                        val ev = JmlEvent(
                             x = c.x,
                             y = c.y,
                             z = c.z,
                             t = lastcatchtime + di.toDouble() *
                                 (sst.throwTime - lastcatchtime) / numcoords,
                             juggler = sst.juggler,
-                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
@@ -1610,14 +1610,14 @@ abstract class MHNPattern : Pattern() {
                         if (h == LEFT_HAND) {
                             c.x = -c.x
                         }
-                        val ev = JMLEvent(
+                        val ev = JmlEvent(
                             x = c.x,
                             y = c.y,
                             z = c.z,
                             t = sst.throwTime + di.toDouble() *
                                 (nextcatchtime - sst.throwTime) / numcoords,
                             juggler = sst.juggler,
-                            hand = if (h == RIGHT_HAND) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
+                            hand = if (h == RIGHT_HAND) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
                         )
                         calcpos[ev] = false
                         rec.events.add(ev)
@@ -1630,7 +1630,7 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    protected fun addJugglerPositionsToJML(
+    protected fun addJugglerPositionsToJml(
         rec: PatternBuilder
     ) {
         if (bodies == null) return
@@ -1649,21 +1649,21 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    protected fun addEventsForUntouchedHandsToJML(
+    protected fun addEventsForUntouchedHandsToJml(
         rec: PatternBuilder,
         handtouched: Array<BooleanArray>,
-        calcpos: MutableMap<JMLEvent, Boolean>
+        calcpos: MutableMap<JmlEvent, Boolean>
     ) {
         for (j in 0..<numberOfJugglers) {
             for (h in 0..1) {
                 if (!handtouched[j][h]) {
-                    val ev = JMLEvent(
+                    val ev = JmlEvent(
                         x = if (h == RIGHT_HAND) RESTINGX else -RESTINGX,
                         y = 0.0,
                         z = 0.0,
                         t = -1.0,
                         juggler = j + 1,
-                        hand = if (h == 0) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
+                        hand = if (h == 0) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
                     )
                     calcpos[ev] = false
                     rec.events.add(ev)
@@ -1672,10 +1672,10 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    protected fun addEventsForUntouchedPathsToJML(
+    protected fun addEventsForUntouchedPathsToJml(
         rec: PatternBuilder,
         pathtouched: BooleanArray,
-        calcpos: MutableMap<JMLEvent, Boolean>
+        calcpos: MutableMap<JmlEvent, Boolean>
     ) {
         // first, apply all pattern symmetries to figure out which paths don't get touched
         for (sym in rec.symmetries) {
@@ -1696,7 +1696,7 @@ abstract class MHNPattern : Pattern() {
             }
 
             // figure out which hand it should belong in
-            var hand = JMLEvent.LEFT_HAND
+            var hand = JmlEvent.LEFT_HAND
             var juggler = 0
 
             top@ for (tempk in 0..<indexes) {
@@ -1705,8 +1705,8 @@ abstract class MHNPattern : Pattern() {
                         for (slot in 0..<maxOccupancy) {
                             val sst = th[tempj][temph][tempk][slot]
                             if (sst != null && sst.pathNum == (k + 1)) {
-                                hand = (if (temph == RIGHT_HAND) JMLEvent.RIGHT_HAND
-                                else JMLEvent.LEFT_HAND)
+                                hand = (if (temph == RIGHT_HAND) JmlEvent.RIGHT_HAND
+                                else JmlEvent.LEFT_HAND)
                                 juggler = tempj
                                 break@top
                             }
@@ -1719,8 +1719,8 @@ abstract class MHNPattern : Pattern() {
             for ((index, ev) in rec.events.withIndex()) {
                 if (ev.hand == hand && ev.juggler == (juggler + 1)) {
                     val ev2 = ev.withTransition(
-                        JMLTransition(
-                            type = JMLTransition.TRANS_HOLDING,
+                        JmlTransition(
+                            type = JmlTransition.TRANS_HOLDING,
                             path = (k + 1)
                         )
                     )
@@ -1740,17 +1740,17 @@ abstract class MHNPattern : Pattern() {
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    protected fun addEventsForGapsToJML(
+    protected fun addEventsForGapsToJml(
         rec: PatternBuilder,
-        calcpos: MutableMap<JMLEvent, Boolean>
+        calcpos: MutableMap<JmlEvent, Boolean>
     ) {
         scanstart@ while (true) {
             // build the pattern so we can use `allEvents`
-            val result = JMLPattern.fromPatternBuilder(rec)
+            val result = JmlPattern.fromPatternBuilder(rec)
 
             for (h in 0..1) {
-                val hand = if (h == 0) JMLEvent.RIGHT_HAND else JMLEvent.LEFT_HAND
-                val startEvent: MutableList<JMLEvent?> = MutableList(numberOfJugglers) { null }
+                val hand = if (h == 0) JmlEvent.RIGHT_HAND else JmlEvent.LEFT_HAND
+                val startEvent: MutableList<JmlEvent?> = MutableList(numberOfJugglers) { null }
 
                 for (image in result.allEvents) {
                     if (image.event.hand != hand) {
@@ -1773,7 +1773,7 @@ abstract class MHNPattern : Pattern() {
 
                             for (i in 1..numAdd) {
                                 val ev =
-                                    JMLEvent(
+                                    JmlEvent(
                                         t = start.t + i * deltaT,
                                         juggler = image.event.juggler,
                                         hand = hand
@@ -1792,9 +1792,9 @@ abstract class MHNPattern : Pattern() {
         }
     }
 
-    protected fun addLocationsForIncompleteEventsToJML(
+    protected fun addLocationsForIncompleteEventsToJml(
         rec: PatternBuilder,
-        calcpos: MutableMap<JMLEvent, Boolean>
+        calcpos: MutableMap<JmlEvent, Boolean>
     ) {
         for ((index, ev) in rec.events.withIndex()) {
             if (!(calcpos[ev] ?: false)) {
@@ -1802,10 +1802,10 @@ abstract class MHNPattern : Pattern() {
             }
 
             // rebuild the pattern to get the event sequence
-            val pat = JMLPattern.fromPatternBuilder(rec)
+            val pat = JmlPattern.fromPatternBuilder(rec)
             val loopTime = pat.loopEndTime - pat.loopStartTime
 
-            val startEvent: JMLEvent? =
+            val startEvent: JmlEvent? =
                 pat.eventSequence(startTime = ev.t, reverse = true)
                     .takeWhile { it.event.t > ev.t - loopTime }
                     .filter { it.event.juggler == ev.juggler && it.event.hand == ev.hand }
@@ -1820,7 +1820,7 @@ abstract class MHNPattern : Pattern() {
                 continue
             }
 
-            val endEvent: JMLEvent? =
+            val endEvent: JmlEvent? =
                 pat.eventSequence(startTime = ev.t)
                     .takeWhile { it.event.t < ev.t + loopTime }
                     .filter { it.event.juggler == ev.juggler && it.event.hand == ev.hand }
@@ -1828,7 +1828,7 @@ abstract class MHNPattern : Pattern() {
             if (endEvent == null) {
                 // if we found an event going backward, we should find one forward
                 throw JuggleExceptionInternal(
-                    "Error in addLocationsForIncompleteEventsToJML()", pat
+                    "Error in addLocationsForIncompleteEventsToJml()", pat
                 )
             }
 
@@ -1886,7 +1886,7 @@ abstract class MHNPattern : Pattern() {
         )
 
         // How many beats early to throw a '1' (all other throws are on-beat)
-        // This value is calculated; see asJMLPattern()
+        // This value is calculated; see asJmlPattern()
         protected var beats_one_throw_early: Double = 0.0
 
         // Minimum airtime for a throw, in beats
@@ -1908,7 +1908,7 @@ abstract class MHNPattern : Pattern() {
         // is invariant with respect to the various pattern symmetries we can apply,
         // but I don't think this is possible with respect to the jugglers.
 
-        protected fun isCatchOrderIncorrect(t1: MHNThrow, t2: MHNThrow): Boolean {
+        protected fun isCatchOrderIncorrect(t1: MhnThrow, t2: MhnThrow): Boolean {
             // first look at the time spent in the air; catch higher throws first
             if (t1.source!!.index > t2.source!!.index) {
                 return true

@@ -1,5 +1,5 @@
 //
-// MHNBody.kt
+// MhnBody.kt
 //
 // This class parses the "body" parameter in MHN notation.
 //
@@ -9,11 +9,11 @@
 package jugglinglab.notation
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.jml.JMLPosition
+import jugglinglab.jml.JmlPosition
 import jugglinglab.util.*
 import jugglinglab.util.jlParseFiniteDouble
 
-data class MHNBody(
+data class MhnBody(
     val config: String
 ) {
     val numberOfJugglers: Int
@@ -108,13 +108,13 @@ data class MHNBody(
 
     // Position and index start from 0.
 
-    fun getPosition(juggler: Int, pos: Int, index: Int): JMLPosition? {
+    fun getPosition(juggler: Int, pos: Int, index: Int): JmlPosition? {
         if (pos >= getPeriod(juggler) || index >= getNumberOfPositions(juggler, pos)) {
             return null
         }
         val coord = bodyPositions[(juggler - 1) % numberOfJugglers][pos][index]
         return coord?.let {
-            JMLPosition(
+            JmlPosition(
                 x = it[1],
                 y = it[2],
                 z = it[3],

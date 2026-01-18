@@ -1,5 +1,5 @@
 //
-// JLFuncCommon.kt
+// JlFuncCommon.kt
 //
 // Some useful functions.
 //

@@ -1,7 +1,7 @@
 //
-// MHNPatternTest.kt
+// MhnPatternTest.kt
 //
-// Unit tests for MHNPattern.
+// Unit tests for MhnPattern.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -11,7 +11,7 @@ package jugglinglab.notation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MHNPatternTest {
+class MhnPatternTest {
     // utility function for testing JML creation.
 
     private fun trimmedJml(input: String): String {
@@ -71,7 +71,7 @@ class MHNPatternTest {
             "<throw path=\"2\" type=\"toss\"/>\n" +
             "</event>\n"
 
-        assertEquals(expected, trimmedJml(pattern.asJMLPattern().toString()))
+        assertEquals(expected, trimmedJml(pattern.asJmlPattern().toString()))
     }
 
 }

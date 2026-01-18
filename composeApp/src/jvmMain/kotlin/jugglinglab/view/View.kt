@@ -14,7 +14,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.PatternWindow
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.renderer.FrameDrawer
 import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
 import jugglinglab.util.jlHandleFatalException
@@ -90,7 +90,7 @@ abstract class View(
     //   elements, since it may be followed by layout
     // - 'coldRestart = true' resets camera angle, zoom, and prop assignments
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
+    abstract fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
 
     // restart without changing pattern or preferences
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

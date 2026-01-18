@@ -12,19 +12,19 @@ package jugglinglab.core
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import kotlin.math.max
 import kotlin.math.min
 
 class PatternAnimationState(
-    initialPattern: JMLPattern,
+    initialPattern: JmlPattern,
     initialPrefs: AnimationPrefs
 ) {
     //--------------------------------------------------------------------------
     // State variables
     //--------------------------------------------------------------------------
 
-    var pattern: JMLPattern by mutableStateOf(initialPattern)
+    var pattern: JmlPattern by mutableStateOf(initialPattern)
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
     var time: Double by mutableStateOf(initialPattern.loopStartTime)
     var isPaused: Boolean by mutableStateOf(initialPrefs.startPaused)
@@ -40,7 +40,7 @@ class PatternAnimationState(
     //--------------------------------------------------------------------------
 
     fun update(
-        pattern: JMLPattern? = null,
+        pattern: JmlPattern? = null,
         prefs: AnimationPrefs? = null,
         time: Double? = null,
         isPaused: Boolean? = null,
@@ -182,7 +182,7 @@ class PatternAnimationState(
     // Undo list to support undo/redo for pattern edits
     //--------------------------------------------------------------------------
 
-    val undoList: MutableList<JMLPattern> = mutableListOf(initialPattern)
+    val undoList: MutableList<JmlPattern> = mutableListOf(initialPattern)
     var undoIndex: Int = 0
 
     // Add the current pattern to the undo list. See View for other undo-related

@@ -10,7 +10,7 @@
 package jugglinglab.view
 
 import jugglinglab.core.*
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.ui.AnimationPanel
 import jugglinglab.ui.LadderDiagramPanel
 import jugglinglab.ui.PatternWindow
@@ -57,7 +57,7 @@ class EditView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+    override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
         ap.restartJuggle(pattern, prefs, coldRestart)

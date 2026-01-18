@@ -1,5 +1,5 @@
 //
-// OpenFilesServerMMF.kt
+// OpenFilesServerMmf.kt
 //
 // This implementation of OpenFilesServer uses a memory mapped file to
 // communicate between processes.
@@ -23,7 +23,7 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import javax.swing.SwingUtilities
 
-class OpenFilesServerMMF : Thread() {
+class OpenFilesServerMmf : Thread() {
     init {
         serverThread = this
         start()
@@ -81,7 +81,7 @@ class OpenFilesServerMMF : Thread() {
                             Desktop.getDesktop().requestForeground(true)
                         }
                         try {
-                            ApplicationWindow.openJMLFile(file)
+                            ApplicationWindow.openJmlFile(file)
                         } catch (jeu: JuggleExceptionUser) {
                             val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message

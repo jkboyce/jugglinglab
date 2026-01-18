@@ -1,7 +1,7 @@
 //
 // LaidoutPattern.kt
 //
-// This class represent a JMLPattern that is physically laid out and ready to
+// This class represent a JmlPattern that is physically laid out and ready to
 // animate.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
@@ -17,10 +17,10 @@ import jugglinglab.curve.Curve
 import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.EventImages
-import jugglinglab.jml.JMLEvent
+import jugglinglab.jml.JmlEvent
 //import jugglinglab.layout.HandLink.Companion.index
-import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLTransition
+import jugglinglab.jml.JmlPattern
+import jugglinglab.jml.JmlTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*
@@ -30,7 +30,7 @@ import jugglinglab.util.Coordinate.Companion.sub
 import kotlin.math.cos
 import kotlin.math.sin
 
-class LaidoutPattern(val pat: JMLPattern) {
+class LaidoutPattern(val pat: JmlPattern) {
     // events as a linked list
     private var eventList: LayoutEvent? = null
 
@@ -230,19 +230,19 @@ class LaidoutPattern(val pat: JMLPattern) {
             for (j in 0..<numevents) {
                 if (!hasJMLTransitionForLeft) {
                     hasJMLTransitionForLeft =
-                        ei[j]!!.hasJMLTransitionForHand(i + 1, JMLEvent.LEFT_HAND)
+                        ei[j]!!.hasJmlTransitionForHand(i + 1, JmlEvent.LEFT_HAND)
                 }
                 if (!hasJMLTransitionForRight) {
                     hasJMLTransitionForRight =
-                        ei[j]!!.hasJMLTransitionForHand(i + 1, JMLEvent.RIGHT_HAND)
+                        ei[j]!!.hasJmlTransitionForHand(i + 1, JmlEvent.RIGHT_HAND)
                 }
                 if (!hasVDHandJMLTransition[i][0]) {
                     hasVDHandJMLTransition[i][0] =
-                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, JMLEvent.LEFT_HAND)
+                        ei[j]!!.hasVdJmlTransitionForHand(i + 1, JmlEvent.LEFT_HAND)
                 }
                 if (!hasVDHandJMLTransition[i][1]) {
                     hasVDHandJMLTransition[i][1] =
-                        ei[j]!!.hasVDJMLTransitionForHand(i + 1, JMLEvent.RIGHT_HAND)
+                        ei[j]!!.hasVdJmlTransitionForHand(i + 1, JmlEvent.RIGHT_HAND)
                 }
             }
             if (!hasJMLTransitionForLeft) {
@@ -264,10 +264,10 @@ class LaidoutPattern(val pat: JMLPattern) {
 
             for (j in 0..<numevents) {
                 if (!hasPathJMLTransition) {
-                    hasPathJMLTransition = ei[j]!!.hasJMLTransitionForPath(i + 1)
+                    hasPathJMLTransition = ei[j]!!.hasJmlTransitionForPath(i + 1)
                 }
                 if (!hasVDPathJMLTransition[i]) {
-                    hasVDPathJMLTransition[i] = ei[j]!!.hasVDJMLTransitionForPath(i + 1)
+                    hasVDPathJMLTransition[i] = ei[j]!!.hasVdJmlTransitionForPath(i + 1)
                 }
             }
             if (!hasPathJMLTransition) {
@@ -308,7 +308,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             // now update the needs arrays, so we know when to stop
             if (maxtime < pat.loopStartTime) {
                 val jug = maxEventImage.event.juggler - 1
-                val han = JMLEvent.handIndex(maxEventImage.event.hand)
+                val han = JmlEvent.handIndex(maxEventImage.event.hand)
 
                 if (!hasVDHandJMLTransition[jug][han]) {
                     needHandEvent[jug][han] = false
@@ -318,15 +318,15 @@ class LaidoutPattern(val pat: JMLPattern) {
                     val path = tr.path - 1
 
                     when (tr.type) {
-                        JMLTransition.TRANS_THROW -> {
+                        JmlTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
                             needHandEvent[jug][han] = false
                             needVDHandEvent[jug][han] = false
                             needSpecialPathEvent[path] = false
                         }
 
-                        JMLTransition.TRANS_CATCH, JMLTransition.TRANS_GRABCATCH -> {}
-                        JMLTransition.TRANS_SOFTCATCH -> {
+                        JmlTransition.TRANS_CATCH, JmlTransition.TRANS_GRABCATCH -> {}
+                        JmlTransition.TRANS_SOFTCATCH -> {
                             if (needVDHandEvent[jug][han]) {
                                 // need corresponding throw to get velocity
                                 needSpecialPathEvent[path] = true
@@ -335,7 +335,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                             needVDHandEvent[jug][han] = false
                         }
 
-                        JMLTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
+                        JmlTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
                             // if no throws for this path, then done
                             needPathEvent[path] = false
                         }
@@ -402,7 +402,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             // now update the needs arrays, so we know when to stop
             if (mintime > pat.loopEndTime) {
                 val jug = minEventImage.event.juggler - 1
-                val han = JMLEvent.handIndex(minEventImage.event.hand)
+                val han = JmlEvent.handIndex(minEventImage.event.hand)
 
                 // if this hand has no throws/catches, then need to build out event list
                 // past a certain time, due to how the hand layout is done in this case
@@ -417,7 +417,7 @@ class LaidoutPattern(val pat: JMLPattern) {
                     val path = tr.path - 1
 
                     when (tr.type) {
-                        JMLTransition.TRANS_THROW -> {
+                        JmlTransition.TRANS_THROW -> {
                             needPathEvent[path] = false
                             if (needVDHandEvent[jug][han]) {
                                 // need corresponding catch to get velocity
@@ -427,19 +427,19 @@ class LaidoutPattern(val pat: JMLPattern) {
                             needVDHandEvent[jug][han] = false
                         }
 
-                        JMLTransition.TRANS_CATCH, JMLTransition.TRANS_GRABCATCH -> {
+                        JmlTransition.TRANS_CATCH, JmlTransition.TRANS_GRABCATCH -> {
                             needPathEvent[path] = false
                             needSpecialPathEvent[path] = false
                         }
 
-                        JMLTransition.TRANS_SOFTCATCH -> {
+                        JmlTransition.TRANS_SOFTCATCH -> {
                             needPathEvent[path] = false
                             needHandEvent[jug][han] = false
                             needVDHandEvent[jug][han] = false
                             needSpecialPathEvent[path] = false
                         }
 
-                        JMLTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
+                        JmlTransition.TRANS_HOLDING -> if (!hasVDPathJMLTransition[path]) {
                             // no throws for this path, done
                             needPathEvent[path] = false
                         }
@@ -559,19 +559,19 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun buildLinkLists() {
-        val incomingPathLink: HashMap<IdentityKey<JMLTransition>, PathLink> = HashMap()
-        val outgoingPathLink: HashMap<IdentityKey<JMLTransition>, PathLink> = HashMap()
+        val incomingPathLink: HashMap<IdentityKey<JmlTransition>, PathLink> = HashMap()
+        val outgoingPathLink: HashMap<IdentityKey<JmlTransition>, PathLink> = HashMap()
 
         for (i in 0..<pat.numberOfPaths) {
             var ev = eventList
             var lastev: LayoutEvent? = null
-            var lasttr: JMLTransition? = null
+            var lasttr: JmlTransition? = null
 
             done1@ while (true) {
                 // find the next transition for this path
-                var tr: JMLTransition?
+                var tr: JmlTransition?
                 while (true) {
-                    tr = ev!!.event.getPathTransition(i + 1, JMLTransition.TRANS_ANY)
+                    tr = ev!!.event.getPathTransition(i + 1, JmlTransition.TRANS_ANY)
                     if (tr != null) {
                         break
                     }
@@ -591,8 +591,8 @@ class LaidoutPattern(val pat: JMLPattern) {
                     )
 
                     when (tr.type) {
-                        JMLTransition.TRANS_THROW, JMLTransition.TRANS_HOLDING -> {
-                            if (lasttr!!.type == JMLTransition.TRANS_THROW) {
+                        JmlTransition.TRANS_THROW, JmlTransition.TRANS_HOLDING -> {
+                            if (lasttr!!.type == JmlTransition.TRANS_THROW) {
                                 val message =
                                     jlGetStringResource(Res.string.error_successive_throws, i + 1)
                                 throw JuggleExceptionUser(message)
@@ -610,8 +610,8 @@ class LaidoutPattern(val pat: JMLPattern) {
                             pl.setInHand(ev.juggler, ev.hand)
                         }
 
-                        JMLTransition.TRANS_CATCH, JMLTransition.TRANS_SOFTCATCH, JMLTransition.TRANS_GRABCATCH -> {
-                            if (lasttr!!.type != JMLTransition.TRANS_THROW) {
+                        JmlTransition.TRANS_CATCH, JmlTransition.TRANS_SOFTCATCH, JmlTransition.TRANS_GRABCATCH -> {
+                            if (lasttr!!.type != JmlTransition.TRANS_THROW) {
                                 val message =
                                     jlGetStringResource(Res.string.error_successive_catches, i + 1)
                                 throw JuggleExceptionUser(message)
@@ -647,7 +647,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
         for (i in 0..<pat.numberOfJugglers) {
             for (h in 0..1) {
-                val hand = if (h == 0) JMLEvent.LEFT_HAND else JMLEvent.RIGHT_HAND
+                val hand = if (h == 0) JmlEvent.LEFT_HAND else JmlEvent.RIGHT_HAND
 
                 var ev = eventList
                 var lastev: LayoutEvent? = null
@@ -667,17 +667,17 @@ class LaidoutPattern(val pat: JMLPattern) {
                     vr = null
                     if (ev.juggler == (i + 1) && ev.hand == hand) {
                         for (tr in ev.event.transitions) {
-                            if (tr.type == JMLTransition.TRANS_THROW) {
+                            if (tr.type == JmlTransition.TRANS_THROW) {
                                 val pl = outgoingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_THROW)
                                 }
-                            } else if (tr.type == JMLTransition.TRANS_SOFTCATCH) {
+                            } else if (tr.type == JmlTransition.TRANS_SOFTCATCH) {
                                 val pl = incomingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_SOFTCATCH)
                                 }
-                            } else if (tr.type == JMLTransition.TRANS_CATCH) {
+                            } else if (tr.type == JmlTransition.TRANS_CATCH) {
                                 val pl = incomingPathLink[IdentityKey(tr)]
                                 if (pl != null) {
                                     vr = VelocityRef(pl.path!!, VelocityRef.VR_CATCH)
@@ -838,7 +838,7 @@ class LaidoutPattern(val pat: JMLPattern) {
             } else {
                 sb.append("  Image event; primary at t=" + current.primary.t + "\n")
             }
-            current.event.writeJML(sb)
+            current.event.writeJml(sb)
             current = current.next
         }
         println(sb.toString())
@@ -940,7 +940,7 @@ class LaidoutPattern(val pat: JMLPattern) {
 
     // Return the global coordinate of an event.
 
-    fun getGlobalCoordinate(ev: JMLEvent): Coordinate {
+    fun getGlobalCoordinate(ev: JmlEvent): Coordinate {
         val lc = ev.localCoordinate
         return convertLocalToGlobal(lc, ev.juggler, ev.t)
     }
@@ -983,7 +983,7 @@ class LaidoutPattern(val pat: JMLPattern) {
     @Throws(JuggleExceptionInternal::class)
     fun getHandCoordinate(juggler: Int, hand: Int, time: Double, newPosition: Coordinate) {
         var time = time
-        val handindex = if (hand == JMLEvent.LEFT_HAND) 0 else 1
+        val handindex = if (hand == JmlEvent.LEFT_HAND) 0 else 1
 
         while (time < pat.loopStartTime) {
             time += pat.loopEndTime - pat.loopStartTime
@@ -1137,7 +1137,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var result: Coordinate? = null
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
-        val handnum = if (hand == JMLEvent.LEFT_HAND) 0 else 1
+        val handnum = if (hand == JmlEvent.LEFT_HAND) 0 else 1
 
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
@@ -1152,7 +1152,7 @@ class LaidoutPattern(val pat: JMLPattern) {
         var result: Coordinate? = null
         val t1 = pat.loopStartTime
         val t2 = pat.loopEndTime
-        val handnum = if (hand == JMLEvent.LEFT_HAND) 0 else 1
+        val handnum = if (hand == JmlEvent.LEFT_HAND) 0 else 1
 
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve

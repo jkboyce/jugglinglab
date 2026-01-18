@@ -1,7 +1,7 @@
 //
 // LayoutEvent.kt
 //
-// Wraps JMLEvent with information used during layout.
+// Wraps JmlEvent with information used during layout.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -10,12 +10,12 @@
 
 package jugglinglab.layout
 
-import jugglinglab.jml.JMLEvent
+import jugglinglab.jml.JmlEvent
 import jugglinglab.util.Permutation
 
 class LayoutEvent(
-    val event: JMLEvent,
-    val primary: JMLEvent,
+    val event: JmlEvent,
+    val primary: JmlEvent,
     val pathPermFromPrimary: Permutation
 ) {
     val t = event.t

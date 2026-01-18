@@ -13,8 +13,8 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.generator.*
 import jugglinglab.generator.Generator.Companion.newGenerator
 import jugglinglab.generator.Transitioner.Companion.newTransitioner
-import jugglinglab.jml.JMLPattern.Companion.fromBasePattern
-import jugglinglab.jml.JMLPatternList
+import jugglinglab.jml.JmlPattern.Companion.fromBasePattern
+import jugglinglab.jml.JmlPatternList
 import jugglinglab.notation.Pattern
 import jugglinglab.util.*
 import jugglinglab.util.jlHandleFatalException
@@ -60,7 +60,7 @@ class ApplicationPanelSwing(
 
         var pl = patlist
         if (pl == null && patlisttab) {
-            pl = PatternListPanel(patternList = JMLPatternList(), animTarget = animtarget)
+            pl = PatternListPanel(patternList = JmlPatternList(), animTarget = animtarget)
         }
         if (trans != null) {
             addTransitionerControl(trans, pl)

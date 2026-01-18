@@ -1,5 +1,5 @@
 //
-// MHNThrow.kt
+// MhnThrow.kt
 //
 // This class represents an element in the juggling matrix. Often this represents
 // the throw of a specific object to some later element in the matrix. It can
@@ -10,31 +10,31 @@
 
 package jugglinglab.notation
 
-data class MHNThrow(
+data class MhnThrow(
     val juggler: Int = 0,  // indexed from 1
-    val hand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    val hand: Int = 0,  // MhnPattern.RIGHT_HAND or LEFT_HAND
     val index: Int = 0,
     val slot: Int = 0,
     val targetJuggler: Int = 0,  // indexed from 1
-    val targetHand: Int = 0,  // MHNPattern.RIGHT_HAND or LEFT_HAND
+    val targetHand: Int = 0,  // MhnPattern.RIGHT_HAND or LEFT_HAND
     val targetIndex: Int = 0,
     val targetSlot: Int = 0,
     val mod: String? = null
-) : Comparable<MHNThrow> {
+) : Comparable<MhnThrow> {
     // filled in during parseSiteswapNotation():
     var handsBeat: Int = 0  // beat of throw in hands sequence, if one exists
 
     // filled in during buildJugglingMatrix():
-    var primary: MHNThrow? = null
-    var source: MHNThrow? = null
-    var target: MHNThrow? = null
+    var primary: MhnThrow? = null
+    var source: MhnThrow? = null
+    var target: MhnThrow? = null
     var pathNum: Int = -1
     var catching: Boolean = false  // are we catching just before this throw?
     var catchNum: Int = -1  // order (starting at 1) to make catches
     // # of beats prior of the previous nonzero element for this hand
     var dwellWindow: Int = 0
 
-    // filled in during asJMLPattern():
+    // filled in during asJmlPattern():
     var throwTime: Double = 0.0  // in seconds
     var catchTime: Double = 0.0  // time of catch prior to throw
 
@@ -66,7 +66,7 @@ data class MHNThrow(
     val isThrownOne: Boolean
         get() = (mod != null && mod[0] != 'H' && throwValue == 1)
 
-    override fun compareTo(other: MHNThrow): Int {
+    override fun compareTo(other: MhnThrow): Int {
         val beats1 = targetIndex - index
         val beats2 = other.targetIndex - other.index
 

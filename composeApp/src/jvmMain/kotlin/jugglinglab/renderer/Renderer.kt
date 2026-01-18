@@ -6,7 +6,7 @@
 
 package jugglinglab.renderer
 
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
 import java.awt.Color
@@ -20,7 +20,7 @@ abstract class Renderer {
         this.showground = showground
     }
 
-    abstract fun setPattern(pat: JMLPattern)
+    abstract fun setPattern(pat: JmlPattern)
 
     abstract fun initDisplay(
         dim: Dimension, border: Int, overallmax: Coordinate, overallmin: Coordinate

@@ -8,8 +8,8 @@ package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLParser
-import jugglinglab.jml.JMLPatternList
+import jugglinglab.jml.JmlParser
+import jugglinglab.jml.JmlPatternList
 import jugglinglab.util.*
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
@@ -29,7 +29,7 @@ import kotlin.math.max
 
 class PatternListWindow(
     windowTitle: String? = null,
-    val patternList: JMLPatternList = JMLPatternList(),
+    val patternList: JmlPatternList = JmlPatternList(),
     var generatorThread: Thread? = null
 ) : JFrame(), ActionListener {
     val patternListPanel = PatternListPanel(
@@ -214,7 +214,7 @@ class PatternListWindow(
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
             MenuCommand.FILE_NEWPL -> PatternListWindow("").setTitle(null)
-            MenuCommand.FILE_OPEN -> ApplicationWindow.openJMLFile()
+            MenuCommand.FILE_OPEN -> ApplicationWindow.openJmlFile()
             MenuCommand.FILE_SAVE -> try {
                 var fname = lastJmlFilename ?: (getTitle() + ".jml")
                 fname = jlSanitizeFilename(fname)
@@ -233,7 +233,7 @@ class PatternListWindow(
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
-                patternList.writeJML(fw)
+                patternList.writeJml(fw)
                 fw.close()
                 setContentsClean()
             } catch (fnfe: FileNotFoundException) {
@@ -287,10 +287,10 @@ class PatternListWindow(
             MenuCommand.FILE_DUPLICATE -> {
                 val pl = run {
                     val sw = StringWriter()
-                    patternList.writeJML(sw)
-                    val parser = JMLParser()
+                    patternList.writeJml(sw)
+                    val parser = JmlParser()
                     parser.parse(sw.toString())
-                    JMLPatternList(jmlNode = parser.tree)
+                    JmlPatternList(jmlNode = parser.tree)
                 }
                 pl.title = "$title copy"
                 PatternListWindow(patternList = pl)

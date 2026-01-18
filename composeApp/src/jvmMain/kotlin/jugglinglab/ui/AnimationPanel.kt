@@ -15,9 +15,9 @@ package jugglinglab.ui
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLEvent
-import jugglinglab.jml.JMLPosition
+import jugglinglab.jml.JmlPattern
+import jugglinglab.jml.JmlEvent
+import jugglinglab.jml.JmlPosition
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.renderer.FrameDrawer
 import jugglinglab.util.jlHandleFatalException
@@ -80,8 +80,8 @@ class AnimationPanel(
 
     // for when an event is activated/dragged
     private var eventActive: Boolean = false
-    private var activeEvent: JMLEvent? = null
-    private var activeEventPrimary: JMLEvent? = null
+    private var activeEvent: JmlEvent? = null
+    private var activeEventPrimary: JmlEvent? = null
 
     private var draggingXz: Boolean = false
     private var draggingY: Boolean = false
@@ -89,7 +89,7 @@ class AnimationPanel(
     private var showYDragControl: Boolean = false
     private var eventStart: Coordinate? = null
     private var eventPrimaryStart: Coordinate? = null
-    private var visibleEvents: List<JMLEvent> = listOf()
+    private var visibleEvents: List<JmlEvent> = listOf()
     private var eventPoints: Array<Array<Array<DoubleArray>>>
     private var handpathPoints: Array<Array<DoubleArray>>
     private var handpathStartTime: Double = 0.0
@@ -98,7 +98,7 @@ class AnimationPanel(
 
     // for when a position is activated/dragged
     private var positionActive: Boolean = false
-    private var activePosition: JMLPosition? = null
+    private var activePosition: JmlPosition? = null
 
     private var posPoints: Array<Array<DoubleArray>>
     private var draggingXy: Boolean = false
@@ -196,7 +196,7 @@ class AnimationPanel(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JMLPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
+    fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
         // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
@@ -766,7 +766,7 @@ class AnimationPanel(
                     while (finalAngle < 0) {
                         finalAngle += 360.0
                     }
-                    val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                    val rec = PatternBuilder.fromJmlPattern(state.pattern)
                     val index = rec.positions.indexOf(activePosition!!)
                     if (index < 0) {
                         throw JuggleExceptionInternal("Error 1 in AEP.mouseDragged()")
@@ -774,7 +774,7 @@ class AnimationPanel(
                     val newPosition = activePosition!!.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
                     state.update(
-                        pattern = JMLPattern.fromPatternBuilder(rec),
+                        pattern = JmlPattern.fromPatternBuilder(rec),
                         selectedItemHashCode = newPosition.jlHashCode
                     )
                 } else {
@@ -809,17 +809,17 @@ class AnimationPanel(
                             z = newPrimaryCoordinate.z
                         )
 
-                        val record = PatternBuilder.fromJMLPattern(state.pattern)
+                        val record = PatternBuilder.fromJmlPattern(state.pattern)
                         val index = record.events.indexOf(activeEventPrimary)
                         record.events[index] = newPrimary
                         state.update(
-                            pattern = JMLPattern.fromPatternBuilder(record),
+                            pattern = JmlPattern.fromPatternBuilder(record),
                             selectedItemHashCode = newEvent.jlHashCode
                         )
                     }
 
                     if (positionActive) {
-                        val rec = PatternBuilder.fromJMLPattern(state.pattern)
+                        val rec = PatternBuilder.fromJmlPattern(state.pattern)
                         val index = rec.positions.indexOf(activePosition!!)
                         if (index < 0) {
                             throw JuggleExceptionInternal("Error 2 in AEP.mouseDragged()")
@@ -827,7 +827,7 @@ class AnimationPanel(
                         val newPosition = activePosition!!.copy(x = cc.x, y = cc.y, z = cc.z)
                         rec.positions[index] = newPosition
                         state.update(
-                            pattern = JMLPattern.fromPatternBuilder(rec),
+                            pattern = JmlPattern.fromPatternBuilder(rec),
                             selectedItemHashCode = newPosition.jlHashCode
                         )
                     }

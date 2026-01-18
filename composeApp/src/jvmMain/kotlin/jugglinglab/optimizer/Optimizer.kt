@@ -1,7 +1,7 @@
 //
 // Optimizer.kt
 //
-// Class that optimizes a JMLPattern by maximizing the allowed margin of error
+// Class that optimizes a JmlPattern by maximizing the allowed margin of error
 // in throwing angle. (Maximize the minimum margin of error across all throws
 // in the pattern.)
 //
@@ -17,7 +17,7 @@ package jugglinglab.optimizer
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlIsLinux
@@ -31,8 +31,8 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class Optimizer private constructor(pat: JMLPattern) {
-    private val record: PatternBuilder = PatternBuilder.fromJMLPattern(pat)
+class Optimizer private constructor(pat: JmlPattern) {
+    private val record: PatternBuilder = PatternBuilder.fromJmlPattern(pat)
 
     private val me: MarginEquations = MarginEquations(pat)
     private val pinned: BooleanArray =
@@ -324,8 +324,8 @@ class Optimizer private constructor(pat: JMLPattern) {
         }
     }
 
-    private fun getResult(): JMLPattern {
-        return JMLPattern.fromPatternBuilder(record)
+    private fun getResult(): JmlPattern {
+        return JmlPattern.fromPatternBuilder(record)
     }
 
     companion object {
@@ -368,7 +368,7 @@ class Optimizer private constructor(pat: JMLPattern) {
         @Suppress("unused")
         @JvmStatic
         @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
-        fun optimize(pat: JMLPattern): JMLPattern {
+        fun optimize(pat: JmlPattern): JmlPattern {
             if (!optimizerAvailable()) {
                 if (Constants.DEBUG_OPTIMIZE) {
                     println("---- Optimizer not loaded, bailing")

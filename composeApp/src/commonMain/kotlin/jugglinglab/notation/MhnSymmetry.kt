@@ -1,5 +1,5 @@
 //
-// MHNSymmetry.kt
+// MhnSymmetry.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -8,7 +8,7 @@ package jugglinglab.notation
 
 import jugglinglab.util.Permutation
 
-data class MHNSymmetry(
+data class MhnSymmetry(
     val type: Int,
     val numberOfJugglers: Int,
     val jugPerm: String?,

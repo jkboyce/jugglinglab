@@ -1,5 +1,5 @@
 //
-// JMLSymmetry.kt
+// JmlSymmetry.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -13,7 +13,7 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.jlGetStringResource
 
-data class JMLSymmetry(
+data class JmlSymmetry(
     val type: Int,
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
@@ -21,7 +21,7 @@ data class JMLSymmetry(
     val pathPerm: Permutation,
     val delay: Double = -1.0
 ) {
-    fun writeJML(wr: Appendable) {
+    fun writeJml(wr: Appendable) {
         val output = when (type) {
             TYPE_DELAY -> "<symmetry type=\"delay\" pperm=\"$pathPerm\" delay=\"${jlToStringRounded(delay, 4)}\"/>\n"
             TYPE_SWITCH -> "<symmetry type=\"switch\" jperm=\"$jugglerPerm\" pperm=\"$pathPerm\"/>\n"
@@ -38,12 +38,12 @@ data class JMLSymmetry(
 
         @Suppress("unused")
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(
-            current: JMLNode,
+        fun fromJmlNode(
+            current: JmlNode,
             numberOfJugglers: Int,
             numberOfPaths: Int,
-            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
-        ): JMLSymmetry {
+            loadingJmlVersion: String = JmlDefs.CURRENT_JML_VERSION
+        ): JmlSymmetry {
             val at = current.attributes
             val symTypeString = at.getValueOf("type")
                 ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_symmetry_notype))
@@ -66,7 +66,7 @@ data class JMLSymmetry(
             val jugglerPerm = createPermutation(numberOfJugglers, at.getValueOf("jperm"), true)
             val pathPerm = createPermutation(numberOfPaths, at.getValueOf("pperm"), false)
 
-            return JMLSymmetry(
+            return JmlSymmetry(
                 type = symType,
                 numberOfJugglers = numberOfJugglers,
                 numberOfPaths = numberOfPaths,

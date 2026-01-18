@@ -1,27 +1,27 @@
 //
-// JMLNode.kt
+// JmlNode.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml
 
-class JMLNode(
-    val nodeType: String?  // from taglist in JMLDefs.java
+class JmlNode(
+    val nodeType: String?  // from taglist in JmlDefs.java
 ) {
     var nodeValue: String? = null  // for nodes with character content
-    var attributes = JMLAttributes()
+    var attributes = JmlAttributes()
         private set
-    var parentNode: JMLNode? = null
-    var previousSibling: JMLNode? = null
-    var nextSibling: JMLNode? = null
-    var children: MutableList<JMLNode> = mutableListOf()
+    var parentNode: JmlNode? = null
+    var previousSibling: JmlNode? = null
+    var nextSibling: JmlNode? = null
+    var children: MutableList<JmlNode> = mutableListOf()
 
     fun addAttribute(name: String, value: String) {
         attributes = attributes.addAttribute(name, value)
     }
     
-    fun addChildNode(newChild: JMLNode) {
+    fun addChildNode(newChild: JmlNode) {
         val lastNode = children.lastOrNull()
         lastNode?.nextSibling = newChild
         children.add(newChild)
@@ -33,7 +33,7 @@ class JMLNode(
     // Recursively traverse the node tree to find the first instance of a given
     // node type.
     
-    fun findNode(type: String?): JMLNode? {
+    fun findNode(type: String?): JmlNode? {
         if (nodeType == type) {
             return this
         }

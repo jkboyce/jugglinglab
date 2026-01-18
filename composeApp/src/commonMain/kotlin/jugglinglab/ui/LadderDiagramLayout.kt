@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.*
 
 class LadderDiagramLayout(
-    val pattern: JMLPattern,
+    val pattern: JmlPattern,
     val width: Int,
     val height: Int,
     val density: Float
@@ -39,8 +39,8 @@ class LadderDiagramLayout(
     val dashOn = (DASH_ON_DP * density)
     val dashOff = (DASH_OFF_DP * density)
 
-    val hasSwitchSymmetry: Boolean = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCH }
-    val hasSwitchDelaySymmetry: Boolean = pattern.symmetries.any { it.type == JMLSymmetry.TYPE_SWITCHDELAY }
+    val hasSwitchSymmetry: Boolean = pattern.symmetries.any { it.type == JmlSymmetry.TYPE_SWITCH }
+    val hasSwitchDelaySymmetry: Boolean = pattern.symmetries.any { it.type == JmlSymmetry.TYPE_SWITCHDELAY }
 
     init {
         calculateLayout()
@@ -93,7 +93,7 @@ class LadderDiagramLayout(
                             endEvent = endEi.event,
                         ).apply {
                             transnumStart = indexTr
-                            type = if (tr.type != JMLTransition.TRANS_THROW) {
+                            type = if (tr.type != JmlTransition.TRANS_THROW) {
                                 LadderItem.TYPE_HOLD
                             } else if (ei.event.juggler != endEvent.juggler) {
                                 LadderItem.TYPE_PASS
@@ -134,13 +134,13 @@ class LadderDiagramLayout(
         for (item in eventItems) {
             val ev = item.event
             var eventX: Int =
-                ((if (ev.hand == JMLEvent.LEFT_HAND) leftX else rightX)
+                ((if (ev.hand == JmlEvent.LEFT_HAND) leftX else rightX)
                         + (ev.juggler - 1) * jugglerDeltaX
                         - transitionRadius)
             val eventY: Int = timeToY(ev.t) - transitionRadius
 
             if (item.type != LadderItem.TYPE_EVENT) {
-                if (ev.hand == JMLEvent.LEFT_HAND) {
+                if (ev.hand == JmlEvent.LEFT_HAND) {
                     eventX += 2 * transitionRadius * (item.transNum + 1)
                 } else {
                     eventX -= 2 * transitionRadius * (item.transNum + 1)
@@ -155,7 +155,7 @@ class LadderDiagramLayout(
         // Set locations of paths
         for (item in pathItems) {
             item.xStart =
-                ((if (item.startEvent.hand == JMLEvent.LEFT_HAND)
+                ((if (item.startEvent.hand == JmlEvent.LEFT_HAND)
                     (leftX + (item.transnumStart + 1) * 2 * transitionRadius)
                 else
                     (rightX - (item.transnumStart + 1) * 2 * transitionRadius))
@@ -165,7 +165,7 @@ class LadderDiagramLayout(
 
             val slot = item.endEvent.transitions.indexOfFirst { it.path == item.pathNum }
             if (slot != -1) {
-                item.xEnd = ((if (item.endEvent.hand == JMLEvent.LEFT_HAND)
+                item.xEnd = ((if (item.endEvent.hand == JmlEvent.LEFT_HAND)
                     (leftX + (slot + 1) * 2 * transitionRadius)
                 else
                     (rightX - (slot + 1) * 2 * transitionRadius))
@@ -184,7 +184,7 @@ class LadderDiagramLayout(
                     if (d < (0.5 * b)) {
                         d = 0.5 * b
                     }
-                    val mult = if (item.endEvent.hand == JMLEvent.LEFT_HAND) -1.0 else 1.0
+                    val mult = if (item.endEvent.hand == JmlEvent.LEFT_HAND) -1.0 else 1.0
                     val xc = xt + mult * d * (yt - item.yStart.toDouble()) / a
                     val yc = yt + mult * d * (item.xStart.toDouble() - xt) / a
                     val rad = sqrt(
@@ -285,8 +285,8 @@ open class LadderItem {
 }
 
 class LadderEventItem(
-    val event: JMLEvent,
-    val primary: JMLEvent
+    val event: JmlEvent,
+    val primary: JmlEvent
 ) : LadderItem() {
     var xLow: Int = 0
     var xHigh: Int = 0
@@ -300,8 +300,8 @@ class LadderEventItem(
 }
 
 class LadderPathItem(
-    val startEvent: JMLEvent,
-    val endEvent: JMLEvent,
+    val startEvent: JmlEvent,
+    val endEvent: JmlEvent,
 ) : LadderItem() {
     var xStart: Int = 0
     var yStart: Int = 0
@@ -315,7 +315,7 @@ class LadderPathItem(
 }
 
 class LadderPositionItem(
-    val position: JMLPosition
+    val position: JmlPosition
 ) : LadderItem() {
     var xLow: Int = 0
     var xHigh: Int = 0

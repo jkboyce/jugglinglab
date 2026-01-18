@@ -1,5 +1,5 @@
 //
-// JMLProp.java
+// JmlProp.java
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -9,7 +9,7 @@ package jugglinglab.jml
 import jugglinglab.prop.Prop
 import jugglinglab.util.JuggleExceptionUser
 
-data class JMLProp (
+data class JmlProp (
     val type: String,
     val mod: String?
 ) {
@@ -18,15 +18,15 @@ data class JMLProp (
         Prop.newProp(type).apply { initProp(mod) }
     }
 
-    fun writeJML(wr: Appendable) {
+    fun writeJml(wr: Appendable) {
         val modString = if (mod != null) " mod=\"$mod\"" else ""
         wr.append("<prop type=\"$type\"$modString/>\n")
     }
 
     companion object {
         @Suppress("unused")
-        fun fromJMLNode(current: JMLNode, version: String?): JMLProp {
-            return JMLProp(
+        fun fromJmlNode(current: JmlNode, version: String?): JmlProp {
+            return JmlProp(
                 type = current.attributes.getValueOf("type")!!,
                 mod = current.attributes.getValueOf("mod")
             )

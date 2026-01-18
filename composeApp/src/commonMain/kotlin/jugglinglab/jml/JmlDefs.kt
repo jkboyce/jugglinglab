@@ -1,12 +1,12 @@
 //
-// JMLDefs.java
+// JmlDefs.java
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml
 
-object JMLDefs {
+object JmlDefs {
     const val CURRENT_JML_VERSION: String = "3"
 
     @Suppress("unused")

@@ -1,12 +1,12 @@
 //
-// JMLTransition.kt
+// JmlTransition.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml
 
-data class JMLTransition(
+data class JmlTransition(
     val type: Int,
     val path: Int,
     val throwType: String? = null,
@@ -24,7 +24,7 @@ data class JMLTransition(
     // Output
     //--------------------------------------------------------------------------
 
-    fun writeJML(wr: Appendable) {
+    fun writeJml(wr: Appendable) {
         when (type) {
             TRANS_THROW -> {
                 var out = "<throw path=\"$path\""

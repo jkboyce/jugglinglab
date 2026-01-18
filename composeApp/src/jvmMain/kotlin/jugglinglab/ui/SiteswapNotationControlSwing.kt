@@ -9,7 +9,7 @@
 package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.notation.MHNPattern
+import jugglinglab.notation.MhnPattern
 import jugglinglab.notation.Pattern
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.prop.Prop
@@ -256,7 +256,7 @@ class SiteswapNotationControlSwing : JPanel() {
 
     fun resetControl() {
         tf1.text = "3" // pattern
-        tf2.text = jlToStringRounded(MHNPattern.DWELL_DEFAULT, 2) // dwell beats
+        tf2.text = jlToStringRounded(MhnPattern.DWELL_DEFAULT, 2) // dwell beats
         tf3.text = "" // beats per second
         tf4.text = ""
         cb1.setSelectedIndex(0)
@@ -276,7 +276,7 @@ class SiteswapNotationControlSwing : JPanel() {
                     .append(Prop.builtinProps[cb3.getSelectedIndex()].lowercase(Locale.getDefault()))
             }
             if (!tf2.getText().isEmpty()) {
-                if (tf2.getText() != jlToStringRounded(MHNPattern.DWELL_DEFAULT, 2)) {
+                if (tf2.getText() != jlToStringRounded(MhnPattern.DWELL_DEFAULT, 2)) {
                     sb.append(";dwell=").append(tf2.getText())
                 }
             }

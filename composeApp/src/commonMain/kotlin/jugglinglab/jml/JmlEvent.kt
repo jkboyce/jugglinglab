@@ -1,5 +1,5 @@
 //
-// JMLEvent.kt
+// JmlEvent.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -13,44 +13,44 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlGetStringResource
 
-data class JMLEvent(
+data class JmlEvent(
     val x: Double = 0.0,
     val y: Double = 0.0,
     val z: Double = 0.0,
     val t: Double = 0.0,
     val juggler: Int = 1,
     val hand: Int = 0,
-    val transitions: List<JMLTransition> = emptyList()
-) : Comparable<JMLEvent> {
+    val transitions: List<JmlTransition> = emptyList()
+) : Comparable<JmlEvent> {
     val localCoordinate: Coordinate
         get() = Coordinate(x, y, z)
 
-    fun getPathTransition(path: Int, transType: Int): JMLTransition? {
+    fun getPathTransition(path: Int, transType: Int): JmlTransition? {
         return transitions.firstOrNull {
-            it.path == path && (transType == JMLTransition.TRANS_ANY || transType == it.type)
+            it.path == path && (transType == JmlTransition.TRANS_ANY || transType == it.type)
         }
     }
 
     val hasThrow: Boolean by lazy {
         transitions.any {
-            it.type == JMLTransition.TRANS_THROW
+            it.type == JmlTransition.TRANS_THROW
         }
     }
 
     val hasThrowOrCatch: Boolean by lazy {
         transitions.any {
             when (it.type) {
-                JMLTransition.TRANS_THROW,
-                JMLTransition.TRANS_CATCH,
-                JMLTransition.TRANS_SOFTCATCH,
-                JMLTransition.TRANS_GRABCATCH -> true
+                JmlTransition.TRANS_THROW,
+                JmlTransition.TRANS_CATCH,
+                JmlTransition.TRANS_SOFTCATCH,
+                JmlTransition.TRANS_GRABCATCH -> true
 
                 else -> false
             }
         }
     }
 
-    fun writeJML(wr: Appendable, startTagOnly: Boolean = false) {
+    fun writeJml(wr: Appendable, startTagOnly: Boolean = false) {
         wr.append("<event x=\"${jlToStringRounded(x, 4)}\"")
         wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
@@ -60,7 +60,7 @@ data class JMLEvent(
         wr.append("\">\n")
         if (!startTagOnly) {
             for (tr in transitions) {
-                tr.writeJML(wr)
+                tr.writeJml(wr)
             }
             wr.append("</event>\n")
         }
@@ -68,7 +68,7 @@ data class JMLEvent(
 
     private val cachedToString: String by lazy {
         val sb = StringBuilder()
-        writeJML(sb)
+        writeJml(sb)
         sb.toString()
     }
 
@@ -78,11 +78,11 @@ data class JMLEvent(
 
     val jlHashCode: Int by lazy {
         val sb = StringBuilder()
-        writeJML(sb, startTagOnly = true)
+        writeJml(sb, startTagOnly = true)
         sb.toString().hashCode()
     }
 
-    override fun compareTo(other: JMLEvent): Int {
+    override fun compareTo(other: JmlEvent): Int {
         val time = jlToStringRounded(t, 4).toDouble()
         val timeOther = jlToStringRounded(other.t, 4).toDouble()
         if (time != timeOther) {
@@ -105,7 +105,7 @@ data class JMLEvent(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class)
-    private fun withHandString(handString: String): JMLEvent {
+    private fun withHandString(handString: String): JmlEvent {
         var newJuggler: Int
         var newHand: Int
 
@@ -136,18 +136,18 @@ data class JMLEvent(
     }
 
 
-    fun withTransition(trans: JMLTransition): JMLEvent {
+    fun withTransition(trans: JmlTransition): JmlEvent {
         return copy(transitions = transitions + trans)
     }
 
     @Suppress("unused")
-    fun withoutTransitionAtIndex(index: Int): JMLEvent {
+    fun withoutTransitionAtIndex(index: Int): JmlEvent {
         return copy(
             transitions = transitions.filterIndexed { i, _ -> i != index }
         )
     }
 
-    fun withoutTransition(trans: JMLTransition): JMLEvent {
+    fun withoutTransition(trans: JmlTransition): JmlEvent {
         return copy(
             transitions = transitions.filter { it != trans }
         )
@@ -161,16 +161,16 @@ data class JMLEvent(
         fun handIndex(handDescriptor: Int) = if (handDescriptor == LEFT_HAND) 0 else 1
 
         //----------------------------------------------------------------------
-        // Constructing JMLEvents
+        // Constructing JmlEvents
         //----------------------------------------------------------------------
 
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(
-            current: JMLNode,
+        fun fromJmlNode(
+            current: JmlNode,
             numberOfJugglers: Int,
             numberOfPaths: Int,
-            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
-        ): JMLEvent {
+            loadingJmlVersion: String = JmlDefs.CURRENT_JML_VERSION
+        ): JmlEvent {
             var tempx = 0.0
             var tempy = 0.0
             var tempz = 0.0
@@ -206,7 +206,7 @@ data class JMLEvent(
                 throw JuggleExceptionUser(message)
             }
 
-            val result = JMLEvent(
+            val result = JmlEvent(
                 x = tempx,
                 y = tempy,
                 z = tempz,
@@ -249,8 +249,8 @@ data class JMLEvent(
 
                     if (childNodeType.equals("throw", ignoreCase = true)) {
                         add(
-                            JMLTransition(
-                                type = JMLTransition.TRANS_THROW,
+                            JmlTransition(
+                                type = JmlTransition.TRANS_THROW,
                                 path = pathNum,
                                 throwType = childTranstype,
                                 throwMod = childMod
@@ -260,8 +260,8 @@ data class JMLEvent(
                         childTranstype.equals("soft", ignoreCase = true)
                     ) {
                         add(
-                            JMLTransition(
-                                type = JMLTransition.TRANS_SOFTCATCH,
+                            JmlTransition(
+                                type = JmlTransition.TRANS_SOFTCATCH,
                                 path = pathNum
                             )
                         )
@@ -269,17 +269,17 @@ data class JMLEvent(
                         childTranstype.equals("grab", ignoreCase = true)
                     ) {
                         add(
-                            JMLTransition(
-                                type = JMLTransition.TRANS_GRABCATCH,
+                            JmlTransition(
+                                type = JmlTransition.TRANS_GRABCATCH,
                                 path = pathNum
                             )
                         )
                     } else if (childNodeType.equals("catch", ignoreCase = true)) {
-                        add(JMLTransition(JMLTransition.TRANS_CATCH, pathNum, null, null))
+                        add(JmlTransition(JmlTransition.TRANS_CATCH, pathNum, null, null))
                     } else if (childNodeType.equals("holding", ignoreCase = true)) {
                         add(
-                            JMLTransition(
-                                type = JMLTransition.TRANS_HOLDING,
+                            JmlTransition(
+                                type = JmlTransition.TRANS_HOLDING,
                                 path = pathNum
                             )
                         )

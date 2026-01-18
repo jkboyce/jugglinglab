@@ -9,9 +9,9 @@
 package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.jml.JMLNode
-import jugglinglab.jml.JMLPatternList
-import jugglinglab.jml.JMLPatternList.PatternRecord
+import jugglinglab.jml.JmlNode
+import jugglinglab.jml.JmlPatternList
+import jugglinglab.jml.JmlPatternList.PatternRecord
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlHandleUserException
 import jugglinglab.util.JuggleExceptionInternal
@@ -31,7 +31,7 @@ import javax.swing.event.PopupMenuListener
 import kotlin.collections.ArrayList
 
 class PatternListPanel(
-    val patternList: JMLPatternList,
+    val patternList: JmlPatternList,
     val parentFrame: PatternListWindow? = null,
     val animTarget: View? = null
 ) : JPanel() {
@@ -109,7 +109,7 @@ class PatternListPanel(
     private fun launchAnimation() {
         try {
             val row = list.selectedIndex.takeIf { it >= 0 && it < listModel.size } ?: return
-            if (JMLPatternList.BLANK_AT_END && row == listModel.size) {
+            if (JmlPatternList.BLANK_AT_END && row == listModel.size) {
                 return
             }
 
@@ -188,7 +188,7 @@ class PatternListPanel(
                 item.setEnabled(false)
             }
             if ((popupCommands[i] == "displaytext" || popupCommands[i] == "remove")
-                && JMLPatternList.BLANK_AT_END && row == listModel.size
+                && JmlPatternList.BLANK_AT_END && row == listModel.size
             ) {
                 item.setEnabled(false)
             }
@@ -235,7 +235,7 @@ class PatternListPanel(
         var anim: String? = null
 
         val pattern = pw.pattern
-        var patnode: JMLNode?
+        var patnode: JmlNode?
         try {
             patnode = pattern.rootNode!!.findNode("pattern")
         } catch (jei: JuggleExceptionInternal) {
@@ -258,7 +258,7 @@ class PatternListPanel(
         listModel.add(row, rec)
 
         if (row < 0) {
-            if (JMLPatternList.BLANK_AT_END) {
+            if (JmlPatternList.BLANK_AT_END) {
                 list.setSelectedIndex(listModel.size - 1)
             } else {
                 list.setSelectedIndex(listModel.size)
@@ -343,7 +343,7 @@ class PatternListPanel(
     // Do final cleanup after any mouse-related interaction.
 
     private fun checkSelection() {
-        if (JMLPatternList.BLANK_AT_END && list.selectedIndex == listModel.size) {
+        if (JmlPatternList.BLANK_AT_END && list.selectedIndex == listModel.size) {
             list.clearSelection()
         }
         popupPatterns = null
@@ -363,7 +363,7 @@ class PatternListPanel(
 
         override fun createTransferable(c: JComponent?): Transferable? {
             val row = list.selectedIndex
-            if (row < 0 || (JMLPatternList.BLANK_AT_END && row == listModel.size)) {
+            if (row < 0 || (JmlPatternList.BLANK_AT_END && row == listModel.size)) {
                 return null
             }
 
@@ -509,7 +509,7 @@ class PatternListPanel(
     }
 
     // This inner class acts as a bridge between the JList (View) and the
-    // JMLPatternList (Model), following the MVC pattern.
+    // JmlPatternList (Model), following the MVC pattern.
 
     private inner class PatternListModel : AbstractListModel<PatternRecord>() {
         override fun getSize(): Int = patternList.model.size

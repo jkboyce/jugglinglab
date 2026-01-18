@@ -1,5 +1,5 @@
 //
-// JMLPatternList.kt
+// JmlPatternList.kt
 //
 // This class represents a JML pattern list. This is the data model; the
 // visualization is in PatternListPanel and PatternListWindow.
@@ -11,17 +11,17 @@ package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
-import jugglinglab.jml.JMLNode.Companion.xmlescape
+import jugglinglab.jml.JmlNode.Companion.xmlescape
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlCompareVersions
 
-class JMLPatternList(
-    jmlNode: JMLNode? = null
+class JmlPatternList(
+    jmlNode: JmlNode? = null
 ) {
-    var loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
+    var loadingJmlVersion: String = JmlDefs.CURRENT_JML_VERSION
 
     var title: String? = null
         set(t) {
@@ -41,14 +41,14 @@ class JMLPatternList(
     val jlHashCode: Int
         get() {
             val sb = StringBuilder()
-            writeJML(sb)
+            writeJml(sb)
             return sb.toString().hashCode()
         }
 
     init {
         clearModel()
         if (jmlNode != null) {
-            readJML(jmlNode)
+            readJml(jmlNode)
         }
     }
 
@@ -88,19 +88,19 @@ class JMLPatternList(
     }
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun getPatternForLine(row: Int): JMLPattern? {
+    fun getPatternForLine(row: Int): JmlPattern? {
         val rec = model[row]
         if (rec.notation == null) {
             return null
         }
 
-        val pat: JMLPattern?
+        val pat: JmlPattern?
         if (rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-            pat = JMLPattern.fromJMLNode(rec.patnode!!, loadingJmlVersion)
+            pat = JmlPattern.fromJmlNode(rec.patnode!!, loadingJmlVersion)
         } else if (rec.anim != null) {
-            pat = JMLPattern.fromBasePattern(rec.notation!!, rec.anim!!)
+            pat = JmlPattern.fromBasePattern(rec.notation!!, rec.anim!!)
 
-            val record = PatternBuilder.fromJMLPattern(pat)
+            val record = PatternBuilder.fromJmlPattern(pat)
             if (rec.info != null) {
                 record.info = rec.info
             }
@@ -130,8 +130,8 @@ class JMLPatternList(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class)
-    private fun readJML(root: JMLNode) {
-        var current: JMLNode = root
+    private fun readJml(root: JmlNode) {
+        var current: JmlNode = root
 
         if (current.nodeType.equals("#root")) {
             current = current.children.find {
@@ -146,7 +146,7 @@ class JMLPatternList(
 
         val vers = current.attributes.getValueOf("version")
         if (vers != null) {
-            if (jlCompareVersions(vers, JMLDefs.CURRENT_JML_VERSION) > 0) {
+            if (jlCompareVersions(vers, JmlDefs.CURRENT_JML_VERSION) > 0) {
                 val message = jlGetStringResource(Res.string.error_jml_version)
                 throw JuggleExceptionUser(message)
             }
@@ -173,8 +173,8 @@ class JMLPatternList(
                 val animprefs = attr.getValueOf("animprefs")
                 val notation = attr.getValueOf("notation")
                 var anim: String? = null
-                var patnode: JMLNode? = null
-                var infonode: JMLNode? = null
+                var patnode: JmlNode? = null
+                var infonode: JmlNode? = null
 
                 if (notation != null) {
                     if (notation.equals("jml", ignoreCase = true)) {
@@ -205,9 +205,9 @@ class JMLPatternList(
         }
     }
 
-    fun writeJML(wr: Appendable) {
-        JMLDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
-        wr.append("<jml version=\"${xmlescape(JMLDefs.CURRENT_JML_VERSION)}\">\n")
+    fun writeJml(wr: Appendable) {
+        JmlDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
+        wr.append("<jml version=\"${xmlescape(JmlDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<patternlist>\n")
         if (title?.isNotEmpty() ?: false) {
             wr.append("<title>${xmlescape(title!!)}</title>\n")
@@ -282,7 +282,7 @@ class JMLPatternList(
 
         wr.append("</patternlist>\n")
         wr.append("</jml>\n")
-        JMLDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
+        JmlDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
     fun writeText(wr: Appendable) {
@@ -300,7 +300,7 @@ class JMLPatternList(
         var animprefs: String?
         var notation: String?
         var anim: String?  // if pattern is not in JML notation
-        var patnode: JMLNode?  // if pattern is in JML
+        var patnode: JmlNode?  // if pattern is in JML
         var info: String?
         var tags: MutableList<String>? = null
 
@@ -309,7 +309,7 @@ class JMLPatternList(
             ap: String?,
             not: String?,
             ani: String?,
-            pat: JMLNode?,
+            pat: JmlNode?,
             inf: String?,
             t: ArrayList<String>?
         ) {
@@ -347,8 +347,8 @@ class JMLPatternList(
             ap: String?,
             not: String?,
             ani: String?,
-            pnode: JMLNode?,
-            inode: JMLNode?
+            pnode: JmlNode?,
+            inode: JmlNode?
         ) {
             display = dis ?: ""
             animprefs = ap?.trim()

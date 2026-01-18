@@ -13,7 +13,7 @@ import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.AnimationPanel
 import jugglinglab.ui.PatternWindow
-import jugglinglab.jml.JMLPattern
+import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.PatternBuilder
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.JuggleExceptionInternal
@@ -200,15 +200,15 @@ class PatternView(
             if (rbBp.isSelected) {
                 val notation = state.pattern.basePatternNotation!!
                 val config = ta.getText().replace("\n", "").trim { it <= ' ' }
-                val newpat = JMLPattern.fromBasePattern(notation, config)
+                val newpat = JmlPattern.fromBasePattern(notation, config)
                 restartView(newpat, null)
                 state.addCurrentToUndoList()
             } else if (rbJml.isSelected) {
-                val newpat = JMLPattern.fromJMLString(ta.getText())
+                val newpat = JmlPattern.fromJmlString(ta.getText())
                 // set the title in the base pattern
-                val record = PatternBuilder.fromJMLPattern(newpat)
+                val record = PatternBuilder.fromJmlPattern(newpat)
                 record.setTitleString(newpat.title)
-                val newpat2 = JMLPattern.fromPatternBuilder(record)
+                val newpat2 = JmlPattern.fromPatternBuilder(record)
                 restartView(newpat2, null)
                 state.addCurrentToUndoList()
             }
@@ -230,7 +230,7 @@ class PatternView(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView(pattern: JMLPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
+    override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
         val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
 
         ja.restartJuggle(pattern, prefs, coldRestart)

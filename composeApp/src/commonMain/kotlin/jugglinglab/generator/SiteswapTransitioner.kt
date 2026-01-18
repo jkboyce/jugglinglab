@@ -10,7 +10,7 @@ package jugglinglab.generator
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.notation.MHNThrow
+import jugglinglab.notation.MhnThrow
 import jugglinglab.notation.SiteswapPattern
 import jugglinglab.util.JuggleExceptionDone
 import jugglinglab.util.JuggleExceptionInternal
@@ -45,7 +45,7 @@ class SiteswapTransitioner : Transitioner() {
     private lateinit var stateTarget: Array<Array<IntArray>>
     private var lTarget: Int = 0
     private var lReturn: Int = 0
-    private lateinit var th: Array<Array<Array<Array<MHNThrow?>>>>
+    private lateinit var th: Array<Array<Array<Array<MhnThrow?>>>>
     private lateinit var throwsLeft: Array<Array<IntArray>>
     private var findAll: Boolean = false
     private lateinit var out: Array<Array<String?>>
@@ -464,7 +464,7 @@ class SiteswapTransitioner : Transitioner() {
                         continue
                     }
 
-                    val mhnt = MHNThrow(
+                    val mhnt = MhnThrow(
                         juggler = j + 1,  // source (juggler, hand, index, slot)
                         hand = h,
                         index = pos,
@@ -526,7 +526,7 @@ class SiteswapTransitioner : Transitioner() {
     // Note this is called prior to adding the throw to the pattern, so future
     // states do not reflect the impact of this throw, nor does th[].
 
-    private fun isThrowValid(pos: Int, mhnt: MHNThrow): Boolean {
+    private fun isThrowValid(pos: Int, mhnt: MhnThrow): Boolean {
         val j = mhnt.juggler - 1
         val h = mhnt.hand
         val i = mhnt.index
@@ -688,7 +688,7 @@ class SiteswapTransitioner : Transitioner() {
 
     // Add a throw to the pattern, updating all data structures.
 
-    private fun addThrow(pos: Int, mhnt: MHNThrow) {
+    private fun addThrow(pos: Int, mhnt: MhnThrow) {
         val j = mhnt.juggler - 1
         val h = mhnt.hand
         val i = mhnt.index
@@ -710,7 +710,7 @@ class SiteswapTransitioner : Transitioner() {
 
     // Undo the actions of addThrow().
 
-    private fun removeThrow(pos: Int, mhnt: MHNThrow) {
+    private fun removeThrow(pos: Int, mhnt: MhnThrow) {
         val j = mhnt.juggler - 1
         val h = mhnt.hand
         val i = mhnt.index

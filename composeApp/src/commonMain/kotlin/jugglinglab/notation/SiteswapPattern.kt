@@ -3,7 +3,7 @@
 //
 // This class represents a pattern in the generalized form of siteswap notation
 // used by Juggling Lab. The real work here is to parse siteswap notation into
-// the internal format used by MHNPattern.
+// the internal format used by MhnPattern.
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -24,7 +24,7 @@ import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.jlGetStringResource
 import jugglinglab.util.jlParseSiteswapPattern
 
-class SiteswapPattern : MHNPattern() {
+class SiteswapPattern : MhnPattern() {
     private var oddperiod: Boolean = false
     var hasHandsSpecifier: Boolean = false
         private set
@@ -54,11 +54,11 @@ class SiteswapPattern : MHNPattern() {
             println("Starting siteswap parser...")
         }
 
-        // initialize parameters that MHNPattern recognizes
+        // initialize parameters that MhnPattern recognizes
         super.fromParameters(pl)
 
         if (hss != null) {
-            val modinfo = HSS.processHSS(pattern!!, hss!!, hold, dwellmax, handspec, dwell)
+            val modinfo = HandSiteswap.processHss(pattern!!, hss!!, hold, dwellmax, handspec, dwell)
             pattern = modinfo.convertedPattern
             dwellarray = modinfo.dwellBeatsArray
         }
@@ -102,7 +102,7 @@ class SiteswapPattern : MHNPattern() {
         get() = if (oddperiod) period / 2 else period
 
     //--------------------------------------------------------------------------
-    // Parse siteswap notation into the MHNPattern data structures
+    // Parse siteswap notation into the MhnPattern data structures
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -155,7 +155,7 @@ class SiteswapPattern : MHNPattern() {
             throw JuggleExceptionUser(message)
         }
 
-        // Use tree to fill in MHNPattern internal variables
+        // Use tree to fill in MhnPattern internal variables
 
         numberOfJugglers = tree.jugglers
         maxOccupancy = 0  // calculated in doFirstPass()
@@ -203,8 +203,8 @@ class SiteswapPattern : MHNPattern() {
 
         // Finally, add pattern symmetries
         addSymmetry(
-            MHNSymmetry(
-                type = MHNSymmetry.TYPE_DELAY,
+            MhnSymmetry(
+                type = MhnSymmetry.TYPE_DELAY,
                 numberOfJugglers = numberOfJugglers,
                 jugPerm = null,
                 delay = period
@@ -216,8 +216,8 @@ class SiteswapPattern : MHNPattern() {
                 sb.append("(").append(i).append(",").append(i).append("*)")
             }
             addSymmetry(
-                MHNSymmetry(
-                    type = MHNSymmetry.TYPE_SWITCHDELAY,
+                MhnSymmetry(
+                    type = MhnSymmetry.TYPE_SWITCHDELAY,
                     numberOfJugglers = numberOfJugglers,
                     jugPerm = sb.toString(),
                     delay = period / 2
@@ -540,7 +540,7 @@ class SiteswapPattern : MHNPattern() {
     }
 
     // Second pass through the tree:
-    // 1)  Fill in the th[] array with MHNThrow objects
+    // 1)  Fill in the th[] array with MhnThrow objects
 
     private fun doSecondPass(sti: SiteswapTreeItem, switchhands: Boolean, beatoffset: Int) {
         var child: SiteswapTreeItem
@@ -610,9 +610,9 @@ class SiteswapPattern : MHNPattern() {
                             destJuggler = 1 + (destJuggler - 1) % numberOfJugglers
                         }
 
-                        // Note we add an MHNThrow for a 0 throw as well, to serve
+                        // Note we add an MhnThrow for a 0 throw as well, to serve
                         // as a placeholder in case of patterns like 24[504],
-                        val t = MHNThrow(
+                        val t = MhnThrow(
                             child.source_juggler,
                             sourceHand,
                             index,

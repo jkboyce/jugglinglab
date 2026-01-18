@@ -209,7 +209,7 @@ internal class Connection(var client: Socket) : Thread() {
                             Desktop.getDesktop().requestForeground(true)
                         }
                         try {
-                            ApplicationWindow.openJMLFile(file)
+                            ApplicationWindow.openJmlFile(file)
                         } catch (jeu: JuggleExceptionUser) {
                             val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message

@@ -1,5 +1,5 @@
 //
-// HSS.kt
+// HandSiteswap.kt
 //
 // This class adds Hand Siteswap (HSS) functionality to Juggling Lab's
 // siteswap notation component.
@@ -15,17 +15,17 @@ import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.jlGetStringResource
 import kotlin.math.max
 
-object HSS {
+object HandSiteswap {
     private const val HSS_DWELL_DEFAULT: Double = 0.3
 
-    // This function is the external interface for the HSS processor. It takes
+    // This function is the external interface for the HandSiteswap processor. It takes
     // object and hand siteswaps and produces (among other things) a converted
     // pattern for the Siteswap component to animate.
     //
     // See SiteswapPattern.fromParameters().
 
     @Throws(JuggleExceptionUser::class)
-    fun processHSS(
+    fun processHss(
         p: String,
         h: String,
         hld: Boolean,
@@ -828,7 +828,7 @@ object HSS {
     }
 
     //--------------------------------------------------------------------------
-    // Types related to HSS
+    // Types related to HandSiteswap
     //--------------------------------------------------------------------------
 
     class OssPatBnc(

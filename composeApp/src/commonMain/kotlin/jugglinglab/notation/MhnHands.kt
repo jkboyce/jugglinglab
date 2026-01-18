@@ -1,5 +1,5 @@
 //
-// MHNHands.kt
+// MhnHands.kt
 //
 // This class parses the "hands" parameter in MHN notation.
 //
@@ -11,7 +11,7 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.util.*
 
-data class MHNHands(
+data class MhnHands(
     val config: String
 ) {
     private val numberOfJugglers: Int

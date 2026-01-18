@@ -32,7 +32,7 @@ object OpenFilesServer {
     // type selected for use in Juggling Lab
     const val OPEN_FILES_METHOD: Int = SERVER_MMF
 
-    private var ofs_mmf: OpenFilesServerMMF? = null
+    private var ofs_mmf: OpenFilesServerMmf? = null
     private var ofs_sockets: OpenFilesServerSockets? = null
 
     // Start up the OpenFilesServer thread, which listens for open file messages
@@ -41,7 +41,7 @@ object OpenFilesServer {
     fun startOpenFilesServer() {
         when (OPEN_FILES_METHOD) {
             SERVER_MMF -> if (ofs_mmf == null) {
-                ofs_mmf = OpenFilesServerMMF()
+                ofs_mmf = OpenFilesServerMmf()
             }
 
             SERVER_SOCKETS -> if (ofs_sockets == null) {
@@ -56,7 +56,7 @@ object OpenFilesServer {
 
     fun tryOpenFile(f: File?): Boolean {
         return when (OPEN_FILES_METHOD) {
-            SERVER_MMF -> OpenFilesServerMMF.tryOpenFile(f)
+            SERVER_MMF -> OpenFilesServerMmf.tryOpenFile(f)
             SERVER_SOCKETS -> OpenFilesServerSockets.tryOpenFile(f)
             else -> false
         }
@@ -65,7 +65,7 @@ object OpenFilesServer {
     // Do any needed cleanup when things are closing down.
     fun cleanup() {
         if (ofs_mmf != null) {
-            OpenFilesServerMMF.cleanup()
+            OpenFilesServerMmf.cleanup()
             ofs_mmf = null
         }
         if (ofs_sockets != null) {

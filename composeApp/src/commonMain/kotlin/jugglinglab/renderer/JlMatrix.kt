@@ -1,5 +1,5 @@
 //
-// JLMatrix.kt
+// JlMatrix.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -9,7 +9,7 @@ package jugglinglab.renderer
 import kotlin.math.cos
 import kotlin.math.sin
 
-class JLMatrix {
+class JlMatrix {
     var m00: Double = 1.0
     var m01: Double = 0.0
     var m02: Double = 0.0
@@ -48,7 +48,7 @@ class JLMatrix {
         transform(rotateMatrix(dx, dy, dz))
     }
 
-    fun transform(n: JLMatrix) {
+    fun transform(n: JlMatrix) {
         val m = this.clone
         m00 = n.m00 * m.m00 + n.m01 * m.m10 + n.m02 * m.m20
         m01 = n.m00 * m.m01 + n.m01 * m.m11 + n.m02 * m.m21
@@ -64,9 +64,9 @@ class JLMatrix {
         m23 = n.m20 * m.m03 + n.m21 * m.m13 + n.m22 * m.m23 + n.m23
     }
 
-    val clone: JLMatrix
+    val clone: JlMatrix
         get() {
-            val m = JLMatrix()
+            val m = JlMatrix()
             m.m00 = m00
             m.m01 = m01
             m.m02 = m02
@@ -86,8 +86,8 @@ class JLMatrix {
             return m
         }
 
-    fun inverse(): JLMatrix {
-        val m = JLMatrix()
+    fun inverse(): JlMatrix {
+        val m = JlMatrix()
         val q1 = m12
         val q6 = m10 * m01
         val q7 = m10 * m21
@@ -135,33 +135,33 @@ class JLMatrix {
     }
 
     companion object {
-        fun shiftMatrix(dx: Double, dy: Double, dz: Double): JLMatrix {
-            val m = JLMatrix()
+        fun shiftMatrix(dx: Double, dy: Double, dz: Double): JlMatrix {
+            val m = JlMatrix()
             m.m03 = dx
             m.m13 = dy
             m.m23 = dz
             return m
         }
 
-        fun scaleMatrix(dx: Double, dy: Double, dz: Double): JLMatrix {
-            val m = JLMatrix()
+        fun scaleMatrix(dx: Double, dy: Double, dz: Double): JlMatrix {
+            val m = JlMatrix()
             m.m00 = dx
             m.m11 = dy
             m.m22 = dz
             return m
         }
 
-        fun scaleMatrix(d: Double): JLMatrix {
+        fun scaleMatrix(d: Double): JlMatrix {
             return scaleMatrix(d, d, d)
         }
 
-        fun rotateMatrix(dx: Double, dy: Double, dz: Double): JLMatrix {
-            val out = JLMatrix()
+        fun rotateMatrix(dx: Double, dy: Double, dz: Double): JlMatrix {
+            val out = JlMatrix()
             var sine: Double
             var cosine: Double
 
             if (dx != 0.0) {
-                val m = JLMatrix()
+                val m = JlMatrix()
                 sine = sin(dx)
                 cosine = cos(dx)
                 m.m11 = cosine
@@ -171,7 +171,7 @@ class JLMatrix {
                 out.transform(m)
             }
             if (dy != 0.0) {
-                val m = JLMatrix()
+                val m = JlMatrix()
                 sine = sin(dy)
                 cosine = cos(dy)
                 m.m00 = cosine
@@ -181,7 +181,7 @@ class JLMatrix {
                 out.transform(m)
             }
             if (dz != 0.0) {
-                val m = JLMatrix()
+                val m = JlMatrix()
                 sine = sin(dz)
                 cosine = cos(dz)
                 m.m00 = cosine

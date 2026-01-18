@@ -1,5 +1,5 @@
 //
-// JMLParser.kt
+// JmlParser.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -10,7 +10,7 @@ package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.jml.JMLDefs.jmlTaglist
+import jugglinglab.jml.JmlDefs.jmlTaglist
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.jlGetStringResource
 import com.fleeksoft.ksoup.Ksoup
@@ -21,24 +21,24 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.fleeksoft.ksoup.nodes.Comment
 
-class JMLParser {
-    var tree: JMLNode? = null  // tree of JML tags
+class JmlParser {
+    var tree: JmlNode? = null  // tree of JML tags
         private set
 
-    // Parse JML and populate the tree of JMLNodes.
+    // Parse JML and populate the tree of JmlNodes.
 
     @Throws(JuggleExceptionUser::class)
     fun parse(xmlString: String) {
         if (Constants.DEBUG_JML_PARSING) {
             println("--------------------------------------------")
-            println("Starting JMLParser.parse()...")
+            println("Starting JmlParser.parse()...")
         }
 
         val doc = Ksoup.parse(
             html = xmlString,
             parser = Parser.xmlParser().setTrackPosition(true)
         )
-        val builder = JMLTreeBuilder()
+        val builder = JmlTreeBuilder()
         doc.traverse(builder)
         tree = builder.root
 
@@ -58,7 +58,7 @@ class JMLParser {
 
     val fileType: Int
         get() {
-            var current: JMLNode = tree!!
+            var current: JmlNode = tree!!
 
             if (current.nodeType.equals("#root")) {
                 current = current.children.find {
@@ -99,12 +99,12 @@ class JMLParser {
 
 // Helper class to build the tree of JMLNodes.
 
-class JMLTreeBuilder : NodeVisitor {
-    var root: JMLNode? = null
+class JmlTreeBuilder : NodeVisitor {
+    var root: JmlNode? = null
     var error: String? = null
 
     // stack to track the current parent Element
-    private val stack = ArrayDeque<JMLNode>()
+    private val stack = ArrayDeque<JmlNode>()
 
     override fun head(node: Node, depth: Int) {
         if (node is Element) {
@@ -125,7 +125,7 @@ class JMLTreeBuilder : NodeVisitor {
                 }
             }
 
-            val myNode = JMLNode(node.tagName())
+            val myNode = JmlNode(node.tagName())
             node.attributes().forEach { myNode.addAttribute(it.key, it.value) }
 
             if (stack.isNotEmpty()) {
@@ -159,7 +159,7 @@ class JMLTreeBuilder : NodeVisitor {
             }
 
             // add comment as leaf child to the parent Element
-            val myNode = JMLNode("comment")
+            val myNode = JmlNode("comment")
             myNode.nodeValue = node.getData()
 
             if (stack.isNotEmpty()) {

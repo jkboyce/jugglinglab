@@ -1,18 +1,18 @@
 //
-// JMLAttributes.java
+// JmlAttributes.java
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
 
 package jugglinglab.jml
 
-data class JMLAttributes(
+data class JmlAttributes(
     val entries: List<Pair<String, String>> = emptyList()
 ) {
     /**
-     * Returns a new `JMLAttributes` instance with the new attribute added.
+     * Returns a new `JmlAttributes` instance with the new attribute added.
      */
-    fun addAttribute(name: String, value: String): JMLAttributes =
+    fun addAttribute(name: String, value: String): JmlAttributes =
         copy(entries = this.entries + (name to value))
 
     /**

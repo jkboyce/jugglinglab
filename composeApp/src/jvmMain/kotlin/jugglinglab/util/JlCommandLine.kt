@@ -1,5 +1,5 @@
 //
-// JLCommandLine.kt
+// JlCommandLine.kt
 //
 // This is the entry point for Juggling Lab as a JVM application. It interprets
 // command line arguments and handles them appropriately.
@@ -16,9 +16,9 @@ import jugglinglab.ui.PatternWindow
 import jugglinglab.generator.GeneratorTargetBasic
 import jugglinglab.generator.SiteswapGenerator
 import jugglinglab.generator.SiteswapTransitioner
-import jugglinglab.jml.JMLParser
-import jugglinglab.jml.JMLPattern
-import jugglinglab.jml.JMLPatternList
+import jugglinglab.jml.JmlParser
+import jugglinglab.jml.JmlPattern
+import jugglinglab.jml.JmlPatternList
 import jugglinglab.renderer.FrameDrawer
 //import jugglinglab.util.jlGetStringResource
 import java.awt.Desktop
@@ -28,7 +28,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.SwingUtilities
 
-object JLCommandLine {
+object JlCommandLine {
     // command line arguments that we trim as portions are parsed
     private var jlargs: MutableList<String> = mutableListOf()
 
@@ -189,7 +189,7 @@ object JLCommandLine {
 
                 for (file in files) {
                     try {
-                        ApplicationWindow.openJMLFile(file)
+                        ApplicationWindow.openJmlFile(file)
                     } catch (jeu: JuggleExceptionUser) {
                         // val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                         val message = "Problem reading from file \"${file.getName()}\""
@@ -450,7 +450,7 @@ object JLCommandLine {
 
             var errorCountCurrentFile = 0
 
-            val parser = JMLParser()
+            val parser = JmlParser()
             try {
                 parser.parse(file.readText())
             } catch (_: Throwable) {
@@ -464,10 +464,10 @@ object JLCommandLine {
                 continue
             }
 
-            if (parser.fileType == JMLParser.JML_PATTERN) {
+            if (parser.fileType == JmlParser.JML_PATTERN) {
                 try {
                     ++patternsCount
-                    val pat = JMLPattern.fromJMLNode(parser.tree!!)
+                    val pat = JmlPattern.fromJmlNode(parser.tree!!)
                     pat.layout
                     ps.println("   OK")
                 } catch (je: JuggleException) {
@@ -477,10 +477,10 @@ object JLCommandLine {
                     ps.println("   Error creating pattern")
                     ++errorCountCurrentFile
                 }
-            } else if (parser.fileType == JMLParser.JML_LIST) {
-                var pl: JMLPatternList? = null
+            } else if (parser.fileType == JmlParser.JML_LIST) {
+                var pl: JmlPatternList? = null
                 try {
-                    pl = JMLPatternList(parser.tree!!)
+                    pl = JmlPatternList(parser.tree!!)
                 } catch (jeu: JuggleExceptionUser) {
                     ps.println("   Error creating pattern list: ${jeu.message}")
                     ++errorCountCurrentFile
@@ -541,7 +541,7 @@ object JLCommandLine {
     // Look at beginning of `jlargs` to see if there's a pattern, and if so then
     // parse and return it. Otherwise print an error message and return null.
 
-    private fun parsePattern(): JMLPattern? {
+    private fun parsePattern(): JmlPattern? {
         if (jlargs.isEmpty()) {
             println("Error: Expected pattern input, none found")
             return null
@@ -562,14 +562,14 @@ object JLCommandLine {
             }
 
             try {
-                val parser = JMLParser()
+                val parser = JmlParser()
                 parser.parse(inpath.toFile().readText())
 
                 when (parser.fileType) {
-                    JMLParser.JML_PATTERN ->
-                        return JMLPattern.fromJMLNode(parser.tree!!)
+                    JmlParser.JML_PATTERN ->
+                        return JmlPattern.fromJmlNode(parser.tree!!)
 
-                    JMLParser.JML_LIST ->
+                    JmlParser.JML_LIST ->
                         println("Error: JML file cannot be a pattern list")
 
                     else -> println("Error: File is not valid JML")
@@ -585,7 +585,7 @@ object JLCommandLine {
         // otherwise assume pattern is in siteswap notation
         try {
             val config = jlargs.removeFirst()
-            return JMLPattern.fromBasePattern("siteswap", config)
+            return JmlPattern.fromBasePattern("siteswap", config)
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")
         } catch (jei: JuggleExceptionInternal) {
@@ -598,7 +598,7 @@ object JLCommandLine {
 
     // Open pattern in a window.
 
-    private fun doAnim(pat: JMLPattern, jc: AnimationPrefs?) {
+    private fun doAnim(pat: JmlPattern, jc: AnimationPrefs?) {
         SwingUtilities.invokeLater {
             registerAboutHandler()
             PatternWindow(pat.title, pat, jc)
@@ -608,7 +608,7 @@ object JLCommandLine {
 
     // Output an animated GIF of the pattern.
 
-    private fun doTogif(pat: JMLPattern, outpath: Path?, jc: AnimationPrefs?) {
+    private fun doTogif(pat: JmlPattern, outpath: Path?, jc: AnimationPrefs?) {
         var jc = jc
         if (outpath == null) {
             println("Error: No output path specified for animated GIF")
@@ -637,13 +637,13 @@ object JLCommandLine {
 
     // Output pattern to JML.
 
-    private fun doTojml(pat: JMLPattern, outpath: Path?, jc: AnimationPrefs?) {
+    private fun doTojml(pat: JmlPattern, outpath: Path?, jc: AnimationPrefs?) {
         if (outpath == null) {
             print(pat.toString())
         } else {
             try {
                 val fw = FileWriter(outpath.toFile())
-                pat.writeJML(fw, writeTitle = true, writeInfo = true)
+                pat.writeJml(fw, writeTitle = true, writeInfo = true)
                 fw.close()
             } catch (_: Throwable) {
                 println("Error: Problem writing JML to path $outpath")

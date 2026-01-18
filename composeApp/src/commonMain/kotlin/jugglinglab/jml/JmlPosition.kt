@@ -1,5 +1,5 @@
 //
-// JMLPosition.kt
+// JmlPosition.kt
 //
 // Copyright 2002-2025 Jack Boyce and the Juggling Lab contributors
 //
@@ -13,18 +13,18 @@ import jugglinglab.util.jlParseFiniteDouble
 import jugglinglab.util.jlToStringRounded
 import jugglinglab.util.jlGetStringResource
 
-data class JMLPosition(
+data class JmlPosition(
     val x: Double = 0.0,
     val y: Double = 0.0,
     val z: Double = 0.0,
     val t: Double = 0.0,
     val angle: Double = 0.0,
     val juggler: Int = 1,
-) : Comparable<JMLPosition> {
+) : Comparable<JmlPosition> {
     val coordinate: Coordinate
         get() = Coordinate(x, y, z)
 
-    fun writeJML(wr: Appendable) {
+    fun writeJml(wr: Appendable) {
         wr.append("<position x=\"${jlToStringRounded(x, 4)}\"")
         wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
@@ -35,7 +35,7 @@ data class JMLPosition(
 
     private val cachedToString: String by lazy {
         val sb = StringBuilder()
-        writeJML(sb)
+        writeJml(sb)
         sb.toString()
     }
 
@@ -45,7 +45,7 @@ data class JMLPosition(
         toString().hashCode()
     }
 
-    override fun compareTo(other: JMLPosition): Int {
+    override fun compareTo(other: JmlPosition): Int {
         val time = jlToStringRounded(t, 4).toDouble()
         val timeOther = jlToStringRounded(other.t, 4).toDouble()
         if (time != timeOther) {
@@ -60,16 +60,16 @@ data class JMLPosition(
     }
 
     //--------------------------------------------------------------------------
-    // Constructing JMLPositions
+    // Constructing JmlPositions
     //--------------------------------------------------------------------------
 
     companion object {
         @Suppress("unused")
         @Throws(JuggleExceptionUser::class)
-        fun fromJMLNode(
-            current: JMLNode,
-            loadingJmlVersion: String = JMLDefs.CURRENT_JML_VERSION
-        ): JMLPosition {
+        fun fromJmlNode(
+            current: JmlNode,
+            loadingJmlVersion: String = JmlDefs.CURRENT_JML_VERSION
+        ): JmlPosition {
             var tempx = 0.0
             var tempy = 0.0
             var tempz = 0.0
@@ -109,7 +109,7 @@ data class JMLPosition(
                 throw JuggleExceptionUser(message)
             }
 
-            return JMLPosition(
+            return JmlPosition(
                 x = tempx,
                 y = tempy,
                 z = tempz,
