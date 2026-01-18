@@ -35,11 +35,9 @@ abstract class View(
     val patternWindow: PatternWindow
 ) : JPanel() {
     //--------------------------------------------------------------------------
-    // Methods to handle undo/redo functionality.
-    //
-    // The enclosing PatternWindow owns the undo list, so it's preserved when
-    // we switch views. All of the methods are here however in case we want to
-    // embed the View in something other than a PatternWindow in the future.
+    // Methods to handle undo/redo functionality. The state owns the undo list
+    // so it's preserved when we switch views. Here are the methods to apply
+    // Undo/Redo to the current view.
     //--------------------------------------------------------------------------
 
     // Undo to the previous save state.
@@ -89,6 +87,7 @@ abstract class View(
     // - this method is responsible for setting preferred sizes of all UI
     //   elements, since it may be followed by layout
     // - 'coldRestart = true' resets camera angle, zoom, and prop assignments
+    //
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     abstract fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
 
