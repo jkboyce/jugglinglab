@@ -443,7 +443,7 @@ data class JmlPattern(
     // Parameter `flipXCoordinate` determines whether the x coordinates are
     // also inverted.
 
-    fun withInvertedXAxis(flipXCoordinate: Boolean = true): JmlPattern {
+    fun withInvertedXaxis(flipXCoordinate: Boolean = true): JmlPattern {
         val newEvents = events.map {
             val newHand = if (it.hand == JmlEvent.LEFT_HAND) {
                 JmlEvent.RIGHT_HAND

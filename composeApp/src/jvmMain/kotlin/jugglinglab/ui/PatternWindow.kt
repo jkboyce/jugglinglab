@@ -565,7 +565,7 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_SWAPHANDS -> {
                 try {
-                    val newpat = view.state.pattern.withInvertedXAxis(flipXCoordinate = false)
+                    val newpat = view.state.pattern.withInvertedXaxis(flipXCoordinate = false)
                     view.restartView(newpat, null, coldRestart = false)
                     view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
@@ -575,7 +575,7 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
 
             MenuCommand.FILE_INVERTX -> {
                 try {
-                    val newpat = view.state.pattern.withInvertedXAxis()
+                    val newpat = view.state.pattern.withInvertedXaxis()
                     view.restartView(newpat, null, coldRestart = false)
                     view.state.addCurrentToUndoList()
                 } catch (e: JuggleExceptionUser) {
