@@ -9,7 +9,7 @@ package jugglinglab.core
 import jugglinglab.curve.Curve
 
 object Constants {
-    const val VERSION: String = "1.6.8"
+    const val VERSION: String = "1.6.9"
     const val YEAR: String = "2026"
 
     const val SITE_URL: String = "http://jugglinglab.org"

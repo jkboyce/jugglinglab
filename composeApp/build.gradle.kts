@@ -77,7 +77,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Juggling Lab"
-            packageVersion = "1.6.8"
+            packageVersion = "1.6.9"
 
             macOS {
                 //iconFile.set(project.file("launcher-icons/icon.icns"))

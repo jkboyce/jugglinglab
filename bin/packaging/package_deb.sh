@@ -34,7 +34,7 @@ jpackage \
    --input target/ \
    --name "Juggling Lab" \
    --linux-package-name "juggling-lab" \
-   --app-version "1.6.8" \
+   --app-version "1.6.9" \
    --main-jar JugglingLab.jar \
    --resource-dir "packaging/debian/" \
    --java-options -Xss2048k \
