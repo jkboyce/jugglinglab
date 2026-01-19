@@ -37,17 +37,24 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.gestures.detectTapGestures
 
 @Composable
 fun AnimationView(
     state: PatternAnimationState,
-    onPress: (Offset) -> Unit,
-    onDrag: (Offset) -> Unit,
-    onRelease: () -> Unit,
+    onPress: (Offset) -> Unit = {},
+    onDrag: (Offset) -> Unit = {},
+    onRelease: () -> Unit = {},
     onEnter: () -> Unit = {},
     onExit: () -> Unit = {},
     onLayoutUpdate: (AnimationLayout) -> Unit = {},
-    onFrame: (Double) -> Unit,  // callback with current animation time for sound playback
+    onFrame: (Double) -> Unit = {},
+    textMeasurer: TextMeasurer = rememberTextMeasurer(),
     modifier: Modifier = Modifier,
 ) {
     // two renderers for stereo support
@@ -58,6 +65,37 @@ fun AnimationView(
         val density = LocalDensity.current.density
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
+
+        if (state.message.isNotEmpty()) {
+            val textLayoutResult = textMeasurer.measure(
+                text = state.message,
+                style = TextStyle(color = Color.Black, fontSize = 13.sp)
+            )
+            val textSize = textLayoutResult.size
+            state.update(time = state.pattern.loopStartTime)
+
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                state.update(message = "", isPaused = false)
+                            }
+                        )
+                    }
+            ) {
+                drawRect(color = Color.White)
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(
+                        x = (widthPx - textSize.width) / 2f,
+                        y = (heightPx - textSize.height) / 2f
+                    )
+                )
+            }
+            return@BoxWithConstraints
+        }
+
         val width = (widthPx / density).toInt()
         val height = (heightPx / density).toInt()
 

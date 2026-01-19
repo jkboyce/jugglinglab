@@ -9,6 +9,7 @@
 
 package jugglinglab.ui
 
+import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.AnimationLayout.Companion.getActiveEvent
@@ -21,6 +22,7 @@ import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.sub
 import jugglinglab.util.jlIsNearLine
+import jugglinglab.util.jlGetStringResource
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -102,7 +104,7 @@ class AnimationController(
                 zoom = 1.0,
                 propForPath = state.initialPropForPath(),
                 fitToFrame = true,
-                message = "click to start"
+                message = if (state.prefs.startPaused) jlGetStringResource(Res.string.gui_message_click_to_start) else ""
             )
             if (state.prefs.mousePause) {
                 // start with mouse assumed outside, and paused
