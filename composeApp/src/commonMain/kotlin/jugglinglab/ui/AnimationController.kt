@@ -101,7 +101,8 @@ class AnimationController(
                 cameraAngle = state.initialCameraAngle(),
                 zoom = 1.0,
                 propForPath = state.initialPropForPath(),
-                fitToFrame = true
+                fitToFrame = true,
+                message = "click to start"
             )
             if (state.prefs.mousePause) {
                 // start with mouse assumed outside, and paused

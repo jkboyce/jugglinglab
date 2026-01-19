@@ -34,6 +34,7 @@ class PatternAnimationState(
     var selectedItemHashCode: Int by mutableStateOf(0)
     var propForPath: List<Int> by mutableStateOf(initialPropForPath())
     var fitToFrame: Boolean by mutableStateOf(true)
+    var message: String by mutableStateOf("")
 
     //--------------------------------------------------------------------------
     // Helper to update the state and notify listeners
@@ -48,7 +49,8 @@ class PatternAnimationState(
         zoom: Double? = null,
         selectedItemHashCode: Int? = null,
         propForPath: List<Int>? = null,
-        fitToFrame: Boolean? = null
+        fitToFrame: Boolean? = null,
+        message: String? = null
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs
@@ -59,7 +61,8 @@ class PatternAnimationState(
         if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
         if (propForPath != null) this.propForPath = propForPath
         if (fitToFrame != null) this.fitToFrame = fitToFrame
-        
+        if (message != null) this.message = message
+
         if (pattern != null) {
             onPatternChange.forEach { it() }
         }
@@ -87,6 +90,9 @@ class PatternAnimationState(
         if (fitToFrame != null) {
             onFitToFrameChange.forEach { it() }
         }
+        if (message != null) {
+            onMessageChange.forEach { it() }
+        }
     }
 
     // callbacks
@@ -99,6 +105,7 @@ class PatternAnimationState(
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
     val onPropForPathChange = mutableListOf<() -> Unit>()
     val onFitToFrameChange = mutableListOf<() -> Unit>()
+    val onMessageChange = mutableListOf<() -> Unit>()
     val onNewPatternUndo = mutableListOf<() -> Unit>()
 
     fun addListener(
@@ -111,6 +118,7 @@ class PatternAnimationState(
         onSelectedItemHashChange: (() -> Unit)? = null,
         onPropForPathChange: (() -> Unit)? = null,
         onFitToFrameChange: (() -> Unit)? = null,
+        onMessageChange: (() -> Unit)? = null,
         onNewPatternUndo: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
@@ -122,6 +130,7 @@ class PatternAnimationState(
         if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
         if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
         if (onFitToFrameChange != null) this.onFitToFrameChange.add(onFitToFrameChange)
+        if (onMessageChange != null) this.onMessageChange.add(onMessageChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
 
@@ -135,6 +144,7 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
         onPropForPathChange.clear()
         onFitToFrameChange.clear()
+        onMessageChange.clear()
         onNewPatternUndo.clear()
     }
 

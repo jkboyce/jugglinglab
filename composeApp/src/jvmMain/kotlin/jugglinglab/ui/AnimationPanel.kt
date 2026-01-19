@@ -35,7 +35,6 @@ class AnimationPanel(
     // associated controller to handle mouse interactions
     private val controller = AnimationController(state)
 
-    var message: String? = null
     private var catchClip: Clip? = null
     private var bounceClip: Clip? = null
 
