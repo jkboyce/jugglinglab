@@ -52,8 +52,12 @@ class PatternView(
         setLayout(BorderLayout())
 
         // animator on the left
-        ja.preferredSize = dim
-        ja.minimumSize = Dimension(10, 10)
+        ja.preferredSize = if (patternWindow.isWindowMaximized) {
+            Dimension(patternWindow.width * 3 / 4, 50)
+        } else {
+            dim
+        }
+        ja.minimumSize = Dimension(50, 50)
 
         // controls panel on the right
         val controls = JPanel()
@@ -113,7 +117,6 @@ class PatternView(
         // split pane dividing the two
         jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls)
         jsp.setResizeWeight(0.0) // % extra space allocated to left (animation) side
-
         add(jsp, BorderLayout.CENTER)
 
         // button + error message label across the bottom

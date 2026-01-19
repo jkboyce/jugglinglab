@@ -189,7 +189,7 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
     val isWindowMaximized: Boolean
         get() = ((extendedState and MAXIMIZED_BOTH) != 0)
 
-    fun setJMLFilename(fname: String?) {
+    fun setJmlFilename(fname: String?) {
         lastJmlFilename = fname
     }
 
@@ -605,11 +605,7 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
                     view.restartView(null, newjc)
 
                     if (newjc.width != jc.width || newjc.height != jc.height) {
-                        if (isWindowMaximized) {
-                            validate()
-                        } else {
-                            pack()
-                        }
+                        if (isWindowMaximized) validate() else pack()
                     }
                 }
             }

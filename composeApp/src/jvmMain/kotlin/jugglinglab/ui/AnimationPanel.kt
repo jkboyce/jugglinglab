@@ -259,15 +259,6 @@ class AnimationPanel(
                     try {
                         if (!animationRunning) return
 
-                        // Don't update the preferred animation size if the enclosing
-                        // window is maximized
-                        val comp = SwingUtilities.getRoot(this@AnimationPanel)
-                        if (comp is PatternWindow) {
-                            if (comp.isWindowMaximized) {
-                                return
-                            }
-                        }
-
                         if (state.prefs.width != size.width || state.prefs.height != size.height) {
                             val newPrefs = state.prefs.copy(width = size.width, height = size.height)
                             state.update(prefs = newPrefs)

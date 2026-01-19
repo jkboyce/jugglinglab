@@ -24,7 +24,7 @@ class SimpleView(
 
     init {
         ja.preferredSize = Dimension(state.prefs.width, state.prefs.height)
-        ja.minimumSize = Dimension(10, 10)
+        ja.minimumSize = Dimension(50, 50)
         setLayout(BorderLayout())
         add(ja, BorderLayout.CENTER)
     }
