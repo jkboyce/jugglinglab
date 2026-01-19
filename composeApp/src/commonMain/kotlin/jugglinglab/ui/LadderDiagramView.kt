@@ -35,6 +35,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.pointer.*
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun LadderDiagramView(
@@ -181,9 +183,7 @@ fun LadderDiagramView(
 
                 if (item.type == LadderItem.TYPE_CROSS || item.type == LadderItem.TYPE_HOLD) {
                     clipRect(
-                        left = (layout.leftX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat() - layout.lineWidth,
                         top = layout.borderTop.toFloat(),
-                        right = (layout.rightX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat() + layout.lineWidth,
                         bottom = height - layout.borderTop
                     ) {
                         drawLine(
@@ -195,9 +195,7 @@ fun LadderDiagramView(
                     }
                 } else if (item.type == LadderItem.TYPE_PASS) {
                     clipRect(
-                        left = layout.leftX.toFloat(),
                         top = layout.borderTop.toFloat(),
-                        right = width - layout.leftX,
                         bottom = height - layout.borderTop
                     ) {
                         drawLine(
@@ -209,12 +207,10 @@ fun LadderDiagramView(
                         )
                     }
                 } else if (item.type == LadderItem.TYPE_SELF) {
-                    if (item.yEnd >= layout.borderTop) {
+                    if (item.yStart <= (height.toInt() - layout.borderTop) && item.yEnd >= layout.borderTop) {
                         clipRect(
-                            left = (layout.leftX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat(),
-                            top = layout.borderTop.toFloat(),
-                            right = (layout.rightX + (item.startEvent.juggler - 1) * layout.jugglerDeltaX).toFloat(),
-                            bottom = height - layout.borderTop
+                            top = max(layout.borderTop.toFloat(), item.yStart.toFloat()),
+                            bottom = min(height - layout.borderTop, item.yEnd.toFloat())
                         ) {
                             drawCircle(
                                 pathColor,
