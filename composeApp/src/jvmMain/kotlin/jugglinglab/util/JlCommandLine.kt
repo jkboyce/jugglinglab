@@ -620,7 +620,7 @@ object JlCommandLine {
                 jc = AnimationPrefs(fps = 33.3)  // default frames per sec for GIFs
                 // Note the GIF header specifies inter-frame delay in terms of
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
-                // 25, 20, ... are precisely achieveable.
+                // 25, 20, ... are precisely achievable.
             }
             val drawer = FrameDrawer(PatternAnimationState(pat, jc))
             drawer.writeGIF(FileOutputStream(outpath.toFile()), null, jc.fps)
