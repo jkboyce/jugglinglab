@@ -31,7 +31,7 @@ class PatternAnimationState(
     var cameraAngle: List<Double> by mutableStateOf(initialCameraAngle())  // radians
     var zoom: Double by mutableStateOf(1.0)
     var selectedItemHashCode: Int by mutableStateOf(0)
-    var propForPath: List<Int> by mutableStateOf(initialPropForPath())
+    var propForPath: List<Int> by mutableStateOf(initialPattern.initialPropForPath)
     var fitToFrame: Boolean by mutableStateOf(true)
     var message: String by mutableStateOf("")
 
@@ -165,12 +165,6 @@ class PatternAnimationState(
             }
         }
         return ca.toList()
-    }
-
-    // Return the initial mapping of paths to props, for the current pattern.
-
-    fun initialPropForPath(): List<Int> {
-        return (1..pattern.numberOfPaths).map { pattern.getPropAssignment(it) }
     }
 
     // Advance the path-to-prop mapping after a cycle through the pattern.

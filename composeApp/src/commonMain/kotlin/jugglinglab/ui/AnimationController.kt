@@ -90,19 +90,27 @@ class AnimationController(
     // Methods to (re)start the animator
     //--------------------------------------------------------------------------
 
+    // There are three levels of "pattern restart":
+    // (a) state.update(pattern = newPattern). This is for minor changes to the
+    //     pattern, such as event edits.
+    // (b) restartJuggle(coldRestart = false). Resets "propForPath", in case there
+    //     was a change to prop definitions or assignments.
+    // (c) restartJuggle(coldRestart = true). Complete restart of the animator,
+    //     including a reset of camera angle, paused state, and zoom.
+
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
         // Do layout first so an error won't disrupt the current animation
         pat?.layout
 
-        if (pat != null) state.update(pattern = pat)
+        if (pat != null) state.update(pattern = pat, propForPath = pat.initialPropForPath)
         if (newjc != null) state.update(prefs = newjc)
         if (coldRestart) {
             state.update(
                 isPaused = state.prefs.startPaused,
                 cameraAngle = state.initialCameraAngle(),
                 zoom = 1.0,
-                propForPath = state.initialPropForPath(),
+                propForPath = state.pattern.initialPropForPath,
                 fitToFrame = true,
                 message = if (state.prefs.startPaused) jlGetStringResource(Res.string.gui_message_click_to_start) else ""
             )
