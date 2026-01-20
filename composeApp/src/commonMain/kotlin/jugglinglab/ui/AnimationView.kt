@@ -65,10 +65,13 @@ fun AnimationView(
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
 
+        val backgroundColor = Color.White
+        val messageColor = Color.Black
+
         if (state.message.isNotEmpty()) {
             val textLayoutResult = textMeasurer.measure(
                 text = state.message,
-                style = TextStyle(color = Color.Black, fontSize = 13.sp)
+                style = TextStyle(color = messageColor, fontSize = 13.sp)
             )
             val textSize = textLayoutResult.size
             state.update(time = state.pattern.loopStartTime)
@@ -83,7 +86,7 @@ fun AnimationView(
                         )
                     }
             ) {
-                drawRect(color = Color.White)
+                drawRect(color = backgroundColor)
                 drawText(
                     textLayoutResult = textLayoutResult,
                     topLeft = Offset(
@@ -204,7 +207,7 @@ fun AnimationView(
                     }
                 }
         ) {
-            drawRect(color = Color.White)
+            drawRect(color = backgroundColor)
 
             val width = size.width.toInt()
             val height = size.height.toInt()
