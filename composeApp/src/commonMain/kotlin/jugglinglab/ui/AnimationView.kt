@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -48,7 +47,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 fun AnimationView(
     state: PatternAnimationState,
     onPress: (Offset) -> Unit = {},
-    onDrag: (Offset) -> Unit = {},
+    onDrag: (Offset, Float) -> Unit = {_, _ ->},
     onRelease: () -> Unit = {},
     onEnter: () -> Unit = {},
     onExit: () -> Unit = {},
@@ -96,8 +95,41 @@ fun AnimationView(
             return@BoxWithConstraints
         }
 
-        val width = (widthPx / density).toInt()
-        val height = (heightPx / density).toInt()
+        try {
+            val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+                    (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
+            renderer1.setPattern(state.pattern)
+            renderer1.setGround(showGround)
+            renderer1.zoomLevel = state.zoom
+            if (state.prefs.stereo) {
+                renderer2.setPattern(state.pattern)
+                renderer2.setGround(showGround)
+                renderer2.zoomLevel = state.zoom
+            }
+
+            if (state.fitToFrame) {
+                val borderPixels = state.prefs.borderPixels
+                val (overallMin, overallMax) = state.pattern.layout.overallBoundingBox
+                if (state.prefs.stereo) {
+                    val w = widthPx / 2
+                    renderer1.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                    renderer2.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                } else {
+                    renderer1.initDisplay(widthPx, heightPx, borderPixels, overallMax, overallMin)
+                }
+            }
+
+            val ca = state.cameraAngle.toDoubleArray()
+            if (state.prefs.stereo) {
+                val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
+                renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
+                renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
+            } else {
+                renderer1.cameraAngle = ca
+            }
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        }
 
         val layout = remember(
             state.pattern,
@@ -106,41 +138,11 @@ fun AnimationView(
             state.cameraAngle,
             state.zoom,
             state.selectedItemHashCode,
-            width,
-            height
+            state.fitToFrame,
+            widthPx,
+            heightPx
         ) {
-            AnimationLayout(state, width, height)
-        }
-
-        SideEffect {
-            // update renderers on every recomposition
-            try {
-                val pattern = state.pattern
-                val sg = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
-                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && pattern.isBouncePattern))
-
-                renderer1.setPattern(pattern)
-                renderer1.setGround(sg)
-                renderer1.zoomLevel = state.zoom
-                if (state.prefs.stereo) {
-                    renderer2.setPattern(pattern)
-                    renderer2.setGround(sg)
-                    renderer2.zoomLevel = state.zoom
-                }
-
-                val ca = doubleArrayOf(state.cameraAngle[0], state.cameraAngle[1])
-                while (ca[0] < 0) ca[0] += 2 * Math.PI
-                while (ca[0] >= 2 * Math.PI) ca[0] -= 2 * Math.PI
-                if (state.prefs.stereo) {
-                    val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
-                    renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
-                    renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
-                } else {
-                    renderer1.cameraAngle = ca
-                }
-            } catch (e: Exception) {
-                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
-            }
+            AnimationLayout(state, widthPx, heightPx, renderer1, renderer2)
         }
 
         LaunchedEffect(layout) {
@@ -189,10 +191,10 @@ fun AnimationView(
                             } else if (event.type == PointerEventType.Exit) {
                                 onExit()
                             } else if (change.changedToDown()) {
-                                onPress(offset / density)
+                                onPress(offset)
                                 change.consume()
                             } else if (change.pressed && change.positionChanged()) {
-                                onDrag(offset / density)
+                                onDrag(offset, density)
                                 change.consume()
                             } else if (change.changedToUp()) {
                                 onRelease()
@@ -206,14 +208,9 @@ fun AnimationView(
 
             val width = size.width.toInt()
             val height = size.height.toInt()
-            val borderPixels = state.prefs.borderPixels
-            val (overallMin, overallMax) = layout.boundingBox
 
             if (state.prefs.stereo) {
                 val w = width / 2
-                renderer1.initDisplay(w, height, borderPixels, overallMax, overallMin)
-                renderer2.initDisplay(w, height, borderPixels, overallMax, overallMin)
-
                 withTransform({ translate(left = 0f, top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
                         renderer1.drawFrame(
@@ -222,8 +219,8 @@ fun AnimationView(
                             state.prefs.hideJugglers,
                             this
                         )
-                        drawEventOverlays(layout, 0, this, density)
-                        drawPositions(layout, 0, this, density)
+                        drawEventOverlays(layout, 0, this)
+                        drawPositions(layout, 0, this)
                     }
                 }
 
@@ -235,20 +232,19 @@ fun AnimationView(
                             state.prefs.hideJugglers,
                             this
                         )
-                        drawEventOverlays(layout, 1, this, density)
-                        drawPositions(layout, 1, this, density)
+                        drawEventOverlays(layout, 1, this)
+                        drawPositions(layout, 1, this)
                     }
                 }
             } else {
-                renderer1.initDisplay(width, height, borderPixels, overallMax, overallMin)
                 renderer1.drawFrame(
                     state.time,
                     state.propForPath,
                     state.prefs.hideJugglers,
                     this
                 )
-                drawEventOverlays(layout, 0, this, density)
-                drawPositions(layout, 0, this, density)
+                drawEventOverlays(layout, 0, this)
+                drawPositions(layout, 0, this)
             }
         }
     }
@@ -257,8 +253,7 @@ fun AnimationView(
 private fun drawEventOverlays(
     layout: AnimationLayout,
     viewIndex: Int,
-    scope: DrawScope,
-    density: Float
+    scope: DrawScope
 ) {
     // Draw Hand Paths
     if (viewIndex < layout.handpathPoints.size) {
@@ -272,11 +267,8 @@ private fun drawEventOverlays(
             var lastDashed = false
 
             for (i in 0 until points.size - 1) {
-                val p1 = Offset(points[i][0].toFloat() * density, points[i][1].toFloat() * density)
-                val p2 = Offset(
-                    points[i + 1][0].toFloat() * density,
-                    points[i + 1][1].toFloat() * density
-                )
+                val p1 = Offset(points[i][0].toFloat(), points[i][1].toFloat())
+                val p2 = Offset(points[i + 1][0].toFloat(), points[i + 1][1].toFloat())
 
                 if (holds[i]) {
                     if (!lastSolid) pathSolid.moveTo(p1.x, p1.y)
@@ -316,9 +308,9 @@ private fun drawEventOverlays(
             val isSelected = (evIndex == 0) // First event is always the active one in the list
 
             // Center dot
-            val center = points[4] // Index 4 is center
-            val cx = center[0].toFloat() * density
-            val cy = center[1].toFloat() * density
+            val center = points[4]
+            val cx = center[0].toFloat()
+            val cy = center[1].toFloat()
 
             scope.drawOval(
                 color = Color.Green,
@@ -328,14 +320,10 @@ private fun drawEventOverlays(
 
             if (isSelected) {
                 if (layout.showXzDragControl) {
-                    val p0 =
-                        Offset(points[0][0].toFloat() * density, points[0][1].toFloat() * density)
-                    val p1 =
-                        Offset(points[1][0].toFloat() * density, points[1][1].toFloat() * density)
-                    val p2 =
-                        Offset(points[2][0].toFloat() * density, points[2][1].toFloat() * density)
-                    val p3 =
-                        Offset(points[3][0].toFloat() * density, points[3][1].toFloat() * density)
+                    val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
+                    val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
+                    val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
+                    val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
                     scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
                     scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
                     scope.drawLine(Color.Green, p2, p3, strokeWidth = 2f)
@@ -345,17 +333,17 @@ private fun drawEventOverlays(
                 if (layout.showYDragControl) {
                     scope.drawLine(
                         Color.Green,
-                        Offset(points[5][0].toFloat() * density, points[5][1].toFloat() * density),
-                        Offset(points[6][0].toFloat() * density, points[6][1].toFloat() * density),
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
                         strokeWidth = 2f
                     )
                 }
             } else {
                 // Draw unselected event box
-                val p0 = Offset(points[0][0].toFloat() * density, points[0][1].toFloat() * density)
-                val p1 = Offset(points[1][0].toFloat() * density, points[1][1].toFloat() * density)
-                val p2 = Offset(points[2][0].toFloat() * density, points[2][1].toFloat() * density)
-                val p3 = Offset(points[3][0].toFloat() * density, points[3][1].toFloat() * density)
+                val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
+                val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
+                val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
+                val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
                 scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
                 scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
                 scope.drawLine(Color.Green, p2, p3, strokeWidth = 2f)
@@ -368,8 +356,7 @@ private fun drawEventOverlays(
 private fun drawPositions(
     layout: AnimationLayout,
     viewIndex: Int,
-    scope: DrawScope,
-    density: Float
+    scope: DrawScope
 ) {
     val posPoints = layout.posPoints
 
@@ -380,8 +367,8 @@ private fun drawPositions(
 
         // Center dot (index 4)
         val center = points[4]
-        val cx = center[0].toFloat() * density
-        val cy = center[1].toFloat() * density
+        val cx = center[0].toFloat()
+        val cy = center[1].toFloat()
 
         scope.drawOval(
             color = Color.Green,
@@ -391,10 +378,10 @@ private fun drawPositions(
 
         // Draw Box 0-3
         // 0-1, 1-2, 2-3, 3-0
-        val p0 = Offset(points[0][0].toFloat() * density, points[0][1].toFloat() * density)
-        val p1 = Offset(points[1][0].toFloat() * density, points[1][1].toFloat() * density)
-        val p2 = Offset(points[2][0].toFloat() * density, points[2][1].toFloat() * density)
-        val p3 = Offset(points[3][0].toFloat() * density, points[3][1].toFloat() * density)
+        val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
+        val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
+        val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
+        val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
 
         scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
         scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
@@ -403,8 +390,8 @@ private fun drawPositions(
 
         // Angle Control (handle at 5)
         if (layout.showAngleDragControl) {
-            val p5 = Offset(points[5][0].toFloat() * density, points[5][1].toFloat() * density)
-            val p4 = Offset(points[4][0].toFloat() * density, points[4][1].toFloat() * density)
+            val p5 = Offset(points[5][0].toFloat(), points[5][1].toFloat())
+            val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
             scope.drawLine(Color.Green, p4, p5, strokeWidth = 1f)
 
             // Handle box/circle at 5
@@ -417,14 +404,14 @@ private fun drawPositions(
 
         // Z Drag Control (handle at 6, arrows at 7,8)
         if (layout.showZDragControl) {
-            val p6 = Offset(points[6][0].toFloat() * density, points[6][1].toFloat() * density)
-            val p4 = Offset(points[4][0].toFloat() * density, points[4][1].toFloat() * density)
+            val p6 = Offset(points[6][0].toFloat(), points[6][1].toFloat())
+            val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
 
             scope.drawLine(Color.Green, p4, p6, strokeWidth = 1f)
 
             // Arrow heads
-            val p7 = Offset(points[7][0].toFloat() * density, points[7][1].toFloat() * density)
-            val p8 = Offset(points[8][0].toFloat() * density, points[8][1].toFloat() * density)
+            val p7 = Offset(points[7][0].toFloat(), points[7][1].toFloat())
+            val p8 = Offset(points[8][0].toFloat(), points[8][1].toFloat())
 
             scope.drawLine(Color.Green, p7, p6, strokeWidth = 1f)
             scope.drawLine(Color.Green, p8, p6, strokeWidth = 1f)

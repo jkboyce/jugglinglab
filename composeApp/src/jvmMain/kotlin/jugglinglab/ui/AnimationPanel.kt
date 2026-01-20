@@ -2,9 +2,9 @@
 // AnimationPanel.kt
 //
 // This class creates the juggling animation on screen. It embeds a Composable
-// AnimationView which handles rendering. It also interprets some mouse
-// interactions such as camera drag and click to pause, and supports interactions
-// with on-screen representations of JML events and positions.
+// AnimationView which handles rendering. It also interprets mouse
+// interactions such as camera drag and click to pause, and supports
+// interactions with on-screen representations of JML events and positions.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -46,7 +46,7 @@ class AnimationPanel(
             AnimationView(
                 state = state,
                 onPress = { offset -> controller.handlePress(offset) },
-                onDrag = { offset -> controller.handleDrag(offset) },
+                onDrag = { offset, density -> controller.handleDrag(offset, density) },
                 onRelease = { controller.handleRelease() },
                 onEnter = { controller.handleEnter() },
                 onExit = { controller.handleExit() },

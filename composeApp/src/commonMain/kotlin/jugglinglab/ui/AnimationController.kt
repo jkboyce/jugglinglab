@@ -112,7 +112,9 @@ class AnimationController(
                 zoom = 1.0,
                 propForPath = state.pattern.initialPropForPath,
                 fitToFrame = true,
-                message = if (state.prefs.startPaused) jlGetStringResource(Res.string.gui_message_click_to_start) else ""
+                message = if (state.prefs.startPaused) {
+                    jlGetStringResource(Res.string.gui_message_click_to_start)
+                } else ""
             )
             if (state.prefs.mousePause) {
                 // start with mouse assumed outside, and paused
@@ -132,15 +134,16 @@ class AnimationController(
     //--------------------------------------------------------------------------
 
     fun handlePress(offset: Offset) {
+        // these are all physical pixel coordinates, not logical pixels
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
         mousePressedLogic(mx, my)
     }
 
-    fun handleDrag(offset: Offset) {
+    fun handleDrag(offset: Offset, density: Float) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
-        mouseDraggedLogic(mx, my)
+        mouseDraggedLogic(mx, my, density)
     }
 
     fun handleRelease() {
@@ -205,13 +208,13 @@ class AnimationController(
                             if (j > 0) {
                                 val image =
                                     state.pattern.allEvents.find { it.event == layout.visibleEvents[j] }
-                                        ?: throw JuggleExceptionInternal("Error 1 in AP.mousePressed()")
+                                        ?: throw JuggleExceptionInternal("Error 1 in AC.mousePressedLogic()")
                                 val code = state.pattern.loopEvents.find {
                                     it.primary == image.primary &&
                                             it.event.juggler == image.event.juggler &&
                                             it.event.hand == image.event.hand
                                 }?.event?.jlHashCode
-                                    ?: throw JuggleExceptionInternal("Error 2 in AP.mousePressed()")
+                                    ?: throw JuggleExceptionInternal("Error 2 in AC.mousePressedLogic()")
                                 state.update(selectedItemHashCode = code)
                             }
                             draggingXz = true
@@ -294,42 +297,7 @@ class AnimationController(
         }
     }
 
-    private fun mouseReleasedLogic() {
-        if (!draggingCamera && !dragging) {
-            // if `draggingCamera` and `dragging` are both false then
-            // mouseDraggedLogic() was never called
-            state.update(isPaused = !state.isPaused)
-            onSimpleMouseClick?.invoke()
-        }
-
-        try {
-            val activeEventImage = getActiveEvent(state)
-            val activePosition = getActivePosition(state)
-
-            if ((activeEventImage != null || activePosition != null) && dragging) {
-                state.update(fitToFrame = true)
-                state.addCurrentToUndoList()
-            }
-
-            draggingCamera = false
-            dragging = false
-            draggingY = false
-            draggingXz = false
-            draggingAngle = false
-            draggingZ = false
-            draggingXy = false
-            deltaX = 0
-            deltaY = 0
-            deltaAngle = 0.0
-            eventStart = null
-            eventPrimaryStart = null
-            positionStart = null
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
-        }
-    }
-
-    private fun mouseDraggedLogic(mx: Int, my: Int) {
+    private fun mouseDraggedLogic(mx: Int, my: Int, density: Float) {
         try {
             if (dragging) {
                 if (draggingAngle) {
@@ -348,7 +316,7 @@ class AnimationController(
                     val activePosition = getActivePosition(state)!!
                     val rec = PatternBuilder.fromJmlPattern(state.pattern)
                     val index = rec.positions.indexOf(activePosition)
-                    if (index < 0) throw JuggleExceptionInternal("Error 1 in AP.mouseDragged()")
+                    if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
                     val newPosition = activePosition.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
                     state.update(
@@ -396,7 +364,7 @@ class AnimationController(
                             val rec = PatternBuilder.fromJmlPattern(state.pattern)
                             val index = rec.positions.indexOf(activePosition)
                             if (index < 0) {
-                                throw JuggleExceptionInternal("Error 2 in AP.mouseDragged()")
+                                throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
                             }
                             val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
                             rec.positions[index] = newPosition
@@ -421,8 +389,10 @@ class AnimationController(
                 lastY = my
                 var ca0 = dragCameraAngle[0]
                 var ca1 = dragCameraAngle[1]
-                ca0 += dx.toDouble() * 0.02
-                ca1 -= dy.toDouble() * 0.02
+                // correct for display density to get a similar slew rate
+                // across platforms
+                ca0 += dx.toDouble() * 0.02 / density
+                ca1 -= dy.toDouble() * 0.02 / density
                 if (ca1 < Math.toRadians(0.0001)) ca1 = Math.toRadians(0.0001)
                 if (ca1 > Math.toRadians(179.9999)) ca1 = Math.toRadians(179.9999)
                 while (ca0 < 0) ca0 += 2.0 * Math.PI
@@ -432,6 +402,41 @@ class AnimationController(
                 state.update(cameraAngle = snapCamera(dragCameraAngle))
                 onCameraChange?.invoke(dragCameraAngle)
             }
+        } catch (e: Exception) {
+            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        }
+    }
+
+    private fun mouseReleasedLogic() {
+        if (!draggingCamera && !dragging) {
+            // if `draggingCamera` and `dragging` are both false then
+            // mouseDraggedLogic() was never called
+            state.update(isPaused = !state.isPaused)
+            onSimpleMouseClick?.invoke()
+        }
+
+        try {
+            val activeEventImage = getActiveEvent(state)
+            val activePosition = getActivePosition(state)
+
+            if ((activeEventImage != null || activePosition != null) && dragging) {
+                state.update(fitToFrame = true)
+                state.addCurrentToUndoList()
+            }
+
+            draggingCamera = false
+            dragging = false
+            draggingY = false
+            draggingXz = false
+            draggingAngle = false
+            draggingZ = false
+            draggingXy = false
+            deltaX = 0
+            deltaY = 0
+            deltaAngle = 0.0
+            eventStart = null
+            eventPrimaryStart = null
+            positionStart = null
         } catch (e: Exception) {
             jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
