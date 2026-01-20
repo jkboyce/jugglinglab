@@ -450,7 +450,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         pat.layout
                         if (!PatternWindow.bringToFront(pat.jlHashCode)) {
                             val pw = PatternWindow(pat.title, pat, AnimationPrefs())
-                            pw.setJMLFilename(jmlf.getName())
+                            pw.setJmlFilename(jmlf.getName())
                         }
                     }
 

@@ -301,7 +301,7 @@ class FrameDrawer(
     //
     // Note: The GIF header specifies the delay time between frames in terms of
     // hundredths of a second. This is an integer quantity, so only `fps` values
-    // like 50, 33 1/3, 25, 20, ... are precisely achieveable.
+    // like 50, 33 1/3, 25, 20, ... are precisely achievable.
 
     @Throws(IOException::class, JuggleExceptionInternal::class)
     fun writeGIF(os: OutputStream, wgm: WriteGIFMonitor?, fps: Double) {

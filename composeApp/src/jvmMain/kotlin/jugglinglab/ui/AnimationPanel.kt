@@ -104,12 +104,8 @@ class AnimationPanel(
             object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent?) {
                     try {
-                        val comp = SwingUtilities.getRoot(this@AnimationPanel)
-                        if (comp is PatternWindow && comp.isWindowMaximized) return
-
-                        if (state.prefs.width != width || state.prefs.height != height) {
-                            val newPrefs =
-                                state.prefs.copy(width = width, height = height)
+                        if (state.prefs.width != size.width || state.prefs.height != size.height) {
+                            val newPrefs = state.prefs.copy(width = size.width, height = size.height)
                             state.update(prefs = newPrefs)
                         }
                     } catch (e: Exception) {

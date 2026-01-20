@@ -28,7 +28,6 @@ class PatternAnimationState(
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
     var time: Double by mutableStateOf(initialPattern.loopStartTime)
     var isPaused: Boolean by mutableStateOf(initialPrefs.startPaused)
-    //var clock: Long by mutableStateOf(0L)
     var cameraAngle: List<Double> by mutableStateOf(initialCameraAngle())  // radians
     var zoom: Double by mutableStateOf(1.0)
     var selectedItemHashCode: Int by mutableStateOf(0)
