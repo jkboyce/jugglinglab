@@ -255,6 +255,9 @@ private fun drawEventOverlays(
     viewIndex: Int,
     scope: DrawScope
 ) {
+    val handpathColor = Color.LightGray
+    val eventColor = Color.Green
+
     // Draw Hand Paths
     if (viewIndex < layout.handpathPoints.size) {
         val points = layout.handpathPoints[viewIndex]
@@ -285,12 +288,12 @@ private fun drawEventOverlays(
 
             scope.drawPath(
                 pathSolid,
-                Color.LightGray,
+                handpathColor,
                 style = Stroke(width = 2f)
             )
             scope.drawPath(
                 pathDashed,
-                Color.LightGray,
+                handpathColor,
                 style = Stroke(
                     width = 2f,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(7f, 7f))
@@ -313,7 +316,7 @@ private fun drawEventOverlays(
             val cy = center[1].toFloat()
 
             scope.drawOval(
-                color = Color.Green,
+                color = eventColor,
                 topLeft = Offset(cx - 2.5f, cy - 2.5f),
                 size = Size(5f, 5f)
             )
@@ -324,15 +327,15 @@ private fun drawEventOverlays(
                     val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
                     val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
                     val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
-                    scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
-                    scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
-                    scope.drawLine(Color.Green, p2, p3, strokeWidth = 2f)
-                    scope.drawLine(Color.Green, p3, p0, strokeWidth = 2f)
+                    scope.drawLine(eventColor, p0, p1, strokeWidth = 2f)
+                    scope.drawLine(eventColor, p1, p2, strokeWidth = 2f)
+                    scope.drawLine(eventColor, p2, p3, strokeWidth = 2f)
+                    scope.drawLine(eventColor, p3, p0, strokeWidth = 2f)
                 }
 
                 if (layout.showYDragControl) {
                     scope.drawLine(
-                        Color.Green,
+                        eventColor,
                         Offset(points[5][0].toFloat(), points[5][1].toFloat()),
                         Offset(points[6][0].toFloat(), points[6][1].toFloat()),
                         strokeWidth = 2f
@@ -344,10 +347,10 @@ private fun drawEventOverlays(
                 val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
                 val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
                 val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
-                scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
-                scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
-                scope.drawLine(Color.Green, p2, p3, strokeWidth = 2f)
-                scope.drawLine(Color.Green, p3, p0, strokeWidth = 2f)
+                scope.drawLine(eventColor, p0, p1, strokeWidth = 2f)
+                scope.drawLine(eventColor, p1, p2, strokeWidth = 2f)
+                scope.drawLine(eventColor, p2, p3, strokeWidth = 2f)
+                scope.drawLine(eventColor, p3, p0, strokeWidth = 2f)
             }
         }
     }
@@ -359,6 +362,7 @@ private fun drawPositions(
     scope: DrawScope
 ) {
     val posPoints = layout.posPoints
+    val posColor = Color.Green
 
     // Check if we have data for this viewIndex
     if (viewIndex < posPoints.size) {
@@ -371,7 +375,7 @@ private fun drawPositions(
         val cy = center[1].toFloat()
 
         scope.drawOval(
-            color = Color.Green,
+            color = posColor,
             topLeft = Offset(cx - 2.5f, cy - 2.5f),
             size = Size(5f, 5f)
         )
@@ -383,20 +387,20 @@ private fun drawPositions(
         val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
         val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
 
-        scope.drawLine(Color.Green, p0, p1, strokeWidth = 2f)
-        scope.drawLine(Color.Green, p1, p2, strokeWidth = 2f)
-        scope.drawLine(Color.Green, p2, p3, strokeWidth = 2f)
-        scope.drawLine(Color.Green, p3, p0, strokeWidth = 2f)
+        scope.drawLine(posColor, p0, p1, strokeWidth = 2f)
+        scope.drawLine(posColor, p1, p2, strokeWidth = 2f)
+        scope.drawLine(posColor, p2, p3, strokeWidth = 2f)
+        scope.drawLine(posColor, p3, p0, strokeWidth = 2f)
 
         // Angle Control (handle at 5)
         if (layout.showAngleDragControl) {
             val p5 = Offset(points[5][0].toFloat(), points[5][1].toFloat())
             val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
-            scope.drawLine(Color.Green, p4, p5, strokeWidth = 1f)
+            scope.drawLine(posColor, p4, p5, strokeWidth = 1f)
 
             // Handle box/circle at 5
             scope.drawOval(
-                color = Color.Green,
+                color = posColor,
                 topLeft = Offset(p5.x - 3f, p5.y - 3f),
                 size = Size(6f, 6f)
             )
@@ -407,14 +411,14 @@ private fun drawPositions(
             val p6 = Offset(points[6][0].toFloat(), points[6][1].toFloat())
             val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
 
-            scope.drawLine(Color.Green, p4, p6, strokeWidth = 1f)
+            scope.drawLine(posColor, p4, p6, strokeWidth = 1f)
 
             // Arrow heads
             val p7 = Offset(points[7][0].toFloat(), points[7][1].toFloat())
             val p8 = Offset(points[8][0].toFloat(), points[8][1].toFloat())
 
-            scope.drawLine(Color.Green, p7, p6, strokeWidth = 1f)
-            scope.drawLine(Color.Green, p8, p6, strokeWidth = 1f)
+            scope.drawLine(posColor, p7, p6, strokeWidth = 1f)
+            scope.drawLine(posColor, p8, p6, strokeWidth = 1f)
         }
     }
 }
