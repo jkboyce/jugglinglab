@@ -235,8 +235,8 @@ fun LadderDiagramView(
             // 5. Positions
             for (item in layout.positionItems) {
                 if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
-                    val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
                     val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
+                    val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
 
                     drawRect(backgroundColor, topLeft, rectSize)
                     drawRect(positionColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
@@ -246,25 +246,26 @@ fun LadderDiagramView(
                             selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
                             Size(rectSize.width + 2, rectSize.height + 2),
-                            style = Stroke(layout.lineWidth)
+                            style = Stroke(layout.lineWidth * 2)
                         )
                     }
                 }
             }
 
-            // 6. Events
+            // 6. Events and transitions
             for (item in layout.eventItems) {
                 val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
-                val size = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
+                val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
 
                 if (item.type == LadderItem.TYPE_EVENT) {
-                    drawOval(eventColor, topLeft, size)
+                    drawOval(eventColor, topLeft, rectSize)
+
                     if (item.jlHashCode == activeItemHash) {
                         drawRect(
                             selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
-                            Size(size.width + 2, size.height + 2),
-                            style = Stroke(layout.lineWidth)
+                            Size(rectSize.width + 2, rectSize.height + 2),
+                            style = Stroke(layout.lineWidth * 2)
                         )
                     }
                 } else {
@@ -273,15 +274,15 @@ fun LadderDiagramView(
                         val propnum = state.propForPath[tr.path - 1]
                         val propColor = state.pattern.getProp(propnum).getEditorColor()
 
-                        drawOval(propColor, topLeft, size)
-                        drawOval(eventColor, topLeft, size, style = Stroke(layout.lineWidth))
+                        drawOval(propColor, topLeft, rectSize)
+                        drawOval(eventColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
 
                         if (item.jlHashCode == activeItemHash) {
                             drawRect(
                                 selectionColor,
                                 topLeft.minus(Offset(1f, 1f)),
-                                Size(size.width + 2, size.height + 2),
-                                style = Stroke(layout.lineWidth)
+                                Size(rectSize.width + 2, rectSize.height + 2),
+                                style = Stroke(layout.lineWidth * 2)
                             )
                         }
                     }
