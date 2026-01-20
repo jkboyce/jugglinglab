@@ -113,6 +113,10 @@ data class JmlPattern(
         return propAssignment[path - 1]
     }
 
+    val initialPropForPath: List<Int> by lazy {
+        (1..numberOfPaths).map { getPropAssignment(it) }
+    }
+
     // number of loop iterations needed to bring props back into the same path
     // assignment; used for e.g. creating animated GIFs
 

@@ -318,7 +318,7 @@ class FrameDrawer(
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
 
         // reset prop assignments to generate an identical GIF every time
-        state.update(propForPath = state.initialPropForPath())
+        state.update(propForPath = pattern.initialPropForPath)
 
         // our own local versions of these three fps-related quantities
         val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * fps).toInt()
