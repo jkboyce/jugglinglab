@@ -33,10 +33,10 @@ class EditView(
     private val jsp: JSplitPane
 
     init {
-        ap.preferredSize =  if (patternWindow.isWindowMaximized) {
+        ap.preferredSize = if (patternWindow.isWindowMaximized) {
             // leave enough room for preferred width of ladder; layout
             // will expand the animator dimensions to fit
-            Dimension(patternWindow.width * 3 / 4, 50)
+            Dimension(patternWindow.width / 4, 50)
         } else {
             Dimension(state.prefs.width, state.prefs.height)
         }
