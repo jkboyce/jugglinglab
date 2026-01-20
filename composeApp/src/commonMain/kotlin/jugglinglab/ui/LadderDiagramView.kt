@@ -53,6 +53,16 @@ fun LadderDiagramView(
         val heightPx = constraints.maxHeight
         val density = LocalDensity.current.density
 
+        val backgroundColor = Color.White
+        val messageColor = Color.Black
+        val symmetryColor = Color.LightGray
+        val handsColor = Color.Black
+        val pathColor = Color.Black
+        val positionColor = Color.Black
+        val eventColor = Color.Black
+        val selectionColor = Color.Green
+        val trackerColor = Color.Red
+
         // layout contains drawing information for on-screen elements
         val layout = remember(state.pattern, widthPx, heightPx, density) {
             if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS)
@@ -70,12 +80,12 @@ fun LadderDiagramView(
             val text = jlGetStringResource(Res.string.gui_too_many_jugglers, LadderDiagramLayout.MAX_JUGGLERS)
             val textLayoutResult = textMeasurer.measure(
                 text = text,
-                style = TextStyle(color = Color.Black, fontSize = 13.sp)
+                style = TextStyle(color = messageColor, fontSize = 13.sp)
             )
             val textSize = textLayoutResult.size
 
             Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRect(color = Color.White)
+                drawRect(color = backgroundColor)
                 drawText(
                     textLayoutResult = textLayoutResult,
                     topLeft = Offset(
@@ -124,10 +134,9 @@ fun LadderDiagramView(
             val height = size.height
 
             // 1. Background
-            drawRect(color = Color.White)
+            drawRect(color = backgroundColor)
 
             // 2. Symmetries
-            val symmetryColor = Color.LightGray
             drawLine(
                 symmetryColor,
                 Offset(0f, layout.borderTop.toFloat()),
@@ -164,23 +173,18 @@ fun LadderDiagramView(
             }
 
             // 3. Hands
-            val handsColor = Color.Black
             for (j in 0..<layout.pattern.numberOfJugglers) {
-                for (i in -1..1) {
-                    val lx = (layout.leftX + i + j * layout.jugglerDeltaX).toFloat()
-                    val rx = (layout.rightX + i + j * layout.jugglerDeltaX).toFloat()
-                    val top = layout.borderTop.toFloat()
-                    val bottom = height - layout.borderTop
+                val lx = (layout.leftX + j * layout.jugglerDeltaX).toFloat()
+                val rx = (layout.rightX + j * layout.jugglerDeltaX).toFloat()
+                val top = layout.borderTop.toFloat()
+                val bottom = height - layout.borderTop
 
-                    drawLine(handsColor, Offset(lx, top), Offset(lx, bottom), strokeWidth = layout.lineWidth)
-                    drawLine(handsColor, Offset(rx, top), Offset(rx, bottom), strokeWidth = layout.lineWidth)
-                }
+                drawLine(handsColor, Offset(lx, top), Offset(lx, bottom), strokeWidth = layout.lineWidth * 2)
+                drawLine(handsColor, Offset(rx, top), Offset(rx, bottom), strokeWidth = layout.lineWidth * 2)
             }
 
             // 4. Paths
             for (item in layout.pathItems) {
-                val pathColor = Color.Black
-
                 if (item.type == LadderItem.TYPE_CROSS || item.type == LadderItem.TYPE_HOLD) {
                     clipRect(
                         top = layout.borderTop.toFloat(),
@@ -208,10 +212,13 @@ fun LadderDiagramView(
                     }
                 } else if (item.type == LadderItem.TYPE_SELF) {
                     if (item.yStart <= (height.toInt() - layout.borderTop) && item.yEnd >= layout.borderTop) {
-                        clipRect(
-                            top = max(layout.borderTop.toFloat(), item.yStart.toFloat()),
-                            bottom = min(height - layout.borderTop, item.yEnd.toFloat())
-                        ) {
+                        val j = item.endEvent.juggler - 1
+                        val lx = (layout.leftX + j * layout.jugglerDeltaX).toFloat()
+                        val rx = (layout.rightX + j * layout.jugglerDeltaX).toFloat()
+                        val top = max(layout.borderTop.toFloat(), item.yStart.toFloat())
+                        val bottom = min(height - layout.borderTop, item.yEnd.toFloat())
+
+                        clipRect(left = lx, top = top, right = rx, bottom = bottom) {
                             drawCircle(
                                 pathColor,
                                 radius = item.radius.toFloat(),
@@ -228,36 +235,37 @@ fun LadderDiagramView(
             // 5. Positions
             for (item in layout.positionItems) {
                 if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
-                    val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
                     val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
+                    val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
 
-                    drawRect(Color.White, topLeft, rectSize)
-                    drawRect(Color.Black, topLeft, rectSize, style = Stroke(layout.lineWidth))
+                    drawRect(backgroundColor, topLeft, rectSize)
+                    drawRect(positionColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
 
                     if (item.jlHashCode == activeItemHash) {
                         drawRect(
-                            Color.Green,
+                            selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
                             Size(rectSize.width + 2, rectSize.height + 2),
-                            style = Stroke(layout.lineWidth)
+                            style = Stroke(layout.lineWidth * 2)
                         )
                     }
                 }
             }
 
-            // 6. Events
+            // 6. Events and transitions
             for (item in layout.eventItems) {
                 val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
-                val size = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
+                val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
 
                 if (item.type == LadderItem.TYPE_EVENT) {
-                    drawOval(Color.Black, topLeft, size)
+                    drawOval(eventColor, topLeft, rectSize)
+
                     if (item.jlHashCode == activeItemHash) {
                         drawRect(
-                            Color.Green,
+                            selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
-                            Size(size.width + 2, size.height + 2),
-                            style = Stroke(layout.lineWidth)
+                            Size(rectSize.width + 2, rectSize.height + 2),
+                            style = Stroke(layout.lineWidth * 2)
                         )
                     }
                 } else {
@@ -266,15 +274,15 @@ fun LadderDiagramView(
                         val propnum = state.propForPath[tr.path - 1]
                         val propColor = state.pattern.getProp(propnum).getEditorColor()
 
-                        drawOval(propColor, topLeft, size)
-                        drawOval(Color.Black, topLeft, size, style = Stroke(layout.lineWidth))
+                        drawOval(propColor, topLeft, rectSize)
+                        drawOval(eventColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
 
                         if (item.jlHashCode == activeItemHash) {
                             drawRect(
-                                Color.Green,
+                                selectionColor,
                                 topLeft.minus(Offset(1f, 1f)),
-                                Size(size.width + 2, size.height + 2),
-                                style = Stroke(layout.lineWidth)
+                                Size(rectSize.width + 2, rectSize.height + 2),
+                                style = Stroke(layout.lineWidth * 2)
                             )
                         }
                     }
@@ -284,7 +292,7 @@ fun LadderDiagramView(
             // 7. Tracker
             val trackerY = layout.timeToY(state.time)
             drawLine(
-                Color.Red,
+                trackerColor,
                 Offset(0f, trackerY.toFloat()),
                 Offset(width, trackerY.toFloat()),
                 strokeWidth = layout.lineWidth
@@ -294,7 +302,7 @@ fun LadderDiagramView(
                 val text = jlToStringRounded(state.time, 2) + " s"
                 val textLayoutResult = textMeasurer.measure(
                     text = text,
-                    style = TextStyle(color = Color.Red, fontSize = 13.sp)
+                    style = TextStyle(color = trackerColor, fontSize = 13.sp)
                 )
                 val textSize = textLayoutResult.size
                 val padding = 3.dp.toPx()
