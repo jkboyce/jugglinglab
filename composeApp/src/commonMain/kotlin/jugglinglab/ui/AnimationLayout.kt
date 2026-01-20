@@ -117,8 +117,7 @@ class AnimationLayout(
 
         for ((evNum, ev2) in visibleEvents.withIndex()) {
             for (i in 0..<rendererCount) {
-                val ren =
-                    if (i == 0) renderer1 else renderer2 // Use local renderers
+                val ren = if (i == 0) renderer1 else renderer2
                 val c = state.pattern.layout.getGlobalCoordinate(ev2)
                 val c2 = ren.getScreenTranslatedCoordinate(c, 1, 0)
                 val dl = 1.0 / distance(c, c2)

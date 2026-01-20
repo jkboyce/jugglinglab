@@ -224,6 +224,9 @@ fun AnimationView(
                         )
                         drawEventOverlays(layout, 0, this)
                         drawPositions(layout, 0, this)
+                        if (state.showAxes) {
+                            renderer1.drawAxes(density, textMeasurer, this)
+                        }
                     }
                 }
 
@@ -237,6 +240,9 @@ fun AnimationView(
                         )
                         drawEventOverlays(layout, 1, this)
                         drawPositions(layout, 1, this)
+                        if (state.showAxes) {
+                            renderer2.drawAxes(density, textMeasurer, this)
+                        }
                     }
                 }
             } else {
@@ -248,6 +254,9 @@ fun AnimationView(
                 )
                 drawEventOverlays(layout, 0, this)
                 drawPositions(layout, 0, this)
+                if (state.showAxes) {
+                    renderer1.drawAxes(density, textMeasurer, this)
+                }
             }
         }
     }

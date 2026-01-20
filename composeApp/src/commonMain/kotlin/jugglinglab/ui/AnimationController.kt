@@ -380,6 +380,7 @@ class AnimationController(
                 lastX = startX
                 lastY = startY
                 dragCameraAngle = state.cameraAngle
+                state.update(showAxes = true)
             }
 
             if (draggingCamera) {
@@ -422,6 +423,9 @@ class AnimationController(
             if ((activeEventImage != null || activePosition != null) && dragging) {
                 state.update(fitToFrame = true)
                 state.addCurrentToUndoList()
+            }
+            if (draggingCamera) {
+                state.update(showAxes = false)
             }
 
             draggingCamera = false

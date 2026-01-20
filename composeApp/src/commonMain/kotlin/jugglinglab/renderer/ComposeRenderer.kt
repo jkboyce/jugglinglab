@@ -17,6 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
@@ -448,6 +453,73 @@ class ComposeRenderer {
                 }
             }
         }
+    }
+
+    @Suppress("UnnecessaryVariable")
+    fun drawAxes(density: Float, textMeasurer: TextMeasurer, drawScope: DrawScope) {
+        val ca = cameraAngle
+        val theta = ca[0]
+        val phi = ca[1]
+
+        val xya = 30f
+        val xyb = (xya * cos(phi)).toFloat()
+        val zlen = (xya * sin(phi)).toFloat()
+        val cx = 38f
+        val cy = 45f
+        val xx = cx - (xya * cos(theta)).toFloat()
+        val xy = cy + (xyb * sin(theta)).toFloat()
+        val yx = cx + (xya * sin(theta)).toFloat()
+        val yy = cy + (xyb * cos(theta)).toFloat()
+        val zx = cx
+        val zy = cy - zlen
+
+        val axesColor = Color.Green
+
+        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(xx, xy) * density, strokeWidth = 3f)
+        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(yx, yy) * density, strokeWidth = 3f)
+        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(zx, zy) * density, strokeWidth = 3f)
+        drawScope.drawOval(
+            color = axesColor,
+            topLeft = Offset(xx - 2.5f, xy - 2.5f) * density,
+            size = Size(5f, 5f) * density
+        )
+        drawScope.drawOval(
+            color = axesColor,
+            topLeft = Offset(yx - 2.5f, yy - 2.5f) * density,
+            size = Size(5f, 5f) * density
+        )
+        drawScope.drawOval(
+            color = axesColor,
+            topLeft = Offset(zx - 2.5f, zy - 2.5f) * density,
+            size = Size(5f, 5f) * density
+        )
+        
+        val textStyle = TextStyle(color = axesColor, fontSize = 13.sp)
+        val padding = with(drawScope) { 3.dp.toPx() }
+        val textLayoutResultX = textMeasurer.measure(text = "x", style = textStyle)
+        drawScope.drawText(
+            textLayoutResult = textLayoutResultX,
+            topLeft = Offset(
+                x = xx * density - textLayoutResultX.size.width / 2,
+                y = xy * density - textLayoutResultX.size.height - padding
+            )
+        )
+        val textLayoutResultY = textMeasurer.measure(text = "y", style = textStyle)
+        drawScope.drawText(
+            textLayoutResult = textLayoutResultY,
+            topLeft = Offset(
+                x = yx * density - textLayoutResultY.size.width / 2,
+                y = yy * density - textLayoutResultY.size.height - padding
+            )
+        )
+        val textLayoutResultZ = textMeasurer.measure(text = "z", style = textStyle)
+        drawScope.drawText(
+            textLayoutResult = textLayoutResultZ,
+            topLeft = Offset(
+                x = zx * density - textLayoutResultZ.size.width / 2,
+                y = zy * density - textLayoutResultZ.size.height - padding
+            )
+        )
     }
 
     private fun updateLineBoundingBox(ob: DrawObject2D) {
