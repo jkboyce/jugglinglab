@@ -22,6 +22,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import jugglinglab.core.Constants
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
@@ -31,20 +32,6 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class ComposeRenderer {
-    var zoomLevel: Double = 1.0
-        set(value) {
-            field = value
-            setZoom(value)
-        }
-
-    var cameraAngle: DoubleArray = doubleArrayOf(0.0, 0.0)
-        set(value) {
-            field = doubleArrayOf(value[0], value[1])
-            if (cameraCenter != null) {
-                calculateCameraMatrix()
-            }
-        }
-
     private var background: Color = Color.White
     var showground: Boolean = false
 
@@ -100,6 +87,12 @@ class ComposeRenderer {
         val adjustedMin = overallMin.copy()
 
         if (DrawObject2D.ORIGINAL_ZOOM) {
+            // This is the zoom algorithm that has been in Juggling Lab for many
+            // years. It's a bit too zoomed-in for some patterns.
+
+            // We want to ensure everything stays visible as we rotate the camera
+            // viewpoint. The following is simple and seems to work ok.
+
             if (pattern.numberOfJugglers == 1) {
                 adjustedMin.z -= 0.3 * max(abs(adjustedMin.y), abs(adjustedMax.y))
                 adjustedMax.z += 5.0
@@ -110,6 +103,7 @@ class ComposeRenderer {
                 adjustedMax.z += 0.4 * max(tempx, tempy)
             }
 
+            // make the x-coordinate origin at the center of the view
             val maxAbsX = max(abs(adjustedMin.x), abs(adjustedMax.x))
             adjustedMin.x = -maxAbsX
             adjustedMax.x = maxAbsX
@@ -119,6 +113,9 @@ class ComposeRenderer {
                 viewport!!.height.toDouble() / (adjustedMax.z - adjustedMin.z)
             )
         } else {
+            // NEW ALGORITHM
+
+            // make the x-coordinate origin at the center of the view
             val maxabsx = max(abs(adjustedMin.x), abs(adjustedMax.x))
             adjustedMin.x = -maxabsx
             adjustedMax.x = maxabsx
@@ -128,23 +125,41 @@ class ComposeRenderer {
             val dz = adjustedMax.z - adjustedMin.z
             val dxy = max(dx, dy)
 
+            // Find `zoom` value that keeps the adjusted bounding box visible in
+            // the viewport
             zoomOrig = min(
                 viewport!!.width.toDouble() / sqrt(dx * dx + dy * dy),
                 viewport!!.height.toDouble() / sqrt(dxy * dxy + dz * dz)
             )
         }
 
+        // Pattern center vis-a-vis camera rotation
         cameraCenter = JlVector(
             0.5 * (adjustedMax.x + adjustedMin.x),
             0.5 * (adjustedMax.z + adjustedMin.z),
             0.5 * (adjustedMax.y + adjustedMin.y)
         )
 
-        setZoom(zoomLevel)
+        setZoom(zoomLevel)  // calculate camera matrix etc.
+
+        if (Constants.DEBUG_LAYOUT) {
+            println("Data from ComposeRenderer.initDisplay():")
+            println("overallMax = $overallMax")
+            println("overallMin = $overallMin")
+            println("adjustedMax = $adjustedMax")
+            println("adjustedMin = $adjustedMin")
+            println("zoomOrig (px/cm) = $zoomOrig")
+        }
     }
 
-    private fun setZoom(zoomfactor: Double) {
-        this.zoom = zoomOrig * zoomfactor
+    var zoomLevel: Double = 1.0
+        set(value) {
+            field = value
+            setZoom(value)
+        }
+
+    private fun setZoom(zoomFactor: Double) {
+        zoom = zoomOrig * zoomFactor
 
         if (viewport != null && cameraCenter != null) {
             originX = (viewport!!.left + 0.5 * viewport!!.width - zoom * cameraCenter!!.x).roundToInt()
@@ -152,6 +167,14 @@ class ComposeRenderer {
             calculateCameraMatrix()
         }
     }
+
+    var cameraAngle: DoubleArray = doubleArrayOf(0.0, 0.0)
+        set(value) {
+            field = doubleArrayOf(value[0], value[1])
+            if (cameraCenter != null) {
+                calculateCameraMatrix()
+            }
+        }
 
     private fun calculateCameraMatrix() {
         m = JlMatrix.shiftMatrix(-cameraCenter!!.x, -cameraCenter!!.y, -cameraCenter!!.z)
