@@ -85,7 +85,7 @@ fun LadderDiagramView(
             val textSize = textLayoutResult.size
 
             Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRect(color = Color.White)
+                drawRect(color = backgroundColor)
                 drawText(
                     textLayoutResult = textLayoutResult,
                     topLeft = Offset(
