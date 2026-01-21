@@ -1213,6 +1213,12 @@ class LaidoutPattern(val pat: JmlPattern) {
         for (i in 1..pat.numberOfPaths) {
             patternMax = Coordinate.max(patternMax, getPathMax(i))
             patternMin = Coordinate.min(patternMin, getPathMin(i))
+
+            if (Constants.DEBUG_LAYOUT) {
+                println("Data from LaidoutPattern.overallBoundingBox:")
+                println("Path max $i = " + getPathMax(i))
+                println("Path min $i = " + getPathMin(i))
+            }
         }
 
         var propMax: Coordinate? = null
@@ -1268,6 +1274,20 @@ class LaidoutPattern(val pat: JmlPattern) {
         // overall bounding box.
         val overallMax = Coordinate.max(patternMax, Coordinate.max(handMax, jugglerWindowMax))
         val overallMin = Coordinate.min(patternMin, Coordinate.min(handMin, jugglerWindowMin))
+
+        if (Constants.DEBUG_LAYOUT) {
+            println("Data from LaidoutPattern.overallBoundingBox:")
+            println("Hand max = $handMax")
+            println("Hand min = $handMin")
+            println("Prop max = $propMax")
+            println("Prop min = $propMin")
+            println("Pattern max = $patternMax")
+            println("Pattern min = $patternMin")
+            println("Juggler max = $jugglerWindowMax")
+            println("Juggler min = $jugglerWindowMin")
+            println("Overall max = $overallMax")
+            println("Overall min = $overallMin")
+        }
 
         Pair(overallMin!!, overallMax!!)
     }
