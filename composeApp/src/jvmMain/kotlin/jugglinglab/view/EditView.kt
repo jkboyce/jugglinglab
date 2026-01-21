@@ -86,11 +86,6 @@ class EditView(
         }
     }
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView() {
-        ap.restartJuggle()
-    }
-
     override val animationPanelSize: Dimension?
         get() = ap.getSize(Dimension())
 

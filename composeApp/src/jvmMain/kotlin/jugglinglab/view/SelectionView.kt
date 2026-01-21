@@ -234,13 +234,6 @@ class SelectionView(
         }
     }
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView() {
-        for (ap in ja) {
-            ap.restartJuggle()
-        }
-    }
-
     override val animationPanelSize: Dimension?
         get() = ja[CENTER].getSize(Dimension())
 

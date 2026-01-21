@@ -89,11 +89,11 @@ abstract class View(
     // - 'coldRestart = true' resets camera angle, zoom, and prop assignments
     //
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean = true)
-
-    // restart without changing pattern or preferences
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun restartView()
+    abstract fun restartView(
+        pattern: JmlPattern? = null,
+        prefs: AnimationPrefs? = null,
+        coldRestart: Boolean = true
+    )
 
     // size of just the juggler animation, not any extra elements
     abstract val animationPanelSize: Dimension?
