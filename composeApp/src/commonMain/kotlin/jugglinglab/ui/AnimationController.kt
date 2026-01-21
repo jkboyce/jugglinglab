@@ -113,11 +113,13 @@ class AnimationController(
         if (prefs != null) state.update(prefs = prefs)
         if (coldRestart) {
             state.update(
+                time = state.pattern.loopStartTime,
                 isPaused = state.prefs.startPaused,
                 cameraAngle = state.initialCameraAngle(),
                 zoom = 1.0,
                 propForPath = state.pattern.initialPropForPath,
                 fitToFrame = true,
+                showAxes = false,
                 message = if (state.prefs.startPaused) {
                     jlGetStringResource(Res.string.gui_message_click_to_start)
                 } else ""
