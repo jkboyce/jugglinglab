@@ -301,14 +301,14 @@ private fun drawEventOverlays(
             scope.drawPath(
                 pathSolid,
                 handpathColor,
-                style = Stroke(width = 2f)
+                style = Stroke(width = 2.5f)
             )
             scope.drawPath(
                 pathDashed,
                 handpathColor,
                 style = Stroke(
-                    width = 2f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(7f, 7f))
+                    width = 2.5f,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(9f, 6f))
                 )
             )
         }
@@ -329,40 +329,66 @@ private fun drawEventOverlays(
 
             scope.drawOval(
                 color = eventColor,
-                topLeft = Offset(cx - 2.5f, cy - 2.5f),
-                size = Size(5f, 5f)
+                topLeft = Offset(cx - 4f, cy - 4f),
+                size = Size(8f, 8f)
             )
 
             if (isSelected) {
                 if (layout.showXzDragControl) {
+                    // selected event box
                     val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
                     val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
                     val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
                     val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
-                    scope.drawLine(eventColor, p0, p1, strokeWidth = 2f)
-                    scope.drawLine(eventColor, p1, p2, strokeWidth = 2f)
-                    scope.drawLine(eventColor, p2, p3, strokeWidth = 2f)
-                    scope.drawLine(eventColor, p3, p0, strokeWidth = 2f)
+                    scope.drawLine(eventColor, p0, p1, strokeWidth = 2.5f)
+                    scope.drawLine(eventColor, p1, p2, strokeWidth = 2.5f)
+                    scope.drawLine(eventColor, p2, p3, strokeWidth = 2.5f)
+                    scope.drawLine(eventColor, p3, p0, strokeWidth = 2.5f)
                 }
 
                 if (layout.showYDragControl) {
+                    // y-axis control pointing forward/backward
                     scope.drawLine(
                         eventColor,
                         Offset(points[5][0].toFloat(), points[5][1].toFloat()),
                         Offset(points[6][0].toFloat(), points[6][1].toFloat()),
                         strokeWidth = 2f
                     )
+                    scope.drawLine(
+                        eventColor,
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[7][0].toFloat(), points[7][1].toFloat()),
+                        strokeWidth = 2f
+                    )
+                    scope.drawLine(
+                        eventColor,
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[8][0].toFloat(), points[8][1].toFloat()),
+                        strokeWidth = 2f
+                    )
+                    scope.drawLine(
+                        eventColor,
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
+                        Offset(points[9][0].toFloat(), points[9][1].toFloat()),
+                        strokeWidth = 2f
+                    )
+                    scope.drawLine(
+                        eventColor,
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
+                        Offset(points[10][0].toFloat(), points[10][1].toFloat()),
+                        strokeWidth = 2f
+                    )
                 }
             } else {
-                // Draw unselected event box
+                // unselected event box
                 val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
                 val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
                 val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
                 val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
-                scope.drawLine(eventColor, p0, p1, strokeWidth = 2f)
-                scope.drawLine(eventColor, p1, p2, strokeWidth = 2f)
-                scope.drawLine(eventColor, p2, p3, strokeWidth = 2f)
-                scope.drawLine(eventColor, p3, p0, strokeWidth = 2f)
+                scope.drawLine(eventColor, p0, p1, strokeWidth = 2.5f)
+                scope.drawLine(eventColor, p1, p2, strokeWidth = 2.5f)
+                scope.drawLine(eventColor, p2, p3, strokeWidth = 2.5f)
+                scope.drawLine(eventColor, p3, p0, strokeWidth = 2.5f)
             }
         }
     }
