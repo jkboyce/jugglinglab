@@ -64,13 +64,12 @@ class AnimationPanel(
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
-        controller.restartJuggle(pat, newjc, coldRestart)
-    }
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle() {
-        controller.restartJuggle()
+    fun restartJuggle(
+        pattern: JmlPattern? = null,
+        prefs: AnimationPrefs? = null,
+        coldRestart: Boolean = true
+    ) {
+        controller.restartJuggle(pattern, prefs, coldRestart)
     }
 
     //--------------------------------------------------------------------------

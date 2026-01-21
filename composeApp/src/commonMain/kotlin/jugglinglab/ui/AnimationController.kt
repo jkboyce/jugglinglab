@@ -97,14 +97,20 @@ class AnimationController(
     //     was a change to prop definitions or assignments.
     // (c) restartJuggle(coldRestart = true). Complete restart of the animator,
     //     including a reset of camera angle, paused state, and zoom.
+    //
+    // For `pattern` and `prefs`, null means no update for that item.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
+    fun restartJuggle(
+        pattern: JmlPattern? = null,
+        prefs: AnimationPrefs? = null,
+        coldRestart: Boolean = true
+    ) {
         // Do layout first so an error won't disrupt the current animation
-        pat?.layout
+        pattern?.layout
 
-        if (pat != null) state.update(pattern = pat, propForPath = pat.initialPropForPath)
-        if (newjc != null) state.update(prefs = newjc)
+        if (pattern != null) state.update(pattern = pattern, propForPath = pattern.initialPropForPath)
+        if (prefs != null) state.update(prefs = prefs)
         if (coldRestart) {
             state.update(
                 isPaused = state.prefs.startPaused,
@@ -124,10 +130,6 @@ class AnimationController(
             }
         }
     }
-
-    @Suppress("unused")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle() = restartJuggle(null, null)
 
     //--------------------------------------------------------------------------
     // Mouse event handlers

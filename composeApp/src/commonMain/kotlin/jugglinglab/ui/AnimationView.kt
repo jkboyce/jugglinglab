@@ -308,7 +308,7 @@ private fun drawEventOverlays(
                 handpathColor,
                 style = Stroke(
                     width = 2.5f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(9f, 6f))
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 7f))
                 )
             )
         }
