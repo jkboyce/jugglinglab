@@ -68,6 +68,9 @@ class AnimationLayout(
     var showZDragControl: Boolean = false
     var showAngleDragControl: Boolean = false
 
+    // Whether to show the grid
+    var showGrid: Boolean = false
+
     init {
         val activeEventImage = getActiveEvent(state)
         if (activeEventImage != null) {
@@ -188,6 +191,8 @@ class AnimationLayout(
 
     private fun createPositionView(activePosition: JmlPosition) {
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
+        showGrid = (state.cameraAngle[1] < Math.toRadians(GRID_SHOW_DEG))
+
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) renderer1 else renderer2
             val c = Coordinate.add(
@@ -237,20 +242,20 @@ class AnimationLayout(
 
         const val STEREO_SEPARATION_RADIANS: Double = 0.1
 
-        private const val EVENT_BOX_HW_CM: Double = 5.0
-        private const val UNSELECTED_BOX_HW_CM: Double = 2.0
-        private const val XZ_CONTROL_SHOW_DEG: Double = 60.0
-        private const val Y_CONTROL_SHOW_DEG: Double = 30.0
-        private const val HANDPATH_POINT_SEP_TIME: Double = 0.005
-        private const val POSITION_BOX_HW_CM: Double = 10.0
-        private const val POSITION_BOX_Z_OFFSET_CM: Double = 0.0
-        private const val XY_GRID_SPACING_CM: Double = 20.0
-        private const val GRID_SHOW_DEG: Double = 70.0
-        private const val ANGLE_CONTROL_SHOW_DEG: Double = 70.0
-        private const val XY_CONTROL_SHOW_DEG: Double = 70.0
-        private const val Z_CONTROL_SHOW_DEG: Double = 30.0
+        const val EVENT_BOX_HW_CM: Double = 5.0
+        const val UNSELECTED_BOX_HW_CM: Double = 2.0
+        const val XZ_CONTROL_SHOW_DEG: Double = 60.0
+        const val Y_CONTROL_SHOW_DEG: Double = 30.0
+        const val HANDPATH_POINT_SEP_TIME: Double = 0.005
+        const val POSITION_BOX_HW_CM: Double = 10.0
+        const val POSITION_BOX_Z_OFFSET_CM: Double = 0.0
+        const val XY_GRID_SPACING_CM: Double = 20.0
+        const val GRID_SHOW_DEG: Double = 70.0
+        const val ANGLE_CONTROL_SHOW_DEG: Double = 70.0
+        const val XY_CONTROL_SHOW_DEG: Double = 70.0
+        const val Z_CONTROL_SHOW_DEG: Double = 30.0
 
-        private val EVENT_CONTROL_POINTS: List<DoubleArray> = listOf(
+        val EVENT_CONTROL_POINTS: List<DoubleArray> = listOf(
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, -EVENT_BOX_HW_CM),
             doubleArrayOf(-EVENT_BOX_HW_CM, 0.0, EVENT_BOX_HW_CM),
             doubleArrayOf(EVENT_BOX_HW_CM, 0.0, EVENT_BOX_HW_CM),
@@ -267,7 +272,7 @@ class AnimationLayout(
             doubleArrayOf(0.0, 0.0, 1.0),
         )
 
-        private val UNSELECTED_EVENT_POINTS: List<DoubleArray> = listOf(
+        val UNSELECTED_EVENT_POINTS: List<DoubleArray> = listOf(
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, -UNSELECTED_BOX_HW_CM),
             doubleArrayOf(-UNSELECTED_BOX_HW_CM, 0.0, UNSELECTED_BOX_HW_CM),
             doubleArrayOf(UNSELECTED_BOX_HW_CM, 0.0, UNSELECTED_BOX_HW_CM),
@@ -275,7 +280,7 @@ class AnimationLayout(
             doubleArrayOf(0.0, 0.0, 0.0),
         )
 
-        private val POS_CONTROL_POINTS: List<DoubleArray> = listOf(
+        val POS_CONTROL_POINTS: List<DoubleArray> = listOf(
             doubleArrayOf(-POSITION_BOX_HW_CM, -POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(-POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0.0),
             doubleArrayOf(POSITION_BOX_HW_CM, POSITION_BOX_HW_CM, 0.0),

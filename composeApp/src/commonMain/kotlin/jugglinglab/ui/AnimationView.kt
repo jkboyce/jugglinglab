@@ -13,6 +13,7 @@ import jugglinglab.core.PatternAnimationState
 import jugglinglab.renderer.ComposeRenderer
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.jlHandleFatalException
+import jugglinglab.util.Coordinate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,9 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun AnimationView(
@@ -216,6 +220,7 @@ fun AnimationView(
                 val w = width / 2
                 withTransform({ translate(left = 0f, top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        drawGrid(layout, renderer1, this)
                         renderer1.drawFrame(
                             state.time,
                             state.propForPath,
@@ -232,6 +237,7 @@ fun AnimationView(
 
                 withTransform({ translate(left = w.toFloat(), top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        drawGrid(layout, renderer2, this)
                         renderer2.drawFrame(
                             state.time,
                             state.propForPath,
@@ -246,6 +252,7 @@ fun AnimationView(
                     }
                 }
             } else {
+                drawGrid(layout, renderer1, this)
                 renderer1.drawFrame(
                     state.time,
                     state.propForPath,
@@ -458,5 +465,67 @@ private fun drawPositions(
             scope.drawLine(posColor, p7, p6, strokeWidth = 1f)
             scope.drawLine(posColor, p8, p6, strokeWidth = 1f)
         }
+    }
+}
+
+// In position editing mode, draw an xy grid at ground level (z = 0).
+
+private fun drawGrid(
+    layout: AnimationLayout,
+    renderer: ComposeRenderer,
+    scope: DrawScope
+) {
+    if (!layout.showGrid) return
+    val gridColor = Color.LightGray
+
+    // Figure out pixel deltas for 1cm vectors along x and y axes
+    val center = renderer.getXY(Coordinate(0.0, 0.0, 0.0))
+    val dx = renderer.getXY(Coordinate(100.0, 0.0, 0.0))
+    val dy = renderer.getXY(Coordinate(0.0, 100.0, 0.0))
+    val axisX = doubleArrayOf(
+        AnimationLayout.XY_GRID_SPACING_CM * ((dx[0] - center[0]).toDouble() / 100.0),
+        AnimationLayout.XY_GRID_SPACING_CM * ((dx[1] - center[1]).toDouble() / 100.0)
+    )
+    val axisY = doubleArrayOf(
+        AnimationLayout.XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0),
+        AnimationLayout.XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
+    )
+
+    val width = scope.size.width.toInt()
+    val height = scope.size.height.toInt()
+
+    // Find which grid intersections are visible on screen by solving for the
+    // grid coordinates at the four corners.
+    val det = axisX[0] * axisY[1] - axisX[1] * axisY[0]
+    var mmin = 0
+    var mmax = 0
+    var nmin = 0
+    var nmax = 0
+    for (j in 0..3) {
+        val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
+        val b = ((if (j < 2) 0 else height) - center[1]).toDouble()
+        val m = (axisY[1] * a - axisY[0] * b) / det
+        val n = (-axisX[1] * a + axisX[0] * b) / det
+        val mint = floor(m).toInt()
+        val nint = floor(n).toInt()
+        mmin = if (j == 0) mint else min(mmin, mint)
+        mmax = if (j == 0) mint + 1 else max(mmax, mint + 1)
+        nmin = if (j == 0) nint else min(nmin, nint)
+        nmax = if (j == 0) nint + 1 else max(nmax, nint + 1)
+    }
+
+    for (j in mmin..mmax) {
+        val x1 = (center[0] + j * axisX[0] + nmin * axisY[0]).toFloat()
+        val y1 = (center[1] + j * axisX[1] + nmin * axisY[1]).toFloat()
+        val x2 = (center[0] + j * axisX[0] + nmax * axisY[0]).toFloat()
+        val y2 = (center[1] + j * axisX[1] + nmax * axisY[1]).toFloat()
+        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 3f else 1f)
+    }
+    for (j in nmin..nmax) {
+        val x1 = (center[0] + mmin * axisX[0] + j * axisY[0]).toFloat()
+        val y1 = (center[1] + mmin * axisX[1] + j * axisY[1]).toFloat()
+        val x2 = (center[0] + mmax * axisX[0] + j * axisY[0]).toFloat()
+        val y2 = (center[1] + mmax * axisX[1] + j * axisY[1]).toFloat()
+        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 3f else 1f)
     }
 }
