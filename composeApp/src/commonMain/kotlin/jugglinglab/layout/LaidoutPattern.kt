@@ -1258,17 +1258,19 @@ class LaidoutPattern(val pat: JmlPattern) {
         // the juggler's rotation angle where `handMax` and `handMin` are
         // achieved. So we create a bounding box that contains the hand
         // regardless of rotation angle.
-        handWindowMax.x = max(
-            max(abs(handWindowMax.x), abs(handWindowMin.x)),
-            max(abs(handWindowMax.y), abs(handWindowMin.y))
+        val hwMax = handWindowMax.copy()
+        val hwMin = handWindowMin.copy()
+        hwMax.x = max(
+            max(abs(hwMax.x), abs(hwMin.x)),
+            max(abs(hwMax.y), abs(hwMin.y))
         )
-        handWindowMin.x = -handWindowMax.x
-        handWindowMax.y = handWindowMax.x
-        handWindowMin.y = handWindowMin.x
+        hwMin.x = -hwMax.x
+        hwMax.y = hwMax.x
+        hwMin.y = hwMin.x
 
         // make sure hands are entirely visible
-        handMax = Coordinate.add(handMax, handWindowMax)
-        handMin = Coordinate.add(handMin, handWindowMin)
+        handMax = Coordinate.add(handMax, hwMax)
+        handMin = Coordinate.add(handMin, hwMin)
 
         // Step 3: Combine the pattern, hand, and juggler bounding boxes into an
         // overall bounding box.

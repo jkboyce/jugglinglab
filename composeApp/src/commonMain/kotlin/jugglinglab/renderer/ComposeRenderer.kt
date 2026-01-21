@@ -86,7 +86,7 @@ class ComposeRenderer {
         val adjustedMax = overallMax.copy()
         val adjustedMin = overallMin.copy()
 
-        if (DrawObject2D.ORIGINAL_ZOOM) {
+        if (ORIGINAL_ZOOM) {
             // This is the zoom algorithm that has been in Juggling Lab for many
             // years. It's a bit too zoomed-in for some patterns.
 
@@ -95,7 +95,7 @@ class ComposeRenderer {
 
             if (pattern.numberOfJugglers == 1) {
                 adjustedMin.z -= 0.3 * max(abs(adjustedMin.y), abs(adjustedMax.y))
-                adjustedMax.z += 5.0
+                adjustedMax.z += 5.0  // keeps objects from rubbing against top of window
             } else {
                 val tempx = max(abs(adjustedMin.x), abs(adjustedMax.x))
                 val tempy = max(abs(adjustedMin.y), abs(adjustedMax.y))
@@ -690,8 +690,12 @@ class ComposeRenderer {
             const val TYPE_PROP: Int = 1
             const val TYPE_BODY: Int = 2
             const val TYPE_LINE: Int = 3
+
             private const val SLOP: Double = 3.0
-            const val ORIGINAL_ZOOM = false
         }
+    }
+
+    companion object {
+        const val ORIGINAL_ZOOM = true
     }
 }
