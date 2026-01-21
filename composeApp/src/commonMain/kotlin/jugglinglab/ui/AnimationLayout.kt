@@ -23,10 +23,10 @@ import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.JuggleExceptionInternal
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.sin
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sin
 
 class AnimationLayout(
     val state: PatternAnimationState,

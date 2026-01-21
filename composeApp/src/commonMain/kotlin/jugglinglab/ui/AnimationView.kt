@@ -220,7 +220,7 @@ fun AnimationView(
                 val w = width / 2
                 withTransform({ translate(left = 0f, top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        drawGrid(layout, renderer1, this)
+                        drawGrid(layout, renderer1, this, width = w, height = height)
                         renderer1.drawFrame(
                             state.time,
                             state.propForPath,
@@ -237,7 +237,7 @@ fun AnimationView(
 
                 withTransform({ translate(left = w.toFloat(), top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        drawGrid(layout, renderer2, this)
+                        drawGrid(layout, renderer2, this, width = w, height = height)
                         renderer2.drawFrame(
                             state.time,
                             state.propForPath,
@@ -473,7 +473,9 @@ private fun drawPositions(
 private fun drawGrid(
     layout: AnimationLayout,
     renderer: ComposeRenderer,
-    scope: DrawScope
+    scope: DrawScope,
+    width: Int = scope.size.width.toInt(),
+    height: Int = scope.size.height.toInt()
 ) {
     if (!layout.showGrid) return
     val gridColor = Color.LightGray
@@ -490,9 +492,6 @@ private fun drawGrid(
         AnimationLayout.XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0),
         AnimationLayout.XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
     )
-
-    val width = scope.size.width.toInt()
-    val height = scope.size.height.toInt()
 
     // Find which grid intersections are visible on screen by solving for the
     // grid coordinates at the four corners.
@@ -519,13 +518,13 @@ private fun drawGrid(
         val y1 = (center[1] + j * axisX[1] + nmin * axisY[1]).toFloat()
         val x2 = (center[0] + j * axisX[0] + nmax * axisY[0]).toFloat()
         val y2 = (center[1] + j * axisX[1] + nmax * axisY[1]).toFloat()
-        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 3f else 1f)
+        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 4f else 1.5f)
     }
     for (j in nmin..nmax) {
         val x1 = (center[0] + mmin * axisX[0] + j * axisY[0]).toFloat()
         val y1 = (center[1] + mmin * axisX[1] + j * axisY[1]).toFloat()
         val x2 = (center[0] + mmax * axisX[0] + j * axisY[0]).toFloat()
         val y2 = (center[1] + mmax * axisX[1] + j * axisY[1]).toFloat()
-        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 3f else 1f)
+        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 4f else 1.5f)
     }
 }
