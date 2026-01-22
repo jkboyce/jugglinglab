@@ -9,10 +9,10 @@
 
 package jugglinglab.core
 
+import jugglinglab.jml.JmlPattern
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import jugglinglab.jml.JmlPattern
 import kotlin.math.max
 import kotlin.math.min
 

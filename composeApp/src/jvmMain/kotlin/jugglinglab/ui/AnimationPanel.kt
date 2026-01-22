@@ -203,16 +203,20 @@ class AnimationPanel(
     //     including a reset of camera angle, paused state, and zoom.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle(pat: JmlPattern?, newjc: AnimationPrefs?, coldRestart: Boolean = true) {
+    fun restartJuggle(
+        pattern: JmlPattern? = null,
+        prefs: AnimationPrefs? = null,
+        coldRestart: Boolean = true
+    ) {
         // Do layout first so an error won't disrupt the current animation
-        pat?.layout
+        pattern?.layout
 
         if (coldRestart) {
             killAnimationThread()
         }
 
-        if (pat != null) state.update(pattern = pat, propForPath = pat.initialPropForPath)
-        if (newjc != null) state.update(prefs = newjc)
+        if (pattern != null) state.update(pattern = pattern, propForPath = pattern.initialPropForPath)
+        if (prefs != null) state.update(prefs = prefs)
 
         if (coldRestart) {
             state.update(
@@ -226,9 +230,6 @@ class AnimationPanel(
             engine = Thread(this).apply { start() }
         }
     }
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun restartJuggle() = restartJuggle(null, null)
 
     //--------------------------------------------------------------------------
 
