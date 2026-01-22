@@ -49,11 +49,6 @@ class SimpleView(
         }
     }
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun restartView() {
-        ja.restartJuggle()
-    }
-
     override val animationPanelSize: Dimension?
         get() = ja.getSize(Dimension())
 

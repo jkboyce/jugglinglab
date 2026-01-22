@@ -197,7 +197,7 @@ class FrameDrawer(
             patternmin = min(patternmin, pattern.layout.getPathMin(i))
 
             if (Constants.DEBUG_LAYOUT) {
-                println("Data from Animator.findMaxMin():")
+                println("Data from FrameDrawer.findMaxMin():")
                 println("Path max $i = " + pattern.layout.getPathMax(i))
                 println("Path min $i = " + pattern.layout.getPathMin(i))
             }
@@ -228,7 +228,7 @@ class FrameDrawer(
             handmin = min(handmin, pattern.layout.getHandMin(i, JmlEvent.RIGHT_HAND))
 
             if (Constants.DEBUG_LAYOUT) {
-                println("Data from Animator.findMaxMin():")
+                println("Data from FrameDrawer.findMaxMin():")
                 println("Hand max $i left = " + pattern.layout.getHandMax(i, JmlEvent.LEFT_HAND))
                 println("Hand min $i left = " + pattern.layout.getHandMin(i, JmlEvent.LEFT_HAND))
                 println("Hand max $i right = " + pattern.layout.getHandMax(i, JmlEvent.RIGHT_HAND))
@@ -266,7 +266,7 @@ class FrameDrawer(
         overallMin = min(patternmin, min(handmin, jwmin))
 
         if (Constants.DEBUG_LAYOUT) {
-            println("Data from Animator.findMaxMin():")
+            println("Data from FrameDrawer.findMaxMin():")
             println("Hand max = $handmax")
             println("Hand min = $handmin")
             println("Prop max = $propmax")
