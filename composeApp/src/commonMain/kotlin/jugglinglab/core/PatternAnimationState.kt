@@ -34,6 +34,9 @@ class PatternAnimationState(
     var propForPath: List<Int> by mutableStateOf(initialPattern.initialPropForPath)
     var fitToFrame: Boolean by mutableStateOf(true)
     var showAxes: Boolean by mutableStateOf(false)
+    var draggingPosition: Boolean by mutableStateOf(false)
+    var draggingPositionZ: Boolean by mutableStateOf(false)
+    var draggingPositionAngle: Boolean by mutableStateOf(false)
     var message: String by mutableStateOf("")
 
     //--------------------------------------------------------------------------
@@ -51,6 +54,9 @@ class PatternAnimationState(
         propForPath: List<Int>? = null,
         fitToFrame: Boolean? = null,
         showAxes: Boolean? = null,
+        draggingPosition: Boolean? = null,
+        draggingPositionZ: Boolean? = null,
+        draggingPositionAngle: Boolean? = null,
         message: String? = null,
     ) {
         if (pattern != null) this.pattern = pattern
@@ -63,6 +69,9 @@ class PatternAnimationState(
         if (propForPath != null) this.propForPath = propForPath
         if (fitToFrame != null) this.fitToFrame = fitToFrame
         if (showAxes != null) this.showAxes = showAxes
+        if (draggingPosition != null) this.draggingPosition = draggingPosition
+        if (draggingPositionZ != null) this.draggingPositionZ = draggingPositionZ
+        if (draggingPositionAngle != null) this.draggingPositionAngle = draggingPositionAngle
         if (message != null) this.message = message
 
         if (pattern != null) {
@@ -95,6 +104,15 @@ class PatternAnimationState(
         if (showAxes != null) {
             onShowAxesChange.forEach { it() }
         }
+        if (draggingPosition != null) {
+            onDraggingPositionChange.forEach { it() }
+        }
+        if (draggingPositionZ != null) {
+            onDraggingPositionZChange.forEach { it() }
+        }
+        if (draggingPositionAngle != null) {
+            onDraggingPositionAngleChange.forEach { it() }
+        }
         if (message != null) {
             onMessageChange.forEach { it() }
         }
@@ -111,6 +129,9 @@ class PatternAnimationState(
     val onPropForPathChange = mutableListOf<() -> Unit>()
     val onFitToFrameChange = mutableListOf<() -> Unit>()
     val onShowAxesChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionZChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionAngleChange = mutableListOf<() -> Unit>()
     val onMessageChange = mutableListOf<() -> Unit>()
     val onNewPatternUndo = mutableListOf<() -> Unit>()
 
@@ -125,6 +146,9 @@ class PatternAnimationState(
         onPropForPathChange: (() -> Unit)? = null,
         onFitToFrameChange: (() -> Unit)? = null,
         onShowAxesChange: (() -> Unit)? = null,
+        onDraggingPositionChange: (() -> Unit)? = null,
+        onDraggingPositionZChange: (() -> Unit)? = null,
+        onDraggingPositionAngleChange: (() -> Unit)? = null,
         onMessageChange: (() -> Unit)? = null,
         onNewPatternUndo: (() -> Unit)? = null
     ) {
@@ -138,6 +162,9 @@ class PatternAnimationState(
         if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
         if (onFitToFrameChange != null) this.onFitToFrameChange.add(onFitToFrameChange)
         if (onShowAxesChange != null) this.onShowAxesChange.add(onShowAxesChange)
+        if (onDraggingPositionChange != null) this.onDraggingPositionChange.add(onDraggingPositionChange)
+        if (onDraggingPositionZChange != null) this.onDraggingPositionZChange.add(onDraggingPositionZChange)
+        if (onDraggingPositionAngleChange != null) this.onDraggingPositionAngleChange.add(onDraggingPositionAngleChange)
         if (onMessageChange != null) this.onMessageChange.add(onMessageChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
@@ -153,6 +180,9 @@ class PatternAnimationState(
         onPropForPathChange.clear()
         onFitToFrameChange.clear()
         onShowAxesChange.clear()
+        onDraggingPositionChange.clear()
+        onDraggingPositionZChange.clear()
+        onDraggingPositionAngleChange.clear()
         onMessageChange.clear()
         onNewPatternUndo.clear()
     }

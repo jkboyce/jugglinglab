@@ -120,6 +120,9 @@ class AnimationController(
                 propForPath = state.pattern.initialPropForPath,
                 fitToFrame = true,
                 showAxes = false,
+                draggingPosition = false,
+                draggingPositionZ = false,
+                draggingPositionAngle = false,
                 message = if (state.prefs.startPaused) {
                     jlGetStringResource(Res.string.gui_message_click_to_start)
                 } else ""
@@ -253,7 +256,7 @@ class AnimationController(
                                 draggingLeft = (i == 0)
                                 deltaX = 0; deltaY = 0
                                 positionStart = activePosition.coordinate
-                                state.update(fitToFrame = false)
+                                state.update(fitToFrame = false, draggingPosition = true, draggingPositionZ = true)
                                 return
                             }
                         }
@@ -264,7 +267,7 @@ class AnimationController(
                                 draggingLeft = (i == 0)
                                 deltaX = 0; deltaY = 0
                                 positionStart = activePosition.coordinate
-                                state.update(fitToFrame = false)
+                                state.update(fitToFrame = false, draggingPosition = true)
                                 return
                             }
                         }
@@ -292,7 +295,7 @@ class AnimationController(
                                     layout.posPoints[i][5][0] - layout.posPoints[i][4][0],
                                     layout.posPoints[i][5][1] - layout.posPoints[i][4][1]
                                 )
-                                state.update(fitToFrame = false)
+                                state.update(fitToFrame = false, draggingPosition = true, draggingPositionAngle = true)
                                 return
                             }
                         }
@@ -457,6 +460,13 @@ class AnimationController(
             }
             if (draggingCamera) {
                 state.update(showAxes = false)
+            }
+            if (dragging) {
+                state.update(
+                    draggingPosition = false,
+                    draggingPositionZ = false,
+                    draggingPositionAngle = false
+                )
             }
 
             draggingCamera = false

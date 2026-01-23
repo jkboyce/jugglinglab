@@ -234,7 +234,7 @@ fun AnimationView(
                             this
                         )
                         drawEventOverlays(layout, 0, this)
-                        drawPositionOverlays(layout, 0, renderer1, this, textMeasurer)
+                        drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
                         if (state.showAxes) {
                             renderer1.drawAxes(textMeasurer, this)
                         }
@@ -253,7 +253,7 @@ fun AnimationView(
                             this
                         )
                         drawEventOverlays(layout, 1, this)
-                        drawPositionOverlays(layout, 1, renderer2, this, textMeasurer)
+                        drawPositionOverlays(state, layout, 1, renderer2, this, textMeasurer)
                         if (state.showAxes) {
                             renderer2.drawAxes(textMeasurer, this)
                         }
@@ -270,7 +270,7 @@ fun AnimationView(
                     this
                 )
                 drawEventOverlays(layout, 0, this)
-                drawPositionOverlays(layout, 0, renderer1, this, textMeasurer)
+                drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
                 if (state.showAxes) {
                     renderer1.drawAxes(textMeasurer, this)
                 }
@@ -413,6 +413,7 @@ private fun drawEventOverlays(
 }
 
 private fun drawPositionOverlays(
+    state: PatternAnimationState,
     layout: AnimationLayout,
     viewIndex: Int,
     renderer: ComposeRenderer,
@@ -447,7 +448,7 @@ private fun drawPositionOverlays(
             size = Size(dotSize5, dotSize5)
         )
 
-        if (layout.showXyDragControl /* || dragging */) {
+        if (layout.showXyDragControl || state.draggingPosition) {
             // edges of xy plane control
             val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
             val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
@@ -459,7 +460,7 @@ private fun drawPositionOverlays(
             drawLine(posColor, p3, p0, strokeWidth = strokeWidth1_25)
         }
 
-        if (layout.showZDragControl /* && (!dragging || draggingZ) */) {
+        if (layout.showZDragControl && (!state.draggingPosition || state.draggingPositionZ)) {
             // z-axis control pointing upward (handle end at 6, arrow head at 7,8)
             val p6 = Offset(points[6][0].toFloat(), points[6][1].toFloat())
             val p7 = Offset(points[7][0].toFloat(), points[7][1].toFloat())
@@ -469,7 +470,7 @@ private fun drawPositionOverlays(
             drawLine(posColor, p6, p8, strokeWidth = strokeWidth1)
         }
 
-        if (layout.showAngleDragControl) {
+        if (layout.showAngleDragControl && (!state.draggingPosition || state.draggingPositionAngle)) {
             // angle-changing control pointing backward (center at 4, handle at 5)
             val p5 = Offset(points[5][0].toFloat(), points[5][1].toFloat())
             drawLine(posColor, p4, p5, strokeWidth = strokeWidth1)
@@ -480,15 +481,15 @@ private fun drawPositionOverlays(
             )
         }
 
-        if (true /* draggingAngle */) {
+        if (state.draggingPositionAngle) {
             // sighting line during angle rotation
             val p9 = Offset(points[9][0].toFloat(), points[9][1].toFloat())
             val p10 = Offset(points[10][0].toFloat(), points[10][1].toFloat())
             drawLine(posColor, p9, p10, strokeWidth = strokeWidth1)
         }
 
-        if (true /* !draggingAngle */) {
-            if (/*draggingZ || */ layout.showGrid) {
+        if (!state.draggingPositionAngle) {
+            if (state.draggingPositionZ || layout.showGrid) {
                 // line dropping down to projection on ground (z = 0)
                 val c = layout.visiblePosition!!.coordinate
                 val z = c.z
@@ -506,7 +507,7 @@ private fun drawPositionOverlays(
                     size = Size(dotSize7, dotSize7)
                 )
 
-                if (true /* draggingZ */) {
+                if (state.draggingPositionZ) {
                     // z-label on the line
                     val textLayoutResult = textMeasurer.measure(
                         text = "z = " + jlToStringRounded(z, 1) + " cm",
