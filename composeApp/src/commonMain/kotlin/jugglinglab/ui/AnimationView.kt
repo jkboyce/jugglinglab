@@ -44,6 +44,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -222,7 +223,9 @@ fun AnimationView(
                 val w = width / 2
                 withTransform({ translate(left = 0f, top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        drawGrid(layout, renderer1, this, width = w, height = height)
+                        if (layout.showGrid) {
+                            drawGrid(renderer1, this, width = w, height = height)
+                        }
                         renderer1.drawFrame(
                             state.time,
                             state.propForPath,
@@ -230,7 +233,7 @@ fun AnimationView(
                             this
                         )
                         drawEventOverlays(layout, 0, this)
-                        drawPositionOverlays(layout, 0, renderer1, this)
+                        drawPositionOverlays(layout, 0, renderer1, this, textMeasurer)
                         if (state.showAxes) {
                             renderer1.drawAxes(textMeasurer, this)
                         }
@@ -239,7 +242,9 @@ fun AnimationView(
 
                 withTransform({ translate(left = w.toFloat(), top = 0f) }) {
                     clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        drawGrid(layout, renderer2, this, width = w, height = height)
+                        if (layout.showGrid) {
+                            drawGrid(renderer2, this, width = w, height = height)
+                        }
                         renderer2.drawFrame(
                             state.time,
                             state.propForPath,
@@ -247,14 +252,16 @@ fun AnimationView(
                             this
                         )
                         drawEventOverlays(layout, 1, this)
-                        drawPositionOverlays(layout, 1, renderer2, this)
+                        drawPositionOverlays(layout, 1, renderer2, this, textMeasurer)
                         if (state.showAxes) {
                             renderer2.drawAxes(textMeasurer, this)
                         }
                     }
                 }
             } else {
-                drawGrid(layout, renderer1, this)
+                if (layout.showGrid) {
+                    drawGrid(renderer1, this)
+                }
                 renderer1.drawFrame(
                     state.time,
                     state.propForPath,
@@ -262,7 +269,7 @@ fun AnimationView(
                     this
                 )
                 drawEventOverlays(layout, 0, this)
-                drawPositionOverlays(layout, 0, renderer1, this)
+                drawPositionOverlays(layout, 0, renderer1, this, textMeasurer)
                 if (state.showAxes) {
                     renderer1.drawAxes(textMeasurer, this)
                 }
@@ -275,9 +282,16 @@ private fun drawEventOverlays(
     layout: AnimationLayout,
     viewIndex: Int,
     scope: DrawScope
-) {
+): Unit = with(scope) {
     val handpathColor = Color.LightGray
     val eventColor = Color.Green
+
+    val strokeWidth1 = 1.dp.toPx()
+    val strokeWidth1_25 = 1.25.dp.toPx()
+    val dotSize4 = 4.dp.toPx()
+    val dotOffset2 = dotSize4 / 2
+    val dashOn = 5.7.dp.toPx()
+    val dashOff = 5.dp.toPx()
 
     // Draw Hand Paths
     if (viewIndex < layout.handpathPoints.size) {
@@ -307,17 +321,17 @@ private fun drawEventOverlays(
                 }
             }
 
-            scope.drawPath(
+            drawPath(
                 pathSolid,
                 handpathColor,
-                style = Stroke(width = 2.5f)
+                style = Stroke(width = strokeWidth1_25)
             )
-            scope.drawPath(
+            drawPath(
                 pathDashed,
                 handpathColor,
                 style = Stroke(
-                    width = 2.5f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 7f))
+                    width = strokeWidth1_25,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashOn, dashOff))
                 )
             )
         }
@@ -329,7 +343,7 @@ private fun drawEventOverlays(
     for (evIndex in eventPoints.indices) {
         if (viewIndex < eventPoints[evIndex].size) {
             val points = eventPoints[evIndex][viewIndex]
-            val isSelected = (evIndex == 0) // First event is always the active one in the list
+            val isSelected = (evIndex == 0)  // first event is always the active one
 
             val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
             val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
@@ -338,60 +352,60 @@ private fun drawEventOverlays(
             val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
 
             // center dot
-            scope.drawOval(
+            drawOval(
                 color = eventColor,
-                topLeft = Offset(p4.x - 4f, p4.y - 4f),
-                size = Size(8f, 8f)
+                topLeft = Offset(p4.x - dotOffset2, p4.y - dotOffset2),
+                size = Size(dotSize4, dotSize4)
             )
 
             if (isSelected) {
                 if (layout.showXzDragControl) {
                     // selected event box
-                    scope.drawLine(eventColor, p0, p1, strokeWidth = 2.5f)
-                    scope.drawLine(eventColor, p1, p2, strokeWidth = 2.5f)
-                    scope.drawLine(eventColor, p2, p3, strokeWidth = 2.5f)
-                    scope.drawLine(eventColor, p3, p0, strokeWidth = 2.5f)
+                    drawLine(eventColor, p0, p1, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p1, p2, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p2, p3, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p3, p0, strokeWidth = strokeWidth1_25)
                 }
 
                 if (layout.showYDragControl) {
                     // y-axis control pointing forward/backward
-                    scope.drawLine(
+                    drawLine(
                         eventColor,
                         Offset(points[5][0].toFloat(), points[5][1].toFloat()),
                         Offset(points[6][0].toFloat(), points[6][1].toFloat()),
-                        strokeWidth = 2f
+                        strokeWidth = strokeWidth1
                     )
-                    scope.drawLine(
+                    drawLine(
                         eventColor,
                         Offset(points[5][0].toFloat(), points[5][1].toFloat()),
                         Offset(points[7][0].toFloat(), points[7][1].toFloat()),
-                        strokeWidth = 2f
+                        strokeWidth = strokeWidth1
                     )
-                    scope.drawLine(
+                    drawLine(
                         eventColor,
                         Offset(points[5][0].toFloat(), points[5][1].toFloat()),
                         Offset(points[8][0].toFloat(), points[8][1].toFloat()),
-                        strokeWidth = 2f
+                        strokeWidth = strokeWidth1
                     )
-                    scope.drawLine(
+                    drawLine(
                         eventColor,
                         Offset(points[6][0].toFloat(), points[6][1].toFloat()),
                         Offset(points[9][0].toFloat(), points[9][1].toFloat()),
-                        strokeWidth = 2f
+                        strokeWidth = strokeWidth1
                     )
-                    scope.drawLine(
+                    drawLine(
                         eventColor,
                         Offset(points[6][0].toFloat(), points[6][1].toFloat()),
                         Offset(points[10][0].toFloat(), points[10][1].toFloat()),
-                        strokeWidth = 2f
+                        strokeWidth = strokeWidth1
                     )
                 }
             } else {
                 // unselected event box
-                scope.drawLine(eventColor, p0, p1, strokeWidth = 2.5f)
-                scope.drawLine(eventColor, p1, p2, strokeWidth = 2.5f)
-                scope.drawLine(eventColor, p2, p3, strokeWidth = 2.5f)
-                scope.drawLine(eventColor, p3, p0, strokeWidth = 2.5f)
+                drawLine(eventColor, p0, p1, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p1, p2, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p2, p3, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p3, p0, strokeWidth = strokeWidth1_25)
             }
         }
     }
@@ -401,11 +415,21 @@ private fun drawPositionOverlays(
     layout: AnimationLayout,
     viewIndex: Int,
     renderer: ComposeRenderer,
-    scope: DrawScope
-) {
+    scope: DrawScope,
+    textMeasurer: TextMeasurer
+): Unit = with(scope) {
     val posPoints = layout.posPoints
     val posColor = Color.Green
     val posTextColor = Color.Black
+
+    val strokeWidth1 = 1.dp.toPx()
+    val strokeWidth1_25 = 1.25.dp.toPx()
+    val dotSize5 = 5.dp.toPx()
+    val dotOffset2_5 = dotSize5 / 2
+    val dotSize7 = 7.dp.toPx()
+    val dotOffset3_5 = dotSize7 / 2
+    val dotSize10 = 10.dp.toPx()
+    val dotOffset5 = dotSize10 / 2
 
     // Check if we have data for this viewIndex
     if (viewIndex < posPoints.size) {
@@ -416,10 +440,10 @@ private fun drawPositionOverlays(
         val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
 
         // center dot
-        scope.drawOval(
+        drawOval(
             color = posColor,
-            topLeft = Offset(p4.x - 5f, p4.y - 5f),
-            size = Size(10f, 10f)
+            topLeft = Offset(p4.x - dotOffset2_5, p4.y - dotOffset2_5),
+            size = Size(dotSize5, dotSize5)
         )
 
         if (layout.showXyDragControl /* || dragging */) {
@@ -428,10 +452,10 @@ private fun drawPositionOverlays(
             val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
             val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
             val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
-            scope.drawLine(posColor, p0, p1, strokeWidth = 2.5f)
-            scope.drawLine(posColor, p1, p2, strokeWidth = 2.5f)
-            scope.drawLine(posColor, p2, p3, strokeWidth = 2.5f)
-            scope.drawLine(posColor, p3, p0, strokeWidth = 2.5f)
+            drawLine(posColor, p0, p1, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p1, p2, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p2, p3, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p3, p0, strokeWidth = strokeWidth1_25)
         }
 
         if (layout.showZDragControl /* && (!dragging || draggingZ) */) {
@@ -439,19 +463,19 @@ private fun drawPositionOverlays(
             val p6 = Offset(points[6][0].toFloat(), points[6][1].toFloat())
             val p7 = Offset(points[7][0].toFloat(), points[7][1].toFloat())
             val p8 = Offset(points[8][0].toFloat(), points[8][1].toFloat())
-            scope.drawLine(posColor, p4, p6, strokeWidth = 2f)
-            scope.drawLine(posColor, p6, p7, strokeWidth = 2f)
-            scope.drawLine(posColor, p6, p8, strokeWidth = 2f)
+            drawLine(posColor, p4, p6, strokeWidth = strokeWidth1)
+            drawLine(posColor, p6, p7, strokeWidth = strokeWidth1)
+            drawLine(posColor, p6, p8, strokeWidth = strokeWidth1)
         }
 
         if (layout.showAngleDragControl) {
             // angle-changing control pointing backward (center at 4, handle at 5)
             val p5 = Offset(points[5][0].toFloat(), points[5][1].toFloat())
-            scope.drawLine(posColor, p4, p5, strokeWidth = 2f)
-            scope.drawOval(
+            drawLine(posColor, p4, p5, strokeWidth = strokeWidth1)
+            drawOval(
                 color = posColor,
-                topLeft = Offset(p5.x - 10f, p5.y - 10f),
-                size = Size(20f, 20f)
+                topLeft = Offset(p5.x - dotOffset5, p5.y - dotOffset5),
+                size = Size(dotSize10, dotSize10)
             )
         }
 
@@ -459,7 +483,7 @@ private fun drawPositionOverlays(
             // sighting line during angle rotation
             val p9 = Offset(points[9][0].toFloat(), points[9][1].toFloat())
             val p10 = Offset(points[10][0].toFloat(), points[10][1].toFloat())
-            scope.drawLine(posColor, p9, p10, strokeWidth = 2f)
+            drawLine(posColor, p9, p10, strokeWidth = strokeWidth1)
         }
 
         if (true /* !draggingAngle */) {
@@ -469,28 +493,35 @@ private fun drawPositionOverlays(
                 val z = c.z
                 c.z = 0.0
                 val xyProjection = renderer.getXY(c)
-                scope.drawLine(
+                drawLine(
                     posColor,
                     p4,
                     Offset(xyProjection[0].toFloat(), xyProjection[1].toFloat()),
-                    strokeWidth = 2f
+                    strokeWidth = strokeWidth1
                 )
-                scope.drawOval(
+                drawOval(
                     color = posColor,
-                    topLeft = Offset(xyProjection[0].toFloat() - 7f, xyProjection[1].toFloat() - 7f),
-                    size = Size(14f, 14f)
+                    topLeft = Offset(xyProjection[0].toFloat() - dotOffset3_5, xyProjection[1].toFloat() - dotOffset3_5),
+                    size = Size(dotSize7, dotSize7)
                 )
 
                 if (true /* draggingZ */) {
                     // z-label on the line
-                    val message = "z = " + jlToStringRounded(z, 1) + " cm"
+                    val textLayoutResult = textMeasurer.measure(
+                        text = "z = " + jlToStringRounded(z, 1) + " cm",
+                        style = TextStyle(color = posTextColor, fontSize = 13.sp)
+                    )
                     val y = max(
                         max(points[0][1], points[1][1]),
                         max(points[2][1], points[3][1])
                     )
-                    val messageY = y.roundToInt() + 40
-
-                    // g2.drawString(message, xyProjection[0] + 5, messageY)
+                    drawText(
+                        textLayoutResult = textLayoutResult,
+                        topLeft = Offset(
+                            x = xyProjection[0].toFloat() + 5.dp.toPx(),
+                            y = y.toFloat() + 32.dp.toPx()
+                        )
+                    )
                 }
             }
         }
@@ -500,14 +531,14 @@ private fun drawPositionOverlays(
 // In position editing mode, draw an xy grid at ground level (z = 0).
 
 private fun drawGrid(
-    layout: AnimationLayout,
     renderer: ComposeRenderer,
     scope: DrawScope,
     width: Int = scope.size.width.toInt(),
     height: Int = scope.size.height.toInt()
-) {
-    if (!layout.showGrid) return
+): Unit = with(scope) {
     val gridColor = Color.LightGray
+    val strokeWidthAxes = 2.dp.toPx()
+    val strokeWidthGrid = 0.75.dp.toPx()
 
     // Figure out pixel deltas for 1cm vectors along x and y axes
     val center = renderer.getXY(Coordinate(0.0, 0.0, 0.0))
@@ -525,35 +556,35 @@ private fun drawGrid(
     // Find which grid intersections are visible on screen by solving for the
     // grid coordinates at the four corners.
     val det = axisX[0] * axisY[1] - axisX[1] * axisY[0]
-    var mmin = 0
-    var mmax = 0
-    var nmin = 0
-    var nmax = 0
+    var mMin = 0
+    var mMax = 0
+    var nMin = 0
+    var nMax = 0
     for (j in 0..3) {
         val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
         val b = ((if (j < 2) 0 else height) - center[1]).toDouble()
         val m = (axisY[1] * a - axisY[0] * b) / det
         val n = (-axisX[1] * a + axisX[0] * b) / det
-        val mint = floor(m).toInt()
-        val nint = floor(n).toInt()
-        mmin = if (j == 0) mint else min(mmin, mint)
-        mmax = if (j == 0) mint + 1 else max(mmax, mint + 1)
-        nmin = if (j == 0) nint else min(nmin, nint)
-        nmax = if (j == 0) nint + 1 else max(nmax, nint + 1)
+        val mInt = floor(m).toInt()
+        val nInt = floor(n).toInt()
+        mMin = if (j == 0) mInt else min(mMin, mInt)
+        mMax = if (j == 0) mInt + 1 else max(mMax, mInt + 1)
+        nMin = if (j == 0) nInt else min(nMin, nInt)
+        nMax = if (j == 0) nInt + 1 else max(nMax, nInt + 1)
     }
 
-    for (j in mmin..mmax) {
-        val x1 = (center[0] + j * axisX[0] + nmin * axisY[0]).toFloat()
-        val y1 = (center[1] + j * axisX[1] + nmin * axisY[1]).toFloat()
-        val x2 = (center[0] + j * axisX[0] + nmax * axisY[0]).toFloat()
-        val y2 = (center[1] + j * axisX[1] + nmax * axisY[1]).toFloat()
-        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 4f else 1.5f)
+    for (j in mMin..mMax) {
+        val x1 = (center[0] + j * axisX[0] + nMin * axisY[0]).toFloat()
+        val y1 = (center[1] + j * axisX[1] + nMin * axisY[1]).toFloat()
+        val x2 = (center[0] + j * axisX[0] + nMax * axisY[0]).toFloat()
+        val y2 = (center[1] + j * axisX[1] + nMax * axisY[1]).toFloat()
+        drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
-    for (j in nmin..nmax) {
-        val x1 = (center[0] + mmin * axisX[0] + j * axisY[0]).toFloat()
-        val y1 = (center[1] + mmin * axisX[1] + j * axisY[1]).toFloat()
-        val x2 = (center[0] + mmax * axisX[0] + j * axisY[0]).toFloat()
-        val y2 = (center[1] + mmax * axisX[1] + j * axisY[1]).toFloat()
-        scope.drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) 4f else 1.5f)
+    for (j in nMin..nMax) {
+        val x1 = (center[0] + mMin * axisX[0] + j * axisY[0]).toFloat()
+        val y1 = (center[1] + mMin * axisX[1] + j * axisY[1]).toFloat()
+        val x2 = (center[0] + mMax * axisX[0] + j * axisY[0]).toFloat()
+        val y2 = (center[1] + mMax * axisX[1] + j * axisY[1]).toFloat()
+        drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
 }

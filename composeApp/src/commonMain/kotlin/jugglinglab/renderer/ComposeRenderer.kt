@@ -214,7 +214,15 @@ class ComposeRenderer {
         return Coordinate(newv.x, newv.z, newv.y)
     }
 
-    fun drawFrame(time: Double, pnum: List<Int>, hideJugglers: List<Int>, drawScope: DrawScope) {
+    fun drawFrame(
+        time: Double,
+        pnum: List<Int>,
+        hideJugglers: List<Int>,
+        scope: DrawScope
+    ): Unit = with(scope) {
+        val strokeWidth0_5 = 0.5.dp.toPx()
+        val strokeWidth1 = 1.dp.toPx()
+
         var numObjects = 5 * pattern.numberOfJugglers + pattern.numberOfPaths + 18
 
         for (i in 0..<numObjects) {
@@ -409,7 +417,7 @@ class ComposeRenderer {
 
                     if (image != null) {
                         val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                        drawScope.drawImage(
+                        drawImage(
                             image = image,
                             topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat())
                         )
@@ -417,7 +425,7 @@ class ComposeRenderer {
                         val size = pr.getProp2DSize(zoom, cameraAngle)
                         if (size != null) {
                             val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                            drawScope.drawOval(
+                            drawOval(
                                 color = pr.getEditorColor(),
                                 topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat()),
                                 size = Size(size.width.toFloat(), size.height.toFloat())
@@ -433,8 +441,8 @@ class ComposeRenderer {
                         path.lineTo(ob.coord[j].x.toFloat(), ob.coord[j].y.toFloat())
                     }
                     path.close()
-                    drawScope.drawPath(path, background)
-                    drawScope.drawPath(path, Color.Black, style = Stroke(2f))
+                    drawPath(path, background)
+                    drawPath(path, Color.Black, style = Stroke(strokeWidth1))
 
                     val lHeadBx = ob.coord[4].x
                     val lHeadBy = ob.coord[4].y
@@ -453,15 +461,15 @@ class ComposeRenderer {
                             else headPath.lineTo(headX[j].toFloat(), headY[j].toFloat())
                         }
                         headPath.close()
-                        drawScope.drawPath(headPath, background)
-                        drawScope.drawPath(headPath, Color.Black, style = Stroke(2f))
+                        drawPath(headPath, background)
+                        drawPath(headPath, Color.Black, style = Stroke(strokeWidth1))
                     } else {
                         val h =
                             sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
                         val hx = (0.5 * (lHeadBx + rHeadBx)).toFloat()
                         val hy1 = (0.5 * (lHeadTy + rHeadBy + h)).toFloat()
                         val hy2 = (0.5 * (lHeadTy + rHeadBy - h)).toFloat()
-                        drawScope.drawLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = 2f)
+                        drawLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
                     }
                 }
 
@@ -471,26 +479,27 @@ class ComposeRenderer {
                     val x2 = ob.coord[1].x.toFloat()
                     val y2 = ob.coord[1].y.toFloat()
                     // Juggler parts have number > 0, ground uses 0
-                    val strokeWidth = if (ob.number > 0) 2f else 1f
-                    drawScope.drawLine(Color.Black, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
+                    val strokeWidth = if (ob.number > 0) strokeWidth1 else strokeWidth0_5
+                    drawLine(Color.Black, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
                 }
             }
         }
     }
 
     @Suppress("UnnecessaryVariable")
-    fun drawAxes(textMeasurer: TextMeasurer, scope: DrawScope) {
-        val density = scope.density
-
+    fun drawAxes(
+        textMeasurer: TextMeasurer,
+        scope: DrawScope
+    ): Unit = with(scope) {
         val ca = cameraAngle
         val theta = ca[0]
         val phi = ca[1]
 
-        val xya = 30f * density
+        val xya = 30.dp.toPx()
         val xyb = (xya * cos(phi)).toFloat()
         val zlen = (xya * sin(phi)).toFloat()
-        val cx = 38f * density
-        val cy = 48f * density
+        val cx = 38.dp.toPx()
+        val cy = 48.dp.toPx()
         val xx = cx - (xya * cos(theta)).toFloat()
         val xy = cy + (xyb * sin(theta)).toFloat()
         val yx = cx + (xya * sin(theta)).toFloat()
@@ -499,33 +508,33 @@ class ComposeRenderer {
         val zy = cy - zlen
 
         val axesColor = Color.Green
-        val strokeWidth = 1f * density
-        val dotSize = 5f * density
+        val strokeWidth = 1.dp.toPx()
+        val dotSize = 5.dp.toPx()
         val dotOffset = dotSize / 2
 
-        scope.drawLine(axesColor, Offset(cx, cy), Offset(xx, xy), strokeWidth = strokeWidth)
-        scope.drawLine(axesColor, Offset(cx, cy), Offset(yx, yy), strokeWidth = strokeWidth)
-        scope.drawLine(axesColor, Offset(cx, cy), Offset(zx, zy), strokeWidth = strokeWidth)
-        scope.drawOval(
+        drawLine(axesColor, Offset(cx, cy), Offset(xx, xy), strokeWidth = strokeWidth)
+        drawLine(axesColor, Offset(cx, cy), Offset(yx, yy), strokeWidth = strokeWidth)
+        drawLine(axesColor, Offset(cx, cy), Offset(zx, zy), strokeWidth = strokeWidth)
+        drawOval(
             color = axesColor,
             topLeft = Offset(xx - dotOffset, xy - dotOffset),
             size = Size(dotSize, dotSize)
         )
-        scope.drawOval(
+        drawOval(
             color = axesColor,
             topLeft = Offset(yx - dotOffset, yy - dotOffset),
             size = Size(dotSize, dotSize)
         )
-        scope.drawOval(
+        drawOval(
             color = axesColor,
             topLeft = Offset(zx - dotOffset, zy - dotOffset),
             size = Size(dotSize, dotSize)
         )
         
         val textStyle = TextStyle(color = axesColor, fontSize = 13.sp)
-        val padding = with(scope) { 3.dp.toPx() }
+        val padding = 3.dp.toPx()
         val textLayoutResultX = textMeasurer.measure(text = "x", style = textStyle)
-        scope.drawText(
+        drawText(
             textLayoutResult = textLayoutResultX,
             topLeft = Offset(
                 x = xx - textLayoutResultX.size.width / 2,
@@ -533,7 +542,7 @@ class ComposeRenderer {
             )
         )
         val textLayoutResultY = textMeasurer.measure(text = "y", style = textStyle)
-        scope.drawText(
+        drawText(
             textLayoutResult = textLayoutResultY,
             topLeft = Offset(
                 x = yx - textLayoutResultY.size.width / 2,
@@ -541,7 +550,7 @@ class ComposeRenderer {
             )
         )
         val textLayoutResultZ = textMeasurer.measure(text = "z", style = textStyle)
-        scope.drawText(
+        drawText(
             textLayoutResult = textLayoutResultZ,
             topLeft = Offset(
                 x = zx - textLayoutResultZ.size.width / 2,
