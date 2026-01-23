@@ -37,27 +37,30 @@ class AnimationLayout(
 ) {
     // Event editing -----------------------------------------------------------
 
-    // List of events visible on screen
+    // List of events visible on screen; selected one is at index 0
     var visibleEvents: List<JmlEvent> = listOf()
 
-    // Screen (logical) coordinates of visual representations for events.
+    // Physical pixel coordinates of visual representations for events.
     // [event index][stereo view 0/1][control point index][x/y]
     var eventPoints = Array(0) { Array(0) { Array(0) { DoubleArray(0) } } }
 
-    // Screen coordinates for hand paths.
+    // Physical pixel coordinates for hand paths.
     // [stereo view 0/1][point index][x/y]
     var handpathPoints = Array(0) { Array(0) { DoubleArray(0) } }
     var handpathStartTime: Double = 0.0
     var handpathEndTime: Double = 0.0
 
     // Whether each hand path segment is a "hold" (solid line) or not (dashed line).
-    var handpathHold: BooleanArray = BooleanArray(0)
+    var handpathIsHold: BooleanArray = BooleanArray(0)
 
     // Visibility flags for drag controls
     var showXzDragControl: Boolean = false
     var showYDragControl: Boolean = false
 
     // Position editing --------------------------------------------------------
+
+    // Position that is visible on screen
+    var visiblePosition: JmlPosition? = null
 
     // Screen coordinates for position editing controls.
     // [stereo view 0/1][control point index][x/y]
@@ -76,9 +79,9 @@ class AnimationLayout(
         if (activeEventImage != null) {
             createEventView(activeEventImage.first, activeEventImage.second)
         } else {
-            val activePosition = getActivePosition(state)
-            if (activePosition != null) {
-                createPositionView(activePosition)
+            visiblePosition = getActivePosition(state)
+            if (visiblePosition != null) {
+                createPositionView(visiblePosition!!)
             }
         }
     }
@@ -171,7 +174,7 @@ class AnimationLayout(
         val numHandpathPoints =
             ceil((handpathEndTime - handpathStartTime) / HANDPATH_POINT_SEP_TIME).toInt() + 1
         handpathPoints = Array(rendererCount) { Array(numHandpathPoints) { DoubleArray(2) } }
-        handpathHold = BooleanArray(numHandpathPoints)
+        handpathIsHold = BooleanArray(numHandpathPoints)
 
         for (i in 0..<rendererCount) {
             val ren = if (i == 0) renderer1 else renderer2
@@ -182,7 +185,7 @@ class AnimationLayout(
                 val point = ren.getXY(c)
                 handpathPoints[i][j][0] = point[0].toDouble()
                 handpathPoints[i][j][1] = point[1].toDouble()
-                handpathHold[j] = state.pattern.layout.isHandHolding(
+                handpathIsHold[j] = state.pattern.layout.isHandHolding(
                     activeEvent.juggler,
                     activeEvent.hand, t + 0.0001)
             }

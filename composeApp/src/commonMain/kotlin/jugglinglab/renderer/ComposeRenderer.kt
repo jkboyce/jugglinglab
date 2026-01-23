@@ -33,7 +33,7 @@ import kotlin.math.sqrt
 
 class ComposeRenderer {
     private var background: Color = Color.White
-    var showground: Boolean = false
+    var showGround: Boolean = false
 
     // Internal fields
     private var cameraCenter: JlVector? = null
@@ -47,22 +47,22 @@ class ComposeRenderer {
     private var originX: Int = 0
     private var originZ: Int = 0
     private var polysides: Int = 40 // # sides in polygon for head
-    private var headcos: DoubleArray = DoubleArray(polysides)
-    private var headsin: DoubleArray = DoubleArray(polysides)
+    private var headCos: DoubleArray = DoubleArray(polysides)
+    private var headSin: DoubleArray = DoubleArray(polysides)
     private var headX: IntArray = IntArray(polysides)
     private var headY: IntArray = IntArray(polysides)
 
     private lateinit var obj: MutableList<DrawObject2D>
     private lateinit var obj2: MutableList<DrawObject2D>
-    private lateinit var jugglervec: Array<Array<JlVector?>>
+    private lateinit var jugglerVec: Array<Array<JlVector?>>
     private var tempc: Coordinate = Coordinate()
     private var tempv1: JlVector = JlVector()
     private var tempv2: JlVector = JlVector()
 
     init {
         for (i in 0..<polysides) {
-            headcos[i] = cos(i.toDouble() * 2.0 * Math.PI / polysides)
-            headsin[i] = sin(i.toDouble() * 2.0 * Math.PI / polysides)
+            headCos[i] = cos(i.toDouble() * 2.0 * Math.PI / polysides)
+            headSin[i] = sin(i.toDouble() * 2.0 * Math.PI / polysides)
         }
     }
 
@@ -71,11 +71,11 @@ class ComposeRenderer {
         val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
         obj = MutableList(maxobjects) { DrawObject2D() }
         obj2 = MutableList(maxobjects) { DrawObject2D() }
-        jugglervec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
+        jugglerVec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
     }
 
     fun setGround(show: Boolean) {
-        showground = show
+        showGround = show
     }
 
     fun initDisplay(w: Int, h: Int, border: Int, overallMax: Coordinate, overallMin: Coordinate) {
@@ -249,7 +249,7 @@ class ComposeRenderer {
         }
 
         // Ground
-        if (showground) {
+        if (showGround) {
             for (i in 0..17) {
                 obj[index].type = DrawObject2D.TYPE_LINE
                 obj[index].number = 0
@@ -287,21 +287,21 @@ class ComposeRenderer {
         }
 
         // Jugglers
-        Juggler.findJugglerCoordinates(pattern, time, jugglervec)
+        Juggler.findJugglerCoordinates(pattern, time, jugglerVec)
 
         for (i in 1..pattern.numberOfJugglers) {
             if (i in hideJugglers) continue
 
             obj[index].type = DrawObject2D.TYPE_BODY
             obj[index].number = i
-            getXYZ(jugglervec[i - 1][2]!!, obj[index].coord[0]) // left shoulder
-            getXYZ(jugglervec[i - 1][3]!!, obj[index].coord[1]) // right shoulder
-            getXYZ(jugglervec[i - 1][7]!!, obj[index].coord[2]) // right waist
-            getXYZ(jugglervec[i - 1][6]!!, obj[index].coord[3]) // left waist
-            getXYZ(jugglervec[i - 1][8]!!, obj[index].coord[4]) // left head bottom
-            getXYZ(jugglervec[i - 1][9]!!, obj[index].coord[5]) // left head top
-            getXYZ(jugglervec[i - 1][10]!!, obj[index].coord[6]) // right head bottom
-            getXYZ(jugglervec[i - 1][11]!!, obj[index].coord[7]) // right head top
+            getXYZ(jugglerVec[i - 1][2]!!, obj[index].coord[0]) // left shoulder
+            getXYZ(jugglerVec[i - 1][3]!!, obj[index].coord[1]) // right shoulder
+            getXYZ(jugglerVec[i - 1][7]!!, obj[index].coord[2]) // right waist
+            getXYZ(jugglerVec[i - 1][6]!!, obj[index].coord[3]) // left waist
+            getXYZ(jugglerVec[i - 1][8]!!, obj[index].coord[4]) // left head bottom
+            getXYZ(jugglerVec[i - 1][9]!!, obj[index].coord[5]) // left head top
+            getXYZ(jugglerVec[i - 1][10]!!, obj[index].coord[6]) // right head bottom
+            getXYZ(jugglerVec[i - 1][11]!!, obj[index].coord[7]) // right head top
 
             var xmin = obj[index].coord[0].x.roundToInt()
             var xmax = xmin
@@ -321,25 +321,25 @@ class ComposeRenderer {
 
             // Arms
             for (j in 0..1) {
-                if (jugglervec[i - 1][4 + j] == null) {
+                if (jugglerVec[i - 1][4 + j] == null) {
                     obj[index].type = DrawObject2D.TYPE_LINE
                     obj[index].number = i
-                    getXYZ(jugglervec[i - 1][2 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglervec[i - 1][j]!!, obj[index].coord[1])
+                    getXYZ(jugglerVec[i - 1][2 + j]!!, obj[index].coord[0])
+                    getXYZ(jugglerVec[i - 1][j]!!, obj[index].coord[1])
                     updateLineBoundingBox(obj[index])
                     index++
                 } else {
                     obj[index].type = DrawObject2D.TYPE_LINE
                     obj[index].number = i
-                    getXYZ(jugglervec[i - 1][2 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglervec[i - 1][4 + j]!!, obj[index].coord[1])
+                    getXYZ(jugglerVec[i - 1][2 + j]!!, obj[index].coord[0])
+                    getXYZ(jugglerVec[i - 1][4 + j]!!, obj[index].coord[1])
                     updateLineBoundingBox(obj[index])
                     index++
 
                     obj[index].type = DrawObject2D.TYPE_LINE
                     obj[index].number = i
-                    getXYZ(jugglervec[i - 1][4 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglervec[i - 1][j]!!, obj[index].coord[1])
+                    getXYZ(jugglerVec[i - 1][4 + j]!!, obj[index].coord[0])
+                    getXYZ(jugglerVec[i - 1][j]!!, obj[index].coord[1])
                     updateLineBoundingBox(obj[index])
                     index++
                 }
@@ -445,8 +445,8 @@ class ComposeRenderer {
                     if (abs(rHeadBx - lHeadBx) > 2.0) {
                         val headPath = Path()
                         for (j in 0..<polysides) {
-                            headX[j] = (0.5 * (lHeadBx + rHeadBx + headcos[j] * (rHeadBx - lHeadBx))).roundToInt()
-                            headY[j] = (0.5 * (lHeadBy + lHeadTy + headsin[j] * (lHeadBy - lHeadTy))
+                            headX[j] = (0.5 * (lHeadBx + rHeadBx + headCos[j] * (rHeadBx - lHeadBx))).roundToInt()
+                            headY[j] = (0.5 * (lHeadBy + lHeadTy + headSin[j] * (lHeadBy - lHeadTy))
                                     + (headX[j] - lHeadBx) * (rHeadBy - lHeadBy) / (rHeadBx - lHeadBx)).roundToInt()
 
                             if (j == 0) headPath.moveTo(headX[j].toFloat(), headY[j].toFloat())
@@ -479,16 +479,18 @@ class ComposeRenderer {
     }
 
     @Suppress("UnnecessaryVariable")
-    fun drawAxes(density: Float, textMeasurer: TextMeasurer, drawScope: DrawScope) {
+    fun drawAxes(textMeasurer: TextMeasurer, scope: DrawScope) {
+        val density = scope.density
+
         val ca = cameraAngle
         val theta = ca[0]
         val phi = ca[1]
 
-        val xya = 30f
+        val xya = 30f * density
         val xyb = (xya * cos(phi)).toFloat()
         val zlen = (xya * sin(phi)).toFloat()
-        val cx = 38f
-        val cy = 45f
+        val cx = 38f * density
+        val cy = 48f * density
         val xx = cx - (xya * cos(theta)).toFloat()
         val xy = cy + (xyb * sin(theta)).toFloat()
         val yx = cx + (xya * sin(theta)).toFloat()
@@ -497,50 +499,53 @@ class ComposeRenderer {
         val zy = cy - zlen
 
         val axesColor = Color.Green
+        val strokeWidth = 1f * density
+        val dotSize = 5f * density
+        val dotOffset = dotSize / 2
 
-        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(xx, xy) * density, strokeWidth = 3f)
-        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(yx, yy) * density, strokeWidth = 3f)
-        drawScope.drawLine(axesColor, Offset(cx, cy) * density, Offset(zx, zy) * density, strokeWidth = 3f)
-        drawScope.drawOval(
+        scope.drawLine(axesColor, Offset(cx, cy), Offset(xx, xy), strokeWidth = strokeWidth)
+        scope.drawLine(axesColor, Offset(cx, cy), Offset(yx, yy), strokeWidth = strokeWidth)
+        scope.drawLine(axesColor, Offset(cx, cy), Offset(zx, zy), strokeWidth = strokeWidth)
+        scope.drawOval(
             color = axesColor,
-            topLeft = Offset(xx - 2.5f, xy - 2.5f) * density,
-            size = Size(5f, 5f) * density
+            topLeft = Offset(xx - dotOffset, xy - dotOffset),
+            size = Size(dotSize, dotSize)
         )
-        drawScope.drawOval(
+        scope.drawOval(
             color = axesColor,
-            topLeft = Offset(yx - 2.5f, yy - 2.5f) * density,
-            size = Size(5f, 5f) * density
+            topLeft = Offset(yx - dotOffset, yy - dotOffset),
+            size = Size(dotSize, dotSize)
         )
-        drawScope.drawOval(
+        scope.drawOval(
             color = axesColor,
-            topLeft = Offset(zx - 2.5f, zy - 2.5f) * density,
-            size = Size(5f, 5f) * density
+            topLeft = Offset(zx - dotOffset, zy - dotOffset),
+            size = Size(dotSize, dotSize)
         )
         
         val textStyle = TextStyle(color = axesColor, fontSize = 13.sp)
-        val padding = with(drawScope) { 3.dp.toPx() }
+        val padding = with(scope) { 3.dp.toPx() }
         val textLayoutResultX = textMeasurer.measure(text = "x", style = textStyle)
-        drawScope.drawText(
+        scope.drawText(
             textLayoutResult = textLayoutResultX,
             topLeft = Offset(
-                x = xx * density - textLayoutResultX.size.width / 2,
-                y = xy * density - textLayoutResultX.size.height - padding
+                x = xx - textLayoutResultX.size.width / 2,
+                y = xy - textLayoutResultX.size.height - padding
             )
         )
         val textLayoutResultY = textMeasurer.measure(text = "y", style = textStyle)
-        drawScope.drawText(
+        scope.drawText(
             textLayoutResult = textLayoutResultY,
             topLeft = Offset(
-                x = yx * density - textLayoutResultY.size.width / 2,
-                y = yy * density - textLayoutResultY.size.height - padding
+                x = yx - textLayoutResultY.size.width / 2,
+                y = yy - textLayoutResultY.size.height - padding
             )
         )
         val textLayoutResultZ = textMeasurer.measure(text = "z", style = textStyle)
-        drawScope.drawText(
+        scope.drawText(
             textLayoutResult = textLayoutResultZ,
             topLeft = Offset(
-                x = zx * density - textLayoutResultZ.size.width / 2,
-                y = zy * density - textLayoutResultZ.size.height - padding
+                x = zx - textLayoutResultZ.size.width / 2,
+                y = zy - textLayoutResultZ.size.height - padding
             )
         )
     }
