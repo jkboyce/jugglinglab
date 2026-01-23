@@ -6,6 +6,8 @@
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
+@file:Suppress("LocalVariableName")
+
 package jugglinglab.ui
 
 import jugglinglab.core.AnimationPrefs
@@ -48,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 @Composable
 fun AnimationView(

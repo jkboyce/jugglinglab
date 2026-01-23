@@ -277,6 +277,9 @@ class AnimationController(
                                 draggingLeft = (i == 0)
                                 deltaX = 0; deltaY = 0
                                 startAngle = Math.toRadians(activePosition.angle)
+
+                                // record pixel coordinates of x and y unit vectors
+                                // in juggler's frame, at start of angle drag
                                 startDx = doubleArrayOf(
                                     layout.posPoints[i][11][0] - layout.posPoints[i][4][0],
                                     layout.posPoints[i][11][1] - layout.posPoints[i][4][1]
@@ -305,20 +308,41 @@ class AnimationController(
         try {
             if (dragging) {
                 if (draggingAngle) {
+                    // shift pixel coords of control point by mouse drag
                     val dcontrol =
                         doubleArrayOf(startControl[0] + mx - startX, startControl[1] + my - startY)
+
+                    // re-express the control point location in coordinate system
+                    // of juggler:
+                    //
+                    // dcontrol_x = A * startDx_x + B * startDy_x;
+                    // dcontrol_y = A * startDx_y + B * startDy_y;
+                    //
+                    // then (A, B) are coordinates of shifted control point, in
+                    // juggler space
                     val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
                     val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
                     val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
                     deltaAngle = -atan2(-a, -b)
 
+                    // snap the angle to the four cardinal directions
                     val newAngle = startAngle + deltaAngle
-                    var finalAngle = Math.toDegrees(newAngle)
+                    if (anglediff(newAngle) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle
+                    } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle - 0.5 * Math.PI
+                    } else if (anglediff(newAngle + Math.PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle + Math.PI
+                    } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle + 0.5 * Math.PI
+                    }
+
+                    var finalAngle = Math.toDegrees(startAngle + deltaAngle)
                     while (finalAngle > 360) finalAngle -= 360.0
                     while (finalAngle < 0) finalAngle += 360.0
 
-                    val activePosition = getActivePosition(state)!!
                     val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                    val activePosition = getActivePosition(state)!!
                     val index = rec.positions.indexOf(activePosition)
                     if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
                     val newPosition = activePosition.copy(angle = finalAngle)
@@ -330,6 +354,9 @@ class AnimationController(
                 } else {
                     deltaX = mx - startX
                     deltaY = my - startY
+
+                    // Get updated event/position coordinate based on mouse position.
+                    // This modifies deltaX, deltaY based on snapping and projection.
                     val cc = currentCoordinate
                     val activeEventImage = getActiveEvent(state)
 

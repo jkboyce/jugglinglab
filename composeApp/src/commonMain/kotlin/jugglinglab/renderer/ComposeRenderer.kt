@@ -220,6 +220,7 @@ class ComposeRenderer {
         hideJugglers: List<Int>,
         scope: DrawScope
     ): Unit = with(scope) {
+        @Suppress("LocalVariableName")
         val strokeWidth0_5 = 0.5.dp.toPx()
         val strokeWidth1 = 1.dp.toPx()
 
