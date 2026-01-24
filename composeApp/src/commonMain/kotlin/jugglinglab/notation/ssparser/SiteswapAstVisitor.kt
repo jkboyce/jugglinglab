@@ -10,6 +10,7 @@ package jugglinglab.notation.ssparser
 
 import jugglinglab.notation.ssparser.generated.JlSiteswapBaseVisitor
 import jugglinglab.notation.ssparser.generated.JlSiteswapParser.*
+import jugglinglab.util.JuggleExceptionUser
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
 
 class SiteswapAstVisitor : JlSiteswapBaseVisitor<SiteswapTreeItem>() {
@@ -112,7 +113,7 @@ class SiteswapAstVisitor : JlSiteswapBaseVisitor<SiteswapTreeItem>() {
         if (jugglers == -1) {
             jugglers = 1
         } else if (jugglers != 1) {
-            throw ParseException("Inconsistent number of jugglers")
+            throw JuggleExceptionUser("Inconsistent number of jugglers")
         }
 
         b.sourceJuggler = 1
@@ -230,7 +231,7 @@ class SiteswapAstVisitor : JlSiteswapBaseVisitor<SiteswapTreeItem>() {
             for (i in 1 until throwsList.size) {
                 val next = visitPassingthrows(throwsList[i])
                 if (next.beats != b.beats) {
-                    throw ParseException("Inconsistent number of beats between jugglers")
+                    throw JuggleExceptionUser("Inconsistent number of beats between jugglers")
                 }
                 b.addChild(next)
                 currentJuggler++
@@ -241,7 +242,7 @@ class SiteswapAstVisitor : JlSiteswapBaseVisitor<SiteswapTreeItem>() {
         if (jugglers == -1) {
             jugglers = b.jugglers
         } else if (b.jugglers != jugglers) {
-            throw ParseException("Inconsistent number of jugglers")
+            throw JuggleExceptionUser("Inconsistent number of jugglers")
         }
 
         b.seqBeatnum = currentBeat

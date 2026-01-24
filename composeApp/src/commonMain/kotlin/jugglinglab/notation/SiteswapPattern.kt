@@ -14,15 +14,14 @@ package jugglinglab.notation
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.notation.ssparser.ParseException
+import jugglinglab.notation.ssparser.SiteswapParser
+//import jugglinglab.notation.ssparser.ParseException
 import jugglinglab.notation.ssparser.SiteswapTreeItem
-import jugglinglab.notation.ssparser.TokenMgrError
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.jlGetStringResource
-import jugglinglab.util.jlParseSiteswapPattern
 
 class SiteswapPattern : MhnPattern() {
     private var oddperiod: Boolean = false
@@ -115,12 +114,12 @@ class SiteswapPattern : MhnPattern() {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parsing pattern \"$pattern\"")
             }
-            tree = jlParseSiteswapPattern(pattern!!)
+            tree = SiteswapParser.parsePattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
                 println(tree)
             }
-        } catch (pe: ParseException) {
+        } /*catch (pe: ParseException) {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("---------------")
                 println("Parse error:")
@@ -150,7 +149,7 @@ class SiteswapPattern : MhnPattern() {
                 tme.errorColumn
             )
             throw JuggleExceptionUser(message)
-        } catch (_: Throwable) {
+        }*/ catch (_: Throwable) {
             val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
             throw JuggleExceptionUser(message)
         }
