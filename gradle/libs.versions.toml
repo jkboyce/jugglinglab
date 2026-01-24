@@ -6,6 +6,7 @@ junit = "4.13.2"
 kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 shadowjar = "8.1.1"
+antlr = "1.0.9"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -21,3 +22,4 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 shadowJar = { id = "com.github.johnrengelman.shadow", version.ref = "shadowjar" }
+antlrKotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr" }
