@@ -7,27 +7,27 @@
 package jugglinglab.notation.ssparser
 
 class SiteswapTreeItem(var type: Int) : Cloneable {
-    var children: ArrayList<SiteswapTreeItem>
+    var children: MutableList<SiteswapTreeItem> = mutableListOf()
 
     // variables that the parser determines:
     var jugglers: Int = 0 // for type 1, 7, 8
     var repeats: Int = 0 // for type 2
     var switchrepeat: Boolean = false // for type 1
     var beats: Int = 0 // for types 3, 7, 8, 9, 13
-    var seq_beatnum: Int = 0 // for types 4, 5, 6, 8, 9, 10, 11, 12, 14
-    var source_juggler: Int = 0 // for types 3, 4, 5, 6, 9, 10, 11, 12, 14
+    var seqBeatnum: Int = 0 // for types 4, 5, 6, 8, 9, 10, 11, 12, 14
+    var sourceJuggler: Int = 0 // for types 3, 4, 5, 6, 9, 10, 11, 12, 14
     var value: Int = 0 // for types 6, 12
     var x: Boolean = false // for types 6, 12
-    var dest_juggler: Int = 0 // for types 6, 12      // Note: can be > # jugglers -> mod down into range
+    var destJuggler: Int = 0 // for types 6, 12      // Note: can be > # jugglers -> mod down into range
     var mod: String? = null // for types 6, 12
-    var spec_left: Boolean = false // for type 14
+    var specLeft: Boolean = false // for type 14
 
     // variables determined by subsequent layout stages:
-    var throw_sum: Int = 0
-    var beatnum: Int = 0
+    var throwSum: Int = 0
+    var beatNum: Int = 0
     var left: Boolean = false
-    var vanilla_async: Boolean = false
-    var sync_throw: Boolean = false
+    var isVanillaAsync: Boolean = false
+    var isSyncThrow: Boolean = false
     var transition: SiteswapTreeItem? = null // used only for Wildcard type -- holds the calculated transition sequence
 
 
@@ -36,11 +36,11 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
     }
 
     fun getChild(index: Int): SiteswapTreeItem {
-        return children.get(index)
+        return children[index]
     }
 
     fun removeChildren() {
-        children = ArrayList<SiteswapTreeItem>()
+        children = mutableListOf()
     }
 
     val numberOfChildren: Int
@@ -51,14 +51,16 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
         result.repeats = repeats
         result.switchrepeat = switchrepeat
         result.beats = beats
-        result.seq_beatnum = seq_beatnum
-        result.source_juggler = source_juggler
+        result.seqBeatnum = seqBeatnum
+        result.sourceJuggler = sourceJuggler
         result.value = value
         result.x = x
-        result.dest_juggler = dest_juggler
+        result.destJuggler = destJuggler
         result.mod = mod
-        result.spec_left = spec_left
-        for (i in 0..<this.numberOfChildren) result.addChild((getChild(i).clone()) as SiteswapTreeItem?)
+        result.specLeft = specLeft
+        for (i in 0..<numberOfChildren) {
+            result.addChild((getChild(i).clone()) as SiteswapTreeItem?)
+        }
         return result
     }
 
@@ -72,22 +74,21 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
             result += "  "
         }
         result += typenames[type - 1] + "("
-        if (field_active(0, type)) result += "jugglers=" + jugglers + ", "
-        if (field_active(1, type)) result += "repeats=" + repeats + ", "
-        if (field_active(2, type)) result += "*=" + switchrepeat + ", "
-        if (field_active(3, type)) result += "beats=" + beats + ", "
-        if (field_active(4, type)) result += "seq_beatnum=" + seq_beatnum + ", "
-        if (field_active(5, type)) result += "fromj=" + source_juggler + ", "
-        if (field_active(6, type)) result += "val=" + value + ", "
-        if (field_active(7, type)) result += "x=" + x + ", "
-        if (field_active(8, type)) result += "toj=" + dest_juggler + ", "
-        if (field_active(9, type)) result += "mod=" + mod + ", "
-        if (field_active(10, type)) result += "spec_left=" + spec_left
+        if (isFieldActive(0, type)) result += "jugglers=$jugglers, "
+        if (isFieldActive(1, type)) result += "repeats=$repeats, "
+        if (isFieldActive(2, type)) result += "*=$switchrepeat, "
+        if (isFieldActive(3, type)) result += "beats=$beats, "
+        if (isFieldActive(4, type)) result += "seqBeatnum=$seqBeatnum, "
+        if (isFieldActive(5, type)) result += "fromj=$sourceJuggler, "
+        if (isFieldActive(6, type)) result += "val=$value, "
+        if (isFieldActive(7, type)) result += "x=$x, "
+        if (isFieldActive(8, type)) result += "toj=$destJuggler, "
+        if (isFieldActive(9, type)) result += "mod=$mod, "
+        if (isFieldActive(10, type)) result += "specLeft=$specLeft"
         result += ") {\n"
 
-        for (i in 0..<this.numberOfChildren) {
-            val item = getChild(i)
-            result += item.toString(indentlevel + 1)
+        for (i in 0..<numberOfChildren) {
+            result += getChild(i).toString(indentlevel + 1)
         }
 
         repeat (indentlevel) {
@@ -95,10 +96,6 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
         }
         result += "}\n"
         return result
-    }
-
-    init {
-        children = ArrayList<SiteswapTreeItem>()
     }
 
     companion object {
@@ -135,7 +132,7 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
         )
 
         // The following codifies the "for types" comments above
-        private val field_defined_types = arrayOf<IntArray>(
+        private val fieldDefinedTypes = arrayOf(
             intArrayOf(1, 7, 8),
             intArrayOf(2),
             intArrayOf(1),
@@ -149,14 +146,8 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
             intArrayOf(14),
         )
 
-        private fun field_active(fieldnum: Int, type: Int): Boolean {
-            val a: IntArray = field_defined_types[fieldnum]
-            for (j in a) {
-                if (j == type) {
-                    return true
-                }
-            }
-            return false
+        private fun isFieldActive(fieldnum: Int, type: Int): Boolean {
+            return (type in fieldDefinedTypes[fieldnum])
         }
     }
 }

@@ -187,7 +187,7 @@ class SiteswapParser : SiteswapParserConstants {
         } else if (jugglers != 1) {
             run { if (true) throw ParseException("Inconsistent number of jugglers") }
         }
-        b.source_juggler = 1
+        b.sourceJuggler = 1
         b.beats = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
@@ -223,8 +223,8 @@ class SiteswapParser : SiteswapParserConstants {
         c = SoloMultiThrow()
         b.addChild(c)
         jj_consume_token(11)
-        b.source_juggler = 1
-        b.seq_beatnum = current_beat
+        b.sourceJuggler = 1
+        b.seqBeatnum = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -300,8 +300,8 @@ class SiteswapParser : SiteswapParserConstants {
                 throw ParseException()
             }
         }
-        b.source_juggler = 1
-        b.seq_beatnum = current_beat
+        b.sourceJuggler = 1
+        b.seqBeatnum = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -394,9 +394,9 @@ class SiteswapParser : SiteswapParserConstants {
                 jj_la1[22] = jj_gen
             }
         }
-        b.source_juggler = 1
-        b.dest_juggler = 1
-        b.seq_beatnum = current_beat
+        b.sourceJuggler = 1
+        b.destJuggler = 1
+        b.seqBeatnum = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -408,12 +408,12 @@ class SiteswapParser : SiteswapParserConstants {
         when (if (jj_ntk == -1) jj_ntk_f() else jj_ntk) {
             21 -> {
                 jj_consume_token(21)
-                b.spec_left = false
+                b.specLeft = false
             }
 
             22 -> {
                 jj_consume_token(22)
-                b.spec_left = true
+                b.specLeft = true
             }
 
             else -> {
@@ -422,8 +422,8 @@ class SiteswapParser : SiteswapParserConstants {
                 throw ParseException()
             }
         }
-        b.source_juggler = 1
-        b.seq_beatnum = current_beat
+        b.sourceJuggler = 1
+        b.seqBeatnum = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -515,7 +515,7 @@ class SiteswapParser : SiteswapParserConstants {
         else if (b.jugglers != jugglers) {
             run { if (true) throw ParseException("Inconsistent number of jugglers") }
         }
-        b.seq_beatnum = current_beat
+        b.seqBeatnum = current_beat
         current_beat += b.beats
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
@@ -586,9 +586,9 @@ class SiteswapParser : SiteswapParserConstants {
                 break@label_6
             }
         }
-        b.source_juggler = current_juggler
+        b.sourceJuggler = current_juggler
         b.beats = current_beat_sub
-        b.seq_beatnum = current_beat
+        b.seqBeatnum = current_beat
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -623,8 +623,8 @@ class SiteswapParser : SiteswapParserConstants {
         c = PassingMultiThrow()
         b.addChild(c)
         jj_consume_token(11)
-        b.source_juggler = current_juggler
-        b.seq_beatnum = current_beat + current_beat_sub
+        b.sourceJuggler = current_juggler
+        b.seqBeatnum = current_beat + current_beat_sub
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -700,8 +700,8 @@ class SiteswapParser : SiteswapParserConstants {
                 throw ParseException()
             }
         }
-        b.source_juggler = current_juggler
-        b.seq_beatnum = current_beat + current_beat_sub
+        b.sourceJuggler = current_juggler
+        b.seqBeatnum = current_beat + current_beat_sub
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -792,9 +792,9 @@ class SiteswapParser : SiteswapParserConstants {
                 jj_la1[46] = jj_gen
             }
         }
-        b.source_juggler = current_juggler
-        b.dest_juggler = dest
-        b.seq_beatnum = current_beat + current_beat_sub
+        b.sourceJuggler = current_juggler
+        b.destJuggler = dest
+        b.seqBeatnum = current_beat + current_beat_sub
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
@@ -806,12 +806,12 @@ class SiteswapParser : SiteswapParserConstants {
         when (if (jj_ntk == -1) jj_ntk_f() else jj_ntk) {
             21 -> {
                 jj_consume_token(21)
-                b.spec_left = false
+                b.specLeft = false
             }
 
             22 -> {
                 jj_consume_token(22)
-                b.spec_left = true
+                b.specLeft = true
             }
 
             else -> {
@@ -820,8 +820,8 @@ class SiteswapParser : SiteswapParserConstants {
                 throw ParseException()
             }
         }
-        b.source_juggler = current_juggler
-        b.seq_beatnum = current_beat + current_beat_sub
+        b.sourceJuggler = current_juggler
+        b.seqBeatnum = current_beat + current_beat_sub
         run { if ("" != null) return b }
         throw Error("Missing return statement in function")
     }
