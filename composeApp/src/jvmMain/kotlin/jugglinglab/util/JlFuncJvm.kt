@@ -13,6 +13,7 @@ package jugglinglab.util
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.SiteswapParser
+import jugglinglab.notation.ssparser.NewSiteswapParser
 import jugglinglab.notation.ssparser.SiteswapTreeItem
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
@@ -450,5 +451,6 @@ fun jlIsSwing(): Boolean {
 }
 
 actual fun jlParseSiteswapPattern(pattern: String): SiteswapTreeItem {
-    return SiteswapParser.parsePattern(pattern)
+    //return SiteswapParser.parsePattern(pattern)
+    return NewSiteswapParser.parsePattern(pattern)
 }

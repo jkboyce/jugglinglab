@@ -150,7 +150,7 @@ class SiteswapPattern : MhnPattern() {
                 tme.errorColumn
             )
             throw JuggleExceptionUser(message)
-        } catch (t: Throwable) {
+        } catch (_: Throwable) {
             val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
             throw JuggleExceptionUser(message)
         }
