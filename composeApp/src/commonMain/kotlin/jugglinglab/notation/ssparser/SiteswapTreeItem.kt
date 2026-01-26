@@ -78,13 +78,13 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
         if (isFieldActive(1, type)) result += "repeats=$repeats, "
         if (isFieldActive(2, type)) result += "*=$switchrepeat, "
         if (isFieldActive(3, type)) result += "beats=$beats, "
-        if (isFieldActive(4, type)) result += "seqBeatnum=$seqBeatnum, "
+        if (isFieldActive(4, type)) result += "seq_beatnum=$seqBeatnum, "
         if (isFieldActive(5, type)) result += "fromj=$sourceJuggler, "
         if (isFieldActive(6, type)) result += "val=$value, "
         if (isFieldActive(7, type)) result += "x=$x, "
         if (isFieldActive(8, type)) result += "toj=$destJuggler, "
         if (isFieldActive(9, type)) result += "mod=$mod, "
-        if (isFieldActive(10, type)) result += "specLeft=$specLeft"
+        if (isFieldActive(10, type)) result += "spec_left=$specLeft"
         result += ") {\n"
 
         for (i in 0..<numberOfChildren) {
