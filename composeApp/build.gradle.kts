@@ -29,25 +29,23 @@ object Versions {
     const val ANTLR_KOTLIN_VERSION = "1.0.9"
 }
 
-// Custom task to generate ANTLR sources from JlSiteswap.g4
+// Custom task to generate ANTLR sources for siteswap parser
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
     dependsOn("cleanGenerateKotlinGrammarSource")
 
-    // ANTLR .g4 files are under {example-project}/antlr
-    // Only include *.g4 files. This allows tools (e.g., IDE plugins)
-    // to generate temporary files inside the base path
+    // ANTLR .g4 files are under composeApp/antlr
     source = fileTree(layout.projectDirectory.dir("antlr")) {
         include("**/*.g4")
     }
 
-    // We want the generated source files to have this package name
+    // package name for generated source files
     val pkgName = "jugglinglab.notation.ssparser.generated"
     packageName = pkgName
 
-    // We want visitors alongside listeners.
+    // we want visitors alongside listeners
     arguments = listOf("-visitor")
 
-    // Generated files are outputted inside build/generatedAntlr/{package-name}
+    // generated files are outputted in build/generatedAntlr/{package-name}
     val outDir = "generatedAntlr/${pkgName.replace(".", "/")}"
     outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
 }
@@ -56,6 +54,11 @@ kotlin {
     jvm()
 
     sourceSets {
+        commonMain {
+            kotlin {
+                srcDir(generateKotlinGrammarSource)
+            }
+        }
         commonMain.dependencies {
             // Compose Multiplatform
             implementation(compose.runtime)
@@ -71,11 +74,6 @@ kotlin {
             implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
             implementation("com.strumenta:antlr-kotlin-runtime:${Versions.ANTLR_KOTLIN_VERSION}")
             implementation(compose.materialIconsExtended)
-        }
-        commonMain {
-            kotlin {
-                srcDir(generateKotlinGrammarSource)
-            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
