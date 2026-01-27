@@ -15,7 +15,7 @@ package jugglinglab.notation
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import jugglinglab.notation.ssparser.SiteswapParser
-//import jugglinglab.notation.ssparser.ParseException
+import jugglinglab.notation.ssparser.SiteswapParseException
 import jugglinglab.notation.ssparser.SiteswapTreeItem
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
@@ -106,56 +106,33 @@ class SiteswapPattern : MhnPattern() {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun parseSiteswapNotation() {
-        // first clear out the internal variables
-        symmetries = mutableListOf()
-        val tree: SiteswapTreeItem?
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Parsing pattern \"$pattern\"")
+        }
 
-        try {
-            if (Constants.DEBUG_SITESWAP_PARSING) {
-                println("Parsing pattern \"$pattern\"")
-            }
-            tree = SiteswapParser.parsePattern(pattern!!)
+        val tree: SiteswapTreeItem = try {
+            val parsedTree = SiteswapParser.parsePattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
-                println(tree)
+                println(parsedTree)
             }
-        } /*catch (pe: ParseException) {
+            parsedTree
+        } catch (spe: SiteswapParseException) {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("---------------")
                 println("Parse error:")
-                println(pe.message)
-                println(pe.currentToken)
+                println(spe.message)
                 println("---------------")
             }
-
-            if (pe.currentToken == null) {
-                val message = jlGetStringResource(Res.string.error_pattern_parsing, pe.message)
-                throw JuggleExceptionUser(message)
-
-            } else {
-                val problem = pe.currentToken!!.next?.image
-                val message = jlGetStringResource(
-                    Res.string.error_pattern_syntax,
-                    problem,
-                    pe.currentToken!!.next?.beginColumn
-                )
-                throw JuggleExceptionUser(message)
-            }
-        } catch (tme: TokenMgrError) {
-            val problem = tme.curChar.toChar().toString()
-            val message = jlGetStringResource(
-                Res.string.error_pattern_syntax,
-                problem,
-                tme.errorColumn
-            )
-            throw JuggleExceptionUser(message)
-        }*/ catch (_: Throwable) {
+            throw JuggleExceptionUser(spe.message!!)
+        } catch (_: Throwable) {
             val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
             throw JuggleExceptionUser(message)
         }
 
         // Use tree to fill in MhnPattern internal variables
 
+        symmetries.clear()
         numberOfJugglers = tree.jugglers
         maxOccupancy = 0  // calculated in doFirstPass()
         maxThrow = 0
@@ -191,7 +168,7 @@ class SiteswapPattern : MhnPattern() {
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println(
                 "period = $period, numpaths = $numberOfPaths, " +
-                    "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
+                        "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
             )
             println("Starting second pass...")
         }
@@ -201,7 +178,7 @@ class SiteswapPattern : MhnPattern() {
         resolveModifiers()
 
         // Finally, add pattern symmetries
-        addSymmetry(
+        symmetries.add(
             MhnSymmetry(
                 type = MhnSymmetry.TYPE_DELAY,
                 numberOfJugglers = numberOfJugglers,
@@ -209,12 +186,12 @@ class SiteswapPattern : MhnPattern() {
                 delay = period
             )
         )
-        if (tree.switchrepeat) { // know that tree is of type Pattern
+        if (tree.switchrepeat) {  // know that tree is of type Pattern
             val sb = StringBuilder()
             for (i in 1..numberOfJugglers) {
-                sb.append("(").append(i).append(",").append(i).append("*)")
+                sb.append("($i,$i*)")
             }
-            addSymmetry(
+            symmetries.add(
                 MhnSymmetry(
                     type = MhnSymmetry.TYPE_SWITCHDELAY,
                     numberOfJugglers = numberOfJugglers,
