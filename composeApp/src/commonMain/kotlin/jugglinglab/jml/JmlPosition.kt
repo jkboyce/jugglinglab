@@ -32,7 +32,7 @@ data class JmlPosition(
         wr.append("<position x=\"${jlToStringRounded(x, 4)}\"")
         wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
-        wr.append(" t=\"$truncatedTime\"")
+        wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
         wr.append(" angle=\"${jlToStringRounded(angle, 4)}\"")
         wr.append(" juggler=\"${juggler}\"/>\n")
     }
