@@ -70,12 +70,8 @@ abstract class MhnPattern : Pattern() {
     var maxThrow: Int = 0
         protected set
     var indexes: Int = 0
-    protected lateinit var symmetries: MutableList<MhnSymmetry>
+    protected var symmetries = mutableListOf<MhnSymmetry>()
     protected var bps: Double = 0.0
-
-    fun addSymmetry(ss: MhnSymmetry) {
-        symmetries.add(ss)
-    }
 
     // Pull out the MHN-related parameters from the given list, leaving any
     // other parameters alone.

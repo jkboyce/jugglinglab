@@ -41,7 +41,7 @@ Over that long span of time the project has seen contributions from many people,
 - Herve Nicol – Bug fixes
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
-- Greg Phillips – Compose Multiplatform refactoring help and ideas
+- Greg Phillips – Compose Multiplatform refactoring help and ideas, ANTLR siteswap parser
 - Romain Richard and Frédéric Rayar – [Android version](https://code.google.com/archive/p/jugglinglab/) ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
 - Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - Daniel Simu – Bug reports, many design suggestions
