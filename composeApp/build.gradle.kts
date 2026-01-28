@@ -24,7 +24,6 @@ plugins {
 
 object Versions {
     const val ORTOOLS_VERSION = "9.4.1874"
-    const val MULTIK_VERSION = "0.2.3"
     const val KSOUP_VERSION = "0.2.5"
     const val ANTLR_KOTLIN_VERSION = "1.0.9"
 }
@@ -70,7 +69,6 @@ kotlin {
             //implementation(libs.androidx.lifecycle.viewmodelCompose)
             //implementation(libs.androidx.lifecycle.runtimeCompose)
             // Juggling Lab specific
-            implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
             implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
             implementation("com.strumenta:antlr-kotlin-runtime:${Versions.ANTLR_KOTLIN_VERSION}")
             implementation(compose.materialIconsExtended)
@@ -143,7 +141,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     archiveClassifier.set("")
     destinationDirectory.set(file("${project.rootDir}/bin"))
 
-    // Exclude several things that aren't needed from the JAR
+    // Exclude several unneeded things from the JAR
 
     // OR-Tools binaries
     exclude("com/google/ortools/Loader.class")
@@ -158,7 +156,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     exclude("androidx/compose/material/icons/outlined/**")
     exclude("androidx/compose/material/icons/sharp/**")
 
-    // Multik native libraries for non-target platforms
+    // Unneeded Skiko drawing libraries
     // Note: This produces a platform-specific JAR based on the build environment
     val osName = System.getProperty("os.name").lowercase()
     val osArch = if (project.hasProperty("targetArch")) {
@@ -167,17 +165,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
         System.getProperty("os.arch").lowercase()
     }
     val isMac = osName.contains("mac")
-    val isWindows = osName.contains("win")
-    val isLinux = osName.contains("nux") || osName.contains("nix")
     val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
-
-    if (!isMac || !isArm64) exclude("lib/macosArm64/**")
-    if (!isMac || isArm64) exclude("lib/macosX64/**")
-    if (!isWindows) exclude("lib/mingwX64/**")
-    if (!isLinux) exclude("lib/linuxX64/**")
-    exclude("lib/arm64-v8a/**")
-
-    // Exclude unneeded drawing libraries
     if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
     if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
 }
