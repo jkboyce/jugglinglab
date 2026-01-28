@@ -955,7 +955,10 @@ class LadderDiagramPanel(
             }
 
             val newPattern = JmlPattern.fromPatternBuilder(rec)
-            state.update(pattern = newPattern)
+            state.update(
+                pattern = newPattern,
+                propForPath = newPattern.initialPropForPath
+            )
             state.addCurrentToUndoList()
             jd.dispose()
         }
