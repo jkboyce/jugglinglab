@@ -20,9 +20,6 @@ package jugglinglab.curve
 
 import jugglinglab.util.Coordinate
 import jugglinglab.util.JuggleExceptionInternal
-import org.jetbrains.kotlinx.multik.api.*
-import org.jetbrains.kotlinx.multik.api.linalg.solve
-import org.jetbrains.kotlinx.multik.ndarray.data.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -260,8 +257,8 @@ class SplineCurve : Curve() {
             //    2 for each natural catch (Lagrange multipliers for constraints)
             val dim = 3 * (n - 1) + 2 * numcatches
 
-            val m = mk.zeros<Double>(dim, dim)
-            val b = mk.zeros<Double>(dim)
+            val m = Array(dim) { DoubleArray(dim) }
+            val b = DoubleArray(dim)
 
             for (axis in 0..2) {
                 val v0 = v[0]!![axis]
@@ -276,11 +273,11 @@ class SplineCurve : Curve() {
                     when (SPLINE_LAYOUT_METHOD) {
                         MINIMIZE_RMSACCEL, CONTINUOUS_ACCEL -> {
                             // cases end up being identical
-                            m[index, index] = 2 / t[i] + 2 / t[i + 1]
+                            m[index][index] = 2 / t[i] + 2 / t[i + 1]
                             val offdiag1 = (if (i == n - 2) 0.0 else 1 / t[i + 1])
                             if (index < 3 * (n - 1) - 1) {
-                                m[index, index + 1] = offdiag1
-                                m[index + 1, index] = offdiag1
+                                m[index][index + 1] = offdiag1
+                                m[index + 1][index] = offdiag1
                             }
 
                             b[index] = 3 * (xi2 - xi1) / (t[i + 1] * t[i + 1]) + 3 * (xi1 - xi0) /
@@ -293,11 +290,11 @@ class SplineCurve : Curve() {
                             }
                         }
                         MINIMIZE_RMSVEL -> {
-                            m[index, index] = 4 * (t[i] + t[i + 1])
+                            m[index][index] = 4 * (t[i] + t[i + 1])
                             val offdiag2 = (if (i == n - 2) 0.0 else -t[i + 1])
                             if (index < 3 * (n - 1) - 1) {
-                                m[index, index + 1] = offdiag2
-                                m[index + 1, index] = offdiag2
+                                m[index][index + 1] = offdiag2
+                                m[index + 1][index] = offdiag2
                             }
 
                             b[index] = 3 * (xi2 - xi0)
@@ -343,34 +340,34 @@ class SplineCurve : Curve() {
 
                 when (largeaxis) {
                     0 -> {
-                        m[index, i] = ci2
-                        m[i, index] = ci2
-                        m[index + 1, i] = ci1
-                        m[i, index + 1] = ci1
-                        m[index + 1, i + (n - 1)] = -ci0
-                        m[i + (n - 1), index + 1] = -ci0
-                        m[index, i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1), index] = -ci0
+                        m[index][i] = ci2
+                        m[i][index] = ci2
+                        m[index + 1][i] = ci1
+                        m[i][index + 1] = ci1
+                        m[index + 1][i + (n - 1)] = -ci0
+                        m[i + (n - 1)][index + 1] = -ci0
+                        m[index][i + 2 * (n - 1)] = -ci0
+                        m[i + 2 * (n - 1)][index] = -ci0
                     }
                     1 -> {
-                        m[index + 1, i] = ci1
-                        m[i, index + 1] = ci1
-                        m[index, i + (n - 1)] = ci2
-                        m[i + (n - 1), index] = ci2
-                        m[index + 1, i + (n - 1)] = -ci0
-                        m[i + (n - 1), index + 1] = -ci0
-                        m[index, i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1), index] = -ci1
+                        m[index + 1][i] = ci1
+                        m[i][index + 1] = ci1
+                        m[index][i + (n - 1)] = ci2
+                        m[i + (n - 1)][index] = ci2
+                        m[index + 1][i + (n - 1)] = -ci0
+                        m[i + (n - 1)][index + 1] = -ci0
+                        m[index][i + 2 * (n - 1)] = -ci1
+                        m[i + 2 * (n - 1)][index] = -ci1
                     }
                     2 -> {
-                        m[index + 1, i] = ci2
-                        m[i, index + 1] = ci2
-                        m[index, i + (n - 1)] = ci2
-                        m[i + (n - 1), index] = ci2
-                        m[index, i + 2 * (n - 1)] = -ci1
-                        m[i + 2 * (n - 1), index] = -ci1
-                        m[index + 1, i + 2 * (n - 1)] = -ci0
-                        m[i + 2 * (n - 1), index + 1] = -ci0
+                        m[index + 1][i] = ci2
+                        m[i][index + 1] = ci2
+                        m[index][i + (n - 1)] = ci2
+                        m[i + (n - 1)][index] = ci2
+                        m[index][i + 2 * (n - 1)] = -ci1
+                        m[i + 2 * (n - 1)][index] = -ci1
+                        m[index + 1][i + 2 * (n - 1)] = -ci0
+                        m[i + 2 * (n - 1)][index + 1] = -ci0
                     }
                 }
 
@@ -379,7 +376,7 @@ class SplineCurve : Curve() {
             }
 
             try {
-                val solution = mk.linalg.solve(m, b)
+                val solution = solveLinearSystem(m, b)
                 for (i in 0..<n - 1) {
                     v[i + 1] = Coordinate(
                         solution[i],
@@ -387,8 +384,10 @@ class SplineCurve : Curve() {
                         solution[i + 2 * (n - 1)]
                     )
                 }
-            } catch (_: Exception) { // multik can throw different exception types
-                throw JuggleExceptionInternal("Multik exception in findvelsEdgesKnown()")
+            } catch (e: JuggleExceptionInternal) {
+                throw e
+            } catch (e: Exception) {
+                throw JuggleExceptionInternal("Exception in findvelsEdgesKnown(): ${e.message}")
             }
         }
 
@@ -563,6 +562,67 @@ class SplineCurve : Curve() {
             for (j in (n - 1) downTo 1) {
                 u[j - 1] -= gam[j] * u[j]
             }
+        }
+
+        // Solve linear system ax = b using Gaussian elimination with partial
+        // pivoting.
+        //
+        // `a` is an N x N matrix, `b` is a vector of length N.
+        // Returns the solution vector x.
+        // Throws JuggleExceptionInternal if the matrix is singular.
+
+        internal fun solveLinearSystem(a: Array<DoubleArray>, b: DoubleArray): DoubleArray {
+            val n = b.size
+            if (n == 0) return DoubleArray(0)
+            if (a.size != n || a[0].size != n) {
+                throw JuggleExceptionInternal("Dimension mismatch in solveLinearSystem")
+            }
+
+            // copies to avoid modifying originals
+            val m = Array(n) { a[it].clone() }
+            val x = b.clone()
+
+            for (i in 0..<n) {
+                // pivot selection
+                var pivotRow = i
+                for (j in i + 1..<n) {
+                    if (abs(m[j][i]) > abs(m[pivotRow][i])) {
+                        pivotRow = j
+                    }
+                }
+
+                // swap rows
+                val tempRow = m[i]
+                m[i] = m[pivotRow]
+                m[pivotRow] = tempRow
+                val tempVal = x[i]
+                x[i] = x[pivotRow]
+                x[pivotRow] = tempVal
+
+                if (abs(m[i][i]) < 1e-12) {
+                    throw JuggleExceptionInternal("Singular matrix in solveLinearSystem")
+                }
+
+                // eliminate equations below
+                for (j in i + 1..<n) {
+                    val factor = m[j][i] / m[i][i]
+                    x[j] -= factor * x[i]
+                    for (k in i..<n) {
+                        m[j][k] -= factor * m[i][k]
+                    }
+                }
+            }
+
+            // back substitution
+            for (i in n - 1 downTo 0) {
+                var sum = 0.0
+                for (j in i + 1..<n) {
+                    sum += m[i][j] * x[j]
+                }
+                x[i] = (x[i] - sum) / m[i][i]
+            }
+
+            return x
         }
     }
 }
