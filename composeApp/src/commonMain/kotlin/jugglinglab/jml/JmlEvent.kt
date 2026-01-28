@@ -25,6 +25,10 @@ data class JmlEvent(
     val localCoordinate: Coordinate
         get() = Coordinate(x, y, z)
 
+    val truncatedTime: Double by lazy {
+        jlToStringRounded(t, 4).toDouble()
+    }
+
     fun getPathTransition(path: Int, transType: Int): JmlTransition? {
         return transitions.firstOrNull {
             it.path == path && (transType == JmlTransition.TRANS_ANY || transType == it.type)
@@ -83,10 +87,8 @@ data class JmlEvent(
     }
 
     override fun compareTo(other: JmlEvent): Int {
-        val time = jlToStringRounded(t, 4).toDouble()
-        val timeOther = jlToStringRounded(other.t, 4).toDouble()
-        if (time != timeOther) {
-            return time.compareTo(timeOther)
+        if (truncatedTime != other.truncatedTime) {
+            return truncatedTime.compareTo(other.truncatedTime)
         }
         if (juggler != other.juggler) {
             return juggler.compareTo(other.juggler)

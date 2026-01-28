@@ -24,6 +24,10 @@ data class JmlPosition(
     val coordinate: Coordinate
         get() = Coordinate(x, y, z)
 
+    val truncatedTime: Double by lazy {
+        jlToStringRounded(t, 4).toDouble()
+    }
+
     fun writeJml(wr: Appendable) {
         wr.append("<position x=\"${jlToStringRounded(x, 4)}\"")
         wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
@@ -46,10 +50,8 @@ data class JmlPosition(
     }
 
     override fun compareTo(other: JmlPosition): Int {
-        val time = jlToStringRounded(t, 4).toDouble()
-        val timeOther = jlToStringRounded(other.t, 4).toDouble()
-        if (time != timeOther) {
-            return time.compareTo(timeOther)
+        if (truncatedTime != other.truncatedTime) {
+            return truncatedTime.compareTo(other.truncatedTime)
         }
         if (juggler != other.juggler) {
             return juggler.compareTo(other.juggler)

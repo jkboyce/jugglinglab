@@ -893,26 +893,33 @@ abstract class MhnPattern : Pattern() {
     // Helpers for converting to JML
     //--------------------------------------------------------------------------
 
+    // Calculate a default beats per second (bps) for the pattern
+
     protected fun calcBps(): Double {
-        // Calculate a default beats per second (bps) for the pattern
-        var result = 0.0
-        var numberaveraged = 0
+        var resultTps = 0.0
+        var numberAveraged = 0
+        var maxThrowval = 0
 
         th.mhnIterator().forEach { (k, _, _, _, sst) ->
             if (sst != null) {
                 val throwval = sst.targetIndex - k
                 if (throwval > 2) {
-                    result += throwspersec[min(throwval, 9)]
-                    ++numberaveraged
+                    resultTps += throwspersec[min(throwval, 9)]
+                    ++numberAveraged
                 }
+                maxThrowval = max(throwval, maxThrowval)
             }
         }
-        if (numberaveraged > 0) {
-            result /= numberaveraged.toDouble()
+        resultTps = if (numberAveraged > 0) {
+            resultTps / numberAveraged.toDouble()
         } else {
-            result = 2.0
+            2.0
         }
-        return result
+
+        // independent `bps` calculation based on max flight time (height)
+        val resultMaxFlight = (maxThrowval - dwell) / SECS_AIRTIME_MAX
+
+        return max(resultTps, resultMaxFlight)
     }
 
     protected fun addPropsToJml(rec: PatternBuilder) {
@@ -1880,6 +1887,9 @@ abstract class MhnPattern : Pattern() {
             5.00,
             5.50,
         )
+
+        // maximum flight time (seconds) estimated from human jugglers
+        protected const val SECS_AIRTIME_MAX = 2.6
 
         // How many beats early to throw a '1' (all other throws are on-beat)
         // This value is calculated; see asJmlPattern()
