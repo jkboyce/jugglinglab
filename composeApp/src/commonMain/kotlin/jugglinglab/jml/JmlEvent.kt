@@ -58,7 +58,7 @@ data class JmlEvent(
         wr.append("<event x=\"${jlToStringRounded(x, 4)}\"")
         wr.append(" y=\"${jlToStringRounded(y, 4)}\"")
         wr.append(" z=\"${jlToStringRounded(z, 4)}\"")
-        wr.append(" t=\"${jlToStringRounded(t, 4)}\"")
+        wr.append(" t=\"$truncatedTime\"")
         wr.append(" hand=\"$juggler:")
         wr.append(if (hand == LEFT_HAND) "left" else "right")
         wr.append("\">\n")
