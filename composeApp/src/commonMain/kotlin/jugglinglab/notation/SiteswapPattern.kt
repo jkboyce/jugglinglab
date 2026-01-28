@@ -14,15 +14,14 @@ package jugglinglab.notation
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.notation.ssparser.ParseException
+import jugglinglab.notation.ssparser.SiteswapParser
+import jugglinglab.notation.ssparser.SiteswapParseException
 import jugglinglab.notation.ssparser.SiteswapTreeItem
-import jugglinglab.notation.ssparser.TokenMgrError
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.ParameterList
 import jugglinglab.util.Permutation.Companion.lcm
 import jugglinglab.util.jlGetStringResource
-import jugglinglab.util.jlParseSiteswapPattern
 
 class SiteswapPattern : MhnPattern() {
     private var oddperiod: Boolean = false
@@ -107,56 +106,33 @@ class SiteswapPattern : MhnPattern() {
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     private fun parseSiteswapNotation() {
-        // first clear out the internal variables
-        symmetries = mutableListOf()
-        val tree: SiteswapTreeItem?
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Parsing pattern \"$pattern\"")
+        }
 
-        try {
-            if (Constants.DEBUG_SITESWAP_PARSING) {
-                println("Parsing pattern \"$pattern\"")
-            }
-            tree = jlParseSiteswapPattern(pattern!!)
+        val tree: SiteswapTreeItem = try {
+            val parsedTree = SiteswapParser.parsePattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("Parse tree:\n")
-                println(tree)
+                println(parsedTree)
             }
-        } catch (pe: ParseException) {
+            parsedTree
+        } catch (spe: SiteswapParseException) {
             if (Constants.DEBUG_SITESWAP_PARSING) {
                 println("---------------")
                 println("Parse error:")
-                println(pe.message)
-                println(pe.currentToken)
+                println(spe.message)
                 println("---------------")
             }
-
-            if (pe.currentToken == null) {
-                val message = jlGetStringResource(Res.string.error_pattern_parsing, pe.message)
-                throw JuggleExceptionUser(message)
-
-            } else {
-                val problem = pe.currentToken!!.next?.image
-                val message = jlGetStringResource(
-                    Res.string.error_pattern_syntax,
-                    problem,
-                    pe.currentToken!!.next?.beginColumn
-                )
-                throw JuggleExceptionUser(message)
-            }
-        } catch (tme: TokenMgrError) {
-            val problem = tme.curChar.toChar().toString()
-            val message = jlGetStringResource(
-                Res.string.error_pattern_syntax,
-                problem,
-                tme.errorColumn
-            )
-            throw JuggleExceptionUser(message)
-        } catch (t: Throwable) {
+            throw JuggleExceptionUser(spe.message!!)
+        } catch (_: Throwable) {
             val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
             throw JuggleExceptionUser(message)
         }
 
         // Use tree to fill in MhnPattern internal variables
 
+        symmetries.clear()
         numberOfJugglers = tree.jugglers
         maxOccupancy = 0  // calculated in doFirstPass()
         maxThrow = 0
@@ -166,13 +142,13 @@ class SiteswapPattern : MhnPattern() {
             println("Starting first pass...")
         }
 
-        tree.beatnum = 0
+        tree.beatNum = 0
         doFirstPass(tree)
 
-        if (!tree.switchrepeat && tree.vanilla_async && tree.beats % 2 == 1) {
+        if (!tree.switchrepeat && tree.isVanillaAsync && tree.beats % 2 == 1) {
             tree.switchrepeat = true
             tree.beats *= 2
-            tree.throw_sum *= 2
+            tree.throwSum *= 2
             oddperiod = true
 
             if (Constants.DEBUG_SITESWAP_PARSING) {
@@ -181,18 +157,18 @@ class SiteswapPattern : MhnPattern() {
         }
 
         period = tree.beats
-        if (tree.throw_sum % tree.beats != 0) {
+        if (tree.throwSum % tree.beats != 0) {
             val message = jlGetStringResource(Res.string.error_siteswap_bad_average)
             throw JuggleExceptionUser(message)
         }
-        numberOfPaths = tree.throw_sum / tree.beats
+        numberOfPaths = tree.throwSum / tree.beats
         indexes = maxThrow + period + 1
         th = Array(numberOfJugglers) { Array(2) { Array(indexes) { arrayOfNulls(maxOccupancy) } } }
 
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println(
                 "period = $period, numpaths = $numberOfPaths, " +
-                    "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
+                        "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
             )
             println("Starting second pass...")
         }
@@ -202,7 +178,7 @@ class SiteswapPattern : MhnPattern() {
         resolveModifiers()
 
         // Finally, add pattern symmetries
-        addSymmetry(
+        symmetries.add(
             MhnSymmetry(
                 type = MhnSymmetry.TYPE_DELAY,
                 numberOfJugglers = numberOfJugglers,
@@ -210,12 +186,12 @@ class SiteswapPattern : MhnPattern() {
                 delay = period
             )
         )
-        if (tree.switchrepeat) { // know that tree is of type Pattern
+        if (tree.switchrepeat) {  // know that tree is of type Pattern
             val sb = StringBuilder()
             for (i in 1..numberOfJugglers) {
-                sb.append("(").append(i).append(",").append(i).append("*)")
+                sb.append("($i,$i*)")
             }
-            addSymmetry(
+            symmetries.add(
                 MhnSymmetry(
                     type = MhnSymmetry.TYPE_SWITCHDELAY,
                     numberOfJugglers = numberOfJugglers,
@@ -248,8 +224,8 @@ class SiteswapPattern : MhnPattern() {
     private fun doFirstPass(sti: SiteswapTreeItem) {
         var child: SiteswapTreeItem
 
-        sti.throw_sum = 0
-        sti.vanilla_async = true
+        sti.throwSum = 0
+        sti.isVanillaAsync = true
 
         when (sti.type) {
             SiteswapTreeItem.TYPE_PATTERN -> {
@@ -259,7 +235,7 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum + sti.beats
+                    child.beatNum = sti.beatNum + sti.beats
 
                     /*
                       if (child.type == SiteswapTreeItem.TYPE_WILDCARD) {
@@ -354,13 +330,13 @@ class SiteswapPattern : MhnPattern() {
                       */
                     doFirstPass(child)
                     sti.beats += child.beats
-                    sti.throw_sum += child.throw_sum
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
                 if (sti.switchrepeat) {
                     sti.beats *= 2
-                    sti.throw_sum *= 2
+                    sti.throwSum *= 2
                 }
             }
 
@@ -371,19 +347,19 @@ class SiteswapPattern : MhnPattern() {
                     sti.removeChildren()
                     sti.addChild(child)
                 }
-                child.beatnum = sti.beatnum
+                child.beatNum = sti.beatNum
                 doFirstPass(child)
                 var i = 1
                 while (i < sti.repeats) {
                     val child2 = (child.clone()) as SiteswapTreeItem
                     sti.addChild(child2)
-                    child2.beatnum = sti.beatnum + i * child.beats
+                    child2.beatNum = sti.beatNum + i * child.beats
                     doFirstPass(child2)
                     i++
                 }
                 sti.beats = child.beats * sti.repeats
-                sti.throw_sum = child.throw_sum * sti.repeats
-                sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                sti.throwSum = child.throwSum * sti.repeats
+                sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
             }
 
             SiteswapTreeItem.TYPE_SOLO_SEQUENCE -> {
@@ -391,10 +367,10 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum + child.seq_beatnum
+                    child.beatNum = sti.beatNum + child.seqBeatnum
                     doFirstPass(child)
-                    sti.throw_sum += child.throw_sum
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
             }
@@ -404,14 +380,14 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum
+                    child.beatNum = sti.beatNum
                     doFirstPass(child)
                     child.left = (i == 0)
-                    child.sync_throw = true
-                    sti.throw_sum += child.throw_sum
+                    child.isSyncThrow = true
+                    sti.throwSum += child.throwSum
                     i++
                 }
-                sti.vanilla_async = false
+                sti.isVanillaAsync = false
             }
 
             SiteswapTreeItem.TYPE_SOLO_MULTI_THROW -> {
@@ -419,16 +395,16 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum
+                    child.beatNum = sti.beatNum
                     doFirstPass(child)
-                    sti.throw_sum += child.value
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.value
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
-                if (sti.beatnum % 2 == 0) {
-                    sti.left = !rightOnEven[sti.source_juggler - 1]
+                if (sti.beatNum % 2 == 0) {
+                    sti.left = !rightOnEven[sti.sourceJuggler - 1]
                 } else {
-                    sti.left = rightOnEven[sti.source_juggler - 1]
+                    sti.left = rightOnEven[sti.sourceJuggler - 1]
                 }
                 if (sti.numberOfChildren > maxOccupancy) {
                     maxOccupancy = sti.numberOfChildren
@@ -440,7 +416,7 @@ class SiteswapPattern : MhnPattern() {
                 if (sti.value > maxThrow) {
                     maxThrow = sti.value
                 }
-                sti.vanilla_async = !sti.x
+                sti.isVanillaAsync = !sti.x
             }
 
             SiteswapTreeItem.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.TYPE_PASSING_GROUP -> {
@@ -448,10 +424,10 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum
+                    child.beatNum = sti.beatNum
                     doFirstPass(child)
-                    sti.throw_sum += child.throw_sum
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
             }
@@ -461,10 +437,10 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum + child.seq_beatnum
+                    child.beatNum = sti.beatNum + child.seqBeatnum
                     doFirstPass(child)
-                    sti.throw_sum += child.throw_sum
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
             }
@@ -474,14 +450,14 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum
+                    child.beatNum = sti.beatNum
                     doFirstPass(child)
                     child.left = (i == 0)
-                    child.sync_throw = true
-                    sti.throw_sum += child.throw_sum
+                    child.isSyncThrow = true
+                    sti.throwSum += child.throwSum
                     i++
                 }
-                sti.vanilla_async = false
+                sti.isVanillaAsync = false
             }
 
             SiteswapTreeItem.TYPE_PASSING_MULTI_THROW -> {
@@ -489,16 +465,16 @@ class SiteswapPattern : MhnPattern() {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
-                    child.beatnum = sti.beatnum
+                    child.beatNum = sti.beatNum
                     doFirstPass(child)
-                    sti.throw_sum += child.value
-                    sti.vanilla_async = sti.vanilla_async and child.vanilla_async
+                    sti.throwSum += child.value
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
                     i++
                 }
-                if (sti.beatnum % 2 == 0) {
-                    sti.left = !rightOnEven[sti.source_juggler - 1]
+                if (sti.beatNum % 2 == 0) {
+                    sti.left = !rightOnEven[sti.sourceJuggler - 1]
                 } else {
-                    sti.left = rightOnEven[sti.source_juggler - 1]
+                    sti.left = rightOnEven[sti.sourceJuggler - 1]
                 }
                 if (sti.numberOfChildren > maxOccupancy) {
                     maxOccupancy = sti.numberOfChildren
@@ -510,29 +486,29 @@ class SiteswapPattern : MhnPattern() {
                 if (sti.value > maxThrow) {
                     maxThrow = sti.value
                 }
-                sti.vanilla_async = !sti.x
+                sti.isVanillaAsync = !sti.x
             }
 
             SiteswapTreeItem.TYPE_WILDCARD -> if (sti.transition != null) {
-                sti.transition!!.beatnum = sti.beatnum
+                sti.transition!!.beatNum = sti.beatNum
                 doFirstPass(sti.transition!!)
                 // copy variables from sti.transition to sti
-                sti.throw_sum = sti.transition!!.throw_sum
-                sti.vanilla_async = sti.transition!!.vanilla_async
+                sti.throwSum = sti.transition!!.throwSum
+                sti.isVanillaAsync = sti.transition!!.isVanillaAsync
                 sti.beats = sti.transition!!.beats
             } else {
                 throw JuggleExceptionInternal("Wildcard not resolved")
             }
 
             SiteswapTreeItem.TYPE_HAND_SPEC -> {
-                if (sti.beatnum % 2 == 0) {
-                    rightOnEven[sti.source_juggler - 1] = !sti.spec_left
+                if (sti.beatNum % 2 == 0) {
+                    rightOnEven[sti.sourceJuggler - 1] = !sti.specLeft
                 } else {
-                    rightOnEven[sti.source_juggler - 1] = sti.spec_left
+                    rightOnEven[sti.sourceJuggler - 1] = sti.specLeft
                 }
-                sti.throw_sum = 0
-                if (sti.beatnum > 0) {
-                    sti.vanilla_async = false
+                sti.throwSum = 0
+                if (sti.beatNum > 0) {
+                    sti.isVanillaAsync = false
                 }
                 hasHandsSpecifier = true
             }
@@ -575,7 +551,7 @@ class SiteswapPattern : MhnPattern() {
             }
 
             SiteswapTreeItem.TYPE_SOLO_MULTI_THROW, SiteswapTreeItem.TYPE_PASSING_MULTI_THROW -> {
-                var index = sti.beatnum + beatoffset
+                var index = sti.beatNum + beatoffset
                 while (index < indexes) {
                     var i = 0
                     while (i < sti.numberOfChildren) {
@@ -595,7 +571,7 @@ class SiteswapPattern : MhnPattern() {
                         var mod = child.mod
                         if (mod == null) {
                             mod = "T" // default throw modifier
-                            if (child.source_juggler == child.dest_juggler && sourceHand == destHand) {
+                            if (child.sourceJuggler == child.destJuggler && sourceHand == destHand) {
                                 if (child.value <= 1) {
                                     mod = "H"
                                 } else if (child.value == 2) {
@@ -605,7 +581,7 @@ class SiteswapPattern : MhnPattern() {
                             }
                         }
 
-                        var destJuggler = child.dest_juggler
+                        var destJuggler = child.destJuggler
                         if (destJuggler > numberOfJugglers) {
                             destJuggler = 1 + (destJuggler - 1) % numberOfJugglers
                         }
@@ -613,7 +589,7 @@ class SiteswapPattern : MhnPattern() {
                         // Note we add an MhnThrow for a 0 throw as well, to serve
                         // as a placeholder in case of patterns like 24[504],
                         val t = MhnThrow(
-                            child.source_juggler,
+                            child.sourceJuggler,
                             sourceHand,
                             index,
                             i,
@@ -625,13 +601,13 @@ class SiteswapPattern : MhnPattern() {
                         )
                         if (hands != null) {
                             var beat = index
-                            if (sti.sync_throw && sourceHand == RIGHT_HAND) {
+                            if (sti.isSyncThrow && sourceHand == RIGHT_HAND) {
                                 beat++
                             }
-                            beat %= hands!!.getPeriod(child.source_juggler)
+                            beat %= hands!!.getPeriod(child.sourceJuggler)
                             t.handsBeat = beat
                         }
-                        th[child.source_juggler - 1][sourceHand][index][i] = t
+                        th[child.sourceJuggler - 1][sourceHand][index][i] = t
 
                         i++
                     }

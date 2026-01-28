@@ -11,7 +11,6 @@
 package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
-import jugglinglab.notation.ssparser.SiteswapTreeItem
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.compose.resources.StringResource
@@ -282,7 +281,3 @@ expect fun jlGetScreenFps(): Double
 expect fun jlGetCurrentPlatform(): String
 
 expect fun jlGetAboutBoxPlatform(): String
-
-// Parse a siteswap pattern.
-
-expect fun jlParseSiteswapPattern(pattern: String): SiteswapTreeItem

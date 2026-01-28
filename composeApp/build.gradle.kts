@@ -9,8 +9,9 @@
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -18,18 +19,46 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.shadowJar)
+    alias(libs.plugins.antlrKotlin)
 }
 
 object Versions {
     const val ORTOOLS_VERSION = "9.4.1874"
     const val MULTIK_VERSION = "0.2.3"
     const val KSOUP_VERSION = "0.2.5"
+    const val ANTLR_KOTLIN_VERSION = "1.0.9"
+}
+
+// Custom task to generate ANTLR sources for siteswap parser
+val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    dependsOn("cleanGenerateKotlinGrammarSource")
+
+    // ANTLR .g4 files are under composeApp/antlr
+    source = fileTree(layout.projectDirectory.dir("antlr")) {
+        include("**/*.g4")
+    }
+
+    // package name for generated source files
+    val pkgName = "jugglinglab.notation.ssparser.generated"
+    packageName = pkgName
+
+    // we want visitors alongside listeners
+    arguments = listOf("-visitor")
+
+    // generated files are outputted in build/generatedAntlr/{package-name}
+    val outDir = "generatedAntlr/${pkgName.replace(".", "/")}"
+    outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
 }
 
 kotlin {
     jvm()
 
     sourceSets {
+        commonMain {
+            kotlin {
+                srcDir(generateKotlinGrammarSource)
+            }
+        }
         commonMain.dependencies {
             // Compose Multiplatform
             implementation(compose.runtime)
@@ -43,6 +72,7 @@ kotlin {
             // Juggling Lab specific
             implementation("org.jetbrains.kotlinx:multik-default:${Versions.MULTIK_VERSION}")
             implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
+            implementation("com.strumenta:antlr-kotlin-runtime:${Versions.ANTLR_KOTLIN_VERSION}")
             implementation(compose.materialIconsExtended)
         }
         commonTest.dependencies {
@@ -157,7 +187,7 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
     group = "distribution"
     description = "Unpacks OR-Tools native libraries to the bin/ortools-lib directory."
 
-    val ortConfiguration = configurations.create("ortNatives") {
+    val ortConfiguration = project.configurations.create("ortNatives") {
         isCanBeConsumed = false
         isCanBeResolved = true
     }
@@ -188,6 +218,7 @@ tasks.named("build") {
 
 // Configure the run task to use the unpacked native libraries
 tasks.withType<JavaExec>().configureEach {
+    dependsOn(generateKotlinGrammarSource)
     dependsOn(unpackOrtNatives)
 
     val osName = System.getProperty("os.name").lowercase()

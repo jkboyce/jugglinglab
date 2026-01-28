@@ -12,8 +12,6 @@ package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
-import jugglinglab.notation.ssparser.SiteswapParser
-import jugglinglab.notation.ssparser.SiteswapTreeItem
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import java.awt.*
@@ -447,8 +445,4 @@ actual fun jlGetAboutBoxPlatform(): String {
 fun jlIsSwing(): Boolean {
     val isCompose = System.getProperty("JL_compose_ui")
     return !(isCompose?.equals("true", ignoreCase = true) ?: false)
-}
-
-actual fun jlParseSiteswapPattern(pattern: String): SiteswapTreeItem {
-    return SiteswapParser.parsePattern(pattern)
 }
