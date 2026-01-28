@@ -63,9 +63,7 @@ data class JmlEvent(
         wr.append(if (hand == LEFT_HAND) "left" else "right")
         wr.append("\">\n")
         if (!startTagOnly) {
-            for (tr in transitions) {
-                tr.writeJml(wr)
-            }
+            transitions.forEach { it.writeJml(wr) }
             wr.append("</event>\n")
         }
     }
