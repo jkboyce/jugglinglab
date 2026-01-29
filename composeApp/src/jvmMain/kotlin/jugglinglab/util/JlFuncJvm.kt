@@ -73,7 +73,7 @@ actual fun jlToStringRounded(value: Double, digits: Int): String {
 actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
-            parent as Component,
+            parent as Component?,
             msg,
             title,
             JOptionPane.INFORMATION_MESSAGE
@@ -86,7 +86,7 @@ actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
 actual fun jlHandleUserException(parent: Any?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
-            parent as Component,
+            parent as Component?,
             msg,
             "Error",
             JOptionPane.ERROR_MESSAGE

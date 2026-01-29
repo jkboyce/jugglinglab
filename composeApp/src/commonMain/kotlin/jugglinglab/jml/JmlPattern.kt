@@ -199,18 +199,92 @@ data class JmlPattern(
 
     // Check whether the pattern is valid. Report any errors as user exceptions
     // with readable messages; the pattern may be from direct user input.
+    //
+    // Note that some errors are detected in readJml(); we don't reproduce those
+    // checks here. All patterns from user input or file loading pass through
+    // readJml().
 
     @Throws(JuggleExceptionUser::class)
     fun assertValid() {
         /*
-        TODO: finish this function. Check that:
-        - all paths have at least one transition
-        - the time sequence of transitions makes sense for each path (i.e.,
-          don't have two throws in succession)
-        - holding transitions are correct
+        Check that:
+        - exactly one delay symmetry exists
         - pperm for switchdelay symmetry is consistent with pperm for delay symmetry
-        - propnums don't refer to nonexistent props (already checked by parser?)
-         */
+        - pperm for switch symmetry: every path has order two
+        - all props have at least one path assigned
+        - all paths have at least one transition
+        - the time sequence of transitions makes sense for each path (e.g., don't
+          have two throws in succession)
+        - holding transitions are correct
+        */
+
+        if (symmetries.count { it.type == JmlSymmetry.TYPE_DELAY } != 1) {
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_no_delay_symmetry))
+        }
+        symmetries.filter { it.type == JmlSymmetry.TYPE_SWITCHDELAY }.forEach { sym ->
+            if (sym.pathPerm.composedWith(sym.pathPerm) != pathPermutation) {
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_switchdelay_symmetry))
+            }
+            if (sym.jugglerPerm.order != 2) {
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_switchdelay_juggler))
+            }
+        }
+        symmetries.filter { it.type == JmlSymmetry.TYPE_SWITCH }.forEach { sym ->
+            if (!(1..numberOfPaths).all { path -> sym.pathPerm.orderOf(path) == 2 }) {
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_switch_symmetry))
+            }
+            if (sym.jugglerPerm.order != 2) {
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_switch_juggler))
+            }
+        }
+
+        (1..numberOfProps).forEach {
+            if (it !in propAssignment) {
+                throw JuggleExceptionUser(jlGetStringResource(Res.string.error_prop_assignment, it))
+            }
+        }
+
+        val pathIsHeld = Array<Boolean?>(numberOfPaths) { null }
+        for ((event, _) in allEvents) {
+            for (tr in event.transitions) {
+                when (tr.type) {
+                    JmlTransition.TRANS_THROW -> {
+                        if (pathIsHeld[tr.path - 1] == false) {
+                            throw JuggleExceptionUser(
+                                jlGetStringResource(Res.string.error_successive_throws, tr.path)
+                            )
+                        }
+                        pathIsHeld[tr.path - 1] = false
+                    }
+                    JmlTransition.TRANS_CATCH,
+                    JmlTransition.TRANS_GRABCATCH ,
+                    JmlTransition.TRANS_SOFTCATCH -> {
+                        if (pathIsHeld[tr.path - 1] == true) {
+                            throw JuggleExceptionUser(
+                                jlGetStringResource(Res.string.error_successive_catches, tr.path)
+                            )
+                        }
+                        pathIsHeld[tr.path - 1] = true
+                    }
+                    JmlTransition.TRANS_HOLDING -> {
+                        if (pathIsHeld[tr.path - 1] == false) {
+                            throw JuggleExceptionUser(
+                                jlGetStringResource(Res.string.error_holding_after_throw, tr.path)
+                            )
+                        }
+                        pathIsHeld[tr.path - 1] = true
+                    }
+                    else -> {}
+                }
+            }
+        }
+        (1..numberOfPaths).forEach { path ->
+            if (pathIsHeld[path - 1] == null) {
+                throw JuggleExceptionUser(
+                    jlGetStringResource(Res.string.error_path_missing_events, path)
+                )
+            }
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -219,6 +293,13 @@ data class JmlPattern(
 
     @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     val layout: LaidoutPattern by lazy {
+        try {
+            assertValid()
+        } catch (jeu: JuggleExceptionUser) {
+            // treat errors as internal errors here; errors during user input
+            // or file load will already be caught by now
+            throw JuggleExceptionInternal(jeu.message!!, this)
+        }
         LaidoutPattern(this)
     }
 
@@ -706,7 +787,27 @@ data class JmlPattern(
             )
         }
 
-        // Create a JmlPattern by parsing a JmlNode
+        // Construct from a string of XML data.
+
+        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+        fun fromJmlString(
+            xmlString: String
+        ): JmlPattern {
+            val parser = JmlParser()
+            parser.parse(xmlString)
+            return fromJmlNode(parser.tree!!)
+        }
+
+        // Create a JmlPattern from another notation. Here `config` can be regular
+        // (like `pattern=3`) or not (like `3`).
+
+        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+        fun fromBasePattern(notation: String, config: String): JmlPattern {
+            val p = Pattern.newPattern(notation).fromString(config)
+            return p.asJmlPattern()
+        }
+
+        // Construct a JmlPattern by parsing a JmlNode.
         //
         // Include a JML version for when we're loading a JmlPattern that's
         // part of a JmlPatternList
@@ -719,7 +820,10 @@ data class JmlPattern(
             val record = PatternBuilder()
             record.loadingJmlVersion = loadingJmlVersion
             readJml(current, record)
-            return fromPatternBuilder(record)
+            val pattern = fromPatternBuilder(record)
+            // some errors we catch in readJml(); do a final validation here
+            pattern.assertValid()
+            return pattern
         }
 
         // Helper for JML parsing
@@ -836,36 +940,7 @@ data class JmlPattern(
                 }
             }
 
-            for (child in current.children) {
-                readJml(child, record)
-            }
-        }
-
-        // Construct from a string of XML data.
-        //
-        // Treat any errors as internal errors since this is not how user-inputted
-        // patterns are created. TODO: is this last statement correct now?
-
-        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun fromJmlString(
-            xmlString: String
-        ): JmlPattern {
-            return try {
-                val parser = JmlParser()
-                parser.parse(xmlString)
-                fromJmlNode(parser.tree!!)
-            } catch (e: Exception) {
-                throw JuggleExceptionInternal(e.message ?: "")
-            }
-        }
-
-        // Create a JmlPattern from another notation. Here `config` can be regular
-        // (like `pattern=3`) or not (like `3`).
-
-        @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-        fun fromBasePattern(notation: String, config: String): JmlPattern {
-            val p = Pattern.newPattern(notation).fromString(config)
-            return p.asJmlPattern()
+            current.children.forEach { readJml(it, record) }
         }
     }
 }

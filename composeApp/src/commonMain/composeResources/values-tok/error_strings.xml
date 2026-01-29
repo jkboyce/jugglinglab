@@ -104,6 +104,7 @@
     <string name="error_dwell_value">Number format error in "dwell" value</string>
     <string name="error_dwell_range">"Dwell" value should be between 0 and 2</string>
     <string name="error_color_format">Error in color format</string>
+    <string name="error_color_empty">Color format string is empty</string>
     <string name="error_notation_bad">Notation type bad</string>
     <string name="error_notation_notfound">Notation type not found</string>
     <string name="error_notation_cantaccess">Cannot access notation (security restricted)</string>
@@ -146,6 +147,14 @@
     <string name="error_security_restriction">Java security manager will not allow Juggling Lab to access the remote file</string>
     <string name="error_pattern_parsing">Pattern error: %1$s</string>
     <string name="error_pattern_syntax">Cannot parse character "%1$s" at position %2$d in the pattern</string>
+    <string name="error_no_delay_symmetry">Delay symmetry missing from pattern</string>
+    <string name="error_switchdelay_symmetry">Switchdelay symmetry not compatible with delay symmetry</string>
+    <string name="error_switchdelay_juggler">Switchdelay symmetry juggler permutation must be order 2</string>
+    <string name="error_switch_symmetry">Switch symmetry path permutation error</string>
+    <string name="error_switch_juggler">Switch symmetry juggler permutation must be order 2</string>
+    <string name="error_prop_assignment">Prop %1$d is not used by any path</string>
+    <string name="error_holding_after_throw">Hold after throw on path %1$d</string>
+    <string name="error_path_missing_events">No events for path %1$d</string>
     <string name="error_prop_type">Prop type "%1$s" not recognized</string>
     <string name="error_token_count">Must have three or four values in color specification</string>
     <string name="error_missing_pattern">JML pattern expected inside line tag %1$d</string>
