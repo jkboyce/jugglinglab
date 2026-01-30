@@ -88,7 +88,7 @@ actual fun jlHandleUserException(parent: Any?, msg: String?) {
         JOptionPane.showMessageDialog(
             parent as Component?,
             msg,
-            "Error",
+            jlGetStringResource(Res.string.error),
             JOptionPane.ERROR_MESSAGE
         )
     }

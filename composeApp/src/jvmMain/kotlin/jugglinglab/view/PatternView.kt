@@ -216,7 +216,8 @@ class PatternView(
                 state.addCurrentToUndoList()
             }
         } catch (jeu: JuggleExceptionUser) {
-            lab.setText("Error: " + jeu.message)
+            val errorString = jlGetStringResource(Res.string.error)
+            lab.setText("$errorString: " + jeu.message)
             setTextEdited(true)
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)
