@@ -27,7 +27,8 @@ import javax.swing.SwingUtilities
 import androidx.compose.ui.awt.ComposePanel
 
 class AnimationPanel(
-    val state: PatternAnimationState
+    val state: PatternAnimationState,
+    val onZoom: (Float) -> Unit = {}
 ) : JPanel() {
     // animation panel
     private val composePanel = ComposePanel()
@@ -51,7 +52,8 @@ class AnimationPanel(
                 onEnter = { controller.handleEnter() },
                 onExit = { controller.handleExit() },
                 onLayoutUpdate = { layout -> controller.updateLayout(layout) },
-                onFrame = { time -> onAnimationFrame(time) }
+                onFrame = { time -> onAnimationFrame(time) },
+                onZoom = onZoom
             )
         }
 

@@ -20,7 +20,7 @@ class SimpleView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
-    private val ja = AnimationPanel(state)
+    private val ja = AnimationPanel(state, onZoom = onZoomChange)
 
     init {
         ja.preferredSize = Dimension(state.prefs.width, state.prefs.height)

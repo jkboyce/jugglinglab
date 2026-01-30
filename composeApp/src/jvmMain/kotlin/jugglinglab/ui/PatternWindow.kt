@@ -35,34 +35,21 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import kotlin.system.exitProcess
 
-class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFrame(title),
-    ActionListener {
+class PatternWindow(
+    title: String?,
+    pattern: JmlPattern,
+    prefs: AnimationPrefs?
+) : JFrame(title), ActionListener {
     private lateinit var view: View
     private lateinit var colorsMenu: JMenu
     private lateinit var viewMenu: JMenu
     lateinit var windowMenu: JMenu
         private set
-
-    private val wheelListener = AWTEventListener { e ->
-        if (e is MouseWheelEvent && SwingUtilities.getWindowAncestor(e.component) == this) {
-            e.consume()
-            try {
-                if (e.wheelRotation > 0) {
-                    doMenuCommand(MenuCommand.VIEW_ZOOMIN)
-                } else if (e.wheelRotation < 0) {
-                    doMenuCommand(MenuCommand.VIEW_ZOOMOUT)
-                }
-            } catch (je: JuggleException) {
-                jlHandleFatalException(je)
-            }
-        }
-    }
-
     private var lastJmlFilename: String? = null
 
     init {
         createMenus()
-        createInitialView(pat, jc)
+        createInitialView(pattern, prefs)
         updateUndoMenu()
 
         location = nextScreenLocation
@@ -80,8 +67,6 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
                 }
             })
 
-        Toolkit.getDefaultToolkit()
-            .addAWTEventListener(wheelListener, AWTEvent.MOUSE_WHEEL_EVENT_MASK)
 
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
@@ -340,7 +325,7 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
         // in JugglingLab.java
         val includeAbout =
             !Desktop.isDesktopSupported()
-                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
+                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = jlGetStringResource(Res.string.gui_help)
         if (jlIsMacOs()) {
@@ -739,14 +724,13 @@ class PatternWindow(title: String?, pat: JmlPattern, jc: AnimationPrefs?) : JFra
     override fun dispose() {
         super.dispose()
         view.disposeView()
-        Toolkit.getDefaultToolkit().removeAWTEventListener(wheelListener)
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
 
     companion object {
-        private const val MAX_ZOOM: Double = 3.0
-        private const val MIN_ZOOM: Double = 0.25
-        private const val ZOOM_PER_STEP: Double = 1.1
+        const val MAX_ZOOM: Double = 3.0
+        const val MIN_ZOOM: Double = 0.25
+        const val ZOOM_PER_STEP: Double = 1.1
         private var exitOnLastClose: Boolean = false
 
         // used for tiling the animation windows on the screen as they're created

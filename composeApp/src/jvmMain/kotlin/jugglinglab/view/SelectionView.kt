@@ -26,7 +26,10 @@ class SelectionView(
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
     private val ja = List(COUNT) {
-        AnimationPanel(if (it == CENTER) state else PatternAnimationState(state.pattern, state.prefs))
+        AnimationPanel(
+            if (it == CENTER) state else PatternAnimationState(state.pattern, state.prefs),
+            onZoom = onZoomChange
+        )
     }
     private val layered: JLayeredPane
     private val mutator: Mutator

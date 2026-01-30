@@ -61,6 +61,7 @@ fun AnimationView(
     onExit: () -> Unit = {},
     onLayoutUpdate: (AnimationLayout) -> Unit = {},
     onFrame: (Double) -> Unit = {},
+    onZoom: (Float) -> Unit = {},
     textMeasurer: TextMeasurer = rememberTextMeasurer(),
     modifier: Modifier = Modifier,
 ) {
@@ -201,6 +202,12 @@ fun AnimationView(
                                 onEnter()
                             } else if (event.type == PointerEventType.Exit) {
                                 onExit()
+                            } else if (event.type == PointerEventType.Scroll) {
+                                val delta = change.scrollDelta
+                                // scrollDelta.y is positive for scrolling down (zoom out), negative for up (zoom in) usually
+                                // We pass the y delta to the callback
+                                onZoom(delta.y)
+                                change.consume()
                             } else if (change.changedToDown()) {
                                 onPress(offset)
                                 change.consume()

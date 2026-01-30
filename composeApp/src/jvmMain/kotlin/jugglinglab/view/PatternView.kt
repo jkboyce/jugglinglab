@@ -32,7 +32,7 @@ class PatternView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow), DocumentListener {
-    private val ja = AnimationPanel(state)
+    private val ja = AnimationPanel(state, onZoom = onZoomChange)
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
     private var bpEditedIcon: JLabel? = null
