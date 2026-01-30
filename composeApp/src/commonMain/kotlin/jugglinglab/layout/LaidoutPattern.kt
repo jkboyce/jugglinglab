@@ -18,17 +18,15 @@ import jugglinglab.curve.LineCurve
 import jugglinglab.curve.SplineCurve
 import jugglinglab.jml.EventImages
 import jugglinglab.jml.JmlEvent
-//import jugglinglab.layout.HandLink.Companion.index
 import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.JmlTransition
 import jugglinglab.path.BouncePath
 import jugglinglab.renderer.Juggler
 import jugglinglab.util.*
-import jugglinglab.util.Coordinate.Companion.max
-import jugglinglab.util.Coordinate.Companion.min
-import jugglinglab.util.Coordinate.Companion.sub
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.max
 
 class LaidoutPattern(val pat: JmlPattern) {
     // events as a linked list
@@ -86,7 +84,7 @@ class LaidoutPattern(val pat: JmlPattern) {
                         println(
                             (handlinks[i][j].size
                                 .toString() + " handlinks for juggler "
-                                + "${i + 1}, hand ${j + 1}:")
+                                    + "${i + 1}, hand ${j + 1}:")
                         )
                         for (k in handlinks[i][j].indices) {
                             println("   " + handlinks[i][j][k])
@@ -732,7 +730,7 @@ class LaidoutPattern(val pat: JmlPattern) {
                         var vr = hl.startVelocityRef
                         if (vr != null
                             && (vr.source == VelocityRef.VR_THROW
-                                || vr.source == VelocityRef.VR_SOFTCATCH)
+                                    || vr.source == VelocityRef.VR_SOFTCATCH)
                         ) {
                             // this is guaranteed to happen before the loop start time,
                             // given the way we built the event list above
@@ -742,7 +740,7 @@ class LaidoutPattern(val pat: JmlPattern) {
 
                         vr = hl.endVelocityRef
                         if (startlink != null && vr != null && (vr.source == VelocityRef.VR_THROW
-                                || vr.source == VelocityRef.VR_SOFTCATCH)
+                                    || vr.source == VelocityRef.VR_SOFTCATCH)
                         ) {
                             val times = DoubleArray(num + 1)
                             val pos = Array(num + 1) { Coordinate() }
@@ -966,7 +964,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         val origin = Coordinate()
         getJugglerPosition(juggler, t, origin)
         val angle = Math.toRadians(getJugglerAngle(juggler, t))
-        val c2 = sub(gc, origin)
+        val c2 = Coordinate.sub(gc, origin)
 
         val lc =
             Coordinate(
@@ -1100,10 +1098,10 @@ class LaidoutPattern(val pat: JmlPattern) {
         for (pl in pathlinks[path - 1]) {
             if (pl.isInHand) {
                 val coord2 = getHandMax(pl.holdingJuggler, pl.holdingHand)
-                result = max(result, coord2)
+                result = Coordinate.max(result, coord2)
             } else {
                 val coord2 = pl.path!!.getMax(t1, t2)
-                result = max(result, coord2)
+                result = Coordinate.max(result, coord2)
             }
         }
         return result
@@ -1119,15 +1117,15 @@ class LaidoutPattern(val pat: JmlPattern) {
                 if (Constants.DEBUG_LAYOUT) {
                     println(
                         "Path min $path link $i: HandMin = " +
-                            getHandMin(pl.holdingJuggler, pl.holdingHand)
+                                getHandMin(pl.holdingJuggler, pl.holdingHand)
                     )
                 }
-                result = min(result, getHandMin(pl.holdingJuggler, pl.holdingHand))
+                result = Coordinate.min(result, getHandMin(pl.holdingJuggler, pl.holdingHand))
             } else {
                 if (Constants.DEBUG_LAYOUT) {
                     println("Path min $path link : PathMin = " + pl.path!!.getMin(t1, t2))
                 }
-                result = min(result, pl.path!!.getMin(t1, t2))
+                result = Coordinate.min(result, pl.path!!.getMin(t1, t2))
             }
         }
         return result
@@ -1142,7 +1140,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
-                result = max(result, hp.getMax(t1, t2))
+                result = Coordinate.max(result, hp.getMax(t1, t2))
             }
         }
         return result
@@ -1157,7 +1155,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         for (hl in handlinks[juggler - 1][handnum]) {
             val hp = hl.handCurve
             if (hp != null) {
-                result = min(result, hp.getMin(t1, t2))
+                result = Coordinate.min(result, hp.getMin(t1, t2))
             }
         }
         return result
@@ -1169,6 +1167,131 @@ class LaidoutPattern(val pat: JmlPattern) {
 
     fun getJugglerMin(juggler: Int): Coordinate? {
         return jugglerCurve[juggler - 1].min
+    }
+
+    val handWindowMax: Coordinate
+        get() = Coordinate(Juggler.HAND_OUT, 0.0, 1.0)
+
+    val handWindowMin: Coordinate
+        get() = Coordinate(-Juggler.HAND_IN, 0.0, -1.0)
+
+    val jugglerWindowMax: Coordinate by lazy {
+        var max = getJugglerMax(1)
+        for (i in 2..pat.numberOfJugglers) {
+            max = Coordinate.max(max, getJugglerMax(i))
+        }
+
+        max = Coordinate.add(
+            max,
+            Coordinate(
+                Juggler.SHOULDER_HW,
+                Juggler.SHOULDER_HW,  // Juggler.HEAD_HW,
+                Juggler.SHOULDER_H + Juggler.NECK_H + Juggler.HEAD_H
+            )
+        )
+        max!!
+    }
+
+    val jugglerWindowMin: Coordinate by lazy {
+        var min = getJugglerMin(1)
+        for (i in 2..pat.numberOfJugglers) {
+            min = Coordinate.min(min, getJugglerMin(i))
+        }
+
+        min = Coordinate.add(
+            min,
+            Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0.0)
+        )
+        min!!
+    }
+
+    val overallBoundingBox: Pair<Coordinate, Coordinate> by lazy {
+        // Step 1: Work out a bounding box that contains all paths through space
+        // for the pattern, including the props
+        var patternMax: Coordinate? = null
+        var patternMin: Coordinate? = null
+        for (i in 1..pat.numberOfPaths) {
+            patternMax = Coordinate.max(patternMax, getPathMax(i))
+            patternMin = Coordinate.min(patternMin, getPathMin(i))
+
+            if (Constants.DEBUG_LAYOUT) {
+                println("Data from LaidoutPattern.overallBoundingBox:")
+                println("Path max $i = " + getPathMax(i))
+                println("Path min $i = " + getPathMin(i))
+            }
+        }
+
+        var propMax: Coordinate? = null
+        var propMin: Coordinate? = null
+        for (i in 1..pat.numberOfProps) {
+            propMax = Coordinate.max(propMax, pat.getProp(i).getMax())
+            propMin = Coordinate.min(propMin, pat.getProp(i).getMin())
+        }
+
+        // Make sure props are entirely visible along all paths. In principle
+        // not all props go on all paths so this could be done more carefully.
+        if (patternMax != null && patternMin != null) {
+            patternMax = Coordinate.add(patternMax, propMax)
+            patternMin = Coordinate.add(patternMin, propMin)
+        }
+
+        // Step 2: Work out a bounding box that contains the hands at all times,
+        // factoring in the physical extent of the hands.
+        var handMax: Coordinate? = null
+        var handMin: Coordinate? = null
+        for (i in 1..pat.numberOfJugglers) {
+            handMax = Coordinate.max(handMax, getHandMax(i, JmlEvent.LEFT_HAND))
+            handMin = Coordinate.min(handMin, getHandMin(i, JmlEvent.LEFT_HAND))
+            handMax = Coordinate.max(handMax, getHandMax(i, JmlEvent.RIGHT_HAND))
+            handMin = Coordinate.min(handMin, getHandMin(i, JmlEvent.RIGHT_HAND))
+
+            if (Constants.DEBUG_LAYOUT) {
+                println("Data from LaidoutPattern.overallBoundingBox:")
+                println("Hand max $i left = " + getHandMax(i, JmlEvent.LEFT_HAND))
+                println("Hand min $i left = " + getHandMin(i, JmlEvent.LEFT_HAND))
+                println("Hand max $i right = " + getHandMax(i, JmlEvent.RIGHT_HAND))
+                println("Hand min $i right = " + getHandMin(i, JmlEvent.RIGHT_HAND))
+            }
+        }
+
+        // The renderer's hand window is in local coordinates. We don't know
+        // the juggler's rotation angle where `handMax` and `handMin` are
+        // achieved. So we create a bounding box that contains the hand
+        // regardless of rotation angle.
+        val hwMax = handWindowMax.copy()
+        val hwMin = handWindowMin.copy()
+        hwMax.x = max(
+            max(abs(hwMax.x), abs(hwMin.x)),
+            max(abs(hwMax.y), abs(hwMin.y))
+        )
+        hwMin.x = -hwMax.x
+        hwMax.y = hwMax.x
+        hwMin.y = hwMin.x
+
+        // make sure hands are entirely visible
+        handMax = Coordinate.add(handMax, hwMax)
+        handMin = Coordinate.add(handMin, hwMin)
+
+        // Step 3: Combine the pattern, hand, and juggler bounding boxes into an
+        // overall bounding box.
+        val overallMax = Coordinate.max(patternMax, Coordinate.max(handMax, jugglerWindowMax))
+        val overallMin = Coordinate.min(patternMin, Coordinate.min(handMin, jugglerWindowMin))
+
+        if (Constants.DEBUG_LAYOUT) {
+            println("Data from LaidoutPattern.overallBoundingBox:")
+            println("Hand max = $handMax")
+            println("Hand min = $handMin")
+            println("Prop max = $propMax")
+            println("Prop min = $propMin")
+            println("Pattern max = $patternMax")
+            println("Pattern min = $patternMin")
+            println("Juggler max = $jugglerWindowMax")
+            println("Juggler min = $jugglerWindowMin")
+            println("Overall max = $overallMax")
+            println("Overall min = $overallMin")
+        }
+
+        Pair(overallMin!!, overallMax!!)
     }
 }
 

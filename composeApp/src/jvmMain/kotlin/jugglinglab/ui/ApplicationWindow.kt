@@ -23,6 +23,7 @@ import jugglinglab.notation.Pattern
 import jugglinglab.util.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.graphics.toAwtImage
 import org.jetbrains.compose.resources.StringResource
 import java.awt.*
 import java.awt.desktop.*
@@ -482,13 +483,96 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             val aboutBox = JFrame(jlGetStringResource(Res.string.gui_about_juggling_lab))
             aboutBox.setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
-            val composePanel = ComposePanel()
-            composePanel.setContent {
-                MaterialTheme {
-                    AboutView(onCloseRequest = { aboutBox.dispose() })
+            if (jlIsSwing()) {
+                val aboutPanel = JPanel(BorderLayout())
+                aboutPanel.setOpaque(true)
+
+                val composeImage = jlGetImageResource("about.png")
+                val aboutPicture = ImageIcon(composeImage.toAwtImage(), "A lab")
+                val aboutLabel = JLabel(aboutPicture)
+                aboutPanel.add(aboutLabel, BorderLayout.LINE_START)
+
+                val textPanel = JPanel()
+                aboutPanel.add(textPanel, BorderLayout.LINE_END)
+                val gb = GridBagLayout()
+                textPanel.setLayout(gb)
+
+                val abouttext1 = JLabel("Juggling Lab")
+                abouttext1.setFont(Font("SansSerif", Font.BOLD, 18))
+                textPanel.add(abouttext1)
+                gb.setConstraints(
+                    abouttext1,
+                    jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 15, 0, 15))
+                )
+
+                val abouttext5 = JLabel(jlGetStringResource(Res.string.gui_version, Constants.VERSION))
+                abouttext5.setFont(Font("SansSerif", Font.PLAIN, 16))
+                textPanel.add(abouttext5)
+                gb.setConstraints(
+                    abouttext5,
+                    jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 15, 0, 15))
+                )
+
+                val abouttext6 = JLabel(jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR))
+                abouttext6.setFont(Font("SansSerif", Font.PLAIN, 14))
+                textPanel.add(abouttext6)
+                gb.setConstraints(
+                    abouttext6,
+                    jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(15, 15, 15, 15))
+                )
+
+                val abouttext3 = JLabel(jlGetStringResource(Res.string.gui_gpl_message))
+                abouttext3.setFont(Font("SansSerif", Font.PLAIN, 12))
+                textPanel.add(abouttext3)
+                gb.setConstraints(
+                    abouttext3,
+                    jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 15, 15, 15))
+                )
+
+                val javaText = jlGetAboutBoxPlatform()
+                val java1 = javaText.substringBefore('\n')
+                val java2 = javaText.substringAfter('\n', "")
+                val javaLabel1 = JLabel(java1)
+                javaLabel1.setFont(Font("SansSerif", Font.PLAIN, 12))
+                textPanel.add(javaLabel1)
+                gb.setConstraints(
+                    javaLabel1,
+                    jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 15, 0, 15))
+                )
+                if (java2.isNotEmpty()) {
+                    val javaLabel2 = JLabel(java2)
+                    javaLabel2.setFont(Font("SansSerif", Font.PLAIN, 12))
+                    textPanel.add(javaLabel2)
+                    gb.setConstraints(
+                        javaLabel2,
+                        jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 15, 0, 15))
+                    )
                 }
+
+                val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
+                textPanel.add(okbutton)
+                gb.setConstraints(
+                    okbutton,
+                    jlConstraints(
+                        GridBagConstraints.LINE_END, 0, if (java2.isNotEmpty()) 6 else 5, Insets(15, 15, 15, 15)
+                    )
+                )
+                okbutton.addActionListener { _: ActionEvent? ->
+                    aboutBox.isVisible = false
+                    aboutBox.dispose()
+                }
+
+                aboutBox.contentPane = aboutPanel
+            } else {
+                val composePanel = ComposePanel()
+                composePanel.setContent {
+                    MaterialTheme {
+                        AboutView(onCloseRequest = { aboutBox.dispose() })
+                    }
+                }
+                aboutBox.contentPane = composePanel
             }
-            aboutBox.contentPane = composePanel
+
             aboutBox.pack()
             aboutBox.setResizable(false)
             aboutBox.setLocationRelativeTo(null) // center frame on screen

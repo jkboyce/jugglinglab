@@ -33,6 +33,11 @@ class PatternAnimationState(
     var selectedItemHashCode: Int by mutableStateOf(0)
     var propForPath: List<Int> by mutableStateOf(initialPattern.initialPropForPath)
     var fitToFrame: Boolean by mutableStateOf(true)
+    var showAxes: Boolean by mutableStateOf(false)
+    var draggingPosition: Boolean by mutableStateOf(false)
+    var draggingPositionZ: Boolean by mutableStateOf(false)
+    var draggingPositionAngle: Boolean by mutableStateOf(false)
+    var message: String by mutableStateOf("")
 
     //--------------------------------------------------------------------------
     // Helper to update the state and notify listeners
@@ -47,7 +52,12 @@ class PatternAnimationState(
         zoom: Double? = null,
         selectedItemHashCode: Int? = null,
         propForPath: List<Int>? = null,
-        fitToFrame: Boolean? = null
+        fitToFrame: Boolean? = null,
+        showAxes: Boolean? = null,
+        draggingPosition: Boolean? = null,
+        draggingPositionZ: Boolean? = null,
+        draggingPositionAngle: Boolean? = null,
+        message: String? = null,
     ) {
         if (pattern != null) this.pattern = pattern
         if (prefs != null) this.prefs = prefs
@@ -58,7 +68,12 @@ class PatternAnimationState(
         if (selectedItemHashCode != null) this.selectedItemHashCode = selectedItemHashCode
         if (propForPath != null) this.propForPath = propForPath
         if (fitToFrame != null) this.fitToFrame = fitToFrame
-        
+        if (showAxes != null) this.showAxes = showAxes
+        if (draggingPosition != null) this.draggingPosition = draggingPosition
+        if (draggingPositionZ != null) this.draggingPositionZ = draggingPositionZ
+        if (draggingPositionAngle != null) this.draggingPositionAngle = draggingPositionAngle
+        if (message != null) this.message = message
+
         if (pattern != null) {
             onPatternChange.forEach { it() }
         }
@@ -86,6 +101,21 @@ class PatternAnimationState(
         if (fitToFrame != null) {
             onFitToFrameChange.forEach { it() }
         }
+        if (showAxes != null) {
+            onShowAxesChange.forEach { it() }
+        }
+        if (draggingPosition != null) {
+            onDraggingPositionChange.forEach { it() }
+        }
+        if (draggingPositionZ != null) {
+            onDraggingPositionZChange.forEach { it() }
+        }
+        if (draggingPositionAngle != null) {
+            onDraggingPositionAngleChange.forEach { it() }
+        }
+        if (message != null) {
+            onMessageChange.forEach { it() }
+        }
     }
 
     // callbacks
@@ -98,6 +128,11 @@ class PatternAnimationState(
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
     val onPropForPathChange = mutableListOf<() -> Unit>()
     val onFitToFrameChange = mutableListOf<() -> Unit>()
+    val onShowAxesChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionZChange = mutableListOf<() -> Unit>()
+    val onDraggingPositionAngleChange = mutableListOf<() -> Unit>()
+    val onMessageChange = mutableListOf<() -> Unit>()
     val onNewPatternUndo = mutableListOf<() -> Unit>()
 
     fun addListener(
@@ -110,6 +145,11 @@ class PatternAnimationState(
         onSelectedItemHashChange: (() -> Unit)? = null,
         onPropForPathChange: (() -> Unit)? = null,
         onFitToFrameChange: (() -> Unit)? = null,
+        onShowAxesChange: (() -> Unit)? = null,
+        onDraggingPositionChange: (() -> Unit)? = null,
+        onDraggingPositionZChange: (() -> Unit)? = null,
+        onDraggingPositionAngleChange: (() -> Unit)? = null,
+        onMessageChange: (() -> Unit)? = null,
         onNewPatternUndo: (() -> Unit)? = null
     ) {
         if (onPatternChange != null) this.onPatternChange.add(onPatternChange)
@@ -121,6 +161,11 @@ class PatternAnimationState(
         if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
         if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
         if (onFitToFrameChange != null) this.onFitToFrameChange.add(onFitToFrameChange)
+        if (onShowAxesChange != null) this.onShowAxesChange.add(onShowAxesChange)
+        if (onDraggingPositionChange != null) this.onDraggingPositionChange.add(onDraggingPositionChange)
+        if (onDraggingPositionZChange != null) this.onDraggingPositionZChange.add(onDraggingPositionZChange)
+        if (onDraggingPositionAngleChange != null) this.onDraggingPositionAngleChange.add(onDraggingPositionAngleChange)
+        if (onMessageChange != null) this.onMessageChange.add(onMessageChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
 
@@ -134,6 +179,11 @@ class PatternAnimationState(
         onSelectedItemHashChange.clear()
         onPropForPathChange.clear()
         onFitToFrameChange.clear()
+        onShowAxesChange.clear()
+        onDraggingPositionChange.clear()
+        onDraggingPositionZChange.clear()
+        onDraggingPositionAngleChange.clear()
+        onMessageChange.clear()
         onNewPatternUndo.clear()
     }
 

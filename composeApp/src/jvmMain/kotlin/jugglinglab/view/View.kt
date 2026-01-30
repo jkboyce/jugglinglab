@@ -29,11 +29,26 @@ import java.io.IOException
 import javax.swing.JPanel
 import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
+import kotlin.math.abs
 
 abstract class View(
     val state: PatternAnimationState,
     val patternWindow: PatternWindow
 ) : JPanel() {
+    // Helper for zooming in/out
+    val onZoomChange: (Float) -> Unit = { delta ->
+        val zoomFactor = (PatternWindow.ZOOM_PER_STEP - 1.0) * abs(delta) + 1.0
+        if (delta > 0) {
+            if (zoom < PatternWindow.MAX_ZOOM / zoomFactor) {
+                zoom *= zoomFactor
+            }
+        } else if (delta < 0) {
+            if (zoom > PatternWindow.MIN_ZOOM * zoomFactor) {
+                zoom /= zoomFactor
+            }
+        }
+    }
+
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality. The state owns the undo list
     // so it's preserved when we switch views. Here are the methods to apply

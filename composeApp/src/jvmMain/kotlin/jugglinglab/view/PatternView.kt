@@ -32,7 +32,7 @@ class PatternView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow), DocumentListener {
-    private val ja: AnimationPanel = AnimationPanel(state)
+    private val ja = AnimationPanel(state, onZoom = onZoomChange)
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
     private var bpEditedIcon: JLabel? = null
@@ -216,7 +216,8 @@ class PatternView(
                 state.addCurrentToUndoList()
             }
         } catch (jeu: JuggleExceptionUser) {
-            lab.setText("Error: " + jeu.message)
+            val errorString = jlGetStringResource(Res.string.error)
+            lab.setText("$errorString: " + jeu.message)
             setTextEdited(true)
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)

@@ -250,7 +250,7 @@ fun AnimationPrefsControl(
             // Error dialog in case of a problem
             AlertDialog(
                 onDismissRequest = { errorMessage = null },
-                title = { Text("Error") },
+                title = { Text(stringResource(Res.string.error)) },
                 text = { Text(errorMessage!!) },
                 confirmButton = {
                     Button(onClick = { errorMessage = null }) {

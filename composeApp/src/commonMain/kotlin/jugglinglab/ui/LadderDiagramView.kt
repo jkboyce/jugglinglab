@@ -1,8 +1,8 @@
 //
 // LadderDiagramView.kt
 //
-// Composable UI displaying the ladder diagram that can accompany the main
-// juggler animation.
+// This is a Composable UI displaying the ladder diagram that can
+// accompany the main juggler animation.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
