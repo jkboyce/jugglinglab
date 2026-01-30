@@ -26,6 +26,7 @@ object Versions {
     const val ORTOOLS_VERSION = "9.4.1874"
     const val KSOUP_VERSION = "0.2.5"
     const val ANTLR_KOTLIN_VERSION = "1.0.9"
+    const val MATERIAL_ICONS_VERSION = "1.7.3"
 }
 
 // Custom task to generate ANTLR sources for siteswap parser
@@ -59,25 +60,23 @@ kotlin {
             }
         }
         commonMain.dependencies {
-            // Compose Multiplatform
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
             //implementation(libs.androidx.lifecycle.viewmodelCompose)
             //implementation(libs.androidx.lifecycle.runtimeCompose)
             // Juggling Lab specific
             implementation("com.fleeksoft.ksoup:ksoup:${Versions.KSOUP_VERSION}")
             implementation("com.strumenta:antlr-kotlin-runtime:${Versions.ANTLR_KOTLIN_VERSION}")
-            implementation(compose.materialIconsExtended)
+            implementation("org.jetbrains.compose.material:material-icons-extended:${Versions.MATERIAL_ICONS_VERSION}")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
-            // Compose Multiplatform
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             // Juggling Lab specific
