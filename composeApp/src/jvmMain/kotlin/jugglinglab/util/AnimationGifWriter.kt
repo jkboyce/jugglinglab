@@ -97,10 +97,10 @@ class AnimationGifWriter(
         val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * gifState.prefs.slowdown * fps).toInt()
         val gifSimIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / gifNumFrames
         val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * gifState.prefs.slowdown).toLong().toDouble()
-        val totalframes = pattern.periodWithProps * gifNumFrames
-        var framecount = 0
         // delay time is embedded in GIF header in hundredths of a second
         val delayTime = (0.5 + gifRealIntervalMillis / 10).toInt().toString()
+        val totalFrames = pattern.periodWithProps * gifNumFrames
+        var currentFrame = 0
 
         // Java GIF encoder
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
@@ -128,19 +128,19 @@ class AnimationGifWriter(
                 drawer.drawFrame(time, g, drawAxes = false, drawBackground = true)
 
                 // after the second frame all subsequent frames have identical metadata
-                if (framecount < 2) {
+                if (currentFrame < 2) {
                     metadata = iw.getDefaultImageMetadata(ImageTypeSpecifier(image), iwp)
-                    configureGifMetadata(metadata, delayTime, framecount)
+                    configureGifMetadata(metadata, delayTime, currentFrame)
                 }
 
                 val ii = IIOImage(image, null, metadata)
                 iw.writeToSequence(ii, null as ImageWriteParam?)
 
                 time += gifSimIntervalSecs
-                ++framecount
+                ++currentFrame
 
                 if (wgm != null) {
-                    wgm.update(framecount, totalframes)
+                    wgm.update(currentFrame, totalFrames)
                     if (wgm.isCanceled) {
                         ios.close()
                         os.close()
@@ -163,7 +163,7 @@ class AnimationGifWriter(
     companion object {
         private fun configureGifMetadata(meta: IIOMetadata, delayTime: String?, imageIndex: Int) {
             val metaFormat = meta.getNativeMetadataFormatName()
-            require("javax_imageio_gif_image_1.0" == metaFormat) {
+            require(metaFormat == "javax_imageio_gif_image_1.0") {
                 "Unfamiliar gif metadata format: $metaFormat"
             }
             val root = meta.getAsTree(metaFormat)
@@ -171,7 +171,7 @@ class AnimationGifWriter(
             // find the GraphicControlExtension node
             var child = root.firstChild
             while (child != null) {
-                if ("GraphicControlExtension" == child.nodeName) break
+                if (child.nodeName == "GraphicControlExtension") break
                 child = child.nextSibling
             }
 
