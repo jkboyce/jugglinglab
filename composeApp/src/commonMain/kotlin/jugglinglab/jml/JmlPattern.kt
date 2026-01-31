@@ -488,10 +488,11 @@ data class JmlPattern(
         val newPositions = positions.map { it.copy(t = it.t * scale) }
         val newEvents = events.map { it.copy(t = it.t * scale) }
 
-        val record = PatternBuilder.fromJmlPattern(this)
-        record.symmetries = newSymmetries.toMutableList()
-        record.events = newEvents.toMutableList()
-        record.positions = newPositions.toMutableList()
+        val record = PatternBuilder.fromJmlPattern(this).apply {
+            symmetries = newSymmetries.toMutableList()
+            events = newEvents.toMutableList()
+            positions = newPositions.toMutableList()
+        }
         return fromPatternBuilder(record)
     }
 
