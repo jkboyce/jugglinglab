@@ -373,7 +373,7 @@ object JlCommandLine {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
+            SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic(lambdaTarget = { ps.println(it) }))
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         } catch (_: Throwable) {
@@ -394,7 +394,7 @@ object JlCommandLine {
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapTransitioner.runTransitionerCLI(jlargs, GeneratorTargetBasic { ps.println(it) })
+            SiteswapTransitioner.runTransitionerCLI(jlargs, GeneratorTargetBasic(lambdaTarget = { ps.println(it) }))
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
         } catch (_: Throwable) {

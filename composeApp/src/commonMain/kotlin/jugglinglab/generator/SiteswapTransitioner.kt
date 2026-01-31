@@ -297,7 +297,7 @@ class SiteswapTransitioner : Transitioner() {
         }
 
         val sb = StringBuilder()
-        target = GeneratorTargetBasic { sb.append(it) }
+        target = GeneratorTargetBasic(lambdaTarget = { sb.append(it) })
         siteswapPrev = siteswapTo
 
         while (true) {

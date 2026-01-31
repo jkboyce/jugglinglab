@@ -15,7 +15,9 @@ import jugglinglab.util.JuggleException
 import jugglinglab.util.JuggleExceptionInternal
 import javax.swing.SwingUtilities
 
-class GeneratorTargetPatternList(val listTarget: PatternListPanel) : GeneratorTarget {
+class GeneratorTargetPatternList(
+    val patternListTarget: PatternListPanel
+) : GeneratorTarget {
     @Throws(JuggleExceptionInternal::class)
     override fun addResult(display: String, notation: String?, anim: String?) {
         if (Constants.VALIDATE_GENERATED_PATTERNS) {
@@ -36,10 +38,10 @@ class GeneratorTargetPatternList(val listTarget: PatternListPanel) : GeneratorTa
         }
 
         // Note we may not be running on the event dispatch thread
-        SwingUtilities.invokeLater { listTarget.addPattern(display, null, notation, anim) }
+        SwingUtilities.invokeLater { patternListTarget.addPattern(display, null, notation, anim) }
     }
 
     override fun completed() {
-        SwingUtilities.invokeLater { listTarget.parentFrame?.onGeneratorDone() }
+        SwingUtilities.invokeLater { patternListTarget.parentFrame?.onGeneratorDone() }
     }
 }

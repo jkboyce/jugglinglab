@@ -655,10 +655,7 @@ class LaidoutPattern(val pat: JmlPattern) {
                 done2@ while (true) {
                     // find the next event touching hand
                     while (ev!!.juggler != juggler || ev.hand != hand) {
-                        ev = ev.next
-                        if (ev == null) {
-                            break@done2
-                        }
+                        ev = ev.next ?: break@done2
                     }
 
                     // find velocity of hand path ending
@@ -695,10 +692,7 @@ class LaidoutPattern(val pat: JmlPattern) {
                     }
                     lastev = ev
                     lastvr = vr
-                    ev = ev.next
-                    if (ev == null) {
-                        break
-                    }
+                    ev = ev.next ?: break
                 }
             }
         }
@@ -1045,9 +1039,7 @@ class LaidoutPattern(val pat: JmlPattern) {
 
         // We don't adjust the playback volume of the audio clip, so this is just
         // yes/no for now
-        if (gotcatch) return 1.0
-
-        return 0.0
+        return if (gotcatch) 1.0 else 0.0
     }
 
     // Get volume of any bounce between time1 and time2.

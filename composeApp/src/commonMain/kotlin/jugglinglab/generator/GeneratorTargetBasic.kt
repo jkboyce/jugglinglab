@@ -9,24 +9,14 @@
 
 package jugglinglab.generator
 
-class GeneratorTargetBasic: GeneratorTarget {
-    var lambdaTarget: ((String) -> Unit)? = null
-    var patternsTarget: MutableList<String>? = null
-
-    // version that processes all displayed lines through a lambda
-    constructor(target: (String) -> Unit) {
-        lambdaTarget = target
-    }
-
-    // version that stores all patterns in a list
-    constructor(target: MutableList<String>) {
-        patternsTarget = target
-    }
-
+class GeneratorTargetBasic(
+    var lambdaTarget: ((String) -> Unit)? = null,
+    var listTarget: MutableList<String>? = null
+) : GeneratorTarget {
     override fun addResult(display: String, notation: String?, anim: String?) {
         lambdaTarget?.invoke(display)
         if (anim != null) {
-            patternsTarget?.add(anim)
+            listTarget?.add(anim)
         }
     }
 }

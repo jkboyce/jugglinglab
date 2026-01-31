@@ -490,8 +490,8 @@ data class JmlPattern(
 
         val record = PatternBuilder.fromJmlPattern(this).apply {
             symmetries = newSymmetries.toMutableList()
-            events = newEvents.toMutableList()
             positions = newPositions.toMutableList()
+            events = newEvents.toMutableList()
         }
         return fromPatternBuilder(record)
     }
@@ -543,8 +543,9 @@ data class JmlPattern(
             }
         }
 
-        val record = PatternBuilder.fromJmlPattern(this)
-        record.events = newEvents.toMutableList()
+        val record = PatternBuilder.fromJmlPattern(this).apply {
+            events = newEvents.toMutableList()
+        }
         return fromPatternBuilder(record)
     }
 
@@ -760,9 +761,10 @@ data class JmlPattern(
             }
         }
 
-        val record = PatternBuilder.fromJmlPattern(this)
-        record.props = newProps
-        record.propAssignment = newPropAssignment
+        val record = PatternBuilder.fromJmlPattern(this).apply {
+            props = newProps
+            propAssignment = newPropAssignment
+        }
         return fromPatternBuilder(record)
     }
 

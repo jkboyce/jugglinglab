@@ -16,7 +16,7 @@ class SiteswapGeneratorTest {
         val patterns = ArrayList<String>()
         SiteswapGenerator().apply {
             initGenerator(input.split(" "))
-            runGenerator(GeneratorTargetBasic(patterns))
+            runGenerator(GeneratorTargetBasic(listTarget = patterns))
         }
         return patterns
     }

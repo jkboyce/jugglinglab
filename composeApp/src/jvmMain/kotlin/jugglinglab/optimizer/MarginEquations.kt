@@ -13,7 +13,6 @@ import jugglinglab.core.Constants
 import jugglinglab.jml.*
 import jugglinglab.layout.PathLink
 import jugglinglab.util.*
-import java.util.*
 import kotlin.math.abs
 
 class MarginEquations(val pat: JmlPattern) {
