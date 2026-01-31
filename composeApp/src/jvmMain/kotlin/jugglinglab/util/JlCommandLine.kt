@@ -19,7 +19,6 @@ import jugglinglab.generator.SiteswapTransitioner
 import jugglinglab.jml.JmlParser
 import jugglinglab.jml.JmlPattern
 import jugglinglab.jml.JmlPatternList
-import jugglinglab.renderer.FrameDrawer
 //import jugglinglab.util.jlGetStringResource
 import java.awt.Desktop
 import java.awt.desktop.AboutEvent
@@ -608,8 +607,8 @@ object JlCommandLine {
 
     // Output an animated GIF of the pattern.
 
-    private fun doTogif(pat: JmlPattern, outpath: Path?, jc: AnimationPrefs?) {
-        var jc = jc
+    private fun doTogif(pat: JmlPattern, outpath: Path?, prefs: AnimationPrefs?) {
+        var jc = prefs
         if (outpath == null) {
             println("Error: No output path specified for animated GIF")
             return
@@ -621,9 +620,10 @@ object JlCommandLine {
                 // Note the GIF header specifies inter-frame delay in terms of
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
                 // 25, 20, ... are precisely achievable.
+            } else if (jc.fps == AnimationPrefs.FPS_DEF) {
+                jc = jc.copy(fps = 33.3)
             }
-            val drawer = FrameDrawer(PatternAnimationState(pat, jc))
-            drawer.writeGIF(FileOutputStream(outpath.toFile()), null, jc.fps)
+            AnimationGifWriter(PatternAnimationState(pat, jc), outpath.toFile())
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")
         } catch (jei: JuggleExceptionInternal) {

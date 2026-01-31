@@ -22,18 +22,6 @@ import jugglinglab.util.Coordinate.Companion.max
 import jugglinglab.util.Coordinate.Companion.min
 import jugglinglab.util.JuggleExceptionInternal
 import java.awt.*
-import java.awt.image.BufferedImage
-import java.io.IOException
-import java.io.OutputStream
-import javax.imageio.IIOImage
-import javax.imageio.ImageIO
-import javax.imageio.ImageTypeSpecifier
-import javax.imageio.ImageWriteParam
-import javax.imageio.metadata.IIOInvalidTreeException
-import javax.imageio.metadata.IIOMetadata
-import javax.imageio.metadata.IIOMetadataNode
-import javax.imageio.stream.ImageOutputStream
-import javax.imageio.stream.MemoryCacheImageOutputStream
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -172,15 +160,6 @@ class FrameDrawer(
         g.fillRect(0, 0, state.prefs.width, state.prefs.height)
     }
 
-    var zoomLevel: Double
-        get() = ren1.getZoomLevel()
-        set(z) {
-            ren1.setZoomLevel(z)
-            if (state.prefs.stereo) {
-                ren2.setZoomLevel(z)
-            }
-        }
-
     // Find the overall bounding box of the juggler and pattern, in real-space
     // (centimeters) global coordinates. Output is the variables `overallmin`
     // and `overallmax`, which determine a bounding box.
@@ -294,135 +273,7 @@ class FrameDrawer(
         }
     }
 
-    // Output a GIF of the pattern to OutputStream `os`.
-    //
-    // Optional parameter `wgm` monitors the progress and allows the user to
-    // cancel. `fps` is the target frames per second for the GIF.
-    //
-    // Note: The GIF header specifies the delay time between frames in terms of
-    // hundredths of a second. This is an integer quantity, so only `fps` values
-    // like 50, 33 1/3, 25, 20, ... are precisely achievable.
-
-    @Throws(IOException::class, JuggleExceptionInternal::class)
-    fun writeGIF(os: OutputStream, wgm: WriteGIFMonitor?, fps: Double) {
-        val pattern = state.pattern
-        val iw = ImageIO.getImageWritersByFormatName("gif").next()
-        val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
-        iw.setOutput(ios)
-        iw.prepareWriteSequence(null)
-
-        val image = BufferedImage(state.prefs.width, state.prefs.height, BufferedImage.TYPE_INT_RGB)
-        val g = image.createGraphics()
-        // antialiased rendering creates too many distinct color values for
-        // GIF to handle well
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
-
-        // reset prop assignments to generate an identical GIF every time
-        state.update(propForPath = pattern.initialPropForPath)
-
-        // our own local versions of these three fps-related quantities
-        val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * state.prefs.slowdown * fps).toInt()
-        val gifSimIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / gifNumFrames
-        val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * state.prefs.slowdown).toLong().toDouble()
-
-        val totalframes = pattern.periodWithProps * gifNumFrames
-        var framecount = 0
-
-        // delay time is embedded in GIF header in terms of hundredths of a second
-        val delayTime = (0.5 + gifRealIntervalMillis / 10).toInt().toString()
-        val iwp = iw.defaultWriteParam
-        var metadata: IIOMetadata? = null
-
-        repeat (pattern.periodWithProps) {
-            var time = pattern.loopStartTime
-
-            repeat (gifNumFrames) {
-                drawFrame(time, g, drawAxes = false, drawBackground = true)
-
-                // after the second frame all subsequent frames have identical metadata
-                if (framecount < 2) {
-                    metadata = iw.getDefaultImageMetadata(ImageTypeSpecifier(image), iwp)
-                    configureGIFMetadata(metadata, delayTime, framecount)
-                }
-
-                val ii = IIOImage(image, null, metadata)
-                iw.writeToSequence(ii, null as ImageWriteParam?)
-
-                time += gifSimIntervalSecs
-                ++framecount
-
-                if (wgm != null) {
-                    wgm.update(framecount, totalframes)
-                    if (wgm.isCanceled) {
-                        ios.close()
-                        os.close()
-                        return
-                    }
-                }
-            }
-
-            state.advancePropForPath()
-        }
-
-        g.dispose()
-        iw.endWriteSequence()
-        ios.close()
-        os.close()
-    }
-
-    interface WriteGIFMonitor {
-        // callback method invoked when a processing step is completed
-        fun update(step: Int, stepsTotal: Int)
-
-        // callback method should return true when user wants to cancel
-        val isCanceled: Boolean
-    }
-
     companion object {
         private const val STEREO_SEPARATION_RADIANS: Double = 0.10
-
-        // Helper method for writeGIF() above.
-
-        private fun configureGIFMetadata(meta: IIOMetadata, delayTime: String?, imageIndex: Int) {
-            val metaFormat = meta.getNativeMetadataFormatName()
-            require("javax_imageio_gif_image_1.0" == metaFormat) {
-                "Unfamiliar gif metadata format: $metaFormat"
-            }
-            val root = meta.getAsTree(metaFormat)
-
-            // find the GraphicControlExtension node
-            var child = root.firstChild
-            while (child != null) {
-                if ("GraphicControlExtension" == child.nodeName) break
-                child = child.nextSibling
-            }
-
-            val gce = child as IIOMetadataNode
-            gce.setAttribute("userInputFlag", "FALSE")
-            gce.setAttribute("delayTime", delayTime)
-
-            // only the first node needs the ApplicationExtensions node
-            if (imageIndex == 0) {
-                val aes = IIOMetadataNode("ApplicationExtensions")
-                val ae = IIOMetadataNode("ApplicationExtension")
-                ae.setAttribute("applicationID", "NETSCAPE")
-                ae.setAttribute("authenticationCode", "2.0")
-                val uo = byteArrayOf(
-                        // last two bytes is an unsigned short (little endian) that
-                        // indicates the the number of times to loop. 0 means loop forever.
-                        0x1, 0x0, 0x0
-                    )
-                ae.userObject = uo
-                aes.appendChild(ae)
-                root.appendChild(aes)
-            }
-
-            try {
-                meta.setFromTree(metaFormat, root)
-            } catch (e: IIOInvalidTreeException) {
-                // shouldn't happen
-                throw Error(e)
-            }
-        }
     }
 }

@@ -10,45 +10,22 @@
 
 package jugglinglab.view
 
-import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.ui.PatternWindow
 import jugglinglab.jml.JmlPattern
-import jugglinglab.renderer.FrameDrawer
-import jugglinglab.renderer.FrameDrawer.WriteGIFMonitor
-import jugglinglab.util.jlHandleFatalException
-import jugglinglab.util.jlHandleUserException
+import jugglinglab.util.AnimationGifWriter
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.JuggleExceptionUser
-import jugglinglab.util.jlGetStringResource
 import java.awt.Dimension
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.swing.JPanel
-import javax.swing.ProgressMonitor
-import javax.swing.SwingUtilities
 import kotlin.math.abs
 
 abstract class View(
     val state: PatternAnimationState,
     val patternWindow: PatternWindow
 ) : JPanel() {
-    // Helper for zooming in/out
-    val onZoomChange: (Float) -> Unit = { delta ->
-        val zoomFactor = (PatternWindow.ZOOM_PER_STEP - 1.0) * abs(delta) + 1.0
-        if (delta > 0) {
-            if (zoom < PatternWindow.MAX_ZOOM / zoomFactor) {
-                zoom *= zoomFactor
-            }
-        } else if (delta < 0) {
-            if (zoom > PatternWindow.MIN_ZOOM * zoomFactor) {
-                zoom /= zoomFactor
-            }
-        }
-    }
-
     //--------------------------------------------------------------------------
     // Methods to handle undo/redo functionality. The state owns the undo list
     // so it's preserved when we switch views. Here are the methods to apply
@@ -127,66 +104,32 @@ abstract class View(
     //--------------------------------------------------------------------------
 
     fun writeGIF(f: File) {
-        var jc = state.prefs
-        if (jc.fps == AnimationPrefs.FPS_DEF) {
-            jc = jc.copy(fps = 33.3)  // default frames per sec for GIFs
+        var prefs = state.prefs
+        if (prefs.fps == AnimationPrefs.FPS_DEF) {
+            prefs = prefs.copy(fps = 33.3)  // default frames per sec for GIFs
             // Note the GIF header specifies inter-frame delay in terms of
             // hundredths of a second, so only `fps` values like 50, 33 1/3,
             // 25, 20, ... are precisely achievable.
         }
-        val gifState = PatternAnimationState(state.pattern, jc)
-        gifState.cameraAngle = state.cameraAngle
-
-        GIFWriter(gifState, f, null)
+        val gifState = PatternAnimationState(state.pattern, prefs).apply {
+            cameraAngle = state.cameraAngle
+        }
+        AnimationGifWriter(gifState, f, patternWindow, null)
     }
 
-    // Utility class for writing GIFs on a thread separate from the EDT.
+    //--------------------------------------------------------------------------
+    // Callback for zooming in/out
+    //--------------------------------------------------------------------------
 
-    inner class GIFWriter(
-        val gifState: PatternAnimationState,
-        val file: File,
-        val cleanup: Runnable?
-    ) : Thread() {
-        val pm =
-            ProgressMonitor(
-                patternWindow,
-                jlGetStringResource(Res.string.gui_saving_animated_gif),
-                "",
-                0,
-                1
-            )
-
-        val wgm = object : WriteGIFMonitor {
-            override fun update(step: Int, stepsTotal: Int) {
-                SwingUtilities.invokeLater {
-                    pm.setMaximum(stepsTotal)
-                    pm.setProgress(step)
-                }
+    val onZoomChange: (Float) -> Unit = { delta ->
+        val zoomFactor = (PatternWindow.ZOOM_PER_STEP - 1.0) * abs(delta) + 1.0
+        if (delta > 0) {
+            if (zoom < PatternWindow.MAX_ZOOM / zoomFactor) {
+                zoom *= zoomFactor
             }
-
-            override val isCanceled: Boolean
-                get() = (pm.isCanceled() || interrupted())
-        }
-
-        init {
-            pm.millisToPopup = 200
-            setPriority(MIN_PRIORITY)
-            start()
-        }
-
-        override fun run() {
-            try {
-                val drawer = FrameDrawer(gifState)
-                drawer.writeGIF(FileOutputStream(file), wgm, gifState.prefs.fps)
-            } catch (_: IOException) {
-                val message = jlGetStringResource(Res.string.error_writing_file, file.toString())
-                jlHandleUserException(parent, message)
-            } catch (jei: JuggleExceptionInternal) {
-                jlHandleFatalException(jei)
-            } finally {
-                if (cleanup != null) {
-                    SwingUtilities.invokeLater(cleanup)
-                }
+        } else if (delta < 0) {
+            if (zoom > PatternWindow.MIN_ZOOM * zoomFactor) {
+                zoom /= zoomFactor
             }
         }
     }
