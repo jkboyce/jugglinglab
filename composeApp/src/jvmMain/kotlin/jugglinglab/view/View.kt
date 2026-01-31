@@ -103,7 +103,7 @@ abstract class View(
     // Saving animated GIFs
     //--------------------------------------------------------------------------
 
-    fun writeGIF(f: File) {
+    fun writeGif(f: File) {
         var prefs = state.prefs
         if (prefs.fps == AnimationPrefs.FPS_DEF) {
             prefs = prefs.copy(fps = 33.3)  // default frames per sec for GIFs
@@ -113,6 +113,7 @@ abstract class View(
         }
         val gifState = PatternAnimationState(state.pattern, prefs).apply {
             cameraAngle = state.cameraAngle
+            zoom = state.zoom
         }
         AnimationGifWriter(gifState, f, patternWindow, null)
     }

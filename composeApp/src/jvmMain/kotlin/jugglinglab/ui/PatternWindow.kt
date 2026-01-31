@@ -522,7 +522,7 @@ class PatternWindow(
                 val index = f.getName().lastIndexOf(".")
                 val base = if (index >= 0) f.getName().substring(0, index) else f.getName()
                 lastJmlFilename = "$base.jml"
-                view.writeGIF(f)
+                view.writeGif(f)
             }
 
             MenuCommand.FILE_DUPLICATE -> {
