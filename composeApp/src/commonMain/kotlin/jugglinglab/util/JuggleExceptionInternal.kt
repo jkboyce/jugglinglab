@@ -16,7 +16,7 @@ package jugglinglab.util
 import jugglinglab.jml.JmlPattern
 
 open class JuggleExceptionInternal : JuggleException {
-    var wrapped: Exception? = null
+    var wrapped: Throwable? = null
     var pattern: JmlPattern? = null
 
     // for an original error
@@ -25,7 +25,7 @@ open class JuggleExceptionInternal : JuggleException {
     }
 
     // for wrapping another error and including a pattern
-    constructor(e: Exception, pattern: JmlPattern?) : super(e.message ?: "") {
+    constructor(e: Throwable, pattern: JmlPattern?) : super(e.message ?: "") {
         this.wrapped = e
         this.pattern = pattern
     }

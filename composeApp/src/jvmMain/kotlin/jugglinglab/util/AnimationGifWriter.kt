@@ -65,12 +65,14 @@ class AnimationGifWriter(
                 }
             }
 
-            writeGif(FileOutputStream(file), wgm, gifState.prefs.fps)
+            writeGif(FileOutputStream(file), wgm)
         } catch (_: IOException) {
             val message = jlGetStringResource(Res.string.error_writing_file, file.toString())
             jlHandleUserException(parent, message)
         } catch (jei: JuggleExceptionInternal) {
             jlHandleFatalException(jei)
+        } catch (e: Throwable) {
+            jlHandleFatalException(JuggleExceptionInternal(e, gifState.pattern))
         } finally {
             if (cleanup != null) {
                 SwingUtilities.invokeLater(cleanup)
@@ -88,8 +90,9 @@ class AnimationGifWriter(
     // like 50, 33 1/3, 25, 20, ... are precisely achievable.
 
     @Throws(IOException::class, JuggleExceptionInternal::class)
-    fun writeGif(os: OutputStream, wgm: WriteGifMonitor?, fps: Double) {
+    private fun writeGif(os: OutputStream, wgm: WriteGifMonitor?) {
         val pattern = gifState.pattern
+        val fps = gifState.prefs.fps
         // reset prop assignments to generate an identical GIF every time
         gifState.update(propForPath = pattern.initialPropForPath)
 
