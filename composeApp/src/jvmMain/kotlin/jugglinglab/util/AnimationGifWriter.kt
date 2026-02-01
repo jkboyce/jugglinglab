@@ -15,7 +15,6 @@ import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.use
 import org.jetbrains.skia.Bitmap
-import org.jetbrains.skia.Image
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
@@ -36,6 +35,9 @@ import javax.imageio.stream.ImageOutputStream
 import javax.imageio.stream.MemoryCacheImageOutputStream
 import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
+import kotlin.math.roundToInt
+import kotlin.math.max
+import kotlin.math.roundToLong
 
 class AnimationGifWriter(
     val gifState: PatternAnimationState,
@@ -44,6 +46,11 @@ class AnimationGifWriter(
     val cleanup: Runnable? = null
 ) : Thread() {
     init {
+        gifState.update(
+            prefs = gifState.prefs.copy(startPaused = false, mousePause = false),
+            isPaused = false,
+            message = ""
+        )
         setPriority(MIN_PRIORITY)
         start()
     }
@@ -99,15 +106,25 @@ class AnimationGifWriter(
     @Throws(IOException::class, JuggleExceptionInternal::class)
     private fun writeGif(os: OutputStream, wgm: WriteGifMonitor?) {
         val pattern = gifState.pattern
-        val fps = gifState.prefs.fps
 
-        // quantities to help with looping through the animation
-        val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * gifState.prefs.slowdown * fps).toInt()
-        val gifSimIntervalSecs = (pattern.loopEndTime - pattern.loopStartTime) / gifNumFrames
-        val gifRealIntervalMillis = (1000.0 * gifSimIntervalSecs * gifState.prefs.slowdown).toLong().toDouble()
-        // delay time is embedded in GIF header in hundredths of a second
-        val delayTime = (0.5 + gifRealIntervalMillis / 10).toInt().toString()
-        val totalFrames = pattern.periodWithProps * gifNumFrames
+        // (integer) inter-frame delay time, in hundredths of a second
+        val frameDurationHundredths = max((100.0 / gifState.prefs.fps).roundToInt(), 1)
+        val frameDurationString = frameDurationHundredths.toString()
+
+        // adjust inter-frame sim time so that an exact number of frames
+        // fit within the animation loop
+        val gifLoopFrames = (
+                (pattern.loopEndTime - pattern.loopStartTime) *
+                        gifState.prefs.slowdown *
+                        (100.0 / frameDurationHundredths.toDouble())
+                ).roundToInt()
+        val frameDurationNanos = (
+                1_000_000_000L *
+                        (pattern.loopEndTime - pattern.loopStartTime) *
+                        gifState.prefs.slowdown / gifLoopFrames.toDouble()
+                ).roundToLong()
+        val loopStartTimeNanos = (pattern.loopStartTime * 1_000_000_000L).toLong()
+        val totalFrames = pattern.periodWithProps * gifLoopFrames
 
         // Java GIF encoder
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
@@ -128,24 +145,32 @@ class AnimationGifWriter(
                 AnimationView(state = gifState)
             }
 
-            val loopStartTimeNanos = (pattern.loopStartTime * 1_000_000_000L).toLong()
-            val frameDurationNanos = (1_000_000_000L / fps).toLong()
+            // for converting Skia Image into bitmap with color type BGRA_8888
+            // that AWT expects; Skia images by default have color type RGBA_8888
+            val bitmap = Bitmap().apply {
+                allocPixels(
+                    ImageInfo(
+                        gifState.prefs.width,
+                        gifState.prefs.height,
+                        ColorType.BGRA_8888,
+                        ColorAlphaType.PREMUL
+                    )
+                )
+            }
 
-            for (currentFrame in 0 until totalFrames) {
+            for (currentFrame in 0..<totalFrames) {
                 // render the frame at the current timestamp
                 val nanoTime = loopStartTimeNanos + currentFrame * frameDurationNanos
-                val image: Image = scene.render(nanoTime)
+                val image = scene.render(nanoTime)
 
                 // process the image
-                val bitmap = Bitmap()
-                bitmap.allocPixels(ImageInfo(image.width, image.height, ColorType.BGRA_8888, ColorAlphaType.PREMUL))
                 image.readPixels(bitmap)
                 val bufferedImage = bitmap.toBufferedImage()
 
                 // after the second frame all subsequent frames have identical metadata
                 if (currentFrame < 2) {
                     metadata = iw.getDefaultImageMetadata(ImageTypeSpecifier(bufferedImage), iwp)
-                    configureGifMetadata(metadata, delayTime, currentFrame)
+                    configureGifMetadata(metadata, frameDurationString, currentFrame)
                 }
 
                 val ii = IIOImage(bufferedImage, null, metadata)
