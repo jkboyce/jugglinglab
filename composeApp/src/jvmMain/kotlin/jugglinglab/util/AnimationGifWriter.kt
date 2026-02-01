@@ -109,15 +109,14 @@ class AnimationGifWriter(
         val frameDurationHundredths = max((100.0 / gifState.prefs.fps).roundToInt(), 1)
         val frameDurationString = frameDurationHundredths.toString()
 
-        // adjust inter-frame sim time so that an exact number of frames
-        // fit within the animation loop
+        // adjust inter-frame sim time so that an exact number of frames fit
+        // within the animation loop
+        val loopDuration = pattern.loopEndTime - pattern.loopStartTime
         val gifLoopFrames = (
-                (pattern.loopEndTime - pattern.loopStartTime) *
-                        gifState.prefs.slowdown *
+                loopDuration * gifState.prefs.slowdown *
                         (100.0 / frameDurationHundredths.toDouble())
                 ).roundToInt()
-        val totalFrames = pattern.periodWithProps * gifLoopFrames
-        val loopDuration = pattern.loopEndTime - pattern.loopStartTime
+        val totalFrames = gifLoopFrames * pattern.periodWithProps
 
         // Java GIF encoder
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
@@ -138,7 +137,7 @@ class AnimationGifWriter(
                 AnimationView(state = gifState, isAntiAlias = false)
             }
 
-            // for converting Skia Image into bitmap with color type BGRA_8888
+            // need to convert Skia Image into bitmap with color type BGRA_8888
             // that AWT expects; Skia images by default have color type RGBA_8888
             val bitmap = Bitmap().apply {
                 allocPixels(
