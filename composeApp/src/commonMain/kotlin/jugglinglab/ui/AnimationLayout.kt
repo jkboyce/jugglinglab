@@ -17,7 +17,7 @@ package jugglinglab.ui
 import jugglinglab.core.PatternAnimationState
 import jugglinglab.jml.JmlEvent
 import jugglinglab.jml.JmlPosition
-import jugglinglab.renderer.ComposeRenderer
+import jugglinglab.renderer.Renderer
 import jugglinglab.util.Coordinate
 import jugglinglab.util.Coordinate.Companion.distance
 import jugglinglab.util.JuggleExceptionInternal
@@ -32,8 +32,8 @@ class AnimationLayout(
     val state: PatternAnimationState,
     val width: Int,
     val height: Int,
-    val renderer1: ComposeRenderer,
-    val renderer2: ComposeRenderer
+    val renderer1: Renderer,
+    val renderer2: Renderer
 ) {
     // Event editing -----------------------------------------------------------
 

@@ -12,7 +12,7 @@ package jugglinglab.ui
 
 import jugglinglab.core.AnimationPrefs
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.renderer.ComposeRenderer
+import jugglinglab.renderer.Renderer
 import jugglinglab.util.JuggleExceptionInternal
 import jugglinglab.util.jlHandleFatalException
 import jugglinglab.util.jlToStringRounded
@@ -67,8 +67,8 @@ fun AnimationView(
     modifier: Modifier = Modifier,
 ) {
     // two renderers for stereo support
-    val renderer1 = remember { ComposeRenderer() }
-    val renderer2 = remember { ComposeRenderer() }
+    val renderer1 = remember { Renderer() }
+    val renderer2 = remember { Renderer() }
     renderer1.isAntiAlias = isAntiAlias
     renderer2.isAntiAlias = isAntiAlias
 
@@ -426,7 +426,7 @@ private fun drawPositionOverlays(
     state: PatternAnimationState,
     layout: AnimationLayout,
     viewIndex: Int,
-    renderer: ComposeRenderer,
+    renderer: Renderer,
     scope: DrawScope,
     textMeasurer: TextMeasurer
 ): Unit = with(scope) {
@@ -543,7 +543,7 @@ private fun drawPositionOverlays(
 // In position editing mode, draw an xy grid at ground level (z = 0).
 
 private fun drawGrid(
-    renderer: ComposeRenderer,
+    renderer: Renderer,
     scope: DrawScope,
     width: Int = scope.size.width.toInt(),
     height: Int = scope.size.height.toInt()

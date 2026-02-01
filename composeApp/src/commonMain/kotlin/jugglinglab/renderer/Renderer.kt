@@ -1,5 +1,5 @@
 //
-// ComposeRenderer.kt
+// Renderer.kt
 //
 // Class that draws the juggling into the frame using Compose DrawScope.
 //
@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class ComposeRenderer {
+class Renderer {
     private var background: Color = Color.White
     var showGround: Boolean = false
 
@@ -148,7 +148,7 @@ class ComposeRenderer {
         setZoom(zoomLevel)  // calculate camera matrix etc.
 
         if (Constants.DEBUG_LAYOUT) {
-            println("Data from ComposeRenderer.initDisplay():")
+            println("Data from Renderer.initDisplay():")
             println("overallMax = $overallMax")
             println("overallMin = $overallMin")
             println("adjustedMax = $adjustedMax")
