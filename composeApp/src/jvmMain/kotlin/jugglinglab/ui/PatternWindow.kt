@@ -98,23 +98,25 @@ class PatternWindow(
         }
         viewMenu.getItem(mode - 1).setSelected(true)
 
+        // animation state persists through future view changes and pattern edits
         val state = PatternAnimationState(
             initialPattern = pattern,
             initialPrefs = jc
-        )
-        state.addListener(onNewPatternUndo = {
-            updateUndoMenu()
-        })
-        when (mode) {
-            AnimationPrefs.VIEW_NONE -> {}
-            AnimationPrefs.VIEW_SIMPLE -> view = SimpleView(state, this)
-            AnimationPrefs.VIEW_EDIT -> view = EditView(state, this)
-            AnimationPrefs.VIEW_PATTERN -> view = PatternView(state, this)
-            AnimationPrefs.VIEW_SELECTION -> view = SelectionView(state, this)
+        ).apply {
+            addListener(onPatternChange = { updateColorsMenu() })
+            addListener(onNewPatternUndo = { updateUndoMenu() })
         }
 
-        view.setOpaque(true)
-        view.isDoubleBuffered = true
+        view = when (mode) {
+            AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this)
+            AnimationPrefs.VIEW_EDIT -> EditView(state, this)
+            AnimationPrefs.VIEW_PATTERN -> PatternView(state, this)
+            AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this)
+            else -> throw JuggleExceptionInternal("createInitialView: problem creating view")
+        }.apply {
+            setOpaque(true)
+            isDoubleBuffered = true
+        }
         contentPane = view
 
         val loc = Locale.getDefault()
@@ -142,10 +144,11 @@ class PatternWindow(
             val state = view.state.apply {
                 removeAllListeners()
                 update(selectedItemHashCode = 0)
+                addListener(onPatternChange = { updateColorsMenu() })
                 addListener(onNewPatternUndo = { updateUndoMenu() })
             }
 
-            val newview: View = when (mode) {
+            val newView = when (mode) {
                 AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this)
                 AnimationPrefs.VIEW_EDIT -> EditView(state, this)
                 AnimationPrefs.VIEW_PATTERN -> PatternView(state, this)
@@ -156,12 +159,12 @@ class PatternWindow(
                 isDoubleBuffered = true
             }
 
-            contentPane = newview
+            contentPane = newView
             if (isWindowMaximized) validate() else pack()
 
-            newview.restartView(state.pattern, state.prefs)
+            newView.restartView(state.pattern, state.prefs)
             view.disposeView()
-            view = newview
+            view = newView
         }
 
     val pattern: JmlPattern
