@@ -14,6 +14,7 @@ import jugglinglab.ui.AnimationView
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.use
+import androidx.compose.runtime.snapshots.Snapshot
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
@@ -37,7 +38,6 @@ import javax.swing.ProgressMonitor
 import javax.swing.SwingUtilities
 import kotlin.math.roundToInt
 import kotlin.math.max
-import kotlin.math.roundToLong
 
 class AnimationGifWriter(
     val gifState: PatternAnimationState,
@@ -160,6 +160,10 @@ class AnimationGifWriter(
                 }
                 val time = pattern.loopStartTime + (frameInLoop.toDouble() / gifLoopFrames) * loopDuration
                 gifState.update(time = time)
+
+                // the next line is critical as it ensures the state update above
+                // propagates to the composition engine before we render
+                Snapshot.sendApplyNotifications()
 
                 // render and process the image
                 val image = scene.render()
