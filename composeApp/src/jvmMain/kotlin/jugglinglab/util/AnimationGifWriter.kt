@@ -1,7 +1,9 @@
 //
 // AnimationGifWriter.kt
 //
-// Utility class for writing GIFs on a thread separate from the EDT.
+// Class for writing animated GIFs to a file. It does the processing in a
+// background thread. If parameter `parent` is specified, a progress indicator
+// is shown in front of that component.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -195,7 +197,7 @@ class AnimationGifWriter(
         os.close()
     }
 
-    // Helper for writeGIF()
+    // Helper for writeGif()
 
     companion object {
         private fun configureGifMetadata(meta: IIOMetadata, delayTime: String?, imageIndex: Int) {
