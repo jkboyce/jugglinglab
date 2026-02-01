@@ -10,6 +10,7 @@ package jugglinglab.renderer
 
 import jugglinglab.jml.JmlPattern
 import jugglinglab.util.Coordinate
+import jugglinglab.core.Constants
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -23,7 +24,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import jugglinglab.core.Constants
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max

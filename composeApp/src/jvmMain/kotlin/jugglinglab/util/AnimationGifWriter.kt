@@ -48,11 +48,7 @@ class AnimationGifWriter(
     val cleanup: Runnable? = null
 ) : Thread() {
     init {
-        gifState.update(
-            prefs = gifState.prefs.copy(startPaused = true, mousePause = false),
-            isPaused = true,
-            message = ""
-        )
+        gifState.update(isPaused = true, message = "")
         setPriority(MIN_PRIORITY)
         start()
     }
