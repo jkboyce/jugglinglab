@@ -10,10 +10,17 @@ package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.PatternAnimationState
-import jugglinglab.renderer.FrameDrawer
+import jugglinglab.ui.AnimationView
+import androidx.compose.ui.ImageComposeScene
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.use
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.ImageInfo
+import org.jetbrains.skiko.toBufferedImage
 import java.awt.Component
-import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -93,8 +100,6 @@ class AnimationGifWriter(
     private fun writeGif(os: OutputStream, wgm: WriteGifMonitor?) {
         val pattern = gifState.pattern
         val fps = gifState.prefs.fps
-        // reset prop assignments to generate an identical GIF every time
-        gifState.update(propForPath = pattern.initialPropForPath)
 
         // quantities to help with looping through the animation
         val gifNumFrames = (0.5 + (pattern.loopEndTime - pattern.loopStartTime) * gifState.prefs.slowdown * fps).toInt()
@@ -103,7 +108,6 @@ class AnimationGifWriter(
         // delay time is embedded in GIF header in hundredths of a second
         val delayTime = (0.5 + gifRealIntervalMillis / 10).toInt().toString()
         val totalFrames = pattern.periodWithProps * gifNumFrames
-        var currentFrame = 0
 
         // Java GIF encoder
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
@@ -114,36 +118,41 @@ class AnimationGifWriter(
         val iwp = iw.defaultWriteParam
         var metadata: IIOMetadata? = null
 
-        // BufferedImage that we'll be drawing into
-        val image = BufferedImage(gifState.prefs.width, gifState.prefs.height, BufferedImage.TYPE_INT_RGB)
-        val g = image.createGraphics()
-        // antialiased rendering creates too many distinct color values for
-        // GIF to handle well
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
+        // render the animation frames offscreen
+        ImageComposeScene(
+            width = gifState.prefs.width,
+            height = gifState.prefs.height,
+            density = Density(1f)
+        ).use { scene ->
+            scene.setContent {
+                AnimationView(state = gifState)
+            }
 
-        // FrameDrawer that does the actual drawing
-        val drawer = FrameDrawer(gifState)
+            val loopStartTimeNanos = (pattern.loopStartTime * 1_000_000_000L).toLong()
+            val frameDurationNanos = (1_000_000_000L / fps).toLong()
 
-        repeat(pattern.periodWithProps) {
-            var time = pattern.loopStartTime
+            for (currentFrame in 0 until totalFrames) {
+                // render the frame at the current timestamp
+                val nanoTime = loopStartTimeNanos + currentFrame * frameDurationNanos
+                val image: Image = scene.render(nanoTime)
 
-            repeat(gifNumFrames) {
-                drawer.drawFrame(time, g, drawAxes = false, drawBackground = true)
+                // process the image
+                val bitmap = Bitmap()
+                bitmap.allocPixels(ImageInfo(image.width, image.height, ColorType.BGRA_8888, ColorAlphaType.PREMUL))
+                image.readPixels(bitmap)
+                val bufferedImage = bitmap.toBufferedImage()
 
                 // after the second frame all subsequent frames have identical metadata
                 if (currentFrame < 2) {
-                    metadata = iw.getDefaultImageMetadata(ImageTypeSpecifier(image), iwp)
+                    metadata = iw.getDefaultImageMetadata(ImageTypeSpecifier(bufferedImage), iwp)
                     configureGifMetadata(metadata, delayTime, currentFrame)
                 }
 
-                val ii = IIOImage(image, null, metadata)
+                val ii = IIOImage(bufferedImage, null, metadata)
                 iw.writeToSequence(ii, null as ImageWriteParam?)
 
-                time += gifSimIntervalSecs
-                ++currentFrame
-
                 if (wgm != null) {
-                    wgm.update(currentFrame, totalFrames)
+                    wgm.update(currentFrame + 1, totalFrames)
                     if (wgm.isCanceled) {
                         ios.close()
                         os.close()
@@ -151,11 +160,8 @@ class AnimationGifWriter(
                     }
                 }
             }
-
-            gifState.advancePropForPath()
         }
 
-        g.dispose()
         iw.endWriteSequence()
         ios.close()
         os.close()
