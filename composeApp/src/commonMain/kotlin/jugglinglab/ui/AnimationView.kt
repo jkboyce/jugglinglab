@@ -63,11 +63,14 @@ fun AnimationView(
     onFrame: (Double) -> Unit = {},
     onZoom: (Float) -> Unit = {},
     textMeasurer: TextMeasurer = rememberTextMeasurer(),
+    isAntiAlias: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     // two renderers for stereo support
     val renderer1 = remember { ComposeRenderer() }
     val renderer2 = remember { ComposeRenderer() }
+    renderer1.isAntiAlias = isAntiAlias
+    renderer2.isAntiAlias = isAntiAlias
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val density = LocalDensity.current.density

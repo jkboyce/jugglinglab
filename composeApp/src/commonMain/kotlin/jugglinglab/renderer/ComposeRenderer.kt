@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -58,6 +59,10 @@ class ComposeRenderer {
     private var tempc: Coordinate = Coordinate()
     private var tempv1: JlVector = JlVector()
     private var tempv2: JlVector = JlVector()
+
+    // for switching antialiasing on/off
+    var isAntiAlias: Boolean = true
+    private val paint = androidx.compose.ui.graphics.Paint()
 
     init {
         for (i in 0..<polysides) {
@@ -426,7 +431,7 @@ class ComposeRenderer {
                         val size = pr.getProp2DSize(zoom, cameraAngle)
                         if (size != null) {
                             val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                            drawOval(
+                            drawAaOval(
                                 color = pr.getEditorColor(),
                                 topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat()),
                                 size = Size(size.width.toFloat(), size.height.toFloat())
@@ -442,8 +447,8 @@ class ComposeRenderer {
                         path.lineTo(ob.coord[j].x.toFloat(), ob.coord[j].y.toFloat())
                     }
                     path.close()
-                    drawPath(path, background)
-                    drawPath(path, Color.Black, style = Stroke(strokeWidth1))
+                    drawAaPath(path, background)
+                    drawAaPath(path, Color.Black, style = Stroke(strokeWidth1))
 
                     val lHeadBx = ob.coord[4].x
                     val lHeadBy = ob.coord[4].y
@@ -462,15 +467,15 @@ class ComposeRenderer {
                             else headPath.lineTo(headX[j].toFloat(), headY[j].toFloat())
                         }
                         headPath.close()
-                        drawPath(headPath, background)
-                        drawPath(headPath, Color.Black, style = Stroke(strokeWidth1))
+                        drawAaPath(headPath, background)
+                        drawAaPath(headPath, Color.Black, style = Stroke(strokeWidth1))
                     } else {
                         val h =
                             sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
                         val hx = (0.5 * (lHeadBx + rHeadBx)).toFloat()
                         val hy1 = (0.5 * (lHeadTy + rHeadBy + h)).toFloat()
                         val hy2 = (0.5 * (lHeadTy + rHeadBy - h)).toFloat()
-                        drawLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
+                        drawAaLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
                     }
                 }
 
@@ -481,7 +486,7 @@ class ComposeRenderer {
                     val y2 = ob.coord[1].y.toFloat()
                     // Juggler parts have number > 0, ground uses 0
                     val strokeWidth = if (ob.number > 0) strokeWidth1 else strokeWidth0_5
-                    drawLine(Color.Black, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
+                    drawAaLine(Color.Black, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
                 }
             }
         }
@@ -531,7 +536,7 @@ class ComposeRenderer {
             topLeft = Offset(zx - dotOffset, zy - dotOffset),
             size = Size(dotSize, dotSize)
         )
-        
+
         val textStyle = TextStyle(color = axesColor, fontSize = 13.sp)
         val padding = 3.dp.toPx()
         val textLayoutResultX = textMeasurer.measure(text = "x", style = textStyle)
@@ -707,6 +712,90 @@ class ComposeRenderer {
             const val TYPE_LINE: Int = 3
 
             private const val SLOP: Double = 3.0
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    // Extension functions to handle aliased or anti-aliased drawing
+    //--------------------------------------------------------------------------
+
+    private fun DrawScope.drawAaPath(
+        path: Path,
+        color: Color,
+        style: androidx.compose.ui.graphics.drawscope.DrawStyle = Fill
+    ) {
+        if (isAntiAlias) {
+            drawPath(path, color, style = style)
+        } else {
+            paint.color = color
+            paint.isAntiAlias = false
+            paint.pathEffect = null
+            when (style) {
+                is Stroke -> {
+                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Stroke
+                    paint.strokeWidth = style.width
+                    paint.strokeCap = style.cap
+                    paint.strokeJoin = style.join
+                    paint.strokeMiterLimit = style.miter
+                    paint.pathEffect = style.pathEffect
+                }
+
+                is Fill -> {
+                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Fill
+                }
+            }
+            drawContext.canvas.drawPath(path, paint)
+        }
+    }
+
+    private fun DrawScope.drawAaLine(
+        color: Color,
+        start: Offset,
+        end: Offset,
+        strokeWidth: Float
+    ) {
+        if (isAntiAlias) {
+            drawLine(color, start, end, strokeWidth)
+        } else {
+            paint.color = color
+            paint.isAntiAlias = false
+            paint.pathEffect = null
+            paint.style = androidx.compose.ui.graphics.PaintingStyle.Stroke
+            paint.strokeWidth = strokeWidth
+            paint.strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt
+            drawContext.canvas.drawLine(start, end, paint)
+        }
+    }
+
+    private fun DrawScope.drawAaOval(
+        color: Color,
+        topLeft: Offset,
+        size: Size,
+        style: androidx.compose.ui.graphics.drawscope.DrawStyle = Fill
+    ) {
+        if (isAntiAlias) {
+            drawOval(color, topLeft, size, style = style)
+        } else {
+            paint.color = color
+            paint.isAntiAlias = false
+            paint.pathEffect = null
+            when (style) {
+                is Stroke -> {
+                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Stroke
+                    paint.strokeWidth = style.width
+                }
+
+                is Fill -> {
+                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Fill
+                }
+            }
+            drawContext.canvas.drawOval(
+                left = topLeft.x,
+                top = topLeft.y,
+                right = topLeft.x + size.width,
+                bottom = topLeft.y + size.height,
+                paint = paint
+            )
         }
     }
 

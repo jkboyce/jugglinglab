@@ -142,7 +142,7 @@ class AnimationGifWriter(
             density = Density(1f)
         ).use { scene ->
             scene.setContent {
-                AnimationView(state = gifState)
+                AnimationView(state = gifState, isAntiAlias = false)
             }
 
             // for converting Skia Image into bitmap with color type BGRA_8888
