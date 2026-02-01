@@ -47,8 +47,8 @@ class AnimationGifWriter(
 ) : Thread() {
     init {
         gifState.update(
-            prefs = gifState.prefs.copy(startPaused = false, mousePause = false),
-            isPaused = false,
+            prefs = gifState.prefs.copy(startPaused = true, mousePause = false),
+            isPaused = true,
             message = ""
         )
         setPriority(MIN_PRIORITY)
@@ -118,13 +118,8 @@ class AnimationGifWriter(
                         gifState.prefs.slowdown *
                         (100.0 / frameDurationHundredths.toDouble())
                 ).roundToInt()
-        val frameDurationNanos = (
-                1_000_000_000L *
-                        (pattern.loopEndTime - pattern.loopStartTime) *
-                        gifState.prefs.slowdown / gifLoopFrames.toDouble()
-                ).roundToLong()
-        val loopStartTimeNanos = (pattern.loopStartTime * 1_000_000_000L).toLong()
         val totalFrames = pattern.periodWithProps * gifLoopFrames
+        val loopDuration = pattern.loopEndTime - pattern.loopStartTime
 
         // Java GIF encoder
         val ios: ImageOutputStream = MemoryCacheImageOutputStream(os)
@@ -159,11 +154,15 @@ class AnimationGifWriter(
             }
 
             for (currentFrame in 0..<totalFrames) {
-                // render the frame at the current timestamp
-                val nanoTime = loopStartTimeNanos + currentFrame * frameDurationNanos
-                val image = scene.render(nanoTime)
+                val frameInLoop = currentFrame % gifLoopFrames
+                if (frameInLoop == 0 && currentFrame > 0) {
+                    gifState.advancePropForPath()
+                }
+                val time = pattern.loopStartTime + (frameInLoop.toDouble() / gifLoopFrames) * loopDuration
+                gifState.update(time = time)
 
-                // process the image
+                // render and process the image
+                val image = scene.render()
                 image.readPixels(bitmap)
                 val bufferedImage = bitmap.toBufferedImage()
 
