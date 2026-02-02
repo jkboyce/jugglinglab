@@ -420,23 +420,12 @@ class Renderer {
                     val y = ob.coord[0].y.roundToInt()
 
                     val image = pr.getProp2DImage(zoom, cameraAngle)
-
                     if (image != null) {
-                        val center = pr.getProp2DCenter(zoom, cameraAngle)!!
+                        val grip = pr.getProp2DGrip(zoom, cameraAngle)!!
                         drawImage(
                             image = image,
-                            topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat())
+                            topLeft = Offset((x - grip.width).toFloat(), (y - grip.height).toFloat())
                         )
-                    } else {
-                        val size = pr.getProp2DSize(zoom, cameraAngle)
-                        if (size != null) {
-                            val center = pr.getProp2DCenter(zoom, cameraAngle)!!
-                            drawAaOval(
-                                color = pr.getEditorColor(),
-                                topLeft = Offset((x - center.width).toFloat(), (y - center.height).toFloat()),
-                                size = Size(size.width.toFloat(), size.height.toFloat())
-                            )
-                        }
                     }
                 }
 
