@@ -110,6 +110,11 @@ class SiteswapPattern : MhnPattern() {
             println("Parsing pattern \"$pattern\"")
         }
 
+        if (pattern == null || pattern!!.trim().isEmpty()) {
+            val message = jlGetStringResource(Res.string.error_no_pattern_specified)
+            throw JuggleExceptionUser(message)
+        }
+
         val tree: SiteswapTreeItem = try {
             val parsedTree = SiteswapParser.parsePattern(pattern!!)
             if (Constants.DEBUG_SITESWAP_PARSING) {
