@@ -756,38 +756,6 @@ class Renderer {
         }
     }
 
-    private fun DrawScope.drawAaOval(
-        color: Color,
-        topLeft: Offset,
-        size: Size,
-        style: androidx.compose.ui.graphics.drawscope.DrawStyle = Fill
-    ) {
-        if (isAntiAlias) {
-            drawOval(color, topLeft, size, style = style)
-        } else {
-            paint.color = color
-            paint.isAntiAlias = false
-            paint.pathEffect = null
-            when (style) {
-                is Stroke -> {
-                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Stroke
-                    paint.strokeWidth = style.width
-                }
-
-                is Fill -> {
-                    paint.style = androidx.compose.ui.graphics.PaintingStyle.Fill
-                }
-            }
-            drawContext.canvas.drawOval(
-                left = topLeft.x,
-                top = topLeft.y,
-                right = topLeft.x + size.width,
-                bottom = topLeft.y + size.height,
-                paint = paint
-            )
-        }
-    }
-
     companion object {
         const val ORIGINAL_ZOOM = true
     }
