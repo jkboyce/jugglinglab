@@ -173,6 +173,7 @@ fun AnimationView(
 
                 while (true) {
                     withFrameNanos { frameTimeNanos ->
+                        if (state.isPaused) return@withFrameNanos
                         val deltaNanos = frameTimeNanos - lastFrameTime
                         lastFrameTime = frameTimeNanos
                         val deltaRealSecs = deltaNanos / 1_000_000_000.0

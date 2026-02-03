@@ -137,16 +137,17 @@ class LadderDiagramPanel(
         try {
             val layout = currentLayout ?: return
             if (layout.pattern !== state.pattern) return
+            val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
 
             if (isPopup) {
                 guiState = STATE_POPUP
                 popupItem = getSelectedLadderEvent(mx, my) ?: getSelectedLadderPosition(mx, my)
                     ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
                 popupX = mx
-                popupY = my
+                popupY = myClamped
 
                 animWasPaused = state.isPaused
-                val newTime = layout.yToTime(my)
+                val newTime = layout.yToTime(myClamped)
                 val code = popupItem?.jlHashCode ?: 0
                 state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
 
@@ -173,7 +174,7 @@ class LadderDiagramPanel(
 
                         if (needsHandling) {
                             guiState = STATE_MOVING_EVENT
-                            startY = my
+                            startY = myClamped
                             startYLow = newActiveEventItem.yLow
                             startYHigh = newActiveEventItem.yHigh
                             startT = newActiveEventItem.event.t
@@ -189,7 +190,7 @@ class LadderDiagramPanel(
                                 itemWasSelected = true
                             }
                             guiState = STATE_MOVING_POSITION
-                            startY = my
+                            startY = myClamped
                             startYLow = newActivePositionItem.yLow
                             startYHigh = newActivePositionItem.yHigh
                             startT = newActivePositionItem.position.t
@@ -201,9 +202,10 @@ class LadderDiagramPanel(
 
                     if (needsHandling) {
                         guiState = STATE_MOVING_TRACKER
-                        val newTime = layout.yToTime(my)
+                        val newTime = layout.yToTime(myClamped)
                         animWasPaused = state.isPaused
-                        state.update(isPaused = true, time = newTime, selectedItemHashCode = 0)
+                        state.update(isPaused = true, selectedItemHashCode = 0)
+                        state.update(time = newTime)
                     }
                 }
 
@@ -222,9 +224,7 @@ class LadderDiagramPanel(
         try {
             val layout = currentLayout ?: return
             if (layout.pattern !== state.pattern) return
-
-            val ladderHeight = layout.height
-            val myClamped = min(max(my, layout.borderTop), ladderHeight - layout.borderTop)
+            val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
 
             when (guiState) {
                 STATE_INACTIVE, STATE_POPUP -> {}
