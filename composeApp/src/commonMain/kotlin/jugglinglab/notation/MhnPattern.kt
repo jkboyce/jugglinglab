@@ -49,8 +49,8 @@ abstract class MhnPattern : Pattern() {
 
     // hss parameters:
     protected var hss: String? = null
-    protected var hold: Boolean = HOLD_DEFAULT
-    protected var dwellmax: Boolean = DWELLMAX_DEFAULT
+    protected var hold: Boolean = HSS_HOLD_DEFAULT
+    protected var dwellmax: Boolean = HSS_DWELLMAX_DEFAULT
     protected var handspec: String? = null
     protected var dwellarray: DoubleArray? = null
 
@@ -904,7 +904,7 @@ abstract class MhnPattern : Pattern() {
             if (sst != null) {
                 val throwval = sst.targetIndex - k
                 if (throwval > 2) {
-                    resultTps += throwspersec[min(throwval, 9)]
+                    resultTps += throwsPerSec[min(throwval, 9)]
                     ++numberAveraged
                 }
                 maxThrowval = max(throwval, maxThrowval)
@@ -1309,9 +1309,9 @@ abstract class MhnPattern : Pattern() {
                             val throwval = sst2.targetIndex - k
 
                             throwxsum += if (sst2.targetHand == h) {
-                                if (throwval > 8) samethrowx[8] else samethrowx[throwval]
+                                if (throwval > 8) sameThrowX[8] else sameThrowX[throwval]
                             } else {
-                                if (throwval > 8) crossingthrowx[8] else crossingthrowx[throwval]
+                                if (throwval > 8) crossingThrowX[8] else crossingThrowX[throwval]
                             }
                             ++numThrows
                         } else if (hands != null) {
@@ -1397,7 +1397,7 @@ abstract class MhnPattern : Pattern() {
                         val catchpath = sst2.pathNum
                         val catchval = k - sst2.source!!.index
                         pathtouched[catchpath - 1] = true
-                        catchxsum += (if (catchval > 8) catchx[8] else catchx[catchval])
+                        catchxsum += (if (catchval > 8) catchX[8] else catchX[catchval])
                         ++numCatches
                     }
 
@@ -1859,36 +1859,26 @@ abstract class MhnPattern : Pattern() {
         const val PROP_DEFAULT: String = "ball"
 
         // for hss config
-        const val HOLD_DEFAULT: Boolean = false
-        const val DWELLMAX_DEFAULT: Boolean = true
+        const val HSS_HOLD_DEFAULT: Boolean = false
+        const val HSS_DWELLMAX_DEFAULT: Boolean = true
 
         const val RIGHT_HAND: Int = 0
         const val LEFT_HAND: Int = 1
 
         // Default spatial coordinates, by number of objects
-        protected val samethrowx: DoubleArray =
-            doubleArrayOf(0.0, 20.0, 25.0, 12.0, 10.0, 7.5, 5.0, 5.0, 5.0)
-        protected val crossingthrowx: DoubleArray =
-            doubleArrayOf(0.0, 17.0, 17.0, 12.0, 10.0, 18.0, 25.0, 25.0, 30.0)
-        protected val catchx: DoubleArray =
+        protected val sameThrowX: DoubleArray =
+            doubleArrayOf(0.0, 20.0, 25.0, 12.0,  7.0,  7.5,  5.0,  5.0,  5.0)
+        protected val crossingThrowX: DoubleArray =
+            doubleArrayOf(0.0, 17.0, 17.0,  7.0, 10.0, 14.0, 25.0, 24.0, 30.0)
+        protected val catchX: DoubleArray =
             doubleArrayOf(0.0, 17.0, 25.0, 30.0, 40.0, 45.0, 45.0, 50.0, 50.0)
         protected const val RESTINGX: Double = 25.0
 
-        // Default beats per second, by number of objects
-        protected val throwspersec: DoubleArray = doubleArrayOf(
-            2.00,
-            2.00,
-            2.00,
-            2.90,
-            3.40,
-            4.10,
-            4.25,
-            5.00,
-            5.00,
-            5.50,
-        )
+        // Default throws per second, by number of objects
+        protected val throwsPerSec: DoubleArray =
+            doubleArrayOf(2.00, 2.00, 2.00, 2.90, 3.40, 4.10, 4.25, 5.00, 5.00, 5.50)
 
-        // maximum flight time (seconds) estimated from human jugglers
+        // Maximum flight time (seconds) estimated from human jugglers
         protected const val SECS_AIRTIME_MAX = 2.6
 
         // How many beats early to throw a '1' (all other throws are on-beat)
