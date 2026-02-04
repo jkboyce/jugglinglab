@@ -216,6 +216,9 @@ data class JmlPattern(
         - the time sequence of transitions makes sense for each path (e.g., don't
           have two throws in succession)
         - holding transitions are correct
+        - position times are inside the animation loop
+        - subsequent positions for a given juggler aren't too close in time
+        - subsequent events for a juggler/hand aren't too close in time
         */
 
         if (symmetries.count { it.type == JmlSymmetry.TYPE_DELAY } != 1) {
@@ -283,6 +286,41 @@ data class JmlPattern(
                 throw JuggleExceptionUser(
                     jlGetStringResource(Res.string.error_path_missing_events, path)
                 )
+            }
+        }
+
+        for (juggler in 1..numberOfJugglers) {
+            val jugglerPositions = positions.filter { it.juggler == juggler }
+            for ((i, pos) in jugglerPositions.withIndex()) {
+                if (pos.t !in loopStartTime..<loopEndTime) {
+                    throw JuggleExceptionUser(
+                        jlGetStringResource(Res.string.error_position_out_of_bounds, juggler)
+                    )
+                }
+                val gapToNext = if (i < jugglerPositions.size - 1) {
+                    jugglerPositions[i + 1].t - pos.t
+                } else {
+                    jugglerPositions[0].t + (loopEndTime - loopStartTime) - pos.t
+                }
+                if (gapToNext < 0.001) {
+                    throw JuggleExceptionUser(
+                        jlGetStringResource(Res.string.error_positions_too_close_in_time, juggler)
+                    )
+                }
+            }
+        }
+
+        for (juggler in 1..numberOfJugglers) {
+            for (h in 0..1) {
+                val hand = JmlEvent.handDescriptor(h)
+                val jugglerEvents = allEvents.map { it.event }.filter { it.juggler == juggler && it.hand == hand }
+                for ((i, ev) in jugglerEvents.withIndex()) {
+                    if (i < jugglerEvents.size - 1 && (jugglerEvents[i + 1].t - ev.t < 0.001)) {
+                        throw JuggleExceptionUser(
+                            jlGetStringResource(Res.string.error_events_too_close_in_time, juggler, hand)
+                        )
+                    }
+                }
             }
         }
     }

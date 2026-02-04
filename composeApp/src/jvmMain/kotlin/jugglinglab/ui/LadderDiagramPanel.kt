@@ -729,12 +729,16 @@ class LadderDiagramPanel(
             fixHolds()
             selectPrimaryEvents()
         }
-        val newPattern = JmlPattern.fromPatternBuilder(record)
-        state.update(
-            pattern = newPattern,
-            selectedItemHashCode = newEvent.jlHashCode
-        )
-        state.addCurrentToUndoList()
+        try {
+            val newPattern = JmlPattern.fromPatternBuilder(record).apply {
+                assertValid()
+            }
+            state.update(
+                pattern = newPattern,
+                selectedItemHashCode = newEvent.jlHashCode
+            )
+            state.addCurrentToUndoList()
+        } catch (_: JuggleExceptionUser) {}
     }
 
     @Throws(JuggleExceptionInternal::class)
@@ -791,12 +795,16 @@ class LadderDiagramPanel(
         val rec = PatternBuilder.fromJmlPattern(state.pattern).apply {
             positions.add(pos)
         }
-        val newPattern = JmlPattern.fromPatternBuilder(rec)
-        state.update(
-            pattern = newPattern,
-            selectedItemHashCode = pos.jlHashCode
-        )
-        state.addCurrentToUndoList()
+        try {
+            val newPattern = JmlPattern.fromPatternBuilder(rec).apply {
+                assertValid()
+            }
+            state.update(
+                pattern = newPattern,
+                selectedItemHashCode = pos.jlHashCode
+            )
+            state.addCurrentToUndoList()
+        } catch (_: JuggleExceptionUser) {}
     }
 
     @Throws(JuggleExceptionInternal::class)

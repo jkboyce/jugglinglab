@@ -155,6 +155,9 @@
     <string name="error_prop_assignment">Prop %1$d is not used by any path</string>
     <string name="error_holding_after_throw">Hold after throw on path %1$d</string>
     <string name="error_path_missing_events">No events for path %1$d</string>
+    <string name="error_position_out_of_bounds">Position time for juggler %1$d is out of bounds</string>
+    <string name="error_positions_too_close_in_time">Positions for juggler %1$d are too close in time</string>
+    <string name="error_events_too_close_in_time">Events for juggler %1$d and hand %2$d are too close in time</string>
     <string name="error_prop_type">����� ����  "%1$s" ���������</string>
     <string name="error_token_count">���� ����� ����� ����� ������� ����</string>
     <string name="error_missing_pattern">JML pattern expected inside line tag %1$d</string>

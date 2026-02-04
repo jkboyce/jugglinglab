@@ -159,6 +159,7 @@ data class JmlEvent(
         const val RIGHT_HAND: Int = 2
 
         fun handIndex(handDescriptor: Int) = if (handDescriptor == LEFT_HAND) 0 else 1
+        fun handDescriptor(handIndex: Int) = if (handIndex == 0) LEFT_HAND else RIGHT_HAND
 
         //----------------------------------------------------------------------
         // Constructing JmlEvents
