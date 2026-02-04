@@ -48,7 +48,6 @@ class AnimationGifWriter(
     val cleanup: Runnable? = null
 ) : Thread() {
     init {
-        gifState.update(isPaused = true, message = "")
         setPriority(MIN_PRIORITY)
         start()
     }
@@ -133,6 +132,9 @@ class AnimationGifWriter(
             height = gifState.prefs.height,
             density = Density(1f)
         ).use { scene ->
+            // start AnimationView paused so it doesn't start its internal timer
+            gifState.update(isPaused = true, message = "")
+
             scene.setContent {
                 AnimationView(state = gifState, isAntiAlias = false)
             }
