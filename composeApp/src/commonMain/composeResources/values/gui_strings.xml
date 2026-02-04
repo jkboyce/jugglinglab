@@ -100,7 +100,7 @@
     <string name="gui_solid_3d_display">Solid 3D display</string>
     <string name="gui_width">Width</string>
     <string name="gui_height">Height</string>
-    <string name="gui_frames_per_second">Frames per second</string>
+    <string name="gui_frames_per_second">Frames per second (GIF)</string>
     <string name="gui_slowdown_factor">Slowdown factor</string>
     <string name="gui_border__pixels_">Border (pixels)</string>
     <string name="gui_double_buffered_animation">Double-buffered animation</string>

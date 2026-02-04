@@ -100,7 +100,7 @@
     <string name="gui_solid_3d_display">Animación 3D sólida</string>
     <string name="gui_width">Anchura</string>
     <string name="gui_height">Altura</string>
-    <string name="gui_frames_per_second">Frecuencia de refresco</string>
+    <string name="gui_frames_per_second">Frecuencia de refresco (GIF)</string>
     <string name="gui_slowdown_factor">Velocidad</string>
     <string name="gui_border__pixels_">Beira (pixeles)</string>
     <string name="gui_double_buffered_animation">Animación doble-protegida</string>

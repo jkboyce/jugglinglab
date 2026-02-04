@@ -100,7 +100,7 @@
     <string name="gui_solid_3d_display">Affichage 3D plein</string>
     <string name="gui_width">Largeur</string>
     <string name="gui_height">Hauteur</string>
-    <string name="gui_frames_per_second">Images par secondes</string>
+    <string name="gui_frames_per_second">Images par secondes (GIF)</string>
     <string name="gui_slowdown_factor">Facteur de ralentissement</string>
     <string name="gui_border__pixels_">Bordure (pixels)</string>
     <string name="gui_double_buffered_animation">animation avec mémoire tampon doublée</string>
