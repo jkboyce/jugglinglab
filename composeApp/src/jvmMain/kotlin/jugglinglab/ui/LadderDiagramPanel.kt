@@ -142,7 +142,7 @@ class LadderDiagramPanel(
             if (isPopup) {
                 guiState = STATE_POPUP
                 popupItem = getSelectedLadderEvent(mx, my) ?: getSelectedLadderPosition(mx, my)
-                    ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
+                        ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
                 popupX = mx
                 popupY = myClamped
 
@@ -151,7 +151,11 @@ class LadderDiagramPanel(
                 val code = popupItem?.jlHashCode ?: 0
                 state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
 
-                makePopupMenu(popupItem).show(composePanel, (mx / currentDensity).toInt(), (my / currentDensity).toInt())
+                makePopupMenu(popupItem).show(
+                    composePanel,
+                    (mx / currentDensity).toInt(),
+                    (my / currentDensity).toInt()
+                )
                 return
             }
 
@@ -353,7 +357,7 @@ class LadderDiagramPanel(
                     continue
                 }
                 d = ((x - item.xCenter) * (x - item.xCenter) +
-                    (y - item.yCenter) * (y - item.yCenter)).toDouble()
+                        (y - item.yCenter) * (y - item.yCenter)).toDouble()
                 d = abs(sqrt(d) - item.radius)
             } else {
                 val xmin = min(item.xStart, item.xEnd)
@@ -366,10 +370,10 @@ class LadderDiagramPanel(
                     continue
                 }
                 d = ((item.xEnd - item.xStart) * (y - item.yStart)
-                    - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
+                        - (x - item.xStart) * (item.yEnd - item.yStart)).toDouble()
                 d = abs(d) / sqrt(
                     ((item.xEnd - item.xStart) * (item.xEnd - item.xStart)
-                        + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
+                            + (item.yEnd - item.yStart) * (item.yEnd - item.yStart)).toDouble()
                 )
             }
 
@@ -411,7 +415,7 @@ class LadderDiagramPanel(
             }
 
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
         deltaYMin = ((tMin - item.event.t) / scale).toInt()
         deltaYMax = ((tMax - item.event.t) / scale).toInt()
     }
@@ -424,7 +428,7 @@ class LadderDiagramPanel(
         val layout = currentLayout ?: return 0
         val dy = min(max(my - startY, deltaYMin), deltaYMax)
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
         val newT = startT + dy * scale  // unclipped new event time
 
         // Calculate a window (tExclMin, tExclMax) of excluded times based on
@@ -483,7 +487,7 @@ class LadderDiagramPanel(
     private fun moveEventInPattern(item: LadderEventItem) {
         val layout = currentLayout ?: return
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
         val newT = run {
             val tempT = startT + deltaY * scale
             if (tempT < state.pattern.loopStartTime + scale) {
@@ -514,8 +518,8 @@ class LadderDiagramPanel(
         // the HOLDING transitions
         val needFixHolds = layout.eventItems.any {
             (it.event.t - item.event.t) * (it.event.t - newT) < 0.0 &&
-                it.event.juggler == item.event.juggler &&
-                it.event.hand == item.event.hand
+                    it.event.juggler == item.event.juggler &&
+                    it.event.hand == item.event.hand
         }
         if (needFixHolds) {
             record.fixHolds()
@@ -533,15 +537,15 @@ class LadderDiagramPanel(
         val tmin = state.pattern.loopStartTime
         val tmax = state.pattern.loopEndTime
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
 
         deltaYMin = ((tmin - item.position.t) / scale).toInt()
         deltaYMax = ((tmax - item.position.t) / scale).toInt()
     }
 
-    // Return value of `delta_y` during mouse drag of an event, clipping it to
+    // Return value of `deltaY` during mouse drag of an event, clipping it to
     // enforce proximity limits between various event types, as well as hard
-    // limits `delta_y_min` and `delta_y_max`.
+    // limits `deltaYMin` and `deltaYMax`.
 
     private fun getClippedPositionTime(my: Int, position: JmlPosition): Int {
         val layout = currentLayout ?: return 0
@@ -549,14 +553,14 @@ class LadderDiagramPanel(
         dy = min(max(dy, deltaYMin), deltaYMax)
 
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
         val shift = dy * scale
-        val newt = startT + shift // unclipped new event time
+        val newT = startT + shift  // unclipped new event time
 
-        // Calculate a window (t_excl_min, t_excl_max) of excluded times based on
-        // proximity to other events, where `newt` is contained within the window.
-        var tExclMin = newt
-        var tExclMax = newt
+        // Calculate a window (tExclMin, tExclMax) of excluded times based on
+        // proximity to other events, where `newT` is contained within the window.
+        var tExclMin = newT
+        var tExclMax = newT
         var changed: Boolean
 
         do {
@@ -580,7 +584,7 @@ class LadderDiagramPanel(
             }
         } while (changed)
 
-        // Clip the position time `newt` to whichever end of the exclusion window
+        // Clip the position time `newT` to whichever end of the exclusion window
         // is closest. First check if each end is feasible.
         val exclDyMin = floor((tExclMin - startT) / scale).toInt()
         val exclDyMax = ceil((tExclMax - startT) / scale).toInt()
@@ -591,7 +595,7 @@ class LadderDiagramPanel(
 
         if (feasibleMin && feasibleMax) {
             val tMidpoint = 0.5 * (tExclMin + tExclMax)
-            resultDy = (if (newt <= tMidpoint) exclDyMin else exclDyMax)
+            resultDy = (if (newT <= tMidpoint) exclDyMin else exclDyMax)
         } else if (feasibleMin) {
             resultDy = exclDyMin
         } else if (feasibleMax) {
@@ -605,7 +609,7 @@ class LadderDiagramPanel(
         val layout = currentLayout ?: return
         val pos = item.position
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+                (layout.height - 2 * layout.borderTop).toDouble()
 
         var newT = startT + deltaY * scale
         if (newT < state.pattern.loopStartTime + scale) {
@@ -720,10 +724,11 @@ class LadderDiagramPanel(
             hand = hand
         )
 
-        val record = PatternBuilder.fromJmlPattern(state.pattern)
-        record.events.add(newEvent)
-        record.fixHolds()
-        record.selectPrimaryEvents()
+        val record = PatternBuilder.fromJmlPattern(state.pattern).apply {
+            events.add(newEvent)
+            fixHolds()
+            selectPrimaryEvents()
+        }
         val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
@@ -768,7 +773,10 @@ class LadderDiagramPanel(
             jug
         }
 
-        val newTime = layout.yToTime(popupY)
+        val newTime = run {
+            val time = layout.yToTime(popupY)
+            if (time == state.pattern.loopEndTime) state.pattern.loopStartTime else time
+        }
 
         val newGlobalCoordinate = Coordinate()
         state.pattern.layout.getJugglerPosition(juggler, newTime, newGlobalCoordinate)
@@ -780,8 +788,9 @@ class LadderDiagramPanel(
             angle = state.pattern.layout.getJugglerAngle(juggler, newTime),
             juggler = juggler
         )
-        val rec = PatternBuilder.fromJmlPattern(state.pattern)
-        rec.positions.add(pos)
+        val rec = PatternBuilder.fromJmlPattern(state.pattern).apply {
+            positions.add(pos)
+        }
         val newPattern = JmlPattern.fromPatternBuilder(rec)
         state.update(
             pattern = newPattern,
@@ -796,8 +805,9 @@ class LadderDiagramPanel(
             throw JuggleExceptionInternal("LadderDiagram illegal remove position")
         }
         val pos = (popupItem as LadderPositionItem).position
-        val rec = PatternBuilder.fromJmlPattern(state.pattern)
-        rec.positions.remove(pos)
+        val rec = PatternBuilder.fromJmlPattern(state.pattern).apply {
+            positions.remove(pos)
+        }
         val newPattern = JmlPattern.fromPatternBuilder(rec)
         state.update(
             pattern = newPattern,
@@ -1122,7 +1132,7 @@ class LadderDiagramPanel(
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
-            (popupItem as LadderEventItem).transNum * 27
+                (popupItem as LadderEventItem).transNum * 27
         val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
@@ -1147,7 +1157,7 @@ class LadderDiagramPanel(
         val index = record.events.indexOf(evPrimary)
         record.events[index] = newPrimary
         val code = (popupItem as LadderEventItem).event.jlHashCode + 23 +
-            (newPrimary.transitions.size - 1) * 27
+                (newPrimary.transitions.size - 1) * 27
         val newPattern = JmlPattern.fromPatternBuilder(record)
         state.update(
             pattern = newPattern,
@@ -1408,8 +1418,8 @@ class LadderDiagramPanel(
                 // can't delete an event if it's the last one for that hand
                 val anotherEventForHand = layout.eventItems.any {
                     it.event.juggler == evitem.event.juggler &&
-                        it.event.hand == evitem.event.hand &&
-                        it.primary != evitem.primary
+                            it.event.hand == evitem.event.hand &&
+                            it.primary != evitem.primary
                 }
                 if (!anotherEventForHand) {
                     return false
@@ -1437,15 +1447,15 @@ class LadderDiagramPanel(
 
                 "changetocatch" ->
                     return tr.type == JmlTransition.TRANS_SOFTCATCH
-                        || tr.type == JmlTransition.TRANS_GRABCATCH
+                            || tr.type == JmlTransition.TRANS_GRABCATCH
 
                 "changetosoftcatch" ->
                     return tr.type == JmlTransition.TRANS_CATCH
-                        || tr.type == JmlTransition.TRANS_GRABCATCH
+                            || tr.type == JmlTransition.TRANS_GRABCATCH
 
                 "changetograbcatch" ->
                     return tr.type == JmlTransition.TRANS_CATCH
-                        || tr.type == JmlTransition.TRANS_SOFTCATCH
+                            || tr.type == JmlTransition.TRANS_SOFTCATCH
             }
         } else if (laditem.type == LadderItem.TYPE_POSITION) {
             return !mutableListOf(
