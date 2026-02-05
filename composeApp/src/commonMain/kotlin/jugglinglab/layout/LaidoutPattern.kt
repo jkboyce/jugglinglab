@@ -51,6 +51,14 @@ class LaidoutPattern(val pat: JmlPattern) {
         Array(pat.numberOfJugglers) { BooleanArray(2) }
 
     init {
+        if (pat.numberOfProps == 0 && pat.numberOfPaths > 0) {
+            throw JuggleExceptionInternal("No props defined", pat)
+        }
+        for (i in 1..pat.numberOfProps) {
+            // raise an exception if prop cannot be loaded
+            pat.getProp(i)
+        }
+
         pat.events.forEach {
             addEvent(
                 LayoutEvent(
@@ -62,10 +70,6 @@ class LaidoutPattern(val pat: JmlPattern) {
         }
 
         try {
-            if (pat.numberOfProps == 0 && pat.numberOfPaths > 0) {
-                throw JuggleExceptionInternal("No props defined", pat)
-            }
-
             buildEventList()
             findPositions()
             buildLinkLists()
