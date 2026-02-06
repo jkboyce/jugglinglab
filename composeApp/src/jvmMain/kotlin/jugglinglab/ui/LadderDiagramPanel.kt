@@ -1497,7 +1497,7 @@ class LadderDiagramPanel(
         const val PATH_SLOP_DP: Int = 5
 
         // minimum time (seconds) between a throw and another event with transitions
-        private const val MIN_THROW_SEP_TIME: Double = 0.05
+        private const val MIN_THROW_SEP_TIME: Double = 0.03
 
         // minimum time (seconds) between all events for a hand
         private const val MIN_EVENT_SEP_TIME: Double = 0.01

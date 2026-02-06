@@ -1891,7 +1891,7 @@ abstract class MhnPattern : Pattern() {
         protected const val BEATS_AIRTIME_MIN: Double = 0.3
 
         // Minimum time from a throw to a subsequent catch for that hand, in beats
-        protected const val BEATS_THROW_CATCH_MIN: Double = 0.3
+        protected const val BEATS_THROW_CATCH_MIN: Double = 0.05
 
         // Minimum time from a catch to a subsequent throw for that hand, in beats
         protected const val BEATS_CATCH_THROW_MIN: Double = 0.02
