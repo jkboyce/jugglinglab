@@ -129,7 +129,7 @@ class AnimationController(
             )
             if (state.prefs.mousePause) {
                 // start with mouse assumed outside, and paused
-                wasPaused = state.isPaused
+                wasPaused = false
                 state.update(isPaused = true)
                 mouseOutsideIsValid = false
             }
