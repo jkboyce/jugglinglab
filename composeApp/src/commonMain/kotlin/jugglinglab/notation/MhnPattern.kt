@@ -713,7 +713,9 @@ abstract class MhnPattern : Pattern() {
         record.setTitleString(if (title == null) pattern else title)
 
         // Step 1: Add basic information about the pattern
+        if (numberOfPaths > 0) {
         addPropsToJml(record)
+            }
         addSymmetriesToJml(record)
 
         // Step 2: Assign catch and throw times to each MhnThrow in the

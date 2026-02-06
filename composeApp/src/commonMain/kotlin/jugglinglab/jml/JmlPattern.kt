@@ -223,10 +223,10 @@ data class JmlPattern(
         */
 
         if (numberOfJugglers < 1) {
-            throw JuggleExceptionUser("Number of jugglers must be at least 1")
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_juggler_count))
         }
         if (loopEndTime < 0.001) {
-            throw JuggleExceptionUser("Pattern loop time is out of range")
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_pattern_loop_time))
         }
 
         if (symmetries.count { it.type == JmlSymmetry.TYPE_DELAY } != 1) {
@@ -250,7 +250,7 @@ data class JmlPattern(
         }
 
         (1..numberOfProps).forEach {
-            if (it !in propAssignment) {
+            if (it !in propAssignment && numberOfPaths != 0) {
                 throw JuggleExceptionUser(jlGetStringResource(Res.string.error_prop_assignment, it))
             }
         }
@@ -888,8 +888,7 @@ data class JmlPattern(
                 "jml" -> {
                     val vers = current.attributes.getValueOf("version") ?: return
                     if (jlCompareVersions(vers, JmlDefs.CURRENT_JML_VERSION) > 0) {
-                        val message = jlGetStringResource(Res.string.error_jml_version)
-                        throw JuggleExceptionUser(message)
+                        throw JuggleExceptionUser(jlGetStringResource(Res.string.error_jml_version))
                     }
                     record.loadingJmlVersion = vers
                 }
@@ -923,28 +922,24 @@ data class JmlPattern(
                         record.numberOfJugglers = jugglerstring?.toInt() ?: 1
                         record.numberOfPaths = pathstring!!.toInt()
                     } catch (_: Exception) {
-                        val message = jlGetStringResource(Res.string.error_setup_tag)
-                        throw JuggleExceptionUser(message)
+                        throw JuggleExceptionUser(jlGetStringResource(Res.string.error_setup_tag))
                     }
 
-                    record.propAssignment = if (propstring != null) {
+                    record.propAssignment = if (propstring != null && propstring.trim().isNotEmpty()) {
                         val tokens = propstring.split(',')
                         if (tokens.size != record.numberOfPaths) {
-                            val message = jlGetStringResource(Res.string.error_prop_assignments)
-                            throw JuggleExceptionUser(message)
+                            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_prop_assignments))
                         }
                         try {
                             tokens.map {
                                 val propNum = it.trim().toInt()
                                 if (propNum < 1 || propNum > record.props.size) {
-                                    val message = jlGetStringResource(Res.string.error_prop_number)
-                                    throw JuggleExceptionUser(message)
+                                    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_prop_number))
                                 }
                                 propNum
                             }.toMutableList()
                         } catch (_: NumberFormatException) {
-                            val message = jlGetStringResource(Res.string.error_prop_format)
-                            throw JuggleExceptionUser(message)
+                            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_prop_format))
                         }
                     } else {
                         MutableList(record.numberOfPaths) { 1 }
@@ -953,7 +948,7 @@ data class JmlPattern(
 
                 "symmetry" -> {
                     if (record.numberOfJugglers < 1) {
-                        throw JuggleExceptionUser("Number of jugglers must be at least 1")
+                        throw JuggleExceptionUser(jlGetStringResource(Res.string.error_juggler_count))
                     }
                     val sym = JmlSymmetry.fromJmlNode(
                         current,

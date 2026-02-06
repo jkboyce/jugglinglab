@@ -152,6 +152,8 @@
     <string name="error_switchdelay_juggler">Switchdelay symmetry juggler permutation must be order 2</string>
     <string name="error_switch_symmetry">Switch symmetry path permutation error</string>
     <string name="error_switch_juggler">Switch symmetry juggler permutation must be order 2</string>
+    <string name="error_juggler_count">Number of jugglers must be at least 1</string>
+    <string name="error_pattern_loop_time">Pattern loop time is out of range</string>
     <string name="error_permutation_format">Permutation must have %1$d elements in mapping</string>
     <string name="error_permutation_number_format">Permutation number format</string>
     <string name="error_permutation_out_of_range">Permutation element out of range</string>
