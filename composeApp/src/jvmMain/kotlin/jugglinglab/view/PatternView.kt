@@ -60,59 +60,57 @@ class PatternView(
         ja.minimumSize = Dimension(50, 50)
 
         // controls panel on the right
-        val controls = JPanel()
-        val gb = GridBagLayout()
-        controls.setLayout(gb)
+        val viewLabel = JLabel(jlGetStringResource(Res.string.gui_patternview_heading))
 
-        val labView = JLabel(jlGetStringResource(Res.string.gui_patternview_heading))
-        gb.setConstraints(
-            labView,
-            jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 4, 10, 0))
-        )
-        controls.add(labView)
-
-        val bg = ButtonGroup()
-        val bppanel = JPanel()
-        bppanel.setLayout(FlowLayout(FlowLayout.LEFT, 0, 0))
         rbBp = JRadioButton(jlGetStringResource(Res.string.gui_patternview_rb1_default))
-        bg.add(rbBp)
-        bppanel.add(rbBp)
-
-        val composeImage = jlGetImageResource("alert.png")
-        val editedIcon = ImageIcon(composeImage.toAwtImage(), "alert.png")
-        val editedIconScaled =
-            ImageIcon(
-                editedIcon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH)
-            )
-        bpEditedIcon = JLabel(editedIconScaled)
-        bpEditedIcon?.setToolTipText(jlGetStringResource(Res.string.gui_patternview_alert))
-        bppanel.add(Box.createHorizontalStrut(10))
-        bppanel.add(bpEditedIcon)
-
-        controls.add(bppanel)
-        gb.setConstraints(
-            bppanel, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0))
-        )
+        bpEditedIcon = run {
+            val composeImage = jlGetImageResource("alert.png")
+            val editedIcon = ImageIcon(composeImage.toAwtImage(), "alert.png")
+            val editedIconScaled =
+                ImageIcon(
+                    editedIcon.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH)
+                )
+            JLabel(editedIconScaled).apply {
+                setToolTipText(jlGetStringResource(Res.string.gui_patternview_alert))
+            }
+        }
+        val bppanel = JPanel().apply {
+            setLayout(FlowLayout(FlowLayout.LEFT, 0, 0))
+            add(rbBp)
+            add(Box.createHorizontalStrut(10))
+            add(bpEditedIcon)
+        }
 
         rbJml = JRadioButton(jlGetStringResource(Res.string.gui_patternview_rb2))
-        bg.add(rbJml)
-        controls.add(rbJml)
-        gb.setConstraints(
-            rbJml, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 4, 0, 0))
-        )
+        ButtonGroup().apply {
+            add(rbBp)
+            add(rbJml)
+        }
 
         ta = JTextArea()
-        val jscroll = JScrollPane(ta)
-        jscroll.preferredSize = Dimension(400, 1)
-        jscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS)
-        jscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
-        controls.add(jscroll)
-        val gbc =
-            jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(15, 0, 0, 0))
-        gbc.fill = GridBagConstraints.BOTH
-        gbc.weighty = 1.0
-        gbc.weightx = gbc.weighty
-        gb.setConstraints(jscroll, gbc)
+        val jscroll = JScrollPane(ta).apply {
+            preferredSize = Dimension(400, 1)
+            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS)
+            setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)
+        }
+
+        val gb = GridBagLayout().apply {
+            setConstraints(viewLabel, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(15, 4, 10, 0)))
+            setConstraints(bppanel, jlConstraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 4, 0, 0)))
+            setConstraints(rbJml, jlConstraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 4, 0, 0)))
+            setConstraints(jscroll, jlConstraints(GridBagConstraints.LINE_START, 0, 3, Insets(15, 0, 0, 0)).apply {
+                fill = GridBagConstraints.BOTH
+                weighty = 1.0
+                weightx = 1.0
+            })
+        }
+        val controls = JPanel().apply {
+            setLayout(gb)
+            add(viewLabel)
+            add(bppanel)
+            add(rbJml)
+            add(jscroll)
+        }
 
         // split pane dividing the two
         jsp = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, ja, controls)
@@ -120,25 +118,23 @@ class PatternView(
         add(jsp, BorderLayout.CENTER)
 
         // button + error message label across the bottom
-        val lower = JPanel()
-        val gb2 = GridBagLayout()
-        lower.setLayout(gb2)
         compile = JButton(jlGetStringResource(Res.string.gui_patternview_compile_button))
-        gb2.setConstraints(
-            compile, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(8, 8, 8, 0))
-        )
-        lower.add(compile)
         revert = JButton(jlGetStringResource(Res.string.gui_patternview_revert_button))
-        gb2.setConstraints(
-            revert, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(8, 5, 8, 12))
-        )
-        lower.add(revert)
         lab = JLabel(" ")
-        val gbc2 = jlConstraints(GridBagConstraints.LINE_START, 2, 0)
-        gbc2.fill = GridBagConstraints.HORIZONTAL
-        gbc2.weightx = 1.0
-        gb2.setConstraints(lab, gbc2)
-        lower.add(lab)
+        val gb2 = GridBagLayout().apply {
+            setConstraints(compile, jlConstraints(GridBagConstraints.LINE_START, 0, 0, Insets(8, 8, 8, 0)))
+            setConstraints(revert, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(8, 5, 8, 12)))
+            setConstraints(lab, jlConstraints(GridBagConstraints.LINE_START, 2, 0).apply {
+                fill = GridBagConstraints.HORIZONTAL
+                weightx = 1.0
+            })
+        }
+        val lower = JPanel().apply {
+            setLayout(gb2)
+            add(compile)
+            add(revert)
+            add(lab)
+        }
 
         add(lower, BorderLayout.PAGE_END)
 
@@ -246,10 +242,14 @@ class PatternView(
         }
         if (pattern != null) {
             val notation = pattern.basePatternNotation
-            val message = jlGetStringResource(Res.string.gui_patternview_rb1, notation)
+            val message = if (notation != null) {
+                jlGetStringResource(Res.string.gui_patternview_rb1, notation)
+            } else {
+                jlGetStringResource(Res.string.gui_patternview_rb1_default)
+            }
             rbBp.setText(message)
 
-            if (!(rbBp.isSelected || rbJml.isSelected)) {
+            if (!rbBp.isSelected && !rbJml.isSelected) {
                 if (notation == null) {
                     rbJml.setSelected(true)
                 } else {
