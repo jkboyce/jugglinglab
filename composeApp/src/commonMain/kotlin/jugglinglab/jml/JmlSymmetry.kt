@@ -7,6 +7,7 @@
 package jugglinglab.jml
 
 import jugglinglab.composeapp.generated.resources.*
+import jugglinglab.util.JuggleException
 import jugglinglab.util.JuggleExceptionUser
 import jugglinglab.util.Permutation
 import jugglinglab.util.jlParseFiniteDouble
@@ -63,19 +64,24 @@ data class JmlSymmetry(
                 }
             } ?: -1.0
 
-            val jugglerPerm = createPermutation(numberOfJugglers, at.getValueOf("jperm"), true)
-            val pathPerm = createPermutation(numberOfPaths, at.getValueOf("pperm"), false)
-
-            return JmlSymmetry(
-                type = symType,
-                numberOfJugglers = numberOfJugglers,
-                numberOfPaths = numberOfPaths,
-                jugglerPerm = jugglerPerm,
-                pathPerm = pathPerm,
-                delay = delay
-            )
+            return try {
+                val jugglerPerm = createPermutation(numberOfJugglers, at.getValueOf("jperm"), true)
+                val pathPerm = createPermutation(numberOfPaths, at.getValueOf("pperm"), false)
+                JmlSymmetry(
+                    type = symType,
+                    numberOfJugglers = numberOfJugglers,
+                    numberOfPaths = numberOfPaths,
+                    jugglerPerm = jugglerPerm,
+                    pathPerm = pathPerm,
+                    delay = delay
+                )
+            } catch (je: JuggleException) {
+                // error creating permutation
+                throw JuggleExceptionUser(je.message!!)
+            }
         }
 
+        @Throws(JuggleException::class)
         private fun createPermutation(
             size: Int,
             permString: String?,

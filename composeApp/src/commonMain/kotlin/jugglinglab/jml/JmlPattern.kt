@@ -208,7 +208,8 @@ data class JmlPattern(
     fun assertValid() {
         /*
         Check that:
-        - exactly one delay symmetry exists
+        - at least one juggler
+        - exactly one delay symmetry exists, and loop time is positive
         - pperm for switchdelay symmetry is consistent with pperm for delay symmetry
         - pperm for switch symmetry: every path has order two
         - all props have at least one path assigned
@@ -220,6 +221,13 @@ data class JmlPattern(
         - subsequent positions for a given juggler aren't too close in time
         - subsequent events for a juggler/hand aren't too close in time
         */
+
+        if (numberOfJugglers < 1) {
+            throw JuggleExceptionUser("Number of jugglers must be at least 1")
+        }
+        if (loopEndTime < 0.001) {
+            throw JuggleExceptionUser("Pattern loop time is out of range")
+        }
 
         if (symmetries.count { it.type == JmlSymmetry.TYPE_DELAY } != 1) {
             throw JuggleExceptionUser(jlGetStringResource(Res.string.error_no_delay_symmetry))
@@ -944,6 +952,9 @@ data class JmlPattern(
                 }
 
                 "symmetry" -> {
+                    if (record.numberOfJugglers < 1) {
+                        throw JuggleExceptionUser("Number of jugglers must be at least 1")
+                    }
                     val sym = JmlSymmetry.fromJmlNode(
                         current,
                         record.numberOfJugglers,

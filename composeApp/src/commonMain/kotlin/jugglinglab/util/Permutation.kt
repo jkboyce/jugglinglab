@@ -8,6 +8,8 @@
 
 package jugglinglab.util
 
+import jugglinglab.composeapp.generated.resources.*
+
 class Permutation {
     var size: Int
         private set
@@ -51,6 +53,7 @@ class Permutation {
     // There are two ways the string can be formatted: As an explicit mapping
     // (comma-separated integers), or in cycle notation (parentheses).
 
+    @Throws(JuggleException::class)
     constructor(n: Int, perm: String, reverses: Boolean) {
         size = n
         this.mapping = if (reverses) IntArray(size * 2 + 1) else IntArray(size)
@@ -69,9 +72,7 @@ class Permutation {
             val tokens = perm.split(',')
 
             if (tokens.size != size && size != 0) {
-                throw JuggleException(
-                    "Permutation init error: must have $n elements in mapping"
-                )
+                throw JuggleException(jlGetStringResource(Res.string.error_permutation_format, size))
             }
             tokens.forEachIndexed { i, token ->
                 val s = token.trim()
@@ -79,13 +80,13 @@ class Permutation {
                 try {
                     num = s.toInt()
                 } catch (_: NumberFormatException) {
-                    throw JuggleException("Permutation init error: number format")
+                    throw JuggleException(jlGetStringResource(Res.string.error_permutation_number_format))
                 }
                 if (num !in 1..size) {
-                    throw JuggleException("Permutation init error: out of range")
+                    throw JuggleException(jlGetStringResource(Res.string.error_permutation_out_of_range))
                 }
                 if (used[num - 1]) {
-                    throw JuggleException("Permutation init error: not one-to-one")
+                    throw JuggleException(jlGetStringResource(Res.string.error_permutation_one_to_one))
                 }
 
                 used[num - 1] = true
@@ -98,7 +99,7 @@ class Permutation {
             for (cycleToken in cycleTokens) {
                 var s1 = cycleToken.trim()
                 if (s1[0] != '(') {
-                    throw JuggleException("Permutation init error: parenthesis not grouped")
+                    throw JuggleException(jlGetStringResource(Res.string.error_permutation_parentheses))
                 }
                 s1 = s1.substring(1)
                 var lastnum = -(size + 1)
@@ -121,15 +122,15 @@ class Permutation {
                             num = s2.toInt()
                         }
                     } catch (_: NumberFormatException) {
-                        throw JuggleException("Permutation init error: number format")
+                        throw JuggleException(jlGetStringResource(Res.string.error_permutation_number_format))
                     }
 
                     if (reverses) {
                         if (num < -size || num > size || num == 0) {
-                            throw JuggleException("Permutation init error: out of range")
+                            throw JuggleException(jlGetStringResource(Res.string.error_permutation_out_of_range))
                         }
                         if (used[num + size]) {
-                            throw JuggleException("Permutation init error: not one-to-one")
+                            throw JuggleException(jlGetStringResource(Res.string.error_permutation_one_to_one))
                         }
                         used[num + size] = true
 
@@ -139,15 +140,15 @@ class Permutation {
                             mapping[num + size] = mapping[lastnum + size]
                             mapping[lastnum + size] = num
                             if (used[-lastnum + size] && (mapping[-lastnum + size] != -num)) {
-                                throw JuggleException("Permutation init error: input not reversible")
+                                throw JuggleException(jlGetStringResource(Res.string.error_permutation_not_reversible))
                             }
                         }
                     } else {
                         if (num !in 1..size) {
-                            throw JuggleException("Permutation init error: out of range")
+                            throw JuggleException(jlGetStringResource(Res.string.error_permutation_out_of_range))
                         }
                         if (used[num - 1]) {
-                            throw JuggleException("Permutation init error: not one-to-one")
+                            throw JuggleException(jlGetStringResource(Res.string.error_permutation_one_to_one))
                         }
                         used[num - 1] = true
 
