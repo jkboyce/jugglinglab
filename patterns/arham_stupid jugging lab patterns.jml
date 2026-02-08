@@ -21,12 +21,39 @@ pattern=&lt;7|1|7|1|7|1&gt;&lt;7p|1p|7p|1p|7p|1p&gt;;colors=mixed;title=6 people
 pattern=(&lt;1|7|1|7|1|7&gt;&lt;1p|7p|1p|7p|1p|7p&gt;^2)&lt;6p2/07070|6p4/70707|6p6/07070|7p1/70707|7p3/07070|7p5/70707&gt;(&lt;7|1|7|1|7|1&gt;&lt;7p|1p|7p|1p|7p|1p&gt;^2)&lt;670707|6p3/07070|6p5/70707|7p2/07070|7p4/70707|707070&gt;;colors=mixed;title=I have 0 idea whats going on
 </line>
 
-<line display="&quot;STOP GIVING ME THE BALLS&quot; -juggler 2" notation="siteswap">
-pattern=&lt;b|1&gt;&lt;bp|1p&gt;;colors=mixed;title=&quot;STOP GIVING ME THE BALLS&quot; -juggler 2
-</line>
-
 <line display="more bouncing" notation="siteswap">
 pattern=&lt;3pBBHF|3pBBHF&gt;;colors=mixed;title=more bouncing
+</line>
+
+<line display="PUNCH" notation="jml">
+<pattern>
+<title>PUNCH</title>
+<basepattern notation="siteswap">pattern=&lt;2|0&gt;; title=PUNCH</basepattern>
+<prop type="ball" mod="diam=20.0"/>
+<setup jugglers="2" paths="2" props="1,1"/>
+<symmetry type="delay" pperm="(1)(2)" delay="1"/>
+<symmetry type="switchdelay" jperm="(1,1*)(2,2*)" pperm="(1,2)"/>
+<event x="25" y="0" z="0" t="0" hand="1:right">
+<holding path="1"/>
+</event>
+<event x="0.11" y="109.8551" z="57.66" t="0" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="25" y="0" z="0" t="0" hand="2:right"/>
+<event x="-25" y="0" z="0" t="0" hand="2:left"/>
+</pattern>
+</line>
+
+<line display="a lot of balls(may lag your computer)" notation="siteswap">
+pattern={1000};bps=900;hands=(-25)(2.5).(25)(-2.5).(-25)(0).;body=(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)...;colors=mixed;title=a lot of balls(may lag your computer)
+</line>
+
+<line display="&quot;STOP GIVING ME THE BALLS&quot; -juggler 2" notation="siteswap">
+pattern=&lt;z|1&gt;&lt;zp|1p&gt;;bps=50;colors=mixed;title=&quot;STOP GIVING ME THE BALLS&quot; -juggler 2
+</line>
+
+<line display="Supersonic passing :D" notation="siteswap" animprefs="width=201;height=226">
+pattern=&lt;1|1&gt;&lt;1p|1p&gt;;bps=100;hands=(10)(32.5).;colors=mixed;title=Supersonic passing :D
 </line>
 
 </patternlist>
