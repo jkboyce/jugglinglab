@@ -875,19 +875,7 @@ abstract class MhnPattern : Pattern() {
             println(result)
         }
 
-        try {
-            result.assertValid()
-        } catch (e: JuggleExceptionUser) {
-            // treat as internal error since user input errors should have
-            // been caught upstream
-            throw JuggleExceptionInternal(
-                "Error in asJmlPattern(): ${e.message}", result
-            )
-        } catch (jei: JuggleExceptionInternal) {
-            jei.pattern = result
-            throw jei
-        }
-
+        result.assertValid()
         return result
     }
 
