@@ -222,15 +222,8 @@ data class JmlPattern(
         - subsequent events for a juggler/hand aren't too close in time
         */
 
-        if (numberOfJugglers < 1) {
-            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_juggler_count))
-        }
-        if (loopEndTime < 0.001) {
-            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_pattern_loop_time))
-        }
-
         if (symmetries.count { it.type == JmlSymmetry.TYPE_DELAY } != 1) {
-            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_no_delay_symmetry))
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_not_one_delay_symmetry))
         }
         symmetries.filter { it.type == JmlSymmetry.TYPE_SWITCHDELAY }.forEach { sym ->
             if (sym.pathPerm.composedWith(sym.pathPerm) != pathPermutation) {
@@ -247,6 +240,13 @@ data class JmlPattern(
             if (sym.jugglerPerm.order != 2) {
                 throw JuggleExceptionUser(jlGetStringResource(Res.string.error_switch_juggler))
             }
+        }
+
+        if (numberOfJugglers < 1) {
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_juggler_count))
+        }
+        if (loopEndTime < 0.001) {
+            throw JuggleExceptionUser(jlGetStringResource(Res.string.error_pattern_loop_time))
         }
 
         (1..numberOfProps).forEach {
