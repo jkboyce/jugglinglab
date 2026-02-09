@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
@@ -39,11 +39,11 @@ fun SiteswapGeneratorControl(
     var maxThrow by remember { mutableStateOf("") }
     var period by remember { mutableStateOf("") }
     // column 1: settings
-    var jugglersIndex by remember { mutableStateOf(0) } // 0..5 maps to 1..6 jugglers
+    var jugglersIndex by remember { mutableIntStateOf(0) } // 0..5 maps to 1..6 jugglers
     var rhythmAsync by remember { mutableStateOf(true) } // true = async, false = sync
-    var compositionIndex by remember { mutableStateOf(0) } // 0=all, 1=non-obvious, 2=prime
+    var compositionIndex by remember { mutableIntStateOf(0) } // 0=all, 1=non-obvious, 2=prime
     // multiplexing: 0="none", 1="2", 2="3", 3="4"
-    var multiplexingIndex by remember { mutableStateOf(0) }
+    var multiplexingIndex by remember { mutableIntStateOf(0) }
     // column 2: filters
     var groundState by remember { mutableStateOf(true) }
     var excitedState by remember { mutableStateOf(true) }
@@ -203,7 +203,7 @@ fun SiteswapGeneratorControl(
                 modifier = Modifier.weight(1f)
             ) {
                 // Jugglers
-                Text(text = stringResource(Res.string.gui_jugglers), style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_jugglers), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = (1..6).map { it.toString() },
@@ -214,7 +214,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Rhythm
-                Text(text = stringResource(Res.string.gui_rhythm), style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_rhythm), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = listOf(
@@ -228,7 +228,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Multiplexing (Dropdown)
-                Text(text = stringResource(Res.string.gui_multiplexing), style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_multiplexing), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = multiplexingOptions,
@@ -239,7 +239,7 @@ fun SiteswapGeneratorControl(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Compositions
-                Text(text = stringResource(Res.string.gui_compositions), style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_compositions), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 StyledDropdown(
                     items = listOf(
@@ -256,7 +256,7 @@ fun SiteswapGeneratorControl(
 
             // RIGHT COLUMN (Filters)
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = stringResource(Res.string.gui_find), style = MaterialTheme.typography.body1)
+                Text(text = stringResource(Res.string.gui_find), style = MaterialTheme.typography.bodyLarge)
                 CompactCheckbox(stringResource(Res.string.gui_ground_state_patterns), groundState) { groundState = it }
                 CompactCheckbox(stringResource(Res.string.gui_excited_state_patterns), excitedState) { excitedState = it }
                 CompactCheckbox(stringResource(Res.string.gui_transition_throws), transitionThrows, enabled = transitionThrowsEnabled) { transitionThrows = it }
@@ -313,7 +313,7 @@ fun SiteswapGeneratorControl(
         ) {
             Button(
                 onClick = { resetControl() },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text(stringResource(Res.string.gui_defaults), color = Color.Black)
             }
@@ -339,7 +339,7 @@ private fun CompactInput(
     modifier: Modifier = Modifier
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.body2)
+        Text(label, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.width(8.dp))
         OutlinedTextField(
             value = value,
@@ -350,7 +350,7 @@ private fun CompactInput(
                 .padding(PaddingValues(0.dp))
                 .then(modifier),
             singleLine = true,
-            textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
         )
     }
 }
@@ -379,7 +379,7 @@ private fun CompactCheckbox(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (enabled) color else Color.LightGray
         )
     }
@@ -400,7 +400,7 @@ private fun AlignedInputRow(
         Text(
             text = label,
             textAlign = TextAlign.End,
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (enabled) Color.Unspecified else Color.LightGray,
             modifier = Modifier.width(labelWidth).padding(end = 10.dp)
         )
@@ -413,7 +413,7 @@ private fun AlignedInputRow(
                 .height(50.dp)
                 .padding(PaddingValues(horizontal = 8.dp, vertical = 0.dp)),
             singleLine = true,
-            textStyle = MaterialTheme.typography.body2,
+            textStyle = MaterialTheme.typography.bodyMedium,
         )
     }
 }
@@ -443,7 +443,7 @@ private fun StyledDropdown(
         ) {
             Text(
                 text = if (selectedIndex in items.indices) items[selectedIndex] else "",
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.bodyMedium
             )
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
@@ -458,13 +458,12 @@ private fun StyledDropdown(
         ) {
             items.forEachIndexed { index, item ->
                 DropdownMenuItem(
+                    text = { Text(text = item, style = MaterialTheme.typography.bodyMedium) },
                     onClick = {
                         onIndexChange(index)
                         expanded = false
                     }
-                ) {
-                    Text(text = item, style = MaterialTheme.typography.body2)
-                }
+                )
             }
         }
     }

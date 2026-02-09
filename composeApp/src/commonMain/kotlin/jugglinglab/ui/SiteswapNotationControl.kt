@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
@@ -43,10 +43,10 @@ fun SiteswapNotationControl(
     var beatsPerSecond by remember { mutableStateOf("") }
     var dwellBeats by remember { mutableStateOf("") }
     var handParams by remember { mutableStateOf("") }
-    var handDropdownIndex by remember { mutableStateOf(0) }
+    var handDropdownIndex by remember { mutableIntStateOf(0) }
     var bodyParams by remember { mutableStateOf("") }
-    var bodyDropdownIndex by remember { mutableStateOf(0) }
-    var propIndex by remember { mutableStateOf(0) }
+    var bodyDropdownIndex by remember { mutableIntStateOf(0) }
+    var propIndex by remember { mutableIntStateOf(0) }
     var manualSettings by remember { mutableStateOf("") }
 
     // Focus requester retained across recompositions
@@ -232,7 +232,7 @@ fun SiteswapNotationControl(
             Text(
                 text = stringResource(Res.string.gui_manual_settings),
                 modifier = Modifier.padding(start = 24.dp, bottom = 4.dp),
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyLarge
             )
             OutlinedTextField(
                 value = manualSettings,
@@ -242,7 +242,7 @@ fun SiteswapNotationControl(
                     .padding(horizontal = 24.dp)
                     .height(56.dp),
                 singleLine = true,
-                textStyle = MaterialTheme.typography.body1
+                textStyle = MaterialTheme.typography.bodyLarge
             )
         }
 
@@ -256,7 +256,7 @@ fun SiteswapNotationControl(
         ) {
             Button(
                 onClick = { resetControl() },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text(stringResource(Res.string.gui_defaults), color = Color.Black)
             }
@@ -279,8 +279,8 @@ private fun LabelledInputRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     width: androidx.compose.ui.unit.Dp = 250.dp,
-    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -291,7 +291,7 @@ private fun LabelledInputRow(
             text = label,
             modifier = Modifier.width(130.dp), // Matched visual alignment
             textAlign = TextAlign.End,
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.width(10.dp))
 
@@ -302,7 +302,7 @@ private fun LabelledInputRow(
                 onValueChange = onValueChange,
                 modifier = Modifier.width(width).height(56.dp).then(modifier),
                 singleLine = true,
-                textStyle = MaterialTheme.typography.body1
+                textStyle = MaterialTheme.typography.bodyLarge
             )
         }
     }
@@ -325,7 +325,7 @@ private fun DropdownRow(
             text = label,
             modifier = Modifier.width(130.dp),
             textAlign = TextAlign.End,
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.width(10.dp))
 
@@ -360,7 +360,7 @@ private fun MovementControlRow(
                 text = label,
                 modifier = Modifier.width(130.dp),
                 textAlign = TextAlign.End,
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.width(10.dp))
             Box(modifier = Modifier.width(250.dp)) {
@@ -388,7 +388,7 @@ private fun MovementControlRow(
                     onValueChange = onTextChange,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.body1
+                    textStyle = MaterialTheme.typography.bodyLarge
                 )
             }
         }
@@ -419,7 +419,7 @@ private fun SimpleDropdown(
         ) {
             Text(
                 text = if (selectedIndex in items.indices) stringResource(items[selectedIndex]) else "",
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyLarge
             )
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
@@ -434,13 +434,12 @@ private fun SimpleDropdown(
         ) {
             items.forEachIndexed { index, item ->
                 DropdownMenuItem(
+                    text = { Text(text = stringResource(item), style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
                         onIndexChange(index)
                         expanded = false
                     }
-                ) {
-                    Text(text = stringResource(item))
-                }
+                )
             }
         }
     }

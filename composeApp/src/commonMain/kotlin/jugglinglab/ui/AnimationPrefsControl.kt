@@ -18,7 +18,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
@@ -56,7 +56,7 @@ fun AnimationPrefsControl(
     var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
     var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
-    var showGround by remember { mutableStateOf(initialPrefs.showGround) }
+    var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
     var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
     var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
     var stereo by remember { mutableStateOf(initialPrefs.stereo) }
@@ -159,7 +159,7 @@ fun AnimationPrefsControl(
                     modifier = Modifier.width(80.dp).height(32.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(selectedText, style = MaterialTheme.typography.body2, maxLines = 1)
+                        Text(selectedText, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
                         Spacer(Modifier.weight(1f))
                         Icon(
                             Icons.Filled.ArrowDropDown,
@@ -170,12 +170,13 @@ fun AnimationPrefsControl(
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     options.forEach { (value, label) ->
-                        DropdownMenuItem(onClick = {
-                            showGround = value
-                            expanded = false
-                        }) {
-                            Text(text = label)
-                        }
+                        DropdownMenuItem(
+                            text = { Text(text = label) },
+                            onClick = {
+                                showGround = value
+                                expanded = false
+                            }
+                        )
                     }
                 }
             }
@@ -183,7 +184,7 @@ fun AnimationPrefsControl(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 stringResource(Res.string.gui_prefs_show_ground),
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyLarge
             )
         }
 
@@ -219,7 +220,7 @@ fun AnimationPrefsControl(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Manual Settings section
-        Text("Manual settings", style = MaterialTheme.typography.body1)
+        Text("Manual settings", style = MaterialTheme.typography.bodyLarge)
         OutlinedTextField(
             value = manualSettings,
             onValueChange = { manualSettings = it },
@@ -236,7 +237,7 @@ fun AnimationPrefsControl(
         ) {
             Button(
                 onClick = onCancel,
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text(stringResource(Res.string.gui_cancel), color = Color.Black)
             }
@@ -279,14 +280,15 @@ private fun PrefsInputRow(
             onValueChange = onValueChange,
             modifier = Modifier.width(80.dp).height(48.dp),
             singleLine = true,
-            textStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = Color.Black,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
                 cursorColor = Color.Black
             )
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = label, style = MaterialTheme.typography.body1)
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
@@ -311,6 +313,6 @@ private fun PrefsCheckbox(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = label, style = MaterialTheme.typography.body1)
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
     }
 }

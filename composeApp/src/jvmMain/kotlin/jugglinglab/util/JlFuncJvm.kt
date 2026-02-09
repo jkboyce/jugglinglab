@@ -14,6 +14,7 @@ import jugglinglab.composeapp.generated.resources.*
 import jugglinglab.core.Constants
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.Image
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.net.URI
@@ -404,6 +405,10 @@ actual fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap {
     } catch (_: SecurityException) {
         throw JuggleExceptionUser(jlGetStringResource(Res.string.error_security_restriction))
     }
+}
+
+actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
+    return Image.makeFromEncoded(bytes).toComposeImageBitmap()
 }
 
 //------------------------------------------------------------------------------

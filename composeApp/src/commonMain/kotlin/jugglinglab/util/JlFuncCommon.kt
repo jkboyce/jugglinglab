@@ -12,10 +12,8 @@ package jugglinglab.util
 
 import jugglinglab.composeapp.generated.resources.*
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.skia.Image
 import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 import kotlin.math.max
@@ -257,7 +255,7 @@ fun jlGetImageResource(source: String): ImageBitmap {
             // load from a Compose resource
             runBlocking {
                 val imageBytes = Res.readBytes("drawable/$source")
-                Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
+                jlBytesToImageBitmap(imageBytes)
             }
         }
     } catch (e: Exception) {
@@ -267,6 +265,8 @@ fun jlGetImageResource(source: String): ImageBitmap {
 }
 
 expect fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap
+
+expect fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap
 
 //------------------------------------------------------------------------------
 // Other

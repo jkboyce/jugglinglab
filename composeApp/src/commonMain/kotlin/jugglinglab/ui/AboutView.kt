@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,31 +48,31 @@ fun AboutView(onCloseRequest: () -> Unit) {
         Spacer(modifier = Modifier.width(16.dp))
 
         Column {
-            Text("Juggling Lab", style = MaterialTheme.typography.h5)
+            Text("Juggling Lab", style = MaterialTheme.typography.headlineSmall)
             Text(
                 text = stringResource(Res.string.gui_version, Constants.VERSION),
-                style = MaterialTheme.typography.subtitle1
+                style = MaterialTheme.typography.titleMedium
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(Res.string.gui_copyright_message, Constants.YEAR),
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.bodyMedium
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(Res.string.gui_gpl_message),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.bodySmall
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 jlGetAboutBoxPlatform(),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.bodySmall
             )
 
             Spacer(modifier = Modifier.weight(1f))

@@ -10,7 +10,7 @@ package jugglinglab.ui
 
 import jugglinglab.composeapp.generated.resources.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.runtime.*
@@ -120,7 +120,7 @@ fun SiteswapTransitionerControl(
                     },
                     modifier = Modifier.width(60.dp),
                     contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
@@ -159,7 +159,7 @@ fun SiteswapTransitionerControl(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(Res.string.gui_multiplexing_in_transitions),
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
 
@@ -176,7 +176,7 @@ fun SiteswapTransitionerControl(
                 ) {
                     Text(
                         text = stringResource(Res.string.gui_simultaneous_throws),
-                        style = MaterialTheme.typography.body1,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = contentColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -186,9 +186,10 @@ fun SiteswapTransitionerControl(
                         enabled = enabled,
                         singleLine = true,
                         modifier = Modifier.width(50.dp).height(56.dp),
-                        textStyle = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
                             cursorColor = Color.Black,
                             disabledTextColor = Color.Gray,
                             disabledBorderColor = Color.LightGray
@@ -223,7 +224,7 @@ fun SiteswapTransitionerControl(
         ) {
             Button(
                 onClick = { resetControl() },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text(stringResource(Res.string.gui_defaults), color = Color.Black)
             }
@@ -255,7 +256,7 @@ private fun PatternInputRow(
             text = label,
             modifier = Modifier.width(100.dp), // fixed width for alignment
             textAlign = TextAlign.End,
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.width(10.dp))
         OutlinedTextField(
@@ -263,7 +264,7 @@ private fun PatternInputRow(
             onValueChange = onValueChange,
             modifier = Modifier.width(250.dp).height(56.dp).then(modifier),
             singleLine = true,
-            textStyle = MaterialTheme.typography.body1
+            textStyle = MaterialTheme.typography.bodyLarge
         )
     }
 }
@@ -290,7 +291,7 @@ private fun SubOptionCheckbox(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             color = if (enabled) Color.Unspecified else Color.Gray
         )
     }
