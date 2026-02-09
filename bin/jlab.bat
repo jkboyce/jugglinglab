@@ -15,12 +15,12 @@ IF EXIST "%JL_BAT_DIR%\JugglingLab.jar" (
     IF EXIST "%JAVA_HOME%\bin\java.exe" (
         IF "%1"=="" (
             REM if no arguments then print a help message
-            "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" jugglinglab.JugglingLabKt help
+            "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" org.jugglinglab.JugglingLabKt help
         ) ELSE (
             REM otherwise pass the args to Juggling Lab
             "%JAVA_HOME%\bin\java.exe" -cp "%JL_BAT_DIR%\JugglingLab.jar" -Xss2048k ^
                 -Djava.library.path="%JL_BAT_DIR%\ortools-lib\ortools-win32-x86-64" ^
-                --enable-native-access=ALL-UNNAMED jugglinglab.JugglingLabKt %*
+                --enable-native-access=ALL-UNNAMED org.jugglinglab.JugglingLabKt %*
         )
 
         SET "JL_EXE="

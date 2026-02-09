@@ -1,0 +1,649 @@
+//
+// SiteswapPattern.kt
+//
+// This class represents a pattern in the generalized form of siteswap notation
+// used by Juggling Lab. The real work here is to parse siteswap notation into
+// the internal format used by MhnPattern.
+//
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+//
+
+@file:Suppress("KotlinConstantConditions", "EmptyRange")
+
+package org.jugglinglab.notation
+
+import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.Constants
+import org.jugglinglab.notation.ssparser.SiteswapParser
+import org.jugglinglab.notation.ssparser.SiteswapParseException
+import org.jugglinglab.notation.ssparser.SiteswapTreeItem
+import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.ParameterList
+import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.Permutation
+
+class SiteswapPattern : MhnPattern() {
+    private var oddperiod: Boolean = false
+    var hasHandsSpecifier: Boolean = false
+        private set
+
+    // async throws on even beat numbers made with right hand?
+    private lateinit var rightOnEven: BooleanArray
+
+    override val notationName = "Siteswap"
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    override fun fromString(config: String): SiteswapPattern {
+        var conf = config
+        if (conf.indexOf('=') == -1) {
+            // just the pattern
+            conf = "pattern=$conf"
+        }
+
+        val pl = ParameterList(conf)
+        fromParameters(pl)
+        pl.errorIfParametersLeft()
+        return this
+    }
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    override fun fromParameters(pl: ParameterList): SiteswapPattern {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Starting siteswap parser...")
+        }
+
+        // initialize parameters that MhnPattern recognizes
+        super.fromParameters(pl)
+
+        if (hss != null) {
+            val modinfo = HandSiteswap.processHss(pattern!!, hss!!, hold, dwellmax, handspec, dwell)
+            pattern = modinfo.convertedPattern
+            dwellarray = modinfo.dwellBeatsArray
+        }
+
+        parseSiteswapNotation()
+
+        // see if we need to repeat the pattern to match hand or body periods:
+        if (hands != null || bodies != null) {
+            val patternPeriod = norepPeriod
+            val handsPeriod = hands?.let { h ->
+                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.Companion.lcm(acc, h.getPeriod(i)) }
+            } ?: 1
+            val bodyPeriod = bodies?.let { b ->
+                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.Companion.lcm(acc, b.getPeriod(i)) }
+            } ?: 1
+            val totalPeriod =
+                Permutation.Companion.lcm(Permutation.Companion.lcm(patternPeriod, handsPeriod), bodyPeriod)
+
+            if (totalPeriod != patternPeriod) {
+                val repeats = totalPeriod / patternPeriod
+                pattern = "($pattern^$repeats)"
+                if (Constants.DEBUG_SITESWAP_PARSING) {
+                    println("-----------------------------------------------------")
+                    println("Repeating pattern to match hand/body period, restarting\n")
+                }
+                parseSiteswapNotation()
+            }
+        }
+
+        buildJugglingMatrix()
+
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Siteswap parser finished")
+            println("-----------------------------------------------------")
+        }
+
+        return this
+    }
+
+    // Only works after parseSiteswapNotation() is called
+    private val norepPeriod: Int
+        get() = if (oddperiod) period / 2 else period
+
+    //--------------------------------------------------------------------------
+    // Parse siteswap notation into the MhnPattern data structures
+    //--------------------------------------------------------------------------
+
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
+    private fun parseSiteswapNotation() {
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Parsing pattern \"$pattern\"")
+        }
+
+        if (pattern == null || pattern!!.trim().isEmpty()) {
+            val message = jlGetStringResource(Res.string.error_no_pattern_specified)
+            throw JuggleExceptionUser(message)
+        }
+
+        val tree: SiteswapTreeItem = try {
+            val parsedTree = SiteswapParser.parsePattern(pattern!!)
+            if (Constants.DEBUG_SITESWAP_PARSING) {
+                println("Parse tree:\n")
+                println(parsedTree)
+            }
+            parsedTree
+        } catch (spe: SiteswapParseException) {
+            if (Constants.DEBUG_SITESWAP_PARSING) {
+                println("---------------")
+                println("Parse error:")
+                println(spe.message)
+                println("---------------")
+            }
+            throw JuggleExceptionUser(spe.message!!)
+        } catch (_: Throwable) {
+            val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
+            throw JuggleExceptionUser(message)
+        }
+
+        // Use tree to fill in MhnPattern internal variables
+
+        symmetries.clear()
+        numberOfJugglers = tree.jugglers
+        maxOccupancy = 0  // calculated in doFirstPass()
+        maxThrow = 0
+        rightOnEven = BooleanArray(numberOfJugglers) { true }
+
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Starting first pass...")
+        }
+
+        tree.beatNum = 0
+        doFirstPass(tree)
+
+        if (!tree.switchrepeat && tree.isVanillaAsync && tree.beats % 2 == 1) {
+            tree.switchrepeat = true
+            tree.beats *= 2
+            tree.throwSum *= 2
+            oddperiod = true
+
+            if (Constants.DEBUG_SITESWAP_PARSING) {
+                println("Vanilla async detected; applying switchdelay symmetry")
+            }
+        }
+
+        period = tree.beats
+        if (tree.throwSum % tree.beats != 0) {
+            val message = jlGetStringResource(Res.string.error_siteswap_bad_average)
+            throw JuggleExceptionUser(message)
+        }
+        numberOfPaths = tree.throwSum / tree.beats
+        indexes = maxThrow + period + 1
+        th = Array(numberOfJugglers) { Array(2) { Array(indexes) { arrayOfNulls(maxOccupancy) } } }
+
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println(
+                "period = $period, numpaths = $numberOfPaths, " +
+                        "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
+            )
+            println("Starting second pass...")
+        }
+
+        doSecondPass(tree, false, 0)
+
+        resolveModifiers()
+
+        // Finally, add pattern symmetries
+        symmetries.add(
+            MhnSymmetry(
+                type = MhnSymmetry.TYPE_DELAY,
+                numberOfJugglers = numberOfJugglers,
+                jugPerm = null,
+                delay = period
+            )
+        )
+        if (tree.switchrepeat) {  // know that tree is of type Pattern
+            val sb = StringBuilder()
+            for (i in 1..numberOfJugglers) {
+                sb.append("($i,$i*)")
+            }
+            symmetries.add(
+                MhnSymmetry(
+                    type = MhnSymmetry.TYPE_SWITCHDELAY,
+                    numberOfJugglers = numberOfJugglers,
+                    jugPerm = sb.toString(),
+                    delay = period / 2
+                )
+            )
+        }
+
+        // Random error check, not sure where this should go
+        if (bodies != null && bodies!!.numberOfJugglers < numberOfJugglers) {
+            val message = jlGetStringResource(Res.string.error_jugglers_body)
+            throw JuggleExceptionUser(message)
+        }
+
+        if (Constants.DEBUG_SITESWAP_PARSING) {
+            println("Done with initial parse.")
+        }
+    }
+
+    // First pass through the tree:
+    // 1)  Assign hands to "Single Throw" types
+    // 2)  Determine whether any Pattern items need switchrepeat turned on
+    // 3)  Calculate sti.beats for Pattern and GroupedPattern types
+    // 4)  Determine absolute beat numbers for each throw
+    // 5)  Calculate max_throw, period, numpaths, and max_occupancy
+    // 6)  Resolve wildcards (not implemented)
+
+    @Throws(JuggleExceptionInternal::class)
+    private fun doFirstPass(sti: SiteswapTreeItem) {
+        var child: SiteswapTreeItem
+
+        sti.throwSum = 0
+        sti.isVanillaAsync = true
+
+        when (sti.type) {
+            SiteswapTreeItem.Companion.TYPE_PATTERN -> {
+                // Can contain Grouped_Pattern, Solo_Sequence, Passing_Sequence, or Wildcard
+                sti.beats = 0
+
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum + sti.beats
+
+                    /*
+                      if (child.type == SiteswapTreeItem.TYPE_WILDCARD) {
+                          // resolve this wildcard by finding a suitable transition sequence
+
+                          child.transition = null;    // remove any previously-found transition sequence
+
+                          // First find the pattern state immediately prior to the wildcard
+                          SiteswapTreeItem[] item = new SiteswapTreeItem[sti.getNumberOfChildren()];
+                          int index = sti.getNumberOfChildren() - 1;
+                          boolean done = false;
+                          for (int j = i-1; j >= 0; j--) {
+                              item[index--] = sti.getChild(j);
+                              if (sti.getChild(j).type == SiteswapTreeItem.TYPE_GROUPED_PATTERN) {
+                                  done = true;
+                                  break;
+                              }
+                              if (sti.getChild(j).type == SiteswapTreeItem.TYPE_WILDCARD)
+                                  throw new JuggleExceptionUser("Can only have one wildcard between grouped patterns");
+                          }
+                          if (!done) {
+                              int beatsum = 0;
+                              for (int j = sti.getNumberOfChildren()-1; j > i; j--) {
+                                  SiteswapTreeItem c = sti.getChild(j);
+                                  item[index--] = c;
+                                  if (c.type == SiteswapTreeItem.TYPE_GROUPED_PATTERN) {
+                                      done = true;
+                                      break;
+                                  }
+                                  if (c.type == SiteswapTreeItem.TYPE_WILDCARD)
+                                      throw new JuggleExceptionUser("Can only have one wildcard between grouped patterns");
+                              }
+                          }
+                          if (!done)
+                              throw new JuggleExceptionUser("Must have at least one grouped subpattern to use wildcard");
+                          SiteswapTreeItem[] item2 = new SiteswapTreeItem[sti.getNumberOfChildren() - 1 - index];
+                          index++;
+                          for (int j = 0; index < sti.getNumberOfChildren(); j++, index++)
+                              item2[j] = item[index];
+                          for (int j = item2.length; j >= 0; j--) {
+                              //  Need to assign beatnum to items in item2[]
+
+                              //  beatsum += c.beats;
+                              //  c.beatnum = sti.beat - beatsum;
+                              //  doFirstPass(c);     // make sure child has hands assigned
+                          }
+                          // int[][] start_state = findExitState(item2);
+
+                          // Next find the pattern state we need to end up at.  Two cases: even number of transition beats, and odd.
+                          index = 0;
+                          done = false;
+                          for (int j = i+1; j < sti.getNumberOfChildren(); j++) {
+                              item[index++] = sti.getChild(j);
+                              if (sti.getChild(j).type == SiteswapTreeItem.TYPE_GROUPED_PATTERN) {
+                                  done = true;
+                                  break;
+                              }
+                              if (sti.getChild(j).type == SiteswapTreeItem.TYPE_WILDCARD)
+                                  throw new JuggleExceptionUser("Can only have one wildcard between grouped patterns");
+                          }
+                          if (!done) {
+                              for (int j = 0; j < i; j++) {
+                                  SiteswapTreeItem c = sti.getChild(j);
+                                  item[index++] = c;
+                                  if (c.type == SiteswapTreeItem.TYPE_GROUPED_PATTERN) {
+                                      done = true;
+                                      break;
+                                  }
+                                  if (c.type == SiteswapTreeItem.TYPE_WILDCARD)
+                                      throw new JuggleExceptionUser("Can only have one wildcard between grouped patterns");
+                              }
+                          }
+                          if (!done)
+                              throw new JuggleExceptionUser("Must have at least one grouped subpattern to use wildcard");
+                          item2 = new SiteswapTreeItem[index];
+                          for (int j = 0; j < index; j++)
+                              item2[j] = item[j];
+
+                          for (int transition_beats = 0; transition_beats < 2; transition_beats++) {
+                              for (int j = 0; j < item2.length; j++) {
+                                  //  Need to assign beatnum to items in item2[]
+
+                                  //    beatsum += c.beats;
+                                  //    c.beatnum = sti.beat - beatsum;
+                                  //    doFirstPass(c);     // make sure child has hands assigned
+                              }
+                              int[][] finish_state = findEntranceState(item2);
+
+                              // Rest of stuff goes here (find transition, fill in child.transition)
+                          }
+                      }
+                      */
+                    doFirstPass(child)
+                    sti.beats += child.beats
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+                if (sti.switchrepeat) {
+                    sti.beats *= 2
+                    sti.throwSum *= 2
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_GROUPED_PATTERN -> {
+                // Contains only a Pattern type (single child)
+                child = sti.getChild(0)
+                if (sti.numberOfChildren > 1) {
+                    sti.removeChildren()
+                    sti.addChild(child)
+                }
+                child.beatNum = sti.beatNum
+                doFirstPass(child)
+                var i = 1
+                while (i < sti.repeats) {
+                    val child2 = (child.clone()) as SiteswapTreeItem
+                    sti.addChild(child2)
+                    child2.beatNum = sti.beatNum + i * child.beats
+                    doFirstPass(child2)
+                    i++
+                }
+                sti.beats = child.beats * sti.repeats
+                sti.throwSum = child.throwSum * sti.repeats
+                sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+            }
+
+            SiteswapTreeItem.Companion.TYPE_SOLO_SEQUENCE -> {
+                // Contains Solo Paired Throw, Solo Multi Throw, or Hand Specifier types
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum + child.seqBeatnum
+                    doFirstPass(child)
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_SOLO_PAIRED_THROW -> {
+                // Contains only Solo Multi Throw type
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum
+                    doFirstPass(child)
+                    child.left = (i == 0)
+                    child.isSyncThrow = true
+                    sti.throwSum += child.throwSum
+                    i++
+                }
+                sti.isVanillaAsync = false
+            }
+
+            SiteswapTreeItem.Companion.TYPE_SOLO_MULTI_THROW -> {
+                // Contains only Solo Single Throw type
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum
+                    doFirstPass(child)
+                    sti.throwSum += child.value
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+                if (sti.beatNum % 2 == 0) {
+                    sti.left = !rightOnEven[sti.sourceJuggler - 1]
+                } else {
+                    sti.left = rightOnEven[sti.sourceJuggler - 1]
+                }
+                if (sti.numberOfChildren > maxOccupancy) {
+                    maxOccupancy = sti.numberOfChildren
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_SOLO_SINGLE_THROW -> {
+                // No children
+                if (sti.value > maxThrow) {
+                    maxThrow = sti.value
+                }
+                sti.isVanillaAsync = !sti.x
+            }
+
+            SiteswapTreeItem.Companion.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.Companion.TYPE_PASSING_GROUP -> {
+                // Contains only Passing Throws type
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum
+                    doFirstPass(child)
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_PASSING_THROWS -> {
+                // Contains Passing Paired Throw, Passing Multi Throw, or Hand Specifier types
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum + child.seqBeatnum
+                    doFirstPass(child)
+                    sti.throwSum += child.throwSum
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_PASSING_PAIRED_THROW -> {
+                // Contains only Passing Multi Throw type
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum
+                    doFirstPass(child)
+                    child.left = (i == 0)
+                    child.isSyncThrow = true
+                    sti.throwSum += child.throwSum
+                    i++
+                }
+                sti.isVanillaAsync = false
+            }
+
+            SiteswapTreeItem.Companion.TYPE_PASSING_MULTI_THROW -> {
+                // Contains only Passing Single Throw type
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    child.beatNum = sti.beatNum
+                    doFirstPass(child)
+                    sti.throwSum += child.value
+                    sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
+                    i++
+                }
+                if (sti.beatNum % 2 == 0) {
+                    sti.left = !rightOnEven[sti.sourceJuggler - 1]
+                } else {
+                    sti.left = rightOnEven[sti.sourceJuggler - 1]
+                }
+                if (sti.numberOfChildren > maxOccupancy) {
+                    maxOccupancy = sti.numberOfChildren
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_PASSING_SINGLE_THROW -> {
+                // No children
+                if (sti.value > maxThrow) {
+                    maxThrow = sti.value
+                }
+                sti.isVanillaAsync = !sti.x
+            }
+
+            SiteswapTreeItem.Companion.TYPE_WILDCARD -> if (sti.transition != null) {
+                sti.transition!!.beatNum = sti.beatNum
+                doFirstPass(sti.transition!!)
+                // copy variables from sti.transition to sti
+                sti.throwSum = sti.transition!!.throwSum
+                sti.isVanillaAsync = sti.transition!!.isVanillaAsync
+                sti.beats = sti.transition!!.beats
+            } else {
+                throw JuggleExceptionInternal("Wildcard not resolved")
+            }
+
+            SiteswapTreeItem.Companion.TYPE_HAND_SPEC -> {
+                if (sti.beatNum % 2 == 0) {
+                    rightOnEven[sti.sourceJuggler - 1] = !sti.specLeft
+                } else {
+                    rightOnEven[sti.sourceJuggler - 1] = sti.specLeft
+                }
+                sti.throwSum = 0
+                if (sti.beatNum > 0) {
+                    sti.isVanillaAsync = false
+                }
+                hasHandsSpecifier = true
+            }
+        }
+    }
+
+    // Second pass through the tree:
+    // 1)  Fill in the th[] array with MhnThrow objects
+
+    private fun doSecondPass(sti: SiteswapTreeItem, switchhands: Boolean, beatoffset: Int) {
+        var child: SiteswapTreeItem
+
+        when (sti.type) {
+            SiteswapTreeItem.Companion.TYPE_PATTERN -> {
+                // Can contain Grouped_Pattern, Solo_Sequence, or Passing_Sequence
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    doSecondPass(child, switchhands, beatoffset)
+                    i++
+                }
+
+                if (sti.switchrepeat) {
+                    var i = 0
+                    while (i < sti.numberOfChildren) {
+                        child = sti.getChild(i)
+                        doSecondPass(child, !switchhands, beatoffset + sti.beats / 2)
+                        i++
+                    }
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_GROUPED_PATTERN, SiteswapTreeItem.Companion.TYPE_SOLO_SEQUENCE, SiteswapTreeItem.Companion.TYPE_SOLO_PAIRED_THROW, SiteswapTreeItem.Companion.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.Companion.TYPE_PASSING_GROUP, SiteswapTreeItem.Companion.TYPE_PASSING_THROWS, SiteswapTreeItem.Companion.TYPE_PASSING_PAIRED_THROW -> {
+                var i = 0
+                while (i < sti.numberOfChildren) {
+                    child = sti.getChild(i)
+                    doSecondPass(child, switchhands, beatoffset)
+                    i++
+                }
+            }
+
+            SiteswapTreeItem.Companion.TYPE_SOLO_MULTI_THROW, SiteswapTreeItem.Companion.TYPE_PASSING_MULTI_THROW -> {
+                var index = sti.beatNum + beatoffset
+                while (index < indexes) {
+                    var i = 0
+                    while (i < sti.numberOfChildren) {
+                        child = sti.getChild(i)
+
+                        val sourceHand: Int = if (switchhands) {
+                            if (sti.left) RIGHT_HAND else LEFT_HAND
+                        } else {
+                            if (sti.left) LEFT_HAND else RIGHT_HAND
+                        }
+
+                        var destHand = if (child.value % 2 == 0) sourceHand else (1 - sourceHand)
+                        if (child.x) {
+                            destHand = 1 - destHand
+                        }
+
+                        var mod = child.mod
+                        if (mod == null) {
+                            mod = "T" // default throw modifier
+                            if (child.sourceJuggler == child.destJuggler && sourceHand == destHand) {
+                                if (child.value <= 1) {
+                                    mod = "H"
+                                } else if (child.value == 2) {
+                                    // resolve hold vs. throw on third pass
+                                    mod = "?"
+                                }
+                            }
+                        }
+
+                        var destJuggler = child.destJuggler
+                        if (destJuggler > numberOfJugglers) {
+                            destJuggler = 1 + (destJuggler - 1) % numberOfJugglers
+                        }
+
+                        // Note we add an MhnThrow for a 0 throw as well, to serve
+                        // as a placeholder in case of patterns like 24[504],
+                        val t = MhnThrow(
+                            child.sourceJuggler,
+                            sourceHand,
+                            index,
+                            i,
+                            destJuggler,
+                            destHand,
+                            index + child.value,
+                            -1,
+                            mod
+                        )
+                        if (hands != null) {
+                            var beat = index
+                            if (sti.isSyncThrow && sourceHand == RIGHT_HAND) {
+                                beat++
+                            }
+                            beat %= hands!!.getPeriod(child.sourceJuggler)
+                            t.handsBeat = beat
+                        }
+                        th[child.sourceJuggler - 1][sourceHand][index][i] = t
+
+                        i++
+                    }
+
+                    index += period
+                }
+            }
+        }
+    }
+
+    // Resolve any unresolved '?' modifiers.
+
+    private fun resolveModifiers() {
+        for ((i, j, h, slot, mhnt) in th.mhnIterator()) {
+            if (mhnt?.mod?.equals("?") ?: continue) {
+                var doHold = true
+                if (i + 1 < indexes) {
+                    for (slot2 in 0..<maxOccupancy) {
+                        val mhnt2 = th[j][h][i + 1][slot2]
+                        if (mhnt2 == null || mhnt2.targetIndex == i + 1) {
+                            continue
+                        }
+                        doHold = false
+                        break
+                    }
+                }
+                val newMhnt = mhnt.copy(mod = if (doHold) "H" else "T")
+                newMhnt.handsBeat = mhnt.handsBeat
+                th[j][h][i][slot] = newMhnt
+            }
+        }
+    }
+}

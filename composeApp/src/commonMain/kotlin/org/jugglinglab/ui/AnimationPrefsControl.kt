@@ -1,0 +1,318 @@
+//
+// AnimationPrefsControl.kt
+//
+// Composable UI for the animation preferences dialog.
+//
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+//
+
+package org.jugglinglab.ui
+
+import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.ParameterList
+import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlToStringRounded
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun AnimationPrefsControl(
+    initialPrefs: AnimationPrefs,
+    onConfirm: (AnimationPrefs) -> Unit,
+    onCancel: () -> Unit
+) {
+    // Extra parameters not covered by UI fields
+    val initialManualSettings = try {
+        val pl = ParameterList(initialPrefs.toString())
+        val paramsRemove = listOf(
+            "width", "height", "fps", "slowdown", "border",
+            "showground", "startpaused", "mousepause", "stereo",
+            "catchsound", "bouncesound"
+        )
+        for (param in paramsRemove) {
+            pl.removeParameter(param)
+        }
+        pl.toString()
+    } catch (_: Exception) { "" }
+
+    // State holders
+    var width by remember { mutableStateOf(initialPrefs.width.toString()) }
+    var height by remember { mutableStateOf(initialPrefs.height.toString()) }
+    var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
+    var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
+    var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
+    var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
+    var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
+    var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
+    var stereo by remember { mutableStateOf(initialPrefs.stereo) }
+    var catchSound by remember { mutableStateOf(initialPrefs.catchSound) }
+    var bounceSound by remember { mutableStateOf(initialPrefs.bounceSound) }
+    var manualSettings by remember { mutableStateOf(initialManualSettings) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Helper for creating the return object
+    fun tryCreatePrefs() {
+        var newPrefs = initialPrefs
+
+        // Validate and set numeric fields
+        fun parseDouble(valStr: String, name: String): Double {
+            return valStr.toDoubleOrNull()?.takeIf { it > 0.0 }
+                ?: throw NumberFormatException(name)
+        }
+        fun parseInt(valStr: String, name: String): Int {
+            return valStr.toIntOrNull()?.takeIf { it >= 0 }
+                ?: throw NumberFormatException(name)
+        }
+
+        try {
+            newPrefs = newPrefs.copy(
+                width = parseInt(width, "width"),
+                height = parseInt(height, "height"),
+                fps = parseDouble(fps, "fps"),
+                slowdown = parseDouble(slowdown, "slowdown"),
+                borderPixels = parseInt(border, "border")
+            )
+        } catch (e: Exception) {
+            errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
+            return
+        }
+
+        newPrefs = newPrefs.copy(
+            showGround = showGround,
+            startPaused = startPaused,
+            mousePause = mousePause,
+            stereo = stereo,
+            catchSound = catchSound,
+            bounceSound = bounceSound
+        )
+
+        // Process manual settings
+        if (manualSettings.isNotBlank()) {
+            try {
+                // We effectively merge the current object state with the manual string
+                newPrefs = AnimationPrefs.Companion.fromString("$newPrefs;$manualSettings")
+            } catch (jeu: JuggleExceptionUser) {
+                errorMessage = jeu.message
+                return
+            }
+        }
+
+        onConfirm(newPrefs)
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .width(IntrinsicSize.Max) // Fit width to content
+            .verticalScroll(rememberScrollState())
+            .onPreviewKeyEvent {
+                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                    tryCreatePrefs()
+                    true
+                } else {
+                    false
+                }
+            }
+    ) {
+        // Number inputs section
+        PrefsInputRow(width, { width = it }, stringResource(Res.string.gui_width))
+        PrefsInputRow(height, { height = it }, stringResource(Res.string.gui_height))
+        PrefsInputRow(fps, { fps = it }, stringResource(Res.string.gui_frames_per_second))
+        PrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
+        PrefsInputRow(border, { border = it }, stringResource(Res.string.gui_border__pixels_))
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Dropdown section
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 4.dp)
+        ) {
+            // Use a Box to simulate the dropdown behavior
+            var expanded by remember { mutableStateOf(false) }
+            val options = listOf(
+                AnimationPrefs.Companion.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
+                AnimationPrefs.Companion.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
+                AnimationPrefs.Companion.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
+            )
+            val selectedText = options.find { it.first == showGround }?.second ?: ""
+
+            Box {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                    modifier = Modifier.width(80.dp).height(32.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(selectedText, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                        Spacer(Modifier.weight(1f))
+                        Icon(
+                            Icons.Filled.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    options.forEach { (value, label) ->
+                        DropdownMenuItem(
+                            text = { Text(text = label) },
+                            onClick = {
+                                showGround = value
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                stringResource(Res.string.gui_prefs_show_ground),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Checkboxes section
+        PrefsCheckbox(
+            startPaused,
+            { startPaused = it },
+            stringResource(Res.string.gui_start_paused)
+        )
+        PrefsCheckbox(
+            mousePause,
+            { mousePause = it },
+            stringResource(Res.string.gui_pause_on_mouse_away)
+        )
+        PrefsCheckbox(
+            stereo,
+            { stereo = it },
+            stringResource(Res.string.gui_stereo_display)
+        )
+        PrefsCheckbox(
+            catchSound,
+            { catchSound = it },
+            stringResource(Res.string.gui_catch_sounds)
+        )
+        PrefsCheckbox(
+            bounceSound,
+            { bounceSound = it },
+            stringResource(Res.string.gui_bounce_sounds)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Manual Settings section
+        Text("Manual settings", style = MaterialTheme.typography.bodyLarge)
+        OutlinedTextField(
+            value = manualSettings,
+            onValueChange = { manualSettings = it },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button section
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(
+                onClick = onCancel,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+            ) {
+                Text(stringResource(Res.string.gui_cancel), color = Color.Black)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = { tryCreatePrefs() }) {
+                Text(stringResource(Res.string.gui_ok))
+            }
+        }
+
+        if (errorMessage != null) {
+            // Error dialog in case of a problem
+            AlertDialog(
+                onDismissRequest = { errorMessage = null },
+                title = { Text(stringResource(Res.string.error)) },
+                text = { Text(errorMessage!!) },
+                confirmButton = {
+                    Button(onClick = { errorMessage = null }) {
+                        Text("OK")
+                    }
+                },
+            )
+        }
+    }
+}
+
+// Helper Composable for [TextField] [Label] rows
+
+@Composable
+private fun PrefsInputRow(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.width(80.dp).height(48.dp),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                cursorColor = Color.Black
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+// Helper Composable for Checkboxes
+
+@Composable
+private fun PrefsCheckbox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(vertical = 2.dp)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+    }
+}

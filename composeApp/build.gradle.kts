@@ -22,6 +22,8 @@ plugins {
     alias(libs.plugins.antlrKotlin)
 }
 
+group = "org.jugglinglab"
+
 object Versions {
     const val ORTOOLS_VERSION = "9.4.1874"
     const val KSOUP_VERSION = "0.2.5"
@@ -39,7 +41,7 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     }
 
     // package name for generated source files
-    val pkgName = "jugglinglab.notation.ssparser.generated"
+    val pkgName = "org.jugglinglab.notation.ssparser.generated"
     packageName = pkgName
 
     // we want visitors alongside listeners
@@ -91,7 +93,7 @@ kotlin {
 compose.desktop {
     application {
         val isCompose = project.hasProperty("JLcompose")
-        mainClass = "jugglinglab.JugglingLabKt"
+        mainClass = "org.jugglinglab.JugglingLabKt"
 
         jvmArgs += listOf(
             "-Xss2048k",
@@ -134,7 +136,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     configurations = listOf(project.configurations.getByName("jvmRuntimeClasspath"))
 
     // Configure the JAR attributes
-    manifest.attributes["Main-Class"] = "jugglinglab.JugglingLabKt"
+    manifest.attributes["Main-Class"] = "org.jugglinglab.JugglingLabKt"
     archiveBaseName.set("JugglingLab")
     archiveVersion.set("")
     archiveClassifier.set("")
