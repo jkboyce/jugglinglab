@@ -1,5 +1,5 @@
 //
-// JugglingLab.kt
+// Main.kt
 //
 // Juggling Lab is an open-source application for creating and animating
 // juggling patterns. https://jugglinglab.org

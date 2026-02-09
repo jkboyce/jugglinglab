@@ -93,7 +93,7 @@ kotlin {
 compose.desktop {
     application {
         val isCompose = project.hasProperty("JLcompose")
-        mainClass = "org.jugglinglab.JugglingLabKt"
+        mainClass = "org.jugglinglab.MainKt"
 
         jvmArgs += listOf(
             "-Xss2048k",
@@ -136,7 +136,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     configurations = listOf(project.configurations.getByName("jvmRuntimeClasspath"))
 
     // Configure the JAR attributes
-    manifest.attributes["Main-Class"] = "org.jugglinglab.JugglingLabKt"
+    manifest.attributes["Main-Class"] = "org.jugglinglab.MainKt"
     archiveBaseName.set("JugglingLab")
     archiveVersion.set("")
     archiveClassifier.set("")

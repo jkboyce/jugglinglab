@@ -7,4 +7,4 @@ Icon=/opt/juggling-lab/lib/Juggling_Lab.png
 Terminal=false
 Type=Application
 Categories=Simulation;Sports;Graphics;
-StartupWMClass=jugglinglab-JugglingLabKt
+StartupWMClass=org-jugglinglab-mainKt
