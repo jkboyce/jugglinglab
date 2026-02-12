@@ -45,7 +45,7 @@ pattern=&lt;3pBBHF|3pBBHF&gt;;colors=mixed;title=more bouncing
 </line>
 
 <line display="a lot of balls(may lag your computer)" notation="siteswap">
-pattern={1000};bps=900;hands=(-25)(2.5).(25)(-2.5).(-25)(0).;body=(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)...;colors=mixed;title=a lot of balls(may lag your computer)
+pattern={666};bps=600;hands=(-25)(2.5).(25)(-2.5).(-25)(0).;body=(0,75,0)...(90,0,75)...(180,-75,0)...(270,0,-75)...;colors=mixed;title=a lot of balls(may lag your computer)
 </line>
 
 <line display="&quot;STOP GIVING ME THE BALLS&quot; -juggler 2" notation="siteswap">
