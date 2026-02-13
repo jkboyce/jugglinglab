@@ -521,12 +521,12 @@ private fun drawPositionOverlays(
                 drawLine(
                     posColor,
                     p4,
-                    Offset(xyProjection[0].toFloat(), xyProjection[1].toFloat()),
+                    Offset(xyProjection.x.toFloat(), xyProjection.y.toFloat()),
                     strokeWidth = strokeWidth1
                 )
                 drawOval(
                     color = posColor,
-                    topLeft = Offset(xyProjection[0].toFloat() - dotOffset3_5, xyProjection[1].toFloat() - dotOffset3_5),
+                    topLeft = Offset(xyProjection.x.toFloat() - dotOffset3_5, xyProjection.y.toFloat() - dotOffset3_5),
                     size = Size(dotSize7, dotSize7)
                 )
 
@@ -543,7 +543,7 @@ private fun drawPositionOverlays(
                     drawText(
                         textLayoutResult = textLayoutResult,
                         topLeft = Offset(
-                            x = xyProjection[0].toFloat() + 5.dp.toPx(),
+                            x = xyProjection.x.toFloat() + 5.dp.toPx(),
                             y = y.toFloat() + 32.dp.toPx()
                         )
                     )
@@ -570,10 +570,10 @@ private fun drawGrid(
     val dx = renderer.getXY(Coordinate(100.0, 0.0, 0.0))
     val dy = renderer.getXY(Coordinate(0.0, 100.0, 0.0))
     
-    val axisXx = AnimationLayout.XY_GRID_SPACING_CM * ((dx[0] - center[0]).toDouble() / 100.0)
-    val axisXy = AnimationLayout.XY_GRID_SPACING_CM * ((dx[1] - center[1]).toDouble() / 100.0)
-    val axisYx = AnimationLayout.XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0)
-    val axisYy = AnimationLayout.XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
+    val axisXx = AnimationLayout.XY_GRID_SPACING_CM * ((dx.x - center.x).toDouble() / 100.0)
+    val axisXy = AnimationLayout.XY_GRID_SPACING_CM * ((dx.y - center.y).toDouble() / 100.0)
+    val axisYx = AnimationLayout.XY_GRID_SPACING_CM * ((dy.x - center.x).toDouble() / 100.0)
+    val axisYy = AnimationLayout.XY_GRID_SPACING_CM * ((dy.y - center.y).toDouble() / 100.0)
 
     // Find which grid intersections are visible on screen by solving for the
     // grid coordinates at the four corners.
@@ -583,8 +583,8 @@ private fun drawGrid(
     var nMin = 0
     var nMax = 0
     for (j in 0..3) {
-        val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
-        val b = ((if (j < 2) 0 else height) - center[1]).toDouble()
+        val a = ((if (j % 2 == 0) 0 else width) - center.x).toDouble()
+        val b = ((if (j < 2) 0 else height) - center.y).toDouble()
         val m = (axisYy * a - axisYx * b) / det
         val n = (-axisXy * a + axisXx * b) / det
         val mInt = floor(m).toInt()
@@ -596,17 +596,17 @@ private fun drawGrid(
     }
 
     for (j in mMin..mMax) {
-        val x1 = (center[0] + j * axisXx + nMin * axisYx).toFloat()
-        val y1 = (center[1] + j * axisXy + nMin * axisYy).toFloat()
-        val x2 = (center[0] + j * axisXx + nMax * axisYx).toFloat()
-        val y2 = (center[1] + j * axisXy + nMax * axisYy).toFloat()
+        val x1 = (center.x + j * axisXx + nMin * axisYx).toFloat()
+        val y1 = (center.y + j * axisXy + nMin * axisYy).toFloat()
+        val x2 = (center.x + j * axisXx + nMax * axisYx).toFloat()
+        val y2 = (center.y + j * axisXy + nMax * axisYy).toFloat()
         drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
     for (j in nMin..nMax) {
-        val x1 = (center[0] + mMin * axisXx + j * axisYx).toFloat()
-        val y1 = (center[1] + mMin * axisXy + j * axisYy).toFloat()
-        val x2 = (center[0] + mMax * axisXx + j * axisYx).toFloat()
-        val y2 = (center[1] + mMax * axisXy + j * axisYy).toFloat()
+        val x1 = (center.x + mMin * axisXx + j * axisYx).toFloat()
+        val y1 = (center.y + mMin * axisXy + j * axisYy).toFloat()
+        val x2 = (center.x + mMax * axisXx + j * axisYx).toFloat()
+        val y2 = (center.y + mMax * axisXy + j * axisYy).toFloat()
         drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
 }

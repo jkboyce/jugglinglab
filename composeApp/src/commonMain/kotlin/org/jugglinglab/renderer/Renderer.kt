@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -196,18 +197,15 @@ class Renderer {
         m.transform(JlMatrix.shiftMatrix(originX.toDouble(), originZ.toDouble(), 0.0))
     }
 
-    fun getXY(coord: Coordinate): IntArray {
-        return getXY(JlVector(coord.x, coord.z, coord.y))
+    fun getXY(coord: Coordinate): IntOffset {
+        val vecX = coord.x
+        val vecY = coord.z
+        val vecZ = coord.y
+        val newX = vecX * m.m00 + vecY * m.m01 + vecZ * m.m02 + m.m03
+        val newY = vecX * m.m10 + vecY * m.m11 + vecZ * m.m12 + m.m13
+        return IntOffset(newX.roundToInt(), newY.roundToInt())
     }
-
-    private fun getXY(vec: JlVector): IntArray {
-        val v = vec.transform(m)
-        val result = IntArray(2)
-        result[0] = v.x.roundToInt()
-        result[1] = v.y.roundToInt()
-        return result
-    }
-
+    
     private fun getXYZ(vec: JlVector, result: JlVector): JlVector {
         result.x = vec.x * m.m00 + vec.y * m.m01 + vec.z * m.m02 + m.m03
         result.y = vec.x * m.m10 + vec.y * m.m11 + vec.z * m.m12 + m.m13

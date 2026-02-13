@@ -16,20 +16,20 @@ class JlVector {
 
     constructor()
 
-    constructor(xpos: Double, ypos: Double, zpos: Double) {
-        x = xpos
-        y = ypos
-        z = zpos
+    constructor(xPos: Double, yPos: Double, zPos: Double) {
+        x = xPos
+        y = yPos
+        z = zPos
     }
 
     val length: Double
         get() = sqrt(x * x + y * y + z * z)
 
     fun transform(m: JlMatrix): JlVector {
-        val newx = x * m.m00 + y * m.m01 + z * m.m02 + m.m03
-        val newy = x * m.m10 + y * m.m11 + z * m.m12 + m.m13
-        val newz = x * m.m20 + y * m.m21 + z * m.m22 + m.m23
-        return JlVector(newx, newy, newz)
+        val newX = x * m.m00 + y * m.m01 + z * m.m02 + m.m03
+        val newY = x * m.m10 + y * m.m11 + z * m.m12 + m.m13
+        val newZ = x * m.m20 + y * m.m21 + z * m.m22 + m.m23
+        return JlVector(newX, newY, newZ)
     }
 
     companion object {

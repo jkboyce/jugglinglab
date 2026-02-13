@@ -125,7 +125,7 @@ class AnimationLayout(
                 val ren = if (i == 0) renderer1 else renderer2
                 val c = state.pattern.layout.getGlobalCoordinate(ev2)
                 val c2 = ren.getScreenTranslatedCoordinate(c, 1, 0)
-                val dl = 1.0 / Coordinate.Companion.distance(c, c2)
+                val dl = 1.0 / Coordinate.distance(c, c2)
 
                 val ca = ren.cameraAngle
                 val theta = ca[0] + Math.toRadians(state.pattern.layout.getJugglerAngle(ev2.juggler, ev2.t))
@@ -146,9 +146,9 @@ class AnimationLayout(
 
                 for (j in targetPoints.indices) {
                     eventPoints[evNum][i][j][0] =
-                        center[0].toDouble() + dxx * targetPoints[j][0] + dyx * targetPoints[j][1] + dzx * targetPoints[j][2]
+                        center.x.toDouble() + dxx * targetPoints[j][0] + dyx * targetPoints[j][1] + dzx * targetPoints[j][2]
                     eventPoints[evNum][i][j][1] =
-                        center[1].toDouble() + dxy * targetPoints[j][0] + dyy * targetPoints[j][1] + dzy * targetPoints[j][2]
+                        center.y.toDouble() + dxy * targetPoints[j][0] + dyy * targetPoints[j][1] + dzy * targetPoints[j][2]
                 }
 
                 if (ev2 == activeEvent) {
@@ -182,8 +182,8 @@ class AnimationLayout(
                 val t = handpathStartTime + j * HANDPATH_POINT_SEP_TIME
                 state.pattern.layout.getHandCoordinate(activeEvent.juggler, activeEvent.hand, t, c)
                 val point = ren.getXY(c)
-                handpathPoints[i][j][0] = point[0].toDouble()
-                handpathPoints[i][j][1] = point[1].toDouble()
+                handpathPoints[i][j][0] = point.x.toDouble()
+                handpathPoints[i][j][1] = point.y.toDouble()
                 handpathIsHold[j] = state.pattern.layout.isHandHolding(
                     activeEvent.juggler,
                     activeEvent.hand, t + 0.0001)
@@ -197,12 +197,12 @@ class AnimationLayout(
 
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) renderer1 else renderer2
-            val c = Coordinate.Companion.add(
+            val c = Coordinate.add(
                 activePosition.coordinate,
                 Coordinate(0.0, 0.0, POSITION_BOX_Z_OFFSET_CM)
             )
             val c2 = ren.getScreenTranslatedCoordinate(c!!, 1, 0)
-            val dl = 1.0 / Coordinate.Companion.distance(c, c2)
+            val dl = 1.0 / Coordinate.distance(c, c2)
 
             val ca = ren.cameraAngle
             val theta = ca[0] + Math.toRadians(activePosition.angle)
@@ -220,9 +220,9 @@ class AnimationLayout(
             val center = ren.getXY(c)
             for (j in POS_CONTROL_POINTS.indices) {
                 posPoints[i][j][0] =
-                    center[0].toDouble() + dxx * POS_CONTROL_POINTS[j][0] + dyx * POS_CONTROL_POINTS[j][1] + dzx * POS_CONTROL_POINTS[j][2]
+                    center.x.toDouble() + dxx * POS_CONTROL_POINTS[j][0] + dyx * POS_CONTROL_POINTS[j][1] + dzx * POS_CONTROL_POINTS[j][2]
                 posPoints[i][j][1] =
-                    center[1].toDouble() + dxy * POS_CONTROL_POINTS[j][0] + dyy * POS_CONTROL_POINTS[j][1] + dzy * POS_CONTROL_POINTS[j][2]
+                    center.y.toDouble() + dxy * POS_CONTROL_POINTS[j][0] + dyy * POS_CONTROL_POINTS[j][1] + dzy * POS_CONTROL_POINTS[j][2]
             }
 
             showAngleDragControl =
