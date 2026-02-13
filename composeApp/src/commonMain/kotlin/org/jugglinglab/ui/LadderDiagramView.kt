@@ -18,7 +18,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -65,15 +64,13 @@ fun LadderDiagramView(
 
         // layout contains drawing information for on-screen elements
         val layout = remember(state.pattern, widthPx, heightPx, density) {
-            if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS)
+            val newLayout = if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS)
                 null
             else
                 LadderDiagramLayout(state.pattern, widthPx, heightPx, density)
-        }
-
-        LaunchedEffect(layout) {
             // pass layout to containing panel for mouse handling
-            onLayoutUpdate(layout)
+            onLayoutUpdate(newLayout)
+            newLayout
         }
 
         if (layout == null) {
@@ -132,6 +129,10 @@ fun LadderDiagramView(
         ) {
             val width = size.width
             val height = size.height
+
+            val strokeStandard = Stroke(layout.lineWidth)
+            val strokeSelected = Stroke(layout.lineWidth * 2)
+            val dashEffect = PathEffect.dashPathEffect(floatArrayOf(layout.dashOn, layout.dashOff), 0f)
 
             // 1. Background
             drawRect(color = backgroundColor)
@@ -206,7 +207,7 @@ fun LadderDiagramView(
                             pathColor,
                             Offset(item.xStart.toFloat(), item.yStart.toFloat()),
                             Offset(item.xEnd.toFloat(), item.yEnd.toFloat()),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(layout.dashOn, layout.dashOff), 0f),
+                            pathEffect = dashEffect,
                             strokeWidth = layout.lineWidth
                         )
                     }
@@ -223,7 +224,7 @@ fun LadderDiagramView(
                                 pathColor,
                                 radius = item.radius.toFloat(),
                                 center = Offset(item.xCenter.toFloat(), item.yCenter.toFloat()),
-                                style = Stroke(layout.lineWidth)
+                                style = strokeStandard
                             )
                         }
                     }
@@ -239,14 +240,14 @@ fun LadderDiagramView(
                     val rectSize = Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
 
                     drawRect(backgroundColor, topLeft, rectSize)
-                    drawRect(positionColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
+                    drawRect(positionColor, topLeft, rectSize, style = strokeStandard)
 
                     if (item.jlHashCode == activeItemHash) {
                         drawRect(
                             selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
                             Size(rectSize.width + 2, rectSize.height + 2),
-                            style = Stroke(layout.lineWidth * 2)
+                            style = strokeSelected
                         )
                     }
                 }
@@ -265,7 +266,7 @@ fun LadderDiagramView(
                             selectionColor,
                             topLeft.minus(Offset(1f, 1f)),
                             Size(rectSize.width + 2, rectSize.height + 2),
-                            style = Stroke(layout.lineWidth * 2)
+                            style = strokeSelected
                         )
                     }
                 } else {
@@ -275,14 +276,14 @@ fun LadderDiagramView(
                         val propColor = state.pattern.getProp(propnum).getEditorColor()
 
                         drawOval(propColor, topLeft, rectSize)
-                        drawOval(eventColor, topLeft, rectSize, style = Stroke(layout.lineWidth))
+                        drawOval(eventColor, topLeft, rectSize, style = strokeStandard)
 
                         if (item.jlHashCode == activeItemHash) {
                             drawRect(
                                 selectionColor,
                                 topLeft.minus(Offset(1f, 1f)),
                                 Size(rectSize.width + 2, rectSize.height + 2),
-                                style = Stroke(layout.lineWidth * 2)
+                                style = strokeSelected
                             )
                         }
                     }
