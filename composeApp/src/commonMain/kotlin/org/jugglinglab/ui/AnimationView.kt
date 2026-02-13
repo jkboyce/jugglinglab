@@ -69,8 +69,6 @@ fun AnimationView(
     // two renderers for stereo support
     val renderer1 = remember { Renderer() }
     val renderer2 = remember { Renderer() }
-    renderer1.isAntiAlias = isAntiAlias
-    renderer2.isAntiAlias = isAntiAlias
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val density = LocalDensity.current.density
@@ -110,40 +108,54 @@ fun AnimationView(
             return@BoxWithConstraints
         }
 
-        try {
-            val showGround = (state.prefs.showGround == AnimationPrefs.Companion.GROUND_ON ||
-                    (state.prefs.showGround == AnimationPrefs.Companion.GROUND_AUTO && state.pattern.isBouncePattern))
-            renderer1.setPattern(state.pattern)
-            renderer1.setGround(showGround)
-            renderer1.zoomLevel = state.zoom
-            if (state.prefs.stereo) {
-                renderer2.setPattern(state.pattern)
-                renderer2.setGround(showGround)
-                renderer2.zoomLevel = state.zoom
-            }
-
-            if (state.fitToFrame) {
-                val borderPixels = state.prefs.borderPixels
-                val (overallMin, overallMax) = state.pattern.layout.overallBoundingBox
+        remember(
+            state.pattern,
+            state.prefs,
+            state.cameraAngle,
+            state.zoom,
+            state.fitToFrame,
+            widthPx,
+            heightPx,
+            isAntiAlias
+        ) {
+            // configure the renderers
+            try {
+                val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
+                renderer1.isAntiAlias = isAntiAlias
+                renderer1.setPattern(state.pattern)
+                renderer1.setGround(showGround)
+                renderer1.zoomLevel = state.zoom
                 if (state.prefs.stereo) {
-                    val w = widthPx / 2
-                    renderer1.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
-                    renderer2.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
-                } else {
-                    renderer1.initDisplay(widthPx, heightPx, borderPixels, overallMax, overallMin)
+                    renderer2.isAntiAlias = isAntiAlias
+                    renderer2.setPattern(state.pattern)
+                    renderer2.setGround(showGround)
+                    renderer2.zoomLevel = state.zoom
                 }
-            }
 
-            val ca = state.cameraAngle.toDoubleArray()
-            if (state.prefs.stereo) {
-                val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
-                renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
-                renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
-            } else {
-                renderer1.cameraAngle = ca
+                if (state.fitToFrame) {
+                    val borderPixels = state.prefs.borderPixels
+                    val (overallMin, overallMax) = state.pattern.layout.overallBoundingBox
+                    if (state.prefs.stereo) {
+                        val w = widthPx / 2
+                        renderer1.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                        renderer2.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                    } else {
+                        renderer1.initDisplay(widthPx, heightPx, borderPixels, overallMax, overallMin)
+                    }
+                }
+
+                val ca = state.cameraAngle.toDoubleArray()
+                if (state.prefs.stereo) {
+                    val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
+                    renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
+                    renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
+                } else {
+                    renderer1.cameraAngle = ca
+                }
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
             }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
 
         val layout = remember(
@@ -165,12 +177,12 @@ fun AnimationView(
         }
 
         LaunchedEffect(state.isPaused) {
-            // Animation loop
             if (!state.isPaused) {
                 val startTime = withFrameNanos { it }
                 var lastFrameTime = startTime
                 val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
 
+                // animation loop
                 while (true) {
                     withFrameNanos { frameTimeNanos ->
                         if (state.isPaused) return@withFrameNanos
@@ -557,18 +569,15 @@ private fun drawGrid(
     val center = renderer.getXY(Coordinate(0.0, 0.0, 0.0))
     val dx = renderer.getXY(Coordinate(100.0, 0.0, 0.0))
     val dy = renderer.getXY(Coordinate(0.0, 100.0, 0.0))
-    val axisX = doubleArrayOf(
-        AnimationLayout.XY_GRID_SPACING_CM * ((dx[0] - center[0]).toDouble() / 100.0),
-        AnimationLayout.XY_GRID_SPACING_CM * ((dx[1] - center[1]).toDouble() / 100.0)
-    )
-    val axisY = doubleArrayOf(
-        AnimationLayout.XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0),
-        AnimationLayout.XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
-    )
+    
+    val axisXx = AnimationLayout.XY_GRID_SPACING_CM * ((dx[0] - center[0]).toDouble() / 100.0)
+    val axisXy = AnimationLayout.XY_GRID_SPACING_CM * ((dx[1] - center[1]).toDouble() / 100.0)
+    val axisYx = AnimationLayout.XY_GRID_SPACING_CM * ((dy[0] - center[0]).toDouble() / 100.0)
+    val axisYy = AnimationLayout.XY_GRID_SPACING_CM * ((dy[1] - center[1]).toDouble() / 100.0)
 
     // Find which grid intersections are visible on screen by solving for the
     // grid coordinates at the four corners.
-    val det = axisX[0] * axisY[1] - axisX[1] * axisY[0]
+    val det = axisXx * axisYy - axisXy * axisYx
     var mMin = 0
     var mMax = 0
     var nMin = 0
@@ -576,8 +585,8 @@ private fun drawGrid(
     for (j in 0..3) {
         val a = ((if (j % 2 == 0) 0 else width) - center[0]).toDouble()
         val b = ((if (j < 2) 0 else height) - center[1]).toDouble()
-        val m = (axisY[1] * a - axisY[0] * b) / det
-        val n = (-axisX[1] * a + axisX[0] * b) / det
+        val m = (axisYy * a - axisYx * b) / det
+        val n = (-axisXy * a + axisXx * b) / det
         val mInt = floor(m).toInt()
         val nInt = floor(n).toInt()
         mMin = if (j == 0) mInt else min(mMin, mInt)
@@ -587,17 +596,17 @@ private fun drawGrid(
     }
 
     for (j in mMin..mMax) {
-        val x1 = (center[0] + j * axisX[0] + nMin * axisY[0]).toFloat()
-        val y1 = (center[1] + j * axisX[1] + nMin * axisY[1]).toFloat()
-        val x2 = (center[0] + j * axisX[0] + nMax * axisY[0]).toFloat()
-        val y2 = (center[1] + j * axisX[1] + nMax * axisY[1]).toFloat()
+        val x1 = (center[0] + j * axisXx + nMin * axisYx).toFloat()
+        val y1 = (center[1] + j * axisXy + nMin * axisYy).toFloat()
+        val x2 = (center[0] + j * axisXx + nMax * axisYx).toFloat()
+        val y2 = (center[1] + j * axisXy + nMax * axisYy).toFloat()
         drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
     for (j in nMin..nMax) {
-        val x1 = (center[0] + mMin * axisX[0] + j * axisY[0]).toFloat()
-        val y1 = (center[1] + mMin * axisX[1] + j * axisY[1]).toFloat()
-        val x2 = (center[0] + mMax * axisX[0] + j * axisY[0]).toFloat()
-        val y2 = (center[1] + mMax * axisX[1] + j * axisY[1]).toFloat()
+        val x1 = (center[0] + mMin * axisXx + j * axisYx).toFloat()
+        val y1 = (center[1] + mMin * axisXy + j * axisYy).toFloat()
+        val x2 = (center[0] + mMax * axisXx + j * axisYx).toFloat()
+        val y2 = (center[1] + mMax * axisXy + j * axisYy).toFloat()
         drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
     }
 }
