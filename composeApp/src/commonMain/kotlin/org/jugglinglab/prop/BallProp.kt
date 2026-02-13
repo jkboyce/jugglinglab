@@ -47,21 +47,21 @@ class BallProp : Prop() {
         get() = listOf(
             ParameterDescriptor(
                 "color",
-                ParameterDescriptor.Companion.TYPE_CHOICE,
+                ParameterDescriptor.TYPE_CHOICE,
                 colorNames,
                 colorNames[COLORNUM_DEF],
                 colorNames[colornum]
             ),
             ParameterDescriptor(
                 "diam",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 DIAM_DEF,
                 diam
             ),
             ParameterDescriptor(
                 "highlight",
-                ParameterDescriptor.Companion.TYPE_BOOLEAN,
+                ParameterDescriptor.TYPE_BOOLEAN,
                 null,
                 HIGHLIGHT_DEF,
                 highlight
@@ -151,6 +151,10 @@ class BallProp : Prop() {
         return Coordinate(-diam / 2, 0.0, -diam / 2)
     }
 
+    override fun getMinZ(): Double {
+        return -diam / 2
+    }
+
     override fun getWidth(): Double {
         return diam
     }
@@ -163,25 +167,25 @@ class BallProp : Prop() {
         return image
     }
 
-    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize {
         if (size == null || zoom != lastzoom) {
             createImage(zoom)
         }
-        return size
+        return size ?: IntSize(0, 0)
     }
 
-    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize {
         if (center == null || zoom != lastzoom) {
             createImage(zoom)
         }
-        return center
+        return center ?: IntSize(0, 0)
     }
 
-    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize {
         if (grip == null || zoom != lastzoom) {
             createImage(zoom)
         }
-        return grip
+        return grip ?: IntSize(0, 0)
     }
 
     // Refresh the display image and related variables for a given zoom level.

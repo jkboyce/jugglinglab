@@ -48,21 +48,21 @@ class RingProp : Prop() {
         get() = listOf(
             ParameterDescriptor(
                 "color",
-                ParameterDescriptor.Companion.TYPE_CHOICE,
+                ParameterDescriptor.TYPE_CHOICE,
                 colorNames,
                 colorNames[COLORNUM_DEF],
                 colorNames[colornum]
             ),
             ParameterDescriptor(
                 "outside",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 OUTSIDE_DIAM_DEF,
                 outsideDiam
             ),
             ParameterDescriptor(
                 "inside",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 INSIDE_DIAM_DEF,
                 insideDiam
@@ -163,6 +163,10 @@ class RingProp : Prop() {
         return Coordinate(-outsideDiam / 2, 0.0, -outsideDiam / 2)
     }
 
+    override fun getMinZ(): Double {
+        return -outsideDiam / 2
+    }
+
     override fun getWidth(): Double {
         // this is for the purposes of default zoom, to fit the juggler into
         // the view area
@@ -176,25 +180,25 @@ class RingProp : Prop() {
         return image
     }
 
-    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize {
         if (size == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
             createImage(zoom, lastcamangle)
         }
-        return size
+        return size ?: IntSize(0, 0)
     }
 
-    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize {
         if (center == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
             createImage(zoom, lastcamangle)
         }
-        return center
+        return center ?: IntSize(0, 0)
     }
 
-    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize {
         if (grip == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
             createImage(zoom, lastcamangle)
         }
-        return grip
+        return grip ?: IntSize(0, 0)
     }
 
     // Refresh the display image and related variables for a given zoom level

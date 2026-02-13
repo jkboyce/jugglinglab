@@ -202,10 +202,10 @@ class Renderer {
 
     private fun getXY(vec: JlVector): IntArray {
         val v = vec.transform(m)
-        val `val` = IntArray(2)
-        `val`[0] = v.x.roundToInt()
-        `val`[1] = v.y.roundToInt()
-        return `val`
+        val result = IntArray(2)
+        result[0] = v.x.roundToInt()
+        result[1] = v.y.roundToInt()
+        return result
     }
 
     private fun getXYZ(vec: JlVector, result: JlVector): JlVector {
@@ -232,6 +232,7 @@ class Renderer {
         @Suppress("LocalVariableName")
         val strokeWidth0_5 = 0.5.dp.toPx()
         val strokeWidth1 = 1.dp.toPx()
+        val stroke1 = Stroke(strokeWidth1)
 
         var numObjects = 5 * pattern.numberOfJugglers + pattern.numberOfPaths + 18
 
@@ -242,7 +243,7 @@ class Renderer {
         var index = 0
 
         // Props
-        var propmin = 0.0
+        var propMinZ = 0.0
         for (i in 1..pattern.numberOfPaths) {
             obj[index].type = DrawObject2D.TYPE_PROP
             obj[index].number = i
@@ -256,13 +257,13 @@ class Renderer {
             val pr = pattern.getProp(pnum[i - 1])
             val center = pr.getProp2DCenter(zoom, cameraAngle)
             val size = pr.getProp2DSize(zoom, cameraAngle)
-            obj[index].boundingbox = Rect(
-                (x - center!!.width).toFloat(),
-                (y - center.height).toFloat(),
-                (x - center.width + size!!.width).toFloat(),
-                (y - center.height + size.height).toFloat()
-            )
-            propmin = min(propmin, pr.getMin()!!.z)
+            
+            obj[index].bbLeft = (x - center.width).toFloat()
+            obj[index].bbTop = (y - center.height).toFloat()
+            obj[index].bbRight = (x - center.width + size.width).toFloat()
+            obj[index].bbBottom = (y - center.height + size.height).toFloat()
+            
+            propMinZ = min(propMinZ, pr.getMinZ())
             index++
         }
 
@@ -283,8 +284,8 @@ class Renderer {
                     tempv2.x = 50.0
                     tempv2.z = tempv1.z
                 }
-                tempv2.y = propmin
-                tempv1.y = propmin
+                tempv2.y = propMinZ
+                tempv1.y = propMinZ
 
                 getXYZ(tempv1, obj[index].coord[0])
                 getXYZ(tempv2, obj[index].coord[1])
@@ -299,7 +300,10 @@ class Renderer {
                 val right = max(x1, x2)
                 val bottom = max(y1, y2)
 
-                obj[index].boundingbox = Rect(left, top, max(left + 1f, right), max(top + 1f, bottom))
+                obj[index].bbLeft = left
+                obj[index].bbTop = top
+                obj[index].bbRight = max(left + 1f, right)
+                obj[index].bbBottom = max(top + 1f, bottom)
                 index++
             }
         }
@@ -334,7 +338,10 @@ class Renderer {
                 if (y < ymin) ymin = y
                 if (y > ymax) ymax = y
             }
-            obj[index].boundingbox = Rect((xmin + 1).toFloat(), (ymin + 1).toFloat(), xmax.toFloat(), ymax.toFloat())
+            obj[index].bbLeft = (xmin + 1).toFloat()
+            obj[index].bbTop = (ymin + 1).toFloat()
+            obj[index].bbRight = xmax.toFloat()
+            obj[index].bbBottom = ymax.toFloat()
             index++
 
             // Arms
@@ -387,7 +394,15 @@ class Renderer {
                     if (obj[i].drawn) {
                         continue
                     }
-                    if (obj[i].covering.all { it.drawn }) {
+                    
+                    var allCoveringDrawn = true
+                    for (k in 0 until obj[i].covering.size) {
+                        if (!obj[i].covering[k].drawn) {
+                            allCoveringDrawn = false
+                            break
+                        }
+                    }
+                    if (allCoveringDrawn) {
                         obj2[index] = obj[i]
                         obj[i].drawn = true
                         index++
@@ -409,7 +424,7 @@ class Renderer {
                 }
                 obj2[index] = obj[i]
                 obj[i].drawn = true
-                index++
+                ++index
             }
         }
 
@@ -425,7 +440,7 @@ class Renderer {
 
                     val image = pr.getProp2DImage(zoom, cameraAngle)
                     if (image != null) {
-                        val grip = pr.getProp2DGrip(zoom, cameraAngle)!!
+                        val grip = pr.getProp2DGrip(zoom, cameraAngle)
                         drawImage(
                             image = image,
                             topLeft = Offset((x - grip.width).toFloat(), (y - grip.height).toFloat())
@@ -434,14 +449,15 @@ class Renderer {
                 }
 
                 DrawObject2D.TYPE_BODY -> {
-                    val path = Path()
+                    val path = ob.path
+                    path.rewind()
                     path.moveTo(ob.coord[0].x.toFloat(), ob.coord[0].y.toFloat())
                     for (j in 1..3) {
                         path.lineTo(ob.coord[j].x.toFloat(), ob.coord[j].y.toFloat())
                     }
                     path.close()
                     drawAaPath(path, background)
-                    drawAaPath(path, Color.Black, style = Stroke(strokeWidth1))
+                    drawAaPath(path, Color.Black, style = stroke1)
 
                     val lHeadBx = ob.coord[4].x
                     val lHeadBy = ob.coord[4].y
@@ -450,7 +466,8 @@ class Renderer {
                     val rHeadBy = ob.coord[6].y
 
                     if (abs(rHeadBx - lHeadBx) > 2.0) {
-                        val headPath = Path()
+                        val headPath = ob.headPath
+                        headPath.rewind()
                         for (j in 0..<polysides) {
                             headX[j] = (0.5 * (lHeadBx + rHeadBx + headCos[j] * (rHeadBx - lHeadBx))).roundToInt()
                             headY[j] = (0.5 * (lHeadBy + lHeadTy + headSin[j] * (lHeadBy - lHeadTy))
@@ -461,7 +478,7 @@ class Renderer {
                         }
                         headPath.close()
                         drawAaPath(headPath, background)
-                        drawAaPath(headPath, Color.Black, style = Stroke(strokeWidth1))
+                        drawAaPath(headPath, Color.Black, style = stroke1)
                     } else {
                         val h =
                             sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
@@ -567,20 +584,30 @@ class Renderer {
         val top = min(y1, y2)
         val right = max(x1, x2)
         val bottom = max(y1, y2)
-        ob.boundingbox = Rect(left, top, max(left + 1f, right), max(top + 1f, bottom))
+        ob.bbLeft = left
+        ob.bbTop = top
+        ob.bbRight = max(left + 1f, right)
+        ob.bbBottom = max(top + 1f, bottom)
     }
 
     class DrawObject2D {
         var type: Int = 0
         var number: Int = 0
         var coord: MutableList<JlVector> = MutableList(8) { JlVector() }
-        var boundingbox: Rect = Rect.Zero
+        var bbLeft: Float = 0f
+        var bbTop: Float = 0f
+        var bbRight: Float = 0f
+        var bbBottom: Float = 0f
         var covering: MutableList<DrawObject2D> = mutableListOf()
         var drawn: Boolean = false
         var tempv: JlVector = JlVector()
+        val path: Path = Path()
+        val headPath: Path = Path()
 
         fun isCovering(obj: DrawObject2D): Boolean {
-            if (!boundingbox.overlaps(obj.boundingbox)) {
+            // Check for bounding box overlap
+            if (bbRight <= obj.bbLeft || bbLeft >= obj.bbRight || 
+                bbBottom <= obj.bbTop || bbTop >= obj.bbBottom) {
                 return false
             }
 
@@ -639,7 +666,7 @@ class Renderer {
             for (i in 0..1) {
                 val x = line.coord[i].x
                 val y = line.coord[i].y
-                if (box.boundingbox.contains(Offset((x + 0.5).toFloat(), (y + 0.5).toFloat()))) {
+                if (contains(box, (x + 0.5).toFloat(), (y + 0.5).toFloat())) {
                     val zb =
                         (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
                     if (line.coord[i].z < (zb - SLOP)) return -1
@@ -651,13 +678,13 @@ class Renderer {
             var intersection = false
             // Check top/bottom edges of bbox
             for (i in 0..1) {
-                val x = (if (i == 0) box.boundingbox.left else box.boundingbox.right).toDouble()
+                val x = (if (i == 0) box.bbLeft else box.bbRight).toDouble()
                 if (x < min(line.coord[0].x, line.coord[1].x) || x > max(line.coord[0].x, line.coord[1].x)) continue
                 if (line.coord[1].x == line.coord[0].x) continue
 
                 val y =
                     line.coord[0].y + (line.coord[1].y - line.coord[0].y) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x)
-                if (y < box.boundingbox.top || y > box.boundingbox.bottom) continue
+                if (y < box.bbTop || y > box.bbBottom) continue
 
                 intersection = true
                 val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
@@ -668,13 +695,13 @@ class Renderer {
 
             // Check left/right edges of bbox
             for (i in 0..1) {
-                val y = (if (i == 0) box.boundingbox.top else box.boundingbox.bottom).toDouble()
+                val y = (if (i == 0) box.bbTop else box.bbBottom).toDouble()
                 if (y < min(line.coord[0].y, line.coord[1].y) || y > max(line.coord[0].y, line.coord[1].y)) continue
                 if (line.coord[1].y == line.coord[0].y) continue
 
                 val x =
                     line.coord[0].x + (line.coord[1].x - line.coord[0].x) * (y - line.coord[0].y) / (line.coord[1].y - line.coord[0].y)
-                if (x < box.boundingbox.left || x > box.boundingbox.right) continue
+                if (x < box.bbLeft || x > box.bbRight) continue
 
                 intersection = true
                 val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
@@ -684,6 +711,10 @@ class Renderer {
             }
 
             return if (intersection) 1 else 0
+        }
+
+        private fun contains(box: DrawObject2D, x: Float, y: Float): Boolean {
+            return x >= box.bbLeft && x < box.bbRight && y >= box.bbTop && y < box.bbBottom
         }
 
         fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {

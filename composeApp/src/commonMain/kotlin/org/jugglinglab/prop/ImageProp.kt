@@ -55,14 +55,14 @@ class ImageProp : Prop() {
         get() = listOf(
             ParameterDescriptor(
                 "image",
-                ParameterDescriptor.Companion.TYPE_ICON,
+                ParameterDescriptor.TYPE_ICON,
                 null,
                 IMAGE_DEF,
                 imageSource
             ),
             ParameterDescriptor(
                 "width",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 WIDTH_DEF,
                 width
@@ -106,6 +106,10 @@ class ImageProp : Prop() {
         return Coordinate(-width / 2, 0.0, 0.0)
     }
 
+    override fun getMinZ(): Double {
+        return 0.0
+    }
+
     override fun getWidth(): Double {
         return width
     }
@@ -117,25 +121,25 @@ class ImageProp : Prop() {
         return image
     }
 
-    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize {
         if (size == null || zoom != lastZoom) {
             createImage(zoom)
         }
-        return size
+        return size ?: IntSize(0, 0)
     }
 
-    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize {
         if (center == null || zoom != lastZoom) {
             createImage(zoom)
         }
-        return center
+        return center ?: IntSize(0, 0)
     }
 
-    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize? {
+    override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize {
         if (grip == null || zoom != lastZoom) {
             createImage(zoom)
         }
-        return grip
+        return grip ?: IntSize(0, 0)
     }
 
     // Refresh the display image and related variables for a given zoom level.
