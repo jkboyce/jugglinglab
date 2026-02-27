@@ -8,7 +8,6 @@
 
 package org.jugglinglab.notation
 
-import org.jugglinglab.notation.SiteswapPattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -124,5 +123,29 @@ class SiteswapPatternTest {
         pattern.asJmlPattern().layout
         assertEquals(2, pattern.numberOfJugglers)
         assertEquals(0, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing spaces 1`() {
+        val pattern = SiteswapPattern().fromString("[53] 22")
+        pattern.asJmlPattern().layout
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(4, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing spaces 2`() {
+        val pattern = SiteswapPattern().fromString("[5 3  ] 2 2 ")
+        pattern.asJmlPattern().layout
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(4, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing spaces 3`() {
+        val pattern = SiteswapPattern().fromString(" (2,4x) ([4x 4] , 2) ")
+        pattern.asJmlPattern().layout
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(4, pattern.numberOfPaths)
     }
 }

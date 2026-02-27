@@ -22,40 +22,40 @@ WILDCARD: '?' ;
 
 SWITCHREVERSE: '*';
 
-groupedpattern : '(' pattern '^' number ')' ;
+groupedpattern : '(' pattern '^' SPC* number SPC* ')' ;
 
 solosequence :
-    ( solomultithrow
+    ( solomultithrow SPC*
     | solopairedthrow '!'? SPC*
     | solohandspecifier SPC*
     )+ ;
 
 solohandspecifier: 'L' | 'R' ;
 
-solopairedthrow : '(' SPC* solomultithrow ',' SPC* solomultithrow ')' ;
+solopairedthrow : '(' SPC* solomultithrow SPC* ',' SPC* solomultithrow SPC* ')' ;
 
 solomultithrow :
-      solosinglethrow SPC*                   #solomultisingle
-    | '[' SPC* (solosinglethrow SPC*)+ ']'   #solomultibraces
+      solosinglethrow                       #solomultisingle
+    | '[' SPC* (solosinglethrow SPC*)+ ']'  #solomultibraces
     ;
 
 solosinglethrow: throwvalue 'x'? modifier? '/'? ;
 
-passingsequence : passinggroup+ ;
+passingsequence : (passinggroup SPC*)+ ;
 
-passinggroup : '<' SPC* passingthrows ('|' SPC* passingthrows)* '>' SPC* ;
+passinggroup : '<' SPC* passingthrows ('|' SPC* passingthrows)* '>' ;
 
 passingthrows :
-    ( passingmultithrow
+    ( passingmultithrow SPC*
     | passingpairedthrow '!'? SPC*
     | passinghandspecifier SPC*
     )+
     ;
 
-passingpairedthrow : '(' SPC* passingmultithrow ',' SPC* passingmultithrow ')' ;
+passingpairedthrow : '(' SPC* passingmultithrow SPC* ',' SPC* passingmultithrow SPC* ')' ;
 
 passingmultithrow :
-      passingsinglethrow SPC*                  #passmultisingle
+      passingsinglethrow                       #passmultisingle
     | '[' SPC* (passingsinglethrow SPC*)+ ']'  #passmultibraces
     ;
 

@@ -17,7 +17,7 @@ object Constants {
     const val HELP_URL: String = "https://jugglinglab.org/#help"
 
     // how juggler angles are interpolated
-    const val ANGLE_LAYOUT_METHOD: Int = Curve.Companion.CURVE_LINE
+    const val ANGLE_LAYOUT_METHOD: Int = Curve.CURVE_LINE
 
     // for positioning windows on screen; scale to a box of this pixel width,
     // centered on the screen
