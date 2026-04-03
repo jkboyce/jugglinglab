@@ -109,7 +109,7 @@ class PatternListPanel(
     private fun launchAnimation() {
         try {
             val row = list.selectedIndex.takeIf { it >= 0 && it < listModel.size } ?: return
-            if (JmlPatternList.BLANK_AT_END && row == listModel.size) {
+            if (JmlPatternList.BLANK_AT_END && (row == listModel.size - 1)) {
                 return
             }
 
@@ -188,7 +188,7 @@ class PatternListPanel(
                 item.setEnabled(false)
             }
             if ((popupCommands[i] == "displaytext" || popupCommands[i] == "remove")
-                && JmlPatternList.BLANK_AT_END && row == listModel.size
+                && JmlPatternList.BLANK_AT_END && (row == listModel.size - 1)
             ) {
                 item.setEnabled(false)
             }
@@ -343,7 +343,7 @@ class PatternListPanel(
     // Do final cleanup after any mouse-related interaction.
 
     private fun checkSelection() {
-        if (JmlPatternList.BLANK_AT_END && list.selectedIndex == listModel.size) {
+        if (JmlPatternList.BLANK_AT_END && (list.selectedIndex == listModel.size - 1)) {
             list.clearSelection()
         }
         popupPatterns = null
@@ -363,7 +363,7 @@ class PatternListPanel(
 
         override fun createTransferable(c: JComponent?): Transferable? {
             val row = list.selectedIndex
-            if (row < 0 || (JmlPatternList.BLANK_AT_END && row == listModel.size)) {
+            if (row < 0 || (JmlPatternList.BLANK_AT_END && (row == listModel.size - 1))) {
                 return null
             }
 
@@ -398,7 +398,7 @@ class PatternListPanel(
             val dl = info.getDropLocation() as JList.DropLocation
             var index = dl.index
             if (index < 0) {
-                index = listModel.size
+                index = if (JmlPatternList.BLANK_AT_END) listModel.size - 2 else listModel.size - 1
             }
 
             // Get the record that is being dropped
