@@ -35,6 +35,7 @@ data class JmlPattern(
     val tags: List<String> = emptyList(),
     val basePatternNotation: String? = null,
     val basePatternConfig: String? = null,
+    val isBasePattern: Boolean = false,
     val props: List<JmlProp> = emptyList(),
     val numberOfJugglers: Int,
     val numberOfPaths: Int,
@@ -151,7 +152,7 @@ data class JmlPattern(
                     }
                 }
                 if (matches) {
-                    period = Permutation.Companion.lcm(period, cperiod)
+                    period = Permutation.lcm(period, cperiod)
                     break
                 }
             }
@@ -164,7 +165,7 @@ data class JmlPattern(
 
     val isBasePatternEdited: Boolean by lazy {
         var edited = false
-        if (hasBasePattern) {
+        if (!isBasePattern && hasBasePattern) {
             try {
                 edited = (fromBasePattern(
                     basePatternNotation!!,
@@ -455,32 +456,32 @@ data class JmlPattern(
 
     fun writeJml(wr: Appendable, writeTitle: Boolean, writeInfo: Boolean) {
         JmlDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
-        wr.append("<jml version=\"${JmlNode.Companion.xmlescape(JmlDefs.CURRENT_JML_VERSION)}\">\n")
+        wr.append("<jml version=\"${JmlNode.xmlescape(JmlDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<pattern>\n")
         if (writeTitle && title != null) {
-            wr.append("<title>${JmlNode.Companion.xmlescape(title)}</title>\n")
+            wr.append("<title>${JmlNode.xmlescape(title)}</title>\n")
         }
         if (writeInfo && (info != null || !tags.isEmpty())) {
             val tagstr = tags.joinToString(",")
             if (info != null) {
                 if (tagstr.isEmpty()) {
-                    wr.append("<info>${JmlNode.Companion.xmlescape(info)}</info>\n")
+                    wr.append("<info>${JmlNode.xmlescape(info)}</info>\n")
                 } else {
                     wr.append(
-                        ("<info tags=\"${JmlNode.Companion.xmlescape(tagstr)}\">${JmlNode.Companion.xmlescape(info)}</info>\n")
+                        ("<info tags=\"${JmlNode.xmlescape(tagstr)}\">${JmlNode.xmlescape(info)}</info>\n")
                     )
                 }
             } else {
-                wr.append("<info tags=\"${JmlNode.Companion.xmlescape(tagstr)}\"/>\n")
+                wr.append("<info tags=\"${JmlNode.xmlescape(tagstr)}\"/>\n")
             }
         }
         if (basePatternNotation != null && basePatternConfig != null) {
             wr.append(
                 ("<basepattern notation=\""
-                    + JmlNode.Companion.xmlescape(basePatternNotation.lowercase())
+                    + JmlNode.xmlescape(basePatternNotation.lowercase())
                     + "\">\n")
             )
-            wr.append(JmlNode.Companion.xmlescape(basePatternConfig.replace(";", ";\n"))).append('\n')
+            wr.append(JmlNode.xmlescape(basePatternConfig.replace(";", ";\n"))).append('\n')
             wr.append("</basepattern>\n")
         }
         props.forEach { it.writeJml(wr) }
@@ -745,7 +746,7 @@ data class JmlPattern(
         // compile a list of colors to apply in round-robin fashion to paths
         val colorList: List<String> = when (val trimmedColorString = colorString.trim()) {
             "mixed" -> {
-                Prop.Companion.colorMixed
+                Prop.colorMixed
             }
 
             "orbits" -> {
@@ -759,7 +760,7 @@ data class JmlPattern(
                     val cycle = delayPerm.cycleOf(i + 1)
                     for (j in cycle) {
                         colorsByOrbit[j - 1] =
-                            Prop.Companion.colorMixed[colorIndex % Prop.Companion.colorMixed.size]
+                            Prop.colorMixed[colorIndex % Prop.colorMixed.size]
                     }
                     ++colorIndex
                 }
@@ -857,8 +858,8 @@ data class JmlPattern(
 
         @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
         fun fromBasePattern(notation: String, config: String): JmlPattern {
-            val p = Pattern.Companion.newPattern(notation).fromString(config)
-            return p.asJmlPattern()
+            val p = Pattern.newPattern(notation).fromString(config).asJmlPattern()
+            return p.copy(isBasePattern = true)
         }
 
         // Construct a JmlPattern by parsing a JmlNode.
@@ -912,7 +913,7 @@ data class JmlPattern(
 
                 "basepattern" -> {
                     record.basePatternNotation =
-                        Pattern.Companion.canonicalNotation(current.attributes.getValueOf("notation"))
+                        Pattern.canonicalNotation(current.attributes.getValueOf("notation"))
                     record.basePatternConfig = current.nodeValue!!.trim()
                 }
 
