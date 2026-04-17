@@ -157,12 +157,13 @@ fun LadderDiagramView(
                 val midY = height - layout.borderTop / 2
                 val qY = height - layout.borderTop * 3 / 4
                 val qY2 = height - layout.borderTop / 4
+                val dx = 2 * (qY2 - midY)
 
                 drawLine(symmetryColor, Offset(lx, midY), Offset(rx, midY), strokeWidth = layout.lineWidth)
-                drawLine(symmetryColor, Offset(lx, midY), Offset(lx * 2, qY), strokeWidth = layout.lineWidth)
-                drawLine(symmetryColor, Offset(lx, midY), Offset(lx * 2, qY2), strokeWidth = layout.lineWidth)
-                drawLine(symmetryColor, Offset(rx, midY), Offset(width - lx * 2, qY), strokeWidth = layout.lineWidth)
-                drawLine(symmetryColor, Offset(rx, midY), Offset(width - lx * 2, qY2), strokeWidth = layout.lineWidth)
+                drawLine(symmetryColor, Offset(lx, midY), Offset(lx + dx, qY), strokeWidth = layout.lineWidth)
+                drawLine(symmetryColor, Offset(lx, midY), Offset(lx + dx, qY2), strokeWidth = layout.lineWidth)
+                drawLine(symmetryColor, Offset(rx, midY), Offset(rx - dx, qY), strokeWidth = layout.lineWidth)
+                drawLine(symmetryColor, Offset(rx, midY), Offset(rx - dx, qY2), strokeWidth = layout.lineWidth)
             }
             if (layout.hasSwitchDelaySymmetry) {
                 drawLine(
