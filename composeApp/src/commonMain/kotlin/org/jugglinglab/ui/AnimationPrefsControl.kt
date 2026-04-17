@@ -105,7 +105,7 @@ fun AnimationPrefsControl(
         if (manualSettings.isNotBlank()) {
             try {
                 // We effectively merge the current object state with the manual string
-                newPrefs = AnimationPrefs.Companion.fromString("$newPrefs;$manualSettings")
+                newPrefs = AnimationPrefs.fromString("$newPrefs;$manualSettings")
             } catch (jeu: JuggleExceptionUser) {
                 errorMessage = jeu.message
                 return
@@ -146,9 +146,9 @@ fun AnimationPrefsControl(
             // Use a Box to simulate the dropdown behavior
             var expanded by remember { mutableStateOf(false) }
             val options = listOf(
-                AnimationPrefs.Companion.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
-                AnimationPrefs.Companion.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
-                AnimationPrefs.Companion.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
+                AnimationPrefs.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
+                AnimationPrefs.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
+                AnimationPrefs.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
             )
             val selectedText = options.find { it.first == showGround }?.second ?: ""
 

@@ -73,8 +73,8 @@ fun SiteswapNotationControl(
     fun parameterList(): ParameterList {
         val sb = StringBuilder()
         sb.append("pattern=").append(pattern)
-        if (propIndex != 0 && propIndex < Prop.Companion.builtinProps.size) {
-            sb.append(";prop=").append(Prop.Companion.builtinProps[propIndex].lowercase())
+        if (propIndex != 0 && propIndex < Prop.builtinProps.size) {
+            sb.append(";prop=").append(Prop.builtinProps[propIndex].lowercase())
         }
         if (dwellBeats.isNotEmpty() && dwellBeats != "1.3") {
             sb.append(";dwell=").append(dwellBeats)
@@ -217,7 +217,7 @@ fun SiteswapNotationControl(
         // Prop Type Dropdown
         DropdownRow(
             label = stringResource(Res.string.gui_prop_type),
-            items = Prop.Companion.builtinPropsStringResources,
+            items = Prop.builtinPropsStringResources,
             selectedIndex = propIndex,
             onIndexChange = { propIndex = it },
         )
