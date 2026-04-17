@@ -119,7 +119,7 @@ class JmlPatternList(
             return null
         }
         val params = ParameterList(rec.animprefs)
-        val ap = AnimationPrefs.Companion.fromParameters(params)
+        val ap = AnimationPrefs.fromParameters(params)
         params.errorIfParametersLeft()
         return ap
     }
@@ -206,13 +206,13 @@ class JmlPatternList(
 
     fun writeJml(wr: Appendable) {
         JmlDefs.jmlPrefix.forEach { wr.append(it).append('\n') }
-        wr.append("<jml version=\"${JmlNode.Companion.xmlescape(JmlDefs.CURRENT_JML_VERSION)}\">\n")
+        wr.append("<jml version=\"${JmlNode.xmlescape(JmlDefs.CURRENT_JML_VERSION)}\">\n")
         wr.append("<patternlist>\n")
         if (title?.isNotEmpty() ?: false) {
-            wr.append("<title>${JmlNode.Companion.xmlescape(title!!)}</title>\n")
+            wr.append("<title>${JmlNode.xmlescape(title!!)}</title>\n")
         }
         if (info?.isNotEmpty() ?: false) {
-            wr.append("<info>${JmlNode.Companion.xmlescape(info!!)}</info>\n")
+            wr.append("<info>${JmlNode.xmlescape(info!!)}</info>\n")
         }
 
         val empty = (model.size == if (BLANK_AT_END) 1 else 0)
@@ -224,15 +224,15 @@ class JmlPatternList(
 
         for (i in 0..<(if (BLANK_AT_END) model.size - 1 else model.size)) {
             val rec = model[i]
-            var line = "<line display=\"${JmlNode.Companion.xmlescape(rec.display.trimEnd())}\""
+            var line = "<line display=\"${JmlNode.xmlescape(rec.display.trimEnd())}\""
             var hasAnimation = false
 
             if (rec.notation != null) {
-                line += " notation=\"${JmlNode.Companion.xmlescape(rec.notation!!.lowercase())}\""
+                line += " notation=\"${JmlNode.xmlescape(rec.notation!!.lowercase())}\""
                 hasAnimation = true
             }
             if (rec.animprefs != null) {
-                line += " animprefs=\"${JmlNode.Companion.xmlescape(rec.animprefs!!)}\""
+                line += " animprefs=\"${JmlNode.xmlescape(rec.animprefs!!)}\""
                 hasAnimation = true
             }
 
@@ -246,23 +246,21 @@ class JmlPatternList(
                 if (rec.notation != null && rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
                     rec.patnode!!.writeNode(wr, 0)
                 } else if (rec.anim != null) {
-                    wr.append(JmlNode.Companion.xmlescape(rec.anim!!)).append('\n')
+                    wr.append(JmlNode.xmlescape(rec.anim!!)).append('\n')
                     if (rec.info != null || (rec.tags != null && !rec.tags!!.isEmpty())) {
                         val tagstr = rec.tags?.joinToString(",") ?: ""
                         if (rec.info != null) {
                             if (tagstr.isEmpty()) {
-                                wr.append("<info>${JmlNode.Companion.xmlescape(rec.info!!)}</info>\n")
+                                wr.append("<info>${JmlNode.xmlescape(rec.info!!)}</info>\n")
                             } else {
                                 wr.append(
-                                    "<info tags=\"${JmlNode.Companion.xmlescape(tagstr)}\">${
-                                        JmlNode.Companion.xmlescape(
-                                            rec.info!!
-                                        )
+                                    "<info tags=\"${JmlNode.xmlescape(tagstr)}\">${
+                                        JmlNode.xmlescape(rec.info!!)
                                     }</info>\n"
                                 )
                             }
                         } else {
-                            wr.append("<info tags=\"${JmlNode.Companion.xmlescape(tagstr)}\"/>\n")
+                            wr.append("<info tags=\"${JmlNode.xmlescape(tagstr)}\"/>\n")
                         }
                     }
                 }

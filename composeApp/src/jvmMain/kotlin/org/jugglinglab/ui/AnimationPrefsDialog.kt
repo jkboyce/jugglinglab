@@ -15,7 +15,6 @@ import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.util.jlGetStringResource
 import androidx.compose.material.*
 import androidx.compose.ui.awt.ComposePanel
-import org.jugglinglab.ui.AnimationPrefsControl
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JDialog

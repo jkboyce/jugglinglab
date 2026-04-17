@@ -179,7 +179,7 @@ class AnimationController(
             startX = mx
             startY = my
 
-            val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)
+            val activeEventImage = AnimationLayout.getActiveEvent(state)
             if (activeEventImage != null) {
                 for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * layout.width / 2
@@ -198,7 +198,7 @@ class AnimationController(
                             dragging = true
                             draggingLeft = (i == 0)
                             deltaX = 0; deltaY = 0
-                            val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)!!
+                            val activeEventImage = AnimationLayout.getActiveEvent(state)!!
                             eventStart = activeEventImage.first.localCoordinate
                             eventPrimaryStart = activeEventImage.second.localCoordinate
                             state.update(fitToFrame = false)
@@ -225,7 +225,7 @@ class AnimationController(
                             dragging = true
                             draggingLeft = (i == 0)
                             deltaX = 0; deltaY = 0
-                            val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)!!
+                            val activeEventImage = AnimationLayout.getActiveEvent(state)!!
                             eventStart = activeEventImage.first.localCoordinate
                             eventPrimaryStart = activeEventImage.second.localCoordinate
                             state.update(fitToFrame = false)
@@ -234,7 +234,7 @@ class AnimationController(
                     }
                 }
             } else {
-                val activePosition = AnimationLayout.Companion.getActivePosition(state)
+                val activePosition = AnimationLayout.getActivePosition(state)
 
                 if (activePosition != null) {
                     for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
@@ -341,14 +341,14 @@ class AnimationController(
                     while (finalAngle > 360) finalAngle -= 360.0
                     while (finalAngle < 0) finalAngle += 360.0
 
-                    val rec = PatternBuilder.Companion.fromJmlPattern(state.pattern)
-                    val activePosition = AnimationLayout.Companion.getActivePosition(state)!!
+                    val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                    val activePosition = AnimationLayout.getActivePosition(state)!!
                     val index = rec.positions.indexOf(activePosition)
                     if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
                     val newPosition = activePosition.copy(angle = finalAngle)
                     rec.positions[index] = newPosition
                     state.update(
-                        pattern = JmlPattern.Companion.fromPatternBuilder(rec),
+                        pattern = JmlPattern.fromPatternBuilder(rec),
                         selectedItemHashCode = newPosition.jlHashCode
                     )
                 } else {
@@ -358,13 +358,13 @@ class AnimationController(
                     // Get updated event/position coordinate based on mouse position.
                     // This modifies deltaX, deltaY based on snapping and projection.
                     val cc = currentCoordinate
-                    val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)
+                    val activeEventImage = AnimationLayout.getActiveEvent(state)
 
                     if (activeEventImage != null) {
-                        var deltalc = Coordinate.Companion.sub(cc, eventStart)!!
-                        deltalc = Coordinate.Companion.truncate(deltalc, 1e-7)
+                        var deltalc = Coordinate.sub(cc, eventStart)!!
+                        deltalc = Coordinate.truncate(deltalc, 1e-7)
 
-                        val newEventCoordinate = Coordinate.Companion.add(eventStart, deltalc)!!
+                        val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
                         val newEvent = activeEventImage.first.copy(
                             x = newEventCoordinate.x,
                             y = newEventCoordinate.y,
@@ -374,25 +374,25 @@ class AnimationController(
                         if (activeEventImage.first.hand != activeEventImage.second.hand) {
                             deltalc.x = -deltalc.x
                         }
-                        val newPrimaryCoordinate = Coordinate.Companion.add(eventPrimaryStart, deltalc)!!
+                        val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
                         val newPrimary = activeEventImage.second.copy(
                             x = newPrimaryCoordinate.x,
                             y = newPrimaryCoordinate.y,
                             z = newPrimaryCoordinate.z
                         )
 
-                        val record = PatternBuilder.Companion.fromJmlPattern(state.pattern)
+                        val record = PatternBuilder.fromJmlPattern(state.pattern)
                         val index = record.events.indexOf(activeEventImage.second)
                         record.events[index] = newPrimary
                         state.update(
-                            pattern = JmlPattern.Companion.fromPatternBuilder(record),
+                            pattern = JmlPattern.fromPatternBuilder(record),
                             selectedItemHashCode = newEvent.jlHashCode
                         )
                     } else {
-                        val activePosition = AnimationLayout.Companion.getActivePosition(state)
+                        val activePosition = AnimationLayout.getActivePosition(state)
 
                         if (activePosition != null) {
-                            val rec = PatternBuilder.Companion.fromJmlPattern(state.pattern)
+                            val rec = PatternBuilder.fromJmlPattern(state.pattern)
                             val index = rec.positions.indexOf(activePosition)
                             if (index < 0) {
                                 throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
@@ -400,7 +400,7 @@ class AnimationController(
                             val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
                             rec.positions[index] = newPosition
                             state.update(
-                                pattern = JmlPattern.Companion.fromPatternBuilder(rec),
+                                pattern = JmlPattern.fromPatternBuilder(rec),
                                 selectedItemHashCode = newPosition.jlHashCode
                             )
                         }
@@ -448,8 +448,8 @@ class AnimationController(
         }
 
         try {
-            val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)
-            val activePosition = AnimationLayout.Companion.getActivePosition(state)
+            val activeEventImage = AnimationLayout.getActiveEvent(state)
+            val activePosition = AnimationLayout.getActivePosition(state)
 
             if ((activeEventImage != null || activePosition != null) && dragging) {
                 state.update(fitToFrame = true)
@@ -503,8 +503,8 @@ class AnimationController(
 
         var a = 0.0
         var snapHorizontal = true
-        val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)
-        val activePosition = AnimationLayout.Companion.getActivePosition(state)
+        val activeEventImage = AnimationLayout.getActiveEvent(state)
+        val activePosition = AnimationLayout.getActivePosition(state)
 
         if (activeEventImage != null) {
             a = -Math.toRadians(
@@ -537,7 +537,7 @@ class AnimationController(
     private val currentCoordinate: Coordinate
         get() {
             val layout = currentLayout!!
-            val activeEventImage = AnimationLayout.Companion.getActiveEvent(state)
+            val activeEventImage = AnimationLayout.getActiveEvent(state)
 
             if (activeEventImage != null) {
                 if (!dragging) return activeEventImage.first.localCoordinate
@@ -580,7 +580,7 @@ class AnimationController(
                 return c
             }
 
-            val activePosition = AnimationLayout.Companion.getActivePosition(state)
+            val activePosition = AnimationLayout.getActivePosition(state)
             if (activePosition != null) {
                 if (!draggingXy && !draggingZ) return activePosition.coordinate
                 val c = positionStart!!.copy()

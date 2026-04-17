@@ -68,13 +68,13 @@ class SiteswapPattern : MhnPattern() {
         if (hands != null || bodies != null) {
             val patternPeriod = norepPeriod
             val handsPeriod = hands?.let { h ->
-                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.Companion.lcm(acc, h.getPeriod(i)) }
+                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.lcm(acc, h.getPeriod(i)) }
             } ?: 1
             val bodyPeriod = bodies?.let { b ->
-                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.Companion.lcm(acc, b.getPeriod(i)) }
+                (1..numberOfJugglers).fold(1) { acc, i -> Permutation.lcm(acc, b.getPeriod(i)) }
             } ?: 1
             val totalPeriod =
-                Permutation.Companion.lcm(Permutation.Companion.lcm(patternPeriod, handsPeriod), bodyPeriod)
+                Permutation.lcm(Permutation.lcm(patternPeriod, handsPeriod), bodyPeriod)
 
             if (totalPeriod != patternPeriod) {
                 val repeats = totalPeriod / patternPeriod
@@ -132,7 +132,8 @@ class SiteswapPattern : MhnPattern() {
             }
             throw JuggleExceptionUser(spe.message!!)
         } catch (_: Throwable) {
-            val message = jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
+            val message =
+                jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")
             throw JuggleExceptionUser(message)
         }
 
@@ -174,7 +175,7 @@ class SiteswapPattern : MhnPattern() {
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println(
                 "period = $period, numpaths = $numberOfPaths, " +
-                        "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
+                    "max_throw = $maxThrow, max_occupancy = $maxOccupancy"
             )
             println("Starting second pass...")
         }
@@ -234,7 +235,7 @@ class SiteswapPattern : MhnPattern() {
         sti.isVanillaAsync = true
 
         when (sti.type) {
-            SiteswapTreeItem.Companion.TYPE_PATTERN -> {
+            SiteswapTreeItem.TYPE_PATTERN -> {
                 // Can contain Grouped_Pattern, Solo_Sequence, Passing_Sequence, or Wildcard
                 sti.beats = 0
 
@@ -346,7 +347,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_GROUPED_PATTERN -> {
+            SiteswapTreeItem.TYPE_GROUPED_PATTERN -> {
                 // Contains only a Pattern type (single child)
                 child = sti.getChild(0)
                 if (sti.numberOfChildren > 1) {
@@ -368,7 +369,7 @@ class SiteswapPattern : MhnPattern() {
                 sti.isVanillaAsync = sti.isVanillaAsync and child.isVanillaAsync
             }
 
-            SiteswapTreeItem.Companion.TYPE_SOLO_SEQUENCE -> {
+            SiteswapTreeItem.TYPE_SOLO_SEQUENCE -> {
                 // Contains Solo Paired Throw, Solo Multi Throw, or Hand Specifier types
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -381,7 +382,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_SOLO_PAIRED_THROW -> {
+            SiteswapTreeItem.TYPE_SOLO_PAIRED_THROW -> {
                 // Contains only Solo Multi Throw type
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -396,7 +397,7 @@ class SiteswapPattern : MhnPattern() {
                 sti.isVanillaAsync = false
             }
 
-            SiteswapTreeItem.Companion.TYPE_SOLO_MULTI_THROW -> {
+            SiteswapTreeItem.TYPE_SOLO_MULTI_THROW -> {
                 // Contains only Solo Single Throw type
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -417,7 +418,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_SOLO_SINGLE_THROW -> {
+            SiteswapTreeItem.TYPE_SOLO_SINGLE_THROW -> {
                 // No children
                 if (sti.value > maxThrow) {
                     maxThrow = sti.value
@@ -425,7 +426,7 @@ class SiteswapPattern : MhnPattern() {
                 sti.isVanillaAsync = !sti.x
             }
 
-            SiteswapTreeItem.Companion.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.Companion.TYPE_PASSING_GROUP -> {
+            SiteswapTreeItem.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.TYPE_PASSING_GROUP -> {
                 // Contains only Passing Throws type
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -438,7 +439,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_PASSING_THROWS -> {
+            SiteswapTreeItem.TYPE_PASSING_THROWS -> {
                 // Contains Passing Paired Throw, Passing Multi Throw, or Hand Specifier types
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -451,7 +452,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_PASSING_PAIRED_THROW -> {
+            SiteswapTreeItem.TYPE_PASSING_PAIRED_THROW -> {
                 // Contains only Passing Multi Throw type
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -466,7 +467,7 @@ class SiteswapPattern : MhnPattern() {
                 sti.isVanillaAsync = false
             }
 
-            SiteswapTreeItem.Companion.TYPE_PASSING_MULTI_THROW -> {
+            SiteswapTreeItem.TYPE_PASSING_MULTI_THROW -> {
                 // Contains only Passing Single Throw type
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -487,7 +488,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_PASSING_SINGLE_THROW -> {
+            SiteswapTreeItem.TYPE_PASSING_SINGLE_THROW -> {
                 // No children
                 if (sti.value > maxThrow) {
                     maxThrow = sti.value
@@ -495,7 +496,7 @@ class SiteswapPattern : MhnPattern() {
                 sti.isVanillaAsync = !sti.x
             }
 
-            SiteswapTreeItem.Companion.TYPE_WILDCARD -> if (sti.transition != null) {
+            SiteswapTreeItem.TYPE_WILDCARD -> if (sti.transition != null) {
                 sti.transition!!.beatNum = sti.beatNum
                 doFirstPass(sti.transition!!)
                 // copy variables from sti.transition to sti
@@ -506,7 +507,7 @@ class SiteswapPattern : MhnPattern() {
                 throw JuggleExceptionInternal("Wildcard not resolved")
             }
 
-            SiteswapTreeItem.Companion.TYPE_HAND_SPEC -> {
+            SiteswapTreeItem.TYPE_HAND_SPEC -> {
                 if (sti.beatNum % 2 == 0) {
                     rightOnEven[sti.sourceJuggler - 1] = !sti.specLeft
                 } else {
@@ -528,7 +529,7 @@ class SiteswapPattern : MhnPattern() {
         var child: SiteswapTreeItem
 
         when (sti.type) {
-            SiteswapTreeItem.Companion.TYPE_PATTERN -> {
+            SiteswapTreeItem.TYPE_PATTERN -> {
                 // Can contain Grouped_Pattern, Solo_Sequence, or Passing_Sequence
                 var i = 0
                 while (i < sti.numberOfChildren) {
@@ -547,7 +548,10 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_GROUPED_PATTERN, SiteswapTreeItem.Companion.TYPE_SOLO_SEQUENCE, SiteswapTreeItem.Companion.TYPE_SOLO_PAIRED_THROW, SiteswapTreeItem.Companion.TYPE_PASSING_SEQUENCE, SiteswapTreeItem.Companion.TYPE_PASSING_GROUP, SiteswapTreeItem.Companion.TYPE_PASSING_THROWS, SiteswapTreeItem.Companion.TYPE_PASSING_PAIRED_THROW -> {
+            SiteswapTreeItem.TYPE_GROUPED_PATTERN, SiteswapTreeItem.TYPE_SOLO_SEQUENCE,
+            SiteswapTreeItem.TYPE_SOLO_PAIRED_THROW, SiteswapTreeItem.TYPE_PASSING_SEQUENCE,
+            SiteswapTreeItem.TYPE_PASSING_GROUP, SiteswapTreeItem.TYPE_PASSING_THROWS,
+            SiteswapTreeItem.TYPE_PASSING_PAIRED_THROW -> {
                 var i = 0
                 while (i < sti.numberOfChildren) {
                     child = sti.getChild(i)
@@ -556,7 +560,7 @@ class SiteswapPattern : MhnPattern() {
                 }
             }
 
-            SiteswapTreeItem.Companion.TYPE_SOLO_MULTI_THROW, SiteswapTreeItem.Companion.TYPE_PASSING_MULTI_THROW -> {
+            SiteswapTreeItem.TYPE_SOLO_MULTI_THROW, SiteswapTreeItem.TYPE_PASSING_MULTI_THROW -> {
                 var index = sti.beatNum + beatoffset
                 while (index < indexes) {
                     var i = 0

@@ -25,8 +25,6 @@ import javax.sound.sampled.DataLine
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import androidx.compose.ui.awt.ComposePanel
-import org.jugglinglab.ui.AnimationController
-import org.jugglinglab.ui.AnimationView
 
 class AnimationPanel(
     val state: PatternAnimationState,

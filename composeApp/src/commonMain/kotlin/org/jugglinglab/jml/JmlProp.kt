@@ -15,7 +15,7 @@ data class JmlProp (
 ) {
     @get:Throws(JuggleExceptionUser::class)
     val prop: Prop by lazy {
-        Prop.Companion.newProp(type).apply { initProp(mod) }
+        Prop.newProp(type).apply { initProp(mod) }
     }
 
     fun writeJml(wr: Appendable) {

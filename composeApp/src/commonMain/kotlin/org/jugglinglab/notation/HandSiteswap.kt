@@ -347,7 +347,7 @@ object HandSiteswap {
                 }
             }
             if (orb[i] != ho && orb[i] != 0) {
-                ho = Permutation.Companion.lcm(orb[i], ho)
+                ho = Permutation.lcm(orb[i], ho)
             }
         }
         return ho
@@ -582,7 +582,7 @@ object HandSiteswap {
 
         val objPer: Int = os.size
         val hndPer: Int = hs.size
-        val patPer = Permutation.Companion.lcm(objPer, ho) // pattern period
+        val patPer = Permutation.lcm(objPer, ho) // pattern period
 
         val ah = IntArray(patPer) // assigned hand
         val assignDone = BooleanArray(patPer)
