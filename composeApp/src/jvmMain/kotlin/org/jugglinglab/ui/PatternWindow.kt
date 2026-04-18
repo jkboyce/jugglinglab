@@ -18,7 +18,6 @@ import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.prop.Prop
-import org.jetbrains.compose.resources.StringResource
 import org.jugglinglab.util.JuggleException
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
@@ -50,6 +49,7 @@ import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import kotlin.system.exitProcess
+import org.jetbrains.compose.resources.StringResource
 
 class PatternWindow(
     title: String?,
@@ -86,16 +86,6 @@ class PatternWindow(
 
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
-
-    // Create a new PatternWindow with the same JmlPattern and default View as
-    // an existing PatternWindow.
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private constructor(pw: PatternWindow) : this(
-        pw.getTitle(),
-        pw.view.state.pattern,
-        pw.view.state.prefs
-    )
 
     //--------------------------------------------------------------------------
     // Methods to create and manage window contents
@@ -545,8 +535,12 @@ class PatternWindow(
             }
 
             MenuCommand.FILE_DUPLICATE -> {
-                val newpw = PatternWindow(this)
-                newpw.title = "$title copy"
+                val newTitle = "$title copy"
+                PatternWindow(
+                    title = newTitle,
+                    pattern = view.state.pattern.copy(title = newTitle),
+                    prefs = view.state.prefs
+                )
             }
 
             MenuCommand.FILE_TITLE -> changeTitle()
