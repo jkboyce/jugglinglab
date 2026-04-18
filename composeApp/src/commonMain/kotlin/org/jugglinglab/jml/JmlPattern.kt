@@ -892,7 +892,7 @@ data class JmlPattern(
                 }
 
                 "jml" -> {
-                    val vers = current.attributes.getValueOf("version") ?: return
+                    val vers = current.attributes.getValueOf("version") ?: JmlDefs.CURRENT_JML_VERSION
                     if (jlCompareVersions(vers, JmlDefs.CURRENT_JML_VERSION) > 0) {
                         throw JuggleExceptionUser(jlGetStringResource(Res.string.error_jml_version))
                     }
