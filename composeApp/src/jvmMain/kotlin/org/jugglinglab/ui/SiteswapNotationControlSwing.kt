@@ -26,13 +26,16 @@ import java.util.Locale
 import javax.swing.JComboBox
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.AbstractDocument
+import javax.swing.text.JTextComponent
 
 class SiteswapNotationControlSwing : JPanel() {
-    var tf1: JTextField
+    var tf1: JTextArea
     var tf2: JTextField
     var tf3: JTextField
     var tf4: JTextField
@@ -54,13 +57,29 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(
-                GridBagConstraints.LINE_END, 0, 0, Insets(BORDER, BORDER, 0, HSPACING)
+                GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(BORDER, BORDER, 0, HSPACING)
             )
         )
-        tf1 = JTextField(15)
-        p1.add(tf1)
+        tf1 = JTextArea(2, 15).apply {
+            lineWrap = true
+            wrapStyleWord = false
+
+            // trap the Enter key and activate the default button
+            val enterStroke = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0)
+            getInputMap(javax.swing.JComponent.WHEN_FOCUSED).put(enterStroke, "enterAction")
+            actionMap.put("enterAction", object : javax.swing.AbstractAction() {
+                override fun actionPerformed(e: java.awt.event.ActionEvent?) {
+                    javax.swing.SwingUtilities.getRootPane(this@apply)?.defaultButton?.doClick()
+                }
+            })
+        }
+        val scrollPane1 = JScrollPane(tf1).apply {
+            verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+            horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        }
+        p1.add(scrollPane1)
         gb.setConstraints(
-            tf1, jlConstraints(
+            scrollPane1, jlConstraints(
                 GridBagConstraints.LINE_START, 1, 0, Insets(BORDER, 0, 0, BORDER)
             )
         )
@@ -68,14 +87,14 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(lab3)
         gb.setConstraints(
             lab3, jlConstraints(
-                GridBagConstraints.LINE_END, 0, 1, Insets(2 * VSPACING, BORDER, 0, HSPACING)
+                GridBagConstraints.LINE_END, 0, 1, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
         tf3 = JTextField(4)
         p1.add(tf3)
         gb.setConstraints(
             tf3, jlConstraints(
-                GridBagConstraints.LINE_START, 1, 1, Insets(2 * VSPACING, 0, 0, BORDER)
+                GridBagConstraints.LINE_START, 1, 1, Insets(VSPACING, 0, 0, BORDER)
             )
         )
         val lab2 = JLabel(jlGetStringResource(Res.string.gui_dwell_beats))
@@ -237,9 +256,9 @@ class SiteswapNotationControlSwing : JPanel() {
         this.add(p1, BorderLayout.PAGE_START)
     }
 
-    // Execute a block of code on a JTextField without triggering its DocumentListeners.
+    // Execute a block of code on a JTextComponent without triggering its DocumentListeners.
 
-    private fun JTextField.programmaticChange(action: JTextField.() -> Unit) {
+    private fun JTextComponent.programmaticChange(action: JTextComponent.() -> Unit) {
         // The getDocumentListeners() method is on AbstractDocument, not the Document interface.
         val doc = document as? AbstractDocument
         val listeners = doc?.documentListeners ?: emptyArray()
