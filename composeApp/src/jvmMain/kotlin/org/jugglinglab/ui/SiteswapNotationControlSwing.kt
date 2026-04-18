@@ -57,7 +57,7 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(
-                GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(2 * BORDER, BORDER, 0, HSPACING)
+                GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(15, BORDER, 0, HSPACING)
             )
         )
         tf1 = JTextArea(2, 19).apply {
@@ -80,7 +80,7 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(scrollPane1)
         gb.setConstraints(
             scrollPane1, jlConstraints(
-                GridBagConstraints.LINE_START, 1, 0, Insets(2 * BORDER, 0, 0, BORDER)
+                GridBagConstraints.LINE_START, 1, 0, Insets(15, 0, 0, BORDER)
             )
         )
         val lab3 = JLabel(jlGetStringResource(Res.string.gui_beats_per_second))
