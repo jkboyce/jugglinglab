@@ -239,6 +239,10 @@ class PatternListWindow(
                     f = File(f.absolutePath + ".jml")
                 }
                 jlErrorIfNotSanitized(f.getName())
+                if (lastJmlFilename == null && patternList.title == null) {
+                    patternList.title = f.getName().substringBeforeLast(".")
+                    setTitle(patternList.title)
+                }
                 lastJmlFilename = f.getName()
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
