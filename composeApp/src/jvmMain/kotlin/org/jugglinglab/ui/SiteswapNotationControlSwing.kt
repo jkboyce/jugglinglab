@@ -57,16 +57,16 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(lab1)
         gb.setConstraints(
             lab1, jlConstraints(
-                GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(BORDER, BORDER, 0, HSPACING)
+                GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(2 * BORDER, BORDER, 0, HSPACING)
             )
         )
         tf1 = JTextArea(2, 15).apply {
             lineWrap = true
             wrapStyleWord = false
 
-            // trap the Enter key and activate the default button
+            // trap the Enter key to activate the default button
             val enterStroke = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0)
-            getInputMap(javax.swing.JComponent.WHEN_FOCUSED).put(enterStroke, "enterAction")
+            getInputMap(WHEN_FOCUSED).put(enterStroke, "enterAction")
             actionMap.put("enterAction", object : javax.swing.AbstractAction() {
                 override fun actionPerformed(e: java.awt.event.ActionEvent?) {
                     javax.swing.SwingUtilities.getRootPane(this@apply)?.defaultButton?.doClick()
@@ -80,7 +80,7 @@ class SiteswapNotationControlSwing : JPanel() {
         p1.add(scrollPane1)
         gb.setConstraints(
             scrollPane1, jlConstraints(
-                GridBagConstraints.LINE_START, 1, 0, Insets(BORDER, 0, 0, BORDER)
+                GridBagConstraints.LINE_START, 1, 0, Insets(2 * BORDER, 0, 0, BORDER)
             )
         )
         val lab3 = JLabel(jlGetStringResource(Res.string.gui_beats_per_second))
