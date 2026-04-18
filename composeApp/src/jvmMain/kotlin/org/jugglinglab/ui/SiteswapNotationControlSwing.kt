@@ -60,7 +60,7 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(2 * BORDER, BORDER, 0, HSPACING)
             )
         )
-        tf1 = JTextArea(2, 15).apply {
+        tf1 = JTextArea(2, 19).apply {
             lineWrap = true
             wrapStyleWord = false
 
@@ -131,7 +131,7 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_START, 1, 3, Insets(VSPACING, 0, 0, BORDER)
             )
         )
-        tf4 = JTextField(15)
+        tf4 = JTextField(19)
         p1.add(tf4)
         gb.setConstraints(
             tf4, jlConstraints(
@@ -185,7 +185,7 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_START, 1, 5, Insets(VSPACING, 0, 0, BORDER)
             )
         )
-        tf5 = JTextField(15)
+        tf5 = JTextField(19)
         p1.add(tf5)
         gb.setConstraints(
             tf5, jlConstraints(
