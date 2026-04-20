@@ -139,7 +139,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             Desktop.getDesktop()
                 .setQuitHandler { _: QuitEvent?, response: QuitResponse? ->
                     try {
-                        doMenuCommand(MenuCommand.FILE_EXIT)
+                        if (!doMenuCommand(MenuCommand.FILE_EXIT)) {
+                            response!!.cancelQuit()
+                        } else {
+                            response!!.performQuit()
+                        }
                     } catch (_: JuggleExceptionInternal) {
                         response!!.performQuit()
                     }
@@ -232,7 +236,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     }
 
     @Throws(JuggleExceptionInternal::class)
-    private fun doMenuCommand(action: MenuCommand) {
+    private fun doMenuCommand(action: MenuCommand): Boolean {
         when (action) {
             MenuCommand.FILE_NONE -> {}
             MenuCommand.FILE_NEWPAT -> newPattern()
@@ -244,7 +248,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         fr.doMenuCommand(PatternListWindow.MenuCommand.FILE_CLOSE)
                         if (fr.isVisible) {
                             // user canceled out of save dialog, abort the quit
-                            return
+                            return false
                         }
                     }
                 }
@@ -265,6 +269,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             MenuCommand.HELP_ABOUT -> showAboutBox()
             MenuCommand.HELP_ONLINE -> showOnlineHelp()
         }
+        return true
     }
 
     companion object {
