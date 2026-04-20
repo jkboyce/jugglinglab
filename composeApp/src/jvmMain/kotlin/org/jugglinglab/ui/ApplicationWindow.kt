@@ -148,13 +148,13 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         val filemenu = JMenu(jlGetStringResource(Res.string.gui_file))
 
-        for (i in 0..<(if (quitHandler) fileItems.size - 2 else fileItems.size)) {
-            if (fileItems[i] == null) {
+        for (i in 0..<(if (quitHandler) fileItemsStringResources.size - 2 else fileItemsStringResources.size)) {
+            if (fileItemsStringResources[i] == null) {
                 filemenu.addSeparator()
                 continue
             }
 
-            val fileitem = JMenuItem(jlGetStringResource(fileItemsRes[i]!!))
+            val fileitem = JMenuItem(jlGetStringResource(fileItemsStringResources[i]!!))
             if (fileShortcuts[i] != ' ') {
                 fileitem.setAccelerator(
                     KeyStroke.getKeyStroke(
@@ -193,11 +193,11 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
 
         val helpmenu = JMenu(jlGetStringResource(Res.string.gui_help))
 
-        for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
-            if (helpItems[i] == null) {
+        for (i in (if (includeAbout) 0 else 1)..<helpItemsStringResources.size) {
+            if (helpItemsStringResources[i] == null) {
                 helpmenu.addSeparator()
             } else {
-                val helpitem = JMenuItem(jlGetStringResource(helpItemsRes[i]!!))
+                val helpitem = JMenuItem(jlGetStringResource(helpItemsStringResources[i]!!))
                 helpitem.actionCommand = helpCommands[i]
                 helpitem.addActionListener(this)
                 helpmenu.add(helpitem)
@@ -460,10 +460,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                 when (parser.fileType) {
                     JmlParser.JML_PATTERN -> {
                         val pat = JmlPattern.fromJmlNode(parser.tree!!)
-                        pat.layout
                         if (!PatternWindow.bringToFront(pat.jlHashCode)) {
+                            pat.layout
                             val pw = PatternWindow(pat.title, pat, AnimationPrefs())
-                            pw.setJmlFilename(jmlf.getName())
+                            pw.setJmlFilepath(jmlf.toPath())
                         }
                     }
 
@@ -471,7 +471,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
                         val pl = JmlPatternList(parser.tree)
                         if (!PatternListWindow.bringToFront(pl.jlHashCode)) {
                             val plw = PatternListWindow(patternList = pl)
-                            plw.setJmlFilename(jmlf.getName())
+                            plw.setJmlFilepath(jmlf.toPath())
                         }
                     }
 
@@ -611,14 +611,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             }
         }
 
-        private val fileItems: List<String?> = listOf(
-            "New Pattern",
-            "New Pattern List",
-            "Open JML...",
-            null,
-            "Quit",
-        )
-        private val fileItemsRes: List<StringResource?> = listOf(
+        private val fileItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_new_pattern,
             Res.string.gui_new_pattern_list,
             Res.string.gui_open_jml___,
@@ -640,11 +633,7 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
             'Q',
         )
 
-        private val helpItems: List<String?> = listOf(
-            "About Juggling Lab",
-            "Juggling Lab Online Help",
-        )
-        private val helpItemsRes: List<StringResource?> = listOf(
+        private val helpItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_about_juggling_lab,
             Res.string.gui_juggling_lab_online_help,
         )

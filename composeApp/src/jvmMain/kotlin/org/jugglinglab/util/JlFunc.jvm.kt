@@ -316,7 +316,7 @@ val jlJfc: JFileChooser by lazy {
 // https://stackoverflow.com/questions/1976007/
 //       what-characters-are-forbidden-in-windows-and-linux-directory-names
 
-fun jlSanitizeFilename(fname: String): String {
+private fun jlSanitizeFilename(fname: String): String {
     val index = fname.lastIndexOf(".")
 
     val base = if (index >= 0) fname.take(index) else fname
@@ -367,6 +367,11 @@ fun jlSanitizeFilename(fname: String): String {
     } else {
         return fname
     }
+}
+
+fun jlSanitizeFilepath(fpath: Path): Path {
+    val fileNameStr = fpath.fileName?.toString() ?: return fpath
+    return fpath.resolveSibling(jlSanitizeFilename(fileNameStr))
 }
 
 @Throws(JuggleExceptionUser::class)

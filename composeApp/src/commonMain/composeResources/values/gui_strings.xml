@@ -58,7 +58,8 @@
     <string name="gui_about_juggling_lab">About Juggling Lab</string>
     <string name="gui_juggling_lab_online_help">Juggling Lab Online Help</string>
     <string name="gui_close">Close</string>
-    <string name="gui_save_jml_as___">Save JML As...</string>
+    <string name="gui_save_jml">Save</string>
+    <string name="gui_save_jml_as___">Save As...</string>
     <string name="gui_save_text_as___">Save Text As...</string>
     <string name="gui_patterns">Patterns</string>
     <string name="gui_view">View</string>

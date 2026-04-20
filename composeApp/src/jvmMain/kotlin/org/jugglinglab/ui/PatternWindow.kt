@@ -30,7 +30,8 @@ import org.jugglinglab.util.jlIsMacOs
 import org.jugglinglab.util.jlIsSwing
 import org.jugglinglab.util.jlJfc
 import org.jugglinglab.util.jlParseFiniteDouble
-import org.jugglinglab.util.jlSanitizeFilename
+import org.jugglinglab.util.jlBaseFileDirectory
+import org.jugglinglab.util.jlSanitizeFilepath
 import org.jugglinglab.view.EditView
 import org.jugglinglab.view.PatternView
 import org.jugglinglab.view.SelectionView
@@ -42,6 +43,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileWriter
 import java.io.IOException
+import java.nio.file.Path
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.*
@@ -61,7 +63,7 @@ class PatternWindow(
     private lateinit var viewMenu: JMenu
     lateinit var windowMenu: JMenu
         private set
-    private var lastJmlFilename: String? = null
+    private var lastJmlFilepath: Path? = null
 
     init {
         createMenus()
@@ -187,8 +189,8 @@ class PatternWindow(
     val isWindowMaximized: Boolean
         get() = ((extendedState and MAXIMIZED_BOTH) != 0)
 
-    fun setJmlFilename(fname: String?) {
-        lastJmlFilename = fname
+    fun setJmlFilepath(fpath: Path?) {
+        lastJmlFilepath = fpath
     }
 
     //--------------------------------------------------------------------------
@@ -207,14 +209,14 @@ class PatternWindow(
 
     private fun createFileMenu(): JMenu {
         val fileMenu = JMenu(jlGetStringResource(Res.string.gui_file))
-        for (i in fileItems.indices) {
-            if (fileItems[i] == null) {
+        for ((i, fileResource) in fileItemsStringResources.withIndex()) {
+            if (fileResource == null) {
                 fileMenu.addSeparator()
                 continue
             }
 
             if (fileCommands[i] == "colorprops") {
-                colorsMenu = JMenu(jlGetStringResource(fileItemsStringResources[i]!!))
+                colorsMenu = JMenu(jlGetStringResource(fileResource))
                 colorsMenu.add(JMenuItem(jlGetStringResource(Res.string.gui_pcmenu_mixed)).apply {
                     actionCommand = "colors_mixed"
                     addActionListener(this@PatternWindow)
@@ -234,14 +236,21 @@ class PatternWindow(
                 continue
             }
 
-            val fileItem = JMenuItem(jlGetStringResource(fileItemsStringResources[i]!!))
+            val fileItem = JMenuItem(jlGetStringResource(fileResource))
+
             if (fileShortcuts[i] != ' ') {
+                val fileShortcut = fileShortcuts[i]
+                var mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                if (fileShortcut.isUpperCase()) {
+                    mask = mask or InputEvent.SHIFT_DOWN_MASK
+                }
                 fileItem.setAccelerator(
                     KeyStroke.getKeyStroke(
-                        fileShortcuts[i].code,
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                        fileShortcut.uppercaseChar().code,
+                        mask
                     )
                 )
+
             }
             fileItem.actionCommand = fileCommands[i]
             fileItem.addActionListener(this)
@@ -266,8 +275,8 @@ class PatternWindow(
         val buttonGroup = ButtonGroup()
         var addingviews = true
 
-        for (i in viewItems.indices) {
-            if (viewItems[i] == null) {
+        for ((i, viewResource) in viewItemsStringResources.withIndex()) {
+            if (viewResource == null) {
                 viewMenu.addSeparator()
                 addingviews = false
                 continue
@@ -275,7 +284,7 @@ class PatternWindow(
 
             if (addingviews) {
                 val viewitem =
-                    JRadioButtonMenuItem(jlGetStringResource(viewItemsStringResources[i]!!))
+                    JRadioButtonMenuItem(jlGetStringResource(viewResource))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -291,7 +300,7 @@ class PatternWindow(
                 viewMenu.add(viewitem)
                 buttonGroup.add(viewitem)
             } else {
-                val viewitem = JMenuItem(jlGetStringResource(viewItemsStringResources[i]!!))
+                val viewitem = JMenuItem(jlGetStringResource(viewResource))
 
                 if (viewShortcuts[i] != ' ') {
                     viewitem.setAccelerator(
@@ -334,7 +343,7 @@ class PatternWindow(
         // in JugglingLab.java
         val includeAbout =
             !Desktop.isDesktopSupported()
-                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
+                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = jlGetStringResource(Res.string.gui_help)
         if (jlIsMacOs()) {
@@ -344,8 +353,8 @@ class PatternWindow(
         }
         val helpmenu = JMenu(menuname)
 
-        for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
-            if (helpItems[i] == null) {
+        for (i in (if (includeAbout) 0 else 1)..<helpItemsStringResources.size) {
+            if (helpItemsStringResources[i] == null) {
                 helpmenu.addSeparator()
             } else {
                 val helpitem = JMenuItem(jlGetStringResource(helpItemsStringResources[i]!!))
@@ -364,8 +373,9 @@ class PatternWindow(
                 "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL)
                 "open" -> doMenuCommand(MenuCommand.FILE_OPEN)
                 "close" -> doMenuCommand(MenuCommand.FILE_CLOSE)
-                "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE)
-                "savegifanim" -> doMenuCommand(MenuCommand.FILE_GIFSAVE)
+                "save" -> doMenuCommand(MenuCommand.FILE_SAVE)
+                "saveas" -> doMenuCommand(MenuCommand.FILE_SAVEAS)
+                "savegifanim" -> doMenuCommand(MenuCommand.FILE_SAVEGIF)
                 "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE)
                 "changetitle" -> doMenuCommand(MenuCommand.FILE_TITLE)
                 "changetiming" -> doMenuCommand(MenuCommand.FILE_RESCALE)
@@ -437,7 +447,8 @@ class PatternWindow(
         FILE_OPEN,
         FILE_CLOSE,
         FILE_SAVE,
-        FILE_GIFSAVE,
+        FILE_SAVEAS,
+        FILE_SAVEGIF,
         FILE_DUPLICATE,
         FILE_TITLE,
         FILE_RESCALE,
@@ -478,12 +489,27 @@ class PatternWindow(
             }
 
             MenuCommand.FILE_SAVE -> {
-                var fname = lastJmlFilename
-                if (fname == null) {
-                    fname = getTitle() + ".jml"  // default filename
+                if (lastJmlFilepath == null) {
+                    doMenuCommand(MenuCommand.FILE_SAVEAS)
+                } else {
+                    try {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
+                        val fw = FileWriter(lastJmlFilepath!!.toFile())
+                        view.state.pattern.writeJml(fw, writeTitle = true, writeInfo = true)
+                        fw.close()
+                    } catch (e: Exception) {
+                        throw JuggleExceptionInternal("Exception on save: " + e.message)
+                    } finally {
+                        setCursor(Cursor.getDefaultCursor())
+                    }
                 }
-                fname = jlSanitizeFilename(fname)
-                jlJfc.setSelectedFile(File(fname))
+
+            }
+
+            MenuCommand.FILE_SAVEAS -> try {
+                var fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve("${title}.jml")
+                fpath = jlSanitizeFilepath(fpath)
+                jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
@@ -494,30 +520,26 @@ class PatternWindow(
                     f = File(f.absolutePath + ".jml")
                 }
                 jlErrorIfNotSanitized(f.getName())
-                lastJmlFilename = f.getName()
-                try {
-                    val fw = FileWriter(f)
-                    view.state.pattern.writeJml(fw, writeTitle = true, writeInfo = true)
-                    fw.close()
-                } catch (fnfe: FileNotFoundException) {
-                    throw JuggleExceptionInternal("FileNotFound: ${fnfe.message}")
-                } catch (ioe: IOException) {
-                    throw JuggleExceptionInternal("IOException: ${ioe.message}")
-                }
+                lastJmlFilepath = f.toPath()
+
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
+                val fw = FileWriter(f)
+                view.state.pattern.writeJml(fw, writeTitle = true, writeInfo = true)
+                fw.close()
+            } catch (fnfe: FileNotFoundException) {
+                throw JuggleExceptionInternal("FileNotFound: ${fnfe.message}")
+            } catch (ioe: IOException) {
+                throw JuggleExceptionInternal("IOException: ${ioe.message}")
+            } finally {
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))
             }
 
-            MenuCommand.FILE_GIFSAVE -> {
-                var fname = lastJmlFilename
-                if (fname != null) {
-                    val index = fname.lastIndexOf(".")
-                    val base = if (index >= 0) fname.take(index) else fname
-                    fname = "$base.gif"
-                } else {
-                    fname = "${getTitle()}.gif"  // default filename
-                }
-
-                fname = jlSanitizeFilename(fname)
-                jlJfc.setSelectedFile(File(fname))
+            MenuCommand.FILE_SAVEGIF -> {
+                var fpath = lastJmlFilepath?.let {
+                    it.resolveSibling("${it.fileName.toString().substringBeforeLast(".")}.gif")
+                } ?: jlBaseFileDirectory.resolve("${title}.gif")
+                fpath = jlSanitizeFilepath(fpath)
+                jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
@@ -528,10 +550,10 @@ class PatternWindow(
                     f = File(f.absolutePath + ".gif")
                 }
                 jlErrorIfNotSanitized(f.getName())
-                val index = f.getName().lastIndexOf(".")
-                val base = if (index >= 0) f.getName().substring(0, index) else f.getName()
-                lastJmlFilename = "$base.jml"
+
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 view.writeGif(f)
+                setCursor(Cursor.getDefaultCursor())
             }
 
             MenuCommand.FILE_DUPLICATE -> {
@@ -823,29 +845,11 @@ class PatternWindow(
             exitOnLastClose = value
         }
 
-        private val fileItems: List<String?> = listOf(
-            "New Pattern",
-            "New Pattern List",
-            "Open JML...",
-            "Save JML As...",
-            "Save Animated GIF As...",
-            null,
-            "Duplicate",
-            null,
-            "Change Title...",
-            "Change Overall Timing...",
-            "Color Props",
-            "Optimize",
-            "Swap Hands",
-            "Flip Pattern in X",
-            "Flip Pattern in Time",
-            null,
-            "Close",
-        )
         private val fileItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_new_pattern,
             Res.string.gui_new_pattern_list,
             Res.string.gui_open_jml___,
+            Res.string.gui_save_jml,
             Res.string.gui_save_jml_as___,
             Res.string.gui_save_animated_gif_as___,
             null,
@@ -865,6 +869,7 @@ class PatternWindow(
             "newpat",
             "newpl",
             "open",
+            "save",
             "saveas",
             "savegifanim",
             null,
@@ -881,39 +886,26 @@ class PatternWindow(
             "close",
         )
         private val fileShortcuts: CharArray = charArrayOf(
-            'N',
-            'L',
-            'O',
+            'n',
+            'l',
+            'o',
+            's',
             'S',
-            'G',
+            'g',
             ' ',
-            'D',
-            ' ',
-            ' ',
+            'd',
             ' ',
             ' ',
-            'J',
             ' ',
-            'M',
-            'T',
             ' ',
-            'W',
+            'j',
+            ' ',
+            'm',
+            't',
+            ' ',
+            'w',
         )
 
-        private val viewItems: List<String?> = listOf(
-            "Simple",
-            "Visual Editor",
-            "Pattern Editor",
-            "Selection Editor",
-            null,
-            "Undo",
-            "Redo",
-            null,
-            "Restart",
-            "Animation Preferences...",
-            "Zoom In",
-            "Zoom Out",
-        )
         private val viewItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_simple,
             Res.string.gui_visual_editor,
@@ -957,10 +949,6 @@ class PatternWindow(
             '-',
         )
 
-        private val helpItems: List<String?> = listOf(
-            "About Juggling Lab",
-            "Juggling Lab Online Help",
-        )
         private val helpItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_about_juggling_lab,
             Res.string.gui_juggling_lab_online_help,

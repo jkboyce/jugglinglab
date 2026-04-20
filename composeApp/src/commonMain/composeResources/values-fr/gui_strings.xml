@@ -58,7 +58,8 @@
     <string name="gui_about_juggling_lab">A propos de Juggling Lab</string>
     <string name="gui_juggling_lab_online_help">Aide en ligne de Juggling Lab</string>
     <string name="gui_close">Fermer</string>
-    <string name="gui_save_jml_as___">Enregistrer JML sous...</string>
+    <string name="gui_save_jml">Enregistrer</string>
+    <string name="gui_save_jml_as___">Enregistrer sous...</string>
     <string name="gui_save_text_as___">Enregistrer texte sous...</string>
     <string name="gui_patterns">Figures</string>
     <string name="gui_view">Voir</string>

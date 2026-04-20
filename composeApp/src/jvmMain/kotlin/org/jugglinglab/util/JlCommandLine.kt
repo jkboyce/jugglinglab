@@ -147,7 +147,7 @@ object JlCommandLine {
         if (!Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)) {
             return
         }
-        Desktop.getDesktop().setAboutHandler { _: AboutEvent? -> ApplicationWindow.Companion.showAboutBox() }
+        Desktop.getDesktop().setAboutHandler { _: AboutEvent? -> ApplicationWindow.showAboutBox() }
     }
 
     // Open the JML file(s) whose paths are given as command-line arguments.
@@ -190,7 +190,7 @@ object JlCommandLine {
 
                 for (file in files) {
                     try {
-                        ApplicationWindow.Companion.openJmlFile(file)
+                        ApplicationWindow.openJmlFile(file)
                     } catch (jeu: JuggleExceptionUser) {
                         // val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                         val message = "Problem reading from file \"${file.getName()}\""
@@ -603,7 +603,7 @@ object JlCommandLine {
         SwingUtilities.invokeLater {
             registerAboutHandler()
             PatternWindow(pat.title, pat, jc)
-            PatternWindow.Companion.setExitOnLastClose(true)
+            PatternWindow.setExitOnLastClose(true)
         }
     }
 

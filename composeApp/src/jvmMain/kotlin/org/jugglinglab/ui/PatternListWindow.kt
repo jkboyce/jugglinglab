@@ -10,7 +10,6 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPatternList
-import org.jetbrains.compose.resources.StringResource
 import org.jugglinglab.util.JuggleException
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
@@ -21,7 +20,8 @@ import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.jlIsMacOs
 import org.jugglinglab.util.jlJfc
-import org.jugglinglab.util.jlSanitizeFilename
+import org.jugglinglab.util.jlBaseFileDirectory
+import org.jugglinglab.util.jlSanitizeFilepath
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -32,10 +32,12 @@ import java.io.FileNotFoundException
 import java.io.FileWriter
 import java.io.IOException
 import java.io.StringWriter
+import java.nio.file.Path
 import java.util.Locale
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
+import org.jetbrains.compose.resources.StringResource
 
 class PatternListWindow(
     windowTitle: String? = null,
@@ -53,7 +55,7 @@ class PatternListWindow(
     val jlHashCode: Int
         get() = patternList.jlHashCode
 
-    private var lastJmlFilename: String? = null
+    private var lastJmlFilepath: Path? = null
     private var lastCleanJlHashCode: Int = 0
 
     init {
@@ -102,8 +104,8 @@ class PatternListWindow(
         setSize(300, 450)
     }
 
-    fun setJmlFilename(fname: String?) {
-        lastJmlFilename = fname
+    fun setJmlFilepath(fpath: Path?) {
+        lastJmlFilepath = fpath
     }
 
     private fun setContentsClean() {
@@ -130,29 +132,34 @@ class PatternListWindow(
     }
 
     private fun createFileMenu(): JMenu {
-        val filemenu = JMenu(jlGetStringResource(Res.string.gui_file))
-        for (i in fileItems.indices) {
-            if (fileItems[i] == null) {
-                filemenu.addSeparator()
+        val fileMenu = JMenu(jlGetStringResource(Res.string.gui_file))
+        for ((i, fileResource) in fileItemsStringResources.withIndex()) {
+            if (fileResource == null) {
+                fileMenu.addSeparator()
                 continue
             }
 
-            val fileitem = JMenuItem(jlGetStringResource(fileItemsStringResources[i]!!))
+            val fileItem = JMenuItem(jlGetStringResource(fileResource))
 
             if (fileShortcuts[i] != ' ') {
-                fileitem.setAccelerator(
+                val fileShortcut = fileShortcuts[i]
+                var mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                if (fileShortcut.isUpperCase()) {
+                    mask = mask or java.awt.event.InputEvent.SHIFT_DOWN_MASK
+                }
+                fileItem.setAccelerator(
                     KeyStroke.getKeyStroke(
-                        fileShortcuts[i].code,
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                        fileShortcut.uppercaseChar().code,
+                        mask
                     )
                 )
             }
 
-            fileitem.actionCommand = fileCommands[i]
-            fileitem.addActionListener(this)
-            filemenu.add(fileitem)
+            fileItem.actionCommand = fileCommands[i]
+            fileItem.addActionListener(this)
+            fileMenu.add(fileItem)
         }
-        return filemenu
+        return fileMenu
     }
 
     private fun createHelpMenu(): JMenu {
@@ -189,7 +196,8 @@ class PatternListWindow(
                 "newpat" -> doMenuCommand(MenuCommand.FILE_NEWPAT)
                 "newpl" -> doMenuCommand(MenuCommand.FILE_NEWPL)
                 "open" -> doMenuCommand(MenuCommand.FILE_OPEN)
-                "saveas" -> doMenuCommand(MenuCommand.FILE_SAVE)
+                "save" -> doMenuCommand(MenuCommand.FILE_SAVE)
+                "saveas" -> doMenuCommand(MenuCommand.FILE_SAVEAS)
                 "savetext" -> doMenuCommand(MenuCommand.FILE_SAVETEXT)
                 "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE)
                 "changetitle" -> doMenuCommand(MenuCommand.FILE_TITLE)
@@ -210,6 +218,7 @@ class PatternListWindow(
         FILE_NEWPL,
         FILE_OPEN,
         FILE_SAVE,
+        FILE_SAVEAS,
         FILE_SAVETEXT,
         FILE_DUPLICATE,
         FILE_TITLE,
@@ -225,10 +234,28 @@ class PatternListWindow(
             MenuCommand.FILE_NEWPAT -> ApplicationWindow.newPattern()
             MenuCommand.FILE_NEWPL -> PatternListWindow("").setTitle(null)
             MenuCommand.FILE_OPEN -> ApplicationWindow.openJmlFile()
-            MenuCommand.FILE_SAVE -> try {
-                var fname = lastJmlFilename ?: (getTitle() + ".jml")
-                fname = jlSanitizeFilename(fname)
-                jlJfc.setSelectedFile(File(fname))
+            MenuCommand.FILE_SAVE -> {
+                if (lastJmlFilepath == null) {
+                    doMenuCommand(MenuCommand.FILE_SAVEAS)
+                } else {
+                    try {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
+                        val fw = FileWriter(lastJmlFilepath!!.toFile())
+                        patternList.writeJml(fw)
+                        fw.close()
+                        setContentsClean()
+                    } catch (e: Exception) {
+                        throw JuggleExceptionInternal("Exception on save: " + e.message)
+                    } finally {
+                        setCursor(Cursor.getDefaultCursor())
+                    }
+                }
+            }
+
+            MenuCommand.FILE_SAVEAS -> try {
+                var fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve("${title}.jml")
+                fpath = jlSanitizeFilepath(fpath)
+                jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
@@ -239,11 +266,11 @@ class PatternListWindow(
                     f = File(f.absolutePath + ".jml")
                 }
                 jlErrorIfNotSanitized(f.getName())
-                if (lastJmlFilename == null && patternList.title == null) {
+                if (lastJmlFilepath == null && patternList.title == null) {
                     patternList.title = f.getName().substringBeforeLast(".")
                     setTitle(patternList.title)
                 }
-                lastJmlFilename = f.getName()
+                lastJmlFilepath = f.toPath()
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
@@ -259,19 +286,12 @@ class PatternListWindow(
             }
 
             MenuCommand.FILE_SAVETEXT -> try {
-                var fname = lastJmlFilename
-                if (fname != null) {
-                    val index = fname.lastIndexOf(".")
-                    val base = if (index >= 0) fname.take(index) else fname
-                    fname = "$base.txt"
-                } else {
-                    fname = getTitle() + ".txt" // default filename
-                }
-
-                fname = jlSanitizeFilename(fname)
-                jlJfc.setSelectedFile(File(fname))
+                var fpath = lastJmlFilepath?.let {
+                    it.resolveSibling("${it.fileName.toString().substringBeforeLast(".")}.txt")
+                } ?: jlBaseFileDirectory.resolve("${title}.txt")
+                fpath = jlSanitizeFilepath(fpath)
+                jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("Text file", "txt"))
-
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                     return
                 }
@@ -281,9 +301,6 @@ class PatternListWindow(
                     f = File(f.absolutePath + ".txt")
                 }
                 jlErrorIfNotSanitized(f.getName())
-                val index = f.getName().lastIndexOf(".")
-                val base = if (index >= 0) f.getName().substring(0, index) else f.getName()
-                lastJmlFilename = "$base.jml"
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 val fw = FileWriter(f)
@@ -376,7 +393,8 @@ class PatternListWindow(
         }
 
         if (lastCleanJlHashCode != jlHashCode) {
-            val message = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
+            val message =
+                jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_message, getTitle())
             val title = jlGetStringResource(Res.string.gui_plwindow_unsaved_changes_title)
 
             val res = JOptionPane.showConfirmDialog(
@@ -448,23 +466,11 @@ class PatternListWindow(
             return false
         }
 
-        private val fileItems: List<String?> = listOf(
-            "New Pattern",
-            "New Pattern List",
-            "Open JML...",
-            "Save JML As...",
-            "Save Text As...",
-            null,
-            "Duplicate",
-            null,
-            "Change Title...",
-            null,
-            "Close",
-        )
         private val fileItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_new_pattern,
             Res.string.gui_new_pattern_list,
             Res.string.gui_open_jml___,
+            Res.string.gui_save_jml,
             Res.string.gui_save_jml_as___,
             Res.string.gui_save_text_as___,
             null,
@@ -478,6 +484,7 @@ class PatternListWindow(
             "newpat",
             "newpl",
             "open",
+            "save",
             "saveas",
             "savetext",
             null,
@@ -488,17 +495,18 @@ class PatternListWindow(
             "close",
         )
         private val fileShortcuts: CharArray = charArrayOf(
-            'N',
-            'L',
-            'O',
+            'n',
+            'l',
+            'o',
+            's',
             'S',
-            'T',
+            't',
             ' ',
-            'D',
+            'd',
             ' ',
             ' ',
             ' ',
-            'W',
+            'w',
         )
 
         private val helpItems: List<String?> = listOf(

@@ -11,8 +11,6 @@
 
 package org.jugglinglab
 
-import org.jugglinglab.util.JlCommandLine
-
 fun main(args: Array<String>) {
-    JlCommandLine.startWithArgs(args)
+    org.jugglinglab.util.JlCommandLine.startWithArgs(args)
 }
