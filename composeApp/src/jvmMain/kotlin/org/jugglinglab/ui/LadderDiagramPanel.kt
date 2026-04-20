@@ -647,14 +647,13 @@ class LadderDiagramPanel(
     private fun makePopupMenu(laditem: LadderItem?): JPopupMenu {
         val popup = JPopupMenu()
 
-        for (i in popupItems.indices) {
-            val name: String? = popupItems[i]
-            if (name == null) {
+        for ((i, popupResource) in popupItemsStringResources.withIndex()) {
+            if (popupResource == null) {
                 popup.addSeparator()
                 continue
             }
 
-            val item = JMenuItem(jlGetStringResource(popupItemsStringResources[i]!!))
+            val item = JMenuItem(jlGetStringResource(popupResource))
             val command: String? = popupCommands[i]
             item.actionCommand = command
             item.addActionListener(this)
@@ -1531,20 +1530,6 @@ class LadderDiagramPanel(
         // Popup menu and related handlers
         //----------------------------------------------------------------------
 
-        private val popupItems: List<String?> = listOf(
-            "Add event to L hand",
-            "Add event to R hand",
-            "Remove event",
-            "Add position to juggler",
-            "Remove position",
-            null,
-            "Define prop...",
-            "Define throw...",
-            "Change to normal catch",
-            "Change to soft catch",
-            "Change to grab catch",
-            "Make last in event",
-        )
         private val popupItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_add_event_to_l_hand,
             Res.string.gui_add_event_to_r_hand,

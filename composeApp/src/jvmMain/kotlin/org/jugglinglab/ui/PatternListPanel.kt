@@ -45,6 +45,7 @@ class PatternListPanel(
     private var okButton: JButton? = null
 
     private lateinit var listModel: PatternListModel
+
     // for drag and drop operations
     private var draggingOut: Boolean = false
 
@@ -173,14 +174,13 @@ class PatternListPanel(
                 }
             }
 
-        for (i in popupItems.indices) {
-            val name: String? = popupItems[i]
-            if (name == null) {
+        for ((i, popupResource) in popupItemsStringResources.withIndex()) {
+            if (popupResource == null) {
                 popup.addSeparator()
                 continue
             }
 
-            val item = JMenuItem(jlGetStringResource(popupItemsStringResources[i]!!))
+            val item = JMenuItem(jlGetStringResource(popupResource))
             item.actionCommand = popupCommands[i]
             item.addActionListener(al)
 
@@ -216,6 +216,7 @@ class PatternListPanel(
                 override fun popupMenuCanceled(e: PopupMenuEvent?) {
                     checkSelection()
                 }
+
                 override fun popupMenuWillBecomeInvisible(e: PopupMenuEvent?) {}
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {}
             })
@@ -254,7 +255,8 @@ class PatternListPanel(
         }
 
         val rec = PatternRecord(
-            display, animprefs, notation, anim, patnode, infonode)
+            display, animprefs, notation, anim, patnode, infonode
+        )
         listModel.add(row, rec)
 
         if (row < 0) {
@@ -418,7 +420,8 @@ class PatternListPanel(
 
                     // allow for multi-line strings
                     val lines: Array<String?> =
-                        s.trimEnd().split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                        s.trimEnd().split("\n".toRegex()).dropLastWhile { it.isEmpty() }
+                            .toTypedArray()
 
                     for (i in lines.indices.reversed()) {
                         val rec = PatternRecord(lines[i]!!, null, null, null, null, null, null)
@@ -555,22 +558,15 @@ class PatternListPanel(
         val FONT_PATTERN: Font = Font("Monospaced", Font.PLAIN, 14)
         val FONT_PATTERN_POPUP: Font = Font("Monospaced", Font.ITALIC, 14)
 
-        val PATTERN_FLAVOR: DataFlavor = DataFlavor(PatternRecord::class.java,
-            "Juggling Lab pattern record")
+        val PATTERN_FLAVOR: DataFlavor = DataFlavor(
+            PatternRecord::class.java,
+            "Juggling Lab pattern record"
+        )
 
         //----------------------------------------------------------------------
         // Popup menu and associated handler methods
         //----------------------------------------------------------------------
 
-        private val popupItems: List<String?> = listOf(
-            "PLPOPUP Insert text...",
-            null,
-            "PLPOPUP Insert pattern",
-            null,
-            "PLPOPUP Change display text...",
-            null,
-            "PLPOPUP Remove line",
-        )
         private val popupItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_plpopup_insert_text___,
             null,

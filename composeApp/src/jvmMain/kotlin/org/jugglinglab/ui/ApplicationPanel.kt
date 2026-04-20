@@ -23,6 +23,13 @@ import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.notation.Pattern
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
+import org.jugglinglab.util.JuggleExceptionDone
+import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.JuggleExceptionInterrupted
+import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.ParameterList
+import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlHandleUserMessage
 import org.jugglinglab.view.View
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -36,13 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.jugglinglab.util.JuggleExceptionDone
-import org.jugglinglab.util.JuggleExceptionInternal
-import org.jugglinglab.util.JuggleExceptionInterrupted
-import org.jugglinglab.util.JuggleExceptionUser
-import org.jugglinglab.util.ParameterList
-import org.jugglinglab.util.jlGetStringResource
-import org.jugglinglab.util.jlHandleUserMessage
 
 open class ApplicationPanel(
     private val parentFrame: JFrame?,

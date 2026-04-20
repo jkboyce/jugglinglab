@@ -20,10 +20,6 @@ import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.notation.Pattern
-import androidx.compose.material.MaterialTheme
-import androidx.compose.ui.awt.ComposePanel
-import androidx.compose.ui.graphics.toAwtImage
-import org.jetbrains.compose.resources.StringResource
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.OpenFilesServer
@@ -37,6 +33,9 @@ import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.jlHandleUserMessage
 import org.jugglinglab.util.jlIsSwing
 import org.jugglinglab.util.jlJfc
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.graphics.toAwtImage
 import java.awt.*
 import java.awt.desktop.*
 import java.awt.event.ActionEvent
@@ -52,6 +51,7 @@ import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import kotlin.system.exitProcess
+import org.jetbrains.compose.resources.StringResource
 
 class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
     var windowMenu: JMenu? = null

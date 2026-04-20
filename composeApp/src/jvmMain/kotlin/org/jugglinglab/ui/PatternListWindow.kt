@@ -177,8 +177,8 @@ class PatternListWindow(
         }
         val helpmenu = JMenu(menuname)
 
-        for (i in (if (includeAbout) 0 else 1)..<helpItems.size) {
-            if (helpItems[i] == null) {
+        for (i in (if (includeAbout) 0 else 1)..<helpItemsStringResources.size) {
+            if (helpItemsStringResources[i] == null) {
                 helpmenu.addSeparator()
             } else {
                 val helpitem = JMenuItem(jlGetStringResource(helpItemsStringResources[i]!!))
@@ -509,10 +509,6 @@ class PatternListWindow(
             'w',
         )
 
-        private val helpItems: List<String?> = listOf(
-            "About Juggling Lab",
-            "Juggling Lab Online Help",
-        )
         private val helpItemsStringResources: List<StringResource?> = listOf(
             Res.string.gui_about_juggling_lab,
             Res.string.gui_juggling_lab_online_help,
