@@ -167,6 +167,7 @@ val shadowJar by tasks.registering(ShadowJar::class) {
     }
     val isMac = osName.contains("mac")
     val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
+    println("DEBUG [shadowJar]: osName=$osName, osArch=$osArch, isMac=$isMac, isArm64=$isArm64")
     if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
     if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
 }
