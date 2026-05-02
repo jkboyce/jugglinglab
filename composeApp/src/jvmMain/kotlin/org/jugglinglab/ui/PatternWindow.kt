@@ -73,6 +73,25 @@ class PatternWindow(
         location = nextScreenLocation
         isVisible = true
 
+        val postProcessor = KeyEventPostProcessor { e ->
+            if (!e.isConsumed && e.id == KeyEvent.KEY_PRESSED && e.keyCode == KeyEvent.VK_SPACE) {
+                val activeWindow =
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow
+                if (activeWindow === this@PatternWindow) {
+                    val focusOwner =
+                        KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner
+                    if (focusOwner !is javax.swing.text.JTextComponent) {
+                        view.state.update(isPaused = !view.state.isPaused)
+                        e.consume()
+                        return@KeyEventPostProcessor true
+                    }
+                }
+            }
+            false
+        }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventPostProcessor(postProcessor)
+
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
         addWindowListener(
             object : WindowAdapter() {
@@ -82,6 +101,11 @@ class PatternWindow(
                     } catch (je: JuggleException) {
                         jlHandleFatalException(je)
                     }
+                }
+
+                override fun windowClosed(e: WindowEvent?) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                        .removeKeyEventPostProcessor(postProcessor)
                 }
             })
 
