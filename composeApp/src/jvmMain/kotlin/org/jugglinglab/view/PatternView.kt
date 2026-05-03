@@ -174,7 +174,7 @@ class PatternView(
     // that was there.
     private fun reloadTextArea() {
         if (rbBp.isSelected) {
-            ta.text = state.pattern.basePatternConfig!!.replace(";", ";\n")
+            ta.text = state.pattern.basePatternConfig!!.replace(Regex(";\\s*"), ";\n")
         } else if (rbJml.isSelected) {
             ta.text = state.pattern.toString()
         }

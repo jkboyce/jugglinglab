@@ -481,7 +481,7 @@ data class JmlPattern(
                     + JmlNode.xmlescape(basePatternNotation.lowercase())
                     + "\">\n")
             )
-            wr.append(JmlNode.xmlescape(basePatternConfig.replace(";", ";\n"))).append('\n')
+            wr.append(JmlNode.xmlescape(basePatternConfig.replace(Regex(";\\s*"), ";\n"))).append('\n')
             wr.append("</basepattern>\n")
         }
         props.forEach { it.writeJml(wr) }
