@@ -544,7 +544,7 @@
 <title>(2x,[4x4])(0,4)(2,2x)*</title>
 <prop type="ball" mod="color={255,0,0}"/>
 <prop type="ball" mod="color={0,230,0}"/>
-<prop type="ball" mod="color={0,0,240,}"/>
+<prop type="ball" mod="color={0,0,240}"/>
 <setup jugglers="1" paths="3" props="1,2,3"/>
 <symmetry type="delay" pperm="(1)(2)(3)" delay="2.8588"/>
 <symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3)"/>
@@ -656,7 +656,7 @@
 <title>(2x,2)(0,[6x6])*</title>
 <prop type="ball" mod="color={255,0,0}"/>
 <prop type="ball" mod="color={0,230,0}"/>
-<prop type="ball" mod="color={0,0,240,}"/>
+<prop type="ball" mod="color={0,0,240}"/>
 <prop type="ball" mod="color={250,230,0}"/>
 <setup jugglers="1" paths="4" props="1,2,3,4"/>
 <symmetry type="delay" pperm="(1,2)(3,4)" delay="1.5811"/>
@@ -693,7 +693,7 @@
 <title>(6,[44x])(0,2x)*</title>
 <prop type="ball" mod="color={255,0,0}"/>
 <prop type="ball" mod="color={0,230,0}"/>
-<prop type="ball" mod="color={0,0,240,}"/>
+<prop type="ball" mod="color={0,0,240}"/>
 <prop type="ball" mod="color={250,230,0}"/>
 <setup jugglers="1" paths="4" props="1,2,3,4"/>
 <symmetry type="delay" pperm="(1,4)(2,3)" delay="1.9113"/>
