@@ -70,8 +70,7 @@ data class JmlPattern(
             if (image.event.t < loopStartTime - timeWindow) break
             val addEvent =
                 image.event.t >= (2 * loopStartTime - loopEndTime) ||
-                    image.event.transitions.isEmpty() ||
-                    !image.event.transitions.all { pathDone[it.path - 1] }
+                    (0..<numberOfPaths).any { !pathDone[it] }
             if (addEvent) {
                 result.add(image)
                 image.event.transitions.forEach {
@@ -87,8 +86,7 @@ data class JmlPattern(
             if (image.event.t > loopEndTime + timeWindow) break
             val addEvent =
                 image.event.t < (2 * loopEndTime - loopStartTime) ||
-                    image.event.transitions.isEmpty() ||
-                    !image.event.transitions.all { pathDone[it.path - 1] }
+                    (0..<numberOfPaths).any { !pathDone[it] }
             if (addEvent) {
                 result.add(image)
                 if (image.event.t < loopEndTime) continue
