@@ -68,15 +68,11 @@ data class JmlPattern(
         val pathDone = Array(numberOfPaths) { false }
         for (image in eventSequence(reverse = true)) {
             if (image.event.t < loopStartTime - timeWindow) break
-            val addEvent =
-                image.event.t >= (2 * loopStartTime - loopEndTime) ||
-                    (0..<numberOfPaths).any { !pathDone[it] }
-            if (addEvent) {
-                result.add(image)
-                image.event.transitions.forEach {
-                    if (it.isThrowOrCatch) {
-                        pathDone[it.path - 1] = true
-                    }
+            if (image.event.t < (2 * loopStartTime - loopEndTime) && pathDone.all { it }) break
+            result.add(image)
+            image.event.transitions.forEach {
+                if (it.isThrowOrCatch) {
+                    pathDone[it.path - 1] = true
                 }
             }
         }
@@ -84,16 +80,12 @@ data class JmlPattern(
         pathDone.fill(false)
         for (image in eventSequence()) {
             if (image.event.t > loopEndTime + timeWindow) break
-            val addEvent =
-                image.event.t < (2 * loopEndTime - loopStartTime) ||
-                    (0..<numberOfPaths).any { !pathDone[it] }
-            if (addEvent) {
-                result.add(image)
-                if (image.event.t < loopEndTime) continue
-                image.event.transitions.forEach {
-                    if (it.isThrowOrCatch) {
-                        pathDone[it.path - 1] = true
-                    }
+            if (image.event.t > (2 * loopEndTime - loopStartTime) && pathDone.all { it }) break
+            result.add(image)
+            if (image.event.t < loopEndTime) continue
+            image.event.transitions.forEach {
+                if (it.isThrowOrCatch) {
+                    pathDone[it.path - 1] = true
                 }
             }
         }
