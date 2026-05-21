@@ -8,7 +8,6 @@
 
 package org.jugglinglab.notation
 
-import org.jugglinglab.notation.SiteswapPattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

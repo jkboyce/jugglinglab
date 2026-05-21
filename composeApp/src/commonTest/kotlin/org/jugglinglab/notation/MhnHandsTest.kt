@@ -7,7 +7,6 @@
 
 package org.jugglinglab.notation
 
-import org.jugglinglab.notation.MhnHands
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

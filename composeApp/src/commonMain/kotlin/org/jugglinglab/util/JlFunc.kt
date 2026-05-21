@@ -170,7 +170,10 @@ fun jlSplitOnCharOutsideParens(input: String, delimiter: Char): List<String> {
         }
     }
     result.add(input.substring(lastSplit))
-    return result.filter { it.isNotEmpty() }
+    if (result.size > 1 && result.last().isEmpty() && input.endsWith(delimiter)) {
+        result.removeAt(result.size - 1)
+    }
+    return result
 }
 
 // Compare two version numbers.

@@ -9,6 +9,7 @@
 package org.jugglinglab.notation
 
 import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlPosition
 import org.jugglinglab.util.jlParseFiniteDouble
 import org.jugglinglab.util.JuggleExceptionUser
@@ -98,6 +99,12 @@ data class MhnBody(
                     bodyPositions[jugglerIndex][beatIndex] = coordTokens.toTypedArray()
                 }
             }
+        }
+
+        if (Constants.DEBUG_PATTERN_CREATION) {
+            println("created new MhnBody with config \"$config\"")
+            val periods = (1..numberOfJugglers).map { getPeriod(it) }.joinToString(", ")
+            println("   periods = $periods")
         }
     }
 
