@@ -10,8 +10,8 @@
 package org.jugglinglab.generator
 
 class GeneratorTargetBasic(
-    var lambdaTarget: ((String) -> Unit)? = null,
-    var listTarget: MutableList<String>? = null
+    val lambdaTarget: ((String) -> Unit)? = null,
+    val listTarget: MutableList<String>? = null
 ) : GeneratorTarget {
     override fun addResult(display: String, notation: String?, anim: String?) {
         lambdaTarget?.invoke(display)

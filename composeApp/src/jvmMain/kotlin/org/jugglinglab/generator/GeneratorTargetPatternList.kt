@@ -9,7 +9,7 @@
 package org.jugglinglab.generator
 
 import org.jugglinglab.core.Constants
-import org.jugglinglab.ui.PatternListPanel
+import org.jugglinglab.ui.desktop.PatternListPanel
 import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.util.JuggleException
 import org.jugglinglab.util.JuggleExceptionInternal

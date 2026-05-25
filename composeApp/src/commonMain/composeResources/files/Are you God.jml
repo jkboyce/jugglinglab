@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+<title>Are you God?</title>
+
+<line display="35-Cascade" notation="siteswap">
+pattern=z;title=35-Cascade
+</line>
+
+<line display="18-Shower" notation="siteswap">
+pattern=z1;hands=(25)(12.5).(12.5)(25).;title=18-Shower
+</line>
+
+<line display="35-Multi Shower" notation="siteswap">
+pattern=[9bdfh][11111];hands=(25)(12.5).(12.5)(25).;title=35-Multi Shower
+</line>
+
+<line display="12-Mills Mess" notation="siteswap">
+pattern=333666999cccfffiiilll;hands=(-30)(2.5).(30)(-2.5).(-30)(0).;title=12-Mills Mess
+</line>
+
+<line display="[b9753]0020[22]0[222]0[2222]0" notation="siteswap">
+pattern=[b9753]0020[22]0[222]0[2222]0;title=[b9753]0020[22]0[222]0[2222]0
+</line>
+
+<line display="123456789abcdefghijklmnopqrstuv" notation="siteswap">
+pattern=123456789abcdefghijklmnopqrstuv;title=123456789abcdefghijklmnopqrstuv
+</line>
+
+<line display="9-ball Box" notation="siteswap">
+pattern=u1q1m1i1e1a1612;title=9-ball Box
+</line>
+
+<line display="xvtrpnljhfdb97531" notation="siteswap">
+pattern=xvtrpnljhfdb97531;title=xvtrpnljhfdb97531
+</line>
+
+<line display="ken" notation="siteswap">
+pattern=ken;title=Ken
+</line>
+
+<line display="itzik" notation="siteswap">
+pattern=itzik;title=itzik
+</line>
+
+<line display="orr" notation="siteswap">
+pattern=orr;title=orr
+</line>
+
+<line display="wafflehouse (no collisions)" notation="jml">
+<pattern>
+<title>wafflehouse</title>
+<basepattern notation="siteswap">pattern=wafflehouse</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="20" props="1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"/>
+<symmetry type="delay" pperm="(1,12,3,11)(2,7,13,18)(4,5,19,17)(6,20)(8,14,15,10)(9,16)" delay="1.8632"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2,12,7,3,13,11,18)(4,14,5,15,19,10,17,8)(6,16,20,9)"/>
+<event x="15.95" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="29.9" y="0" z="0" t="0.0593" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-12.28" y="0" z="0" t="0.0847" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-43.44" y="0" z="0" t="0.144" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="16.94" y="0" z="0" t="0.1694" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="5" y="0" z="0" t="0.2287" hand="1:right">
+<catch path="5"/>
+</event>
+<event x="-26.07" y="0" z="0" t="0.2541" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="-50" y="0" z="0" t="0.3134" hand="1:left">
+<catch path="6"/>
+</event>
+<event x="33.68" y="0" z="0" t="0.3388" hand="1:right">
+<throw path="5" type="toss"/>
+</event>
+<event x="50" y="0" z="0" t="0.398" hand="1:right">
+<catch path="7"/>
+</event>
+<event x="-45" y="0" z="0" t="0.4235" hand="1:left">
+<throw path="6" type="toss"/>
+</event>
+<event x="-35.96" y="0" z="0" t="0.4827" hand="1:left">
+<catch path="8"/>
+</event>
+<event x="41.29" y="0" z="0" t="0.5081" hand="1:right">
+<throw path="7" type="toss"/>
+</event>
+<event x="50" y="0" z="0" t="0.5674" hand="1:right">
+<catch path="9"/>
+</event>
+<event x="-37.06" y="0" z="0" t="0.5928" hand="1:left">
+<throw path="8" type="toss"/>
+</event>
+<event x="-27.07" y="0" z="0" t="0.6521" hand="1:left">
+<catch path="10"/>
+</event>
+<event x="12.05" y="0" z="0" t="0.6775" hand="1:right">
+<throw path="9" type="toss"/>
+</event>
+<event x="50" y="0" z="0" t="0.7368" hand="1:right">
+<catch path="11"/>
+</event>
+<event x="-16.6" y="0" z="0" t="0.7622" hand="1:left">
+<throw path="10" type="toss"/>
+</event>
+<event x="-5" y="0" z="0" t="0.8215" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="5" y="0" z="0" t="0.8469" hand="1:right">
+<throw path="11" type="toss"/>
+</event>
+<event x="31.43" y="0" z="0" t="0.9062" hand="1:right">
+<catch path="12"/>
+</event>
+</pattern>
+</line>
+
+<line display=""/>
+<line display="By Chunky Kibbles:"/>
+
+<line display="Extended Sexta-Multiplex" notation="siteswap">
+pattern=[rstuvw];title=Extended Sexta-Multiplex
+</line>
+
+<line display="297 Balls 11-Multiplex" notation="siteswap">
+pattern=[mnopqrstuvw];title=297 Balls 11-Multiplex
+</line>
+
+<line display="528 Balls" notation="siteswap">
+pattern=[123456789abcdefghijklmnopqrstuvw];title=528 Balls
+</line>
+
+<line display="One-handed Extended Sexta-Multiplex" notation="siteswap">
+pattern=[oqsuwy]0;title=One-handed Extended Sexta-Multiplex
+</line>
+
+</patternlist>
+</jml>

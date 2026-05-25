@@ -11,11 +11,13 @@ package org.jugglinglab.jml
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.notation.Pattern
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlCompareVersions
+import androidx.compose.runtime.mutableStateListOf
 
 class JmlPatternList(
     jmlNode: JmlNode? = null
@@ -32,17 +34,13 @@ class JmlPatternList(
     var info: String? = null
         private set
 
-    val model = mutableListOf<PatternRecord>()
+    val model = mutableStateListOf<PatternRecord>()
 
     val size: Int
         get() = if (BLANK_AT_END) model.size - 1 else model.size
 
     val jlHashCode: Int
-        get() {
-            val sb = StringBuilder()
-            writeJml(sb)
-            return sb.toString().hashCode()
-        }
+        get() = buildString { writeJml(this) }.hashCode()
 
     init {
         clearModel()
@@ -95,16 +93,16 @@ class JmlPatternList(
 
         val pat: JmlPattern?
         if (rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-            pat = JmlPattern.fromJmlNode(rec.patnode!!, loadingJmlVersion)
+            pat = JmlPattern.fromJmlNode(rec.patnode, loadingJmlVersion)
         } else if (rec.anim != null) {
-            pat = JmlPattern.fromBasePattern(rec.notation!!, rec.anim!!)
+            pat = JmlPattern.fromBasePattern(rec.notation, rec.anim)
 
             val record = PatternBuilder.fromJmlPattern(pat)
             if (rec.info != null) {
                 record.info = rec.info
             }
             if (rec.tags != null) {
-                record.tags.addAll(rec.tags!!)
+                record.tags.addAll(rec.tags)
             }
         } else {
             return null
@@ -193,7 +191,7 @@ class JmlPatternList(
                     }
                 }
 
-                val rec = PatternRecord(
+                val rec = PatternRecord.create(
                     display, animprefs, notation, anim, patnode, infonode
                 )
                 addLine(-1, rec)
@@ -228,11 +226,11 @@ class JmlPatternList(
             var hasAnimation = false
 
             if (rec.notation != null) {
-                line += " notation=\"${JmlNode.xmlescape(rec.notation!!.lowercase())}\""
+                line += " notation=\"${JmlNode.xmlescape(rec.notation.lowercase())}\""
                 hasAnimation = true
             }
             if (rec.animprefs != null) {
-                line += " animprefs=\"${JmlNode.xmlescape(rec.animprefs!!)}\""
+                line += " animprefs=\"${JmlNode.xmlescape(rec.animprefs)}\""
                 hasAnimation = true
             }
 
@@ -243,19 +241,23 @@ class JmlPatternList(
                 }
                 wr.append(line).append('\n')
 
-                if (rec.notation != null && rec.notation.equals("jml", ignoreCase = true) && rec.patnode != null) {
-                    rec.patnode!!.writeNode(wr, 0)
+                if (rec.notation != null && rec.notation.equals(
+                        "jml",
+                        ignoreCase = true
+                    ) && rec.patnode != null
+                ) {
+                    rec.patnode.writeNode(wr, 0)
                 } else if (rec.anim != null) {
-                    wr.append(JmlNode.xmlescape(rec.anim!!)).append('\n')
-                    if (rec.info != null || (rec.tags != null && !rec.tags!!.isEmpty())) {
+                    wr.append(JmlNode.xmlescape(rec.anim)).append('\n')
+                    if (rec.info != null || !rec.tags.isNullOrEmpty()) {
                         val tagstr = rec.tags?.joinToString(",") ?: ""
                         if (rec.info != null) {
                             if (tagstr.isEmpty()) {
-                                wr.append("<info>${JmlNode.xmlescape(rec.info!!)}</info>\n")
+                                wr.append("<info>${JmlNode.xmlescape(rec.info)}</info>\n")
                             } else {
                                 wr.append(
                                     "<info tags=\"${JmlNode.xmlescape(tagstr)}\">${
-                                        JmlNode.xmlescape(rec.info!!)
+                                        JmlNode.xmlescape(rec.info)
                                     }</info>\n"
                                 )
                             }
@@ -296,94 +298,85 @@ class JmlPatternList(
     // Record to encapsulate the data for a single line
     //--------------------------------------------------------------------------
 
-    class PatternRecord {
-        var display: String
-        var animprefs: String?
-        var notation: String?
-        var anim: String?  // if pattern is not in JML notation
-        var patnode: JmlNode?  // if pattern is in JML
-        var info: String?
-        var tags: MutableList<String>? = null
+    data class PatternRecord(
+        val display: String,
+        val animprefs: String?,
+        val notation: String?,
+        val anim: String?,  // if pattern is not in JML notation
+        val patnode: JmlNode?,  // if pattern is in JML
+        val info: String?,
+        val tags: List<String>? = null
+    ) {
+        val canAnimate: Boolean =
+            notation != null && (patnode != null || anim != null)
 
-        constructor(
-            dis: String,
-            ap: String?,
-            not: String?,
-            ani: String?,
-            pat: JmlNode?,
-            inf: String?,
-            t: ArrayList<String>?
-        ) {
-            display = dis
-            animprefs = ap
-            notation = not
-            anim = ani
-            patnode = pat
-            info = inf
-            tags = t
-        }
-
-        // Copy constructor.
-
-        constructor(pr: PatternRecord) {
-            display = pr.display
-            animprefs = pr.animprefs
-            notation = pr.notation
-            anim = pr.anim
-            patnode = pr.patnode
-            info = pr.info
-
-            if (pr.tags != null) {
-                tags = mutableListOf()
-                tags!!.addAll(pr.tags!!)
-            } else {
-                tags = null
-            }
-        }
-
-        // Convenience constructor for during JML parsing.
-
-        constructor(
-            dis: String?,
-            ap: String?,
-            not: String?,
-            ani: String?,
-            pnode: JmlNode?,
-            inode: JmlNode?
-        ) {
-            display = dis ?: ""
-            animprefs = ap?.trim()
-            notation = not?.trim()
-            anim = ani?.trim()
-            patnode = pnode
-
-            if (inode == null) {
-                info = null
-                tags = null
-                return
-            }
-
-            val infoString = inode.nodeValue
-            info = if (!infoString.isNullOrBlank()) {
-                infoString.trim()
-            } else null
-
-            val tagstr = inode.attributes.getValueOf("tags")
-            if (tagstr == null) {
-                tags = null
-                return
-            }
-
-            val infotags: ArrayList<String> = ArrayList()
-            tagstr.split(',')
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .forEach { t ->
-                    if (infotags.none { it.equals(t, ignoreCase = true) }) {
-                        infotags.add(t)
-                    }
+        val jlHashCode: Int by lazy {
+            if (!canAnimate || notation == null) 0
+            else {
+                var result = notation.lowercase().hashCode()
+                if (anim != null) {
+                    result = 31 * result + Pattern.newPattern(notation).fromString(anim)
+                        .toCanonicalString(forHashCode = true).hashCode()
                 }
-            tags = infotags
+                if (patnode != null) {
+                    val nodeHash = buildString { patnode.writeNode(this, 0) }.hashCode()
+                    result = 31 * result + nodeHash
+                }
+                result
+            }
+        }
+
+        companion object {
+            // Copy factory function
+            fun create(pr: PatternRecord): PatternRecord {
+                return pr.copy(tags = pr.tags?.toList())
+            }
+
+            // Convenience factory function for during JML parsing.
+            fun create(
+                dis: String?,
+                ap: String?,
+                not: String?,
+                ani: String?,
+                pnode: JmlNode?,
+                inode: JmlNode?
+            ): PatternRecord {
+                val display = dis ?: ""
+                val animprefs = ap?.trim()
+                val notation = not?.trim()
+                val anim = ani?.trim()
+
+                if (inode == null) {
+                    return PatternRecord(display, animprefs, notation, anim, pnode, null, null)
+                }
+
+                val infoString = inode.nodeValue
+                val info = if (!infoString.isNullOrBlank()) {
+                    infoString.trim()
+                } else null
+
+                val tagstr = inode.attributes.getValueOf("tags") ?: return PatternRecord(
+                    display,
+                    animprefs,
+                    notation,
+                    anim,
+                    pnode,
+                    info,
+                    null
+                )
+
+                val infotags: ArrayList<String> = ArrayList()
+                tagstr.split(',')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .forEach { t ->
+                        if (infotags.none { it.equals(t, ignoreCase = true) }) {
+                            infotags.add(t)
+                        }
+                    }
+                val tags = if (infotags.isEmpty()) null else infotags.toList()
+                return PatternRecord(display, animprefs, notation, anim, pnode, info, tags)
+            }
         }
     }
 

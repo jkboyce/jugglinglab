@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+<title>Passing Patterns</title>
+
+<line display="2 jugglers 5 balls:"/>
+
+<line display="1-count Ultimate" notation="siteswap">
+pattern=&lt;3p|2p&gt;;title=1-count Ultimate
+</line>
+
+<line display="3-count Ultimate" notation="siteswap">
+pattern=&lt;4p 2 2|2 2 3p&gt;;title=3-count Ultimate
+</line>
+
+<line display=""/>
+<line display="2 jugglers 6 balls:"/>
+
+<line display="4-count (Every others)" notation="siteswap">
+pattern=&lt;3p 3 3 3|3p 3 3 3&gt;;title=4-count (Every others)
+</line>
+
+<line display="3-count (Waltz)" notation="siteswap">
+pattern=&lt;3p 3 3|3p 3 3&gt;;title=3-count (Waltz)
+</line>
+
+<line display="2-count (Everies)" notation="siteswap">
+pattern=&lt;3p 3|3p 3&gt;;title=2-count (Everies)
+</line>
+
+<line display="1-count (Ultimate)" notation="siteswap">
+pattern=&lt;3p|3p&gt;;title=1-count (Ultimate)
+</line>
+
+<line display="6-count" notation="siteswap">
+pattern=&lt;3p 3 3 3 3 3 | 3p 3 3 3 3 3&gt;;title=6-count
+</line>
+
+<line display="PPS" notation="siteswap">
+pattern=&lt;3p 3p 3|3p 3p 3&gt;;title=PPS
+</line>
+
+<line display="PPSS (Desmond Tutu)" notation="siteswap">
+pattern=&lt;3p 3p 3 3 | 3p 3p 3 3&gt;;title=PPSS (Desmond Tutu)
+</line>
+
+<line display="PSPSP" notation="siteswap">
+pattern=&lt;3p 3 3p 3 3p|3p 3 3p 3 3p&gt;;title=PSPSP
+</line>
+
+<line display="PPSPS (Bookends)" notation="siteswap">
+pattern=&lt;3p 3p 3 3p 3| 3p 3p 3 3p 3&gt;;title=PPSPS (Bookends)
+</line>
+
+<line display="PSPS PPSS (Tango)" notation="siteswap">
+pattern=&lt;3p 3 3p 3 3p 3p 3 3 | 3p 3 3p 3 3p 3p 3 3&gt;;title=PSPS PPSS (Tango)
+</line>
+
+<line display="Ultimate Waltz" notation="siteswap">
+pattern=&lt;4p 3 3 | 2 2 4p&gt;;title=Ultimate Waltz
+</line>
+
+<line display="4 Countdown (PSSSPSSPSPPSPSS)" notation="siteswap">
+pattern=&lt;3p 3 3 3 3p 3 3 3p 3 3p 3p 3 3p 3 3|3p 3 3 3 3p 3 3 3p 3 3p 3p 3 3p 3 3&gt;;title=4 Countdown (PSSSPSSPSPPSPSS)
+</line>
+
+<line display="3 Countdown (PSSPSPPS)" notation="siteswap">
+pattern=&lt;3p 3 3 3p 3 3p 3p 3|3p 3 3 3p 3 3p 3p 3&gt;;title=3 Countdown (PSSPSPPS)
+</line>
+
+<line display=""/>
+<line display="2 jugglers 7 balls:"/>
+
+<line display="2-count" notation="siteswap">
+pattern=&lt;R|L&gt;&lt;4xp 3 | 3 4xp&gt;;title=2-count
+</line>
+
+<line display="4-count" notation="siteswap">
+pattern=&lt;3 3 5p 3 | 5p 3 3 3&gt;;title=4-count
+</line>
+
+<line display="PPS" notation="siteswap">
+pattern=&lt;4p 4p 3 | 3 3p 4p&gt;;title=PPS
+</line>
+
+<line display="PPS (Double vs Simple)" notation="siteswap">
+pattern=&lt;3p 3p 3 | 4p 4 4p&gt;;title=PPS (Double vs Simple)
+</line>
+
+<line display=""/>
+<line display="2 jugglers 8 balls:"/>
+
+<line display="2-count" notation="siteswap">
+pattern=&lt;5p 3 | 5p 3&gt;;title=2-count
+</line>
+
+<line display="3-count" notation="siteswap">
+pattern=&lt;6p 3 3|6p 3 3&gt;;title=3-count
+</line>
+
+<line display="PPS" notation="siteswap">
+pattern=&lt;4p 4p 3|3 5p 5p&gt;;title=PPS
+</line>
+
+<line display=""/>
+<line display="3 jugglers 9 balls:"/>
+
+<line display="Feed" notation="siteswap">
+pattern=&lt;3p2 3 3p3 3| 3p1 3 3 3| 3 3 3p1 3&gt;;title=Feed
+</line>
+
+<line display="Ultimate" notation="siteswap">
+pattern=&lt;3p2 3|3p1 3p3| 3 3p2&gt;;title=Ultimate
+</line>
+
+<line display="PPS" notation="siteswap">
+pattern=&lt;3p2 3 3 | 3p1 3p3 3 | 3 3p2 3&gt;;title=PPS
+</line>
+
+<line display="Triangle" notation="siteswap">
+pattern=&lt;3p2 3 3 3 | 3p3 3 3 3 | 3p1 3 3 3&gt;;title=Triangle
+</line>
+
+<line display="Triangle PPS" notation="siteswap">
+pattern=&lt;3p2|3p1|3&gt; &lt;3p3|3 |3p1&gt; &lt;3 |3p3|3p2&gt;;title=Triangle PPS
+</line>
+
+<line display="Tarim Triangle" notation="siteswap">
+pattern=&lt;3p2|3p3|3p1&gt; &lt;3p3|3 |3p1&gt; &lt;3 |3 |3 &gt;;title=Tarim Triangle
+</line>
+
+</patternlist>
+</jml>

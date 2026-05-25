@@ -1,31 +1,25 @@
 [versions]
-agp = "8.11.2"
-android-compileSdk = "36"
+agp = "9.2.1"
+android-compileSdk = "37"
 android-minSdk = "24"
-android-targetSdk = "36"
-androidx-activity = "1.12.2"
-androidx-appcompat = "1.7.1"
-androidx-core = "1.17.0"
-androidx-espresso = "3.7.0"
-androidx-lifecycle = "2.9.6"
-androidx-testExt = "1.3.0"
-composeHotReload = "1.0.0"
-composeMultiplatform = "1.10.0"
-junit = "4.13.2"
-kotlin = "2.3.0"
-kotlinx-coroutines = "1.10.2"
+android-targetSdk = "37"
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.10.0"
+composeHotReload = "1.1.1"
+composeMultiplatform = "1.11.0"
+kotlin = "2.3.21"
+kotlinx-coroutines = "1.11.0"
 material3 = "1.10.0-alpha05"
-shadowjar = "8.1.1"
-antlr-kotlin = "1.0.9"
+shadowjar = "9.4.1"
+antlr-kotlin = "1.0.10"
+datastore = "1.2.1"
+jetbrains-navigation-compose = "2.9.2"
+ksoup = "0.2.6"
+material-icons = "1.7.3"
+ortools = "9.4.1874"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { module = "junit:junit", version.ref = "junit" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
-androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
-androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
@@ -37,11 +31,26 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMul
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation-compose" }
+antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
+fleeksoft-ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons" }
+google-ortools = { module = "com.google.ortools:ortools-java", version.ref = "ortools" }
+ortools-native-macos-arm = { module = "com.google.ortools:ortools-darwin-aarch64", version.ref = "ortools" }
+ortools-native-macos-x86 = { module = "com.google.ortools:ortools-darwin-x86-64", version.ref = "ortools" }
+ortools-native-linux-arm = { module = "com.google.ortools:ortools-linux-aarch64", version.ref = "ortools" }
+ortools-native-linux-x86 = { module = "com.google.ortools:ortools-linux-x86-64", version.ref = "ortools" }
+ortools-native-win32-x86 = { module = "com.google.ortools:ortools-win32-x86-64", version.ref = "ortools" }
 
 [plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-shadowJar = { id = "com.github.johnrengelman.shadow", version.ref = "shadowjar" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+shadowJar = { id = "com.gradleup.shadow", version.ref = "shadowjar" }
 antlrKotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }

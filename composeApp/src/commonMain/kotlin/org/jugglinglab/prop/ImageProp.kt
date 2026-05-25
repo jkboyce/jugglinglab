@@ -43,7 +43,7 @@ class ImageProp : Prop() {
         }
     }
 
-    override val type = "Image"
+    override val type = "image"
 
     override val isColorable = false
 

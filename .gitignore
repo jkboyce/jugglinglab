@@ -7,3 +7,4 @@
 admin/
 build/
 local.properties
+composeApp/bin/

@@ -228,6 +228,105 @@ expect fun jlHandleUserException(parent: Any?, msg: String?)
 expect fun jlHandleFatalException(e: Exception)
 
 //------------------------------------------------------------------------------
+// Helpers for execution context information
+//------------------------------------------------------------------------------
+
+// Platform information.
+expect val jlCurrentPlatform: String
+
+expect val jlAboutBoxPlatform: String
+
+expect val jlCurrentVersion: String
+
+expect val jlIsDesktop: Boolean
+
+expect val jlIsMobile: Boolean
+
+// Platform type shortcuts.
+val jlIsMacOs: Boolean by lazy {
+    jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("mac os x")
+}
+val jlIsWindows: Boolean by lazy {
+    jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("windows")
+}
+val jlIsLinux: Boolean by lazy {
+    jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("linux")
+}
+val jlIsAndroid: Boolean by lazy {
+    jlIsMobile && jlCurrentPlatform.lowercase().startsWith("android")
+}
+
+//------------------------------------------------------------------------------
+// Helpers for file opening/saving files
+//------------------------------------------------------------------------------
+
+// Sanitize filename based on platform restrictions.
+//
+// See e.g.:
+// https://stackoverflow.com/questions/1976007/
+//       what-characters-are-forbidden-in-windows-and-linux-directory-names
+
+fun jlSanitizeFilename(fname: String): String {
+    val index = fname.lastIndexOf(".")
+    val base = if (index >= 0) fname.take(index) else fname
+    val extension = if (index >= 0) fname.substring(index) else ""
+
+    if (jlIsMacOs) {
+        // remove all instances of `:` and `/`
+        var b = base.replace("[:/]".toRegex(), "")
+
+        // remove leading `.` and space
+        while (b.startsWith(".") || b.startsWith(" ")) {
+            b = b.substring(1)
+        }
+
+        if (b.isEmpty()) {
+            b = "Pattern"
+        }
+
+        return b + extension
+    } else if (jlIsWindows) {
+        // remove all instances of `\/?:*"`
+        var b = base.replace("[/?:*\"]".toRegex(), "")
+
+        // disallow strings with `><|`
+        var forbidden = (b.contains(">"))
+        forbidden = forbidden || (b.contains("<"))
+        forbidden = forbidden || (b.contains("|"))
+
+        if (forbidden || b.isEmpty()) {
+            b = "Pattern"
+        }
+
+        return b + extension
+    } else if (jlIsLinux || jlIsAndroid) {
+        // change all `/` to `:`
+        var b = base.replace("/".toRegex(), ":")
+
+        // remove leading `.` and space
+        while (b.startsWith(".") || b.startsWith(" ")) {
+            b = b.substring(1)
+        }
+
+        if (b.isEmpty()) {
+            b = "Pattern"
+        }
+
+        return b + extension
+    } else {
+        return fname
+    }
+}
+
+@Throws(JuggleExceptionUser::class)
+fun jlErrorIfNotSanitized(fname: String) {
+    if (fname == jlSanitizeFilename(fname)) {
+        return
+    }
+    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_saving_disallowed_character))
+}
+
+//------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
 
@@ -279,8 +378,30 @@ expect fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap
 
 expect fun jlGetScreenFps(): Double
 
-// Return platform information.
+// Open the platform's native share UI with the given URL string.
+// `subject`  is used as the email subject.
+// `htmlText` is used as a rich-text email body (falls back to `url` on
+//            plain-text targets).
 
-expect fun jlGetCurrentPlatform(): String
+expect fun jlShareUrl(url: String, subject: String? = null, htmlText: String? = null)
 
-expect fun jlGetAboutBoxPlatform(): String
+// Share a file via the platform's native share UI.
+// `content`  is the file's text content.
+// `filename` is the suggested filename (e.g. "pattern.jml").
+// `mimeType` is the MIME type (e.g. "application/xml").
+// `subject`  is used as the email subject line.
+
+expect fun jlShareFile(
+    content: String,
+    filename: String,
+    mimeType: String,
+    subject: String? = null
+)
+
+//------------------------------------------------------------------------------
+// Helpers for playing audio
+//------------------------------------------------------------------------------
+
+expect fun jlPlayCatchSound(volume: Float = 1f)
+
+expect fun jlPlayBounceSound(volume: Float = 1f)

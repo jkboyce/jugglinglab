@@ -63,7 +63,7 @@ data class JmlPattern(
 
     val allEvents: List<EventImage> by lazy {
         val result = mutableListOf<EventImage>()
-        val timeWindow = pathPermutation!!.order * (loopEndTime - loopStartTime)
+        val timeWindow = pathPermutation!!.maxOrder * (loopEndTime - loopStartTime)
 
         val pathDone = Array(numberOfPaths) { false }
         for (image in eventSequence(reverse = true)) {
@@ -96,7 +96,7 @@ data class JmlPattern(
     // just the events inside the animation loop
 
     val loopEvents: List<EventImage> by lazy {
-        allEvents.filter { it.event.t in loopStartTime..<loopEndTime }
+        allEvents.filter { it.event.truncatedTime in loopStartTime..<loopEndTime }
     }
 
     val numberOfProps: Int = props.size
@@ -1074,7 +1074,7 @@ data class PatternBuilder(
                 throw JuggleExceptionInternal("error 7 in fixHolds()", pat)
             }
 
-            val timeWindow = pat.pathPermutation!!.order * (pat.loopEndTime - pat.loopStartTime) * 2
+            val timeWindow = pat.pathPermutation!!.maxOrder * (pat.loopEndTime - pat.loopStartTime)
 
             // record of where balls are held (juggler, hand) as we scan forward,
             // for each path: value `null` means unknown, value (0, 0) means in the air

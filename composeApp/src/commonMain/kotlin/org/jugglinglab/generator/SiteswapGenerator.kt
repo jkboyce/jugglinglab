@@ -38,6 +38,7 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionInterrupted
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlBinomial
+import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
 import kotlin.math.max
 import kotlin.math.min
@@ -1399,7 +1400,7 @@ class SiteswapGenerator : Generator() {
 
         fun runGeneratorCLI(args: List<String>, target: GeneratorTarget) {
             if (args.size < 3) {
-                val version = jlGetStringResource(Res.string.gui_version, Constants.VERSION)
+                val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
                 val copyright = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
                 var output = "Juggling Lab ${version.lowercase()}\n"
                 output += "$copyright\n"

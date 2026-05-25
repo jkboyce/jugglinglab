@@ -11,6 +11,8 @@ package org.jugglinglab.core
 
 import org.jugglinglab.jml.JmlPattern
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlin.math.max
@@ -26,11 +28,11 @@ class PatternAnimationState(
 
     var pattern: JmlPattern by mutableStateOf(initialPattern)
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
-    var time: Double by mutableStateOf(initialPattern.loopStartTime)
+    var time: Double by mutableDoubleStateOf(initialPattern.loopStartTime)
     var isPaused: Boolean by mutableStateOf(initialPrefs.startPaused)
     var cameraAngle: List<Double> by mutableStateOf(initialCameraAngle())  // radians
-    var zoom: Double by mutableStateOf(1.0)
-    var selectedItemHashCode: Int by mutableStateOf(0)
+    var zoom: Double by mutableDoubleStateOf(1.0)
+    var selectedItemHashCode: Int by mutableIntStateOf(0)
     var propForPath: List<Int> by mutableStateOf(initialPattern.initialPropForPath)
     var fitToFrame: Boolean by mutableStateOf(true)
     var showAxes: Boolean by mutableStateOf(false)
@@ -122,7 +124,7 @@ class PatternAnimationState(
     val onPatternChange = mutableListOf<() -> Unit>()
     val onPrefsChange = mutableListOf<() -> Unit>()
     val onTimeChange = mutableListOf<() -> Unit>()
-    val onIsPausedChange  = mutableListOf<() -> Unit>()
+    val onIsPausedChange = mutableListOf<() -> Unit>()
     val onCameraAngleChange = mutableListOf<() -> Unit>()
     val onZoomChange = mutableListOf<() -> Unit>()
     val onSelectedItemHashChange = mutableListOf<() -> Unit>()
@@ -158,13 +160,21 @@ class PatternAnimationState(
         if (onIsPausedChanged != null) this.onIsPausedChange.add(onIsPausedChanged)
         if (onCameraAngleChange != null) this.onCameraAngleChange.add(onCameraAngleChange)
         if (onZoomChange != null) this.onZoomChange.add(onZoomChange)
-        if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(onSelectedItemHashChange)
+        if (onSelectedItemHashChange != null) this.onSelectedItemHashChange.add(
+            onSelectedItemHashChange
+        )
         if (onPropForPathChange != null) this.onPropForPathChange.add(onPropForPathChange)
         if (onFitToFrameChange != null) this.onFitToFrameChange.add(onFitToFrameChange)
         if (onShowAxesChange != null) this.onShowAxesChange.add(onShowAxesChange)
-        if (onDraggingPositionChange != null) this.onDraggingPositionChange.add(onDraggingPositionChange)
-        if (onDraggingPositionZChange != null) this.onDraggingPositionZChange.add(onDraggingPositionZChange)
-        if (onDraggingPositionAngleChange != null) this.onDraggingPositionAngleChange.add(onDraggingPositionAngleChange)
+        if (onDraggingPositionChange != null) this.onDraggingPositionChange.add(
+            onDraggingPositionChange
+        )
+        if (onDraggingPositionZChange != null) this.onDraggingPositionZChange.add(
+            onDraggingPositionZChange
+        )
+        if (onDraggingPositionAngleChange != null) this.onDraggingPositionAngleChange.add(
+            onDraggingPositionAngleChange
+        )
         if (onMessageChange != null) this.onMessageChange.add(onMessageChange)
         if (onNewPatternUndo != null) this.onNewPatternUndo.add(onNewPatternUndo)
     }
@@ -225,7 +235,7 @@ class PatternAnimationState(
     // Undo list to support undo/redo for pattern edits
     //--------------------------------------------------------------------------
 
-    val undoList: MutableList<JmlPattern> = mutableListOf(initialPattern)
+    val undoList: MutableList<JmlPattern> = ArrayDeque(listOf(initialPattern))
     var undoIndex: Int = 0
 
     // Add the current pattern to the undo list. See View for other undo-related
@@ -237,6 +247,15 @@ class PatternAnimationState(
         while (undoIndex + 1 < undoList.size) {
             undoList.removeAt(undoIndex + 1)
         }
+        while (undoList.size > UNDO_DEPTH) {
+            undoList.removeAt(0)
+            --undoIndex
+        }
         onNewPatternUndo.forEach { it() }
+    }
+
+    companion object {
+        // maximum undo depth to keep in memory
+        const val UNDO_DEPTH = 20
     }
 }

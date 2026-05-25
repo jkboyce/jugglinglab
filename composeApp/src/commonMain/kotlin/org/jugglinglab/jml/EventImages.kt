@@ -167,9 +167,8 @@ class EventImages(
         return false
     }
 
-    fun hasJmlTransitionForPath(path: Int): Boolean {
-        val cycle = loopPerm!!.cycleOf(path)
-
+    private val pathsWithJmlTransition: Set<Int> by lazy {
+        val paths = mutableSetOf<Int>()
         for (k in 0..<evTransitionCount) {
             val transPath = primaryEvent.transitions[k].path
             for (i in 0..<numJugglers) {
@@ -177,18 +176,18 @@ class EventImages(
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
-                            if (permtemp.map(transPath) in cycle) return true
+                            val mappedPath = permtemp.map(transPath)
+                            paths.addAll(loopPerm!!.cycleOf(mappedPath))
                         }
                     }
                 }
             }
         }
-        return false
+        paths
     }
 
-    fun hasVdJmlTransitionForPath(path: Int): Boolean {
-        val cycle = loopPerm!!.cycleOf(path)
-
+    private val pathsWithVdJmlTransition: Set<Int> by lazy {
+        val paths = mutableSetOf<Int>()
         for (k in 0..<evTransitionCount) {
             if (transitionType[k] != JmlTransition.TRANS_THROW
                 && transitionType[k] != JmlTransition.TRANS_SOFTCATCH
@@ -201,13 +200,22 @@ class EventImages(
                     for (h in 0..1) {
                         val permtemp = ea[i][h][j]
                         if (permtemp != null) {
-                            if (permtemp.map(transPath) in cycle) return true
+                            val mappedPath = permtemp.map(transPath)
+                            paths.addAll(loopPerm!!.cycleOf(mappedPath))
                         }
                     }
                 }
             }
         }
-        return false
+        paths
+    }
+
+    fun hasJmlTransitionForPath(path: Int): Boolean {
+        return pathsWithJmlTransition.contains(path)
+    }
+
+    fun hasVdJmlTransitionForPath(path: Int): Boolean {
+        return pathsWithVdJmlTransition.contains(path)
     }
 
     @Throws(JuggleExceptionUser::class)
@@ -243,7 +251,7 @@ class EventImages(
                 JmlSymmetry.TYPE_SWITCHDELAY -> {
                     sym[index] = temp
                     symperiod[index] = temp.jugglerPerm.order
-                    numEntries = Permutation.Companion.lcm(numEntries, symperiod[index])
+                    numEntries = Permutation.lcm(numEntries, symperiod[index])
                     deltaentries[index] = -1
                     index++
                 }

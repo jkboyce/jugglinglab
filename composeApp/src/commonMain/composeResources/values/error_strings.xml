@@ -203,4 +203,19 @@
     <string name="error_hss_handspec_hand_missing">Hand %1$d missing in handspec</string>
     <string name="error_hss_juggler_not_assigned_to_hand">Juggler not assigned to hand %1$d</string>
     <string name="error_hss_no_hand_to_throw_at_beat">No hand to throw object at beat %1$d</string>
+    <string name="error_mobile_favorites_format">Favorites file has wrong format</string>
+    <string name="error_mobile_local_storage">Local storage not available</string>
+    <string name="error_mobile_loading_favorites">Error loading Favorites: %1$s</string>
+    <string name="error_mobile_load_shared_pattern">Could not load shared pattern</string>
+    <string name="error_mobile_loading_pattern">Error loading pattern: %1$s</string>
+    <string name="error_mobile_reading_imported_file">Error reading imported file: %1$s</string>
+    <string name="error_mobile_saving">Error saving: %1$s</string>
+    <string name="error_mobile_adding_favorites">Error adding to Favorites: %1$s</string>
+    <string name="error_mobile_pattern_too_long">Pattern is too long to share. Export as a file instead.</string>
+    <string name="error_mobile_sharing">Error sharing: %1$s</string>
+    <string name="error_mobile_exporting">Error exporting: %1$s</string>
+    <string name="error_mobile_file_exists">A file with that name already exists</string>
+    <string name="error_mobile_renaming_file">Error renaming file: %1$s</string>
+    <string name="error_mobile_deleting_file">Error deleting file: %1$s</string>
+    <string name="error_mobile_deleting_favorites">Error deleting Favorites: %1$s</string>
 </resources>

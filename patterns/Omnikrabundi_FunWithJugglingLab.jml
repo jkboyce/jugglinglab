@@ -4,14 +4,8 @@
 <patternlist>
 <title>Fun with Juggling Lab</title>
 
-<line display="All credit to Dominik Braun for"/>
-<line display="these amazing patterns!"/>
-
-<line display="____________________________________"/>
-<line display="Note: Some patterns have a"/>
-<line display="predetermined camera angle they are"/>
-<line display="meant to be seen from. Feel free to"/>
-<line display="rotate from there, though."/>
+<line display="Credit to Dominik Braun for these"/>
+<line display="amazing patterns!"/>
 <line display=""/>
 <line display="Patterns marked with a leading"/>
 <line display="asterisk (*) take a bit longer to"/>
@@ -222,12 +216,6 @@ title=Face Animation
 
 <line display=""/>
 <line display="____________________________________"/>
-<line display="JML-exclusive patterns"/>
-<line display="(There's no siteswap for these, as"/>
-<line display="siteswap notation limits capabilities"/>
-<line display="of Juggling Lab. They were created"/>
-<line display="directly in JML notation instead.)"/>
-<line display=""/>
 
 <line display="51 ball shower"
       animprefs="camangle=0;slowdown=5;view=simple"

@@ -12,15 +12,16 @@ package org.jugglinglab.view
 
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.ui.PatternWindow
 import org.jugglinglab.jml.JmlPattern
+import org.jugglinglab.ui.common.AnimationController.Companion.MAX_ZOOM
+import org.jugglinglab.ui.common.AnimationController.Companion.MIN_ZOOM
+import org.jugglinglab.ui.desktop.PatternWindow
 import org.jugglinglab.util.AnimationGifWriter
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import java.awt.Dimension
 import java.io.File
 import javax.swing.JPanel
-import kotlin.math.abs
 
 abstract class View(
     val state: PatternAnimationState,
@@ -40,7 +41,7 @@ abstract class View(
             return
         try {
             --state.undoIndex
-            restartView(state.undoList[state.undoIndex], null, coldRestart = false)
+            restartView(pattern = state.undoList[state.undoIndex], coldRestart = false)
             if (state.undoIndex == 0 || state.undoIndex == state.undoList.size - 2) {
                 patternWindow.updateUndoMenu()
             }
@@ -58,7 +59,7 @@ abstract class View(
             return
         try {
             ++state.undoIndex
-            restartView(state.undoList[state.undoIndex], null, coldRestart = false)
+            restartView(pattern = state.undoList[state.undoIndex], coldRestart = false)
             if (state.undoIndex == 1 || state.undoIndex == state.undoList.size - 1) {
                 patternWindow.updateUndoMenu()
             }
@@ -97,6 +98,11 @@ abstract class View(
         get() = state.zoom
         set(z) = state.update(zoom = z)
 
+    // AnimationView callback for zooming in/out
+    val onViewZoomChange: (Float) -> Unit = { zoomFactor ->
+        zoom = (zoom * zoomFactor).coerceIn(MIN_ZOOM, MAX_ZOOM)
+    }
+
     abstract fun disposeView()
 
     //--------------------------------------------------------------------------
@@ -116,22 +122,5 @@ abstract class View(
             zoom = state.zoom
         }
         AnimationGifWriter(gifState, f, patternWindow, null)
-    }
-
-    //--------------------------------------------------------------------------
-    // Callback for zooming in/out
-    //--------------------------------------------------------------------------
-
-    val onZoomChange: (Float) -> Unit = { delta ->
-        val zoomFactor = (PatternWindow.Companion.ZOOM_PER_STEP - 1.0) * abs(delta) + 1.0
-        if (delta > 0) {
-            if (zoom < PatternWindow.Companion.MAX_ZOOM / zoomFactor) {
-                zoom *= zoomFactor
-            }
-        } else if (delta < 0) {
-            if (zoom > PatternWindow.Companion.MIN_ZOOM * zoomFactor) {
-                zoom /= zoomFactor
-            }
-        }
     }
 }

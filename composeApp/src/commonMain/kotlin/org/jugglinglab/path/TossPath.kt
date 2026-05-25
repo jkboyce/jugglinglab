@@ -72,7 +72,7 @@ class TossPath : Path() {
         bz = (end.z - start.z) / t - az * t
     }
 
-    override val type = "Toss"
+    override val type = "toss"
 
     override val minDuration = 0.0
 
@@ -80,7 +80,7 @@ class TossPath : Path() {
         get() = listOf(
             ParameterDescriptor(
                 "g",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 G_DEF,
                 g

@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+<title>How to Juggle</title>
+
+<line display="Learn the steps below and you&apos;ll"/>
+<line display="be juggling in no time!"/>
+<line display=""/>
+<line display="3-Cascade Step By Step:"/>
+
+<line display="1 Ball out of a 3-Cascade" notation="siteswap">
+pattern=300;title=1 Ball out of a 3-Cascade
+</line>
+
+<line display="Throw Twice" notation="siteswap">
+pattern=33022;title=Throw Twice
+</line>
+
+<line display="2 Balls out of a 3-Cascade" notation="siteswap">
+pattern=330;title=2 Balls out of a 3-Cascade
+</line>
+
+<line display="Throw 3 Times" notation="siteswap">
+pattern=[32]3322;title=Throw 3 Times
+</line>
+
+<line display="3-Cascade" notation="siteswap">
+pattern=3
+</line>
+
+<line display="Slower 3-Cascade" notation="siteswap">
+pattern=3;bps=2;title=Slower 3-Cascade
+</line>
+
+<line display=""/>
+<line display="4-Fountain Step By Step:"/>
+
+<line display="2 in One Hand" notation="siteswap">
+pattern=40;title=2 in One Hand
+</line>
+
+<line display="4-Synchronous Fountain" notation="siteswap">
+pattern=(4,4);title=4-Synchronous Fountain
+</line>
+
+<line display="4-Fountain" notation="siteswap">
+pattern=4;title=4-Fountain
+</line>
+
+<line display=""/>
+<line display="5-Cascade Step By Step:"/>
+
+<line display="2 Balls out of a 5-Cascade" notation="jml">
+<pattern>
+<title>2 Balls out of a 5-Cascade</title>
+<basepattern notation="siteswap">pattern=50500;title=2 Balls out of a 5-Cascade</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="2" props="1,1"/>
+<symmetry type="delay" pperm="(1)(2)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-34.949" y="0" z="9.6431" t="0.4518" hand="1:left"/>
+<event x="29.5374" y="0" z="19.7492" t="0.7028" hand="1:right"/>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="3 Balls out of a 5-Cascade" notation="jml">
+<pattern>
+<title>3 Balls out of a 5-Cascade</title>
+<basepattern notation="siteswap">pattern=52512;title=3 Balls out of a 5-Cascade</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-30.2705" y="0" z="-1.4657" t="0.1606" hand="1:left">
+<holding path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.5321" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="16.8658" y="0" z="0.4225" t="0.6425" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="Chase" notation="jml">
+<pattern>
+<title>Chase</title>
+<basepattern notation="siteswap">pattern=50505;title=Chase</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-29.8153" y="0" z="21.5003" t="0.1405" hand="1:left"/>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="2"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-37.4296" y="0" z="17.2415" t="0.4718" hand="1:left"/>
+<event x="32.5" y="0" z="0" t="0.6024" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="10" y="0" z="0" t="0.8032" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="Flash" notation="jml">
+<pattern>
+<title>Flash</title>
+<basepattern notation="siteswap">pattern=55500;title=Flash</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="3" props="1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-28.8824" y="0" z="10.2105" t="0.4919" hand="1:left"/>
+<event x="27.531" y="0" z="11.4021" t="0.6827" hand="1:right"/>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="Throw 4 out of 5" notation="jml">
+<pattern>
+<title>Throw 4 out of 5</title>
+<basepattern notation="siteswap">pattern=[52][52]55022[22][22];title=Throw 4 out of 5</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="3.6144"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,2)(3,4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<holding path="2"/>
+<throw path="1" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<holding path="4"/>
+<throw path="3" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="2" type="toss"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6024" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="18.3978" y="0" z="17.9637" t="0.6911" hand="1:right"/>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+<event x="32.5" y="0" z="0" t="1.004" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-32.5" y="0" z="0" t="1.2048" hand="1:left">
+<holding path="1"/>
+<catch path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="1.4056" hand="1:right">
+<holding path="3"/>
+<catch path="4"/>
+</event>
+<event x="-21.3007" y="0" z="-16.6246" t="1.5204" hand="1:left">
+<holding path="1"/>
+<holding path="2"/>
+</event>
+<event x="20.4196" y="0" z="-16.9576" t="1.745" hand="1:right">
+<holding path="3"/>
+<holding path="4"/>
+</event>
+</pattern>
+</line>
+
+<line display="4 Balls out of a 5-Cascade" notation="jml">
+<pattern>
+<title>4 Balls out of a 5-Cascade</title>
+<basepattern notation="siteswap">pattern=55550;title=4 Balls out of a 5-Cascade</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1)(2)(3)(4)" delay="2.008"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1)(2)(3)(4)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0" hand="1:left">
+<catch path="2"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="10" y="0" z="0" t="0.4016" hand="1:right">
+<throw path="3" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4016" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="-10" y="0" z="0" t="0.6024" hand="1:left">
+<throw path="4" type="toss"/>
+</event>
+<event x="28.1969" y="0" z="13.2303" t="0.6927" hand="1:right"/>
+<event x="-32.5" y="0" z="0" t="0.8032" hand="1:left">
+<catch path="1"/>
+</event>
+</pattern>
+</line>
+
+<line display="552" notation="jml">
+<pattern>
+<title>552</title>
+<basepattern notation="siteswap">pattern=552</basepattern>
+<prop type="ball"/>
+<setup jugglers="1" paths="4" props="1,1,1,1"/>
+<symmetry type="delay" pperm="(1,2)(3,4)" delay="1.2048"/>
+<symmetry type="switchdelay" jperm="(1,1*)" pperm="(1,4,2,3)"/>
+<event x="10" y="0" z="0" t="0" hand="1:right">
+<throw path="1" type="toss"/>
+</event>
+<event x="32.5" y="0" z="0" t="0.2008" hand="1:right">
+<catch path="3"/>
+</event>
+<event x="-10" y="0" z="0" t="0.2008" hand="1:left">
+<throw path="2" type="toss"/>
+</event>
+<event x="-32.5" y="0" z="0" t="0.4016" hand="1:left">
+<catch path="4"/>
+</event>
+<event x="17.2555" y="0" z="-15.4501" t="0.4879" hand="1:right">
+<holding path="3"/>
+</event>
+</pattern>
+</line>
+
+<line display="5551" notation="siteswap">
+pattern=5551
+</line>
+
+<line display="5-Cascade" notation="siteswap">
+pattern=5;title=5-Cascade
+</line>
+
+</patternlist>
+</jml>

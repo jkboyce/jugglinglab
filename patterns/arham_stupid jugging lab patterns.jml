@@ -2,8 +2,11 @@
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
 <jml version="3">
 <patternlist>
+<title>Stupid Juggling Lab Patterns</title>
 
-<line display="Ummm so here are some (stupid) juggling lab patterns"/>
+<line display="Ummm so here are some (stupid)"/>
+<line display="juggling lab patterns"/>
+<line display=""/>
 
 <line display="bouncing balls for fun :D" notation="siteswap">
 pattern=bBHFbBHFbBHFbBHFbBHFbBHF00000;colors=mixed;title=bouncing balls for fun :D
@@ -52,7 +55,7 @@ pattern={666};bps=600;hands=(-25)(2.5).(25)(-2.5).(-25)(0).;body=(0,75,0)...(90,
 pattern=&lt;z|1&gt;&lt;zp|1p&gt;;bps=50;colors=mixed;title=&quot;STOP GIVING ME THE BALLS&quot; -juggler 2
 </line>
 
-<line display="Supersonic passing :D" notation="siteswap" animprefs="width=201;height=226">
+<line display="Supersonic passing :D" notation="siteswap">
 pattern=&lt;1|1&gt;&lt;1p|1p&gt;;bps=100;hands=(10)(32.5).;colors=mixed;title=Supersonic passing :D
 </line>
 

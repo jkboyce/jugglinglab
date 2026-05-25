@@ -10,9 +10,9 @@
 package org.jugglinglab.view
 
 import org.jugglinglab.jml.JmlPattern
-import org.jugglinglab.ui.AnimationPanel
-import org.jugglinglab.ui.LadderDiagramPanel
-import org.jugglinglab.ui.PatternWindow
+import org.jugglinglab.ui.desktop.AnimationPanel
+import org.jugglinglab.ui.desktop.LadderDiagramPanel
+import org.jugglinglab.ui.desktop.PatternWindow
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.core.AnimationPrefs
@@ -29,7 +29,7 @@ class EditView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
-    private val ap = AnimationPanel(state, onZoom = onZoomChange)
+    private val ap = AnimationPanel(state, onZoom = onViewZoomChange)
     private val ladder = LadderDiagramPanel(state, patternWindow)
     private val jsp: JSplitPane
 

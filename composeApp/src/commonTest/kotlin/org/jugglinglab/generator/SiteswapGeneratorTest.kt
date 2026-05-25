@@ -8,8 +8,6 @@
 
 package org.jugglinglab.generator
 
-import org.jugglinglab.generator.GeneratorTargetBasic
-import org.jugglinglab.generator.SiteswapGenerator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

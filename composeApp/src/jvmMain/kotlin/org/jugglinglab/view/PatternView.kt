@@ -11,8 +11,8 @@ package org.jugglinglab.view
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.ui.AnimationPanel
-import org.jugglinglab.ui.PatternWindow
+import org.jugglinglab.ui.desktop.AnimationPanel
+import org.jugglinglab.ui.desktop.PatternWindow
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.util.jlHandleFatalException
@@ -32,7 +32,7 @@ class PatternView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow), DocumentListener {
-    private val ja = AnimationPanel(state, onZoom = onZoomChange)
+    private val ja = AnimationPanel(state, onZoom = onViewZoomChange)
     private lateinit var jsp: JSplitPane
     private lateinit var rbBp: JRadioButton
     private var bpEditedIcon: JLabel? = null

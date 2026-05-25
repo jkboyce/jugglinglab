@@ -12,7 +12,7 @@
 package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
-import org.jugglinglab.ui.ApplicationWindow
+import org.jugglinglab.ui.desktop.ApplicationWindow
 import java.awt.Desktop
 import java.io.*
 import java.net.ServerSocket
@@ -209,7 +209,7 @@ internal class Connection(var client: Socket) : Thread() {
                             Desktop.getDesktop().requestForeground(true)
                         }
                         try {
-                            ApplicationWindow.Companion.openJmlFile(file)
+                            ApplicationWindow.openJmlFile(file)
                         } catch (jeu: JuggleExceptionUser) {
                             val message = jlGetStringResource(Res.string.error_reading_file, file.getName())
                             val msg = message + ":\n" + jeu.message

@@ -8,11 +8,11 @@
 
 package org.jugglinglab.curve
 
-import org.jugglinglab.curve.SplineCurve
 import org.jugglinglab.util.JuggleExceptionInternal
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import kotlin.math.abs
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class LinearSolverTest {
@@ -94,7 +94,7 @@ class LinearSolverTest {
     }
 
     private fun assertVectorEquals(expected: DoubleArray, actual: DoubleArray, epsilon: Double = 1e-10) {
-        assertTrue(expected.size == actual.size, "Vector size mismatch")
+        assertEquals(expected.size, actual.size, "Vector size mismatch")
         for (i in expected.indices) {
             assertTrue(abs(expected[i] - actual[i]) < epsilon, "Mismatch at index $i: expected ${expected[i]}, got ${actual[i]}")
         }

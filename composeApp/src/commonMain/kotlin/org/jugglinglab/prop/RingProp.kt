@@ -28,6 +28,7 @@ class RingProp : Prop() {
     private var colornum: Int = COLORNUM_DEF
     private var outsideDiam: Double = OUTSIDE_DIAM_DEF
     private var insideDiam: Double = INSIDE_DIAM_DEF
+    private var customColorStr: String? = null
     // recalculated based on zoom and camangle
     private var image: ImageBitmap? = null
     private var size: IntSize? = null
@@ -36,7 +37,7 @@ class RingProp : Prop() {
     private var lastzoom: Double = 0.0
     private var lastcamangle: DoubleArray = doubleArrayOf(0.0, 0.0)
 
-    override val type = "Ring"
+    override val type = "ring"
 
     override val isColorable = true
 
@@ -49,9 +50,10 @@ class RingProp : Prop() {
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
-                colorNames,
+                if (colornum == -1) colorNames + "custom" else colorNames,
                 colorNames[COLORNUM_DEF],
-                colorNames[colornum]
+                if (colornum == -1) "custom" else colorNames[colornum],
+                customData = if (colornum == -1) customColorStr else null
             ),
             ParameterDescriptor(
                 "outside",
@@ -104,6 +106,8 @@ class RingProp : Prop() {
                         }
 
                         temp = Color(red, green, blue, alpha)
+                        colornum = -1
+                        customColorStr = colorstr
                     } catch (_: NumberFormatException) {
                         val message = jlGetStringResource(Res.string.error_prop_color, colorstr)
                         throw JuggleExceptionUser(message)

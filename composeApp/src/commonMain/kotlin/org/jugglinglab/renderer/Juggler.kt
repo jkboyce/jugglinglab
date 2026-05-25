@@ -55,8 +55,8 @@ object Juggler {
             val coord0 = Coordinate()
             val coord1 = Coordinate()
             val coord2 = Coordinate()
-            pat.layout.getHandCoordinate(juggler, JmlEvent.Companion.LEFT_HAND, time, coord0)
-            pat.layout.getHandCoordinate(juggler, JmlEvent.Companion.RIGHT_HAND, time, coord1)
+            pat.layout.getHandCoordinate(juggler, JmlEvent.LEFT_HAND, time, coord0)
+            pat.layout.getHandCoordinate(juggler, JmlEvent.RIGHT_HAND, time, coord1)
             val lefthand = JlVector(coord0.x, coord0.z + LOWER_HAND_HEIGHT, coord0.y)
             val righthand = JlVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
 

@@ -12,7 +12,7 @@ package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.ui.AnimationView
+import org.jugglinglab.ui.common.AnimationView
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.use

@@ -11,7 +11,8 @@ class ParameterDescriptor(
     val type: Int,
     val range: List<String>?,
     val defaultValue: Any?,
-    var value: Any?
+    var value: Any?,
+    var customData: Any? = null
 ) {
     companion object {
         const val TYPE_BOOLEAN: Int = 1

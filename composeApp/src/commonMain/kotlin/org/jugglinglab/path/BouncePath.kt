@@ -288,7 +288,7 @@ class BouncePath : Path() {
         return numroots
     }
 
-    override val type = "Bounce"
+    override val type = "bounce"
 
     override val minDuration: Double
         get() {
@@ -331,42 +331,42 @@ class BouncePath : Path() {
         get() = listOf(
             ParameterDescriptor(
                 "bounces",
-                ParameterDescriptor.Companion.TYPE_INT,
+                ParameterDescriptor.TYPE_INT,
                 null,
                 BOUNCES_DEF,
                 bounces
             ),
             ParameterDescriptor(
                 "forced",
-                ParameterDescriptor.Companion.TYPE_BOOLEAN,
+                ParameterDescriptor.TYPE_BOOLEAN,
                 null,
                 FORCED_DEF,
                 forced
             ),
             ParameterDescriptor(
                 "hyper",
-                ParameterDescriptor.Companion.TYPE_BOOLEAN,
+                ParameterDescriptor.TYPE_BOOLEAN,
                 null,
                 HYPER_DEF,
                 hyper
             ),
             ParameterDescriptor(
                 "bounceplane",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 BOUNCEPLANE_DEF,
                 bounceplane
             ),
             ParameterDescriptor(
                 "bouncefrac",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 BOUNCEFRAC_DEF,
                 bouncefrac
             ),
             ParameterDescriptor(
                 "g",
-                ParameterDescriptor.Companion.TYPE_FLOAT,
+                ParameterDescriptor.TYPE_FLOAT,
                 null,
                 G_DEF,
                 g

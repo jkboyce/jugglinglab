@@ -9,6 +9,7 @@
 package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
+import kotlin.math.max
 
 class Permutation {
     var size: Int
@@ -394,6 +395,21 @@ class Permutation {
             for (elem in 1..size) {
                 if (map(elem) != 0) {
                     ord = lcm(ord, orderOf(elem))
+                }
+            }
+
+            return ord
+        }
+
+    // Find the maximum order of all elements in the permutation.
+
+    val maxOrder: Int
+        get() {
+            var ord = 1
+
+            for (elem in 1..size) {
+                if (map(elem) != 0) {
+                    ord = max(ord, orderOf(elem))
                 }
             }
 

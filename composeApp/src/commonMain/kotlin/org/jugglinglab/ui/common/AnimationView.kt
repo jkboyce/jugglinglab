@@ -1,0 +1,727 @@
+//
+// AnimationView.kt
+//
+// Composable juggling animation.
+//
+// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+//
+
+@file:Suppress("LocalVariableName")
+
+package org.jugglinglab.ui.common
+
+import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.core.Constants
+import org.jugglinglab.core.PatternAnimationState
+import org.jugglinglab.renderer.Renderer
+import org.jugglinglab.util.Coordinate
+import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.jlHandleFatalException
+import org.jugglinglab.util.jlToStringRounded
+import org.jugglinglab.util.jlPlayBounceSound
+import org.jugglinglab.util.jlPlayCatchSound
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+
+@Composable
+fun AnimationView(
+    state: PatternAnimationState,
+    modifier: Modifier = Modifier,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    onPress: (Offset) -> Unit = {},
+    onDrag: (Offset, Float) -> Unit = {_, _ ->},
+    onRelease: (cancel: Boolean) -> Unit = {},
+    onEnter: () -> Unit = {},
+    onExit: () -> Unit = {},
+    onLayoutUpdate: (AnimationLayout) -> Unit = {},
+    onFrame: (Double) -> Unit = {},
+    onZoom: (Float) -> Unit = {},
+    textMeasurer: TextMeasurer = rememberTextMeasurer(),
+    isAntiAlias: Boolean = true
+) {
+    // two renderers for stereo support
+    val renderer1 = remember { Renderer() }
+    val renderer2 = remember { Renderer() }
+
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val density = LocalDensity.current.density
+        val widthPx = constraints.maxWidth
+        val heightPx = constraints.maxHeight
+
+        val backgroundColor = colorScheme.background
+        val messageColor = colorScheme.onBackground
+
+        if (state.message.isNotEmpty()) {
+            // show a text message in the center of the screen
+            val textLayoutResult = textMeasurer.measure(
+                text = state.message,
+                style = TextStyle(color = messageColor, fontSize = 13.sp)
+            )
+            val textSize = textLayoutResult.size
+            state.update(time = state.pattern.loopStartTime)
+
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                state.update(message = "", isPaused = false)
+                            }
+                        )
+                    }
+            ) {
+                drawRect(color = backgroundColor)
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(
+                        x = (widthPx - textSize.width) / 2f,
+                        y = (heightPx - textSize.height) / 2f
+                    )
+                )
+            }
+            return@BoxWithConstraints
+        }
+
+        remember(
+            state.pattern,
+            state.prefs,
+            state.cameraAngle,
+            state.zoom,
+            state.fitToFrame,
+            widthPx,
+            heightPx,
+            isAntiAlias,
+            colorScheme
+        ) {
+            // configure the renderers
+            try {
+                val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
+                renderer1.isAntiAlias = isAntiAlias
+                renderer1.backgroundColor = backgroundColor
+                renderer1.lineColor = colorScheme.onBackground
+                renderer1.setPattern(state.pattern)
+                renderer1.setGround(showGround)
+                renderer1.zoomLevel = state.zoom
+                if (state.prefs.stereo) {
+                    renderer2.isAntiAlias = isAntiAlias
+                    renderer2.backgroundColor = backgroundColor
+                    renderer2.lineColor = colorScheme.onBackground
+                    renderer2.setPattern(state.pattern)
+                    renderer2.setGround(showGround)
+                    renderer2.zoomLevel = state.zoom
+                }
+
+                if (state.fitToFrame) {
+                    val borderPixels = state.prefs.borderPixels
+                    val (overallMin, overallMax) = state.pattern.layout.overallBoundingBox
+                    if (state.prefs.stereo) {
+                        val w = widthPx / 2
+                        renderer1.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                        renderer2.initDisplay(w, heightPx, borderPixels, overallMax, overallMin)
+                    } else {
+                        renderer1.initDisplay(widthPx, heightPx, borderPixels, overallMax, overallMin)
+                    }
+                }
+
+                val ca = state.cameraAngle.toDoubleArray()
+                if (state.prefs.stereo) {
+                    val separation = AnimationLayout.STEREO_SEPARATION_RADIANS
+                    renderer1.cameraAngle = doubleArrayOf(ca[0] - separation / 2, ca[1])
+                    renderer2.cameraAngle = doubleArrayOf(ca[0] + separation / 2, ca[1])
+                } else {
+                    renderer1.cameraAngle = ca
+                }
+            } catch (e: Exception) {
+                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            }
+            true
+        }
+
+        val layout = remember(
+            state.pattern,
+            state.prefs.stereo,
+            state.prefs.borderPixels,
+            state.cameraAngle,
+            state.zoom,
+            state.selectedItemHashCode,
+            state.fitToFrame,
+            widthPx,
+            heightPx
+        ) {
+            val newLayout = AnimationLayout(state, widthPx, heightPx, renderer1, renderer2)
+            onLayoutUpdate(newLayout)
+            newLayout
+        }
+
+        LaunchedEffect(state.isPaused) {
+            if (!state.isPaused) {
+                val startTime = withFrameNanos { it }
+                var lastFrameTime = startTime
+                val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
+
+                // animation loop
+                while (true) {
+                    withFrameNanos { frameTimeNanos ->
+                        if (state.isPaused) return@withFrameNanos
+                        val deltaNanos = frameTimeNanos - lastFrameTime
+                        lastFrameTime = frameTimeNanos
+                        val deltaRealSecs = deltaNanos / 1_000_000_000.0
+                        val deltaSimSecs = deltaRealSecs / state.prefs.slowdown
+                        var newTime = state.time + deltaSimSecs
+
+                        if (newTime >= state.pattern.loopEndTime) {
+                            val overflow = newTime - state.pattern.loopEndTime
+                            newTime = state.pattern.loopStartTime + (overflow % loopDuration)
+                            state.advancePropForPath()
+                        }
+
+                        var oldTime = state.time
+                        if (newTime < oldTime) {
+                            oldTime -= loopDuration
+                        }
+                        if (state.prefs.catchSound) {
+                            for (path in 1..state.pattern.numberOfPaths) {
+                                if (state.pattern.layout.getPathCatchVolume(path, oldTime, newTime) > 0.0) {
+                                    jlPlayCatchSound()
+                                }
+                            }
+                        }
+                        if (state.prefs.bounceSound) {
+                            for (path in 1..state.pattern.numberOfPaths) {
+                                if (state.pattern.layout.getPathBounceVolume(path, oldTime, newTime) > 0.0) {
+                                    jlPlayBounceSound()
+                                }
+                            }
+                        }
+
+                        state.update(time = newTime)
+                        onFrame(newTime)
+                    }
+                }
+            }
+        }
+
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(Unit) {
+                    handlePointerEvents(
+                        onEnter = onEnter,
+                        onExit = onExit,
+                        onZoom = onZoom,
+                        onPress = onPress,
+                        onDrag = onDrag,
+                        onRelease = onRelease,
+                        density = density
+                    )
+                }
+        ) {
+            drawRect(color = backgroundColor)
+
+            val width = size.width.toInt()
+            val height = size.height.toInt()
+
+            if (state.prefs.stereo) {
+                if (renderer1.currentPattern !== state.pattern || renderer2.currentPattern !== state.pattern) return@Canvas
+                val w = width / 2
+                withTransform({ translate(left = 0f, top = 0f) }) {
+                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        if (layout.showGrid) {
+                            drawGrid(renderer1, this, width = w, height = height)
+                        }
+                        renderer1.drawFrame(
+                            state.time,
+                            state.propForPath,
+                            state.prefs.hideJugglers,
+                            this
+                        )
+                        drawEventOverlays(layout, 0, this)
+                        drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
+                        if (state.showAxes) {
+                            renderer1.drawAxes(textMeasurer, this)
+                        }
+                    }
+                }
+
+                withTransform({ translate(left = w.toFloat(), top = 0f) }) {
+                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                        if (layout.showGrid) {
+                            drawGrid(renderer2, this, width = w, height = height)
+                        }
+                        renderer2.drawFrame(
+                            state.time,
+                            state.propForPath,
+                            state.prefs.hideJugglers,
+                            this
+                        )
+                        drawEventOverlays(layout, 1, this)
+                        drawPositionOverlays(state, layout, 1, renderer2, this, textMeasurer)
+                        if (state.showAxes) {
+                            renderer2.drawAxes(textMeasurer, this)
+                        }
+                    }
+                }
+            } else {
+                if (renderer1.currentPattern !== state.pattern) return@Canvas
+                if (layout.showGrid) {
+                    drawGrid(renderer1, this)
+                }
+                renderer1.drawFrame(
+                    state.time,
+                    state.propForPath,
+                    state.prefs.hideJugglers,
+                    this
+                )
+                drawEventOverlays(layout, 0, this)
+                drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
+                if (state.showAxes) {
+                    renderer1.drawAxes(textMeasurer, this)
+                }
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// Pointer event handling
+//------------------------------------------------------------------------------
+
+private suspend fun PointerInputScope.handlePointerEvents(
+    onEnter: () -> Unit,
+    onExit: () -> Unit,
+    onZoom: (Float) -> Unit,
+    onPress: (Offset) -> Unit,
+    onDrag: (Offset, Float) -> Unit,
+    onRelease: (Boolean) -> Unit,
+    density: Float
+) {
+    awaitPointerEventScope {
+        var isZooming = false
+        var zoomLastDistance = 0f
+        var wasZoomingThisGesture = false
+
+        while (true) {
+            val event = awaitPointerEvent()
+            val changes = event.changes
+
+            if (event.type == PointerEventType.Enter) {
+                onEnter()
+            } else if (event.type == PointerEventType.Exit) {
+                onExit()
+            } else if (event.type == PointerEventType.Scroll) {
+                val delta = changes.first().scrollDelta
+                // delta.y is positive for scrolling down (zoom in), negative for up (zoom out)
+                var zoomFactor = 1f + 0.1f * abs(delta.y)
+                if (delta.y < 0) {
+                    zoomFactor = 1 / zoomFactor
+                }
+                onZoom(zoomFactor)
+                changes.first().consume()
+                continue
+            }
+
+            val pressed = changes.filter { it.pressed }
+
+            if (pressed.size >= 2) {
+                if (!isZooming) {
+                    onRelease(true)  // cancel any active drag without triggering a click
+                    isZooming = true
+                    wasZoomingThisGesture = true
+                    zoomLastDistance = 0f
+                }
+
+                val p1 = pressed[0]
+                val p2 = pressed[1]
+                val currentDistance = (p1.position - p2.position).getDistance()
+
+                if (zoomLastDistance > 0f) {
+                    val zoomFactor = currentDistance / zoomLastDistance
+                    if (zoomFactor != 1.0f) {
+                        onZoom(zoomFactor)
+                    }
+                }
+                zoomLastDistance = currentDistance
+                changes.forEach { it.consume() }
+            } else if (pressed.size == 1) {
+                val change = pressed.first()
+                val offset = change.position
+
+                if (isZooming) {
+                    isZooming = false
+                    // Transitioned from 2 to 1 finger; don't start a new press, just consume
+                    change.consume()
+                } else {
+                    if (wasZoomingThisGesture) {
+                        // Still finishing a gesture that involved zooming
+                        change.consume()
+                    } else {
+                        if (change.changedToDown()) {
+                            onPress(offset)
+                            change.consume()
+                        } else if (change.positionChanged()) {
+                            onDrag(offset, density)
+                            change.consume()
+                        }
+                    }
+                }
+            } else {
+                isZooming = false
+                if (changes.any { it.changedToUp() }) {
+                    onRelease(wasZoomingThisGesture)
+                    wasZoomingThisGesture = false
+                    changes.forEach { it.consume() }
+                } else {
+                    wasZoomingThisGesture = false
+                }
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// Drawing
+//------------------------------------------------------------------------------
+
+private fun drawEventOverlays(
+    layout: AnimationLayout,
+    viewIndex: Int,
+    scope: DrawScope
+): Unit = with(scope) {
+    val handpathColor = Color.LightGray
+    val eventColor = Constants.HIGHLIGHT_COLOR
+
+    val strokeWidth1 = 1.dp.toPx()
+    val strokeWidth1_25 = 1.25.dp.toPx()
+    val dotSize4 = 4.dp.toPx()
+    val dotOffset2 = dotSize4 / 2
+    val dashOn = 5.7.dp.toPx()
+    val dashOff = 5.dp.toPx()
+
+    // Draw Hand Paths
+    if (viewIndex < layout.handpathPoints.size) {
+        val points = layout.handpathPoints[viewIndex]
+        val holds = layout.handpathIsHold
+
+        if (points.isNotEmpty()) {
+            val pathSolid = Path()
+            val pathDashed = Path()
+            var lastSolid = false
+            var lastDashed = false
+
+            for (i in 0 until points.size - 1) {
+                val p1 = Offset(points[i][0].toFloat(), points[i][1].toFloat())
+                val p2 = Offset(points[i + 1][0].toFloat(), points[i + 1][1].toFloat())
+
+                if (holds[i]) {
+                    if (!lastSolid) pathSolid.moveTo(p1.x, p1.y)
+                    pathSolid.lineTo(p2.x, p2.y)
+                    lastSolid = true
+                    lastDashed = false
+                } else {
+                    if (!lastDashed) pathDashed.moveTo(p1.x, p1.y)
+                    pathDashed.lineTo(p2.x, p2.y)
+                    lastDashed = true
+                    lastSolid = false
+                }
+            }
+
+            drawPath(
+                pathSolid,
+                handpathColor,
+                style = Stroke(width = strokeWidth1_25)
+            )
+            drawPath(
+                pathDashed,
+                handpathColor,
+                style = Stroke(
+                    width = strokeWidth1_25,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashOn, dashOff))
+                )
+            )
+        }
+    }
+
+    // Draw Events
+    val eventPoints = layout.eventPoints
+
+    for (evIndex in eventPoints.indices) {
+        if (viewIndex < eventPoints[evIndex].size) {
+            val points = eventPoints[evIndex][viewIndex]
+            val isSelected = (evIndex == 0)  // first event is always the active one
+
+            val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
+            val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
+            val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
+            val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
+            val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
+
+            // center dot
+            drawOval(
+                color = eventColor,
+                topLeft = Offset(p4.x - dotOffset2, p4.y - dotOffset2),
+                size = Size(dotSize4, dotSize4)
+            )
+
+            if (isSelected) {
+                if (layout.showXzDragControl) {
+                    // selected event box
+                    drawLine(eventColor, p0, p1, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p1, p2, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p2, p3, strokeWidth = strokeWidth1_25)
+                    drawLine(eventColor, p3, p0, strokeWidth = strokeWidth1_25)
+                }
+
+                if (layout.showYDragControl) {
+                    // y-axis control pointing forward/backward
+                    drawLine(
+                        eventColor,
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
+                        strokeWidth = strokeWidth1
+                    )
+                    drawLine(
+                        eventColor,
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[7][0].toFloat(), points[7][1].toFloat()),
+                        strokeWidth = strokeWidth1
+                    )
+                    drawLine(
+                        eventColor,
+                        Offset(points[5][0].toFloat(), points[5][1].toFloat()),
+                        Offset(points[8][0].toFloat(), points[8][1].toFloat()),
+                        strokeWidth = strokeWidth1
+                    )
+                    drawLine(
+                        eventColor,
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
+                        Offset(points[9][0].toFloat(), points[9][1].toFloat()),
+                        strokeWidth = strokeWidth1
+                    )
+                    drawLine(
+                        eventColor,
+                        Offset(points[6][0].toFloat(), points[6][1].toFloat()),
+                        Offset(points[10][0].toFloat(), points[10][1].toFloat()),
+                        strokeWidth = strokeWidth1
+                    )
+                }
+            } else {
+                // unselected event box
+                drawLine(eventColor, p0, p1, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p1, p2, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p2, p3, strokeWidth = strokeWidth1_25)
+                drawLine(eventColor, p3, p0, strokeWidth = strokeWidth1_25)
+            }
+        }
+    }
+}
+
+private fun drawPositionOverlays(
+    state: PatternAnimationState,
+    layout: AnimationLayout,
+    viewIndex: Int,
+    renderer: Renderer,
+    scope: DrawScope,
+    textMeasurer: TextMeasurer
+): Unit = with(scope) {
+    val posPoints = layout.posPoints
+    val posColor = Constants.HIGHLIGHT_COLOR
+    val posTextColor = renderer.lineColor
+
+    val strokeWidth1 = 1.dp.toPx()
+    val strokeWidth1_25 = 1.25.dp.toPx()
+    val dotSize5 = 5.dp.toPx()
+    val dotOffset2_5 = dotSize5 / 2
+    val dotSize7 = 7.dp.toPx()
+    val dotOffset3_5 = dotSize7 / 2
+    val dotSize10 = 10.dp.toPx()
+    val dotOffset5 = dotSize10 / 2
+
+    // Check if we have data for this viewIndex
+    if (viewIndex < posPoints.size) {
+        val points = posPoints[viewIndex]
+        if (points.isEmpty()) return
+
+        // center
+        val p4 = Offset(points[4][0].toFloat(), points[4][1].toFloat())
+
+        // center dot
+        drawOval(
+            color = posColor,
+            topLeft = Offset(p4.x - dotOffset2_5, p4.y - dotOffset2_5),
+            size = Size(dotSize5, dotSize5)
+        )
+
+        if (layout.showXyDragControl || state.draggingPosition) {
+            // edges of xy plane control
+            val p0 = Offset(points[0][0].toFloat(), points[0][1].toFloat())
+            val p1 = Offset(points[1][0].toFloat(), points[1][1].toFloat())
+            val p2 = Offset(points[2][0].toFloat(), points[2][1].toFloat())
+            val p3 = Offset(points[3][0].toFloat(), points[3][1].toFloat())
+            drawLine(posColor, p0, p1, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p1, p2, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p2, p3, strokeWidth = strokeWidth1_25)
+            drawLine(posColor, p3, p0, strokeWidth = strokeWidth1_25)
+        }
+
+        if (layout.showZDragControl && (!state.draggingPosition || state.draggingPositionZ)) {
+            // z-axis control pointing upward (handle end at 6, arrow head at 7,8)
+            val p6 = Offset(points[6][0].toFloat(), points[6][1].toFloat())
+            val p7 = Offset(points[7][0].toFloat(), points[7][1].toFloat())
+            val p8 = Offset(points[8][0].toFloat(), points[8][1].toFloat())
+            drawLine(posColor, p4, p6, strokeWidth = strokeWidth1)
+            drawLine(posColor, p6, p7, strokeWidth = strokeWidth1)
+            drawLine(posColor, p6, p8, strokeWidth = strokeWidth1)
+        }
+
+        if (layout.showAngleDragControl && (!state.draggingPosition || state.draggingPositionAngle)) {
+            // angle-changing control pointing backward (center at 4, handle at 5)
+            val p5 = Offset(points[5][0].toFloat(), points[5][1].toFloat())
+            drawLine(posColor, p4, p5, strokeWidth = strokeWidth1)
+            drawOval(
+                color = posColor,
+                topLeft = Offset(p5.x - dotOffset5, p5.y - dotOffset5),
+                size = Size(dotSize10, dotSize10)
+            )
+        }
+
+        if (state.draggingPositionAngle) {
+            // sighting line during angle rotation
+            val p9 = Offset(points[9][0].toFloat(), points[9][1].toFloat())
+            val p10 = Offset(points[10][0].toFloat(), points[10][1].toFloat())
+            drawLine(posColor, p9, p10, strokeWidth = strokeWidth1)
+        }
+
+        if (!state.draggingPositionAngle) {
+            if (state.draggingPositionZ || layout.showGrid) {
+                // line dropping down to projection on ground (z = 0)
+                val c = layout.visiblePosition!!.coordinate
+                val z = c.z
+                c.z = 0.0
+                val xyProjection = renderer.getXY(c)
+                drawLine(
+                    posColor,
+                    p4,
+                    Offset(xyProjection.x.toFloat(), xyProjection.y.toFloat()),
+                    strokeWidth = strokeWidth1
+                )
+                drawOval(
+                    color = posColor,
+                    topLeft = Offset(xyProjection.x.toFloat() - dotOffset3_5, xyProjection.y.toFloat() - dotOffset3_5),
+                    size = Size(dotSize7, dotSize7)
+                )
+
+                if (state.draggingPositionZ) {
+                    // z-label on the line
+                    val textLayoutResult = textMeasurer.measure(
+                        text = "z = " + jlToStringRounded(z, 1) + " cm",
+                        style = TextStyle(color = posTextColor, fontSize = 13.sp)
+                    )
+                    val y = max(
+                        max(points[0][1], points[1][1]),
+                        max(points[2][1], points[3][1])
+                    )
+                    drawText(
+                        textLayoutResult = textLayoutResult,
+                        topLeft = Offset(
+                            x = xyProjection.x.toFloat() + 5.dp.toPx(),
+                            y = y.toFloat() + 32.dp.toPx()
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+// In position editing mode, draw an xy grid at ground level (z = 0).
+
+private fun drawGrid(
+    renderer: Renderer,
+    scope: DrawScope,
+    width: Int = scope.size.width.toInt(),
+    height: Int = scope.size.height.toInt()
+): Unit = with(scope) {
+    val gridColor = Color.LightGray
+    val strokeWidthAxes = 2.dp.toPx()
+    val strokeWidthGrid = 0.75.dp.toPx()
+
+    // Figure out pixel deltas for 1cm vectors along x and y axes
+    val center = renderer.getXY(Coordinate(0.0, 0.0, 0.0))
+    val dx = renderer.getXY(Coordinate(100.0, 0.0, 0.0))
+    val dy = renderer.getXY(Coordinate(0.0, 100.0, 0.0))
+    
+    val axisXx = AnimationLayout.XY_GRID_SPACING_CM * ((dx.x - center.x).toDouble() / 100.0)
+    val axisXy = AnimationLayout.XY_GRID_SPACING_CM * ((dx.y - center.y).toDouble() / 100.0)
+    val axisYx = AnimationLayout.XY_GRID_SPACING_CM * ((dy.x - center.x).toDouble() / 100.0)
+    val axisYy = AnimationLayout.XY_GRID_SPACING_CM * ((dy.y - center.y).toDouble() / 100.0)
+
+    // Find which grid intersections are visible on screen by solving for the
+    // grid coordinates at the four corners.
+    val det = axisXx * axisYy - axisXy * axisYx
+    var mMin = 0
+    var mMax = 0
+    var nMin = 0
+    var nMax = 0
+    for (j in 0..3) {
+        val a = ((if (j % 2 == 0) 0 else width) - center.x).toDouble()
+        val b = ((if (j < 2) 0 else height) - center.y).toDouble()
+        val m = (axisYy * a - axisYx * b) / det
+        val n = (-axisXy * a + axisXx * b) / det
+        val mInt = floor(m).toInt()
+        val nInt = floor(n).toInt()
+        mMin = if (j == 0) mInt else min(mMin, mInt)
+        mMax = if (j == 0) mInt + 1 else max(mMax, mInt + 1)
+        nMin = if (j == 0) nInt else min(nMin, nInt)
+        nMax = if (j == 0) nInt + 1 else max(nMax, nInt + 1)
+    }
+
+    for (j in mMin..mMax) {
+        val x1 = (center.x + j * axisXx + nMin * axisYx).toFloat()
+        val y1 = (center.y + j * axisXy + nMin * axisYy).toFloat()
+        val x2 = (center.x + j * axisXx + nMax * axisYx).toFloat()
+        val y2 = (center.y + j * axisXy + nMax * axisYy).toFloat()
+        drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
+    }
+    for (j in nMin..nMax) {
+        val x1 = (center.x + mMin * axisXx + j * axisYx).toFloat()
+        val y1 = (center.y + mMin * axisXy + j * axisYy).toFloat()
+        val x2 = (center.x + mMax * axisXx + j * axisYx).toFloat()
+        val y2 = (center.y + mMax * axisXy + j * axisYy).toFloat()
+        drawLine(gridColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = if (j == 0) strokeWidthAxes else strokeWidthGrid)
+    }
+}

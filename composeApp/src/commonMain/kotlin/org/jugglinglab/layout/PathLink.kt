@@ -12,7 +12,6 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 
 class PathLink(
-    val pathNum: Int,
     val startGlobalCoordinate: Coordinate,
     val startEvent: LayoutEvent,
     val endGlobalCoordinate: Coordinate,
@@ -40,7 +39,7 @@ class PathLink(
         pathType: String,
         pathMod: String?
     ) {
-        val newPath = Path.Companion.newPath(pathType)
+        val newPath = Path.newPath(pathType)
         newPath.initPath(pathMod)
         newPath.setStart(startGlobalCoordinate, startEvent.t)
         newPath.setEnd(endGlobalCoordinate, endEvent.t)

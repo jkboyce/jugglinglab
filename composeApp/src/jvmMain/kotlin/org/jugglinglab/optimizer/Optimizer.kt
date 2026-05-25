@@ -355,7 +355,7 @@ class Optimizer private constructor(pat: JmlPattern) {
                 // The following is helpful to debug issues loading the OR-Tools
                 // libraries on Linux. A common issue is a system version of glibc
                 // that is older than the library requires.
-                if (jlIsLinux()) {
+                if (jlIsLinux) {
                     println(e)
                 }
             }

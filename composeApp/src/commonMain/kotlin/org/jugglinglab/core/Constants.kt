@@ -7,9 +7,10 @@
 package org.jugglinglab.core
 
 import org.jugglinglab.curve.Curve
+import androidx.compose.ui.graphics.Color
 
 object Constants {
-    const val VERSION: String = "1.7.1"
+    const val VERSION: String = "1.7.2"
     const val YEAR: String = "2026"
 
     const val SITE_URL: String = "http://jugglinglab.org"
@@ -23,6 +24,13 @@ object Constants {
     // centered on the screen
     const val RESERVED_WIDTH_PIXELS: Int = 1200
 
+    // colors for rendering
+    val HIGHLIGHT_COLOR: Color = Color(0xFF32CD32)
+
+    // execution limits for generator
+    const val MAX_PATTERNS: Int = 1000
+    const val MAX_TIME_SEC: Double = 15.0
+
     // flags to print useful debugging info to stdout
     const val DEBUG_SITESWAP_PARSING: Boolean = false
     const val DEBUG_JML_PARSING: Boolean = false
@@ -33,4 +41,7 @@ object Constants {
     const val DEBUG_OPTIMIZE: Boolean = false
     const val DEBUG_OPEN_SERVER: Boolean = false
     const val VALIDATE_GENERATED_PATTERNS: Boolean = false
+
+    // flags to test/debug the mobile app
+    const val TEST_MOBILE_APP: Boolean = false
 }

@@ -31,7 +31,7 @@ class SiteswapPattern : MhnPattern() {
     // async throws on even beat numbers made with right hand?
     private lateinit var rightOnEven: BooleanArray
 
-    override val notationName = "Siteswap"
+    override val notationName = "siteswap"
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun fromString(config: String): SiteswapPattern {

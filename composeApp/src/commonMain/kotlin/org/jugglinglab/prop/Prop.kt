@@ -60,12 +60,14 @@ abstract class Prop {
 
     companion object {
         val builtinProps: List<String> = listOf(
-            "Ball",
-            "Image",
-            "Ring",
+            "ball",
+            "square",
+            "image",
+            "ring",
         )
         val builtinPropsStringResources: List<StringResource> = listOf(
             Res.string.gui_prop_name_ball,
+            Res.string.gui_prop_name_square,
             Res.string.gui_prop_name_image,
             Res.string.gui_prop_name_ring,
         )
@@ -75,6 +77,8 @@ abstract class Prop {
         fun newProp(type: String): Prop {
             if (type.equals("ball", ignoreCase = true)) {
                 return BallProp()
+            } else if (type.equals("square", ignoreCase = true)) {
+                return SquareProp()
             } else if (type.equals("image", ignoreCase = true)) {
                 return ImageProp()
             } else if (type.equals("ring", ignoreCase = true)) {

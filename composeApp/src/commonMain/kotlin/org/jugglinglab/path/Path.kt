@@ -110,9 +110,9 @@ abstract class Path {
         val res = if (result == null) {
             loc
         } else if (findmax) {
-            Coordinate.Companion.max(result, loc)
+            Coordinate.max(result, loc)
         } else {
-            Coordinate.Companion.min(result, loc)
+            Coordinate.min(result, loc)
         }
         return res!!
     }
@@ -120,8 +120,8 @@ abstract class Path {
     companion object {
         // List of the built-in path types
         val builtinPaths: List<String> = listOf(
-            "Toss",
-            "Bounce",
+            "toss",
+            "bounce",
         )
 
         // Factory method to create paths

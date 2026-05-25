@@ -112,8 +112,8 @@ abstract class Curve {
 
         return when {
             result == null -> loc
-            findmax -> Coordinate.Companion.max(result, loc)!!
-            else -> Coordinate.Companion.min(result, loc)!!
+            findmax -> Coordinate.max(result, loc)!!
+            else -> Coordinate.min(result, loc)!!
         }
     }
 

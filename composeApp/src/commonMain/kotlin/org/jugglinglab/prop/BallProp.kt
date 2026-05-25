@@ -28,6 +28,7 @@ class BallProp : Prop() {
     private var colornum: Int = COLORNUM_DEF
     private var diam: Double = DIAM_DEF // diameter, in cm
     private var highlight: Boolean = HIGHLIGHT_DEF
+    private var customColorStr: String? = null
     // recalculated based on zoom
     private var image: ImageBitmap? = null
     private var size: IntSize? = null
@@ -35,7 +36,7 @@ class BallProp : Prop() {
     private var grip: IntSize? = null
     private var lastzoom: Double = 0.0
 
-    override val type = "Ball"
+    override val type = "ball"
 
     override val isColorable = true
 
@@ -48,9 +49,10 @@ class BallProp : Prop() {
             ParameterDescriptor(
                 "color",
                 ParameterDescriptor.TYPE_CHOICE,
-                colorNames,
+                if (colornum == -1) colorNames + "custom" else colorNames,
                 colorNames[COLORNUM_DEF],
-                colorNames[colornum]
+                if (colornum == -1) "custom" else colorNames[colornum],
+                customData = if (colornum == -1) customColorStr else null
             ),
             ParameterDescriptor(
                 "diam",
@@ -103,6 +105,8 @@ class BallProp : Prop() {
                         }
 
                         temp = Color(red, green, blue, alpha)
+                        colornum = -1
+                        customColorStr = colorstr
                     } catch (_: NumberFormatException) {
                         val message = jlGetStringResource(Res.string.error_prop_color, colorstr)
                         throw JuggleExceptionUser(message)

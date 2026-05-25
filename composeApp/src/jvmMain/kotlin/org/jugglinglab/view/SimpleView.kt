@@ -8,8 +8,8 @@ package org.jugglinglab.view
 
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.ui.AnimationPanel
-import org.jugglinglab.ui.PatternWindow
+import org.jugglinglab.ui.desktop.AnimationPanel
+import org.jugglinglab.ui.desktop.PatternWindow
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
@@ -20,7 +20,7 @@ class SimpleView(
     state: PatternAnimationState,
     patternWindow: PatternWindow
 ) : View(state, patternWindow) {
-    private val ja = AnimationPanel(state, onZoom = onZoomChange)
+    private val ja = AnimationPanel(state, onZoom = onViewZoomChange)
 
     init {
         ja.preferredSize = Dimension(state.prefs.width, state.prefs.height)

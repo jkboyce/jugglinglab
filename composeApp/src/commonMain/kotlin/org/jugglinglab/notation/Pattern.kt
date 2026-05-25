@@ -28,7 +28,7 @@ abstract class Pattern {
     abstract fun fromParameters(pl: ParameterList): Pattern
 
     // canonical string representation
-    abstract override fun toString(): String
+    abstract fun toCanonicalString(forHashCode: Boolean = false): String
 
     // convert pattern to JML
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -38,8 +38,8 @@ abstract class Pattern {
     companion object {
         // The built-in notations
         val builtinNotations: List<String> = listOf(
-            "Siteswap",
-            )
+            "siteswap",
+        )
 
         // these should be in the same order as in the builtinNotations array
         const val NOTATION_NONE: Int = 0

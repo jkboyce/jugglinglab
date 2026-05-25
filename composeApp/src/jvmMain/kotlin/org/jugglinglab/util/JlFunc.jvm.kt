@@ -115,7 +115,7 @@ private fun showInternalErrorWindow(e: Exception) {
         sw.write(jlGetStringResource(Res.string.error_internal_msg_part1) + "\n\n")
         sw.write(jlGetStringResource(Res.string.error_internal_msg_part2) + "\n")
         sw.write(jlGetStringResource(Res.string.error_internal_msg_part3) + "\n\n")
-        sw.write("Juggling Lab version: ${Constants.VERSION}\n\n")
+        sw.write("Juggling Lab version: $jlCurrentVersion\n\n")
         if (e is JuggleExceptionInternal) {
             if (e.wrapped != null) {
                 e.wrapped?.printStackTrace(PrintWriter(sw))
@@ -232,13 +232,33 @@ fun jlConstraints(location: Int, gridx: Int, gridy: Int, ins: Insets?): GridBagC
 // Helpers for execution context information
 //------------------------------------------------------------------------------
 
-// platform
-fun jlIsMacOs() = System.getProperty("os.name").lowercase().startsWith("mac os x")
-fun jlIsWindows() = System.getProperty("os.name").lowercase().startsWith("windows")
-fun jlIsLinux() = System.getProperty("os.name").lowercase().startsWith("linux")
+actual val jlCurrentPlatform: String by lazy {
+    System.getProperty("os.name") + " " + System.getProperty("os.version")
+}
 
-// running from the command line?
-fun jlIsCli() = (System.getenv("JL_WORKING_DIR") != null)
+actual val jlAboutBoxPlatform: String by lazy {
+    val javaVersion = System.getProperty("java.version")
+    val javaVmName = System.getProperty("java.vm.name")
+    val javaVmVersion = System.getProperty("java.vm.version")
+    "Java version $javaVersion\n$javaVmName ($javaVmVersion)"
+}
+
+actual val jlCurrentVersion: String = Constants.VERSION
+
+actual val jlIsDesktop: Boolean = true
+
+actual val jlIsMobile: Boolean = false
+
+// Running from the command line?
+val jlIsCli: Boolean by lazy {
+    System.getenv("JL_WORKING_DIR") != null
+}
+
+// Should the Swing-based UI be used?
+val jlIsSwing: Boolean by lazy {
+    val isCompose = System.getProperty("JL_compose_ui")
+    !(isCompose?.equals("true", ignoreCase = true) ?: false)
+}
 
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files
@@ -310,76 +330,9 @@ val jlJfc: JFileChooser by lazy {
     }
 }
 
-// Sanitize filename based on platform restrictions.
-//
-// See e.g.:
-// https://stackoverflow.com/questions/1976007/
-//       what-characters-are-forbidden-in-windows-and-linux-directory-names
-
-private fun jlSanitizeFilename(fname: String): String {
-    val index = fname.lastIndexOf(".")
-
-    val base = if (index >= 0) fname.take(index) else fname
-    val extension = if (index >= 0) fname.substring(index) else ""
-
-    if (jlIsMacOs()) {
-        // remove all instances of `:` and `/`
-        var b = base.replace("[:/]".toRegex(), "")
-
-        // remove leading `.` and space
-        while (b.startsWith(".") || b.startsWith(" ")) {
-            b = b.substring(1)
-        }
-
-        if (b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else if (jlIsWindows()) {
-        // remove all instances of `\/?:*"`
-        var b = base.replace("[/?:*\"]".toRegex(), "")
-
-        // disallow strings with `><|`
-        var forbidden = (b.contains(">"))
-        forbidden = forbidden || (b.contains("<"))
-        forbidden = forbidden || (b.contains("|"))
-
-        if (forbidden || b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else if (jlIsLinux()) {
-        // change all `/` to `:`
-        var b = base.replace("/".toRegex(), ":")
-
-        // remove leading `.` and space
-        while (b.startsWith(".") || b.startsWith(" ")) {
-            b = b.substring(1)
-        }
-
-        if (b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else {
-        return fname
-    }
-}
-
 fun jlSanitizeFilepath(fpath: Path): Path {
     val fileNameStr = fpath.fileName?.toString() ?: return fpath
     return fpath.resolveSibling(jlSanitizeFilename(fileNameStr))
-}
-
-@Throws(JuggleExceptionUser::class)
-fun jlErrorIfNotSanitized(fname: String) {
-    if (fname == jlSanitizeFilename(fname)) {
-        return
-    }
-    throw JuggleExceptionUser(jlGetStringResource(Res.string.error_saving_disallowed_character))
 }
 
 //------------------------------------------------------------------------------
@@ -436,23 +389,77 @@ actual fun jlGetScreenFps(): Double {
     return if (fpsScreen < 20) 60.0 else fpsScreen
 }
 
-// Return platform information.
-
-actual fun jlGetCurrentPlatform(): String {
-    return System.getProperty("os.name") + " " + System.getProperty("os.version")
+actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
+    // Not applicable on desktop
 }
 
-actual fun jlGetAboutBoxPlatform(): String {
-    val javaVersion = System.getProperty("java.version")
-    val javaVmName = System.getProperty("java.vm.name")
-    val javaVmVersion = System.getProperty("java.vm.version")
-
-    return "Java version $javaVersion\n$javaVmName ($javaVmVersion)"
+actual fun jlShareFile(content: String, filename: String, mimeType: String, subject: String?) {
+    // Not applicable on desktop
 }
 
-// Return true if Swing-based UI should be used.
+//------------------------------------------------------------------------------
+// Helpers for playing audio
+//------------------------------------------------------------------------------
 
-fun jlIsSwing(): Boolean {
-    val isCompose = System.getProperty("JL_compose_ui")
-    return !(isCompose?.equals("true", ignoreCase = true) ?: false)
+private const val CLIP_POOL_SIZE = 16
+
+private fun createClipPool(resourcePath: String): Array<javax.sound.sampled.Clip?> {
+    return try {
+        val bytes = kotlinx.coroutines.runBlocking {
+            Res.readBytes(resourcePath)
+        }
+        Array(CLIP_POOL_SIZE) {
+            val audioIn = javax.sound.sampled.AudioSystem.getAudioInputStream(java.io.ByteArrayInputStream(bytes))
+            val info = javax.sound.sampled.DataLine.Info(javax.sound.sampled.Clip::class.java, audioIn.format)
+            val clip = javax.sound.sampled.AudioSystem.getLine(info) as javax.sound.sampled.Clip
+            clip.open(audioIn)
+            clip
+        }
+    } catch (_: Exception) {
+        Array(CLIP_POOL_SIZE) { null }
+    }
+}
+
+private val catchClips by lazy { createClipPool("files/sounds/catch.wav") }
+private var catchClipIndex = 0
+
+private val bounceClips by lazy { createClipPool("files/sounds/bounce.wav") }
+private var bounceClipIndex = 0
+
+private fun setClipVolume(clip: javax.sound.sampled.Clip, volume: Float) {
+    if (clip.isControlSupported(javax.sound.sampled.FloatControl.Type.MASTER_GAIN)) {
+        val gainControl = clip.getControl(javax.sound.sampled.FloatControl.Type.MASTER_GAIN) as javax.sound.sampled.FloatControl
+        val gain = if (volume > 0f) {
+            20f * kotlin.math.log10(volume)
+        } else {
+            gainControl.minimum
+        }
+        gainControl.value = gain.coerceIn(gainControl.minimum, gainControl.maximum)
+    }
+}
+
+actual fun jlPlayCatchSound(volume: Float) {
+    SwingUtilities.invokeLater {
+        val clip = catchClips[catchClipIndex]
+        catchClipIndex = (catchClipIndex + 1) % CLIP_POOL_SIZE
+        clip?.let {
+            setClipVolume(it, volume)
+            if (it.isActive) it.stop()
+            it.framePosition = 0
+            it.start()
+        }
+    }
+}
+
+actual fun jlPlayBounceSound(volume: Float) {
+    SwingUtilities.invokeLater {
+        val clip = bounceClips[bounceClipIndex]
+        bounceClipIndex = (bounceClipIndex + 1) % CLIP_POOL_SIZE
+        clip?.let {
+            setClipVolume(it, volume)
+            if (it.isActive) it.stop()
+            it.framePosition = 0
+            it.start()
+        }
+    }
 }

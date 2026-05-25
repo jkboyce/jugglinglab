@@ -38,16 +38,21 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Renderer {
-    private var background: Color = Color.White
+    var backgroundColor: Color = Color.White
+    var lineColor: Color = Color.Black
     var showGround: Boolean = false
 
     // Internal fields
     private var cameraCenter: JlVector? = null
+    private var zoomCenterV: JlVector? = null
+    private var bbCenterY: Double = 0.0
     private var m: JlMatrix = JlMatrix()
     private var width: Int = 0
     private var height: Int = 0
     private var viewport: Rect? = null
     private lateinit var pattern: JmlPattern
+    val currentPattern: JmlPattern?
+        get() = if (::pattern.isInitialized) pattern else null
     private var zoom: Double = 0.0 // pixels/cm
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
     private var originX: Int = 0
@@ -143,12 +148,12 @@ class Renderer {
             )
         }
 
+        val zc = pattern.layout.zoomCenter
+        zoomCenterV = JlVector(zc.x, zc.z, zc.y)
         // Pattern center vis-a-vis camera rotation
-        cameraCenter = JlVector(
-            0.5 * (adjustedMax.x + adjustedMin.x),
-            0.5 * (adjustedMax.z + adjustedMin.z),
-            0.5 * (adjustedMax.y + adjustedMin.y)
-        )
+        cameraCenter = JlVector(zc.x, 0.0, zc.y)
+        // Vertical midpoint of the pattern bounding box
+        bbCenterY = 0.5 * (adjustedMax.z + adjustedMin.z)
 
         setZoom(zoomLevel)  // calculate camera matrix etc.
 
@@ -171,7 +176,10 @@ class Renderer {
     private fun setZoom(zoomFactor: Double) {
         zoom = zoomOrig * zoomFactor
 
-        if (viewport != null && cameraCenter != null) {
+        if (viewport != null && cameraCenter != null && zoomCenterV != null) {
+            val limit = (viewport!!.height / 2.0) / zoom
+            cameraCenter!!.y = bbCenterY.coerceIn(zoomCenterV!!.y - limit, zoomCenterV!!.y + limit)
+
             originX = (viewport!!.left + 0.5 * viewport!!.width - zoom * cameraCenter!!.x).roundToInt()
             originZ = (viewport!!.top + 0.5 * viewport!!.height + zoom * cameraCenter!!.y).roundToInt()
             calculateCameraMatrix()
@@ -454,8 +462,8 @@ class Renderer {
                         path.lineTo(ob.coord[j].x.toFloat(), ob.coord[j].y.toFloat())
                     }
                     path.close()
-                    drawAaPath(path, background)
-                    drawAaPath(path, Color.Black, style = stroke1)
+                    drawAaPath(path, backgroundColor)
+                    drawAaPath(path, lineColor, style = stroke1)
 
                     val lHeadBx = ob.coord[4].x
                     val lHeadBy = ob.coord[4].y
@@ -475,15 +483,15 @@ class Renderer {
                             else headPath.lineTo(headX[j].toFloat(), headY[j].toFloat())
                         }
                         headPath.close()
-                        drawAaPath(headPath, background)
-                        drawAaPath(headPath, Color.Black, style = stroke1)
+                        drawAaPath(headPath, backgroundColor)
+                        drawAaPath(headPath, lineColor, style = stroke1)
                     } else {
                         val h =
                             sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
                         val hx = (0.5 * (lHeadBx + rHeadBx)).toFloat()
                         val hy1 = (0.5 * (lHeadTy + rHeadBy + h)).toFloat()
                         val hy2 = (0.5 * (lHeadTy + rHeadBy - h)).toFloat()
-                        drawAaLine(Color.Black, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
+                        drawAaLine(lineColor, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
                     }
                 }
 
@@ -494,7 +502,7 @@ class Renderer {
                     val y2 = ob.coord[1].y.toFloat()
                     // Juggler parts have number > 0, ground uses 0
                     val strokeWidth = if (ob.number > 0) strokeWidth1 else strokeWidth0_5
-                    drawAaLine(Color.Black, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
+                    drawAaLine(lineColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
                 }
             }
         }
@@ -521,7 +529,7 @@ class Renderer {
         val zx = cx
         val zy = cy - zlen
 
-        val axesColor = Color.Green
+        val axesColor = Constants.HIGHLIGHT_COLOR
         val strokeWidth = 1.dp.toPx()
         val dotSize = 5.dp.toPx()
         val dotOffset = dotSize / 2

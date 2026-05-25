@@ -193,7 +193,8 @@ abstract class MhnPattern : Pattern() {
 
     // Write out configuration parameters in a standard order.
 
-    override fun toString(): String {
+    @Throws(JuggleExceptionInternal::class)
+    override fun toCanonicalString(forHashCode: Boolean): String {
         if (config == null) return ""
         var result = ""
         try {
@@ -217,6 +218,7 @@ abstract class MhnPattern : Pattern() {
                 "title",
             )
             for (key in keys) {
+                if (forHashCode && key == "title") continue
                 val value = pl.getParameter(key)
                 if (value != null) {
                     result += "$key=$value;"
@@ -230,6 +232,11 @@ abstract class MhnPattern : Pattern() {
             throw JuggleExceptionInternal(jeu.message ?: "")
         }
         return result
+    }
+
+    @Throws(JuggleExceptionInternal::class)
+    override fun toString(): String {
+        return toCanonicalString()
     }
 
     // Fill in details of the juggling matrix th[], to prepare for animation

@@ -8,8 +8,8 @@ package org.jugglinglab.view
 
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.ui.AnimationPanel
-import org.jugglinglab.ui.PatternWindow
+import org.jugglinglab.ui.desktop.AnimationPanel
+import org.jugglinglab.ui.desktop.PatternWindow
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
@@ -28,7 +28,7 @@ class SelectionView(
     private val ja = List(COUNT) {
         AnimationPanel(
             if (it == CENTER) state else PatternAnimationState(state.pattern, state.prefs),
-            onZoom = onZoomChange
+            onZoom = onViewZoomChange
         )
     }
     private val layered: JLayeredPane
