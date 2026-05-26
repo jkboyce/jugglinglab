@@ -311,6 +311,9 @@ fun LadderDiagramView(
                                     downPos = offset
                                     val screenOffset = Offset(offset.x, offset.y - scrollState.value)
                                     isEventHandled = onPress(offset, isPopup, localZoom > 1f, screenOffset)
+                                    if (change.type == PointerType.Mouse) {
+                                        change.consume()
+                                    }
                                 } else if (change.pressed && change.positionChanged()) {
                                     if (isEventHandled) {
                                         onDrag(offset)
