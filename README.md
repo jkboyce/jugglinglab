@@ -14,7 +14,7 @@ Juggling Lab is a Compose Multiplatform application written in Kotlin. To date i
 - `gradlew run` – compile and run Juggling Lab
 - `gradlew run -PJLcompose` – compile and run with a Compose interface
 
-If you prefer to work in an IDE, we currently recommend [Android Studio](https://developer.android.com/studio) which has good support for Gradle, Compose, and Android emulation and testing. Opening the repo in Android Studio configures the relevant plugins.
+For an IDE we recommend [Android Studio](https://developer.android.com/studio) which has good support for Gradle, Compose, and Android emulation and testing. Opening the repo in Android Studio configures the relevant plugins.
 
 ## Contributors
 
