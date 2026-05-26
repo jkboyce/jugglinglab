@@ -109,7 +109,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Juggling Lab"
-            packageVersion = "1.7.2"
+            packageVersion = "1.7.3"
 
             macOS {
                 //iconFile.set(project.file("launcher-icons/icon.icns"))
