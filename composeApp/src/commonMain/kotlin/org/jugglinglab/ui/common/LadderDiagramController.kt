@@ -476,9 +476,15 @@ class LadderDiagramController(
         }
 
         record.selectPrimaryEvents()
+        val newPattern = JmlPattern.fromPatternBuilder(record)
+        val selectedImage = newPattern.loopEvents
+            .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
+            .minByOrNull { abs(it.event.t - newT) }
+        val newHashCode = selectedImage?.event?.jlHashCode ?: newEvent.jlHashCode
+
         state.update(
-            pattern = JmlPattern.fromPatternBuilder(record),
-            selectedItemHashCode = newEvent.jlHashCode
+            pattern = newPattern,
+            selectedItemHashCode = newHashCode
         )
     }
 
