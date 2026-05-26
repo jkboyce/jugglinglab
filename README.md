@@ -8,16 +8,13 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is written in Kotlin and uses standard Swing components, so it should run on any platform supported by Java 11 or later. Clone the repository and play around with it! I always appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
+Juggling Lab is a Compose Multiplatform application written in Kotlin. To date it supports all desktop platforms (macOS, Windows, Linux) and Android. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
 
-Juggling Lab is undergoing a transition from Swing to Compose Multiplatform, which will let us bring Juggling Lab to mobile and the web. By default it runs with the legacy Swing UI, but you can enable the Compose UI as described below (note it's still rough around the edges).
-
-**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). You can run these commands in the base directory of the repo:
+**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use these commands in the base directory of the repo:
 - `gradlew run` – compile and run Juggling Lab
-- `gradlew run -PJLcompose` – compile and run with the experimental Compose-based interface
-- `gradlew build` – build the combined JAR file `/bin/JugglingLab.jar` (this is mostly for distributing the desktop application)
+- `gradlew run -PJLcompose` – compile and run with a Compose interface
 
-**Working on Juggling Lab code.** Since Juggling Lab is evolving into a Compose Multiplatform application, the best IDE to use is [IntelliJ IDEA](https://www.jetbrains.com/idea/) from JetBrains. Opening the repo in IDEA configures the relevant plugins. Currently two run configurations are available in the dropdown at the top of the project window: `jugglinglab [run]` and `jugglinglab [run Compose]`.
+If you prefer to work in an IDE, we currently recommend [Android Studio](https://developer.android.com/studio) which has good support for Gradle, Compose, and Android emulation and testing. Opening the repo in Android Studio configures the relevant plugins.
 
 ## Contributors
 
@@ -39,14 +36,15 @@ Over that long span of time the project has seen contributions from many people,
 - Ken Matsuoka – JuggleMaster pattern library, used here with his permission
 - Rupert Millard – Implementation of '*' shortcut for sync notation
 - Herve Nicol – Bug fixes
+- Daniel Ortuño Juárez – Android testing and many improvement ideas
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
-- Greg Phillips – Compose Multiplatform refactoring help and ideas, ANTLR siteswap parser
-- Romain Richard and Frédéric Rayar – [Android version](https://code.google.com/archive/p/jugglinglab/) ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
+- Greg Phillips – Compose Multiplatform refactoring help and ideas, ANTLR siteswap parser, Android testing and ideas
+- Romain Richard and Frédéric Rayar – Android version ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
 - Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - Daniel Simu – Bug reports, many design suggestions
 - P. R. Vaidyanathan – Hand Siteswap feature input
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
 - Mahit Warhadpande – Hand Siteswap feature design and implementation
-- Alan Weathers – Alanz pattern files, bug reports, many application improvement ideas
+- Alan Weathers – Alanz pattern files, Android testing, bug reports, many application improvement ideas
