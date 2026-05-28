@@ -151,9 +151,10 @@ open class ApplicationPanel(
     // Return the callback function to invoke when the user clicks
     // "Run" on the pattern entry control.
 
-    private fun onRunPatternEntry(): (ParameterList) -> Unit {
-        return { pl ->
+    private fun onRunPatternEntry(): (String) -> Unit {
+        return { parameterString ->
             try {
+                val pl = ParameterList(parameterString)
                 val p = SiteswapPattern().fromParameters(pl)
                 val jc = AnimationPrefs.fromParameters(pl)
                 pl.errorIfParametersLeft()
