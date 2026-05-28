@@ -46,7 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SiteswapNotationControl(
     initialParams: String? = null,
     isBasePatternEdited: Boolean = false,
-    onConfirm: (ParameterList) -> Unit
+    onConfirm: (String) -> Unit
 ) {
     // State Variables
     var lastInitialParams by rememberSaveable { mutableStateOf<String?>(null) }
@@ -139,7 +139,7 @@ fun SiteswapNotationControl(
         focusRequester.requestFocus()
     }
 
-    fun parameterList(): ParameterList {
+    fun parameterString(): String {
         val sb = StringBuilder()
         sb.append("pattern=").append(pattern.text)
         if (propIndex != 0 && propIndex < Prop.builtinProps.size) {
@@ -161,32 +161,35 @@ fun SiteswapNotationControl(
             sb.append(";").append(manualSettings)
         }
 
-        val pl = ParameterList(sb.toString())
-
-        // check if we want to add a non-default title
-        if (pl.getParameter("title") == null) {
-            val hss = pl.getParameter("hss")
-            if (hss != null) {
-                val title = "oss: " + pl.getParameter("pattern") + "  hss: " + hss
-                pl.addParameter("title", title)
-            } else if (handDropdownIndex != 0) {
-                // if hands are not default, apply a title
-                val handsLabels = builtinHandsStringResources +
-                    listOf(Res.string.gui_mhnhands_name_custom)
-                val title = pl.getParameter("pattern") + " " +
-                    jlGetStringResource(handsLabels[handDropdownIndex - 1])
-                pl.addParameter("title", title)
-            } else if (bodyDropdownIndex != 0) {
-                // if body movement is not default, apply a title
-                val bodyLabels = builtinBodyStringResources +
-                    listOf(Res.string.gui_mhnbody_name_custom)
-                val title = pl.getParameter("pattern") + " " +
-                    jlGetStringResource(bodyLabels[bodyDropdownIndex - 1])
-                pl.addParameter("title", title)
+        var parameterString = sb.toString()
+        try {
+            val pl = ParameterList(parameterString)
+            if (pl.getParameter("title") == null) {
+                // check if we want to add a non-default title
+                val hss = pl.getParameter("hss")
+                if (hss != null) {
+                    val title = "oss: " + pl.getParameter("pattern") + "  hss: " + hss
+                    pl.addParameter("title", title)
+                } else if (handDropdownIndex != 0) {
+                    // if hands are not default, apply a title
+                    val handsLabels = builtinHandsStringResources +
+                        listOf(Res.string.gui_mhnhands_name_custom)
+                    val title = pl.getParameter("pattern") + " " +
+                        jlGetStringResource(handsLabels[handDropdownIndex - 1])
+                    pl.addParameter("title", title)
+                } else if (bodyDropdownIndex != 0) {
+                    // if body movement is not default, apply a title
+                    val bodyLabels = builtinBodyStringResources +
+                        listOf(Res.string.gui_mhnbody_name_custom)
+                    val title = pl.getParameter("pattern") + " " +
+                        jlGetStringResource(bodyLabels[bodyDropdownIndex - 1])
+                    pl.addParameter("title", title)
+                }
+                parameterString = pl.toString()
             }
+        } catch (_: Exception) {
         }
-
-        return pl
+        return parameterString
     }
 
     Column(
@@ -196,7 +199,7 @@ fun SiteswapNotationControl(
             .imePadding()
             .onPreviewKeyEvent {
                 if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
-                    onConfirm(parameterList())
+                    onConfirm(parameterString())
                     true
                 } else {
                     false
@@ -339,7 +342,7 @@ fun SiteswapNotationControl(
                 resetControl("3")
                 lastInitialParams = null
             },
-            onRun = { onConfirm(parameterList()) }
+            onRun = { onConfirm(parameterString()) }
         )
     }
 }

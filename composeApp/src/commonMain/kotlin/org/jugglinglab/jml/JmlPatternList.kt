@@ -313,16 +313,20 @@ class JmlPatternList(
         val jlHashCode: Int by lazy {
             if (!canAnimate || notation == null) 0
             else {
-                var result = notation.lowercase().hashCode()
-                if (anim != null) {
-                    result = 31 * result + Pattern.newPattern(notation).fromString(anim)
-                        .toCanonicalString(forHashCode = true).hashCode()
+                try {
+                    var result = notation.lowercase().hashCode()
+                    if (anim != null) {
+                        result = 31 * result + Pattern.newPattern(notation).fromString(anim)
+                            .toCanonicalString(forHashCode = true).hashCode()
+                    }
+                    if (patnode != null) {
+                        val nodeHash = buildString { patnode.writeNode(this, 0) }.hashCode()
+                        result = 31 * result + nodeHash
+                    }
+                    result
+                } catch (_: Exception) {
+                    0
                 }
-                if (patnode != null) {
-                    val nodeHash = buildString { patnode.writeNode(this, 0) }.hashCode()
-                    result = 31 * result + nodeHash
-                }
-                result
             }
         }
 

@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
@@ -77,6 +79,7 @@ fun AnimationView(
     // two renderers for stereo support
     val renderer1 = remember { Renderer() }
     val renderer2 = remember { Renderer() }
+    val coroutineScope = rememberCoroutineScope()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val density = LocalDensity.current.density
@@ -253,64 +256,70 @@ fun AnimationView(
         ) {
             drawRect(color = backgroundColor)
 
-            val width = size.width.toInt()
-            val height = size.height.toInt()
+            try {
+                val width = size.width.toInt()
+                val height = size.height.toInt()
 
-            if (state.prefs.stereo) {
-                if (renderer1.currentPattern !== state.pattern || renderer2.currentPattern !== state.pattern) return@Canvas
-                val w = width / 2
-                withTransform({ translate(left = 0f, top = 0f) }) {
-                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        if (layout.showGrid) {
-                            drawGrid(renderer1, this, width = w, height = height)
-                        }
-                        renderer1.drawFrame(
-                            state.time,
-                            state.propForPath,
-                            state.prefs.hideJugglers,
-                            this
-                        )
-                        drawEventOverlays(layout, 0, this)
-                        drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
-                        if (state.showAxes) {
-                            renderer1.drawAxes(textMeasurer, this)
+                if (state.prefs.stereo) {
+                    if (renderer1.currentPattern !== state.pattern || renderer2.currentPattern !== state.pattern) return@Canvas
+                    val w = width / 2
+                    withTransform({ translate(left = 0f, top = 0f) }) {
+                        clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                            if (layout.showGrid) {
+                                drawGrid(renderer1, this, width = w, height = height)
+                            }
+                            renderer1.drawFrame(
+                                state.time,
+                                state.propForPath,
+                                state.prefs.hideJugglers,
+                                this
+                            )
+                            drawEventOverlays(layout, 0, this)
+                            drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
+                            if (state.showAxes) {
+                                renderer1.drawAxes(textMeasurer, this)
+                            }
                         }
                     }
-                }
 
-                withTransform({ translate(left = w.toFloat(), top = 0f) }) {
-                    clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
-                        if (layout.showGrid) {
-                            drawGrid(renderer2, this, width = w, height = height)
-                        }
-                        renderer2.drawFrame(
-                            state.time,
-                            state.propForPath,
-                            state.prefs.hideJugglers,
-                            this
-                        )
-                        drawEventOverlays(layout, 1, this)
-                        drawPositionOverlays(state, layout, 1, renderer2, this, textMeasurer)
-                        if (state.showAxes) {
-                            renderer2.drawAxes(textMeasurer, this)
+                    withTransform({ translate(left = w.toFloat(), top = 0f) }) {
+                        clipRect(left = 0f, top = 0f, right = w.toFloat(), bottom = height.toFloat()) {
+                            if (layout.showGrid) {
+                                drawGrid(renderer2, this, width = w, height = height)
+                            }
+                            renderer2.drawFrame(
+                                state.time,
+                                state.propForPath,
+                                state.prefs.hideJugglers,
+                                this
+                            )
+                            drawEventOverlays(layout, 1, this)
+                            drawPositionOverlays(state, layout, 1, renderer2, this, textMeasurer)
+                            if (state.showAxes) {
+                                renderer2.drawAxes(textMeasurer, this)
+                            }
                         }
                     }
+                } else {
+                    if (renderer1.currentPattern !== state.pattern) return@Canvas
+                    if (layout.showGrid) {
+                        drawGrid(renderer1, this)
+                    }
+                    renderer1.drawFrame(
+                        state.time,
+                        state.propForPath,
+                        state.prefs.hideJugglers,
+                        this
+                    )
+                    drawEventOverlays(layout, 0, this)
+                    drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
+                    if (state.showAxes) {
+                        renderer1.drawAxes(textMeasurer, this)
+                    }
                 }
-            } else {
-                if (renderer1.currentPattern !== state.pattern) return@Canvas
-                if (layout.showGrid) {
-                    drawGrid(renderer1, this)
-                }
-                renderer1.drawFrame(
-                    state.time,
-                    state.propForPath,
-                    state.prefs.hideJugglers,
-                    this
-                )
-                drawEventOverlays(layout, 0, this)
-                drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
-                if (state.showAxes) {
-                    renderer1.drawAxes(textMeasurer, this)
+            } catch (e: Exception) {
+                coroutineScope.launch {
+                    state.update(message = e.message ?: e.toString(), isPaused = true)
                 }
             }
         }

@@ -47,7 +47,7 @@ import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -461,7 +461,7 @@ fun App(
                 val views = listOf(
                     Triple(
                         "Info",
-                        Icons.Default.Info,
+                        Icons.Default.Home,
                         stringResource(Res.string.gui_mobile_nav_info)
                     ),
                     Triple(

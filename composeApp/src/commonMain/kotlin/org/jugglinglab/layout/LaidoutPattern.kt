@@ -993,6 +993,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         if (i == pathlinks[path - 1].size) {
             return 0.0
         }
+        var passes = 0
         while (true) {
             val pl2 = pathlinks[path - 1][i]
             if (!pl2.isInHand) {
@@ -1008,6 +1009,7 @@ class LaidoutPattern(val pat: JmlPattern) {
             ++i
             if (i == pathlinks[path - 1].size) {
                 i = 0
+                if (++passes > 1) break
             }
         }
 
@@ -1034,6 +1036,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         if (i == pathlinks[path - 1].size) {
             return 0.0
         }
+        var passes = 0
         while (true) {
             pl = pathlinks[path - 1][i]
             val p = pl.path
@@ -1050,6 +1053,7 @@ class LaidoutPattern(val pat: JmlPattern) {
             ++i
             if (i == pathlinks[path - 1].size) {
                 i = 0
+                if (++passes > 1) break
             }
         }
 
